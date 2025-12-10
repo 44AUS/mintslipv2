@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 
-export const generateAndDownloadPaystub = async (formData) => {
+export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs) => {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   
   const rate = parseFloat(formData.rate) || 0;

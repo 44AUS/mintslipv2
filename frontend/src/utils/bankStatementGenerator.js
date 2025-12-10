@@ -39,7 +39,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   
-  const margin = 25;
+  const margin = 40;
   let y = margin + 20;
   const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -85,39 +85,53 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
       maximumFractionDigits: 2,
     });
 
+  // Template-specific colors
+  let primaryColor, accentColor;
+  if (template === 'template-b') {
+    primaryColor = [41, 128, 185]; // Blue
+    accentColor = [52, 152, 219];
+  } else if (template === 'template-c') {
+    primaryColor = [142, 68, 173]; // Purple
+    accentColor = [155, 89, 182];
+  } else {
+    primaryColor = [0, 178, 106]; // Green (default)
+    accentColor = [233, 112, 50];
+  }
+
   // Header
-  doc.setFontSize(28);
-  doc.setTextColor(0, 178, 106);
-  doc.text("BANK", margin, y);
+  doc.setFontSize(32);
+  doc.setTextColor(...primaryColor);
+  doc.setFont(undefined, 'bold');
+  doc.text("BANK STATEMENT", margin, y);
   
   y += 30;
-  doc.setFontSize(7);
-  doc.setTextColor(180, 180, 180);
-  doc.text("Member Services", pageWidth - margin, y, { align: "right" });
-  doc.setTextColor(0, 0, 0);
-  doc.text("(800) 422-3641", pageWidth - margin, y + 12, { align: "right" });
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.setFont(undefined, 'normal');
+  doc.text("Customer Service: (800) 422-3641", pageWidth - margin, y, { align: "right" });
 
   // Account Info
-  y += 60;
+  y += 50;
   doc.setTextColor(0, 0, 0);
-  doc.setFontSize(7);
+  doc.setFontSize(10);
   doc.text(accountName, margin, y);
-  doc.text(accountAddress1, margin, y + 12);
-  doc.text(accountAddress2, margin, y + 24);
+  doc.text(accountAddress1, margin, y + 15);
+  doc.text(accountAddress2, margin, y + 30);
 
   // Statement Title
-  y += 80;
+  y += 70;
   doc.setFontSize(16);
-  doc.setTextColor(180, 180, 180);
+  doc.setTextColor(100, 100, 100);
   doc.text("Checking Account Statement", margin, y);
 
   // Account Number and Period
   y += 30;
-  doc.setFontSize(8);
-  doc.setTextColor(156, 156, 156);
-  doc.text("Account number", margin, y);
-  doc.setTextColor(180, 180, 180);
-  doc.text(String(accountNumber || ""), margin, y + 14);
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.text("Account Number", margin, y);
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text(String(accountNumber || ""), margin, y + 15);
 
   const monthText = new Date(year, month - 1).toLocaleString("en-US", {
     month: "long",
@@ -125,29 +139,25 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   });
   const dateRange = `(${formatDateLong(statementStart)} - ${formatDateLong(statementEnd)})`;
 
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.text("Statement Period", margin, y + 40);
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text(monthText, margin, y + 55);
   doc.setFontSize(8);
-  doc.setTextColor(156, 156, 156);
-  doc.text("Statement period", margin, y + 36);
-  doc.setFontSize(8);
-  doc.setTextColor(180, 180, 180);
-  doc.text(monthText, margin, y + 50);
+  doc.setTextColor(120, 120, 120);
   const monthWidth = doc.getTextWidth(monthText);
-  doc.setFontSize(7);
-  doc.text(` ${dateRange}`, margin + monthWidth, y + 50);
-
-  // Issued By
-  y += 70;
-  doc.setFontSize(7);
-  doc.setTextColor(180, 180, 180);
-  doc.text("Issued by Bank, Member FDIC", margin, y);
+  doc.text(` ${dateRange}`, margin + monthWidth, y + 55);
 
   // Summary Section
-  y += 50;
-  const summaryWidth = 220;
-  doc.setFontSize(8);
-  doc.setTextColor(233, 112, 50);
+  y += 90;
+  const summaryWidth = 300;
+  doc.setFontSize(12);
+  doc.setTextColor(...accentColor);
+  doc.setFont(undefined, 'bold');
   doc.text("Summary", margin, y);
-  y += 10;
+  y += 5;
 
   const beginningDateText = statementStart
     ? `Beginning balance on ${formatDateLong(statementStart)}`
@@ -161,60 +171,64 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     ["Deposits", deposits, "#000"],
     ["Purchases", purchases, "#000"],
     ["Transfers", transfers, "#000"],
-    [endingDateText, ending, "#1a51aa"],
+    [endingDateText, ending, `rgb(${accentColor[0]}, ${accentColor[1]}, ${accentColor[2]})`],
   ];
 
-  const rowHeight = 20;
+  const rowHeight = 25;
+  doc.setFont(undefined, 'normal');
   summaryRows.forEach(([label, val, color], idx) => {
     const isLastRow = idx === summaryRows.length - 1;
-    doc.setDrawColor(221, 221, 221);
-    doc.setLineWidth(0.7);
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
     doc.line(margin, y, margin + summaryWidth, y);
-    y += rowHeight / 2;
-    doc.setFontSize(7);
+    y += rowHeight / 2 + 5;
+    doc.setFontSize(9);
     doc.setTextColor(color);
     doc.text(label, margin, y);
     doc.text(`$${toFixed(val)}`, margin + summaryWidth, y, { align: "right" });
-    y += rowHeight / 3;
+    y += rowHeight / 2;
     if (!isLastRow) {
       doc.line(margin, y, margin + summaryWidth, y);
     }
   });
 
   // Transactions Section
-  y += 40;
-  doc.setTextColor(233, 112, 50);
-  doc.setFontSize(8);
+  y += 35;
+  doc.setTextColor(...accentColor);
+  doc.setFontSize(12);
+  doc.setFont(undefined, 'bold');
   doc.text("Transactions", margin, y);
-  y += 10;
-  doc.setDrawColor(220, 220, 220);
+  y += 5;
+  doc.setDrawColor(200, 200, 200);
   doc.line(margin, y, pageWidth - margin, y);
-  y += 14;
+  y += 15;
 
   const col = {
     date: margin,
     desc: margin + 90,
     type: margin + 280,
-    amt: margin + 400,
+    amt: pageWidth - margin - 10,
   };
 
-  doc.setFontSize(7);
-  doc.setTextColor(0, 0, 0);
-  doc.text("TRANSACTION DATE", col.date, y);
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.setFont(undefined, 'bold');
+  doc.text("DATE", col.date, y);
   doc.text("DESCRIPTION", col.desc, y);
   doc.text("TYPE", col.type, y);
   doc.text("AMOUNT", col.amt, y, { align: "right" });
   y += 8;
   doc.line(margin, y, pageWidth - margin, y);
-  y += 10;
+  y += 12;
 
   const bottomLimit = doc.internal.pageSize.getHeight() - 60;
-  const lineHeight = 14;
+  const lineHeight = 18;
 
+  doc.setFont(undefined, 'normal');
   transactions.forEach((tx) => {
     if (y + lineHeight > bottomLimit) {
       doc.addPage();
-      y = margin;
+      y = margin + 20;
     }
 
     const type = (tx.type || "").toLowerCase();
@@ -230,7 +244,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     )}`;
     const formattedDate = formatShortDate(tx.date);
 
-    doc.setFontSize(7);
+    doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
     doc.text(formattedDate, col.date, y);
     doc.text(tx.description || "", col.desc, y);
@@ -240,23 +254,25 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     y += lineHeight;
   });
 
-  // Footer
+  // Footer page
   doc.addPage();
-  doc.setFontSize(12);
-  doc.setTextColor(51, 51, 51);
-  doc.text("Error Resolution Procedures", margin, margin + 50);
+  doc.setFontSize(14);
+  doc.setTextColor(60, 60, 60);
+  doc.setFont(undefined, 'bold');
+  doc.text("Important Information", margin, margin + 40);
 
   doc.setFontSize(10);
-  const text = "In case of errors or questions about your electronic transactions, please contact us as soon as possible. We must hear from you no later than 60 days after we sent the first statement on which the problem or error appeared.";
+  doc.setFont(undefined, 'normal');
+  const text = "In case of errors or questions about your electronic transactions, please contact us as soon as possible. We must hear from you no later than 60 days after we sent the first statement on which the problem or error appeared. If you think your statement or receipt is wrong or if you need more information about a transaction, please contact customer service immediately.";
   const wrappedText = doc.splitTextToSize(text, pageWidth - margin * 2);
-  doc.text(wrappedText, margin, margin + 90);
+  doc.text(wrappedText, margin, margin + 70);
 
   // Page Numbers
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
-    doc.setTextColor(102, 102, 102);
+    doc.setTextColor(120, 120, 120);
     doc.text(
       `Page ${i} of ${totalPages}`,
       pageWidth / 2,

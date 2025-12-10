@@ -22,7 +22,11 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Razorpay client (Test mode)
-razorpay_client = razorpay.Client(auth=("rzp_test_samplekey123456", "test_secret_key_placeholder"))
+try:
+    razorpay_client = razorpay.Client(auth=("rzp_test_samplekey123456", "test_secret_key_placeholder"))
+except Exception as e:
+    logging.warning(f"Razorpay client initialization failed: {e}")
+    razorpay_client = None
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")

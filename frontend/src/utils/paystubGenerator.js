@@ -58,7 +58,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   const state = formData.state?.toUpperCase() || "";
   const stateRate = stateRates[state] || 0.05;
 
-  // If multiple stubs, create ZIP with organized folders
+  // If multiple stubs, create ZIP
   if (calculatedNumStubs > 1) {
     const zip = new JSZip();
     let currentStartDate = new Date(startDate);
@@ -74,16 +74,12 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         payDay, pageWidth, pageHeight, calculatedNumStubs
       );
       
-      // Create folder structure: Year/Month/filename
-      const year = stubData.payDate.getFullYear();
-      const month = String(stubData.payDate.getMonth() + 1).padStart(2, '0');
-      const monthName = stubData.payDate.toLocaleString('en-US', { month: 'long' });
-      const folderPath = `${year}/${month}-${monthName}`;
+      // Simple filename with date
       const fileName = `PayStub_${stubData.payDate.toISOString().split('T')[0]}.pdf`;
       
-      // Add PDF to zip in organized folder
+      // Add PDF directly to zip root
       const pdfBlob = doc.output('blob');
-      zip.folder(folderPath).file(fileName, pdfBlob);
+      zip.file(fileName, pdfBlob);
       
       currentStartDate.setDate(currentStartDate.getDate() + periodLength);
     }

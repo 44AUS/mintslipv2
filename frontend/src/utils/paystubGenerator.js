@@ -4,7 +4,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   
   const rate = parseFloat(formData.rate) || 0;
-  const numStubs = parseInt(formData.numStubs) || 1;
+  const calculatedNumStubs = numStubs || 1;
   const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
   const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
   

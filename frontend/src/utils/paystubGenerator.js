@@ -11,7 +11,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   const hoursArray = formData.hoursList
     .split(",")
     .map((h) => parseFloat(h.trim()) || 0)
-    .slice(0, numStubs) || [];
+    .slice(0, calculatedNumStubs) || [];
   const overtimeArray = formData.overtimeList
     .split(",")
     .map((h) => parseFloat(h.trim()) || 0)

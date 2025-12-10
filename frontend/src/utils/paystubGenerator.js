@@ -58,9 +58,61 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   const state = formData.state?.toUpperCase() || "";
   const stateRate = stateRates[state] || 0.05;
 
-  const doc = new jsPDF({ unit: "pt", format: "letter" });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
+  // If multiple stubs, create ZIP with organized folders
+  if (calculatedNumStubs > 1) {
+    const zip = new JSZip();
+    
+    for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      const stubData = generateSingleStub(
+        doc, formData, template, stubNum, startDate, periodLength, 
+        hoursArray, overtimeArray, defaultHours, rate, stateRate, 
+        payDay, pageWidth, pageHeight, calculatedNumStubs
+      );
+      
+      // Create folder structure: Year/Month/filename
+      const year = stubData.payDate.getFullYear();
+      const month = String(stubData.payDate.getMonth() + 1).padStart(2, '0');
+      const monthName = stubData.payDate.toLocaleString('en-US', { month: 'long' });
+      const folderPath = `${year}/${month}-${monthName}`;
+      const fileName = `PayStub_${stubData.payDate.toISOString().split('T')[0]}.pdf`;
+      
+      // Add PDF to zip in organized folder
+      const pdfBlob = doc.output('blob');
+      zip.folder(folderPath).file(fileName, pdfBlob);
+      
+      startDate.setDate(startDate.getDate() + periodLength);
+    }
+    
+    // Generate and download ZIP
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    saveAs(zipBlob, `PayStubs_${formData.name || "Employee"}.zip`);
+    
+  } else {
+    // Single stub - download directly as PDF
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    
+    generateSingleStub(
+      doc, formData, template, 0, startDate, periodLength,
+      hoursArray, overtimeArray, defaultHours, rate, stateRate,
+      payDay, pageWidth, pageHeight, 1
+    );
+    
+    doc.save(`PayStub-${formData.name || "document"}.pdf`);
+  }
+};
+
+// Helper function to generate a single paystub
+function generateSingleStub(
+  doc, formData, template, stubNum, startDate, periodLength,
+  hoursArray, overtimeArray, defaultHours, rate, stateRate,
+  payDay, pageWidth, pageHeight, totalStubs
+) {
 
   for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
     if (stubNum > 0) doc.addPage();

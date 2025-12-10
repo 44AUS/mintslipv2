@@ -72,7 +72,15 @@ async def create_order(order_req: OrderRequest):
         }
         
         # In test mode, this will work with test credentials
-        razorpay_order = razorpay_client.order.create(data=order_data)
+        if razorpay_client is None:
+            # Mock order for testing when Razorpay is not available
+            razorpay_order = {
+                "id": f"order_test_{uuid.uuid4().hex[:10]}",
+                "amount": order_req.amount,
+                "currency": "INR"
+            }
+        else:
+            razorpay_order = razorpay_client.order.create(data=order_data)
         
         # Store transaction in database
         transaction = Transaction(

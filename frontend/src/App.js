@@ -6,8 +6,8 @@ import BankStatementForm from "@/pages/BankStatementForm";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
-// Use a valid PayPal Sandbox Client ID
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "AZDxjDScFpQtjWTOUtWKbyN87sd1C0NYIrqqQCaFax8A97_DLEDOcMqaG5T";
+// Use PayPal Sandbox Client ID
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
 
 function App() {
   return (

@@ -8,12 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import axios from "axios";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 export default function PaystubForm() {
   const navigate = useNavigate();
@@ -36,10 +32,11 @@ export default function PaystubForm() {
     companyZip: "",
     companyPhone: "",
     hireDate: "",
+    startDate: "",
+    endDate: "",
     rate: "",
     payFrequency: "biweekly",
     payDay: "Friday",
-    numStubs: 1,
     hoursList: "",
     overtimeList: "",
     includeLocalTax: true,
@@ -53,9 +50,19 @@ export default function PaystubForm() {
     });
   };
 
+  const calculateNumStubs = useMemo(() => {
+    if (!formData.startDate || !formData.endDate) return 0;
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
+    return Math.ceil(diffDays / periodLength);
+  }, [formData.startDate, formData.endDate, formData.payFrequency]);
+
   const preview = useMemo(() => {
     const rate = parseFloat(formData.rate) || 0;
-    const numStubs = parseInt(formData.numStubs) || 1;
+    const numStubs = calculateNumStubs;
     const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
     const hoursArray = formData.hoursList
       .split(",")
@@ -80,8 +87,8 @@ export default function PaystubForm() {
     const totalTaxes = ssTax + medTax + stateTax + localTax;
     const netPay = totalGross - totalTaxes;
 
-    return { totalGross, totalTaxes, netPay, ssTax, medTax, stateTax, localTax };
-  }, [formData]);
+    return { totalGross, totalTaxes, netPay, ssTax, medTax, stateTax, localTax, numStubs };
+  }, [formData, calculateNumStubs]);
 
   const createOrder = (data, actions) => {
     return actions.order.create({
@@ -100,23 +107,13 @@ export default function PaystubForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      const details = await actions.order.capture();
-      
-      // Record purchase in backend
-      await axios.post(`${API}/record-purchase`, {
-        payment_id: details.id,
-        document_type: "paystub",
-        template: selectedTemplate,
-        amount: 10.00,
-        status: "completed"
-      });
-
+      await actions.order.capture();
       toast.success("Payment successful! Generating your document...");
       
       // Generate and download PDF
-      await generateAndDownloadPaystub(formData, selectedTemplate);
+      await generateAndDownloadPaystub(formData, selectedTemplate, calculateNumStubs);
       
-      toast.success("Pay stub downloaded successfully!");
+      toast.success("Pay stub(s) downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {
       toast.error("Failed to generate document");
@@ -157,7 +154,7 @@ export default function PaystubForm() {
                 </h2>
                 <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${ selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-a" id="template-a" data-testid="template-a-radio" />
                         <Label htmlFor="template-a" className="cursor-pointer font-medium">Template A</Label>
@@ -283,9 +280,43 @@ export default function PaystubForm() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="numStubs">Number of Stubs *</Label>
-                    <Input data-testid="num-stubs-input" id="numStubs" name="numStubs" type="number" min="1" max="10" value={formData.numStubs} onChange={handleChange} required />
+                    <Label htmlFor="payDay">Pay Day *</Label>
+                    <Select value={formData.payDay} onValueChange={(val) => setFormData({...formData, payDay: val})}>
+                      <SelectTrigger data-testid="pay-day-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Monday">Monday</SelectItem>
+                        <SelectItem value="Tuesday">Tuesday</SelectItem>
+                        <SelectItem value="Wednesday">Wednesday</SelectItem>
+                        <SelectItem value="Thursday">Thursday</SelectItem>
+                        <SelectItem value="Friday">Friday</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
+
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Paystub Generation Period *</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input data-testid="start-date-input" id="startDate" name="startDate" type="date" value={formData.startDate} onChange={handleChange} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <Input data-testid="end-date-input" id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} required />
+                    </div>
+                  </div>
+                  {calculateNumStubs > 0 && (
+                    <p className="text-sm text-slate-600 mt-2">
+                      This will generate <strong>{calculateNumStubs}</strong> paystub{calculateNumStubs > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="hoursList">Hours Worked (comma separated)</Label>
                     <Input data-testid="hours-list-input" id="hoursList" name="hoursList" placeholder="80, 80, 80" value={formData.hoursList} onChange={handleChange} />
@@ -328,6 +359,12 @@ export default function PaystubForm() {
                   Pay Preview
                 </h3>
                 <div className="space-y-2 text-sm">
+                  {preview.numStubs > 0 && (
+                    <div className="flex justify-between mb-3 pb-3 border-b border-green-300">
+                      <span className="text-slate-700 font-semibold">Paystubs to Generate:</span>
+                      <span className="font-bold">{preview.numStubs}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-slate-700">Total Gross Pay:</span>
                     <span className="font-bold">${preview.totalGross.toFixed(2)}</span>

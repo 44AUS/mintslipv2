@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank } from "lucide-react";
 import Header from "@/components/Header";
 
 export default function Home() {
@@ -103,7 +103,7 @@ export default function Home() {
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <FileBarChart className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
+              <PiggyBank className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
             </div>
             
             <div className="space-y-4">
@@ -111,7 +111,7 @@ export default function Home() {
                 Bank Statement
               </h4>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Create detailed bank statements with transaction history, account summaries, and professional formatting.
+                Create real detailed bank statements with transaction history, account summaries, and professional formatting.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
@@ -140,7 +140,7 @@ export default function Home() {
                 Secure & Instant
               </h3>
               <p className="text-lg leading-relaxed text-slate-600">
-                Your payment is processed securely through Razorpay. Once payment is confirmed, your document is generated and downloaded immediately.
+                Your payment is processed securely through PayPal. Once payment is confirmed, your document is generated and downloaded immediately.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">

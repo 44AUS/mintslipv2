@@ -110,23 +110,23 @@ export default function BankStatementForm() {
                 <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="template-a" id="bank-template-a" data-testid="bank-template-a-radio" />
-                    <Label htmlFor="bank-template-a" className="cursor-pointer font-medium">Template A</Label>
+                    <Label htmlFor="bank-template-a" className="cursor-pointer font-medium">Chime</Label>
                   </div>
-                  <p className="text-xs text-slate-600 mt-2">Classic banking style</p>
+                  <p className="text-xs text-slate-600 mt-2">Chime inspired statement</p>
                 </div>
                 <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="template-b" id="bank-template-b" data-testid="bank-template-b-radio" />
-                    <Label htmlFor="bank-template-b" className="cursor-pointer font-medium">Template B</Label>
+                    <Label htmlFor="bank-template-b" className="cursor-pointer font-medium">Bank of America</Label>
                   </div>
-                  <p className="text-xs text-slate-600 mt-2">Modern digital format</p>
+                  <p className="text-xs text-slate-600 mt-2">Bank of America inspired statement</p>
                 </div>
                 <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="template-c" id="bank-template-c" data-testid="bank-template-c-radio" />
-                    <Label htmlFor="bank-template-c" className="cursor-pointer font-medium">Template C</Label>
+                    <Label htmlFor="bank-template-c" className="cursor-pointer font-medium">Chase</Label>
                   </div>
-                  <p className="text-xs text-slate-600 mt-2">Detailed statement</p>
+                  <p className="text-xs text-slate-600 mt-2">Chase inspired statement</p>
                 </div>
               </div>
             </RadioGroup>

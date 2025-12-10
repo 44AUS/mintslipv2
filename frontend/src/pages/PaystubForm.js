@@ -148,16 +148,16 @@ export default function PaystubForm() {
                     <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-a" id="template-a" data-testid="template-a-radio" />
-                        <Label htmlFor="template-a" className="cursor-pointer font-medium">Template A</Label>
+                        <Label htmlFor="template-a" className="cursor-pointer font-medium">Gusto</Label>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Classic professional style</p>
+                      <p className="text-xs text-slate-600 mt-2">Gusto style</p>
                     </div>
                     <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-b" id="template-b" data-testid="template-b-radio" />
-                        <Label htmlFor="template-b" className="cursor-pointer font-medium">Template B</Label>
+                        <Label htmlFor="template-b" className="cursor-pointer font-medium">ADP</Label>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Modern clean layout</p>
+                      <p className="text-xs text-slate-600 mt-2">ADP layout</p>
                     </div>
                     <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">

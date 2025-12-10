@@ -15,7 +15,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   const overtimeArray = formData.overtimeList
     .split(",")
     .map((h) => parseFloat(h.trim()) || 0)
-    .slice(0, numStubs) || [];
+    .slice(0, calculatedNumStubs) || [];
 
   const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
   let startDate = new Date(hireDate);

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FileText, FileBarChart, CheckCircle, Shield, Clock } from "lucide-react";
+import Header from "@/components/Header";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -8,14 +9,7 @@ export default function Home() {
     <div className="min-h-screen bg-white relative">
       <div className="noise-overlay" />
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-            DocuMint
-          </h1>
-        </div>
-      </header>
+      <Header title="DocuMint" />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-20 md:py-32">

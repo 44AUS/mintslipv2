@@ -26,7 +26,7 @@ function formatDateLong(dateStr) {
   });
 }
 
-export const generateAndDownloadBankStatement = async (data) => {
+export const generateAndDownloadBankStatement = async (data, template = 'template-a') => {
   const {
     accountName,
     accountAddress1,

@@ -181,8 +181,6 @@ function generateSingleStub(
 
   return { payDate, startDate, endDate };
 }
-
-    // Header with company name
     doc.setFillColor(...headerBg);
     doc.rect(0, 0, pageWidth, 100, 'F');
     

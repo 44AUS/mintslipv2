@@ -110,23 +110,22 @@ function generateSingleStub(
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
   payDay, pageWidth, pageHeight, totalStubs
 ) {
-
   const hours = hoursArray[stubNum] || defaultHours;
-    const overtime = overtimeArray[stubNum] || 0;
-    const regularPay = rate * hours;
-    const overtimePay = rate * 1.5 * overtime;
-    const grossPay = regularPay + overtimePay;
+  const overtime = overtimeArray[stubNum] || 0;
+  const regularPay = rate * hours;
+  const overtimePay = rate * 1.5 * overtime;
+  const grossPay = regularPay + overtimePay;
 
-    const ssTax = grossPay * 0.062;
-    const medTax = grossPay * 0.0145;
-    const stateTax = grossPay * stateRate;
-    const localTax = formData.includeLocalTax ? grossPay * 0.01 : 0;
-    const totalTax = ssTax + medTax + stateTax + localTax;
-    const netPay = grossPay - totalTax;
+  const ssTax = grossPay * 0.062;
+  const medTax = grossPay * 0.0145;
+  const stateTax = grossPay * stateRate;
+  const localTax = formData.includeLocalTax ? grossPay * 0.01 : 0;
+  const totalTax = ssTax + medTax + stateTax + localTax;
+  const netPay = grossPay - totalTax;
 
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + periodLength - 1);
-    const payDate = nextWeekday(new Date(endDate), payDay);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + periodLength - 1);
+  const payDate = nextWeekday(new Date(endDate), payDay);
 
     // Template-specific styling
     let primaryColor, accentColor, headerBg;

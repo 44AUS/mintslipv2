@@ -124,7 +124,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
 function generateSingleStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
-  payDay, pageWidth, pageHeight, totalStubs
+  payDay, pageWidth, pageHeight, totalStubs, payFrequency
 ) {
   const hours = hoursArray[stubNum] || defaultHours;
   const overtime = overtimeArray[stubNum] || 0;

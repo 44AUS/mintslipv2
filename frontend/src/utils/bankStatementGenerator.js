@@ -125,7 +125,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
-  // Header
+  // Page Numbers
   doc.setFontSize(32);
   doc.setTextColor(...primaryColor);
   doc.setFont(undefined, 'bold');

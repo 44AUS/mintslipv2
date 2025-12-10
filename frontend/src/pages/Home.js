@@ -121,7 +121,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>₹50</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>

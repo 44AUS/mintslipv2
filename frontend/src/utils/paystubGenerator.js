@@ -127,24 +127,24 @@ function generateSingleStub(
   endDate.setDate(startDate.getDate() + periodLength - 1);
   const payDate = nextWeekday(new Date(endDate), payDay);
 
-    // Template-specific styling
-    let primaryColor, accentColor, headerBg;
-    if (template === 'template-b') {
-      primaryColor = [41, 128, 185]; // Blue
-      accentColor = [52, 152, 219];
-      headerBg = [236, 240, 241];
-    } else if (template === 'template-c') {
-      primaryColor = [142, 68, 173]; // Purple
-      accentColor = [155, 89, 182];
-      headerBg = [245, 242, 248];
-    } else {
-      primaryColor = [44, 62, 80]; // Dark gray (default)
-      accentColor = [52, 73, 94];
-      headerBg = [236, 240, 241];
-    }
+  // Template-specific styling
+  let primaryColor, accentColor, headerBg;
+  if (template === 'template-b') {
+    primaryColor = [41, 128, 185]; // Blue
+    accentColor = [52, 152, 219];
+    headerBg = [236, 240, 241];
+  } else if (template === 'template-c') {
+    primaryColor = [142, 68, 173]; // Purple
+    accentColor = [155, 89, 182];
+    headerBg = [245, 242, 248];
+  } else {
+    primaryColor = [44, 62, 80]; // Dark gray (default)
+    accentColor = [52, 73, 94];
+    headerBg = [236, 240, 241];
+  }
 
-    let y = 40;
-    const margin = 40;
+  let y = 40;
+  const margin = 40;
 
     // Header with company name
     doc.setFillColor(...headerBg);

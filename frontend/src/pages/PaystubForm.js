@@ -91,14 +91,15 @@ export default function PaystubForm() {
   }, [formData, calculateNumStubs]);
 
   const createOrder = (data, actions) => {
+    const totalAmount = (calculateNumStubs * 10).toFixed(2);
     return actions.order.create({
       purchase_units: [
         {
           amount: {
-            value: "10.00",
+            value: totalAmount,
             currency_code: "USD"
           },
-          description: "Pay Stub Generation"
+          description: `Pay Stub Generation (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''})`
         },
       ],
     });

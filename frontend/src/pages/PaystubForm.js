@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import axios from "axios";
+import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -16,6 +18,7 @@ const API = `${BACKEND_URL}/api`;
 export default function PaystubForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState("template-a");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -80,73 +83,50 @@ export default function PaystubForm() {
     return { totalGross, totalTaxes, netPay, ssTax, medTax, stateTax, localTax };
   }, [formData]);
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
-    setIsProcessing(true);
+  const createOrder = (data, actions) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: "10.00",
+            currency_code: "USD"
+          },
+          description: "Pay Stub Generation"
+        },
+      ],
+    });
+  };
 
+  const onApprove = async (data, actions) => {
+    setIsProcessing(true);
     try {
-      // Create Razorpay order
-      const orderResponse = await axios.post(`${API}/create-order`, {
+      const details = await actions.order.capture();
+      
+      // Record purchase in backend
+      await axios.post(`${API}/record-purchase`, {
+        payment_id: details.id,
         document_type: "paystub",
-        amount: 1000  // ₹10 in paise
+        template: selectedTemplate,
+        amount: 10.00,
+        status: "completed"
       });
 
-      const { order_id, amount, currency, key_id } = orderResponse.data;
-
-      // Razorpay options
-      const options = {
-        key: key_id,
-        amount: amount,
-        currency: currency,
-        name: "DocuMint",
-        description: "Pay Stub Generation",
-        order_id: order_id,
-        handler: async function (response) {
-          try {
-            // Verify payment
-            await axios.post(`${API}/verify-payment`, {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              document_type: "paystub"
-            });
-
-            toast.success("Payment successful! Generating your document...");
-            
-            // Generate and download PDF
-            await generateAndDownloadPaystub(formData);
-            
-            toast.success("Pay stub downloaded successfully!");
-            setIsProcessing(false);
-          } catch (error) {
-            toast.error("Payment verification failed");
-            setIsProcessing(false);
-          }
-        },
-        prefill: {
-          name: formData.name,
-          email: "user@example.com",
-          contact: "9999999999"
-        },
-        theme: {
-          color: "#1a4731"
-        },
-        modal: {
-          ondismiss: function() {
-            setIsProcessing(false);
-            toast.error("Payment cancelled");
-          }
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-
+      toast.success("Payment successful! Generating your document...");
+      
+      // Generate and download PDF
+      await generateAndDownloadPaystub(formData, selectedTemplate);
+      
+      toast.success("Pay stub downloaded successfully!");
+      setIsProcessing(false);
     } catch (error) {
-      console.error("Payment error:", error);
-      toast.error("Failed to initiate payment");
+      toast.error("Failed to generate document");
       setIsProcessing(false);
     }
+  };
+
+  const onError = (err) => {
+    toast.error("Payment failed. Please try again.");
+    setIsProcessing(false);
   };
 
   return (
@@ -169,7 +149,39 @@ export default function PaystubForm() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Form */}
           <div className="lg:col-span-7 space-y-8">
-            <form onSubmit={handlePayment} className="space-y-8">
+            <form className="space-y-8">
+              {/* Template Selection */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Choose Template
+                </h2>
+                <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${ selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="template-a" id="template-a" data-testid="template-a-radio" />
+                        <Label htmlFor="template-a" className="cursor-pointer font-medium">Template A</Label>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-2">Classic professional style</p>
+                    </div>
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="template-b" id="template-b" data-testid="template-b-radio" />
+                        <Label htmlFor="template-b" className="cursor-pointer font-medium">Template B</Label>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-2">Modern clean layout</p>
+                    </div>
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="template-c" id="template-c" data-testid="template-c-radio" />
+                        <Label htmlFor="template-c" className="cursor-pointer font-medium">Template C</Label>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-2">Detailed format</p>
+                    </div>
+                  </div>
+                </RadioGroup>
+              </div>
+
               {/* Employee Information */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
@@ -296,15 +308,15 @@ export default function PaystubForm() {
                 </div>
               </div>
 
-              <Button
-                data-testid="pay-and-generate-button"
-                type="submit"
-                disabled={isProcessing}
-                className="w-full py-6 text-lg font-bold"
-                style={{ backgroundColor: '#ccff00', color: '#000000' }}
-              >
-                {isProcessing ? "Processing..." : "Pay ₹10 & Generate"}
-              </Button>
+              <div data-testid="paypal-button-container">
+                <PayPalButtons
+                  createOrder={createOrder}
+                  onApprove={onApprove}
+                  onError={onError}
+                  disabled={isProcessing}
+                  style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                />
+              </div>
             </form>
           </div>
 

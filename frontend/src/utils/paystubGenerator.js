@@ -144,24 +144,43 @@ function generateSingleStub(
   endDate.setDate(startDate.getDate() + periodLength - 1);
   const payDate = nextWeekday(new Date(endDate), payDay);
 
-  // Template-specific styling
-  let primaryColor, accentColor, headerBg;
+  const margin = 40;
+  
+  // Prepare data object for template
+  const templateData = {
+    formData,
+    hours,
+    overtime,
+    regularPay,
+    overtimePay,
+    grossPay,
+    ssTax,
+    medTax,
+    stateTax,
+    localTax,
+    totalTax,
+    netPay,
+    rate,
+    stateRate,
+    startDate,
+    endDate,
+    payDate,
+    payFrequency,
+    stubNum,
+    totalStubs
+  };
+
+  // Call the appropriate template
   if (template === 'template-b') {
-    primaryColor = [41, 128, 185]; // Blue
-    accentColor = [52, 152, 219];
-    headerBg = [236, 240, 241];
+    generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === 'template-c') {
-    primaryColor = [142, 68, 173]; // Purple
-    accentColor = [155, 89, 182];
-    headerBg = [245, 242, 248];
+    generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
   } else {
-    primaryColor = [44, 62, 80]; // Dark gray (default)
-    accentColor = [52, 73, 94];
-    headerBg = [236, 240, 241];
+    generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
-  let y = 40;
-  const margin = 40;
+  return { payDate, startDate, endDate };
+}
 
     // Header with company name
     doc.setFillColor(...headerBg);

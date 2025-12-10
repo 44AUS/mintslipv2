@@ -61,6 +61,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   // If multiple stubs, create ZIP with organized folders
   if (calculatedNumStubs > 1) {
     const zip = new JSZip();
+    let currentStartDate = new Date(startDate);
     
     for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
       const doc = new jsPDF({ unit: "pt", format: "letter" });
@@ -68,7 +69,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       const pageHeight = doc.internal.pageSize.getHeight();
       
       const stubData = generateSingleStub(
-        doc, formData, template, stubNum, startDate, periodLength, 
+        doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
         hoursArray, overtimeArray, defaultHours, rate, stateRate, 
         payDay, pageWidth, pageHeight, calculatedNumStubs
       );
@@ -84,7 +85,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       const pdfBlob = doc.output('blob');
       zip.folder(folderPath).file(fileName, pdfBlob);
       
-      startDate.setDate(startDate.getDate() + periodLength);
+      currentStartDate.setDate(currentStartDate.getDate() + periodLength);
     }
     
     // Generate and download ZIP

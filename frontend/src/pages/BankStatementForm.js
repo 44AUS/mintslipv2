@@ -5,16 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import axios from "axios";
+import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 export default function BankStatementForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState("template-a");
   
   const [accountName, setAccountName] = useState("");
   const [accountAddress1, setAccountAddress1] = useState("");
@@ -47,82 +46,49 @@ export default function BankStatementForm() {
     setTransactions(updated);
   };
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
+  const createOrder = (data, actions) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: "50.00",
+            currency_code: "USD"
+          },
+          description: "Bank Statement Generation"
+        },
+      ],
+    });
+  };
+
+  const onApprove = async (data, actions) => {
     setIsProcessing(true);
-
     try {
-      // Create Razorpay order
-      const orderResponse = await axios.post(`${API}/create-order`, {
-        document_type: "bankstatement",
-        amount: 5000  // ₹50 in paise
-      });
-
-      const { order_id, amount, currency, key_id } = orderResponse.data;
-
-      // Razorpay options
-      const options = {
-        key: key_id,
-        amount: amount,
-        currency: currency,
-        name: "DocuMint",
-        description: "Bank Statement Generation",
-        order_id: order_id,
-        handler: async function (response) {
-          try {
-            // Verify payment
-            await axios.post(`${API}/verify-payment`, {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              document_type: "bankstatement"
-            });
-
-            toast.success("Payment successful! Generating your document...");
-            
-            // Generate and download PDF
-            const formData = {
-              accountName,
-              accountAddress1,
-              accountAddress2,
-              accountNumber,
-              selectedMonth,
-              beginningBalance,
-              transactions
-            };
-            await generateAndDownloadBankStatement(formData);
-            
-            toast.success("Bank statement downloaded successfully!");
-            setIsProcessing(false);
-          } catch (error) {
-            toast.error("Payment verification failed");
-            setIsProcessing(false);
-          }
-        },
-        prefill: {
-          name: accountName,
-          email: "user@example.com",
-          contact: "9999999999"
-        },
-        theme: {
-          color: "#1a4731"
-        },
-        modal: {
-          ondismiss: function() {
-            setIsProcessing(false);
-            toast.error("Payment cancelled");
-          }
-        }
+      await actions.order.capture();
+      toast.success("Payment successful! Generating your document...");
+      
+      // Generate and download PDF
+      const formData = {
+        accountName,
+        accountAddress1,
+        accountAddress2,
+        accountNumber,
+        selectedMonth,
+        beginningBalance,
+        transactions
       };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-
+      await generateAndDownloadBankStatement(formData, selectedTemplate);
+      
+      toast.success("Bank statement downloaded successfully!");
+      setIsProcessing(false);
     } catch (error) {
-      console.error("Payment error:", error);
-      toast.error("Failed to initiate payment");
+      toast.error("Failed to generate document");
       setIsProcessing(false);
     }
+  };
+
+  const onError = (err) => {
+    toast.error("Payment failed. Please try again.");
+    setIsProcessing(false);
   };
 
   return (
@@ -142,7 +108,39 @@ export default function BankStatementForm() {
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <form onSubmit={handlePayment} className="space-y-8">
+        <form className="space-y-8">
+          {/* Template Selection */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              Choose Template
+            </h2>
+            <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="template-a" id="bank-template-a" data-testid="bank-template-a-radio" />
+                    <Label htmlFor="bank-template-a" className="cursor-pointer font-medium">Template A</Label>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">Classic banking style</p>
+                </div>
+                <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="template-b" id="bank-template-b" data-testid="bank-template-b-radio" />
+                    <Label htmlFor="bank-template-b" className="cursor-pointer font-medium">Template B</Label>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">Modern digital format</p>
+                </div>
+                <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="template-c" id="bank-template-c" data-testid="bank-template-c-radio" />
+                    <Label htmlFor="bank-template-c" className="cursor-pointer font-medium">Template C</Label>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">Detailed statement</p>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
+
           {/* Account Information */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
@@ -264,15 +262,15 @@ export default function BankStatementForm() {
             </div>
           </div>
 
-          <Button
-            data-testid="pay-and-generate-statement-button"
-            type="submit"
-            disabled={isProcessing}
-            className="w-full py-6 text-lg font-bold"
-            style={{ backgroundColor: '#ccff00', color: '#000000' }}
-          >
-            {isProcessing ? "Processing..." : "Pay ₹50 & Generate"}
-          </Button>
+          <div data-testid="paypal-button-container-bank">
+            <PayPalButtons
+              createOrder={createOrder}
+              onApprove={onApprove}
+              onError={onError}
+              disabled={isProcessing}
+              style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+            />
+          </div>
         </form>
       </div>
     </div>

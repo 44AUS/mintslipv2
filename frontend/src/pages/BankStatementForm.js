@@ -96,17 +96,7 @@ export default function BankStatementForm() {
     <div className="min-h-screen bg-white relative">
       <div className="noise-overlay" />
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-4">
-          <button onClick={() => navigate("/")} className="hover:opacity-70 transition-opacity">
-            <ArrowLeft className="w-5 h-5" style={{ color: '#1a4731' }} />
-          </button>
-          <h1 className="text-2xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-            Generate Bank Statement
-          </h1>
-        </div>
-      </header>
+      <Header title="Generate Bank Statement" />
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         <form className="space-y-8">

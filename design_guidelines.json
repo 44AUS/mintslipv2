@@ -1,0 +1,146 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is king",
+      "Zoom in",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "project_context": {
+    "app_name": "DocuMint",
+    "app_type": "SaaS / E-commerce",
+    "target_audience": "Individuals needing financial documents (pay stubs, bank statements)",
+    "emotional_tone": "Trustworthy, Efficient, Professional, Crisp",
+    "design_inspiration": "Kikoff (Clean, Fintech, Approachable) mixed with Swiss Poster Design",
+    "theme_strategy": "Light Mode (Primary) - evokes paper, officiality, and clarity. Dark Mode available for 'Control Room' dashboard view."
+  },
+  "typography": {
+    "font_family_headings": "Outfit, sans-serif",
+    "font_family_body": "Manrope, sans-serif",
+    "font_weights": {
+      "light": 300,
+      "regular": 400,
+      "medium": 500,
+      "bold": 700,
+      "black": 900
+    },
+    "rules": [
+      "Headings (Size > 32px) MUST use tracking-tight",
+      "Overlines MUST be Uppercase + tracking-widest + text-xs",
+      "Line height: leading-none for headers, leading-relaxed for body",
+      "Do NOT use Inter for headings"
+    ]
+  },
+  "colors": {
+    "palette_name": "Swiss Forest",
+    "base": {
+      "background": "#ffffff",
+      "foreground": "#1a1a1a",
+      "paper": "#f8f9fa"
+    },
+    "primary": {
+      "default": "#1a4731",
+      "foreground": "#ffffff",
+      "description": "Deep Forest Green - Represents money, stability, old-world security"
+    },
+    "secondary": {
+      "default": "#f0fdf4",
+      "foreground": "#1a4731",
+      "description": "Pale Mint - For backgrounds of active states"
+    },
+    "accent": {
+      "default": "#ccff00",
+      "foreground": "#000000",
+      "description": "Electric Lime - The 'Anti-AI' twist. Use sparingly for primary CTAs to break the boring bank vibe."
+    },
+    "muted": {
+      "default": "#f1f5f9",
+      "foreground": "#64748b"
+    },
+    "border": "#e2e8f0",
+    "rules": [
+      "Never use pure black (#000000). Use #1a1a1a.",
+      "Primary CTAs should use the Accent color (Electric Lime) with black text for high visibility, OR Primary color (Forest Green) with white text for authority.",
+      "Gradients: Avoid full-screen gradients. Use subtle noise textures instead."
+    ]
+  },
+  "layout_strategy": {
+    "spacing_scale": "Tailwind Scale (p-4, p-8, p-12, p-16, p-24, p-32)",
+    "container_padding": "p-6 or p-8 for bordered containers",
+    "grids": {
+      "landing_page": {
+        "name": "The Tetris Grid",
+        "structure": "grid-cols-1 md:grid-cols-12 gap-8",
+        "rules": "Asymmetry is key. Use col-span-8 for hero, col-span-4 for supporting visuals. Leave empty cells for breathing room."
+      },
+      "form_page": {
+        "name": "The Control Room",
+        "structure": "grid-cols-1 lg:grid-cols-12 gap-6",
+        "rules": "Split screen: Left side (Inputs) col-span-4 or 5. Right side (Live Preview) col-span-8 or 7. Sticky right side."
+      }
+    }
+  },
+  "components": {
+    "strategy": "Hybrid",
+    "instructions": [
+      "Use Shadcn UI for all interactive form elements (Input, Select, DatePicker, Dialog).",
+      "Customize Shadcn components to match the 'Swiss Forest' palette (Square corners or tight rounded-md).",
+      "Use Custom HTML/Tailwind for 'Document Preview Cards' and 'Hero Sections'.",
+      "Buttons: Sharp edges or small radius (rounded-md). No pill shapes for this financial aesthetic."
+    ],
+    "specific_components": {
+      "card": "Use 'Tracing Beam' style for document selection cards. A subtle border that glows on hover.",
+      "toast": "Use Sonner for notifications.",
+      "inputs": "High contrast borders. Focus state: Ring with Primary color."
+    }
+  },
+  "visual_enhancers": {
+    "texture": "Add a subtle 'noise' opacity-5 overlay to the background to simulate paper texture.",
+    "glassmorphism": "Use for the sticky header: bg-white/80 backdrop-blur-md border-b border-black/5.",
+    "motion": {
+      "hover": "translate-y-[-2px] shadow-lg transition-all duration-300",
+      "entrance": "Staggered fade-in-up for list items."
+    }
+  },
+  "images": {
+    "strategy": "Minimalist & Abstract",
+    "selected_assets": [
+      {
+        "category": "hero_bg",
+        "url": "https://images.unsplash.com/photo-1762831063505-68022b6133a9?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Minimalist desk with calculator and notebook. Use as a subtle background or side visual."
+      },
+      {
+        "category": "security_trust",
+        "url": "https://images.unsplash.com/photo-1696013910376-c56f76dd8178?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Padlock on black surface. Use for the 'Secure Payment' section."
+      },
+      {
+        "category": "success_human",
+        "url": "https://images.unsplash.com/photo-1736939661350-dec5c2bd5cd1?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "description": "Professional woman with laptop. Use for testimonials or success page."
+      }
+    ],
+    "rules": "Images should be treated as 'Objects' on the grid, not just backgrounds. Give them borders or shadow frames."
+  },
+  "accessibility": {
+    "contrast": "Ensure text meets APCA standards. Dark text on light bg.",
+    "testing": "All interactive elements MUST have data-testid attributes (e.g., data-testid='pay-stub-submit').",
+    "motion": "Respect prefers-reduced-motion."
+  },
+  "universal_guidelines": [
+    "Do NOT use generic centered layouts. Use asymmetry.",
+    "Do NOT use 'Inter' for headings.",
+    "Do NOT use gradients for text.",
+    "Always add micro-interactions (hover, focus, active).",
+    "Use 2-3x more spacing than typical.",
+    "Components must use named exports.",
+    "Pages must use default exports."
+  ],
+  "instructions_to_main_agent": "You are building a document generation app. Focus on the 'Form Filling' experience. It should feel like filling out a high-end tax return—precise, clear, and satisfying. The 'Live Preview' of the document is the star of the show. Make sure the PDF generation logic (backend) is connected to the frontend form state."
+}

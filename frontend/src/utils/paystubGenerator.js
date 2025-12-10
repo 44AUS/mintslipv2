@@ -108,7 +108,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       generateSingleStub(
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, stateRate,
-        payDay, pageWidth, pageHeight, 1
+        payDay, pageWidth, pageHeight, 1, payFrequency
       );
       
       doc.save(`PayStub-${formData.name || "document"}.pdf`);

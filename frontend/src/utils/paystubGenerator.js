@@ -20,7 +20,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
   let startDate = new Date(hireDate);
 
-  for (let stubNum = 0; stubNum < numStubs; stubNum++) {
+  for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
     if (stubNum > 0) doc.addPage();
     
     const hours = hoursArray[stubNum] || defaultHours;

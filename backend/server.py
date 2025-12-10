@@ -23,7 +23,6 @@ db = client[os.environ['DB_NAME']]
 
 # Razorpay client (Test mode)
 razorpay_client = razorpay.Client(auth=("rzp_test_samplekey123456", "test_secret_key_placeholder"))
-razorpay_client.set_app_info({"title": "DocuMint", "version": "1.0.0"})
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")

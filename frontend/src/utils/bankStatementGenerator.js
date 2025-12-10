@@ -86,17 +86,43 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
       maximumFractionDigits: 2,
     });
 
-  // Template-specific colors
-  let primaryColor, accentColor;
+  const monthText = new Date(year, month - 1).toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+  const dateRange = `(${formatDateLong(statementStart)} - ${formatDateLong(statementEnd)})`;
+
+  // Prepare data for templates
+  const templateData = {
+    accountName,
+    accountAddress1,
+    accountAddress2,
+    accountNumber,
+    year,
+    month,
+    statementStart,
+    statementEnd,
+    beginning,
+    ending,
+    deposits,
+    purchases,
+    transfers,
+    monthText,
+    dateRange,
+    transactions,
+    toFixed,
+    formatShortDate,
+    formatDateLong,
+    parseCurrency
+  };
+
+  // Call appropriate template
   if (template === 'template-b') {
-    primaryColor = [41, 128, 185]; // Blue
-    accentColor = [52, 152, 219];
+    generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === 'template-c') {
-    primaryColor = [142, 68, 173]; // Purple
-    accentColor = [155, 89, 182];
+    generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
   } else {
-    primaryColor = [0, 178, 106]; // Green (default)
-    accentColor = [233, 112, 50];
+    generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
   // Header

@@ -316,10 +316,7 @@ function generateSingleStub(
     // Footer
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Stub ${stubNum + 1} of ${calculatedNumStubs}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
+    doc.text(`Stub ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
 
-    startDate.setDate(startDate.getDate() + periodLength);
-  }
-
-  doc.save(`PayStub-${formData.name || "document"}.pdf`);
-};
+  return { payDate, startDate, endDate };
+}

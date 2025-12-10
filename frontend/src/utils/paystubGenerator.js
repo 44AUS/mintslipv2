@@ -114,10 +114,7 @@ function generateSingleStub(
   payDay, pageWidth, pageHeight, totalStubs
 ) {
 
-  for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
-    if (stubNum > 0) doc.addPage();
-
-    const hours = hoursArray[stubNum] || defaultHours;
+  const hours = hoursArray[stubNum] || defaultHours;
     const overtime = overtimeArray[stubNum] || 0;
     const regularPay = rate * hours;
     const overtimePay = rate * 1.5 * overtime;

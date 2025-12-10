@@ -18,7 +18,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
     .slice(0, calculatedNumStubs) || [];
 
   const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
-  let startDate = new Date(hireDate);
+  let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
 
   for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
     if (stubNum > 0) doc.addPage();

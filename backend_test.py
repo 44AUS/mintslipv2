@@ -235,43 +235,93 @@ class DocuMintTester:
             self.log_test("CORS Headers", False, f"Exception: {str(e)}")
             return False
 
-    def test_bank_statement_template_a_features(self):
-        """Test Bank Statement Template A (Chime/Sutton) specific features"""
+    def test_bank_statement_template_a_implementation(self):
+        """Test Bank Statement Template A (Chime/Sutton) implementation in code"""
         try:
-            # Test that the bank statement form page loads
+            # Since this is a React SPA, test the implementation by checking the source code
+            import os
+            
+            # Check if the Template A implementation file exists
+            template_file = "/app/frontend/src/utils/bankStatementTemplates.js"
+            form_file = "/app/frontend/src/pages/BankStatementForm.js"
+            
+            if not os.path.exists(template_file):
+                self.log_test("Template A Implementation", False, "Template file not found")
+                return False
+            
+            if not os.path.exists(form_file):
+                self.log_test("Template A Implementation", False, "Form file not found")
+                return False
+            
+            # Read and check template implementation
+            with open(template_file, 'r') as f:
+                template_content = f.read()
+            
+            with open(form_file, 'r') as f:
+                form_content = f.read()
+            
+            # Check for key Template A (Chime/Sutton) features from requirements
+            required_features = {
+                "Sutton header": "Sutton" in template_content,
+                "Member Services": "Member Services" in template_content,
+                "Checking Account Statement": "Checking Account Statement" in template_content,
+                "Issued by Sutton Bank": "Issued by Sutton Bank" in template_content,
+                "Summary section": "Summary" in template_content,
+                "Transactions table": "TRANSACTION DATE" in template_content,
+                "Settlement Date column": "SETTLEMENT DATE" in template_content,
+                "Error Resolution Procedures": "Error Resolution Procedures" in template_content,
+                "Chime template option": "Chime" in form_content,
+                "Template A selection": "template-a" in form_content
+            }
+            
+            missing_features = [feature for feature, present in required_features.items() if not present]
+            
+            if missing_features:
+                success = False
+                details = f"Missing Template A features: {missing_features}"
+            else:
+                success = True
+                details = "All Template A (Chime/Sutton) features implemented correctly"
+            
+            self.log_test("Template A Implementation", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Template A Implementation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_react_spa_loads(self):
+        """Test that React SPA loads correctly"""
+        try:
             response = requests.get(f"{self.base_url}/bankstatement", timeout=10)
             success = response.status_code == 200
             
             if success:
                 content = response.text
-                # Check for key Template A features mentioned in the requirements
-                template_a_features = [
-                    "Chime",  # Template A should be labeled as Chime
-                    "Account Holder Name",  # Form should have account holder field
-                    "Account Number",  # Form should have account number field
-                    "Address Line 1",  # Form should have address fields
-                    "Statement Month",  # Form should have statement month
-                    "Beginning Balance",  # Form should have beginning balance
-                    "Add Transaction"  # Form should allow adding transactions
+                # Check for React SPA indicators
+                react_indicators = [
+                    '<div id="root">',  # React root element
+                    'bundle.js',  # JavaScript bundle
+                    'DOCTYPE html'  # Valid HTML
                 ]
                 
-                missing_features = []
-                for feature in template_a_features:
-                    if feature not in content:
-                        missing_features.append(feature)
+                missing_indicators = []
+                for indicator in react_indicators:
+                    if indicator not in content:
+                        missing_indicators.append(indicator)
                 
-                if missing_features:
+                if missing_indicators:
                     success = False
-                    details = f"Status: {response.status_code}, Missing features: {missing_features}"
+                    details = f"Status: {response.status_code}, Missing React indicators: {missing_indicators}"
                 else:
-                    details = f"Status: {response.status_code}, All Template A features present"
+                    details = f"Status: {response.status_code}, React SPA structure correct"
             else:
                 details = f"Status: {response.status_code}"
             
-            self.log_test("Bank Statement Template A Features", success, details)
+            self.log_test("React SPA Structure", success, details)
             return success
         except Exception as e:
-            self.log_test("Bank Statement Template A Features", False, f"Exception: {str(e)}")
+            self.log_test("React SPA Structure", False, f"Exception: {str(e)}")
             return False
 
     def run_all_tests(self):

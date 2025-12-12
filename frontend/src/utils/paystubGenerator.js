@@ -76,7 +76,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         
-        const stubData = generateSingleStub(
+        const stubData = await generateSingleStub(
           doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
           hoursArray, overtimeArray, defaultHours, rate, stateRate, 
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency

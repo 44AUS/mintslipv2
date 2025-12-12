@@ -1,9 +1,12 @@
 // HTML-based templates for expo-print
 // These templates replicate the jsPDF templates from the web app
 
-// Template A: Classic Professional
+// Template A: Gusto-Style Professional
 export function generateHTMLTemplateA(data) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs, stateRate } = data;
+  
+  const totalHours = Number(hours) + Number(overtime || 0);
+  const overtimeRate = rate * 1.5;
   
   return `
     <!DOCTYPE html>
@@ -11,162 +14,348 @@ export function generateHTMLTemplateA(data) {
     <head>
       <meta charset="utf-8">
       <style>
-        @page { margin: 0; }
+        @page { margin: 0; size: letter; }
         body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', Arial, sans-serif; 
           margin: 0; 
           padding: 40px;
-          font-size: 10pt;
+          font-size: 9pt;
+          color: #333;
         }
-        .header {
-          background-color: #ecf0f1;
-          padding: 30px;
-          margin: -40px -40px 30px -40px;
-        }
-        .company-name { font-size: 24pt; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
-        .company-info { font-size: 9pt; color: #666; line-height: 1.6; }
-        .title { font-size: 18pt; font-weight: bold; text-align: center; color: #34495e; margin: 20px 0; }
-        .info-box {
-          background-color: #f8f9fa;
-          padding: 20px;
-          margin: 20px 0;
-          border-radius: 4px;
-        }
-        .section-title { font-size: 11pt; font-weight: bold; color: #2c3e50; margin: 20px 0 5px 0; }
-        .section-line { border-bottom: 1px solid #ccc; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        th { text-align: left; color: #666; font-weight: normal; padding: 5px 0; }
-        td { padding: 5px 0; color: #3c3c3c; }
-        .text-right { text-align: right; }
-        .divider { border-top: 1px solid #ddd; margin: 15px 0; }
-        .total-row { font-weight: bold; }
-        .net-pay-box {
-          background-color: #34495e;
-          color: white;
-          padding: 15px 20px;
-          margin: 20px 0;
-          border-radius: 4px;
+        .header-section {
           display: flex;
           justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 30px;
         }
-        .net-pay-label { font-size: 14pt; font-weight: bold; }
-        .net-pay-amount { font-size: 14pt; font-weight: bold; }
-        .footer { font-size: 8pt; color: #999; margin-top: 20px; text-align: center; }
-        .deduction-total { color: #dc3545; }
+        .logo-area {
+          flex: 1;
+        }
+        .logo-text {
+          font-size: 18pt;
+          font-weight: bold;
+          color: #00a89b;
+          margin-bottom: 30px;
+        }
+        .earnings-title {
+          font-size: 18pt;
+          font-weight: bold;
+          color: #333;
+          margin-bottom: 10px;
+        }
+        .pay-info {
+          font-size: 9pt;
+          color: #666;
+          line-height: 1.6;
+        }
+        .info-boxes {
+          display: flex;
+          gap: 10px;
+          margin-left: auto;
+        }
+        .info-box {
+          background-color: #f8f8f8;
+          padding: 12px;
+          width: 130px;
+          border-radius: 2px;
+        }
+        .info-box-title {
+          font-size: 8pt;
+          font-weight: bold;
+          margin-bottom: 8px;
+          color: #333;
+        }
+        .info-box-content {
+          font-size: 7pt;
+          color: #666;
+          line-height: 1.5;
+        }
+        .section-header {
+          font-size: 11pt;
+          font-weight: bold;
+          color: #333;
+          margin: 25px 0 8px 0;
+          padding-bottom: 3px;
+          border-bottom: 1px solid #00a89b;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 12px 0;
+        }
+        th {
+          text-align: left;
+          font-weight: bold;
+          font-size: 9pt;
+          padding: 8px 4px;
+          background-color: white;
+          border-bottom: 1px solid #ddd;
+        }
+        th.text-right, td.text-right {
+          text-align: right;
+        }
+        td {
+          padding: 10px 4px;
+          font-size: 9pt;
+          border-left: 1px solid #e0e0e0;
+        }
+        td:first-child {
+          border-left: none;
+        }
+        tr:nth-child(even) td {
+          background-color: #f5f5f5;
+        }
+        .underline {
+          text-decoration: underline;
+        }
+        .two-column {
+          display: flex;
+          gap: 10px;
+          margin: 20px 0;
+        }
+        .column {
+          flex: 1;
+        }
+        .summary-table td {
+          background-color: white !important;
+          border: none;
+        }
+        .summary-table tr:first-child td {
+          font-weight: bold;
+          border-bottom: 1px solid #ddd;
+        }
       </style>
     </head>
     <body>
-      <div class="header">
-        <div class="company-name">${formData.company || 'Company Name'}</div>
-        <div class="company-info">
-          ${formData.companyAddress || ''}<br/>
-          ${formData.companyCity || ''}, ${formData.companyState || ''} ${formData.companyZip || ''}<br/>
-          Phone: ${formData.companyPhone || ''}
+      <!-- HEADER -->
+      <div class="header-section">
+        <div class="logo-area">
+          <div class="logo-text">Gusto</div>
+          <div class="earnings-title">Earnings Statement</div>
+          <div class="pay-info">
+            Pay period: ${startDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}   Pay Day: ${payDate.toLocaleDateString()}<br/>
+            Hire Date: ${formData.hireDate || startDate.toLocaleDateString()}<br/>
+            ${formData.name || ''} (...Direct Deposit to ${formData.bankName || 'Bank'} ******${formData.bank ? formData.bank.slice(-4) : '0000'})
+          </div>
+        </div>
+        
+        <div class="info-boxes">
+          <div class="info-box">
+            <div class="info-box-title">Company</div>
+            <div class="info-box-content">
+              ${formData.company || 'Company Name'}<br/>
+              ${formData.companyAddress || ''}<br/>
+              ${formData.companyCity || ''}, ${formData.companyState || ''} ${formData.companyZip || ''}<br/>
+              ${formData.companyPhone || ''}
+            </div>
+          </div>
+          
+          <div class="info-box">
+            <div class="info-box-title">Employee</div>
+            <div class="info-box-content">
+              ${formData.name || ''}<br/>
+              XXX-XX-${formData.ssn ? formData.ssn.slice(-4) : '0000'}<br/>
+              ${formData.address || ''}<br/>
+              ${formData.city || ''}, ${formData.state || ''} ${formData.zip || ''}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="title">PAY STUB</div>
+      <!-- EARNINGS -->
+      <div class="section-header">Employee Gross Earnings</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th class="text-right">Rate</th>
+            <th class="text-right">Hours</th>
+            <th class="text-right">Current</th>
+            <th class="text-right">Year-To-Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="underline">Regular Hours</span> | Hourly</td>
+            <td class="text-right">$${rate.toFixed(2)}</td>
+            <td class="text-right">${hours}</td>
+            <td class="text-right">$${regularPay.toFixed(2)}</td>
+            <td class="text-right">$${regularPay.toFixed(2)}</td>
+          </tr>
+          ${overtime > 0 ? `
+          <tr>
+            <td><span class="underline">Overtime Hours</span> | 1.5x</td>
+            <td class="text-right">$${overtimeRate.toFixed(2)}</td>
+            <td class="text-right">${overtime}</td>
+            <td class="text-right">$${overtimePay.toFixed(2)}</td>
+            <td class="text-right">$${overtimePay.toFixed(2)}</td>
+          </tr>
+          ` : ''}
+        </tbody>
+      </table>
 
-      <div class="info-box">
-        <div style="font-weight: bold; margin-bottom: 10px;">Employee Information</div>
-        <table>
-          <tr>
-            <td>Name: ${formData.name || ''}</td>
-            <td class="text-right">SSN: ***-**-${formData.ssn ? formData.ssn.slice(-4) : '0000'}</td>
-          </tr>
-          <tr>
-            <td colspan="2">${formData.address || ''}</td>
-          </tr>
-          <tr>
-            <td colspan="2">${formData.city || ''}, ${formData.state || ''} ${formData.zip || ''}</td>
-          </tr>
-        </table>
+      <!-- TAXES (Two Column Layout) -->
+      <div class="two-column">
+        <div class="column">
+          <div class="section-header">Employee Taxes Withheld</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th class="text-right">Current</th>
+                <th class="text-right">YTD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="underline">Social Security</span></td>
+                <td class="text-right">$${ssTax.toFixed(2)}</td>
+                <td class="text-right">$${ssTax.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td><span class="underline">Medicare</span></td>
+                <td class="text-right">$${medTax.toFixed(2)}</td>
+                <td class="text-right">$${medTax.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td><span class="underline">${formData.state?.toUpperCase() || 'State'} Withholding Tax</span></td>
+                <td class="text-right">$${stateTax.toFixed(2)}</td>
+                <td class="text-right">$${stateTax.toFixed(2)}</td>
+              </tr>
+              ${formData.includeLocalTax && localTax > 0 ? `
+              <tr>
+                <td><span class="underline">Local Tax</span></td>
+                <td class="text-right">$${localTax.toFixed(2)}</td>
+                <td class="text-right">$${localTax.toFixed(2)}</td>
+              </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="column">
+          <div class="section-header">Employer Tax</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Company Tax</th>
+                <th class="text-right">Current</th>
+                <th class="text-right">YTD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="underline">Social Security</span></td>
+                <td class="text-right">$${ssTax.toFixed(2)}</td>
+                <td class="text-right">$${ssTax.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td><span class="underline">Medicare</span></td>
+                <td class="text-right">$${medTax.toFixed(2)}</td>
+                <td class="text-right">$${medTax.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td><span class="underline">FUTA</span></td>
+                <td class="text-right">$${(grossPay * 0.006).toFixed(2)}</td>
+                <td class="text-right">$${(grossPay * 0.006).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td><span class="underline">${formData.state?.toUpperCase() || 'State'} Unemployment Tax</span></td>
+                <td class="text-right">$${(grossPay * 0.01).toFixed(2)}</td>
+                <td class="text-right">$${(grossPay * 0.01).toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="section-title">Pay Period Details</div>
-      <div class="section-line"></div>
+      <!-- DEDUCTIONS -->
+      <div class="section-header">Employee Deductions</div>
       <table>
-        <tr>
-          <td>Period: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}</td>
-          <td class="text-right">Pay Date: ${payDate.toLocaleDateString()}</td>
-        </tr>
-        <tr>
-          <td>Pay Frequency: ${payFrequency === 'biweekly' ? 'Bi-Weekly' : 'Weekly'}</td>
-        </tr>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Type</th>
+            <th class="text-right">Current</th>
+            <th class="text-right">Year-To-Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>None</td>
+            <td>–</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+          </tr>
+        </tbody>
       </table>
 
-      <div class="section-title">Earnings</div>
-      <div class="section-line"></div>
+      <!-- CONTRIBUTIONS -->
+      <div class="section-header">Employee Contributions</div>
       <table>
-        <tr>
-          <th>Description</th>
-          <th style="text-align: center;">Hours</th>
-          <th style="text-align: center;">Rate</th>
-          <th class="text-right">Amount</th>
-        </tr>
-        <tr>
-          <td>Regular Pay</td>
-          <td style="text-align: center;">${hours.toFixed(2)}</td>
-          <td style="text-align: center;">$${rate.toFixed(2)}</td>
-          <td class="text-right">$${regularPay.toFixed(2)}</td>
-        </tr>
-        ${overtime > 0 ? `
-        <tr>
-          <td>Overtime Pay</td>
-          <td style="text-align: center;">${overtime.toFixed(2)}</td>
-          <td style="text-align: center;">$${(rate * 1.5).toFixed(2)}</td>
-          <td class="text-right">$${overtimePay.toFixed(2)}</td>
-        </tr>
-        ` : ''}
-      </table>
-      <div class="divider"></div>
-      <table>
-        <tr class="total-row">
-          <td>Gross Pay</td>
-          <td class="text-right">$${grossPay.toFixed(2)}</td>
-        </tr>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Type</th>
+            <th class="text-right">Current</th>
+            <th class="text-right">Year-To-Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>None</td>
+            <td>–</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+          </tr>
+        </tbody>
       </table>
 
-      <div class="section-title">Deductions</div>
-      <div class="section-line"></div>
-      <table>
-        <tr>
-          <td>Social Security (6.2%)</td>
-          <td class="text-right">$${ssTax.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td>Medicare (1.45%)</td>
-          <td class="text-right">$${medTax.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td>State Tax (${(stateRate * 100).toFixed(2)}%)</td>
-          <td class="text-right">$${stateTax.toFixed(2)}</td>
-        </tr>
-        ${formData.includeLocalTax ? `
-        <tr>
-          <td>Local Tax (1%)</td>
-          <td class="text-right">$${localTax.toFixed(2)}</td>
-        </tr>
-        ` : ''}
-      </table>
-      <div class="divider"></div>
-      <table>
-        <tr class="total-row deduction-total">
-          <td>Total Deductions</td>
-          <td class="text-right">$${totalTax.toFixed(2)}</td>
-        </tr>
+      <!-- SUMMARY -->
+      <div class="section-header">Summary</div>
+      <table class="summary-table">
+        <tbody>
+          <tr>
+            <td>Description</td>
+            <td class="text-right">Current</td>
+            <td class="text-right">Year-To-Date</td>
+          </tr>
+          <tr>
+            <td><span class="underline">Gross Earnings</span></td>
+            <td class="text-right">$${grossPay.toFixed(2)}</td>
+            <td class="text-right">$${grossPay.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><span class="underline">Taxes</span></td>
+            <td class="text-right">$${totalTax.toFixed(2)}</td>
+            <td class="text-right">$${totalTax.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><span class="underline">Net Pay</span></td>
+            <td class="text-right">$${netPay.toFixed(2)}</td>
+            <td class="text-right">$${netPay.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><span class="underline">Total Reimbursements</span></td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+          </tr>
+          <tr>
+            <td><span class="underline">Check Amount</span></td>
+            <td class="text-right">$${netPay.toFixed(2)}</td>
+            <td class="text-right">$${netPay.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td><span class="underline">Hours Worked</span></td>
+            <td class="text-right">${totalHours.toFixed(2)}</td>
+            <td class="text-right">${totalHours.toFixed(2)}</td>
+          </tr>
+        </tbody>
       </table>
 
-      <div class="net-pay-box">
-        <span class="net-pay-label">NET PAY</span>
-        <span class="net-pay-amount">$${netPay.toFixed(2)}</span>
+      <div style="margin-top: 30px; font-size: 8pt; color: #999; text-align: center;">
+        Statement ${stubNum + 1} of ${totalStubs}
       </div>
-
-      <div style="font-size: 9pt; color: #666; margin-top: 10px;">
-        Direct Deposit: ${formData.bankName || ''} | Account: ****${formData.bank ? formData.bank.slice(-4) : '0000'}
-      </div>
-
-      <div class="footer">Stub ${stubNum + 1} of ${totalStubs}</div>
     </body>
     </html>
   `;

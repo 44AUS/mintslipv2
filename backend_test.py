@@ -302,7 +302,7 @@ class DocuMintTester:
                 react_indicators = [
                     '<div id="root">',  # React root element
                     'bundle.js',  # JavaScript bundle
-                    'DOCTYPE html'  # Valid HTML
+                    'doctype html'  # Valid HTML (case insensitive)
                 ]
                 
                 missing_indicators = []

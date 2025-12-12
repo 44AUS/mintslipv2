@@ -386,6 +386,57 @@ class DocuMintTester:
             self.log_test("Template A Specific Features", False, f"Exception: {str(e)}")
             return False
 
+    def test_form_structure(self):
+        """Test that form has all required fields for user workflow"""
+        try:
+            form_file = "/app/frontend/src/pages/BankStatementForm.js"
+            
+            with open(form_file, 'r') as f:
+                content = f.read()
+            
+            # Required form fields from review request
+            required_fields = {
+                'Account Holder Name field': 'accountName' in content and 'Account Holder Name' in content,
+                'Account Number field': 'accountNumber' in content and 'Account Number' in content,
+                'Address Line 1 field': 'accountAddress1' in content and 'Address Line 1' in content,
+                'Address Line 2 field': 'accountAddress2' in content and 'Address Line 2' in content,
+                'Statement Month field': 'selectedMonth' in content and 'Statement Month' in content,
+                'Beginning Balance field': 'beginningBalance' in content and 'Beginning Balance' in content,
+                'Transaction fields': (
+                    'transactions' in content and 
+                    'date' in content and 
+                    'description' in content and 
+                    'type' in content and 
+                    'amount' in content
+                ),
+                'Template A (Chime) selection': 'template-a' in content and 'Chime' in content,
+                'PayPal button integration': 'PayPalButtons' in content,
+                'Add Transaction functionality': 'addTransaction' in content and 'Add Transaction' in content
+            }
+            
+            failed_fields = []
+            passed_fields = []
+            
+            for field_name, is_present in required_fields.items():
+                if is_present:
+                    passed_fields.append(field_name)
+                else:
+                    failed_fields.append(field_name)
+            
+            success = len(failed_fields) == 0
+            
+            if success:
+                details = f"All {len(passed_fields)} required form fields present"
+            else:
+                details = f"Missing fields: {failed_fields}. Present: {len(passed_fields)}/{len(required_fields)}"
+            
+            self.log_test("Form Structure", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Form Structure", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all application tests"""
         print("🚀 Starting DocuMint Application Tests")

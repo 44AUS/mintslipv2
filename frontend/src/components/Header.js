@@ -9,21 +9,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-export default function Header({ title }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isHome = location.pathname === "/";
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleNavigation = (path) => {
-    navigate(path);
-    setMobileMenuOpen(false);
-  };
-
-  const NavLinks = ({ isMobile = false }) => (
+// Navigation links component - defined outside to avoid re-creating on each render
+function NavLinks({ location, onNavigate, isMobile = false }) {
+  return (
     <>
       <button
-        onClick={() => handleNavigation("/paystub")}
+        onClick={() => onNavigate("/paystub")}
         className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
           isMobile ? "w-full justify-start text-base py-3" : ""
         }`}
@@ -34,7 +25,7 @@ export default function Header({ title }) {
         <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Pay Stubs</span>
       </button>
       <button
-        onClick={() => handleNavigation("/bankstatement")}
+        onClick={() => onNavigate("/bankstatement")}
         className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
           isMobile ? "w-full justify-start text-base py-3" : ""
         }`}
@@ -46,6 +37,18 @@ export default function Header({ title }) {
       </button>
     </>
   );
+}
+
+export default function Header({ title }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
@@ -72,7 +75,7 @@ export default function Header({ title }) {
           
           {/* Desktop Navigation Links - Hidden on mobile/tablet */}
           <nav className="hidden md:flex items-center gap-4">
-            <NavLinks />
+            <NavLinks location={location} onNavigate={handleNavigation} />
           </nav>
 
           {/* Mobile/Tablet Hamburger Menu - Visible only on mobile/tablet */}
@@ -97,7 +100,7 @@ export default function Header({ title }) {
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-2 mt-6">
-                  <NavLinks isMobile={true} />
+                  <NavLinks location={location} onNavigate={handleNavigation} isMobile={true} />
                 </nav>
                 
                 {/* Home link in mobile menu */}

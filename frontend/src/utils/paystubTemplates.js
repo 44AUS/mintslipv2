@@ -1,384 +1,360 @@
-// Template A: Gusto-Style Professional
-export function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
+// Helper to load logo safely
+async function loadImageAsBase64(url) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const blob = await r.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+// Number formatter (adds commas)
+function fmt(n) {
+  return Number(n).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+// Template A: Gusto-Style Professional (matches artifact exactly)
+export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs } = data;
   
   const totalHours = Number(hours) + Number(overtime || 0);
   const overtimeRate = rate * 1.5;
+  const left = margin;
+  const usableWidth = pageWidth - 2 * margin;
   let y = 40;
 
   // ========== HEADER SECTION ==========
-  // Logo/Branding
-  doc.setFontSize(18);
-  doc.setTextColor(0, 168, 155); // Gusto teal
-  doc.setFont(undefined, 'bold');
-  doc.text("Gusto", margin, y);
-  
-  // Earnings Statement Title
-  y += 30;
-  doc.setFontSize(18);
-  doc.setTextColor(51, 51, 51);
-  doc.text("Earnings Statement", margin, y);
-  
-  // Pay Period Info
-  y += 20;
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(102, 102, 102);
-  doc.text(`Pay period: ${startDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}   Pay Day: ${payDate.toLocaleDateString()}`, margin, y);
-  y += 12;
-  doc.text(`Hire Date: ${formData.hireDate || startDate.toLocaleDateString()}`, margin, y);
-  y += 12;
-  doc.text(`${formData.name || ''} (...Direct Deposit to ${formData.bankName || 'Bank'} ******${formData.bank ? formData.bank.slice(-4) : '0000'})`, margin, y);
+  const top = y;
+  const logoX = left;
+  const logoWidth = 70;
 
-  // Info Boxes (Company and Employee) - Right Side
-  const boxTop = 30;
+  // Load and draw logo
+  try {
+    const logoData = await loadImageAsBase64("/gustoLogo.png");
+    if (logoData) {
+      const img = new Image();
+      img.src = logoData;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const aspect = img.height / img.width || 0.4;
+          doc.addImage(img, "PNG", logoX, top, logoWidth, logoWidth * aspect);
+          resolve();
+        };
+        img.onerror = resolve;
+      });
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(0, 168, 161);
+      doc.text("Gusto", logoX, top + 20);
+    }
+  } catch {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(0, 168, 161);
+    doc.text("Gusto", logoX, top + 20);
+  }
+
+  // Left column: earnings info
+  let leftY = top + 60;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Earnings Statement", logoX, leftY);
+  leftY += 30;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(102, 102, 102);
+  doc.text(
+    `Pay period: ${startDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}   Pay Day: ${payDate.toLocaleDateString()}`,
+    logoX,
+    leftY
+  );
+  leftY += 12;
+  doc.text(`Hire Date: ${formData.hireDate || startDate.toLocaleDateString()}`, logoX, leftY);
+  leftY += 12;
+  doc.text(`${formData.name || ''} (...Direct Deposit to ${formData.bankName || 'Bank'} ******${formData.bank ? formData.bank.slice(-4) : '0000'})`, logoX, leftY);
+
+  // Right: Company + Employee boxes
+  const boxTop = top + 30;
   const boxHeight = 70;
   const boxWidth = 130;
-  const box1X = pageWidth - margin - boxWidth * 2 - 10;
-  const box2X = pageWidth - margin - boxWidth;
-  
-  // Company Box
+  const rightStartX = left + 270;
+
   doc.setFillColor(248, 248, 248);
-  doc.rect(box1X, boxTop, boxWidth, boxHeight, 'F');
+  doc.rect(rightStartX, boxTop, boxWidth, boxHeight, "F");
+  doc.rect(rightStartX + boxWidth + 10, boxTop, boxWidth, boxHeight, "F");
+
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Company", box1X + 8, boxTop + 14);
-  doc.setFont(undefined, 'normal');
+  doc.setTextColor(0, 0, 0);
+  doc.text("Company", rightStartX + 8, boxTop + 14);
+  doc.text("Employee", rightStartX + boxWidth + 18, boxTop + 14);
+
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(102, 102, 102);
-  doc.text(formData.company || "Company Name", box1X + 8, boxTop + 28, { maxWidth: boxWidth - 16 });
-  doc.text(formData.companyAddress || "", box1X + 8, boxTop + 40, { maxWidth: boxWidth - 16 });
-  doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, box1X + 8, boxTop + 52, { maxWidth: boxWidth - 16 });
-  doc.text(formData.companyPhone || "", box1X + 8, boxTop + 64, { maxWidth: boxWidth - 16 });
+  doc.text(formData.company || "Company Name", rightStartX + 8, boxTop + 28);
+  doc.text(formData.companyAddress || "", rightStartX + 8, boxTop + 40);
+  doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, rightStartX + 8, boxTop + 52);
+  doc.text(formData.companyPhone || "", rightStartX + 8, boxTop + 64);
+  doc.text(formData.name || "", rightStartX + boxWidth + 18, boxTop + 28);
+  doc.text(`XXX-XX-${formData.ssn || "0000"}`, rightStartX + boxWidth + 18, boxTop + 40);
+  doc.text(formData.address || "", rightStartX + boxWidth + 18, boxTop + 52);
+  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightStartX + boxWidth + 18, boxTop + 64);
 
-  // Employee Box
-  doc.setFillColor(248, 248, 248);
-  doc.rect(box2X, boxTop, boxWidth, boxHeight, 'F');
-  doc.setFontSize(8);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Employee", box2X + 8, boxTop + 14);
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(102, 102, 102);
-  doc.text(formData.name || "", box2X + 8, boxTop + 28, { maxWidth: boxWidth - 16 });
-  doc.text(`XXX-XX-${formData.ssn || "0000"}`, box2X + 8, boxTop + 40);
-  doc.text(formData.address || "", box2X + 8, boxTop + 52, { maxWidth: boxWidth - 16 });
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, box2X + 8, boxTop + 64, { maxWidth: boxWidth - 16 });
-
-  y = Math.max(y, boxTop + boxHeight) + 30;
+  y = Math.max(leftY, boxTop + boxHeight) + 30;
 
   // ========== EARNINGS SECTION ==========
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Employee Gross Earnings", margin, y);
-  doc.setDrawColor(0, 168, 155);
-  doc.setLineWidth(1);
-  doc.line(margin, y + 3, pageWidth - margin, y + 3);
-  
+  sectionHeader(doc, "Employee Gross Earnings", left, y, usableWidth);
   y += 20;
-  
-  // Earnings Table Header
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Description", margin + 4, y);
-  doc.text("Rate", margin + 250, y, { align: 'right' });
-  doc.text("Hours", margin + 310, y, { align: 'right' });
-  doc.text("Current", margin + 390, y, { align: 'right' });
-  doc.text("Year-To-Date", pageWidth - margin - 4, y, { align: 'right' });
-  
-  doc.setDrawColor(221, 221, 221);
-  doc.setLineWidth(0.5);
-  doc.line(margin, y + 2, pageWidth - margin, y + 2);
-  
-  y += 16;
-  
-  // Regular Hours Row
-  doc.setFillColor(245, 245, 245);
-  doc.rect(margin, y - 11, pageWidth - 2 * margin, 16, 'F');
-  doc.setFont(undefined, 'normal');
-  doc.setTextColor(51, 51, 51);
-  
-  // Underline "Regular Hours"
-  const regularText = "Regular Hours";
-  const regularTextWidth = doc.getTextWidth(regularText);
-  doc.text(`${regularText} | Hourly`, margin + 4, y);
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.line(margin + 4, y + 1, margin + 4 + regularTextWidth, y + 1);
-  
-  doc.text(`$${rate.toFixed(2)}`, margin + 250, y, { align: 'right' });
-  doc.text(hours.toString(), margin + 310, y, { align: 'right' });
-  doc.text(`$${regularPay.toFixed(2)}`, margin + 390, y, { align: 'right' });
-  doc.text(`$${regularPay.toFixed(2)}`, pageWidth - margin - 4, y, { align: 'right' });
-  
-  // Vertical lines
-  doc.setDrawColor(224, 224, 224);
-  doc.line(margin + 230, y - 11, margin + 230, y + 5);
-  doc.line(margin + 290, y - 11, margin + 290, y + 5);
-  doc.line(margin + 360, y - 11, margin + 360, y + 5);
-  doc.line(margin + 450, y - 11, margin + 450, y + 5);
-  
-  y += 16;
-  
-  // Overtime Row (if applicable)
-  if (overtime > 0) {
-    doc.setFillColor(255, 255, 255);
-    doc.rect(margin, y - 11, pageWidth - 2 * margin, 16, 'F');
-    
-    const overtimeText = "Overtime Hours";
-    const overtimeTextWidth = doc.getTextWidth(overtimeText);
-    doc.text(`${overtimeText} | 1.5x`, margin + 4, y);
-    doc.setDrawColor(0, 0, 0);
-    doc.line(margin + 4, y + 1, margin + 4 + overtimeTextWidth, y + 1);
-    
-    doc.text(`$${overtimeRate.toFixed(2)}`, margin + 250, y, { align: 'right' });
-    doc.text(overtime.toString(), margin + 310, y, { align: 'right' });
-    doc.text(`$${overtimePay.toFixed(2)}`, margin + 390, y, { align: 'right' });
-    doc.text(`$${overtimePay.toFixed(2)}`, pageWidth - margin - 4, y, { align: 'right' });
-    
-    doc.setDrawColor(224, 224, 224);
-    doc.line(margin + 230, y - 11, margin + 230, y + 5);
-    doc.line(margin + 290, y - 11, margin + 290, y + 5);
-    doc.line(margin + 360, y - 11, margin + 360, y + 5);
-    doc.line(margin + 450, y - 11, margin + 450, y + 5);
-    
-    y += 16;
+
+  const earningsRows = [
+    ["Description", "Rate", "Hours", "Current", "Year-To-Date"],
+    [
+      "Regular Hours | Hourly",
+      `$${fmt(rate)}`,
+      hours.toString(),
+      `$${fmt(regularPay)}`,
+      `$${fmt(regularPay)}`,
+    ],
+  ];
+
+  if (Number(overtime) > 0) {
+    earningsRows.push([
+      "Overtime Hours | 1.5x",
+      `$${fmt(overtimeRate)}`,
+      overtime.toString(),
+      `$${fmt(overtimePay)}`,
+      `$${fmt(overtimePay)}`,
+    ]);
   }
-  
-  y += 10;
+
+  drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
+  y += 60;
 
   // ========== TAXES SECTION (Two Columns) ==========
-  const taxColWidth = (pageWidth - 2 * margin - 10) / 2;
-  const leftTaxX = margin;
-  const rightTaxX = margin + taxColWidth + 10;
-  
-  // Left Column: Employee Taxes
-  let leftY = y;
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Employee Taxes Withheld", leftTaxX, leftY);
-  doc.setDrawColor(0, 168, 155);
-  doc.setLineWidth(1);
-  doc.line(leftTaxX, leftY + 3, leftTaxX + taxColWidth, leftY + 3);
-  
-  leftY += 18;
-  
-  // Employee Tax Table Header
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.text("Description", leftTaxX + 4, leftY);
-  doc.text("Current", leftTaxX + taxColWidth - 100, leftY, { align: 'right' });
-  doc.text("YTD", leftTaxX + taxColWidth - 4, leftY, { align: 'right' });
-  doc.setDrawColor(221, 221, 221);
-  doc.line(leftTaxX, leftY + 2, leftTaxX + taxColWidth, leftY + 2);
-  
-  leftY += 16;
-  
+  const taxGap = 10;
+  const taxTableWidth = (usableWidth - taxGap) / 2;
+  const taxLeftX = left;
+  const taxRightX = left + taxTableWidth + taxGap;
+
+  sectionHeader(doc, "Employee Taxes Withheld", taxLeftX, y, taxTableWidth);
+  sectionHeader(doc, "Employer Tax", taxRightX, y, taxTableWidth);
+  y += 18;
+
   // Employee tax rows
-  const employeeTaxes = [
-    ["Social Security", ssTax],
-    ["Medicare", medTax],
-    [`${formData.state?.toUpperCase() || 'State'} Withholding Tax`, stateTax],
-  ];
-  
+  const empTaxRows = [["Description", "Current", "YTD"]];
+  const erTaxRows = [["Company Tax", "Current", "YTD"]];
+
+  empTaxRows.push(["Social Security", `$${fmt(ssTax)}`, `$${fmt(ssTax)}`]);
+  erTaxRows.push(["Social Security", `$${fmt(grossPay * 0.062)}`, `$${fmt(grossPay * 0.062)}`]);
+
+  empTaxRows.push(["Medicare", `$${fmt(medTax)}`, `$${fmt(medTax)}`]);
+  erTaxRows.push(["Medicare", `$${fmt(grossPay * 0.0145)}`, `$${fmt(grossPay * 0.0145)}`]);
+
+  empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Withholding Tax`, `$${fmt(stateTax)}`, `$${fmt(stateTax)}`]);
+  erTaxRows.push(["FUTA", `$${fmt(grossPay * 0.006)}`, `$${fmt(grossPay * 0.006)}`]);
+
   if (formData.includeLocalTax && localTax > 0) {
-    employeeTaxes.push(["Local Tax", localTax]);
+    empTaxRows.push(["Local Tax", `$${fmt(localTax)}`, `$${fmt(localTax)}`]);
+  } else {
+    empTaxRows.push(["Local Tax (none)", "$0.00", "$0.00"]);
   }
-  
-  employeeTaxes.forEach((tax, idx) => {
-    const isGray = idx % 2 === 1;
-    if (isGray) {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(leftTaxX, leftY - 11, taxColWidth, 16, 'F');
-    }
-    
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(51, 51, 51);
-    const taxText = tax[0];
-    const taxTextWidth = doc.getTextWidth(taxText);
-    doc.text(taxText, leftTaxX + 4, leftY);
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(leftTaxX + 4, leftY + 1, leftTaxX + 4 + taxTextWidth, leftY + 1);
-    
-    doc.text(`$${tax[1].toFixed(2)}`, leftTaxX + taxColWidth - 100, leftY, { align: 'right' });
-    doc.text(`$${tax[1].toFixed(2)}`, leftTaxX + taxColWidth - 4, leftY, { align: 'right' });
-    
-    doc.setDrawColor(224, 224, 224);
-    doc.line(leftTaxX + taxColWidth - 120, leftY - 11, leftTaxX + taxColWidth - 120, leftY + 5);
-    doc.line(leftTaxX + taxColWidth - 50, leftY - 11, leftTaxX + taxColWidth - 50, leftY + 5);
-    
-    leftY += 16;
-  });
+  erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemployment Tax`, `$${fmt(grossPay * 0.01)}`, `$${fmt(grossPay * 0.01)}`]);
 
-  // Right Column: Employer Taxes
-  let rightY = y;
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Employer Tax", rightTaxX, rightY);
-  doc.setDrawColor(0, 168, 155);
-  doc.setLineWidth(1);
-  doc.line(rightTaxX, rightY + 3, rightTaxX + taxColWidth, rightY + 3);
-  
-  rightY += 18;
-  
-  // Employer Tax Table Header
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.text("Company Tax", rightTaxX + 4, rightY);
-  doc.text("Current", rightTaxX + taxColWidth - 100, rightY, { align: 'right' });
-  doc.text("YTD", rightTaxX + taxColWidth - 4, rightY, { align: 'right' });
-  doc.setDrawColor(221, 221, 221);
-  doc.line(rightTaxX, rightY + 2, rightTaxX + taxColWidth, rightY + 2);
-  
-  rightY += 16;
-  
-  // Employer tax rows
-  const employerTaxes = [
-    ["Social Security", grossPay * 0.062],
-    ["Medicare", grossPay * 0.0145],
-    ["FUTA", grossPay * 0.006],
-    [`${formData.state?.toUpperCase() || 'State'} Unemployment Tax`, grossPay * 0.01],
-  ];
-  
-  employerTaxes.forEach((tax, idx) => {
-    const isGray = idx % 2 === 1;
-    if (isGray) {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(rightTaxX, rightY - 11, taxColWidth, 16, 'F');
-    }
-    
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(51, 51, 51);
-    const taxText = tax[0];
-    const taxTextWidth = doc.getTextWidth(taxText);
-    doc.text(taxText, rightTaxX + 4, rightY);
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(rightTaxX + 4, rightY + 1, rightTaxX + 4 + taxTextWidth, rightY + 1);
-    
-    doc.text(`$${tax[1].toFixed(2)}`, rightTaxX + taxColWidth - 100, rightY, { align: 'right' });
-    doc.text(`$${tax[1].toFixed(2)}`, rightTaxX + taxColWidth - 4, rightY, { align: 'right' });
-    
-    doc.setDrawColor(224, 224, 224);
-    doc.line(rightTaxX + taxColWidth - 120, rightY - 11, rightTaxX + taxColWidth - 120, rightY + 5);
-    doc.line(rightTaxX + taxColWidth - 50, rightY - 11, rightTaxX + taxColWidth - 50, rightY + 5);
-    
-    rightY += 16;
-  });
-
-  y = Math.max(leftY, rightY) + 10;
+  const taxYStart = y;
+  const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);
+  const erTaxHeight = drawTable(doc, taxRightX, y, erTaxRows, 16, taxTableWidth, true, true);
+  y = taxYStart + Math.max(empTaxHeight, erTaxHeight) + 10;
 
   // ========== DEDUCTIONS SECTION ==========
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Employee Deductions", margin, y);
-  doc.setDrawColor(0, 168, 155);
-  doc.setLineWidth(1);
-  doc.line(margin, y + 3, pageWidth - margin, y + 3);
+  sectionHeader(doc, "Employee Deductions", left, y, usableWidth);
   y += 18;
-  
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.text("Description", margin + 4, y);
-  doc.text("Type", margin + 200, y);
-  doc.text("Current", pageWidth - margin - 150, y, { align: 'right' });
-  doc.text("Year-To-Date", pageWidth - margin - 4, y, { align: 'right' });
-  doc.setDrawColor(221, 221, 221);
-  doc.line(margin, y + 2, pageWidth - margin, y + 2);
-  y += 16;
-  
-  doc.setFont(undefined, 'normal');
-  doc.text("None", margin + 4, y);
-  doc.text("–", margin + 200, y);
-  doc.text("$0.00", pageWidth - margin - 150, y, { align: 'right' });
-  doc.text("$0.00", pageWidth - margin - 4, y, { align: 'right' });
-  
-  y += 30;
+  drawTable(
+    doc,
+    left,
+    y,
+    [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
+    16,
+    usableWidth,
+    false,
+    true
+  );
+  y += 40;
 
   // ========== CONTRIBUTIONS SECTION ==========
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Employee Contributions", margin, y);
-  doc.setDrawColor(0, 168, 155);
-  doc.setLineWidth(1);
-  doc.line(margin, y + 3, pageWidth - margin, y + 3);
+  sectionHeader(doc, "Employee Contributions", left, y, usableWidth);
   y += 18;
-  
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.text("Description", margin + 4, y);
-  doc.text("Type", margin + 200, y);
-  doc.text("Current", pageWidth - margin - 150, y, { align: 'right' });
-  doc.text("Year-To-Date", pageWidth - margin - 4, y, { align: 'right' });
-  doc.setDrawColor(221, 221, 221);
-  doc.line(margin, y + 2, pageWidth - margin, y + 2);
-  y += 16;
-  
-  doc.setFont(undefined, 'normal');
-  doc.text("None", margin + 4, y);
-  doc.text("–", margin + 200, y);
-  doc.text("$0.00", pageWidth - margin - 150, y, { align: 'right' });
-  doc.text("$0.00", pageWidth - margin - 4, y, { align: 'right' });
-  
-  y += 30;
+  drawTable(
+    doc,
+    left,
+    y,
+    [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
+    16,
+    usableWidth,
+    false,
+    true
+  );
+  y += 40;
 
   // ========== SUMMARY SECTION ==========
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(51, 51, 51);
-  doc.text("Summary", margin, y);
-  doc.setDrawColor(0, 168, 155);
-  doc.setLineWidth(1);
-  doc.line(margin, y + 3, pageWidth - margin, y + 3);
+  sectionHeader(doc, "Summary", left, y, usableWidth);
   y += 18;
   
-  doc.setFontSize(9);
-  doc.setFont(undefined, 'bold');
-  doc.text("Description", margin + 4, y);
-  doc.text("Current", pageWidth - margin - 150, y, { align: 'right' });
-  doc.text("Year-To-Date", pageWidth - margin - 4, y, { align: 'right' });
-  doc.setDrawColor(221, 221, 221);
-  doc.line(margin, y + 2, pageWidth - margin, y + 2);
-  y += 16;
-  
-  const summaryItems = [
-    ["Gross Earnings", grossPay],
-    ["Taxes", totalTax],
-    ["Net Pay", netPay],
-    ["Total Reimbursements", 0],
-    ["Check Amount", netPay],
-    ["Hours Worked", totalHours],
-  ];
-  
-  summaryItems.forEach((item) => {
-    doc.setFont(undefined, 'normal');
-    const itemText = item[0];
-    const itemTextWidth = doc.getTextWidth(itemText);
-    doc.text(itemText, margin + 4, y);
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin + 4, y + 1, margin + 4 + itemTextWidth, y + 1);
-    
-    const currentValue = item[0] === "Hours Worked" ? item[1].toFixed(2) : `$${item[1].toFixed(2)}`;
-    doc.text(currentValue, pageWidth - margin - 150, y, { align: 'right' });
-    doc.text(currentValue, pageWidth - margin - 4, y, { align: 'right' });
-    y += 14;
-  });
+  drawTable(
+    doc,
+    left,
+    y,
+    [
+      ["Description", "Current", "Year-To-Date"],
+      ["Gross Earnings", `$${fmt(grossPay)}`, `$${fmt(grossPay)}`],
+      ["Taxes", `$${fmt(totalTax)}`, `$${fmt(totalTax)}`],
+      ["Net Pay", `$${fmt(netPay)}`, `$${fmt(netPay)}`],
+      ["Total Reimbursements", "$0.00", "$0.00"],
+      ["Check Amount", `$${fmt(netPay)}`, `$${fmt(netPay)}`],
+      ["Hours Worked", `${fmt(totalHours)}`, `${fmt(totalHours)}`],
+    ],
+    16,
+    usableWidth,
+    true,
+    true
+  );
 
   // Footer
-  y += 20;
   doc.setFontSize(8);
   doc.setTextColor(153, 153, 153);
   doc.text(`Statement ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
+}
+
+// Helper functions
+function sectionHeader(doc, text, x, y, width) {
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text(text, x, y);
+  doc.setFillColor(0, 168, 161);
+  doc.rect(x - 0.5, y + 3, width + 1, 1, "F");
+}
+
+function drawEarningsTableWithUnderline(doc, startX, startY, rows, rowHeight = 16, tableWidth = 500) {
+  const colWidths = [
+    tableWidth * 0.45,
+    tableWidth * 0.13,
+    tableWidth * 0.1,
+    tableWidth * 0.14,
+    tableWidth * 0.18,
+  ];
+  let y = startY;
+  doc.setFontSize(9);
+  doc.setDrawColor(200);
+  doc.setLineWidth(0.3);
+
+  rows.forEach((row, i) => {
+    if (i === 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFillColor(255, 255, 255);
+      doc.rect(startX, y - 11, tableWidth, rowHeight, "F");
+    } else {
+      const isGray = i % 2 === 1;
+      if (isGray) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(startX, y - 11, tableWidth, rowHeight, "F");
+      }
+      doc.setFont("helvetica", "normal");
+    }
+    doc.setTextColor(0, 0, 0);
+    let x = startX;
+    row.forEach((cell, colIndex) => {
+      if (colIndex === 0) {
+        const textX = x + 4;
+        const text = String(cell);
+        doc.text(text, textX, y, { align: "left" });
+        if (text.includes("Regular Hours")) {
+          const underlineWidth = doc.getTextWidth("Regular Hours");
+          doc.setDrawColor(0);
+          doc.line(textX, y + 1, textX + underlineWidth, y + 1);
+          doc.setDrawColor(200);
+        }
+      } else {
+        doc.text(String(cell), x + colWidths[colIndex] - 4, y, { align: "right" });
+      }
+      if (colIndex > 0) doc.line(x, y - 11, x, y + rowHeight - 11);
+      x += colWidths[colIndex];
+    });
+    y += rowHeight;
+  });
+  return rows.length * rowHeight;
+}
+
+function drawTable(
+  doc,
+  startX,
+  startY,
+  rows,
+  rowHeight = 16,
+  tableWidth = 500,
+  underline = true,
+  bottomBorder = false
+) {
+  const numCols = rows[0].length;
+  const colWidths = [tableWidth * 0.4, ...Array(numCols - 1).fill(tableWidth * 0.6 / (numCols - 1))];
+  let y = startY;
+  doc.setFontSize(9);
+  doc.setDrawColor(200);
+  doc.setLineWidth(0.3);
+
+  rows.forEach((row, i) => {
+    if (i === 0) {
+      doc.setFont("helvetica", "bold");
+      doc.setFillColor(255, 255, 255);
+      doc.rect(startX, y - 11, tableWidth, rowHeight, "F");
+    } else {
+      const isGray = i % 2 === 1;
+      if (isGray) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(startX, y - 11, tableWidth, rowHeight, "F");
+      }
+      doc.setFont("helvetica", "normal");
+    }
+    doc.setTextColor(0, 0, 0);
+    let x = startX;
+    row.forEach((cell, colIndex) => {
+      const text = String(cell);
+      if (colIndex === 0) {
+        const textX = x + 4;
+        doc.text(text, textX, y, { align: "left" });
+        if (underline && i > 0 && text.toLowerCase() !== "description") {
+          const underlineWidth = doc.getTextWidth(text);
+          doc.setDrawColor(0);
+          doc.line(textX, y + 1, textX + underlineWidth, y + 1);
+          doc.setDrawColor(200);
+        }
+      } else {
+        doc.text(text, x + colWidths[colIndex] - 4, y, { align: "right" });
+      }
+      if (colIndex > 0) doc.line(x, y - 11, x, y + rowHeight - 11);
+      x += colWidths[colIndex];
+    });
+    y += rowHeight;
+  });
+
+  if (bottomBorder) {
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.5);
+    doc.line(startX, y - 11, startX + tableWidth, y - 11);
+  }
+
+  return rows.length * rowHeight;
 }
 
 // Template B: Modern Minimalist

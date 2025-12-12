@@ -122,7 +122,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
 };
 
 // Helper function to generate a single paystub
-function generateSingleStub(
+async function generateSingleStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
   payDay, pageWidth, pageHeight, totalStubs, payFrequency

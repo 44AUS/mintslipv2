@@ -40,9 +40,9 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   
-  const margin = 40;
-  let y = margin + 20;
+  const margin = 25;
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
   // Calculate statement dates
   const [year, month] = selectedMonth.split("-").map(Number);
@@ -100,6 +100,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     accountNumber,
     year,
     month,
+    selectedMonth,
     statementStart,
     statementEnd,
     beginning,
@@ -107,6 +108,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     deposits,
     purchases,
     transfers,
+    refunds,
     monthText,
     dateRange,
     transactions,
@@ -125,10 +127,12 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
+  // Add page numbers
+  const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
-    doc.setTextColor(120, 120, 120);
+    doc.setTextColor(102, 102, 102);
     doc.text(
       `Page ${i} of ${totalPages}`,
       pageWidth / 2,

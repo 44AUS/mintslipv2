@@ -358,7 +358,7 @@ class DocuMintTester:
         print(f"📈 Success Rate: {success_rate:.1f}%")
         
         # Determine overall success
-        critical_tests_passed = frontend_ok and template_a_ok
+        critical_tests_passed = frontend_ok and spa_ok and template_a_ok
         
         if critical_tests_passed:
             print("🎉 Critical functionality tests passed!")

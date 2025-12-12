@@ -346,6 +346,10 @@ class DocuMintTester:
         print("\n📄 Testing Bank Statement Template A Implementation...")
         template_a_ok = self.test_bank_statement_template_a_implementation()
         
+        # Test specific Template A features from review request
+        print("\n🔍 Testing Template A Specific Features...")
+        template_features_ok = self.test_template_a_specific_features()
+        
         # Note about backend API endpoints
         print("\n📝 Note: Backend API endpoints are not implemented yet.")
         print("    The application uses client-side PDF generation with jsPDF.")

@@ -324,6 +324,68 @@ class DocuMintTester:
             self.log_test("React SPA Structure", False, f"Exception: {str(e)}")
             return False
 
+    def test_template_a_specific_features(self):
+        """Test specific Template A features mentioned in review request"""
+        try:
+            template_file = "/app/frontend/src/utils/bankStatementTemplates.js"
+            
+            with open(template_file, 'r') as f:
+                content = f.read()
+            
+            # Features specifically mentioned in the review request
+            specific_features = {
+                '"Sutton" header in green': 'doc.setTextColor("#00b26a")' in content and 'doc.text("Sutton"' in content,
+                '"Member Services" with phone number': '"Member Services"' in content and '"(800) 422-3641"' in content,
+                '"Checking Account Statement" title': '"Checking Account Statement"' in content,
+                'Account number section': '"Account number"' in content,
+                'Statement period section': '"Statement period"' in content,
+                '"Issued by Sutton Bank, Member FDIC"': '"Issued by Sutton Bank, Member FDIC"' in content,
+                'Summary section with categories': (
+                    '"Beginning balance"' in content and 
+                    '"Deposits"' in content and 
+                    '"ATM Withdrawals"' in content and 
+                    '"Purchases"' in content and 
+                    '"Adjustments"' in content and 
+                    '"Transfers"' in content and 
+                    '"Round Up Transfers"' in content and 
+                    '"Fees"' in content and 
+                    '"SpotMe Tips"' in content and 
+                    '"Ending balance"' in content
+                ),
+                'Transactions table with required columns': (
+                    '"TRANSACTION DATE"' in content and 
+                    '"DESCRIPTION"' in content and 
+                    '"TYPE"' in content and 
+                    '"AMOUNT"' in content and 
+                    '"NET AMOUNT"' in content and 
+                    '"SETTLEMENT DATE"' in content
+                ),
+                'Error Resolution Procedures page': '"Error Resolution Procedures"' in content and 'doc.addPage()' in content
+            }
+            
+            failed_features = []
+            passed_features = []
+            
+            for feature_name, is_present in specific_features.items():
+                if is_present:
+                    passed_features.append(feature_name)
+                else:
+                    failed_features.append(feature_name)
+            
+            success = len(failed_features) == 0
+            
+            if success:
+                details = f"All {len(passed_features)} specific Template A features implemented correctly"
+            else:
+                details = f"Failed features: {failed_features}. Passed: {len(passed_features)}/{len(specific_features)}"
+            
+            self.log_test("Template A Specific Features", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Template A Specific Features", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all application tests"""
         print("🚀 Starting DocuMint Application Tests")

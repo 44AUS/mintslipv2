@@ -412,6 +412,10 @@ class DocuMintTester:
         print("\n🔍 Testing Template A Specific Features...")
         template_features_ok = self.test_template_a_specific_features()
         
+        # Test form structure for user workflow
+        print("\n📝 Testing Form Structure for User Workflow...")
+        form_structure_ok = self.test_form_structure()
+        
         # Note about backend API endpoints
         print("\n📝 Note: Backend API endpoints are not implemented yet.")
         print("    The application uses client-side PDF generation with jsPDF.")

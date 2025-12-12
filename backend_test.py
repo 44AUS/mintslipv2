@@ -338,9 +338,13 @@ class DocuMintTester:
         print("\n🔧 Testing Backend Service...")
         backend_running = self.test_backend_service_status()
         
-        # Test Bank Statement Template A specific features
-        print("\n📄 Testing Bank Statement Template A Features...")
-        template_a_ok = self.test_bank_statement_template_a_features()
+        # Test React SPA structure
+        print("\n⚛️  Testing React SPA Structure...")
+        spa_ok = self.test_react_spa_loads()
+        
+        # Test Bank Statement Template A implementation
+        print("\n📄 Testing Bank Statement Template A Implementation...")
+        template_a_ok = self.test_bank_statement_template_a_implementation()
         
         # Note about backend API endpoints
         print("\n📝 Note: Backend API endpoints are not implemented yet.")

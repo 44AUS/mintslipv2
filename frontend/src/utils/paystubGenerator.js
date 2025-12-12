@@ -176,7 +176,7 @@ function generateSingleStub(
   } else if (template === 'template-c') {
     generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
   } else {
-    generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
   return { payDate, startDate, endDate };

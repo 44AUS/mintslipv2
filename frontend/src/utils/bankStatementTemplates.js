@@ -1,3 +1,6 @@
+import ChimeLogo from "../assests/chime.png";
+
+
 // Template A: Chime/Sutton Style Bank Statement
 export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { 
@@ -26,9 +29,15 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   
   // --- Header Section ---
   doc.setFontSize(28);
-  doc.setTextColor("#00b26a"); // Green color
-  doc.setFont("helvetica", "bold");
-  doc.text("Sutton", margin, y);
+  doc.setTextColor("#00b26a");
+  // <-- REPLACED: insert Gusto logo instead of the old "chime" text
+  try {
+    // If your bundler provides a URL or base64 string via import, this will work.
+    doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
+  } catch (e) {
+    // fallback to text if addImage fails
+    doc.text("Chime", margin, y);
+  }
 
   // --- Member Services Header ---
   doc.setFontSize(7);

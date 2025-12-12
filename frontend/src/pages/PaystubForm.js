@@ -162,9 +162,9 @@ export default function PaystubForm() {
                     <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-c" id="template-c" data-testid="template-c-radio" />
-                        <Label htmlFor="template-c" className="cursor-pointer font-medium">Template C</Label>
+                        <Label htmlFor="template-c" className="cursor-pointer font-medium">Workday</Label>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Detailed format</p>
+                      <p className="text-xs text-slate-600 mt-2">Workday style</p>
                     </div>
                   </div>
                 </RadioGroup>

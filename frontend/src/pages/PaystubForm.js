@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 export default function PaystubForm() {
   const navigate = useNavigate();
@@ -49,6 +50,28 @@ export default function PaystubForm() {
       [name]: type === "checkbox" ? checked : value,
     });
   };
+
+  // Handle employee address selection from Google Places
+  const handleEmployeeAddressSelect = useCallback((addressData) => {
+    setFormData(prev => ({
+      ...prev,
+      address: addressData.address,
+      city: addressData.city,
+      state: addressData.state,
+      zip: addressData.zip
+    }));
+  }, []);
+
+  // Handle company address selection from Google Places
+  const handleCompanyAddressSelect = useCallback((addressData) => {
+    setFormData(prev => ({
+      ...prev,
+      companyAddress: addressData.address,
+      companyCity: addressData.city,
+      companyState: addressData.state,
+      companyZip: addressData.zip
+    }));
+  }, []);
 
   const calculateNumStubs = useMemo(() => {
     if (!formData.startDate || !formData.endDate) return 0;
@@ -192,9 +215,18 @@ export default function PaystubForm() {
                     <Label htmlFor="bank">Last 4 of Bank Account *</Label>
                     <Input data-testid="bank-account-input" id="bank" name="bank" value={formData.bank} onChange={handleChange} maxLength="4" required />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="address">Address *</Label>
-                    <Input data-testid="address-input" id="address" name="address" value={formData.address} onChange={handleChange} required />
+                    <AddressAutocomplete
+                      data-testid="address-input"
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      onAddressSelect={handleEmployeeAddressSelect}
+                      placeholder="Start typing your address..."
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="city">City *</Label>
@@ -222,8 +254,21 @@ export default function PaystubForm() {
                     <Input data-testid="company-name-input" id="company" name="company" value={formData.company} onChange={handleChange} required />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="companyPhone">Company Phone *</Label>
+                    <Input data-testid="company-phone-input" id="companyPhone" name="companyPhone" value={formData.companyPhone} onChange={handleChange} required />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="companyAddress">Company Address *</Label>
-                    <Input data-testid="company-address-input" id="companyAddress" name="companyAddress" value={formData.companyAddress} onChange={handleChange} required />
+                    <AddressAutocomplete
+                      data-testid="company-address-input"
+                      id="companyAddress"
+                      name="companyAddress"
+                      value={formData.companyAddress}
+                      onChange={handleChange}
+                      onAddressSelect={handleCompanyAddressSelect}
+                      placeholder="Start typing company address..."
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="companyCity">Company City *</Label>
@@ -236,10 +281,6 @@ export default function PaystubForm() {
                   <div className="space-y-2">
                     <Label htmlFor="companyZip">Company Zip *</Label>
                     <Input data-testid="company-zip-input" id="companyZip" name="companyZip" value={formData.companyZip} onChange={handleChange} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="companyPhone">Company Phone *</Label>
-                    <Input data-testid="company-phone-input" id="companyPhone" name="companyPhone" value={formData.companyPhone} onChange={handleChange} required />
                   </div>
                 </div>
               </div>
@@ -329,22 +370,13 @@ export default function PaystubForm() {
                   </Label>
                 </div>
               </div>
-
-              <div data-testid="paypal-button-container">
-                <PayPalButtons
-                  createOrder={createOrder}
-                  onApprove={onApprove}
-                  onError={onError}
-                  disabled={isProcessing}
-                  style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                />
-              </div>
             </form>
           </div>
 
-          {/* Right: Preview */}
+          {/* Right: Preview and PayPal */}
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-6">
+              {/* Pay Preview */}
               <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Pay Preview
@@ -388,6 +420,27 @@ export default function PaystubForm() {
                     <span className="font-bold">Net Pay:</span>
                     <span className="font-bold">${preview.netPay.toFixed(2)}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* PayPal - Under Preview */}
+              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Complete Payment
+                </h3>
+                {calculateNumStubs > 0 && (
+                  <p className="text-sm text-slate-600 mb-4">
+                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)
+                  </p>
+                )}
+                <div data-testid="paypal-button-container">
+                  <PayPalButtons
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                    disabled={isProcessing || calculateNumStubs === 0}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                  />
                 </div>
               </div>
             </div>

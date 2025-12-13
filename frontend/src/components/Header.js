@@ -25,7 +25,7 @@ function NavLinks({ location, onNavigate, isMobile = false }) {
         <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Pay Stubs</span>
       </button>
       <button
-        onClick={() => onNavigate("/bankstatement")}
+        onClick={() => onNavigate("/bank-statement")}
         className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
           isMobile ? "w-full justify-start text-base py-3" : ""
         }`}
@@ -69,7 +69,7 @@ export default function Header({ title }) {
               style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
               onClick={() => navigate("/")}
             >
-              {title || "DocuMint"}
+              {title || "MintSlip"}
             </h1>
           </div>
           
@@ -96,7 +96,7 @@ export default function Header({ title }) {
                     className="text-xl font-black tracking-tight text-left"
                     style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
                   >
-                    DocuMint
+                    MintSlip
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-2 mt-6">

@@ -141,5 +141,5 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     );
   }
 
-  doc.save(`BankStatement-${accountName || "statement"}.pdf`);
+  doc.save(`Chime-Statement-${accountName || "statement"}.pdf`);
 };

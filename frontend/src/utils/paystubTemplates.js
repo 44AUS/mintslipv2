@@ -231,9 +231,9 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   );
 
   // Footer
-  doc.setFontSize(8);
-  doc.setTextColor(153, 153, 153);
-  doc.text(`Statement ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
+  // doc.setFontSize(8);
+  // doc.setTextColor(153, 153, 153);
+  // doc.text(`Statement ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 30, { align: 'center' });
 }
 
 // Helper functions

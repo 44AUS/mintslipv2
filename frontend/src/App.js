@@ -5,6 +5,7 @@ import PaystubForm from "@/pages/PaystubForm";
 import BankStatementForm from "@/pages/BankStatementForm";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Privacy from "./pages/Privacy";
 
 // Use PayPal Sandbox Client ID
 const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
@@ -18,7 +19,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/paystub" element={<PaystubForm />} />
-            <Route path="/bankstatement" element={<BankStatementForm />} />
+            <Route path="/bank-statement" element={<BankStatementForm />} />
+            <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </BrowserRouter>
       </div>

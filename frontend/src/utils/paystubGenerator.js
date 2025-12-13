@@ -83,7 +83,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         );
         
         // Simple filename with date
-        const fileName = `PayStub_${stubData.payDate.toISOString().split('T')[0]}.pdf`;
+        const fileName = `${formData.name}-paystub-${stubData.payDate.toISOString().split('T')[0]}.pdf`;
         console.log(`Adding ${fileName} to ZIP`);
         
         // Add PDF directly to zip root
@@ -96,7 +96,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       // Generate and download ZIP
       console.log("Generating ZIP file...");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, `PayStubs_${formData.name || "Employee"}.zip`);
+      saveAs(zipBlob, `Paystubs_${formData.name || "Employee"}.zip`);
       console.log("ZIP downloaded successfully");
       
     } else {

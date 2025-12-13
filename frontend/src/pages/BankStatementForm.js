@@ -63,19 +63,26 @@ export default function BankStatementForm() {
     setTransactions(updated);
   };
 
-  const createOrder = (data, actions) => {
-    return actions.order.create({
-      purchase_units: [
-        {
-          amount: {
-            value: "50.00",
-            currency_code: "USD"
-          },
-          description: "Bank Statement Generation"
+const createOrder = (data, actions) => {
+  return actions.order.create({
+    application_context: {
+      shipping_preference: "GET_FROM_FILE", 
+      // ✔ Forces ZIP-only, no address collection
+      // ✔ 100% valid for digital goods
+    },
+    purchase_units: [
+      {
+        amount: {
+          value: "50.00",
+          currency_code: "USD",
         },
-      ],
-    });
-  };
+        description: "Bank Statement Generation",
+      },
+      
+    ],
+  });
+};
+
 
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
@@ -150,7 +157,7 @@ export default function BankStatementForm() {
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Chime inspired statement</p>
                     </div>
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                    {/* <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-b" id="bank-template-b" data-testid="bank-template-b-radio" />
                         <Label htmlFor="bank-template-b" className="cursor-pointer font-medium">Bank of America</Label>
@@ -163,7 +170,7 @@ export default function BankStatementForm() {
                         <Label htmlFor="bank-template-c" className="cursor-pointer font-medium">Chase</Label>
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Chase inspired statement</p>
-                    </div>
+                    </div> */}
                   </div>
                 </RadioGroup>
               </div>
@@ -183,27 +190,12 @@ export default function BankStatementForm() {
                     <Input data-testid="account-number-input" id="accountNumber" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="accountAddress1">Address Line 1 *</Label>
-                    <AddressAutocomplete
-                      data-testid="address-line-1-input"
-                      id="accountAddress1"
-                      value={accountAddress1}
-                      onChange={(e) => setAccountAddress1(e.target.value)}
-                      onAddressSelect={handleAddressSelect}
-                      placeholder="Start typing your address..."
-                      required
-                    />
+                    <Label htmlFor="accountAddress1">Address Line 1 (Street Number & Name) *</Label>
+                    <Input data-testid="account-address-input" id="accountAddress1" value={accountAddress1} onChange={(e) => setAccountAddress1(e.target.value)} required />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="accountAddress2">Address Line 2 (City, State ZIP) *</Label>
-                    <Input 
-                      data-testid="address-line-2-input" 
-                      id="accountAddress2" 
-                      value={accountAddress2} 
-                      onChange={(e) => setAccountAddress2(e.target.value)} 
-                      placeholder="City, State ZIP"
-                      required 
-                    />
+                    <Input data-testid="account-address-input" id="accountAddress2" value={accountAddress2} onChange={(e) => setAccountAddress2(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="selectedMonth">Statement Month *</Label>
@@ -263,7 +255,7 @@ export default function BankStatementForm() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Description</Label>
+                          <Label className="text-xs">Statement Descriptior</Label>
                           <Input
                             data-testid={`transaction-${idx}-description`}
                             value={tx.description}

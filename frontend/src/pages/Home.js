@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt } from "lucide-react";
 import Header from "@/components/Header";
+import Example from '../assests/example.png';
+import secure from '../assests/secure.png';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -9,7 +11,7 @@ export default function Home() {
     <div className="min-h-screen bg-white relative">
       <div className="noise-overlay" />
       
-      <Header title="DocuMint" />
+      <Header title="MintSlip" />
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-6 py-20 md:py-32">
@@ -51,7 +53,7 @@ export default function Home() {
           <div className="md:col-span-5">
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1762831063505-68022b6133a9?crop=entropy&cs=srgb&fm=jpg&q=85&w=800"
+                src={Example}
                 alt="Professional workspace"
                 className="w-full h-auto rounded-md shadow-2xl border border-slate-200"
               />
@@ -77,7 +79,7 @@ export default function Home() {
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <FileText className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
+              <Receipt className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
             </div>
             
             <div className="space-y-4">
@@ -99,7 +101,7 @@ export default function Home() {
           {/* Bank Statement Card */}
           <button
             data-testid="bankstatement-card-button"
-            onClick={() => navigate("/bankstatement")}
+            onClick={() => navigate("/bank-statement")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -115,12 +117,65 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50-$70</span>
+                  <span className="text-slate-500">per document</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
+           {/* W-2 Card */}
+          <button
+            data-testid="bankstatement-card-button"
+            onClick={() => navigate("/")}
+            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
+          >
+            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
+              <Calendar className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                W-2 Form (Coming Soon)
+              </h4>
+              <p className="text-slate-600 text-base leading-relaxed pr-16">
+                Create fully detailed W-2 forms with accurate wage information, tax breakdowns, employer/employee details, and clean, professional formatting.
+              </p>
+              <div className="pt-4">
+                <div className="inline-flex items-center gap-2">
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$15</span>
+                  <span className="text-slate-500">per document</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* Utility Card */}
+          <button
+            data-testid="bankstatement-card-button"
+            onClick={() => navigate("/")}
+            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
+          >
+            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
+              <FileText className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                Utility Bill (Coming Soon)
+              </h4>
+              <p className="text-slate-600 text-base leading-relaxed pr-16">
+                Create fully detailed utility bills with usage summaries, billing periods, account details, and itemized charges.
+              </p>
+              <div className="pt-4">
+                <div className="inline-flex items-center gap-2">
                   <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
             </div>
           </button>
+
         </div>
       </section>
 
@@ -130,7 +185,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <img
-                src="https://images.unsplash.com/photo-1696013910376-c56f76dd8178?crop=entropy&cs=srgb&fm=jpg&q=85&w=600"
+                src={secure}
                 alt="Secure payment"
                 className="w-full h-auto rounded-md shadow-xl border border-slate-300"
               />
@@ -164,7 +219,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-8">
         <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 text-sm">
-          <p>© 2025 DocuMint. Professional document generation service.</p>
+          <p>© 2025 MintSlip. Professional document generation service.</p>
         </div>
       </footer>
     </div>

@@ -679,6 +679,14 @@ export default function PaystubForm() {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <div className="p-4 space-y-3 bg-white border-t">
+                          {/* Only hourly employees can have overtime */}
+                          {formData.workerType === 'contractor' && (
+                            <div className="p-2 bg-amber-50 border border-amber-200 rounded-md mb-2">
+                              <p className="text-xs text-amber-700">
+                                <strong>Note:</strong> Contractors are not legally entitled to overtime pay.
+                              </p>
+                            </div>
+                          )}
                           {payPeriods.map((period, index) => (
                             <div 
                               key={index} 
@@ -690,30 +698,47 @@ export default function PaystubForm() {
                                 </span>
                                 <p className="text-xs text-slate-500">{period.label}</p>
                               </div>
-                              <div className="flex-1 grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                  <Label className="text-xs text-slate-600">Regular Hours</Label>
-                                  <Input
-                                    type="number"
-                                    value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
-                                    onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
-                                    className="h-9"
-                                    min="0"
-                                    step="0.5"
-                                  />
+                              {/* Show only hours for contractors, hours + overtime for hourly employees */}
+                              {formData.workerType === 'contractor' ? (
+                                <div className="flex-1">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Hours Worked</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
+                                      className="h-9 max-w-32"
+                                      min="0"
+                                      step="0.5"
+                                    />
+                                  </div>
                                 </div>
-                                <div className="space-y-1">
-                                  <Label className="text-xs text-slate-600">Overtime Hours</Label>
-                                  <Input
-                                    type="number"
-                                    value={hoursPerPeriod[index]?.overtime ?? 0}
-                                    onChange={(e) => handlePeriodHoursChange(index, 'overtime', e.target.value)}
-                                    className="h-9"
-                                    min="0"
-                                    step="0.5"
-                                  />
+                              ) : (
+                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Regular Hours</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.5"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Overtime Hours</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.overtime ?? 0}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'overtime', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.5"
+                                    />
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           ))}
                         </div>

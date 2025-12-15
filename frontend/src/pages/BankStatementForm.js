@@ -54,6 +54,34 @@ export default function BankStatementForm() {
     setAccountAddress2(`${addressData.city}, ${addressData.state} ${addressData.zip}`);
   }, []);
 
+  // Generate PDF preview when form data changes (debounced)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      // Only generate preview if we have minimum required data
+      if (selectedMonth) {
+        setIsGeneratingPreview(true);
+        try {
+          const formData = {
+            accountName,
+            accountAddress1,
+            accountAddress2,
+            accountNumber,
+            selectedMonth,
+            beginningBalance,
+            transactions
+          };
+          const previewUrl = await generateBankStatementPreview(formData, selectedTemplate);
+          setPdfPreview(previewUrl);
+        } catch (error) {
+          console.error("Preview generation failed:", error);
+        }
+        setIsGeneratingPreview(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [accountName, accountAddress1, accountAddress2, accountNumber, selectedMonth, beginningBalance, transactions, selectedTemplate]);
+
   const addTransaction = () => {
     setTransactions([...transactions, { date: "", description: "", type: "Purchase", amount: "" }]);
   };

@@ -1213,7 +1213,6 @@ export default function PaystubForm() {
                           <span className="font-bold">Total Taxes:</span>
                           <span className="font-bold">${preview.totalTaxes.toFixed(2)}</span>
                         </div>
-                        </div>
                       </div>
                       {/* Deductions */}
                       {preview.totalDeductions > 0 && (

@@ -273,6 +273,17 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   
   if (!isContractor) {
     summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
+    
+    // Add deductions if any
+    if (totalDeductions > 0) {
+      summaryRows.push(["Deductions", `$${fmt(totalDeductions)}`, `$${fmt(ytdDeductions)}`]);
+    }
+    
+    // Add contributions if any
+    if (totalContributions > 0) {
+      summaryRows.push(["Contributions", `$${fmt(totalContributions)}`, `$${fmt(ytdContributions)}`]);
+    }
+    
     summaryRows.push(["Net Pay", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);
     summaryRows.push(["Total Reimbursements", "$0.00", "$0.00"]);
     summaryRows.push(["Check Amount", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);

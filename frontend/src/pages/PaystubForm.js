@@ -869,18 +869,59 @@ export default function PaystubForm() {
                   </Collapsible>
                 )}
 
-                {/* Tax option - only for employees */}
+                {/* Local Tax option - only for employees in states with local taxes */}
                 {formData.workerType === 'employee' && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      data-testid="local-tax-checkbox"
-                      id="includeLocalTax"
-                      checked={formData.includeLocalTax}
-                      onCheckedChange={(checked) => setFormData({...formData, includeLocalTax: checked})}
-                    />
-                    <Label htmlFor="includeLocalTax" className="text-sm font-normal cursor-pointer">
-                      Include local tax (1%)
-                    </Label>
+                  <div className="space-y-3">
+                    {stateHasLocalTax(formData.state) ? (
+                      <>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            data-testid="local-tax-checkbox"
+                            id="includeLocalTax"
+                            checked={formData.includeLocalTax}
+                            onCheckedChange={(checked) => setFormData({...formData, includeLocalTax: checked})}
+                          />
+                          <Label htmlFor="includeLocalTax" className="text-sm font-normal cursor-pointer">
+                            Include local/city tax
+                          </Label>
+                        </div>
+                        
+                        {formData.includeLocalTax && (
+                          <div className="ml-6 space-y-2">
+                            <Label className="text-xs text-slate-600">Select City/Municipality for Local Tax</Label>
+                            <Select 
+                              value={formData.city || ""} 
+                              onValueChange={(val) => setFormData({...formData, city: val})}
+                            >
+                              <SelectTrigger className="w-full max-w-xs">
+                                <SelectValue placeholder="Select city..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getCitiesWithLocalTax(formData.state).map(city => (
+                                  <SelectItem key={city} value={city}>
+                                    {city} ({(getLocalTaxRate(formData.state, city) * 100).toFixed(2)}%)
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {formData.city && getLocalTaxRate(formData.state, formData.city) > 0 && (
+                              <p className="text-xs text-green-700">
+                                Local tax rate for {formData.city}: <strong>{(getLocalTaxRate(formData.state, formData.city) * 100).toFixed(2)}%</strong>
+                              </p>
+                            )}
+                            {formData.city && getLocalTaxRate(formData.state, formData.city) === 0 && (
+                              <p className="text-xs text-slate-500">
+                                No local income tax found for this city.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-xs text-slate-500">
+                        {formData.state ? `${formData.state} does not have local income taxes.` : 'Select a state to see local tax options.'}
+                      </p>
+                    )}
                   </div>
                 )}
                 

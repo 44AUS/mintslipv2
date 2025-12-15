@@ -452,15 +452,60 @@ export default function PaystubForm() {
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Pay Information
                 </h2>
+                
+                {/* Pay Type Selection */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Pay Type *</Label>
+                  <RadioGroup 
+                    value={formData.payType} 
+                    onValueChange={(val) => setFormData({...formData, payType: val})}
+                    className="flex flex-row gap-4"
+                  >
+                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'hourly' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="hourly" id="pay-hourly" data-testid="pay-hourly-radio" />
+                        <Label htmlFor="pay-hourly" className="cursor-pointer font-medium">Hourly</Label>
+                      </div>
+                    </div>
+                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'salary' ? 'border-green-800 bg-green-50' : 'border-slate-200'} ${!canUseSalary ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value="salary" 
+                          id="pay-salary" 
+                          data-testid="pay-salary-radio" 
+                          disabled={!canUseSalary}
+                        />
+                        <Label htmlFor="pay-salary" className={`cursor-pointer font-medium ${!canUseSalary ? 'text-slate-400' : ''}`}>
+                          Salary
+                        </Label>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                  {!canUseSalary && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      * Salary option not available for contractors on Gusto template
+                    </p>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="hireDate">Hire Date *</Label>
+                    <Label htmlFor="hireDate">{formData.workerType === 'contractor' ? 'Start Date *' : 'Hire Date *'}</Label>
                     <Input data-testid="hire-date-input" id="hireDate" name="hireDate" type="date" value={formData.hireDate} onChange={handleChange} required />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="rate">Hourly Rate ($) *</Label>
-                    <Input data-testid="hourly-rate-input" id="rate" name="rate" type="number" step="0.01" value={formData.rate} onChange={handleChange} required />
-                  </div>
+                  
+                  {formData.payType === 'hourly' ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="rate">Hourly Rate ($) *</Label>
+                      <Input data-testid="hourly-rate-input" id="rate" name="rate" type="number" step="0.01" value={formData.rate} onChange={handleChange} required />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="annualSalary">Annual Salary ($) *</Label>
+                      <Input data-testid="annual-salary-input" id="annualSalary" name="annualSalary" type="number" step="0.01" value={formData.annualSalary} onChange={handleChange} required />
+                    </div>
+                  )}
+                  
                   <div className="space-y-2">
                     <Label htmlFor="payFrequency">Pay Frequency *</Label>
                     <Select value={formData.payFrequency} onValueChange={(val) => setFormData({...formData, payFrequency: val})}>

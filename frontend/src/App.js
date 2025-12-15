@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "@/pages/Home";
 import PaystubForm from "@/pages/PaystubForm";
 import BankStatementForm from "@/pages/BankStatementForm";
+import W2Form from "@/pages/W2Form";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Privacy from "./pages/Privacy";
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/paystub" element={<PaystubForm />} />
             <Route path="/bank-statement" element={<BankStatementForm />} />
+            <Route path="/w2" element={<W2Form />} />
             <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </BrowserRouter>

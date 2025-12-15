@@ -126,8 +126,8 @@ export default function Home() {
 
            {/* W-2 Card */}
           <button
-            data-testid="bankstatement-card-button"
-            onClick={() => navigate("/")}
+            data-testid="w2-card-button"
+            onClick={() => navigate("/w2")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -136,7 +136,7 @@ export default function Home() {
             
             <div className="space-y-4">
               <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                W-2 Form (Coming Soon)
+                W-2 Form
               </h4>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Create fully detailed W-2 forms with accurate wage information, tax breakdowns, employer/employee details, and clean, professional formatting.

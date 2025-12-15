@@ -154,16 +154,40 @@ async function generateSingleStub(
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
   payDay, pageWidth, pageHeight, totalStubs, payFrequency
 ) {
-  const hours = hoursArray[stubNum] || defaultHours;
-  const overtime = overtimeArray[stubNum] || 0;
-  const regularPay = rate * hours;
-  const overtimePay = rate * 1.5 * overtime;
-  const grossPay = regularPay + overtimePay;
+  const payType = formData.payType || "hourly";
+  const workerType = formData.workerType || "employee";
+  const isContractor = workerType === "contractor";
+  const annualSalary = parseFloat(formData.annualSalary) || 0;
+  const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+  
+  // Calculate gross pay based on pay type
+  let hours = 0;
+  let overtime = 0;
+  let regularPay = 0;
+  let overtimePay = 0;
+  let grossPay = 0;
+  
+  if (payType === "salary") {
+    // Salary calculation - fixed amount per period
+    grossPay = annualSalary / periodsPerYear;
+    regularPay = grossPay;
+    hours = defaultHours; // Standard hours for display purposes
+    overtime = 0;
+    overtimePay = 0;
+  } else {
+    // Hourly calculation
+    hours = hoursArray[stubNum] || defaultHours;
+    overtime = overtimeArray[stubNum] || 0;
+    regularPay = rate * hours;
+    overtimePay = rate * 1.5 * overtime;
+    grossPay = regularPay + overtimePay;
+  }
 
-  const ssTax = grossPay * 0.062;
-  const medTax = grossPay * 0.0145;
-  const stateTax = grossPay * stateRate;
-  const localTax = formData.includeLocalTax ? grossPay * 0.01 : 0;
+  // Contractors don't have taxes withheld
+  const ssTax = isContractor ? 0 : grossPay * 0.062;
+  const medTax = isContractor ? 0 : grossPay * 0.0145;
+  const stateTax = isContractor ? 0 : grossPay * stateRate;
+  const localTax = isContractor ? 0 : (formData.includeLocalTax ? grossPay * 0.01 : 0);
   const totalTax = ssTax + medTax + stateTax + localTax;
   const netPay = grossPay - totalTax;
 

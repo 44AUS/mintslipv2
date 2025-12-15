@@ -137,6 +137,75 @@ export default function PaystubForm() {
     return Math.ceil(diffDays / periodLength);
   }, [formData.startDate, formData.endDate, formData.payFrequency]);
 
+  // Calculate pay periods with start/end dates for hours editing
+  const payPeriods = useMemo(() => {
+    if (!formData.startDate || !formData.endDate || calculateNumStubs === 0) return [];
+    
+    const periods = [];
+    const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
+    let currentStart = new Date(formData.startDate);
+    
+    for (let i = 0; i < calculateNumStubs; i++) {
+      const periodEnd = new Date(currentStart);
+      periodEnd.setDate(currentStart.getDate() + periodLength - 1);
+      
+      periods.push({
+        index: i,
+        startDate: new Date(currentStart),
+        endDate: periodEnd,
+        label: `${currentStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${periodEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+      });
+      
+      currentStart = new Date(periodEnd);
+      currentStart.setDate(currentStart.getDate() + 1);
+    }
+    
+    return periods;
+  }, [formData.startDate, formData.endDate, formData.payFrequency, calculateNumStubs]);
+
+  // Initialize hoursPerPeriod when pay periods change
+  useEffect(() => {
+    const defaultHours = formData.payFrequency === "biweekly" ? 80 : 40;
+    
+    if (payPeriods.length > 0) {
+      setHoursPerPeriod(prev => {
+        const newHours = payPeriods.map((period, i) => ({
+          hours: prev[i]?.hours ?? defaultHours,
+          overtime: prev[i]?.overtime ?? 0
+        }));
+        return newHours;
+      });
+    } else {
+      setHoursPerPeriod([]);
+    }
+  }, [payPeriods.length, formData.payFrequency]);
+
+  // Update formData hoursList and overtimeList when hoursPerPeriod changes
+  useEffect(() => {
+    if (hoursPerPeriod.length > 0) {
+      const hoursList = hoursPerPeriod.map(p => p.hours).join(', ');
+      const overtimeList = hoursPerPeriod.map(p => p.overtime).join(', ');
+      
+      setFormData(prev => ({
+        ...prev,
+        hoursList,
+        overtimeList
+      }));
+    }
+  }, [hoursPerPeriod]);
+
+  // Handler for updating individual period hours
+  const handlePeriodHoursChange = (index, field, value) => {
+    setHoursPerPeriod(prev => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: parseFloat(value) || 0
+      };
+      return updated;
+    });
+  };
+
   const preview = useMemo(() => {
     const rate = parseFloat(formData.rate) || 0;
     const annualSalary = parseFloat(formData.annualSalary) || 0;

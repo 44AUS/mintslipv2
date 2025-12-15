@@ -263,6 +263,8 @@ async function generateSingleStub(
     netPay,
     rate,
     stateRate,
+    localTaxRate,
+    sutaRate,
     startDate,
     endDate,
     payDate,

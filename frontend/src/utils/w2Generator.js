@@ -70,235 +70,488 @@ export const BOX_12_CODES = [
 // Format currency
 const formatCurrency = (amount) => {
   const num = parseFloat(amount) || 0;
+  if (num === 0) return "";
   return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-// Generate W-2 PDF
+// Generate W-2 PDF matching IRS format
 export const generateW2PDF = (formData, taxYear) => {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 30;
-
-  // Draw W-2 form
-  drawW2Form(doc, formData, taxYear, margin, pageWidth, pageHeight);
+  const margin = 25;
+  const formWidth = pageWidth - 2 * margin;
+  
+  // Draw the W-2 form
+  drawIRSW2Form(doc, formData, taxYear, margin, formWidth);
 
   return doc;
 };
 
-// Draw the W-2 form
-function drawW2Form(doc, data, taxYear, margin, pageWidth, pageHeight) {
-  const boxHeight = 45;
-  const smallBoxHeight = 35;
+// Draw the official IRS W-2 form layout
+function drawIRSW2Form(doc, data, taxYear, margin, formWidth) {
+  const rowHeight = 28;
+  const smallRowHeight = 24;
   let y = margin;
-
-  // Header
-  doc.setFillColor(0, 0, 0);
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.rect(margin, y, pageWidth - 2 * margin, 25, "F");
-  doc.text(`Form W-2 Wage and Tax Statement ${taxYear}`, pageWidth / 2, y + 17, { align: "center" });
-  y += 35;
-
-  doc.setTextColor(0, 0, 0);
-
-  // Control number and year boxes (top row)
-  const topBoxWidth = (pageWidth - 2 * margin - 10) / 2;
   
-  // Box a - Employee's social security number
-  drawLabeledBox(doc, margin, y, topBoxWidth, boxHeight, "a Employee's social security number", data.employeeSSN || "XXX-XX-XXXX");
+  // Column widths based on IRS layout (left section ~60%, right section ~40%)
+  const leftColWidth = formWidth * 0.55;
+  const rightColWidth = formWidth * 0.45;
+  const halfRightCol = rightColWidth / 2;
   
-  // OMB box
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("OMB No. 1545-0008", margin + topBoxWidth + 15, y + 10);
-  drawLabeledBox(doc, margin + topBoxWidth + 10, y, topBoxWidth, boxHeight, "Safe, accurate, FAST! Use efile", "");
-  y += boxHeight + 5;
-
-  // Employer info section
-  const leftColWidth = (pageWidth - 2 * margin) * 0.6;
-  const rightColWidth = (pageWidth - 2 * margin) * 0.4 - 5;
-
-  // Box b - Employer identification number (EIN)
-  drawLabeledBox(doc, margin, y, leftColWidth, boxHeight, "b Employer identification number (EIN)", data.employerEIN || "XX-XXXXXXX");
+  // Colors
+  const boxBorderColor = [0, 0, 0];
+  const labelColor = [0, 0, 0];
   
-  // Box 1 - Wages, tips, other compensation
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, boxHeight, "1 Wages, tips, other compensation", formatCurrency(data.wagesTips));
-  
-  // Box 2 - Federal income tax withheld
-  drawLabeledBox(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, rightColWidth / 2, boxHeight, "2 Federal income tax withheld", formatCurrency(data.federalTaxWithheld));
-  y += boxHeight + 2;
-
-  // Box c - Employer's name, address, and ZIP code
-  const employerAddress = `${data.employerName || "Employer Name"}\n${data.employerAddress || "123 Main St"}\n${data.employerCity || "City"}, ${data.employerState || "ST"} ${data.employerZip || "12345"}`;
-  drawLabeledBox(doc, margin, y, leftColWidth, boxHeight * 1.5, "c Employer's name, address, and ZIP code", employerAddress, true);
-  
-  // Box 3 - Social security wages
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, boxHeight, "3 Social security wages", formatCurrency(data.socialSecurityWages));
-  
-  // Box 4 - Social security tax withheld
-  drawLabeledBox(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, rightColWidth / 2, boxHeight, "4 Social security tax withheld", formatCurrency(data.socialSecurityTax));
-  y += boxHeight + 2;
-
-  // Box 5 - Medicare wages and tips
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, boxHeight, "5 Medicare wages and tips", formatCurrency(data.medicareWages));
-  
-  // Box 6 - Medicare tax withheld
-  drawLabeledBox(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, rightColWidth / 2, boxHeight, "6 Medicare tax withheld", formatCurrency(data.medicareTax));
-  y += boxHeight * 0.5 + 5;
-
-  // Box d - Control number
-  drawLabeledBox(doc, margin, y, leftColWidth, smallBoxHeight, "d Control number", data.controlNumber || "");
-  
-  // Box 7 - Social security tips
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, smallBoxHeight, "7 Social security tips", formatCurrency(data.socialSecurityTips));
-  
-  // Box 8 - Allocated tips
-  drawLabeledBox(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, rightColWidth / 2, smallBoxHeight, "8 Allocated tips", formatCurrency(data.allocatedTips));
-  y += smallBoxHeight + 2;
-
-  // Box e - Employee's name
-  drawLabeledBox(doc, margin, y, leftColWidth, boxHeight, "e Employee's first name and initial    Last name", `${data.employeeFirstName || "First"} ${data.employeeMiddleInitial || ""} ${data.employeeLastName || "Last"}`);
-  
-  // Box 9 - Blank
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, smallBoxHeight, "9", "");
-  
-  // Box 10 - Dependent care benefits
-  drawLabeledBox(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, rightColWidth / 2, smallBoxHeight, "10 Dependent care benefits", formatCurrency(data.dependentCareBenefits));
-  y += boxHeight + 2;
-
-  // Box f - Employee's address
-  const employeeAddress = `${data.employeeAddress || "456 Employee St"}\n${data.employeeCity || "City"}, ${data.employeeState || "ST"} ${data.employeeZip || "12345"}`;
-  drawLabeledBox(doc, margin, y, leftColWidth, boxHeight * 1.2, "f Employee's address and ZIP code", employeeAddress, true);
-  
-  // Box 11 - Nonqualified plans
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, smallBoxHeight, "11 Nonqualified plans", formatCurrency(data.nonqualifiedPlans));
-  
-  // Box 12a
-  const box12Width = rightColWidth / 2;
-  drawBox12(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, box12Width, smallBoxHeight, "12a", data.box12aCode, data.box12aAmount);
-  y += smallBoxHeight + 2;
-
-  // Box 12b
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, smallBoxHeight, "See instructions for box 12", "");
-  drawBox12(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, box12Width, smallBoxHeight, "12b", data.box12bCode, data.box12bAmount);
-  y += smallBoxHeight + 2;
-
-  // Box 12c, 12d and Box 13
-  y += boxHeight * 0.2;
-  
-  // Box 13 checkboxes
-  const checkboxY = y;
-  drawLabeledBox(doc, margin + leftColWidth + 5, y, rightColWidth / 2 - 2, boxHeight, "13", "");
-  doc.setFontSize(7);
-  drawCheckbox(doc, margin + leftColWidth + 10, y + 15, "Statutory employee", data.statutoryEmployee);
-  drawCheckbox(doc, margin + leftColWidth + 10, y + 27, "Retirement plan", data.retirementPlan);
-  drawCheckbox(doc, margin + leftColWidth + 10, y + 39, "Third-party sick pay", data.thirdPartySickPay);
-  
-  // Box 12c
-  drawBox12(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, box12Width, smallBoxHeight, "12c", data.box12cCode, data.box12cAmount);
-  y += smallBoxHeight + 2;
-  
-  // Box 12d
-  drawBox12(doc, margin + leftColWidth + 5 + rightColWidth / 2, y, box12Width, smallBoxHeight, "12d", data.box12dCode, data.box12dAmount);
-  y += smallBoxHeight + 5;
-
-  // Box 14 - Other
-  drawLabeledBox(doc, margin, y, leftColWidth, boxHeight, "14 Other", data.other || "");
-  y += boxHeight + 5;
-
-  // State/Local section
-  const stateColWidth = (pageWidth - 2 * margin) / 6;
-  
-  // Headers
-  doc.setFontSize(6);
-  doc.setFont("helvetica", "normal");
-  
-  drawLabeledBox(doc, margin, y, stateColWidth * 0.8, smallBoxHeight, "15 State", data.state || "");
-  drawLabeledBox(doc, margin + stateColWidth * 0.8 + 2, y, stateColWidth * 1.2, smallBoxHeight, "Employer's state ID number", data.employerStateId || "");
-  drawLabeledBox(doc, margin + stateColWidth * 2 + 4, y, stateColWidth, smallBoxHeight, "16 State wages, tips, etc.", formatCurrency(data.stateWages));
-  drawLabeledBox(doc, margin + stateColWidth * 3 + 6, y, stateColWidth, smallBoxHeight, "17 State income tax", formatCurrency(data.stateIncomeTax));
-  drawLabeledBox(doc, margin + stateColWidth * 4 + 8, y, stateColWidth, smallBoxHeight, "18 Local wages, tips, etc.", formatCurrency(data.localWages));
-  drawLabeledBox(doc, margin + stateColWidth * 5 + 10, y, stateColWidth - 12, smallBoxHeight, "19 Local income tax", formatCurrency(data.localIncomeTax));
-  y += smallBoxHeight + 2;
-
-  // Box 20 - Locality name (second row for state/local)
-  drawLabeledBox(doc, margin + stateColWidth * 4 + 8, y, stateColWidth * 2 - 12, smallBoxHeight, "20 Locality name", data.localityName || "");
-
-  // Footer
-  y = pageHeight - 50;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text("Copy B - To Be Filed With Employee's FEDERAL Tax Return", pageWidth / 2, y, { align: "center" });
-  doc.text("This information is being furnished to the Internal Revenue Service.", pageWidth / 2, y + 12, { align: "center" });
-}
-
-// Draw a labeled box
-function drawLabeledBox(doc, x, y, width, height, label, value, multiline = false) {
-  doc.setDrawColor(0, 0, 0);
+  doc.setDrawColor(...boxBorderColor);
   doc.setLineWidth(0.5);
-  doc.rect(x, y, width, height);
   
-  // Label
+  // === TOP ROW: Control number placeholder & OMB ===
+  const topRowHeight = 22;
+  
+  // Void checkbox area (small)
+  doc.rect(margin, y, 40, topRowHeight);
   doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-  doc.text(label, x + 3, y + 8);
+  doc.text("22222", margin + 5, y + 8);
+  doc.rect(margin + 8, y + 10, 6, 6);
+  doc.setFontSize(5);
+  doc.text("Void", margin + 16, y + 15);
   
-  // Value
+  // Box a - Employee's SSN
+  const ssnBoxWidth = leftColWidth - 50;
+  doc.rect(margin + 45, y, ssnBoxWidth, topRowHeight);
+  doc.setFontSize(6);
+  doc.text("a  Employee's social security number", margin + 48, y + 7);
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
+  doc.text(data.employeeSSN || "", margin + 50, y + 18);
   
-  if (multiline && value.includes('\n')) {
-    const lines = value.split('\n');
-    let lineY = y + 20;
-    lines.forEach(line => {
-      doc.text(line, x + 5, lineY);
-      lineY += 12;
-    });
-  } else {
-    doc.text(String(value || ""), x + 5, y + height - 8);
+  // OMB Number
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.text("OMB No. 1545-0008", margin + leftColWidth + 5, y + 10);
+  
+  y += topRowHeight;
+  
+  // === ROW 1: EIN + Box 1 + Box 2 ===
+  // Box b - Employer EIN
+  doc.rect(margin, y, leftColWidth, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("b  Employer identification number (EIN)", margin + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.employerEIN || "", margin + 5, y + 20);
+  
+  // Box 1 - Wages
+  const rightX = margin + leftColWidth;
+  doc.rect(rightX, y, halfRightCol, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("1  Wages, tips, other compensation", rightX + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.wagesTips), rightX + halfRightCol - 5, y + 20, { align: "right" });
+  
+  // Box 2 - Federal tax withheld
+  doc.rect(rightX + halfRightCol, y, halfRightCol, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("2  Federal income tax withheld", rightX + halfRightCol + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.federalTaxWithheld), rightX + rightColWidth - 5, y + 20, { align: "right" });
+  
+  y += rowHeight;
+  
+  // === ROW 2: Employer Name + Box 3 + Box 4 ===
+  const employerBoxHeight = rowHeight * 2;
+  
+  // Box c - Employer's name, address
+  doc.rect(margin, y, leftColWidth, employerBoxHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("c  Employer's name, address, and ZIP code", margin + 3, y + 7);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  
+  // Draw employer info
+  let employerY = y + 16;
+  if (data.employerName) {
+    doc.text(data.employerName, margin + 5, employerY);
+    employerY += 10;
   }
+  if (data.employerAddress) {
+    doc.text(data.employerAddress, margin + 5, employerY);
+    employerY += 10;
+  }
+  const cityStateZip = `${data.employerCity || ""}${data.employerCity && data.employerState ? ", " : ""}${data.employerState || ""} ${data.employerZip || ""}`.trim();
+  if (cityStateZip) {
+    doc.text(cityStateZip, margin + 5, employerY);
+  }
+  
+  // Box 3 - Social security wages
+  doc.rect(rightX, y, halfRightCol, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("3  Social security wages", rightX + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.socialSecurityWages), rightX + halfRightCol - 5, y + 20, { align: "right" });
+  
+  // Box 4 - Social security tax withheld
+  doc.rect(rightX + halfRightCol, y, halfRightCol, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("4  Social security tax withheld", rightX + halfRightCol + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.socialSecurityTax), rightX + rightColWidth - 5, y + 20, { align: "right" });
+  
+  y += rowHeight;
+  
+  // === ROW 3: (still employer box) + Box 5 + Box 6 ===
+  // Box 5 - Medicare wages
+  doc.rect(rightX, y, halfRightCol, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("5  Medicare wages and tips", rightX + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.medicareWages), rightX + halfRightCol - 5, y + 20, { align: "right" });
+  
+  // Box 6 - Medicare tax withheld
+  doc.rect(rightX + halfRightCol, y, halfRightCol, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("6  Medicare tax withheld", rightX + halfRightCol + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.medicareTax), rightX + rightColWidth - 5, y + 20, { align: "right" });
+  
+  y += rowHeight;
+  
+  // === ROW 4: Control number + Box 7 + Box 8 ===
+  // Box d - Control number
+  doc.rect(margin, y, leftColWidth, smallRowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("d  Control number", margin + 3, y + 7);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.controlNumber || "", margin + 5, y + 18);
+  
+  // Box 7 - SS tips
+  doc.rect(rightX, y, halfRightCol, smallRowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("7  Social security tips", rightX + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.socialSecurityTips), rightX + halfRightCol - 5, y + 18, { align: "right" });
+  
+  // Box 8 - Allocated tips
+  doc.rect(rightX + halfRightCol, y, halfRightCol, smallRowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("8  Allocated tips", rightX + halfRightCol + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.allocatedTips), rightX + rightColWidth - 5, y + 18, { align: "right" });
+  
+  y += smallRowHeight;
+  
+  // === ROW 5: Employee name + Box 9 + Box 10 ===
+  // Box e - Employee's name
+  doc.rect(margin, y, leftColWidth, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("e  Employee's first name and initial", margin + 3, y + 7);
+  doc.text("Last name", margin + leftColWidth * 0.45, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  const firstName = `${data.employeeFirstName || ""} ${data.employeeMiddleInitial || ""}`.trim();
+  doc.text(firstName, margin + 5, y + 20);
+  doc.text(data.employeeLastName || "", margin + leftColWidth * 0.45, y + 20);
+  
+  // Box 9 - Blank/Verification code
+  doc.rect(rightX, y, halfRightCol, smallRowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("9", rightX + 3, y + 7);
+  
+  // Box 10 - Dependent care benefits
+  doc.rect(rightX + halfRightCol, y, halfRightCol, smallRowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("10  Dependent care benefits", rightX + halfRightCol + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.dependentCareBenefits), rightX + rightColWidth - 5, y + 18, { align: "right" });
+  
+  y += rowHeight;
+  
+  // === ROW 6: Employee address part 1 + Box 11 + Box 12a ===
+  const addressBoxHeight = rowHeight * 1.5;
+  
+  // Box f - Employee's address (spans 2 rows)
+  doc.rect(margin, y, leftColWidth, addressBoxHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("f  Employee's address and ZIP code", margin + 3, y + 7);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  
+  let addrY = y + 17;
+  if (data.employeeAddress) {
+    doc.text(data.employeeAddress, margin + 5, addrY);
+    addrY += 10;
+  }
+  const empCityStateZip = `${data.employeeCity || ""}${data.employeeCity && data.employeeState ? ", " : ""}${data.employeeState || ""} ${data.employeeZip || ""}`.trim();
+  if (empCityStateZip) {
+    doc.text(empCityStateZip, margin + 5, addrY);
+  }
+  
+  // Box 11 - Nonqualified plans
+  doc.rect(rightX, y, halfRightCol, smallRowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("11  Nonqualified plans", rightX + 3, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.nonqualifiedPlans), rightX + halfRightCol - 5, y + 18, { align: "right" });
+  
+  // Box 12a
+  drawBox12Entry(doc, rightX + halfRightCol, y, halfRightCol, smallRowHeight, "12a", data.box12aCode, data.box12aAmount);
+  
+  y += smallRowHeight;
+  
+  // === ROW 7: (address continues) + See instructions + Box 12b ===
+  // "See instructions for box 12" text
+  doc.rect(rightX, y, halfRightCol, smallRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("See instructions for box 12", rightX + 3, y + 10);
+  
+  // Box 12b
+  drawBox12Entry(doc, rightX + halfRightCol, y, halfRightCol, smallRowHeight, "12b", data.box12bCode, data.box12bAmount);
+  
+  y += smallRowHeight + (addressBoxHeight - smallRowHeight * 2);
+  
+  // === ROW 8: Box 13 + Box 12c ===
+  const box13Height = smallRowHeight * 2;
+  
+  // Box 13 - Checkboxes
+  doc.rect(rightX, y, halfRightCol, box13Height);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("13", rightX + 3, y + 8);
+  
+  // Checkboxes
+  drawCheckbox(doc, rightX + 5, y + 14, "Statutory employee", data.statutoryEmployee);
+  drawCheckbox(doc, rightX + 5, y + 26, "Retirement plan", data.retirementPlan);
+  drawCheckbox(doc, rightX + 5, y + 38, "Third-party sick pay", data.thirdPartySickPay);
+  
+  // Box 12c
+  drawBox12Entry(doc, rightX + halfRightCol, y, halfRightCol, smallRowHeight, "12c", data.box12cCode, data.box12cAmount);
+  
+  // Box 12d (below 12c)
+  drawBox12Entry(doc, rightX + halfRightCol, y + smallRowHeight, halfRightCol, smallRowHeight, "12d", data.box12dCode, data.box12dAmount);
+  
+  y += box13Height;
+  
+  // === ROW 9: Box 14 (Other) ===
+  // Box 14 - Other (full width of left column)
+  doc.rect(margin, y, leftColWidth + rightColWidth, rowHeight);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("14  Other", margin + 3, y + 7);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.other || "", margin + 5, y + 20);
+  
+  y += rowHeight + 3;
+  
+  // === STATE/LOCAL TAX SECTION ===
+  const stateRowHeight = 26;
+  const col1 = formWidth * 0.08;  // State
+  const col2 = formWidth * 0.17;  // Employer state ID
+  const col3 = formWidth * 0.18;  // State wages
+  const col4 = formWidth * 0.15;  // State income tax
+  const col5 = formWidth * 0.18;  // Local wages  
+  const col6 = formWidth * 0.12;  // Local income tax
+  const col7 = formWidth * 0.12;  // Locality name
+  
+  // First state/local row
+  let sx = margin;
+  
+  // Box 15 - State
+  doc.rect(sx, y, col1, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("15 State", sx + 2, y + 6);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.state || "", sx + 3, y + 18);
+  sx += col1;
+  
+  // Employer's state ID number
+  doc.rect(sx, y, col2, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("Employer's state ID number", sx + 2, y + 6);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.employerStateId || "", sx + 3, y + 18);
+  sx += col2;
+  
+  // Box 16 - State wages
+  doc.rect(sx, y, col3, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("16 State wages, tips, etc.", sx + 2, y + 6);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.stateWages), sx + col3 - 3, y + 18, { align: "right" });
+  sx += col3;
+  
+  // Box 17 - State income tax
+  doc.rect(sx, y, col4, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("17 State income tax", sx + 2, y + 6);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.stateIncomeTax), sx + col4 - 3, y + 18, { align: "right" });
+  sx += col4;
+  
+  // Box 18 - Local wages
+  doc.rect(sx, y, col5, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("18 Local wages, tips, etc.", sx + 2, y + 6);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.localWages), sx + col5 - 3, y + 18, { align: "right" });
+  sx += col5;
+  
+  // Box 19 - Local income tax
+  doc.rect(sx, y, col6, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("19 Local income tax", sx + 2, y + 6);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text(formatCurrency(data.localIncomeTax), sx + col6 - 3, y + 18, { align: "right" });
+  sx += col6;
+  
+  // Box 20 - Locality name
+  doc.rect(sx, y, col7, stateRowHeight);
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text("20 Locality name", sx + 2, y + 6);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text(data.localityName || "", sx + 3, y + 18);
+  
+  y += stateRowHeight;
+  
+  // Second state/local row (empty, for additional states)
+  sx = margin;
+  doc.rect(sx, y, col1, stateRowHeight);
+  sx += col1;
+  doc.rect(sx, y, col2, stateRowHeight);
+  sx += col2;
+  doc.rect(sx, y, col3, stateRowHeight);
+  sx += col3;
+  doc.rect(sx, y, col4, stateRowHeight);
+  sx += col4;
+  doc.rect(sx, y, col5, stateRowHeight);
+  sx += col5;
+  doc.rect(sx, y, col6, stateRowHeight);
+  sx += col6;
+  doc.rect(sx, y, col7, stateRowHeight);
+  
+  y += stateRowHeight + 10;
+  
+  // === FOOTER ===
+  // Form title bar
+  doc.setFillColor(0, 0, 0);
+  doc.rect(margin, y, formWidth, 18, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Form", margin + 5, y + 12);
+  doc.setFontSize(14);
+  doc.text("W-2", margin + 28, y + 13);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text("Wage and Tax Statement", margin + 60, y + 12);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(taxYear, margin + formWidth / 2 - 15, y + 13);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("Department of the Treasury—Internal Revenue Service", margin + formWidth - 5, y + 12, { align: "right" });
+  
+  y += 25;
+  
+  // Copy designation
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text("Copy B—To Be Filed With Employee's FEDERAL Tax Return.", margin, y);
+  y += 10;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text("This information is being furnished to the Internal Revenue Service.", margin, y);
 }
 
-// Draw Box 12 format (code + amount)
-function drawBox12(doc, x, y, width, height, label, code, amount) {
+// Draw Box 12 entry (code + amount format)
+function drawBox12Entry(doc, x, y, width, height, label, code, amount) {
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
   doc.rect(x, y, width, height);
   
-  // Label
-  doc.setFontSize(6);
-  doc.setFont("helvetica", "normal");
-  doc.text(label, x + 3, y + 8);
+  // Vertical divider for code section
+  const codeWidth = 25;
+  doc.line(x + codeWidth, y, x + codeWidth, y + height);
   
-  // Code
-  doc.setFontSize(8);
+  // Label
+  doc.setFontSize(5);
+  doc.setFont("helvetica", "normal");
+  doc.text(label, x + 3, y + 6);
+  doc.text("Code", x + 3, y + 12);
+  
+  // Code value
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text(code || "", x + 5, y + height - 5);
+  if (code) {
+    doc.text(code, x + 5, y + height - 4);
+  }
   
   // Amount
   if (amount) {
-    doc.text(formatCurrency(amount), x + width - 5, y + height - 5, { align: "right" });
+    doc.setFontSize(9);
+    doc.text(formatCurrency(amount), x + width - 3, y + height - 4, { align: "right" });
   }
 }
 
-// Draw checkbox
+// Draw checkbox with label
 function drawCheckbox(doc, x, y, label, checked) {
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.5);
-  doc.rect(x, y, 8, 8);
+  doc.rect(x, y, 7, 7);
   
   if (checked) {
     doc.setFont("helvetica", "bold");
-    doc.text("X", x + 1.5, y + 6.5);
+    doc.setFontSize(8);
+    doc.text("X", x + 1, y + 6);
   }
   
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.text(label, x + 12, y + 6);
+  doc.setFontSize(6);
+  doc.text(label, x + 10, y + 5);
 }
 
 // Generate and download W-2

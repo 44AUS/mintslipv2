@@ -167,11 +167,23 @@ frontend:
     file: "src/pages/PaystubForm.js, src/utils/paystubPreviewGenerator.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added real-time PDF preview section below PayPal buttons. Features: 1) Live preview updates as user fills form (500ms debounce). 2) MintSlip watermark overlay on preview. 3) Click-to-enlarge with Dialog modal for full-size view. 4) Watermark message 'Watermark removed after payment'. 5) Loading spinner while generating. 6) Empty state prompts user to fill required fields. Created paystubPreviewGenerator.js utility that generates preview PDF with watermarks."
+
+  - task: "W-2 Generator with PDF Preview"
+    implemented: true
+    working: true
+    file: "src/pages/W2Form.js, src/utils/w2Generator.js, src/utils/w2PreviewGenerator.js, src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented complete W-2 Generator feature with IRS-compliant form layout. Features: 1) All standard W-2 boxes (1-20) including Box 12 codes (A-HH) and Box 13 checkboxes. 2) Selectable tax years (current year + 5 years back). 3) Employer/Employee information sections with full address fields. 4) State and Local tax sections (Boxes 15-20). 5) Auto-calculate button for SS/Medicare taxes. 6) Live PDF preview with MintSlip watermark (500ms debounce). 7) Click-to-enlarge preview dialog. 8) W-2 Summary panel showing totals. 9) PayPal integration for $15 payment. 10) PDF layout matches official IRS W-2 form structure. Added route /w2 in App.js and updated Home page card to link to W-2 generator (removed 'Coming Soon' label)."
 
 metadata:
   created_by: "main_agent"
@@ -181,7 +193,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Real-time PDF Preview with Watermark"
+    - "W-2 Generator with PDF Preview"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -197,3 +209,5 @@ agent_communication:
     message: "Added Contractor (1099) option and Salary pay type to paystub generation. Features implemented: 1) Worker Type toggle between Employee (W-2) and Contractor (1099). 2) Pay Type toggle between Hourly and Salary. 3) Contractors show no tax withholdings in preview and PDF. 4) Salary workers show annual salary divided by pay frequency. 5) Gusto template restricts contractors to hourly only. 6) Dynamic form labels based on worker type. 7) PDF template adapts for contractors - shows 'Contractor Payment Statement' title and tax info notice."
   - agent: "main"
     message: "Added real-time PDF preview with MintSlip watermark. Created paystubPreviewGenerator.js utility that generates live PDF preview as user fills form. Preview shows actual PDF layout with watermark overlay, click to enlarge in modal dialog, and note that watermark is removed after payment. Preview auto-updates with 500ms debounce when form data changes."
+  - agent: "main"
+    message: "Implemented W-2 Generator feature. Created W2Form.js page with all standard IRS W-2 boxes (1-20), Box 12 codes (A-HH), Box 13 checkboxes, tax year selector (2020-2025), employer/employee info sections, state/local tax section. Created w2Generator.js with IRS-compliant PDF layout matching official W-2 form structure. Created w2PreviewGenerator.js for live preview with watermark. Added /w2 route in App.js and updated Home page W-2 card to navigate to the generator (removed Coming Soon label). Features auto-calculate for SS/Medicare taxes and $15 PayPal payment."

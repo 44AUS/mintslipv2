@@ -181,7 +181,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Contractor Option and Salary Pay Type"
+    - "Real-time PDF Preview with Watermark"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -195,3 +195,5 @@ agent_communication:
     message: "Fixed YTD calculation bug in paystub generation. The issue was that Year-to-Date values were just copying the current period values instead of calculating cumulative totals. Added calculatePayPeriodsFromHireDate() function to properly calculate the number of pay periods from hire date to current pay period. Updated Template A to use proper YTD values for earnings, taxes, and summary sections. Example: hire date 10/26/2025, pay period 11/30/2025-12/13/2025 will now show ~4 periods worth of YTD values instead of just 1 period."
   - agent: "main"
     message: "Added Contractor (1099) option and Salary pay type to paystub generation. Features implemented: 1) Worker Type toggle between Employee (W-2) and Contractor (1099). 2) Pay Type toggle between Hourly and Salary. 3) Contractors show no tax withholdings in preview and PDF. 4) Salary workers show annual salary divided by pay frequency. 5) Gusto template restricts contractors to hourly only. 6) Dynamic form labels based on worker type. 7) PDF template adapts for contractors - shows 'Contractor Payment Statement' title and tax info notice."
+  - agent: "main"
+    message: "Added real-time PDF preview with MintSlip watermark. Created paystubPreviewGenerator.js utility that generates live PDF preview as user fills form. Preview shows actual PDF layout with watermark overlay, click to enlarge in modal dialog, and note that watermark is removed after payment. Preview auto-updates with 500ms debounce when form data changes."

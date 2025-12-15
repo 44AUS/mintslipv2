@@ -140,7 +140,7 @@ frontend:
     file: "src/utils/paystubGenerator.js, src/utils/paystubTemplates.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -148,6 +148,18 @@ frontend:
       - working: true
         agent: "main"
         comment: "Fixed YTD calculation in paystubGenerator.js by adding calculatePayPeriodsFromHireDate() function that calculates number of pay periods from hire date (or Jan 1 of pay period year, whichever is later) to current pay period end. Updated paystubTemplates.js to use actual YTD values (ytdRegularPay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours) instead of duplicating current period values."
+
+  - task: "Contractor Option and Salary Pay Type"
+    implemented: true
+    working: true
+    file: "src/pages/PaystubForm.js, src/utils/paystubGenerator.js, src/utils/paystubTemplates.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added Worker Type selection (Employee W-2 vs Contractor 1099) and Pay Type selection (Hourly vs Salary). Key features: 1) Contractors have no tax withholdings - shown on PDF and preview. 2) Salary option shows annual salary divided by pay periods. 3) Gusto template (template-a) for contractors is hourly only - salary disabled with notice. 4) Dynamic labels change based on worker type (Employee/Contractor, Hire Date/Start Date). 5) PDF template updated to show 'Contractor Payment Statement' for 1099 workers."
 
 metadata:
   created_by: "main_agent"

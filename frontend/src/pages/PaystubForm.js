@@ -601,7 +601,7 @@ export default function PaystubForm() {
               {/* Pay Preview */}
               <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Pay Preview
+                  Pay Preview {formData.workerType === 'contractor' && <span className="text-sm font-normal text-amber-700">(1099 Contractor)</span>}
                 </h3>
                 <div className="space-y-2 text-sm">
                   {preview.numStubs > 0 && (
@@ -614,32 +614,45 @@ export default function PaystubForm() {
                     <span className="text-slate-700">Total Gross Pay:</span>
                     <span className="font-bold">${preview.totalGross.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-700">Social Security (6.2%):</span>
-                    <span>${preview.ssTax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-700">Medicare (1.45%):</span>
-                    <span>${preview.medTax.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-700">State Tax (5%):</span>
-                    <span>${preview.stateTax.toFixed(2)}</span>
-                  </div>
-                  {formData.includeLocalTax && (
-                    <div className="flex justify-between">
-                      <span className="text-slate-700">Local Tax (1%):</span>
-                      <span>${preview.localTax.toFixed(2)}</span>
+                  
+                  {formData.workerType === 'employee' ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">Social Security (6.2%):</span>
+                        <span>${preview.ssTax.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">Medicare (1.45%):</span>
+                        <span>${preview.medTax.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">State Tax (5%):</span>
+                        <span>${preview.stateTax.toFixed(2)}</span>
+                      </div>
+                      {formData.includeLocalTax && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-700">Local Tax (1%):</span>
+                          <span>${preview.localTax.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-green-300 pt-2 mt-2">
+                        <div className="flex justify-between text-red-700">
+                          <span className="font-bold">Total Taxes:</span>
+                          <span className="font-bold">${preview.totalTaxes.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="border-t border-green-300 pt-2 mt-2">
+                      <div className="flex justify-between text-amber-700">
+                        <span className="font-bold">No Taxes Withheld</span>
+                        <span className="font-bold">$0.00</span>
+                      </div>
                     </div>
                   )}
-                  <div className="border-t border-green-300 pt-2 mt-2">
-                    <div className="flex justify-between text-red-700">
-                      <span className="font-bold">Total Taxes:</span>
-                      <span className="font-bold">${preview.totalTaxes.toFixed(2)}</span>
-                    </div>
-                  </div>
+                  
                   <div className="flex justify-between text-green-700 text-lg">
-                    <span className="font-bold">Net Pay:</span>
+                    <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Net Pay:'}</span>
                     <span className="font-bold">${preview.netPay.toFixed(2)}</span>
                   </div>
                 </div>

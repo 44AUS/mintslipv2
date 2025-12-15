@@ -261,18 +261,18 @@ export default function PaystubForm() {
                 </RadioGroup>
               </div>
 
-              {/* Employee Information */}
+              {/* Employee/Contractor Information */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Employee Information
+                  {formData.workerType === 'contractor' ? 'Contractor Information' : 'Employee Information'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Employee Name *</Label>
+                    <Label htmlFor="name">{formData.workerType === 'contractor' ? 'Contractor Name *' : 'Employee Name *'}</Label>
                     <Input data-testid="employee-name-input" id="name" name="name" value={formData.name} onChange={handleChange} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ssn">Last 4 of SSN *</Label>
+                    <Label htmlFor="ssn">{formData.workerType === 'contractor' ? 'Last 4 of SSN/EIN *' : 'Last 4 of SSN *'}</Label>
                     <Input data-testid="ssn-input" id="ssn" name="ssn" value={formData.ssn} onChange={handleChange} maxLength="4" required />
                   </div>
                   <div className="space-y-2">

@@ -92,7 +92,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   leftY += 12;
   doc.text(`${formData.name || ''} (...Direct Deposit to ${formData.bankName || 'Bank'} ******${formData.bank ? formData.bank.slice(-4) : '0000'})`, logoX, leftY);
 
-  // Right: Company + Employee boxes
+  // Right: Company + Employee/Contractor boxes
   const boxTop = top + 30;
   const boxHeight = 70;
   const boxWidth = 130;
@@ -106,7 +106,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   doc.text("Company", rightStartX + 8, boxTop + 14);
-  doc.text("Employee", rightStartX + boxWidth + 18, boxTop + 14);
+  doc.text(workerLabel, rightStartX + boxWidth + 18, boxTop + 14);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
@@ -116,28 +116,44 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, rightStartX + 8, boxTop + 52);
   doc.text(formData.companyPhone || "", rightStartX + 8, boxTop + 64);
   doc.text(formData.name || "", rightStartX + boxWidth + 18, boxTop + 28);
-  doc.text(`XXX-XX-${formData.ssn || "0000"}`, rightStartX + boxWidth + 18, boxTop + 40);
+  doc.text(isContractor ? `EIN/SSN: ***-**-${formData.ssn || "0000"}` : `XXX-XX-${formData.ssn || "0000"}`, rightStartX + boxWidth + 18, boxTop + 40);
   doc.text(formData.address || "", rightStartX + boxWidth + 18, boxTop + 52);
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightStartX + boxWidth + 18, boxTop + 64);
 
   y = Math.max(leftY, boxTop + boxHeight) + 30;
 
   // ========== EARNINGS SECTION ==========
-  sectionHeader(doc, "Employee Gross Earnings", left, y, usableWidth);
+  const earningsSectionTitle = isContractor ? "Contractor Gross Earnings" : "Employee Gross Earnings";
+  sectionHeader(doc, earningsSectionTitle, left, y, usableWidth);
   y += 20;
 
+  // Build earnings rows based on pay type
   const earningsRows = [
     ["Description", "Rate", "Hours", "Current", "Year-To-Date"],
-    [
+  ];
+  
+  if (payType === "salary") {
+    // For salary, show as fixed amount per period
+    const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+    earningsRows.push([
+      "Salary | Per Period",
+      `$${fmt(annualSalary)}/yr`,
+      "-",
+      `$${fmt(regularPay)}`,
+      `$${fmt(ytdRegularPay)}`,
+    ]);
+  } else {
+    // Hourly pay
+    earningsRows.push([
       "Regular Hours | Hourly",
       `$${fmt(rate)}`,
       hours.toString(),
       `$${fmt(regularPay)}`,
       `$${fmt(ytdRegularPay)}`,
-    ],
-  ];
+    ]);
+  }
 
-  if (Number(overtime) > 0) {
+  if (Number(overtime) > 0 && payType === "hourly") {
     earningsRows.push([
       "Overtime Hours | 1.5x",
       `$${fmt(overtimeRate)}`,

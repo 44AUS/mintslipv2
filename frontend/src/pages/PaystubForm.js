@@ -866,6 +866,234 @@ export default function PaystubForm() {
                     </p>
                   </div>
                 )}
+
+                {/* Employee Deductions Section - Only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                          Employee Deductions
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Pre-tax deductions like 401(k), health insurance, etc.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addDeduction}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Deduction
+                      </Button>
+                    </div>
+
+                    {deductions.length === 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-md border border-dashed border-slate-300 text-center">
+                        <p className="text-sm text-slate-500">No deductions added. Click "Add Deduction" to add one.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {deductions.map((deduction) => (
+                          <div key={deduction.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-xs text-slate-600">Type</Label>
+                                <Select 
+                                  value={deduction.type} 
+                                  onValueChange={(val) => {
+                                    updateDeduction(deduction.id, 'type', val);
+                                    if (val !== 'other') {
+                                      const label = deductionTypes.find(t => t.value === val)?.label || '';
+                                      updateDeduction(deduction.id, 'name', label);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {deductionTypes.map(type => (
+                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {deduction.type === 'other' && (
+                                <div className="flex-1 space-y-1">
+                                  <Label className="text-xs text-slate-600">Description</Label>
+                                  <Input
+                                    type="text"
+                                    value={deduction.name}
+                                    onChange={(e) => updateDeduction(deduction.id, 'name', e.target.value)}
+                                    placeholder="Enter description"
+                                    className="h-9"
+                                  />
+                                </div>
+                              )}
+                              <div className="w-32 space-y-1">
+                                <Label className="text-xs text-slate-600">Amount</Label>
+                                <div className="flex items-center gap-1">
+                                  {!deduction.isPercentage && <span className="text-slate-500">$</span>}
+                                  <Input
+                                    type="number"
+                                    value={deduction.amount}
+                                    onChange={(e) => updateDeduction(deduction.id, 'amount', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                    min="0"
+                                    step="0.01"
+                                  />
+                                  {deduction.isPercentage && <span className="text-slate-500">%</span>}
+                                </div>
+                              </div>
+                              <div className="flex items-end gap-2">
+                                <div className="flex items-center space-x-1">
+                                  <Checkbox
+                                    id={`ded-pct-${deduction.id}`}
+                                    checked={deduction.isPercentage}
+                                    onCheckedChange={(checked) => updateDeduction(deduction.id, 'isPercentage', checked)}
+                                  />
+                                  <Label htmlFor={`ded-pct-${deduction.id}`} className="text-xs cursor-pointer">%</Label>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeDeduction(deduction.id)}
+                                  className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Employee Contributions Section - Only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                          Employee Contributions
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Voluntary contributions like HSA, FSA, Roth 401(k), etc.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addContribution}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Contribution
+                      </Button>
+                    </div>
+
+                    {contributions.length === 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-md border border-dashed border-slate-300 text-center">
+                        <p className="text-sm text-slate-500">No contributions added. Click "Add Contribution" to add one.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {contributions.map((contribution) => (
+                          <div key={contribution.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-xs text-slate-600">Type</Label>
+                                <Select 
+                                  value={contribution.type} 
+                                  onValueChange={(val) => {
+                                    updateContribution(contribution.id, 'type', val);
+                                    if (val !== 'other') {
+                                      const label = contributionTypes.find(t => t.value === val)?.label || '';
+                                      updateContribution(contribution.id, 'name', label);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {contributionTypes.map(type => (
+                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {contribution.type === 'other' && (
+                                <div className="flex-1 space-y-1">
+                                  <Label className="text-xs text-slate-600">Description</Label>
+                                  <Input
+                                    type="text"
+                                    value={contribution.name}
+                                    onChange={(e) => updateContribution(contribution.id, 'name', e.target.value)}
+                                    placeholder="Enter description"
+                                    className="h-9"
+                                  />
+                                </div>
+                              )}
+                              <div className="w-32 space-y-1">
+                                <Label className="text-xs text-slate-600">Amount</Label>
+                                <div className="flex items-center gap-1">
+                                  {!contribution.isPercentage && <span className="text-slate-500">$</span>}
+                                  <Input
+                                    type="number"
+                                    value={contribution.amount}
+                                    onChange={(e) => updateContribution(contribution.id, 'amount', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                    min="0"
+                                    step="0.01"
+                                  />
+                                  {contribution.isPercentage && <span className="text-slate-500">%</span>}
+                                </div>
+                              </div>
+                              <div className="flex items-end gap-2">
+                                <div className="flex items-center space-x-1">
+                                  <Checkbox
+                                    id={`cont-pct-${contribution.id}`}
+                                    checked={contribution.isPercentage}
+                                    onCheckedChange={(checked) => updateContribution(contribution.id, 'isPercentage', checked)}
+                                  />
+                                  <Label htmlFor={`cont-pct-${contribution.id}`} className="text-xs cursor-pointer">%</Label>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeContribution(contribution.id)}
+                                  className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
           </div>

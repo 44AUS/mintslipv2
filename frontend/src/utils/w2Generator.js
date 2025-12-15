@@ -35,7 +35,7 @@ export const W2_BOXES = {
 
 // Box 12 codes
 export const BOX_12_CODES = [
-  { code: "", label: "None" },
+  { code: "none", label: "None" },
   { code: "A", label: "A - Uncollected social security or RRTA tax on tips" },
   { code: "B", label: "B - Uncollected Medicare tax on tips" },
   { code: "C", label: "C - Taxable cost of group-term life insurance over $50,000" },

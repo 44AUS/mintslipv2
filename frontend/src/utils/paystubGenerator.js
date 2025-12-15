@@ -121,6 +121,25 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
   }
 };
 
+// Helper function to calculate number of pay periods from hire date to current pay period end
+function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLength) {
+  // Use the start of the year of the current pay period OR hire date, whichever is later
+  const payPeriodYear = currentPeriodEnd.getFullYear();
+  const startOfYear = new Date(payPeriodYear, 0, 1);
+  
+  // YTD starts from either January 1 of the pay period year OR hire date (whichever is later)
+  const ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
+  
+  // Calculate number of days from YTD start to current period end
+  const diffTime = currentPeriodEnd.getTime() - ytdStartDate.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Calculate number of complete pay periods (at least 1)
+  const numPeriods = Math.max(1, Math.ceil(diffDays / periodLength));
+  
+  return numPeriods;
+}
+
 // Helper function to generate a single paystub
 async function generateSingleStub(
   doc, formData, template, stubNum, startDate, periodLength,
@@ -143,6 +162,22 @@ async function generateSingleStub(
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + periodLength - 1);
   const payDate = nextWeekday(new Date(endDate), payDay);
+
+  // Calculate YTD values based on pay periods from hire date
+  const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date(startDate);
+  const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
+  
+  // Calculate YTD values
+  const ytdRegularPay = regularPay * ytdPayPeriods;
+  const ytdOvertimePay = overtimePay * ytdPayPeriods;
+  const ytdGrossPay = grossPay * ytdPayPeriods;
+  const ytdSsTax = ssTax * ytdPayPeriods;
+  const ytdMedTax = medTax * ytdPayPeriods;
+  const ytdStateTax = stateTax * ytdPayPeriods;
+  const ytdLocalTax = localTax * ytdPayPeriods;
+  const ytdTotalTax = totalTax * ytdPayPeriods;
+  const ytdNetPay = netPay * ytdPayPeriods;
+  const ytdHours = (hours + overtime) * ytdPayPeriods;
 
   const margin = 40;
   
@@ -167,7 +202,19 @@ async function generateSingleStub(
     payDate,
     payFrequency,
     stubNum,
-    totalStubs
+    totalStubs,
+    // YTD values
+    ytdPayPeriods,
+    ytdRegularPay,
+    ytdOvertimePay,
+    ytdGrossPay,
+    ytdSsTax,
+    ytdMedTax,
+    ytdStateTax,
+    ytdLocalTax,
+    ytdTotalTax,
+    ytdNetPay,
+    ytdHours
   };
 
   // Call the appropriate template

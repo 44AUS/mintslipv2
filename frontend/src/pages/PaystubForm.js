@@ -24,6 +24,8 @@ export default function PaystubForm() {
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [hoursExpanded, setHoursExpanded] = useState(false);
   const [hoursPerPeriod, setHoursPerPeriod] = useState([]);
+  const [deductions, setDeductions] = useState([]);
+  const [contributions, setContributions] = useState([]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -53,6 +55,76 @@ export default function PaystubForm() {
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type
   });
+
+  // Common deduction types for quick selection
+  const deductionTypes = [
+    { label: "401(k)", value: "401k" },
+    { label: "Health Insurance", value: "health_insurance" },
+    { label: "Dental Insurance", value: "dental_insurance" },
+    { label: "Vision Insurance", value: "vision_insurance" },
+    { label: "Life Insurance", value: "life_insurance" },
+    { label: "Disability Insurance", value: "disability_insurance" },
+    { label: "Union Dues", value: "union_dues" },
+    { label: "Garnishment", value: "garnishment" },
+    { label: "Other", value: "other" },
+  ];
+
+  // Common contribution types for quick selection
+  const contributionTypes = [
+    { label: "401(k) Match", value: "401k_match" },
+    { label: "HSA", value: "hsa" },
+    { label: "FSA", value: "fsa" },
+    { label: "Dependent Care FSA", value: "dependent_care_fsa" },
+    { label: "Commuter Benefits", value: "commuter" },
+    { label: "Roth 401(k)", value: "roth_401k" },
+    { label: "Other", value: "other" },
+  ];
+
+  // Add a new deduction
+  const addDeduction = () => {
+    setDeductions([...deductions, { 
+      id: Date.now(), 
+      type: "other", 
+      name: "", 
+      amount: "", 
+      isPercentage: false 
+    }]);
+  };
+
+  // Remove a deduction
+  const removeDeduction = (id) => {
+    setDeductions(deductions.filter(d => d.id !== id));
+  };
+
+  // Update a deduction
+  const updateDeduction = (id, field, value) => {
+    setDeductions(deductions.map(d => 
+      d.id === id ? { ...d, [field]: value } : d
+    ));
+  };
+
+  // Add a new contribution
+  const addContribution = () => {
+    setContributions([...contributions, { 
+      id: Date.now(), 
+      type: "other", 
+      name: "", 
+      amount: "", 
+      isPercentage: false 
+    }]);
+  };
+
+  // Remove a contribution
+  const removeContribution = (id) => {
+    setContributions(contributions.filter(c => c.id !== id));
+  };
+
+  // Update a contribution
+  const updateContribution = (id, field, value) => {
+    setContributions(contributions.map(c => 
+      c.id === id ? { ...c, [field]: value } : c
+    ));
+  };
 
   // Generate PDF preview when form data changes (debounced)
   useEffect(() => {

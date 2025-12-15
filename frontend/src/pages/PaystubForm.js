@@ -22,6 +22,8 @@ export default function PaystubForm() {
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [hoursExpanded, setHoursExpanded] = useState(false);
+  const [hoursPerPeriod, setHoursPerPeriod] = useState([]);
   
   const [formData, setFormData] = useState({
     name: "",

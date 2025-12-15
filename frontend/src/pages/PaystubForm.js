@@ -41,7 +41,34 @@ export default function PaystubForm() {
     hoursList: "",
     overtimeList: "",
     includeLocalTax: true,
+    workerType: "employee", // "employee" or "contractor"
+    payType: "hourly", // "hourly" or "salary"
+    annualSalary: "", // for salary pay type
   });
+
+  // Determine if salary option should be available
+  // Contractors on Gusto (template-a) can only use hourly
+  const canUseSalary = !(formData.workerType === "contractor" && selectedTemplate === "template-a");
+  
+  // Auto-switch to hourly if contractor selects Gusto template
+  const handleWorkerTypeChange = (val) => {
+    setFormData(prev => {
+      const newData = { ...prev, workerType: val };
+      // If contractor on Gusto, force hourly
+      if (val === "contractor" && selectedTemplate === "template-a") {
+        newData.payType = "hourly";
+      }
+      return newData;
+    });
+  };
+
+  // Handle template change - reset to hourly if contractor selects Gusto
+  const handleTemplateChange = (val) => {
+    setSelectedTemplate(val);
+    if (formData.workerType === "contractor" && val === "template-a") {
+      setFormData(prev => ({ ...prev, payType: "hourly" }));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

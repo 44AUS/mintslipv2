@@ -246,7 +246,12 @@ async function generateSingleStub(
     ytdLocalTax,
     ytdTotalTax,
     ytdNetPay,
-    ytdHours
+    ytdHours,
+    // Worker and pay type
+    payType,
+    workerType,
+    isContractor,
+    annualSalary
   };
 
   // Call the appropriate template

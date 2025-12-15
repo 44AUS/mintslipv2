@@ -322,10 +322,29 @@ export default function PaystubForm() {
     const stateTax = isContractor ? 0 : totalGross * 0.05;
     const localTax = isContractor ? 0 : (formData.includeLocalTax ? totalGross * 0.01 : 0);
     const totalTaxes = ssTax + medTax + stateTax + localTax;
-    const netPay = totalGross - totalTaxes;
 
-    return { totalGross, totalTaxes, netPay, ssTax, medTax, stateTax, localTax, numStubs };
-  }, [formData, calculateNumStubs]);
+    // Calculate deductions total
+    const totalDeductions = deductions.reduce((sum, d) => {
+      const amount = parseFloat(d.amount) || 0;
+      if (d.isPercentage) {
+        return sum + (totalGross * amount / 100) * (numStubs || 1);
+      }
+      return sum + amount * (numStubs || 1);
+    }, 0);
+
+    // Calculate contributions total
+    const totalContributions = contributions.reduce((sum, c) => {
+      const amount = parseFloat(c.amount) || 0;
+      if (c.isPercentage) {
+        return sum + (totalGross * amount / 100) * (numStubs || 1);
+      }
+      return sum + amount * (numStubs || 1);
+    }, 0);
+
+    const netPay = totalGross - totalTaxes - totalDeductions - totalContributions;
+
+    return { totalGross, totalTaxes, netPay, ssTax, medTax, stateTax, localTax, numStubs, totalDeductions, totalContributions };
+  }, [formData, calculateNumStubs, deductions, contributions]);
 
   const createOrder = (data, actions) => {
     const totalAmount = (calculateNumStubs * 10).toFixed(2);

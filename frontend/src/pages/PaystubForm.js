@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
+import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 export default function PaystubForm() {

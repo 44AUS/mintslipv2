@@ -206,32 +206,48 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     // ========== DEDUCTIONS SECTION ==========
     sectionHeader(doc, "Employee Deductions", left, y, usableWidth);
     y += 18;
-    drawTable(
-      doc,
-      left,
-      y,
-      [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
-      16,
-      usableWidth,
-      false,
-      true
-    );
-    y += 40;
+    
+    // Build deductions rows
+    const deductionRows = [["Description", "Type", "Current", "Year-To-Date"]];
+    if (deductionsData && deductionsData.length > 0) {
+      deductionsData.forEach(d => {
+        const typeLabel = d.isPercentage ? `${d.amount}% of Gross` : "Fixed";
+        deductionRows.push([
+          d.name || "Deduction",
+          typeLabel,
+          `$${fmt(d.currentAmount)}`,
+          `$${fmt(d.currentAmount * (data.ytdPayPeriods || 1))}`
+        ]);
+      });
+    } else {
+      deductionRows.push(["None", "–", "$0.00", "$0.00"]);
+    }
+    
+    drawTable(doc, left, y, deductionRows, 16, usableWidth, false, true);
+    y += deductionRows.length * 16 + 10;
 
     // ========== CONTRIBUTIONS SECTION ==========
     sectionHeader(doc, "Employee Contributions", left, y, usableWidth);
     y += 18;
-    drawTable(
-      doc,
-      left,
-      y,
-      [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
-      16,
-      usableWidth,
-      false,
-      true
-    );
-    y += 40;
+    
+    // Build contributions rows
+    const contributionRows = [["Description", "Type", "Current", "Year-To-Date"]];
+    if (contributionsData && contributionsData.length > 0) {
+      contributionsData.forEach(c => {
+        const typeLabel = c.isPercentage ? `${c.amount}% of Gross` : "Fixed";
+        contributionRows.push([
+          c.name || "Contribution",
+          typeLabel,
+          `$${fmt(c.currentAmount)}`,
+          `$${fmt(c.currentAmount * (data.ytdPayPeriods || 1))}`
+        ]);
+      });
+    } else {
+      contributionRows.push(["None", "–", "$0.00", "$0.00"]);
+    }
+    
+    drawTable(doc, left, y, contributionRows, 16, usableWidth, false, true);
+    y += contributionRows.length * 16 + 10;
   } else {
     // Contractor - No taxes withheld notice
     sectionHeader(doc, "Tax Information", left, y, usableWidth);

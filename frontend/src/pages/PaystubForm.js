@@ -209,7 +209,7 @@ export default function PaystubForm() {
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Choose Template
                 </h2>
-                <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                <RadioGroup value={selectedTemplate} onValueChange={handleTemplateChange}>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
@@ -232,6 +232,31 @@ export default function PaystubForm() {
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Workday style</p>
                     </div> */}
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Worker Type Selection */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Worker Type
+                </h2>
+                <RadioGroup value={formData.workerType} onValueChange={handleWorkerTypeChange}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="employee" id="worker-employee" data-testid="worker-employee-radio" />
+                        <Label htmlFor="worker-employee" className="cursor-pointer font-medium">Employee (W-2)</Label>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-2">Standard employee with tax withholdings</p>
+                    </div>
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'contractor' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="contractor" id="worker-contractor" data-testid="worker-contractor-radio" />
+                        <Label htmlFor="worker-contractor" className="cursor-pointer font-medium">Contractor (1099)</Label>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-2">Independent contractor, no tax withholdings</p>
+                    </div>
                   </div>
                 </RadioGroup>
               </div>

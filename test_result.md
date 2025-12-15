@@ -104,6 +104,8 @@
 
 user_problem_statement: "Make header mobile-friendly with dropdown menu, update Bank Statement Template A to match Chime/Sutton style"
 
+backend: []
+
 frontend:
   - task: "Mobile-friendly header with hamburger menu"
     implemented: true

@@ -174,8 +174,8 @@ export const generateBankStatementPreview = async (formData, template = 'templat
     // Generate the template
     generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
 
-    // Add watermark on top
-    addWatermark(doc, pageWidth, pageHeight);
+    // Add watermark on ALL pages
+    addWatermarkToAllPages(doc, pageWidth, pageHeight);
 
     // Convert to base64 data URL
     const pdfDataUrl = doc.output('dataurlstring');

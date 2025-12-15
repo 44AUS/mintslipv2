@@ -24,7 +24,7 @@ function fmt(n) {
 
 // Template A: Gusto-Style Professional (matches artifact exactly)
 export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
-  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
+  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, stateRate, localTaxRate, sutaRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours,
     payType, workerType, isContractor, annualSalary,
     deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions

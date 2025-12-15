@@ -78,6 +78,7 @@ export default function PaystubForm() {
   const canUseSalary = !(formData.workerType === "contractor" && selectedTemplate === "template-a");
   
   // Auto-switch to hourly if contractor selects Gusto template
+  // Also clear overtime for contractors
   const handleWorkerTypeChange = (val) => {
     setFormData(prev => {
       const newData = { ...prev, workerType: val };
@@ -87,6 +88,11 @@ export default function PaystubForm() {
       }
       return newData;
     });
+    
+    // Clear overtime if switching to contractor
+    if (val === "contractor") {
+      setHoursPerPeriod(prev => prev.map(p => ({ ...p, overtime: 0 })));
+    }
   };
 
   // Handle template change - reset to hourly if contractor selects Gusto

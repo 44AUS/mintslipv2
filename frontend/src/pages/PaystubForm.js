@@ -1144,6 +1144,20 @@ export default function PaystubForm() {
                           <span className="font-bold">${preview.totalTaxes.toFixed(2)}</span>
                         </div>
                       </div>
+                      {/* Deductions */}
+                      {preview.totalDeductions > 0 && (
+                        <div className="flex justify-between text-orange-700">
+                          <span className="font-bold">Total Deductions:</span>
+                          <span className="font-bold">${preview.totalDeductions.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {/* Contributions */}
+                      {preview.totalContributions > 0 && (
+                        <div className="flex justify-between text-purple-700">
+                          <span className="font-bold">Total Contributions:</span>
+                          <span className="font-bold">${preview.totalContributions.toFixed(2)}</span>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="border-t border-green-300 pt-2 mt-2">

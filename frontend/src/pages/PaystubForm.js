@@ -811,28 +811,7 @@ export default function PaystubForm() {
                 </div>
               </div>
 
-              {/* PayPal - Under Preview */}
-              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
-                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Complete Payment
-                </h3>
-                {calculateNumStubs > 0 && (
-                  <p className="text-sm text-slate-600 mb-4">
-                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)
-                  </p>
-                )}
-                <div data-testid="paypal-button-container">
-                  <PayPalButtons
-                    createOrder={createOrder}
-                    onApprove={onApprove}
-                    onError={onError}
-                    disabled={isProcessing || calculateNumStubs === 0}
-                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                  />
-                </div>
-              </div>
-
-              {/* PDF Preview Section */}
+              {/* PDF Preview Section - Now Above Payment */}
               <div className="p-4 bg-white border-2 border-slate-200 rounded-md">
                 <h3 className="text-lg font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Document Preview
@@ -922,6 +901,27 @@ export default function PaystubForm() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* PayPal - Now Below Preview */}
+              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Complete Payment
+                </h3>
+                {calculateNumStubs > 0 && (
+                  <p className="text-sm text-slate-600 mb-4">
+                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)
+                  </p>
+                )}
+                <div data-testid="paypal-button-container">
+                  <PayPalButtons
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                    disabled={isProcessing || calculateNumStubs === 0}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                  />
+                </div>
               </div>
             </div>
           </div>

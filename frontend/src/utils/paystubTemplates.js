@@ -178,25 +178,34 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     sectionHeader(doc, "Employer Tax", taxRightX, y, taxTableWidth);
     y += 18;
 
-    // Employee tax rows
+    // Employee tax rows - use actual rates
     const empTaxRows = [["Description", "Current", "YTD"]];
     const erTaxRows = [["Company Tax", "Current", "YTD"]];
 
-    empTaxRows.push(["Social Security", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
-    erTaxRows.push(["Social Security", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
+    empTaxRows.push(["Social Security (6.2%)", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
+    erTaxRows.push(["Social Security (6.2%)", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
 
-    empTaxRows.push(["Medicare", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
-    erTaxRows.push(["Medicare", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
+    empTaxRows.push(["Medicare (1.45%)", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
+    erTaxRows.push(["Medicare (1.45%)", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
 
-    empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Withholding Tax`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
-    erTaxRows.push(["FUTA", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
+    // State tax with actual rate
+    const stateRatePercent = stateRate ? (stateRate * 100).toFixed(2) : "5.00";
+    empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Tax (${stateRatePercent}%)`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
+    erTaxRows.push(["FUTA (0.6%)", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
 
-    if (formData.includeLocalTax && localTax > 0) {
-      empTaxRows.push(["Local Tax", `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
+    // Local tax with actual rate
+    if (formData.includeLocalTax && localTax > 0 && localTaxRate > 0) {
+      const localRatePercent = (localTaxRate * 100).toFixed(2);
+      const cityName = formData.city || "Local";
+      empTaxRows.push([`${cityName} Tax (${localRatePercent}%)`, `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
     } else {
       empTaxRows.push(["Local Tax (none)", "$0.00", "$0.00"]);
     }
-    erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemployment Tax`, `$${fmt(grossPay * 0.01)}`, `$${fmt(ytdGrossPay * 0.01)}`]);
+    
+    // SUTA with actual rate
+    const actualSutaRate = sutaRate || 0.027;
+    const sutaRatePercent = (actualSutaRate * 100).toFixed(2);
+    erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemp. (${sutaRatePercent}%)`, `$${fmt(grossPay * actualSutaRate)}`, `$${fmt(ytdGrossPay * actualSutaRate)}`]);
 
     const taxYStart = y;
     const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);

@@ -127,7 +127,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
       `$${fmt(rate)}`,
       hours.toString(),
       `$${fmt(regularPay)}`,
-      `$${fmt(regularPay)}`,
+      `$${fmt(ytdRegularPay)}`,
     ],
   ];
 
@@ -137,7 +137,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
       `$${fmt(overtimeRate)}`,
       overtime.toString(),
       `$${fmt(overtimePay)}`,
-      `$${fmt(overtimePay)}`,
+      `$${fmt(ytdOvertimePay)}`,
     ]);
   }
 

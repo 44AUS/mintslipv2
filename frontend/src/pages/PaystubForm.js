@@ -555,27 +555,42 @@ export default function PaystubForm() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="hoursList">Hours Worked (comma separated)</Label>
-                    <Input data-testid="hours-list-input" id="hoursList" name="hoursList" placeholder="80, 80, 80" value={formData.hoursList} onChange={handleChange} />
+                {/* Hours input - only for hourly pay type */}
+                {formData.payType === 'hourly' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="hoursList">Hours Worked (comma separated)</Label>
+                      <Input data-testid="hours-list-input" id="hoursList" name="hoursList" placeholder="80, 80, 80" value={formData.hoursList} onChange={handleChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="overtimeList">Overtime Hours (comma separated)</Label>
+                      <Input data-testid="overtime-list-input" id="overtimeList" name="overtimeList" placeholder="0, 5, 0" value={formData.overtimeList} onChange={handleChange} />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="overtimeList">Overtime Hours (comma separated)</Label>
-                    <Input data-testid="overtime-list-input" id="overtimeList" name="overtimeList" placeholder="0, 5, 0" value={formData.overtimeList} onChange={handleChange} />
+                )}
+
+                {/* Tax option - only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      data-testid="local-tax-checkbox"
+                      id="includeLocalTax"
+                      checked={formData.includeLocalTax}
+                      onCheckedChange={(checked) => setFormData({...formData, includeLocalTax: checked})}
+                    />
+                    <Label htmlFor="includeLocalTax" className="text-sm font-normal cursor-pointer">
+                      Include local tax (1%)
+                    </Label>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    data-testid="local-tax-checkbox"
-                    id="includeLocalTax"
-                    checked={formData.includeLocalTax}
-                    onCheckedChange={(checked) => setFormData({...formData, includeLocalTax: checked})}
-                  />
-                  <Label htmlFor="includeLocalTax" className="text-sm font-normal cursor-pointer">
-                    Include local tax (1%)
-                  </Label>
-                </div>
+                )}
+                
+                {formData.workerType === 'contractor' && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-sm text-amber-800">
+                      <strong>Note:</strong> As a contractor (1099), no taxes will be withheld. You are responsible for paying your own self-employment taxes.
+                    </p>
+                  </div>
+                )}
               </div>
             </form>
           </div>

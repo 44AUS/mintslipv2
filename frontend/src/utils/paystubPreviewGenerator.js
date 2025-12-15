@@ -222,7 +222,14 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       payType,
       workerType,
       isContractor,
-      annualSalary
+      annualSalary,
+      // Deductions and contributions
+      deductionsData,
+      totalDeductions,
+      contributionsData,
+      totalContributions,
+      ytdDeductions,
+      ytdContributions
     };
 
     // Generate the template

@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { generateTemplateA, generateTemplateB, generateTemplateC } from "./paystubTemplates";
+import { getLocalTaxRate, getSUTARate } from "./taxRates";
 
 // Helper to calculate next weekday
 const DAY_MAP = {

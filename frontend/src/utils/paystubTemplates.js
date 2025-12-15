@@ -243,36 +243,37 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     doc.text("paying self-employment taxes and any applicable federal/state income taxes.", left, y);
     y += 30;
   }
-  y += 18;
-  drawTable(
-    doc,
-    left,
-    y,
-    [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
-    16,
-    usableWidth,
-    false,
-    true
-  );
-  y += 40;
 
   // ========== SUMMARY SECTION ==========
   sectionHeader(doc, "Summary", left, y, usableWidth);
   y += 18;
   
+  // Build summary rows based on worker type
+  const summaryRows = [
+    ["Description", "Current", "Year-To-Date"],
+    ["Gross Earnings", `$${fmt(grossPay)}`, `$${fmt(ytdGrossPay)}`],
+  ];
+  
+  if (!isContractor) {
+    summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
+    summaryRows.push(["Net Pay", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);
+    summaryRows.push(["Total Reimbursements", "$0.00", "$0.00"]);
+    summaryRows.push(["Check Amount", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);
+  } else {
+    summaryRows.push(["Taxes Withheld", "$0.00", "$0.00"]);
+    summaryRows.push(["Total Payment", `$${fmt(grossPay)}`, `$${fmt(ytdGrossPay)}`]);
+  }
+  
+  // Add hours for hourly pay type only
+  if (payType === "hourly") {
+    summaryRows.push(["Hours Worked", `${fmt(totalHours)}`, `${fmt(ytdHours)}`]);
+  }
+  
   drawTable(
     doc,
     left,
     y,
-    [
-      ["Description", "Current", "Year-To-Date"],
-      ["Gross Earnings", `$${fmt(grossPay)}`, `$${fmt(ytdGrossPay)}`],
-      ["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`],
-      ["Net Pay", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`],
-      ["Total Reimbursements", "$0.00", "$0.00"],
-      ["Check Amount", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`],
-      ["Hours Worked", `${fmt(totalHours)}`, `${fmt(ytdHours)}`],
-    ],
+    summaryRows,
     16,
     usableWidth,
     true,

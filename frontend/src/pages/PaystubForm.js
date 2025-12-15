@@ -651,18 +651,75 @@ export default function PaystubForm() {
                   )}
                 </div>
 
-                {/* Hours input - only for hourly pay type */}
-                {formData.payType === 'hourly' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="hoursList">Hours Worked (comma separated)</Label>
-                      <Input data-testid="hours-list-input" id="hoursList" name="hoursList" placeholder="80, 80, 80" value={formData.hoursList} onChange={handleChange} />
+                {/* Hours input per pay period - only for hourly pay type */}
+                {formData.payType === 'hourly' && payPeriods.length > 0 && (
+                  <Collapsible open={hoursExpanded} onOpenChange={setHoursExpanded}>
+                    <div className="border rounded-lg overflow-hidden">
+                      <CollapsibleTrigger asChild>
+                        <button
+                          type="button"
+                          className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                        >
+                          <div>
+                            <Label className="text-base font-semibold cursor-pointer">Hours Per Pay Period</Label>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Click to {hoursExpanded ? 'collapse' : 'expand'} and edit hours for each pay date
+                            </p>
+                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`h-5 w-5 text-slate-500 transition-transform ${hoursExpanded ? 'rotate-180' : ''}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="p-4 space-y-3 bg-white border-t">
+                          {payPeriods.map((period, index) => (
+                            <div 
+                              key={index} 
+                              className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-slate-50 rounded-lg"
+                            >
+                              <div className="flex-shrink-0 sm:w-48">
+                                <span className="text-sm font-medium text-slate-700">
+                                  Pay Period {index + 1}
+                                </span>
+                                <p className="text-xs text-slate-500">{period.label}</p>
+                              </div>
+                              <div className="flex-1 grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-slate-600">Regular Hours</Label>
+                                  <Input
+                                    type="number"
+                                    value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
+                                    onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
+                                    className="h-9"
+                                    min="0"
+                                    step="0.5"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs text-slate-600">Overtime Hours</Label>
+                                  <Input
+                                    type="number"
+                                    value={hoursPerPeriod[index]?.overtime ?? 0}
+                                    onChange={(e) => handlePeriodHoursChange(index, 'overtime', e.target.value)}
+                                    className="h-9"
+                                    min="0"
+                                    step="0.5"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="overtimeList">Overtime Hours (comma separated)</Label>
-                      <Input data-testid="overtime-list-input" id="overtimeList" name="overtimeList" placeholder="0, 5, 0" value={formData.overtimeList} onChange={handleChange} />
-                    </div>
-                  </div>
+                  </Collapsible>
                 )}
 
                 {/* Tax option - only for employees */}

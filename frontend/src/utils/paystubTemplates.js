@@ -158,21 +158,21 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   const empTaxRows = [["Description", "Current", "YTD"]];
   const erTaxRows = [["Company Tax", "Current", "YTD"]];
 
-  empTaxRows.push(["Social Security", `$${fmt(ssTax)}`, `$${fmt(ssTax)}`]);
-  erTaxRows.push(["Social Security", `$${fmt(grossPay * 0.062)}`, `$${fmt(grossPay * 0.062)}`]);
+  empTaxRows.push(["Social Security", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
+  erTaxRows.push(["Social Security", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
 
-  empTaxRows.push(["Medicare", `$${fmt(medTax)}`, `$${fmt(medTax)}`]);
-  erTaxRows.push(["Medicare", `$${fmt(grossPay * 0.0145)}`, `$${fmt(grossPay * 0.0145)}`]);
+  empTaxRows.push(["Medicare", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
+  erTaxRows.push(["Medicare", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
 
-  empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Withholding Tax`, `$${fmt(stateTax)}`, `$${fmt(stateTax)}`]);
-  erTaxRows.push(["FUTA", `$${fmt(grossPay * 0.006)}`, `$${fmt(grossPay * 0.006)}`]);
+  empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Withholding Tax`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
+  erTaxRows.push(["FUTA", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
 
   if (formData.includeLocalTax && localTax > 0) {
-    empTaxRows.push(["Local Tax", `$${fmt(localTax)}`, `$${fmt(localTax)}`]);
+    empTaxRows.push(["Local Tax", `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
   } else {
     empTaxRows.push(["Local Tax (none)", "$0.00", "$0.00"]);
   }
-  erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemployment Tax`, `$${fmt(grossPay * 0.01)}`, `$${fmt(grossPay * 0.01)}`]);
+  erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemployment Tax`, `$${fmt(grossPay * 0.01)}`, `$${fmt(ytdGrossPay * 0.01)}`]);
 
   const taxYStart = y;
   const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);

@@ -18,6 +18,9 @@ export default function PaystubForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -47,6 +50,25 @@ export default function PaystubForm() {
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type
   });
+
+  // Generate PDF preview when form data changes (debounced)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      // Only generate preview if we have minimum required data
+      if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
+        setIsGeneratingPreview(true);
+        try {
+          const previewUrl = await generatePreviewPDF(formData, selectedTemplate);
+          setPdfPreview(previewUrl);
+        } catch (error) {
+          console.error("Preview generation failed:", error);
+        }
+        setIsGeneratingPreview(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [formData, selectedTemplate]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

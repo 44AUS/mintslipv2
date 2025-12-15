@@ -370,8 +370,15 @@ export default function PaystubForm() {
       await actions.order.capture();
       toast.success("Payment successful! Generating your document...");
       
+      // Prepare formData with deductions and contributions
+      const fullFormData = {
+        ...formData,
+        deductions: deductions,
+        contributions: contributions,
+      };
+      
       // Generate and download PDF
-      await generateAndDownloadPaystub(formData, selectedTemplate, calculateNumStubs);
+      await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs);
       
       toast.success("Pay stub(s) downloaded successfully!");
       setIsProcessing(false);

@@ -7,15 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
+import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 export default function BankStatementForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
+  const [pdfPreview, setPdfPreview] = useState(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
   const [accountName, setAccountName] = useState("");
   const [accountAddress1, setAccountAddress1] = useState("");

@@ -523,10 +523,10 @@ function drawBox12Entry(doc, x, y, width, height, label, code, amount) {
   doc.text(label, x + 3, y + 6);
   doc.text("Code", x + 3, y + 12);
   
-  // Code value
+  // Code value (skip if "none" or empty)
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  if (code) {
+  if (code && code !== "none") {
     doc.text(code, x + 5, y + height - 4);
   }
   

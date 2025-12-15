@@ -166,58 +166,83 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
   y += 60;
 
-  // ========== TAXES SECTION (Two Columns) ==========
-  const taxGap = 10;
-  const taxTableWidth = (usableWidth - taxGap) / 2;
-  const taxLeftX = left;
-  const taxRightX = left + taxTableWidth + taxGap;
+  // ========== TAXES SECTION (Two Columns) - Only for Employees ==========
+  if (!isContractor) {
+    const taxGap = 10;
+    const taxTableWidth = (usableWidth - taxGap) / 2;
+    const taxLeftX = left;
+    const taxRightX = left + taxTableWidth + taxGap;
 
-  sectionHeader(doc, "Employee Taxes Withheld", taxLeftX, y, taxTableWidth);
-  sectionHeader(doc, "Employer Tax", taxRightX, y, taxTableWidth);
-  y += 18;
+    sectionHeader(doc, "Employee Taxes Withheld", taxLeftX, y, taxTableWidth);
+    sectionHeader(doc, "Employer Tax", taxRightX, y, taxTableWidth);
+    y += 18;
 
-  // Employee tax rows
-  const empTaxRows = [["Description", "Current", "YTD"]];
-  const erTaxRows = [["Company Tax", "Current", "YTD"]];
+    // Employee tax rows
+    const empTaxRows = [["Description", "Current", "YTD"]];
+    const erTaxRows = [["Company Tax", "Current", "YTD"]];
 
-  empTaxRows.push(["Social Security", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
-  erTaxRows.push(["Social Security", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
+    empTaxRows.push(["Social Security", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
+    erTaxRows.push(["Social Security", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
 
-  empTaxRows.push(["Medicare", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
-  erTaxRows.push(["Medicare", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
+    empTaxRows.push(["Medicare", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
+    erTaxRows.push(["Medicare", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
 
-  empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Withholding Tax`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
-  erTaxRows.push(["FUTA", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
+    empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Withholding Tax`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
+    erTaxRows.push(["FUTA", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
 
-  if (formData.includeLocalTax && localTax > 0) {
-    empTaxRows.push(["Local Tax", `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
+    if (formData.includeLocalTax && localTax > 0) {
+      empTaxRows.push(["Local Tax", `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
+    } else {
+      empTaxRows.push(["Local Tax (none)", "$0.00", "$0.00"]);
+    }
+    erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemployment Tax`, `$${fmt(grossPay * 0.01)}`, `$${fmt(ytdGrossPay * 0.01)}`]);
+
+    const taxYStart = y;
+    const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);
+    const erTaxHeight = drawTable(doc, taxRightX, y, erTaxRows, 16, taxTableWidth, true, true);
+    y = taxYStart + Math.max(empTaxHeight, erTaxHeight) + 10;
+
+    // ========== DEDUCTIONS SECTION ==========
+    sectionHeader(doc, "Employee Deductions", left, y, usableWidth);
+    y += 18;
+    drawTable(
+      doc,
+      left,
+      y,
+      [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
+      16,
+      usableWidth,
+      false,
+      true
+    );
+    y += 40;
+
+    // ========== CONTRIBUTIONS SECTION ==========
+    sectionHeader(doc, "Employee Contributions", left, y, usableWidth);
+    y += 18;
+    drawTable(
+      doc,
+      left,
+      y,
+      [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
+      16,
+      usableWidth,
+      false,
+      true
+    );
+    y += 40;
   } else {
-    empTaxRows.push(["Local Tax (none)", "$0.00", "$0.00"]);
+    // Contractor - No taxes withheld notice
+    sectionHeader(doc, "Tax Information", left, y, usableWidth);
+    y += 18;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(102, 102, 102);
+    doc.text("No taxes withheld. As an independent contractor (1099), you are responsible for", left, y);
+    y += 12;
+    doc.text("paying self-employment taxes and any applicable federal/state income taxes.", left, y);
+    y += 30;
   }
-  erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemployment Tax`, `$${fmt(grossPay * 0.01)}`, `$${fmt(ytdGrossPay * 0.01)}`]);
-
-  const taxYStart = y;
-  const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);
-  const erTaxHeight = drawTable(doc, taxRightX, y, erTaxRows, 16, taxTableWidth, true, true);
-  y = taxYStart + Math.max(empTaxHeight, erTaxHeight) + 10;
-
-  // ========== DEDUCTIONS SECTION ==========
-  sectionHeader(doc, "Employee Deductions", left, y, usableWidth);
-  y += 18;
-  drawTable(
-    doc,
-    left,
-    y,
-    [["Description", "Type", "Current", "Year-To-Date"], ["None", "–", "$0.00", "$0.00"]],
-    16,
-    usableWidth,
-    false,
-    true
-  );
-  y += 40;
-
-  // ========== CONTRIBUTIONS SECTION ==========
-  sectionHeader(doc, "Employee Contributions", left, y, usableWidth);
   y += 18;
   drawTable(
     doc,

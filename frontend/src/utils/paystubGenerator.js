@@ -29,11 +29,19 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
     console.log("Starting PDF generation...", { formData, template, numStubs });
     
     const rate = parseFloat(formData.rate) || 0;
+    const annualSalary = parseFloat(formData.annualSalary) || 0;
     const calculatedNumStubs = numStubs || 1;
     const payFrequency = formData.payFrequency || "biweekly";
     const periodLength = payFrequency === "biweekly" ? 14 : 7;
     const defaultHours = payFrequency === "weekly" ? 40 : 80;
     const payDay = formData.payDay || "Friday";
+    const payType = formData.payType || "hourly";
+    const workerType = formData.workerType || "employee";
+    const isContractor = workerType === "contractor";
+
+    // Calculate salary per period if salary type
+    const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+    const salaryPerPeriod = payType === "salary" ? annualSalary / periodsPerYear : 0;
 
     const hoursArray = (formData.hoursList || "")
       .split(",")
@@ -47,7 +55,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
 
-    // State tax rates
+    // State tax rates (not applied to contractors)
     const stateRates = {
       AL: 0.05, AK: 0, AZ: 0.025, AR: 0.047, CA: 0.06, CO: 0.0455, CT: 0.05,
       DE: 0.052, FL: 0, GA: 0.0575, HI: 0.07, ID: 0.059, IL: 0.0495, IN: 0.0323,
@@ -60,9 +68,9 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
     };
 
     const state = formData.state?.toUpperCase() || "";
-    const stateRate = stateRates[state] || 0.05;
+    const stateRate = isContractor ? 0 : (stateRates[state] || 0.05);
 
-    console.log("Calculated values:", { calculatedNumStubs, rate, payFrequency });
+    console.log("Calculated values:", { calculatedNumStubs, rate, payFrequency, payType, workerType, isContractor });
 
     // If multiple stubs, create ZIP
     if (calculatedNumStubs > 1) {

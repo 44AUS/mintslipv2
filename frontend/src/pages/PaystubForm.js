@@ -112,6 +112,7 @@ export default function PaystubForm() {
 
   const preview = useMemo(() => {
     const rate = parseFloat(formData.rate) || 0;
+    const annualSalary = parseFloat(formData.annualSalary) || 0;
     const numStubs = calculateNumStubs;
     const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
     const hoursArray = formData.hoursList
@@ -123,17 +124,29 @@ export default function PaystubForm() {
       .map((h) => parseFloat(h.trim()) || 0)
       .slice(0, numStubs) || [];
 
-    const results = hoursArray.map((hrs, i) => {
-      const baseHours = hrs || defaultHours;
-      const overtime = overtimeArray[i] || 0;
-      return rate * baseHours + rate * 1.5 * overtime;
-    });
+    let totalGross = 0;
+    
+    if (formData.payType === "salary") {
+      // Calculate salary per pay period
+      const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
+      const salaryPerPeriod = annualSalary / periodsPerYear;
+      totalGross = salaryPerPeriod * (numStubs || 1);
+    } else {
+      // Hourly calculation
+      const results = hoursArray.map((hrs, i) => {
+        const baseHours = hrs || defaultHours;
+        const overtime = overtimeArray[i] || 0;
+        return rate * baseHours + rate * 1.5 * overtime;
+      });
+      totalGross = results.reduce((a, b) => a + b, 0);
+    }
 
-    const totalGross = results.reduce((a, b) => a + b, 0);
-    const ssTax = totalGross * 0.062;
-    const medTax = totalGross * 0.0145;
-    const stateTax = totalGross * 0.05;
-    const localTax = formData.includeLocalTax ? totalGross * 0.01 : 0;
+    // Contractors don't have taxes withheld (they handle their own taxes)
+    const isContractor = formData.workerType === "contractor";
+    const ssTax = isContractor ? 0 : totalGross * 0.062;
+    const medTax = isContractor ? 0 : totalGross * 0.0145;
+    const stateTax = isContractor ? 0 : totalGross * 0.05;
+    const localTax = isContractor ? 0 : (formData.includeLocalTax ? totalGross * 0.01 : 0);
     const totalTaxes = ssTax + medTax + stateTax + localTax;
     const netPay = totalGross - totalTaxes;
 

@@ -1195,12 +1195,16 @@ export default function PaystubForm() {
                         <span>${preview.medTax.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-700">State Tax (5%):</span>
+                        <span className="text-slate-700">
+                          {formData.state ? `${formData.state} State Tax (${(preview.stateRate * 100).toFixed(2)}%):` : 'State Tax:'}
+                        </span>
                         <span>${preview.stateTax.toFixed(2)}</span>
                       </div>
-                      {formData.includeLocalTax && (
+                      {formData.includeLocalTax && preview.localTaxRate > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-slate-700">Local Tax (1%):</span>
+                          <span className="text-slate-700">
+                            {formData.city ? `${formData.city} Local Tax (${(preview.localTaxRate * 100).toFixed(2)}%):` : 'Local Tax:'}
+                          </span>
                           <span>${preview.localTax.toFixed(2)}</span>
                         </div>
                       )}
@@ -1208,6 +1212,7 @@ export default function PaystubForm() {
                         <div className="flex justify-between text-red-700">
                           <span className="font-bold">Total Taxes:</span>
                           <span className="font-bold">${preview.totalTaxes.toFixed(2)}</span>
+                        </div>
                         </div>
                       </div>
                       {/* Deductions */}

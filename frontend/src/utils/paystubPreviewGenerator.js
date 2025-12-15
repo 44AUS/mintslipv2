@@ -33,40 +33,46 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
   return numPeriods;
 }
 
-// Add watermark to the PDF
-function addWatermark(doc, pageWidth, pageHeight) {
-  // Save current state
-  doc.saveGraphicsState();
+// Add watermark to ALL pages of the PDF
+function addWatermarkToAllPages(doc, pageWidth, pageHeight) {
+  const totalPages = doc.internal.getNumberOfPages();
   
-  // Set watermark properties
-  doc.setTextColor(200, 200, 200); // Light gray
-  doc.setFontSize(60);
-  doc.setFont("helvetica", "bold");
-  
-  // Calculate center position
-  const text = "MintSlip";
-  const textWidth = doc.getTextWidth(text);
-  
-  // Rotate and draw watermark diagonally across the page
-  const centerX = pageWidth / 2;
-  const centerY = pageHeight / 2;
-  
-  // Draw multiple watermarks
-  for (let i = 0; i < 3; i++) {
-    const yOffset = (i - 1) * 200;
-    doc.text(text, centerX - textWidth / 2, centerY + yOffset, { 
-      angle: 45,
-      align: 'center'
-    });
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    
+    // Save current state
+    doc.saveGraphicsState();
+    
+    // Set watermark properties
+    doc.setTextColor(200, 200, 200); // Light gray
+    doc.setFontSize(60);
+    doc.setFont("helvetica", "bold");
+    
+    // Calculate center position
+    const text = "MintSlip";
+    const textWidth = doc.getTextWidth(text);
+    
+    // Rotate and draw watermark diagonally across the page
+    const centerX = pageWidth / 2;
+    const centerY = pageHeight / 2;
+    
+    // Draw multiple watermarks
+    for (let j = 0; j < 3; j++) {
+      const yOffset = (j - 1) * 200;
+      doc.text(text, centerX - textWidth / 2, centerY + yOffset, { 
+        angle: 45,
+        align: 'center'
+      });
+    }
+    
+    // Add "PREVIEW" text at top
+    doc.setFontSize(40);
+    doc.setTextColor(255, 100, 100); // Light red
+    doc.text("PREVIEW", centerX, 50, { align: 'center' });
+    
+    // Restore state
+    doc.restoreGraphicsState();
   }
-  
-  // Add "PREVIEW" text
-  doc.setFontSize(40);
-  doc.setTextColor(255, 100, 100); // Light red
-  doc.text("PREVIEW", centerX, 50, { align: 'center' });
-  
-  // Restore state
-  doc.restoreGraphicsState();
 }
 
 // Generate preview PDF as base64 data URL

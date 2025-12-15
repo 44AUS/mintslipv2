@@ -8,6 +8,25 @@ function parseCurrency(s) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function formatShortDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  const month = d.getMonth() + 1;
+  const day = String(d.getDate()).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${month}/${day}/${year}`;
+}
+
+function formatDateLong(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleString("en-US", {
+    month: "long",
+    day: "2-digit",
+    year: "numeric",
+  });
+}
+
 // Add watermark to the PDF
 function addWatermark(doc, pageWidth, pageHeight) {
   // Save current state
@@ -79,13 +98,16 @@ export const generateBankStatementPreview = async (formData, template = 'templat
     const beginning = parseCurrency(beginningBalance);
     let ending = beginning;
     let deposits = 0, purchases = 0, transfers = 0, refunds = 0;
-    let atmWithdrawals = 0, adjustments = 0, roundUpTransfers = 0, fees = 0, spotMeTips = 0;
 
     (transactions || []).forEach((tx) => {
       const amount = parseCurrency(tx.amount);
       switch (tx.type) {
         case "Deposit":
           deposits += amount;
+          ending += amount;
+          break;
+        case "Refund":
+          refunds += amount;
           ending += amount;
           break;
         case "Purchase":
@@ -96,54 +118,36 @@ export const generateBankStatementPreview = async (formData, template = 'templat
           transfers += amount;
           ending -= amount;
           break;
-        case "ATM Withdrawal":
-          atmWithdrawals += amount;
-          ending -= amount;
-          break;
-        case "Adjustment":
-          adjustments += amount;
-          ending += amount; // Adjustments can be positive
-          break;
-        case "Round Up Transfer":
-          roundUpTransfers += amount;
-          ending -= amount;
-          break;
-        case "Fee":
-          fees += amount;
-          ending -= amount;
-          break;
-        case "SpotMe Tip":
-          spotMeTips += amount;
-          ending -= amount;
-          break;
-        case "Refund":
-          refunds += amount;
-          ending += amount;
-          break;
         default:
           purchases += amount;
           ending -= amount;
+          break;
       }
     });
 
-    // Format transactions for template
-    const formattedTransactions = (transactions || []).map((tx) => {
-      const d = tx.date ? new Date(tx.date + "T00:00:00") : new Date();
-      return {
-        date: tx.date || "",
-        description: tx.description || "",
-        type: tx.type || "Purchase",
-        amount: parseCurrency(tx.amount),
-        balance: 0, // Will be calculated in template
-      };
-    });
+    // Helper function for formatting numbers
+    const toFixed = (n) =>
+      n.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 
-    // Prepare template data
+    // Calculate month text and date range
+    const monthText = new Date(year, month - 1).toLocaleString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+    const dateRange = `(${formatDateLong(statementStart)} - ${formatDateLong(statementEnd)})`;
+
+    // Prepare template data (matching what the main generator passes)
     const templateData = {
       accountName: accountName || "Account Holder",
-      accountAddress1: accountAddress1 || "",
-      accountAddress2: accountAddress2 || "",
-      accountNumber: accountNumber || "XXXX",
+      accountAddress1: accountAddress1 || "123 Main Street",
+      accountAddress2: accountAddress2 || "City, State 12345",
+      accountNumber: accountNumber || "XXXX-XXXX",
+      year,
+      month,
+      selectedMonth,
       statementStart,
       statementEnd,
       beginning,
@@ -152,19 +156,17 @@ export const generateBankStatementPreview = async (formData, template = 'templat
       purchases,
       transfers,
       refunds,
-      atmWithdrawals,
-      adjustments,
-      roundUpTransfers,
-      fees,
-      spotMeTips,
-      transactions: formattedTransactions,
-      margin,
-      pageWidth,
-      pageHeight,
+      monthText,
+      dateRange,
+      transactions: transactions || [],
+      toFixed,
+      formatShortDate,
+      formatDateLong,
+      parseCurrency
     };
 
-    // Generate the template (only Template A for now as it's the main one)
-    await generateBankTemplateA(doc, templateData);
+    // Generate the template
+    generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
 
     // Add watermark on top
     addWatermark(doc, pageWidth, pageHeight);

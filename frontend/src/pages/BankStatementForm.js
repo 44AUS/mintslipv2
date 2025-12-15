@@ -369,6 +369,98 @@ const createOrder = (data, actions) => {
                 </div>
               </div>
 
+              {/* PDF Preview Section */}
+              <div className="p-4 bg-white border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Document Preview
+                </h3>
+                <p className="text-xs text-slate-500 mb-3">
+                  Click to enlarge • Watermark removed after payment
+                </p>
+                
+                {isGeneratingPreview ? (
+                  <div className="flex items-center justify-center h-64 bg-slate-100 rounded-md">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <p className="text-sm text-slate-500">Generating preview...</p>
+                    </div>
+                  </div>
+                ) : pdfPreview ? (
+                  <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+                    <DialogTrigger asChild>
+                      <div className="relative cursor-pointer group">
+                        {/* PDF Preview Thumbnail */}
+                        <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <iframe
+                            src={pdfPreview}
+                            className="w-full h-64 pointer-events-none"
+                            title="Bank Statement Preview"
+                            style={{ transform: 'scale(1)', transformOrigin: 'top left' }}
+                          />
+                          {/* Watermark Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div 
+                              className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none"
+                              style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}
+                            >
+                              MintSlip
+                            </div>
+                          </div>
+                          {/* Click to enlarge overlay */}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
+                              <span className="text-sm text-slate-700 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                                Click to enlarge
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+                      <DialogHeader className="p-4 border-b">
+                        <DialogTitle className="flex items-center justify-between">
+                          <span>Document Preview</span>
+                          <span className="text-sm font-normal text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                            Watermark removed after payment
+                          </span>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="relative flex-1 h-full overflow-hidden">
+                        <iframe
+                          src={pdfPreview}
+                          className="w-full h-[calc(90vh-80px)]"
+                          title="Bank Statement Preview Full"
+                        />
+                        {/* Large Watermark Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div 
+                            className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none"
+                            style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.1)' }}
+                          >
+                            MintSlip
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <div className="flex items-center justify-center h-64 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
+                    <div className="text-center p-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-sm text-slate-500">
+                        Select a statement month<br />to see a preview
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* PayPal - Right Side */}
               <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>

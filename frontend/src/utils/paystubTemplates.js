@@ -25,7 +25,8 @@ function fmt(n) {
 // Template A: Gusto-Style Professional (matches artifact exactly)
 export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
-    ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours
+    ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours,
+    payType, workerType, isContractor, annualSalary
   } = data;
   
   const totalHours = Number(hours) + Number(overtime || 0);
@@ -33,6 +34,11 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   const left = margin;
   const usableWidth = pageWidth - 2 * margin;
   let y = 40;
+  
+  // Labels based on worker type
+  const workerLabel = isContractor ? "Contractor" : "Employee";
+  const hireLabel = isContractor ? "Start Date" : "Hire Date";
+  const statementTitle = isContractor ? "Contractor Payment Statement" : "Earnings Statement";
 
   // ========== HEADER SECTION ==========
   const top = y;
@@ -71,7 +77,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(0, 0, 0);
-  doc.text("Earnings Statement", logoX, leftY);
+  doc.text(statementTitle, logoX, leftY);
   leftY += 30;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -82,7 +88,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     leftY
   );
   leftY += 12;
-  doc.text(`Hire Date: ${formData.hireDate || startDate.toLocaleDateString()}`, logoX, leftY);
+  doc.text(`${hireLabel}: ${formData.hireDate || startDate.toLocaleDateString()}`, logoX, leftY);
   leftY += 12;
   doc.text(`${formData.name || ''} (...Direct Deposit to ${formData.bankName || 'Bank'} ******${formData.bank ? formData.bank.slice(-4) : '0000'})`, logoX, leftY);
 

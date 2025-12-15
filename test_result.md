@@ -155,11 +155,23 @@ frontend:
     file: "src/pages/PaystubForm.js, src/utils/paystubGenerator.js, src/utils/paystubTemplates.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Added Worker Type selection (Employee W-2 vs Contractor 1099) and Pay Type selection (Hourly vs Salary). Key features: 1) Contractors have no tax withholdings - shown on PDF and preview. 2) Salary option shows annual salary divided by pay periods. 3) Gusto template (template-a) for contractors is hourly only - salary disabled with notice. 4) Dynamic labels change based on worker type (Employee/Contractor, Hire Date/Start Date). 5) PDF template updated to show 'Contractor Payment Statement' for 1099 workers."
+
+  - task: "Real-time PDF Preview with Watermark"
+    implemented: true
+    working: true
+    file: "src/pages/PaystubForm.js, src/utils/paystubPreviewGenerator.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added real-time PDF preview section below PayPal buttons. Features: 1) Live preview updates as user fills form (500ms debounce). 2) MintSlip watermark overlay on preview. 3) Click-to-enlarge with Dialog modal for full-size view. 4) Watermark message 'Watermark removed after payment'. 5) Loading spinner while generating. 6) Empty state prompts user to fill required fields. Created paystubPreviewGenerator.js utility that generates preview PDF with watermarks."
 
 metadata:
   created_by: "main_agent"

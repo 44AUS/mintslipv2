@@ -141,7 +141,32 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const stateTax = isContractor ? 0 : grossPay * stateRate;
     const localTax = isContractor ? 0 : (formData.includeLocalTax ? grossPay * 0.01 : 0);
     const totalTax = ssTax + medTax + stateTax + localTax;
-    const netPay = grossPay - totalTax;
+
+    // Calculate deductions for preview
+    const deductionsData = (formData.deductions || []).map(d => {
+      const amount = parseFloat(d.amount) || 0;
+      const currentAmount = d.isPercentage ? (grossPay * amount / 100) : amount;
+      return {
+        ...d,
+        currentAmount,
+        name: d.type === 'other' ? d.name : d.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      };
+    });
+    const totalDeductions = deductionsData.reduce((sum, d) => sum + d.currentAmount, 0);
+
+    // Calculate contributions for preview
+    const contributionsData = (formData.contributions || []).map(c => {
+      const amount = parseFloat(c.amount) || 0;
+      const currentAmount = c.isPercentage ? (grossPay * amount / 100) : amount;
+      return {
+        ...c,
+        currentAmount,
+        name: c.type === 'other' ? c.name : c.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      };
+    });
+    const totalContributions = contributionsData.reduce((sum, c) => sum + c.currentAmount, 0);
+
+    const netPay = grossPay - totalTax - totalDeductions - totalContributions;
 
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + periodLength - 1);
@@ -157,6 +182,8 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const ytdStateTax = stateTax * ytdPayPeriods;
     const ytdLocalTax = localTax * ytdPayPeriods;
     const ytdTotalTax = totalTax * ytdPayPeriods;
+    const ytdDeductions = totalDeductions * ytdPayPeriods;
+    const ytdContributions = totalContributions * ytdPayPeriods;
     const ytdNetPay = netPay * ytdPayPeriods;
     const ytdHours = (hours + overtime) * ytdPayPeriods;
 

@@ -184,11 +184,17 @@ async function generateSingleStub(
     grossPay = regularPay + overtimePay;
   }
 
+  // Get actual local tax rate
+  const localTaxRate = getLocalTaxRate(formData.state, formData.city);
+  
+  // Get actual SUTA rate for employer taxes
+  const sutaRate = getSUTARate(formData.state);
+
   // Contractors don't have taxes withheld
   const ssTax = isContractor ? 0 : grossPay * 0.062;
   const medTax = isContractor ? 0 : grossPay * 0.0145;
   const stateTax = isContractor ? 0 : grossPay * stateRate;
-  const localTax = isContractor ? 0 : (formData.includeLocalTax ? grossPay * 0.01 : 0);
+  const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
   const totalTax = ssTax + medTax + stateTax + localTax;
 
   // Calculate deductions for this pay period

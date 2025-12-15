@@ -26,7 +26,8 @@ function fmt(n) {
 export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours,
-    payType, workerType, isContractor, annualSalary
+    payType, workerType, isContractor, annualSalary,
+    deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions
   } = data;
   
   const totalHours = Number(hours) + Number(overtime || 0);

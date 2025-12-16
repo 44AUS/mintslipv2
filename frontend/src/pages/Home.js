@@ -79,7 +79,7 @@ export default function Home() {
                 What is a Pay Stub?
               </h3>
               <p className="text-lg leading-relaxed text-slate-600">
-                A pay stub is a document that summarizes an employee's pay for a specific pay period. It's typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
+                A pay stub is a document that summarizes an employee&apos;s pay for a specific pay period. It&apos;s typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
               </p>
               <p className="text-base leading-relaxed text-slate-600">
                 Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay — the amount you actually take home.

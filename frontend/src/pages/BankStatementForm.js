@@ -235,7 +235,18 @@ const createOrder = (data, actions) => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="accountNumber">Account Number *</Label>
-                    <Input data-testid="account-number-input" id="accountNumber" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} required />
+                    <Input 
+                      data-testid="account-number-input" 
+                      id="accountNumber" 
+                      value={accountNumber} 
+                      onChange={handleAccountNumberChange}
+                      placeholder="Enter account number"
+                      className={validationErrors.accountNumber ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.accountNumber && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.accountNumber}</p>
+                    )}
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="accountAddress1">Address Line 1 (Street Number & Name) *</Label>

@@ -543,7 +543,20 @@ export default function PaystubForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="ssn">{formData.workerType === 'contractor' ? 'Last 4 of SSN/EIN *' : 'Last 4 of SSN *'}</Label>
-                    <Input data-testid="ssn-input" id="ssn" name="ssn" value={formData.ssn} onChange={handleChange} maxLength="4" required />
+                    <Input 
+                      data-testid="ssn-input" 
+                      id="ssn" 
+                      name="ssn" 
+                      value={formData.ssn} 
+                      onChange={handleSSNChange} 
+                      maxLength="4" 
+                      placeholder="1234"
+                      className={validationErrors.ssn ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.ssn && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.ssn}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bankName">Bank Name *</Label>

@@ -385,9 +385,14 @@ export default function W2Form() {
                       <Input 
                         id="employerZip" 
                         name="employerZip" 
+                        placeholder="12345"
                         value={formData.employerZip} 
-                        onChange={handleChange} 
+                        onChange={handleEmployerZipChange}
+                        className={validationErrors.employerZip ? 'border-red-500' : ''}
                       />
+                      {validationErrors.employerZip && (
+                        <p className="text-xs text-red-500 mt-1">{validationErrors.employerZip}</p>
+                      )}
                     </div>
                   </div>
                 </div>

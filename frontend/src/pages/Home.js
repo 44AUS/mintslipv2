@@ -115,7 +115,7 @@ export default function Home() {
                 Our Paystub Generator Has Your Income Verification Needs
               </h3>
               <p className="text-lg leading-relaxed text-slate-600">
-                MintSlip provides a wide selection of paystub templates to suit your needs. Whether you're a freelancer, small business owner, or employee, we've got you covered with professional, accurate documents.
+                MintSlip provides a wide selection of paystub templates to suit your needs. Whether you&apos;re a freelancer, small business owner, or employee, we&apos;ve got you covered with professional, accurate documents.
               </p>
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div className="p-4 bg-green-50 rounded-md border border-green-200">

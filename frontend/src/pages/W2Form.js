@@ -908,6 +908,7 @@ export default function W2Form() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

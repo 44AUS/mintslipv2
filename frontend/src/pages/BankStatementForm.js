@@ -484,6 +484,7 @@ const createOrder = (data, actions) => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

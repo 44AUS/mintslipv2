@@ -1362,6 +1362,7 @@ export default function PaystubForm() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

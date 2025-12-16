@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info } from "lucide-react";
+import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -8,17 +8,40 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
-// Navigation links component - defined outside to avoid re-creating on each render
-function NavLinks({ location, onNavigate, isMobile = false }) {
+// Tax Forms dropdown items
+const TAX_FORMS = [
+  { name: "W-2 Generator", path: "/w2", icon: FileSpreadsheet },
+  // Add more tax forms here as needed
+];
+
+// Navigation links component for desktop
+function DesktopNavLinks({ location, onNavigate }) {
   const isActive = (path) => location.pathname === path;
+  const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
   
   const getButtonClasses = (path) => {
-    const base = `flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
-      isMobile ? "w-full justify-start text-base py-3" : ""
-    }`;
-    
+    const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
     if (isActive(path)) {
+      return `${base} bg-green-100 text-green-800 font-semibold`;
+    }
+    return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
+  };
+
+  const getDropdownTriggerClasses = () => {
+    const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
+    if (isTaxFormActive) {
       return `${base} bg-green-100 text-green-800 font-semibold`;
     }
     return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
@@ -31,40 +54,178 @@ function NavLinks({ location, onNavigate, isMobile = false }) {
         className={getButtonClasses("/paystub")}
         data-testid="nav-paystub-link"
       >
-        <FileText className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={isMobile ? "text-base" : "text-sm"}>Pay Stubs</span>
+        <FileText className="w-4 h-4" />
+        <span className="text-sm">Pay Stubs</span>
       </button>
+      
       <button
         onClick={() => onNavigate("/bank-statement")}
         className={getButtonClasses("/bank-statement")}
         data-testid="nav-bankstatement-link"
       >
-        <FileBarChart className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={isMobile ? "text-base" : "text-sm"}>Bank Statements</span>
+        <FileBarChart className="w-4 h-4" />
+        <span className="text-sm">Bank Statements</span>
       </button>
+
+      {/* Tax Forms Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={getDropdownTriggerClasses()}
+            data-testid="nav-taxforms-dropdown"
+          >
+            <Receipt className="w-4 h-4" />
+            <span className="text-sm">Tax Forms</span>
+            <ChevronDown className="w-3 h-3 ml-1" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          {TAX_FORMS.map((form) => {
+            const IconComponent = form.icon;
+            return (
+              <DropdownMenuItem
+                key={form.path}
+                onClick={() => onNavigate(form.path)}
+                className={`flex items-center gap-2 cursor-pointer ${
+                  isActive(form.path) ? 'bg-green-50 text-green-800 font-semibold' : ''
+                }`}
+              >
+                <IconComponent className="w-4 h-4" />
+                <span>{form.name}</span>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <button
         onClick={() => onNavigate("/about")}
         className={getButtonClasses("/about")}
         data-testid="nav-about-link"
       >
-        <Info className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={isMobile ? "text-base" : "text-sm"}>About</span>
+        <Info className="w-4 h-4" />
+        <span className="text-sm">About</span>
       </button>
+      
       <button
         onClick={() => onNavigate("/faq")}
         className={getButtonClasses("/faq")}
         data-testid="nav-faq-link"
       >
-        <HelpCircle className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={isMobile ? "text-base" : "text-sm"}>FAQ</span>
+        <HelpCircle className="w-4 h-4" />
+        <span className="text-sm">FAQ</span>
       </button>
+      
       <button
         onClick={() => onNavigate("/contact")}
         className={getButtonClasses("/contact")}
         data-testid="nav-contact-link"
       >
-        <Mail className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={isMobile ? "text-base" : "text-sm"}>Contact</span>
+        <Mail className="w-4 h-4" />
+        <span className="text-sm">Contact</span>
+      </button>
+    </>
+  );
+}
+
+// Navigation links component for mobile
+function MobileNavLinks({ location, onNavigate }) {
+  const [taxFormsOpen, setTaxFormsOpen] = useState(false);
+  const isActive = (path) => location.pathname === path;
+  const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
+  
+  const getButtonClasses = (path) => {
+    const base = "flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md transition-all";
+    if (isActive(path)) {
+      return `${base} bg-green-100 text-green-800 font-semibold`;
+    }
+    return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => onNavigate("/paystub")}
+        className={getButtonClasses("/paystub")}
+        data-testid="nav-paystub-link-mobile"
+      >
+        <FileText className="w-5 h-5" />
+        <span className="text-base">Pay Stubs</span>
+      </button>
+      
+      <button
+        onClick={() => onNavigate("/bank-statement")}
+        className={getButtonClasses("/bank-statement")}
+        data-testid="nav-bankstatement-link-mobile"
+      >
+        <FileBarChart className="w-5 h-5" />
+        <span className="text-base">Bank Statements</span>
+      </button>
+
+      {/* Tax Forms Collapsible for Mobile */}
+      <Collapsible open={taxFormsOpen} onOpenChange={setTaxFormsOpen}>
+        <CollapsibleTrigger asChild>
+          <button
+            className={`flex items-center justify-between gap-2 px-4 py-3 w-full rounded-md transition-all ${
+              isTaxFormActive 
+                ? 'bg-green-100 text-green-800 font-semibold' 
+                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+            }`}
+            data-testid="nav-taxforms-mobile"
+          >
+            <div className="flex items-center gap-2">
+              <Receipt className="w-5 h-5" />
+              <span className="text-base">Tax Forms</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${taxFormsOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pl-6 space-y-1 mt-1">
+          {TAX_FORMS.map((form) => {
+            const IconComponent = form.icon;
+            return (
+              <button
+                key={form.path}
+                onClick={() => onNavigate(form.path)}
+                className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
+                  isActive(form.path) 
+                    ? 'bg-green-100 text-green-800 font-semibold' 
+                    : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+                }`}
+              >
+                <IconComponent className="w-4 h-4" />
+                <span className="text-sm">{form.name}</span>
+              </button>
+            );
+          })}
+        </CollapsibleContent>
+      </Collapsible>
+
+      <button
+        onClick={() => onNavigate("/about")}
+        className={getButtonClasses("/about")}
+        data-testid="nav-about-link-mobile"
+      >
+        <Info className="w-5 h-5" />
+        <span className="text-base">About</span>
+      </button>
+      
+      <button
+        onClick={() => onNavigate("/faq")}
+        className={getButtonClasses("/faq")}
+        data-testid="nav-faq-link-mobile"
+      >
+        <HelpCircle className="w-5 h-5" />
+        <span className="text-base">FAQ</span>
+      </button>
+      
+      <button
+        onClick={() => onNavigate("/contact")}
+        className={getButtonClasses("/contact")}
+        data-testid="nav-contact-link-mobile"
+      >
+        <Mail className="w-5 h-5" />
+        <span className="text-base">Contact</span>
       </button>
     </>
   );
@@ -105,8 +266,8 @@ export default function Header({ title }) {
           </div>
           
           {/* Desktop Navigation Links - Hidden on mobile/tablet */}
-          <nav className="hidden md:flex items-center gap-4">
-            <NavLinks location={location} onNavigate={handleNavigation} />
+          <nav className="hidden md:flex items-center gap-2">
+            <DesktopNavLinks location={location} onNavigate={handleNavigation} />
           </nav>
 
           {/* Mobile/Tablet Hamburger Menu - Visible only on mobile/tablet */}
@@ -131,7 +292,7 @@ export default function Header({ title }) {
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-2 mt-6">
-                  <NavLinks location={location} onNavigate={handleNavigation} isMobile={true} />
+                  <MobileNavLinks location={location} onNavigate={handleNavigation} />
                 </nav>
                 
                 {/* Home link in mobile menu */}

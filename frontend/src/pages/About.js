@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Target, Eye, Award, Users, Shield, Zap, FileText } from "lucide-react";
 
@@ -245,12 +246,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8">
-        <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 text-sm">
-          <p>© 2025 MintSlip. Professional document generation service.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

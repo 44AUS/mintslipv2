@@ -678,7 +678,19 @@ export default function PaystubForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="companyPhone">Company Phone *</Label>
-                    <Input data-testid="company-phone-input" id="companyPhone" name="companyPhone" value={formData.companyPhone} onChange={handleChange} required />
+                    <Input 
+                      data-testid="company-phone-input" 
+                      id="companyPhone" 
+                      name="companyPhone" 
+                      value={formData.companyPhone} 
+                      onChange={handleCompanyPhoneChange} 
+                      placeholder="(555) 123-4567"
+                      className={validationErrors.companyPhone ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.companyPhone && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.companyPhone}</p>
+                    )}
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="companyAddress">Company Address *</Label>

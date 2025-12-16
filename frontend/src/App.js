@@ -6,6 +6,7 @@ import BankStatementForm from "@/pages/BankStatementForm";
 import W2Form from "@/pages/W2Form";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
+import About from "@/pages/About";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
@@ -28,6 +29,7 @@ function App() {
             <Route path="/w2" element={<W2Form />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
           </Routes>
         </BrowserRouter>

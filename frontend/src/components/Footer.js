@@ -22,7 +22,7 @@ const FOOTER_LINKS = {
     title: "Legal",
     links: [
       { name: "Privacy Policy", path: "/privacy" },
-      { name: "Terms of Service", path: "/privacy" },
+      { name: "Terms of Service", path: "/terms" },
       { name: "Refund Policy", path: "/contact" },
     ]
   }

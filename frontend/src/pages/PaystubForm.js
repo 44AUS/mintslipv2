@@ -16,6 +16,12 @@ import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { 
+  formatPhoneNumber, validatePhoneNumber,
+  formatZipCode, validateZipCode,
+  formatSSNLast4, validateSSNLast4,
+  formatBankLast4, validateBankLast4
+} from "@/utils/validation";
 
 export default function PaystubForm() {
   const navigate = useNavigate();

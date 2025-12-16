@@ -649,7 +649,19 @@ export default function PaystubForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="zip">Zip Code *</Label>
-                    <Input data-testid="zip-input" id="zip" name="zip" value={formData.zip} onChange={handleChange} required />
+                    <Input 
+                      data-testid="zip-input" 
+                      id="zip" 
+                      name="zip" 
+                      value={formData.zip} 
+                      onChange={handleZipChange} 
+                      placeholder="12345"
+                      className={validationErrors.zip ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.zip && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.zip}</p>
+                    )}
                   </div>
                 </div>
               </div>

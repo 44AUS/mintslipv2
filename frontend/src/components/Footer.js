@@ -57,7 +57,7 @@ export default function Footer() {
               <span className="text-white">slip</span>
             </button>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
-              Maximize your business potential with our SaaS technology
+              Maximize your personal & business potential with our SaaS technology
             </p>
             
             {/* Contact Info */}

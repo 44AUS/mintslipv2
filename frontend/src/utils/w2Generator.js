@@ -42,13 +42,19 @@ const formatCurrency = (amount) => {
 };
 
 // Template mapping for tax years
+// const getTemplateUrl = (taxYear) => {
+//   const year = parseInt(taxYear);
+//   if (year >= 2025) {
+//     return "/templates/w2-2025.pdf";
+//   }
+//   return "/templates/w2-2024.pdf";
+// };
+
 const getTemplateUrl = (taxYear) => {
   const year = parseInt(taxYear);
-  if (year >= 2025) {
-    return "/templates/w2-2025.pdf";
-  }
-  return "/templates/w2-2024.pdf";
+  return `/templates/w2-${year}.pdf`;
 };
+
 
 // Field positions on the PDF - coordinates are from bottom-left (PDF standard)
 // Page size: 612 x 792 points

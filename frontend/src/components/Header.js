@@ -25,7 +25,7 @@ const TAX_FORMS = [
   { name: "W-2 Generator", path: "/w2", icon: FileSpreadsheet },
   { name: "W-9 Generator", path: "/w9", icon: FileSpreadsheet },
   { name: "1099 NEC Generator", path: "/1099-nec", icon: FileSpreadsheet },
-  { name: "1099 Misc", path: "/1099-misc", icon: FileSpreadsheet },
+  { name: "1099 Misc Generator", path: "/1099-misc", icon: FileSpreadsheet },
   { name: "Schedule C Generator", path: "/schedule-c", icon: FileSpreadsheet },
   // Add more tax forms here as needed
 ];
@@ -125,7 +125,7 @@ function DesktopNavLinks({ location, onNavigate }) {
         <DropdownMenuTrigger asChild>
           <button
             className={getDropdownTriggerClasses()}
-            data-testid="nav-taxforms-dropdown"
+            data-testid="nav-otherforms-dropdown"
           >
             <Receipt className="w-4 h-4" />
             <span className="text-sm">Other Forms</span>

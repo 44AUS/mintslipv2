@@ -323,8 +323,12 @@ export default function W2Form() {
                       name="employerEIN" 
                       placeholder="XX-XXXXXXX"
                       value={formData.employerEIN} 
-                      onChange={handleChange} 
+                      onChange={handleEINChange}
+                      className={validationErrors.employerEIN ? 'border-red-500' : ''}
                     />
+                    {validationErrors.employerEIN && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.employerEIN}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="controlNumber">Control Number (Box d)</Label>

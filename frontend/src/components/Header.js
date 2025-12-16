@@ -11,62 +11,60 @@ import {
 
 // Navigation links component - defined outside to avoid re-creating on each render
 function NavLinks({ location, onNavigate, isMobile = false }) {
+  const isActive = (path) => location.pathname === path;
+  
+  const getButtonClasses = (path) => {
+    const base = `flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
+      isMobile ? "w-full justify-start text-base py-3" : ""
+    }`;
+    
+    if (isActive(path)) {
+      return `${base} bg-green-100 text-green-800 font-semibold`;
+    }
+    return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
+  };
+
   return (
     <>
       <button
         onClick={() => onNavigate("/paystub")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
-          isMobile ? "w-full justify-start text-base py-3" : ""
-        }`}
+        className={getButtonClasses("/paystub")}
         data-testid="nav-paystub-link"
-        style={{ color: location.pathname === '/paystub' ? '#1a4731' : '#64748b' }}
       >
         <FileText className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Pay Stubs</span>
+        <span className={isMobile ? "text-base" : "text-sm"}>Pay Stubs</span>
       </button>
       <button
         onClick={() => onNavigate("/bank-statement")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
-          isMobile ? "w-full justify-start text-base py-3" : ""
-        }`}
+        className={getButtonClasses("/bank-statement")}
         data-testid="nav-bankstatement-link"
-        style={{ color: location.pathname === '/bank-statement' ? '#1a4731' : '#64748b' }}
       >
         <FileBarChart className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Bank Statements</span>
+        <span className={isMobile ? "text-base" : "text-sm"}>Bank Statements</span>
       </button>
       <button
         onClick={() => onNavigate("/about")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
-          isMobile ? "w-full justify-start text-base py-3" : ""
-        }`}
+        className={getButtonClasses("/about")}
         data-testid="nav-about-link"
-        style={{ color: location.pathname === '/about' ? '#1a4731' : '#64748b' }}
       >
         <Info className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>About</span>
+        <span className={isMobile ? "text-base" : "text-sm"}>About</span>
       </button>
       <button
         onClick={() => onNavigate("/faq")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
-          isMobile ? "w-full justify-start text-base py-3" : ""
-        }`}
+        className={getButtonClasses("/faq")}
         data-testid="nav-faq-link"
-        style={{ color: location.pathname === '/faq' ? '#1a4731' : '#64748b' }}
       >
         <HelpCircle className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>FAQ</span>
+        <span className={isMobile ? "text-base" : "text-sm"}>FAQ</span>
       </button>
       <button
         onClick={() => onNavigate("/contact")}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
-          isMobile ? "w-full justify-start text-base py-3" : ""
-        }`}
+        className={getButtonClasses("/contact")}
         data-testid="nav-contact-link"
-        style={{ color: location.pathname === '/contact' ? '#1a4731' : '#64748b' }}
       >
         <Mail className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
-        <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Contact</span>
+        <span className={isMobile ? "text-base" : "text-sm"}>Contact</span>
       </button>
     </>
   );

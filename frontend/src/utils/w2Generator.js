@@ -103,10 +103,10 @@ const FIELD_POSITIONS = {
   box12dCode: { x: 482, y: 474, fontSize: 9 },
   box12dAmount: { x: 515, y: 474, fontSize: 9, align: 'right', width: 75 },
   
-  // Box 13 checkboxes (left of box 12, higher up)
-  box13Statutory: { x: 340, y: 546, fontSize: 10 },
-  box13Retirement: { x: 340, y: 530, fontSize: 10 },
-  box13ThirdParty: { x: 340, y: 514, fontSize: 10 },
+  // Box 13 checkboxes (horizontal arrangement)
+  box13Statutory: { x: 340, y: 520, fontSize: 10 },
+  box13Retirement: { x: 392, y: 520, fontSize: 10 },
+  box13ThirdParty: { x: 444, y: 520, fontSize: 10 },
   
   // Box 14 - Other (below box 13)
   box14: { x: 310, y: 475, fontSize: 8 },

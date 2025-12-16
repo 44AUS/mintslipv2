@@ -411,8 +411,12 @@ export default function W2Form() {
                       name="employeeSSN" 
                       placeholder="XXX-XX-XXXX"
                       value={formData.employeeSSN} 
-                      onChange={handleChange} 
+                      onChange={handleSSNChange}
+                      className={validationErrors.employeeSSN ? 'border-red-500' : ''}
                     />
+                    {validationErrors.employeeSSN && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.employeeSSN}</p>
+                    )}
                   </div>
                   <div></div>
                   <div className="space-y-2">

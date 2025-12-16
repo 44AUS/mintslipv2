@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -361,12 +362,7 @@ export default function FAQ() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8">
-        <div className="max-w-7xl mx-auto px-6 text-center text-slate-500 text-sm">
-          <p>© 2025 MintSlip. Professional document generation service.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

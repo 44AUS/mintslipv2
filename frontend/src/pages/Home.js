@@ -162,7 +162,7 @@ export default function Home() {
               We Offer the Best Pricing in The Paystub Generator Industry
             </h3>
             <p className="text-lg text-green-100 max-w-2xl mx-auto">
-              Transparent Pricing, Unmatched Value — That's the MintSlip Promise
+              Transparent Pricing, Unmatched Value — That&apos;s the MintSlip Promise
             </p>
           </div>
           

@@ -6,6 +6,7 @@ import BankStatementForm from "@/pages/BankStatementForm";
 import W2Form from "@/pages/W2Form";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
+import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Privacy from "./pages/Privacy";
@@ -19,6 +20,7 @@ function App() {
       <div className="App">
         <Toaster position="top-center" richColors />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/paystub" element={<PaystubForm />} />

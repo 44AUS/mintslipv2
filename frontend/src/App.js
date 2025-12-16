@@ -7,10 +7,11 @@ import W2Form from "@/pages/W2Form";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
 import About from "@/pages/About";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
-import Privacy from "./pages/Privacy";
 
 // Use PayPal Sandbox Client ID
 const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
@@ -31,6 +32,7 @@ function App() {
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
           </Routes>
         </BrowserRouter>
       </div>

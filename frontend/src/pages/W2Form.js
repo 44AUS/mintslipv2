@@ -108,6 +108,43 @@ export default function W2Form() {
     localityName: "",
   });
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState({
+    employerEIN: '',
+    employerZip: '',
+    employeeSSN: '',
+    employeeZip: '',
+  });
+
+  // Validated input handlers
+  const handleEINChange = (e) => {
+    const formatted = formatEIN(e.target.value);
+    setFormData(prev => ({ ...prev, employerEIN: formatted }));
+    const validation = validateEIN(formatted);
+    setValidationErrors(prev => ({ ...prev, employerEIN: validation.error }));
+  };
+
+  const handleEmployerZipChange = (e) => {
+    const formatted = formatZipCode(e.target.value);
+    setFormData(prev => ({ ...prev, employerZip: formatted }));
+    const validation = validateZipCode(formatted);
+    setValidationErrors(prev => ({ ...prev, employerZip: validation.error }));
+  };
+
+  const handleSSNChange = (e) => {
+    const formatted = formatFullSSN(e.target.value);
+    setFormData(prev => ({ ...prev, employeeSSN: formatted }));
+    const validation = validateFullSSN(formatted);
+    setValidationErrors(prev => ({ ...prev, employeeSSN: validation.error }));
+  };
+
+  const handleEmployeeZipChange = (e) => {
+    const formatted = formatZipCode(e.target.value);
+    setFormData(prev => ({ ...prev, employeeZip: formatted }));
+    const validation = validateZipCode(formatted);
+    setValidationErrors(prev => ({ ...prev, employeeZip: validation.error }));
+  };
+
   // Auto-calculate common values
   const autoCalculate = useCallback(() => {
     const wages = parseFloat(formData.wagesTips) || 0;

@@ -64,6 +64,15 @@ export default function PaystubForm() {
     annualSalary: "", // for salary pay type
   });
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState({
+    ssn: '',
+    bank: '',
+    zip: '',
+    companyZip: '',
+    companyPhone: '',
+  });
+
   // Common deduction types for quick selection
   const deductionTypes = [
     { label: "401(k)", value: "401k" },

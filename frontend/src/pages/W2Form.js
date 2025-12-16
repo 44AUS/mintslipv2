@@ -13,6 +13,11 @@ import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadW2, BOX_12_CODES } from "@/utils/w2Generator";
 import { generateW2Preview } from "@/utils/w2PreviewGenerator";
+import { 
+  formatEIN, validateEIN,
+  formatZipCode, validateZipCode,
+  formatFullSSN, validateFullSSN
+} from "@/utils/validation";
 
 // US States list
 const US_STATES = [

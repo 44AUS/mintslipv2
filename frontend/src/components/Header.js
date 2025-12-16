@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, FileText, FileBarChart, Menu } from "lucide-react";
+import { ArrowLeft, FileText, FileBarChart, Menu, Mail } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -30,10 +30,21 @@ function NavLinks({ location, onNavigate, isMobile = false }) {
           isMobile ? "w-full justify-start text-base py-3" : ""
         }`}
         data-testid="nav-bankstatement-link"
-        style={{ color: location.pathname === '/bankstatement' ? '#1a4731' : '#64748b' }}
+        style={{ color: location.pathname === '/bank-statement' ? '#1a4731' : '#64748b' }}
       >
         <FileBarChart className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
         <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Bank Statements</span>
+      </button>
+      <button
+        onClick={() => onNavigate("/contact")}
+        className={`flex items-center gap-2 px-4 py-2 rounded-md hover:bg-green-50 transition-colors ${
+          isMobile ? "w-full justify-start text-base py-3" : ""
+        }`}
+        data-testid="nav-contact-link"
+        style={{ color: location.pathname === '/contact' ? '#1a4731' : '#64748b' }}
+      >
+        <Mail className={isMobile ? "w-5 h-5" : "w-4 h-4"} />
+        <span className={`font-medium ${isMobile ? "text-base" : "text-sm"}`}>Contact</span>
       </button>
     </>
   );

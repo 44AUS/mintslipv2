@@ -14,6 +14,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { formatAccountNumber, validateAccountNumber } from "@/utils/validation";
 
 export default function BankStatementForm() {
   const navigate = useNavigate();

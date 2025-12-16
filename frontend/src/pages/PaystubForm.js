@@ -200,6 +200,42 @@ export default function PaystubForm() {
     });
   };
 
+  // Validated input handlers
+  const handleSSNChange = (e) => {
+    const formatted = formatSSNLast4(e.target.value);
+    setFormData(prev => ({ ...prev, ssn: formatted }));
+    const validation = validateSSNLast4(formatted);
+    setValidationErrors(prev => ({ ...prev, ssn: validation.error }));
+  };
+
+  const handleBankChange = (e) => {
+    const formatted = formatBankLast4(e.target.value);
+    setFormData(prev => ({ ...prev, bank: formatted }));
+    const validation = validateBankLast4(formatted);
+    setValidationErrors(prev => ({ ...prev, bank: validation.error }));
+  };
+
+  const handleZipChange = (e) => {
+    const formatted = formatZipCode(e.target.value);
+    setFormData(prev => ({ ...prev, zip: formatted }));
+    const validation = validateZipCode(formatted);
+    setValidationErrors(prev => ({ ...prev, zip: validation.error }));
+  };
+
+  const handleCompanyZipChange = (e) => {
+    const formatted = formatZipCode(e.target.value);
+    setFormData(prev => ({ ...prev, companyZip: formatted }));
+    const validation = validateZipCode(formatted);
+    setValidationErrors(prev => ({ ...prev, companyZip: validation.error }));
+  };
+
+  const handleCompanyPhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData(prev => ({ ...prev, companyPhone: formatted }));
+    const validation = validatePhoneNumber(formatted);
+    setValidationErrors(prev => ({ ...prev, companyPhone: validation.error }));
+  };
+
   // Handle employee address selection from Google Places
   const handleEmployeeAddressSelect = useCallback((addressData) => {
     setFormData(prev => ({

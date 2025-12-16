@@ -39,6 +39,19 @@ export default function BankStatementForm() {
   const [addressState, setAddressState] = useState("");
   const [addressZip, setAddressZip] = useState("");
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState({
+    accountNumber: '',
+  });
+
+  // Validated input handler
+  const handleAccountNumberChange = (e) => {
+    const formatted = formatAccountNumber(e.target.value);
+    setAccountNumber(formatted);
+    const validation = validateAccountNumber(formatted);
+    setValidationErrors(prev => ({ ...prev, accountNumber: validation.error }));
+  };
+
   useEffect(() => {
     const now = new Date();
     const y = now.getFullYear();

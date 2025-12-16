@@ -53,72 +53,72 @@ const getTemplateUrl = (taxYear) => {
 // Field positions on the PDF - coordinates are from bottom-left (PDF standard)
 // Page size: 612 x 792 points
 const FIELD_POSITIONS = {
-  // Top section - Employee SSN (Box a)
-  employeeSSN: { x: 175, y: 737, fontSize: 11 },
+  // Top section - Employee SSN (Box a) - far right top
+  employeeSSN: { x: 175, y: 755, fontSize: 11 },
   
-  // Box b - Employer EIN
-  employerEIN: { x: 38, y: 700, fontSize: 10 },
+  // Box b - Employer EIN (below box a, left side)
+  employerEIN: { x: 38, y: 718, fontSize: 10 },
   
-  // Box c - Employer info (multi-line)
-  employerName: { x: 38, y: 666, fontSize: 9 },
-  employerAddress: { x: 38, y: 654, fontSize: 9 },
-  employerCityStateZip: { x: 38, y: 642, fontSize: 9 },
+  // Box c - Employer info (multi-line, below box b)
+  employerName: { x: 38, y: 685, fontSize: 9 },
+  employerAddress: { x: 38, y: 673, fontSize: 9 },
+  employerCityStateZip: { x: 38, y: 661, fontSize: 9 },
   
-  // Box d - Control number
-  controlNumber: { x: 38, y: 610, fontSize: 9 },
+  // Box d - Control number (below box c)
+  controlNumber: { x: 38, y: 628, fontSize: 9 },
   
-  // Box e - Employee name
-  employeeFirstName: { x: 38, y: 575, fontSize: 10 },
-  employeeLastName: { x: 175, y: 575, fontSize: 10 },
+  // Box e - Employee name (below box d)
+  employeeFirstName: { x: 38, y: 595, fontSize: 10 },
+  employeeLastName: { x: 175, y: 595, fontSize: 10 },
   
-  // Box f - Employee address (multi-line)
-  employeeAddress: { x: 38, y: 540, fontSize: 9 },
-  employeeCityStateZip: { x: 38, y: 528, fontSize: 9 },
+  // Box f - Employee address (multi-line, below box e)
+  employeeAddress: { x: 38, y: 558, fontSize: 9 },
+  employeeCityStateZip: { x: 38, y: 546, fontSize: 9 },
   
   // Right side - Wage/Tax boxes (aligned right for amounts)
-  box1: { x: 385, y: 700, fontSize: 10, align: 'right', width: 90 },
-  box2: { x: 515, y: 700, fontSize: 10, align: 'right', width: 85 },
+  box1: { x: 385, y: 718, fontSize: 10, align: 'right', width: 90 },
+  box2: { x: 515, y: 718, fontSize: 10, align: 'right', width: 85 },
   
-  box3: { x: 385, y: 666, fontSize: 10, align: 'right', width: 90 },
-  box4: { x: 515, y: 666, fontSize: 10, align: 'right', width: 85 },
+  box3: { x: 385, y: 685, fontSize: 10, align: 'right', width: 90 },
+  box4: { x: 515, y: 685, fontSize: 10, align: 'right', width: 85 },
   
-  box5: { x: 385, y: 632, fontSize: 10, align: 'right', width: 90 },
-  box6: { x: 515, y: 632, fontSize: 10, align: 'right', width: 85 },
+  box5: { x: 385, y: 652, fontSize: 10, align: 'right', width: 90 },
+  box6: { x: 515, y: 652, fontSize: 10, align: 'right', width: 85 },
   
-  box7: { x: 385, y: 600, fontSize: 10, align: 'right', width: 90 },
-  box8: { x: 515, y: 600, fontSize: 10, align: 'right', width: 85 },
+  box7: { x: 385, y: 620, fontSize: 10, align: 'right', width: 90 },
+  box8: { x: 515, y: 620, fontSize: 10, align: 'right', width: 85 },
   
-  box9: { x: 385, y: 568, fontSize: 10 },
-  box10: { x: 515, y: 568, fontSize: 10, align: 'right', width: 85 },
+  box9: { x: 385, y: 588, fontSize: 10 },
+  box10: { x: 515, y: 588, fontSize: 10, align: 'right', width: 85 },
   
-  box11: { x: 385, y: 536, fontSize: 10, align: 'right', width: 90 },
+  box11: { x: 385, y: 556, fontSize: 10, align: 'right', width: 90 },
   
   // Box 12 codes and amounts
-  box12aCode: { x: 482, y: 536, fontSize: 9 },
-  box12aAmount: { x: 515, y: 536, fontSize: 9, align: 'right', width: 75 },
-  box12bCode: { x: 482, y: 512, fontSize: 9 },
-  box12bAmount: { x: 515, y: 512, fontSize: 9, align: 'right', width: 75 },
-  box12cCode: { x: 482, y: 488, fontSize: 9 },
-  box12cAmount: { x: 515, y: 488, fontSize: 9, align: 'right', width: 75 },
-  box12dCode: { x: 482, y: 464, fontSize: 9 },
-  box12dAmount: { x: 515, y: 464, fontSize: 9, align: 'right', width: 75 },
+  box12aCode: { x: 482, y: 556, fontSize: 9 },
+  box12aAmount: { x: 515, y: 556, fontSize: 9, align: 'right', width: 75 },
+  box12bCode: { x: 482, y: 532, fontSize: 9 },
+  box12bAmount: { x: 515, y: 532, fontSize: 9, align: 'right', width: 75 },
+  box12cCode: { x: 482, y: 508, fontSize: 9 },
+  box12cAmount: { x: 515, y: 508, fontSize: 9, align: 'right', width: 75 },
+  box12dCode: { x: 482, y: 484, fontSize: 9 },
+  box12dAmount: { x: 515, y: 484, fontSize: 9, align: 'right', width: 75 },
   
   // Box 13 checkboxes
-  box13Statutory: { x: 392, y: 508, fontSize: 10 },
-  box13Retirement: { x: 392, y: 488, fontSize: 10 },
-  box13ThirdParty: { x: 392, y: 468, fontSize: 10 },
+  box13Statutory: { x: 392, y: 528, fontSize: 10 },
+  box13Retirement: { x: 392, y: 508, fontSize: 10 },
+  box13ThirdParty: { x: 392, y: 488, fontSize: 10 },
   
   // Box 14 - Other
-  box14: { x: 310, y: 445, fontSize: 8 },
+  box14: { x: 310, y: 465, fontSize: 8 },
   
   // State/Local section (Boxes 15-20) - First row
-  state: { x: 38, y: 410, fontSize: 9 },
-  employerStateId: { x: 70, y: 410, fontSize: 8 },
-  box16: { x: 180, y: 410, fontSize: 9, align: 'right', width: 70 },
-  box17: { x: 270, y: 410, fontSize: 9, align: 'right', width: 60 },
-  box18: { x: 350, y: 410, fontSize: 9, align: 'right', width: 70 },
-  box19: { x: 440, y: 410, fontSize: 9, align: 'right', width: 60 },
-  box20: { x: 520, y: 410, fontSize: 8 },
+  state: { x: 38, y: 428, fontSize: 9 },
+  employerStateId: { x: 70, y: 428, fontSize: 8 },
+  box16: { x: 180, y: 428, fontSize: 9, align: 'right', width: 70 },
+  box17: { x: 270, y: 428, fontSize: 9, align: 'right', width: 60 },
+  box18: { x: 350, y: 428, fontSize: 9, align: 'right', width: 70 },
+  box19: { x: 440, y: 428, fontSize: 9, align: 'right', width: 60 },
+  box20: { x: 520, y: 428, fontSize: 8 },
 };
 
 // Generate W-2 by filling in PDF template

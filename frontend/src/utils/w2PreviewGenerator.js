@@ -192,10 +192,14 @@ export const generateW2Preview = async (formData, taxYear) => {
       opacity: 0.4,
     });
     
-    // Save and return as data URL
+    // Save and return as base64 data URL
     const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: "application/pdf" });
-    const dataUrl = URL.createObjectURL(blob);
+    
+    // Convert to base64 for stable preview
+    const base64 = btoa(
+      pdfBytes.reduce((data, byte) => data + String.fromCharCode(byte), '')
+    );
+    const dataUrl = `data:application/pdf;base64,${base64}`;
     
     return dataUrl;
     

@@ -23,6 +23,19 @@ import {
 // Tax Forms dropdown items
 const TAX_FORMS = [
   { name: "W-2 Generator", path: "/w2", icon: FileSpreadsheet },
+  { name: "W-9 Generator", path: "/w9", icon: FileSpreadsheet },
+  { name: "1099 NEC Generator", path: "/1099-nec", icon: FileSpreadsheet },
+  { name: "1099 Misc", path: "/1099-misc", icon: FileSpreadsheet },
+  { name: "Schedule C Generator", path: "/schedule-c", icon: FileSpreadsheet },
+  // Add more tax forms here as needed
+];
+
+// Other Forms dropdown items
+const OTHER_FORMS = [
+  { name: "Voided Check", path: "/voided-check", icon: FileSpreadsheet },
+  { name: "Offer Letter Generator", path: "/offer-letter", icon: FileSpreadsheet },
+  { name: "Invoice Generator", path: "/invoice-generator", icon: FileSpreadsheet },
+  { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
   // Add more tax forms here as needed
 ];
 
@@ -67,6 +80,15 @@ function DesktopNavLinks({ location, onNavigate }) {
         <span className="text-sm">Bank Statements</span>
       </button>
 
+        <button
+        onClick={() => onNavigate("/utility-bill")}
+        className={getButtonClasses("/utility-bill")}
+        data-testid="nav-bankstatement-link"
+      >
+        <FileBarChart className="w-4 h-4" />
+        <span className="text-sm">Utility Bills</span>
+      </button>
+
       {/* Tax Forms Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -98,23 +120,36 @@ function DesktopNavLinks({ location, onNavigate }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <button
-        onClick={() => onNavigate("/about")}
-        className={getButtonClasses("/about")}
-        data-testid="nav-about-link"
-      >
-        <Info className="w-4 h-4" />
-        <span className="text-sm">About</span>
-      </button>
-      
-      <button
-        onClick={() => onNavigate("/faq")}
-        className={getButtonClasses("/faq")}
-        data-testid="nav-faq-link"
-      >
-        <HelpCircle className="w-4 h-4" />
-        <span className="text-sm">FAQ</span>
-      </button>
+      {/* Other Forms/Generators Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={getDropdownTriggerClasses()}
+            data-testid="nav-taxforms-dropdown"
+          >
+            <Receipt className="w-4 h-4" />
+            <span className="text-sm">Other Forms</span>
+            <ChevronDown className="w-3 h-3 ml-1" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          {OTHER_FORMS.map((form) => {
+            const IconComponent = form.icon;
+            return (
+              <DropdownMenuItem
+                key={form.path}
+                onClick={() => onNavigate(form.path)}
+                className={`flex items-center gap-2 cursor-pointer ${
+                  isActive(form.path) ? 'bg-green-50 text-green-800 font-semibold' : ''
+                }`}
+              >
+                <IconComponent className="w-4 h-4" />
+                <span>{form.name}</span>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
       
       <button
         onClick={() => onNavigate("/contact")}

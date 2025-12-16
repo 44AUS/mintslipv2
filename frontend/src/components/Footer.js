@@ -57,7 +57,7 @@ export default function Footer() {
               <span className="text-white">slip</span>
             </button>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
-              MintSlip is your trusted partner for professional document generation. Create accurate pay stubs, bank statements, and W-2 forms in minutes.
+              Maximize your business potential with our SaaS technology
             </p>
             
             {/* Contact Info */}

@@ -18,45 +18,46 @@ const getTemplateUrl = (taxYear) => {
 
 // Field positions matching the main generator
 const FIELD_POSITIONS = {
-  employeeSSN: { x: 48, y: 728, fontSize: 10 },
-  employerEIN: { x: 48, y: 695, fontSize: 10 },
-  employerName: { x: 48, y: 665, fontSize: 9 },
-  employerAddress: { x: 48, y: 653, fontSize: 9 },
-  employerCityStateZip: { x: 48, y: 641, fontSize: 9 },
-  controlNumber: { x: 48, y: 608, fontSize: 9 },
-  employeeName: { x: 48, y: 575, fontSize: 10 },
-  employeeAddress: { x: 48, y: 530, fontSize: 9 },
-  employeeCityStateZip: { x: 48, y: 518, fontSize: 9 },
-  box1: { x: 340, y: 695, fontSize: 10 },
-  box2: { x: 480, y: 695, fontSize: 10 },
-  box3: { x: 340, y: 665, fontSize: 10 },
-  box4: { x: 480, y: 665, fontSize: 10 },
-  box5: { x: 340, y: 635, fontSize: 10 },
-  box6: { x: 480, y: 635, fontSize: 10 },
-  box7: { x: 340, y: 608, fontSize: 10 },
-  box8: { x: 480, y: 608, fontSize: 10 },
-  box9: { x: 340, y: 578, fontSize: 10 },
-  box10: { x: 480, y: 578, fontSize: 10 },
-  box11: { x: 340, y: 548, fontSize: 10 },
-  box12aCode: { x: 480, y: 548, fontSize: 9 },
-  box12aAmount: { x: 520, y: 548, fontSize: 9 },
-  box12bCode: { x: 480, y: 525, fontSize: 9 },
-  box12bAmount: { x: 520, y: 525, fontSize: 9 },
-  box12cCode: { x: 480, y: 502, fontSize: 9 },
-  box12cAmount: { x: 520, y: 502, fontSize: 9 },
-  box12dCode: { x: 480, y: 479, fontSize: 9 },
-  box12dAmount: { x: 520, y: 479, fontSize: 9 },
-  box13Statutory: { x: 344, y: 518, fontSize: 10 },
-  box13Retirement: { x: 344, y: 502, fontSize: 10 },
-  box13ThirdParty: { x: 344, y: 486, fontSize: 10 },
-  box14: { x: 340, y: 455, fontSize: 8 },
-  state: { x: 48, y: 470, fontSize: 9 },
-  employerStateId: { x: 85, y: 470, fontSize: 8 },
-  box16: { x: 200, y: 470, fontSize: 9 },
-  box17: { x: 280, y: 470, fontSize: 9 },
-  box18: { x: 360, y: 470, fontSize: 9 },
-  box19: { x: 440, y: 470, fontSize: 9 },
-  box20: { x: 520, y: 470, fontSize: 8 },
+  employeeSSN: { x: 175, y: 737, fontSize: 11 },
+  employerEIN: { x: 38, y: 700, fontSize: 10 },
+  employerName: { x: 38, y: 666, fontSize: 9 },
+  employerAddress: { x: 38, y: 654, fontSize: 9 },
+  employerCityStateZip: { x: 38, y: 642, fontSize: 9 },
+  controlNumber: { x: 38, y: 610, fontSize: 9 },
+  employeeFirstName: { x: 38, y: 575, fontSize: 10 },
+  employeeLastName: { x: 175, y: 575, fontSize: 10 },
+  employeeAddress: { x: 38, y: 540, fontSize: 9 },
+  employeeCityStateZip: { x: 38, y: 528, fontSize: 9 },
+  box1: { x: 385, y: 700, fontSize: 10, align: 'right', width: 90 },
+  box2: { x: 515, y: 700, fontSize: 10, align: 'right', width: 85 },
+  box3: { x: 385, y: 666, fontSize: 10, align: 'right', width: 90 },
+  box4: { x: 515, y: 666, fontSize: 10, align: 'right', width: 85 },
+  box5: { x: 385, y: 632, fontSize: 10, align: 'right', width: 90 },
+  box6: { x: 515, y: 632, fontSize: 10, align: 'right', width: 85 },
+  box7: { x: 385, y: 600, fontSize: 10, align: 'right', width: 90 },
+  box8: { x: 515, y: 600, fontSize: 10, align: 'right', width: 85 },
+  box9: { x: 385, y: 568, fontSize: 10 },
+  box10: { x: 515, y: 568, fontSize: 10, align: 'right', width: 85 },
+  box11: { x: 385, y: 536, fontSize: 10, align: 'right', width: 90 },
+  box12aCode: { x: 482, y: 536, fontSize: 9 },
+  box12aAmount: { x: 515, y: 536, fontSize: 9, align: 'right', width: 75 },
+  box12bCode: { x: 482, y: 512, fontSize: 9 },
+  box12bAmount: { x: 515, y: 512, fontSize: 9, align: 'right', width: 75 },
+  box12cCode: { x: 482, y: 488, fontSize: 9 },
+  box12cAmount: { x: 515, y: 488, fontSize: 9, align: 'right', width: 75 },
+  box12dCode: { x: 482, y: 464, fontSize: 9 },
+  box12dAmount: { x: 515, y: 464, fontSize: 9, align: 'right', width: 75 },
+  box13Statutory: { x: 392, y: 508, fontSize: 10 },
+  box13Retirement: { x: 392, y: 488, fontSize: 10 },
+  box13ThirdParty: { x: 392, y: 468, fontSize: 10 },
+  box14: { x: 310, y: 445, fontSize: 8 },
+  state: { x: 38, y: 410, fontSize: 9 },
+  employerStateId: { x: 70, y: 410, fontSize: 8 },
+  box16: { x: 180, y: 410, fontSize: 9, align: 'right', width: 70 },
+  box17: { x: 270, y: 410, fontSize: 9, align: 'right', width: 60 },
+  box18: { x: 350, y: 410, fontSize: 9, align: 'right', width: 70 },
+  box19: { x: 440, y: 410, fontSize: 9, align: 'right', width: 60 },
+  box20: { x: 520, y: 410, fontSize: 8 },
 };
 
 // Generate W-2 preview with watermark
@@ -80,16 +81,27 @@ export const generateW2Preview = async (formData, taxYear) => {
     // Helper function to draw text
     const drawText = (text, position, useBold = false) => {
       if (!text || text === "none") return;
-      page.drawText(String(text), {
-        x: position.x,
+      const textStr = String(text);
+      const selectedFont = useBold ? boldFont : font;
+      const fontSize = position.fontSize || 10;
+      
+      let xPos = position.x;
+      
+      if (position.align === 'right' && position.width) {
+        const textWidth = selectedFont.widthOfTextAtSize(textStr, fontSize);
+        xPos = position.x + position.width - textWidth;
+      }
+      
+      page.drawText(textStr, {
+        x: xPos,
         y: position.y,
-        size: position.fontSize || 10,
-        font: useBold ? boldFont : font,
+        size: fontSize,
+        font: selectedFont,
         color: rgb(0, 0, 0),
       });
     };
     
-    // Fill in the form fields (same as main generator)
+    // Fill in the form fields
     drawText(formData.employeeSSN, FIELD_POSITIONS.employeeSSN, true);
     drawText(formData.employerEIN, FIELD_POSITIONS.employerEIN);
     drawText(formData.employerName, FIELD_POSITIONS.employerName, true);
@@ -104,12 +116,9 @@ export const generateW2Preview = async (formData, taxYear) => {
     
     drawText(formData.controlNumber, FIELD_POSITIONS.controlNumber);
     
-    const employeeName = [
-      formData.employeeFirstName,
-      formData.employeeMiddleInitial,
-      formData.employeeLastName
-    ].filter(Boolean).join(" ");
-    drawText(employeeName, FIELD_POSITIONS.employeeName, true);
+    const firstName = [formData.employeeFirstName, formData.employeeMiddleInitial].filter(Boolean).join(" ");
+    drawText(firstName, FIELD_POSITIONS.employeeFirstName, true);
+    drawText(formData.employeeLastName, FIELD_POSITIONS.employeeLastName, true);
     
     drawText(formData.employeeAddress, FIELD_POSITIONS.employeeAddress);
     const employeeCityStateZip = [
@@ -166,30 +175,25 @@ export const generateW2Preview = async (formData, taxYear) => {
     drawText(formatCurrency(formData.localIncomeTax), FIELD_POSITIONS.box19);
     drawText(formData.localityName, FIELD_POSITIONS.box20);
     
-    // Add WATERMARK
-    const watermarkText = "MintSlip";
-    const watermarkSize = 72;
-    
-    // Draw diagonal watermark across the page
-    page.drawText(watermarkText, {
-      x: width / 2 - 120,
-      y: height / 2 - 20,
-      size: watermarkSize,
+    // Add WATERMARK - diagonal across the page
+    page.drawText("MintSlip", {
+      x: width / 2 - 100,
+      y: height / 2,
+      size: 60,
       font: boldFont,
-      color: rgb(0.85, 0.85, 0.85),
+      color: rgb(0.8, 0.8, 0.8),
       rotate: { type: 'degrees', angle: -35 },
-      opacity: 0.4,
+      opacity: 0.5,
     });
     
-    // Add smaller watermarks
     page.drawText("PREVIEW", {
       x: width / 2 - 60,
-      y: height / 2 - 60,
+      y: height / 2 - 50,
       size: 24,
       font: boldFont,
-      color: rgb(0.85, 0.85, 0.85),
+      color: rgb(0.8, 0.8, 0.8),
       rotate: { type: 'degrees', angle: -35 },
-      opacity: 0.4,
+      opacity: 0.5,
     });
     
     // Save and return as base64 data URL

@@ -564,7 +564,20 @@ export default function PaystubForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bank">Last 4 of Bank Account *</Label>
-                    <Input data-testid="bank-account-input" id="bank" name="bank" value={formData.bank} onChange={handleChange} maxLength="4" required />
+                    <Input 
+                      data-testid="bank-account-input" 
+                      id="bank" 
+                      name="bank" 
+                      value={formData.bank} 
+                      onChange={handleBankChange} 
+                      maxLength="4" 
+                      placeholder="5678"
+                      className={validationErrors.bank ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.bank && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.bank}</p>
+                    )}
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="address">Address *</Label>

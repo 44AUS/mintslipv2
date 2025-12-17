@@ -58,6 +58,11 @@ export default function PaystubForm() {
   const companySearchRef = useRef(null);
   const logoInputRef = useRef(null);
   
+  // Helper to format currency with commas
+  const formatCurrency = (num) => {
+    return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+  
   const [formData, setFormData] = useState({
     name: "",
     ssn: "",

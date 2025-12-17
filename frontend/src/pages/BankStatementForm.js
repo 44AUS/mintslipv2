@@ -208,10 +208,11 @@ export default function BankStatementForm() {
   }, []);
 
   // Generate PDF preview when form data changes (debounced)
+  // Only generate when a bank/template is selected
   useEffect(() => {
     const timer = setTimeout(async () => {
-      // Only generate preview if we have minimum required data
-      if (selectedMonth) {
+      // Only generate preview if a bank is selected AND we have minimum required data
+      if (selectedBank && selectedMonth) {
         setIsGeneratingPreview(true);
         try {
           const formData = {
@@ -231,6 +232,9 @@ export default function BankStatementForm() {
           console.error("Preview generation failed:", error);
         }
         setIsGeneratingPreview(false);
+      } else {
+        // Clear preview if no bank selected
+        setPdfPreview(null);
       }
     }, 500); // 500ms debounce
 

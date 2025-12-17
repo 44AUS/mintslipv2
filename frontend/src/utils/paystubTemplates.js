@@ -135,13 +135,13 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   y = Math.max(leftY, boxTop + boxHeight) + 20;
 
   // ========== FILING STATUS SECTION (Optional) ==========
-  if (!isContractor && (formData.federalFilingStatus || formData.stateFilingStatus)) {
+  if (!isContractor && (formData.federalFilingStatus || parseInt(formData.stateAllowances) > 0)) {
     doc.setFillColor(248, 248, 248);
     doc.rect(left, y, usableWidth, 22, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
-    doc.text("Filing Status", left + 8, y + 8);
+    doc.text("Tax Withholding Info", left + 8, y + 8);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     let filingY = y + 17;
@@ -150,8 +150,8 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
       doc.text(`Federal: ${formatFilingStatus(formData.federalFilingStatus)}`, filingX, filingY);
       filingX += 140;
     }
-    if (formData.stateFilingStatus) {
-      doc.text(`State: ${formatFilingStatus(formData.stateFilingStatus)}`, filingX, filingY);
+    if (parseInt(formData.stateAllowances) > 0) {
+      doc.text(`State Allowances: ${formData.stateAllowances}`, filingX, filingY);
     }
     y += 30;
   } else {

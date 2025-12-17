@@ -599,10 +599,12 @@ export default function PaystubForm() {
     setIsProcessing(false);
   };
   
-  // Clear logo from localStorage when leaving the page
+  // Clear logo and reset payroll company when leaving the page
   useEffect(() => {
     return () => {
       localStorage.removeItem('paystubCompanyLogo');
+      // Note: State resets are not needed in cleanup since component unmounts,
+      // but we ensure localStorage is cleared
     };
   }, []);
 

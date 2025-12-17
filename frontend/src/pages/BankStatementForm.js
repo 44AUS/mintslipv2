@@ -14,13 +14,16 @@ import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { formatAccountNumber, validateAccountNumber } from "@/utils/validation";
+import ChimeLogo from '../assests/chime.png';
+import BoA from '../assests/boa2.png';
+import ChaseLogo from '../assests/chase-logo-black-transparent.png';
 
 // Bank templates - user will supply logos
 // Logo placeholders - replace these paths with actual logo files when provided
 const BANKS_DATA = [
-  { id: 'chime', name: 'Chime', logo: null, template: 'template-a' },
-  { id: 'bank-of-america', name: 'Bank of America', logo: null, template: 'template-b' },
-  { id: 'chase', name: 'Chase', logo: null, template: 'template-c' },
+  { id: 'chime', name: 'Chime', logo: ChimeLogo, template: 'template-a' },
+  { id: 'bank-of-america', name: 'Bank of America', logo: BoA, template: 'template-b' },
+  { id: 'chase', name: 'Chase', logo: ChaseLogo, template: 'template-c' },
 ];
 
 export default function BankStatementForm() {

@@ -23,6 +23,7 @@ import {
   formatSSNLast4, validateSSNLast4,
   formatBankLast4, validateBankLast4
 } from "@/utils/validation";
+import GustoLogo from '../assests/gustoLogo.png';
 
 // Payroll company templates
 const PAYROLL_COMPANIES = [

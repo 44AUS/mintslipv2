@@ -510,29 +510,45 @@ export default function PaystubForm() {
                 </RadioGroup>
               </div>
 
-              {/* Worker Type Selection */}
+              {/* Worker Type Selection - Only show contractor option for Template A (Gusto) */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Worker Type
                 </h2>
-                <RadioGroup value={formData.workerType} onValueChange={handleWorkerTypeChange}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="employee" id="worker-employee" data-testid="worker-employee-radio" />
-                        <Label htmlFor="worker-employee" className="cursor-pointer font-medium">Employee (W-2)</Label>
+                {selectedTemplate === 'template-a' ? (
+                  <RadioGroup value={formData.workerType} onValueChange={handleWorkerTypeChange}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="employee" id="worker-employee" data-testid="worker-employee-radio" />
+                          <Label htmlFor="worker-employee" className="cursor-pointer font-medium">Employee (W-2)</Label>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-2">Standard employee with tax withholdings</p>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Standard employee with tax withholdings</p>
-                    </div>
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'contractor' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="contractor" id="worker-contractor" data-testid="worker-contractor-radio" />
-                        <Label htmlFor="worker-contractor" className="cursor-pointer font-medium">Contractor (1099)</Label>
+                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'contractor' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="contractor" id="worker-contractor" data-testid="worker-contractor-radio" />
+                          <Label htmlFor="worker-contractor" className="cursor-pointer font-medium">Contractor (1099)</Label>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-2">Independent contractor, no tax withholdings</p>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Independent contractor, no tax withholdings</p>
                     </div>
+                  </RadioGroup>
+                ) : (
+                  <div className="p-4 bg-slate-50 border-2 border-slate-200 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-green-600 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="font-medium text-slate-800">Employee (W-2)</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2 ml-6">
+                      {selectedTemplate === 'template-b' ? 'ADP' : 'Workday'} template only supports employee pay stubs with tax withholdings.
+                    </p>
                   </div>
-                </RadioGroup>
+                )}
               </div>
 
               {/* Employee/Contractor Information */}

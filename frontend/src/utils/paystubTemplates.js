@@ -518,7 +518,7 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.setFont(undefined, 'normal');
-  doc.text(`${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, pageWidth / 2, y + 20, { align: 'center' });
+  doc.text(`${formatDate(startDate)} - ${formatDate(endDate)}`, pageWidth / 2, y + 20, { align: 'center' });
 
   // Two-column layout
   y = 130;

@@ -184,9 +184,13 @@ export default function PaystubForm() {
     }
   };
 
-  // Handle template change - reset to hourly if contractor selects Gusto
+  // Handle template change - reset to employee if template B or C is selected (no contractor option)
   const handleTemplateChange = (val) => {
     setSelectedTemplate(val);
+    // Template B (ADP) and Template C (Workday) don't support contractor - force employee
+    if ((val === "template-b" || val === "template-c") && formData.workerType === "contractor") {
+      setFormData(prev => ({ ...prev, workerType: "employee" }));
+    }
     if (formData.workerType === "contractor" && val === "template-a") {
       setFormData(prev => ({ ...prev, payType: "hourly" }));
     }

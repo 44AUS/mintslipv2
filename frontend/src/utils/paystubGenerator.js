@@ -272,6 +272,7 @@ async function generateSingleStub(
   const ytdGrossPay = grossPay * ytdPayPeriods;
   const ytdSsTax = ssTax * ytdPayPeriods;
   const ytdMedTax = medTax * ytdPayPeriods;
+  const ytdFederalTax = federalTax * ytdPayPeriods;
   const ytdStateTax = stateTax * ytdPayPeriods;
   const ytdLocalTax = localTax * ytdPayPeriods;
   const ytdTotalTax = totalTax * ytdPayPeriods;
@@ -292,6 +293,7 @@ async function generateSingleStub(
     grossPay,
     ssTax,
     medTax,
+    federalTax,
     stateTax,
     localTax,
     totalTax,
@@ -320,6 +322,7 @@ async function generateSingleStub(
     ytdGrossPay,
     ytdSsTax,
     ytdMedTax,
+    ytdFederalTax,
     ytdStateTax,
     ytdLocalTax,
     ytdTotalTax,

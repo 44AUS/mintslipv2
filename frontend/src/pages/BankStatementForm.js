@@ -452,6 +452,30 @@ const createOrder = (data, actions) => {
                     />
                   </div>
                 )}
+
+                {/* Selected Bank Preview - Shows large logo for reference */}
+                {selectedBank && selectedBank.logo && (
+                  <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                    <p className="text-sm text-slate-600 mb-3">Selected Bank Preview (for reference only):</p>
+                    <div className="flex items-center gap-4">
+                      <img 
+                        src={selectedBank.logo} 
+                        alt={selectedBank.name} 
+                        className="w-[150px] h-[150px] rounded-lg object-contain bg-white border border-slate-200 p-2"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      <div>
+                        <p className="font-semibold text-slate-800">{selectedBank.name}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          This is a preview of the bank logo.<br/>
+                          You must upload your own logo below.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Bank Logo Upload */}

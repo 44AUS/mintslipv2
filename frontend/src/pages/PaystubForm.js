@@ -515,13 +515,47 @@ export default function PaystubForm() {
       WI: 0.053, WY: 0,
     };
     const stateRate = stateRates[formData.state?.toUpperCase()] || 0.05;
-    const stateTax = isContractor ? 0 : totalGross * stateRate;
+    
+    // Calculate federal tax based on filing status and exemptions
+    let federalTax = 0;
+    if (!isContractor) {
+      if (formData.federalFilingStatus) {
+        // Use progressive tax calculation with filing status
+        federalTax = calculateFederalTax(
+          totalGross / (numStubs || 1), // Per period gross
+          formData.payFrequency,
+          formData.federalFilingStatus,
+          formData.federalExemptions || 0
+        ) * (numStubs || 1);
+      } else {
+        // Default flat rate if no filing status
+        federalTax = totalGross * 0.22;
+      }
+    }
+    
+    // Calculate state tax based on filing status and exemptions
+    let stateTax = 0;
+    if (!isContractor) {
+      if (formData.stateFilingStatus) {
+        stateTax = calculateStateTax(
+          totalGross / (numStubs || 1), // Per period gross
+          formData.state,
+          formData.payFrequency,
+          formData.stateFilingStatus,
+          formData.stateExemptions || 0,
+          stateRate
+        ) * (numStubs || 1);
+      } else {
+        // Default flat rate if no filing status
+        stateTax = totalGross * stateRate;
+      }
+    }
     
     // Use actual local tax rate from taxRates lookup
     const actualLocalTaxRate = getLocalTaxRate(formData.state, formData.city);
     const localTax = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? totalGross * actualLocalTaxRate : 0);
     
-    const totalTaxes = ssTax + medTax + stateTax + localTax;
+    const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
 
     // Calculate deductions total
     const totalDeductions = deductions.reduce((sum, d) => {

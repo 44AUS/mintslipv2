@@ -535,14 +535,14 @@ export default function PaystubForm() {
   const createOrder = (data, actions) => {
     const totalAmount = (calculateNumStubs * 10).toFixed(2);
     return actions.order.create({
+      application_context: {
+        shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
+      },
       purchase_units: [
         {
           amount: {
             value: totalAmount,
             currency_code: "USD"
-          },
-          application_context: {
-            shipping_preference: "NO_SHIPPING", // 🚫 removes shipping address prompt // 
           },
           description: `Pay Stub Generation (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''})`
         },

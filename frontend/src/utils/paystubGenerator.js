@@ -194,9 +194,43 @@ async function generateSingleStub(
   // Contractors don't have taxes withheld
   const ssTax = isContractor ? 0 : grossPay * 0.062;
   const medTax = isContractor ? 0 : grossPay * 0.0145;
-  const stateTax = isContractor ? 0 : grossPay * stateRate;
+  
+  // Calculate federal income tax based on filing status and exemptions
+  let federalTax = 0;
+  if (!isContractor) {
+    if (formData.federalFilingStatus) {
+      federalTax = calculateFederalTax(
+        grossPay,
+        payFrequency,
+        formData.federalFilingStatus,
+        formData.federalExemptions || 0
+      );
+    } else {
+      // Default flat rate if no filing status selected
+      federalTax = grossPay * 0.22;
+    }
+  }
+  
+  // Calculate state tax based on filing status and exemptions
+  let stateTax = 0;
+  if (!isContractor) {
+    if (formData.stateFilingStatus) {
+      stateTax = calculateStateTax(
+        grossPay,
+        formData.state,
+        payFrequency,
+        formData.stateFilingStatus,
+        formData.stateExemptions || 0,
+        stateRate
+      );
+    } else {
+      // Default flat rate if no filing status selected
+      stateTax = grossPay * stateRate;
+    }
+  }
+  
   const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
-  const totalTax = ssTax + medTax + stateTax + localTax;
+  const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
   // Calculate deductions for this pay period
   const deductionsData = (formData.deductions || []).map(d => {

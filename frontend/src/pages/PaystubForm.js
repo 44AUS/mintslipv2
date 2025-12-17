@@ -334,13 +334,11 @@ export default function PaystubForm() {
     }
   };
 
-  // Load logo from localStorage on mount
+  // Clear any previously saved logo on mount (fresh start each time)
   useEffect(() => {
-    const savedLogo = localStorage.getItem('paystubCompanyLogo');
-    if (savedLogo) {
-      setCompanyLogo(savedLogo);
-      setLogoPreview(savedLogo);
-    }
+    localStorage.removeItem('paystubCompanyLogo');
+    setCompanyLogo(null);
+    setLogoPreview(null);
   }, []);
 
   // Close dropdown when clicking outside

@@ -874,9 +874,9 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   doc.text(`$${medTax.toFixed(2)}`, pageWidth - margin - 5, y, { align: 'right' });
   y += 15;
   
-  // State Tax with filing status
-  const stateLabel = formData.stateFilingStatus 
-    ? `State Tax (${formData.stateFilingStatus === 'married_jointly' ? 'MFJ' : formData.stateFilingStatus === 'single' ? 'S' : 'HOH'})`
+  // State Tax with allowances (only for states that use them)
+  const stateLabel = parseInt(formData.stateAllowances) > 0
+    ? `State Tax (${formData.stateAllowances} allow.)`
     : "State Tax";
   doc.text(stateLabel, margin + 5, y);
   doc.text(`${(data.stateRate * 100).toFixed(2)}%`, margin + 300, y);

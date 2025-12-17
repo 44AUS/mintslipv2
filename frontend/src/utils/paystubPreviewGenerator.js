@@ -259,8 +259,9 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       totalContributions,
       ytdDeductions,
       ytdContributions,
-      // Logo for Workday template
-      logoDataUrl: formData.logoDataUrl || null
+      // For preview, don't show actual logo - show "LOGO" text instead
+      logoDataUrl: null,
+      isPreview: true
     };
 
     // Generate the template based on selection

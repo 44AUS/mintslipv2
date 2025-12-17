@@ -592,36 +592,182 @@ export default function PaystubForm() {
           {/* Left: Form */}
           <div className="lg:col-span-7 space-y-8">
             <form className="space-y-8">
-              {/* Template Selection */}
+              {/* Payroll Company Selection */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Choose Template
+                  Select Payroll Company
                 </h2>
-                <RadioGroup value={selectedTemplate} onValueChange={handleTemplateChange}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="template-a" id="template-a" data-testid="template-a-radio" />
-                        <Label htmlFor="template-a" className="cursor-pointer font-medium">Gusto</Label>
+                
+                {/* Company Search Input */}
+                <div className="relative" ref={companySearchRef}>
+                  <Label htmlFor="companySearch">Payroll Provider *</Label>
+                  <div className="relative mt-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      id="companySearch"
+                      data-testid="company-search-input"
+                      value={companySearchQuery}
+                      onChange={(e) => {
+                        setCompanySearchQuery(e.target.value);
+                        setShowCompanyDropdown(true);
+                      }}
+                      onFocus={() => setShowCompanyDropdown(true)}
+                      placeholder="Type to search payroll provider..."
+                      className="pl-10 pr-10"
+                    />
+                    {selectedPayrollCompany && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Gusto style</p>
+                    )}
+                  </div>
+                  
+                  {/* Company Dropdown */}
+                  {showCompanyDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                      {filteredCompanies.length > 0 ? (
+                        filteredCompanies.map((company) => (
+                          <div
+                            key={company.id}
+                            data-testid={`company-option-${company.id}`}
+                            onClick={() => handlePayrollCompanySelect(company)}
+                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
+                              selectedPayrollCompany?.id === company.id ? 'bg-green-100' : ''
+                            }`}
+                          >
+                            <div className="w-10 h-10 rounded bg-slate-100 border border-slate-200 flex items-center justify-center">
+                              <Building2 className="w-5 h-5 text-slate-400" />
+                            </div>
+                            <div>
+                              <span className="font-medium text-slate-700 block">{company.name}</span>
+                              <span className="text-xs text-slate-500">
+                                {company.template === 'template-a' ? 'Style A' : company.template === 'template-b' ? 'Style B' : 'Style C'}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-slate-500 text-center">
+                          No payroll providers found matching your search.
+                        </div>
+                      )}
                     </div>
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="template-b" id="template-b" data-testid="template-b-radio" />
-                        <Label htmlFor="template-b" className="cursor-pointer font-medium">ADP</Label>
+                  )}
+                </div>
+
+                {/* Selected Company Confirmation */}
+                {selectedPayrollCompany && (
+                  <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-[100px] h-[100px] rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+                        <Building2 className="w-10 h-10 text-slate-300" />
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">ADP layout</p>
-                    </div>
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="template-c" id="template-c" data-testid="template-c-radio" />
-                        <Label htmlFor="template-c" className="cursor-pointer font-medium">Workday</Label>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
+                        <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
+                        <p className="text-sm text-slate-600 mt-1">
+                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Style A (Gusto)' : selectedPayrollCompany.template === 'template-b' ? 'Style B (ADP)' : 'Style C (Workday)'}</span>
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Workday style</p>
                     </div>
                   </div>
-                </RadioGroup>
+                )}
+              </div>
+
+              {/* Company Logo Upload */}
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    Company Logo *
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Upload your company or payroll provider logo. PNG format only.
+                  </p>
+                </div>
+                
+                {/* Logo Upload Area */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                  onDrop={handleLogoDrop}
+                  className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
+                    isDragging 
+                      ? 'border-green-500 bg-green-50' 
+                      : logoError 
+                        ? 'border-red-300 bg-red-50' 
+                        : 'border-slate-300 hover:border-green-400'
+                  }`}
+                >
+                  {logoPreview ? (
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <img 
+                          src={logoPreview} 
+                          alt="Company Logo Preview" 
+                          className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white p-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Click the X to remove and upload a different logo.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                      <p className="text-sm text-slate-600 mb-2">
+                        Drag and drop your logo here, or
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logoInputRef.current?.click()}
+                        className="gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Select File
+                      </Button>
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept=".png,image/png"
+                        onChange={handleLogoSelect}
+                        className="hidden"
+                        data-testid="logo-file-input"
+                      />
+                      <p className="text-xs text-slate-400 mt-3">
+                        PNG format only
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {logoError && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <X className="w-4 h-4" />
+                    {logoError}
+                  </p>
+                )}
+                
+                {!companyLogo && !logoError && (
+                  <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+                    * A company logo is required to generate your pay stub
+                  </p>
+                )}
               </div>
 
               {/* Worker Type Selection - Only show contractor option for Template A (Gusto) */}

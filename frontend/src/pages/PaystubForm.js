@@ -907,6 +907,21 @@ export default function PaystubForm() {
                       <p className="text-xs text-red-500 mt-1">{validationErrors.ssn}</p>
                     )}
                   </div>
+                  {/* Employee ID - Only for Workday template */}
+                  {selectedTemplate === 'template-c' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="employeeId">Employee ID *</Label>
+                      <Input 
+                        data-testid="employee-id-input" 
+                        id="employeeId" 
+                        name="employeeId" 
+                        value={formData.employeeId} 
+                        onChange={handleChange} 
+                        placeholder="100012345"
+                        required 
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="bankName">Bank Name *</Label>
                     <Input data-testid="bank-name-input" id="bankName" name="bankName" value={formData.bankName} onChange={handleChange} required />

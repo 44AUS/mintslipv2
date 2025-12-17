@@ -24,8 +24,8 @@ import {
   formatBankLast4, validateBankLast4
 } from "@/utils/validation";
 import GustoLogo from '../assests/gustoLogo.png';
-import ADPLogo from '../assests/adpLogo.png';
-import WorkdayLogo from '../assests/workdayLogo.png';
+import ADPLogo from '../assests/adp-logo.png';
+import WorkdayLogo from '../assests/workday-logo.png';
 
 // Payroll company templates with logos
 const PAYROLL_COMPANIES = [

@@ -24,12 +24,14 @@ import {
   formatBankLast4, validateBankLast4
 } from "@/utils/validation";
 import GustoLogo from '../assests/gustoLogo.png';
+import ADPLogo from '../assests/adpLogo.png';
+import WorkdayLogo from '../assests/workdayLogo.png';
 
-// Payroll company templates
+// Payroll company templates with logos
 const PAYROLL_COMPANIES = [
-  { id: 'gusto', name: 'Gusto', template: 'template-a' },
-  { id: 'adp', name: 'ADP', template: 'template-b' },
-  { id: 'workday', name: 'Workday', template: 'template-c' },
+  { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
+  { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
+  { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
 ];
 
 export default function PaystubForm() {

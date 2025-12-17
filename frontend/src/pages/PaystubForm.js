@@ -598,6 +598,7 @@ export default function PaystubForm() {
         deductions: deductions,
         contributions: contributions,
         companyLogo: companyLogo, // Include uploaded logo for PDF
+        logoDataUrl: logoPreview, // Pass logo data URL for Workday template
       };
       
       // Generate and download PDF

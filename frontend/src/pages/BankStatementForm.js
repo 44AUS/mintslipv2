@@ -724,7 +724,7 @@ const createOrder = (data, actions) => {
                 </p>
                 
                 {isGeneratingPreview ? (
-                  <div className="flex items-center justify-center h-64 bg-slate-100 rounded-md">
+                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
@@ -738,7 +738,7 @@ const createOrder = (data, actions) => {
                         <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <iframe
                             src={pdfPreview}
-                            className="w-full h-64 pointer-events-none"
+                            className="w-full h-96 pointer-events-none"
                             title="Bank Statement Preview"
                             style={{ transform: 'scale(1)', transformOrigin: 'top left' }}
                           />
@@ -793,7 +793,7 @@ const createOrder = (data, actions) => {
                     </DialogContent>
                   </Dialog>
                 ) : (
-                  <div className="flex items-center justify-center h-64 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
+                  <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
                     <div className="text-center p-4">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

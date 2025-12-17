@@ -896,7 +896,7 @@ export default function W2Form() {
                 </p>
                 
                 {isGeneratingPreview ? (
-                  <div className="flex items-center justify-center h-64 bg-slate-100 rounded-md">
+                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
@@ -909,7 +909,7 @@ export default function W2Form() {
                         <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <iframe
                             src={pdfPreview}
-                            className="w-full h-64 pointer-events-none"
+                            className="w-full h-96 pointer-events-none"
                             title="W-2 Preview"
                           />
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -940,7 +940,7 @@ export default function W2Form() {
                     </DialogContent>
                   </Dialog>
                 ) : (
-                  <div className="flex items-center justify-center h-64 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
+                  <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
                     <p className="text-sm text-slate-500">Select a tax year to see preview</p>
                   </div>
                 )}

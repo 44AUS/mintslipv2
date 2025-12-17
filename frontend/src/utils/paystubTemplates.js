@@ -858,6 +858,15 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont(undefined, 'normal');
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
+  
+  // Federal Income Tax with filing status
+  const fedLabel = formData.federalFilingStatus 
+    ? `Federal Tax (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'single' ? 'S' : 'HOH'})`
+    : "Federal Tax";
+  doc.text(fedLabel, margin + 5, y);
+  doc.text("", margin + 300, y);
+  doc.text(`$${(federalTax || 0).toFixed(2)}`, pageWidth - margin - 5, y, { align: 'right' });
+  y += 15;
   doc.text("Social Security", margin + 5, y);
   doc.text("6.2%", margin + 300, y);
   doc.text(`$${ssTax.toFixed(2)}`, pageWidth - margin - 5, y, { align: 'right' });
@@ -866,7 +875,12 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   doc.text("1.45%", margin + 300, y);
   doc.text(`$${medTax.toFixed(2)}`, pageWidth - margin - 5, y, { align: 'right' });
   y += 15;
-  doc.text("State Tax", margin + 5, y);
+  
+  // State Tax with filing status
+  const stateLabel = formData.stateFilingStatus 
+    ? `State Tax (${formData.stateFilingStatus === 'married_jointly' ? 'MFJ' : formData.stateFilingStatus === 'single' ? 'S' : 'HOH'})`
+    : "State Tax";
+  doc.text(stateLabel, margin + 5, y);
   doc.text(`${(data.stateRate * 100).toFixed(2)}%`, margin + 300, y);
   doc.text(`$${stateTax.toFixed(2)}`, pageWidth - margin - 5, y, { align: 'right' });
   

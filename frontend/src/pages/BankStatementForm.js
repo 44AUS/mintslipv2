@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
@@ -16,13 +15,57 @@ import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenera
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { formatAccountNumber, validateAccountNumber } from "@/utils/validation";
 
+// Bank data with logos (using public bank logo URLs)
+const BANKS_DATA = [
+  { id: 'bank-of-america', name: 'Bank of America', logo: 'https://logo.clearbit.com/bankofamerica.com', template: 'template-b' },
+  { id: 'chase', name: 'Chase', logo: 'https://logo.clearbit.com/chase.com', template: 'template-c' },
+  { id: 'wells-fargo', name: 'Wells Fargo', logo: 'https://logo.clearbit.com/wellsfargo.com', template: 'template-b' },
+  { id: 'citi', name: 'Citi Bank', logo: 'https://logo.clearbit.com/citi.com', template: 'template-b' },
+  { id: 'capital-one', name: 'Capital One', logo: 'https://logo.clearbit.com/capitalone.com', template: 'template-b' },
+  { id: 'td-bank', name: 'TD Bank', logo: 'https://logo.clearbit.com/td.com', template: 'template-b' },
+  { id: 'pnc', name: 'PNC Bank', logo: 'https://logo.clearbit.com/pnc.com', template: 'template-b' },
+  { id: 'us-bank', name: 'US Bank', logo: 'https://logo.clearbit.com/usbank.com', template: 'template-b' },
+  { id: 'truist', name: 'Truist', logo: 'https://logo.clearbit.com/truist.com', template: 'template-b' },
+  { id: 'goldman-sachs', name: 'Goldman Sachs', logo: 'https://logo.clearbit.com/goldmansachs.com', template: 'template-c' },
+  { id: 'morgan-stanley', name: 'Morgan Stanley', logo: 'https://logo.clearbit.com/morganstanley.com', template: 'template-c' },
+  { id: 'fifth-third', name: 'Fifth Third Bank', logo: 'https://logo.clearbit.com/53.com', template: 'template-b' },
+  { id: 'citizens', name: 'Citizens Bank', logo: 'https://logo.clearbit.com/citizensbank.com', template: 'template-b' },
+  { id: 'regions', name: 'Regions Bank', logo: 'https://logo.clearbit.com/regions.com', template: 'template-b' },
+  { id: 'huntington', name: 'Huntington Bank', logo: 'https://logo.clearbit.com/huntington.com', template: 'template-b' },
+  { id: 'ally', name: 'Ally Bank', logo: 'https://logo.clearbit.com/ally.com', template: 'template-b' },
+  { id: 'discover', name: 'Discover Bank', logo: 'https://logo.clearbit.com/discover.com', template: 'template-b' },
+  { id: 'synchrony', name: 'Synchrony Bank', logo: 'https://logo.clearbit.com/synchrony.com', template: 'template-b' },
+  { id: 'chime', name: 'Chime', logo: 'https://logo.clearbit.com/chime.com', template: 'template-a' },
+  { id: 'sofi', name: 'SoFi', logo: 'https://logo.clearbit.com/sofi.com', template: 'template-b' },
+  { id: 'american-express', name: 'American Express', logo: 'https://logo.clearbit.com/americanexpress.com', template: 'template-c' },
+  { id: 'hsbc', name: 'HSBC', logo: 'https://logo.clearbit.com/hsbc.com', template: 'template-c' },
+  { id: 'navy-federal', name: 'Navy Federal Credit Union', logo: 'https://logo.clearbit.com/navyfederal.org', template: 'template-b' },
+  { id: 'usaa', name: 'USAA', logo: 'https://logo.clearbit.com/usaa.com', template: 'template-b' },
+  { id: 'charles-schwab', name: 'Charles Schwab', logo: 'https://logo.clearbit.com/schwab.com', template: 'template-c' },
+  { id: 'other', name: 'Other Bank', logo: null, template: 'template-b' },
+];
+
 export default function BankStatementForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState("template-a");
+  const [selectedTemplate, setSelectedTemplate] = useState("template-b");
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  
+  // Bank search state
+  const [bankSearchQuery, setBankSearchQuery] = useState("");
+  const [selectedBank, setSelectedBank] = useState(null);
+  const [showBankDropdown, setShowBankDropdown] = useState(false);
+  const [customBankName, setCustomBankName] = useState("");
+  const bankSearchRef = useRef(null);
+  
+  // Logo upload state
+  const [uploadedLogo, setUploadedLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [logoError, setLogoError] = useState("");
+  const fileInputRef = useRef(null);
   
   const [accountName, setAccountName] = useState("");
   const [accountAddress1, setAccountAddress1] = useState("");
@@ -43,6 +86,134 @@ export default function BankStatementForm() {
   const [validationErrors, setValidationErrors] = useState({
     accountNumber: '',
   });
+
+  // Filter banks based on search query
+  const filteredBanks = BANKS_DATA.filter(bank =>
+    bank.name.toLowerCase().includes(bankSearchQuery.toLowerCase())
+  );
+
+  // Handle bank selection
+  const handleBankSelect = (bank) => {
+    setSelectedBank(bank);
+    setBankSearchQuery(bank.name);
+    setSelectedTemplate(bank.template);
+    setShowBankDropdown(false);
+    
+    // If selecting a known bank, use their logo
+    if (bank.logo) {
+      setLogoPreview(bank.logo);
+      setUploadedLogo(bank.logo);
+      setLogoError("");
+    } else {
+      // For "Other Bank", clear logo so user must upload
+      setLogoPreview(null);
+      setUploadedLogo(null);
+    }
+  };
+
+  // Handle custom bank name for "Other Bank"
+  const handleCustomBankName = (e) => {
+    setCustomBankName(e.target.value);
+  };
+
+  // Logo upload validation and processing
+  const validateAndProcessLogo = (file) => {
+    setLogoError("");
+    
+    // Check file type
+    if (!file.type.includes('png')) {
+      setLogoError("Only PNG files are accepted");
+      return false;
+    }
+    
+    // Check file size (max 1MB)
+    if (file.size > 1024 * 1024) {
+      setLogoError("File size must be less than 1MB");
+      return false;
+    }
+    
+    return new Promise((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        img.onload = () => {
+          // Check dimensions (max 250x250)
+          if (img.width > 250 || img.height > 250) {
+            setLogoError("Image dimensions must be 250x250 pixels or smaller");
+            resolve(false);
+            return;
+          }
+          
+          // Store in localStorage
+          const base64 = e.target.result;
+          localStorage.setItem('bankStatementLogo', base64);
+          setUploadedLogo(base64);
+          setLogoPreview(base64);
+          resolve(true);
+        };
+        img.onerror = () => {
+          setLogoError("Invalid image file");
+          resolve(false);
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = () => {
+        setLogoError("Error reading file");
+        resolve(false);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle file drop
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await validateAndProcessLogo(files[0]);
+    }
+  };
+
+  // Handle file select
+  const handleFileSelect = async (e) => {
+    const files = e.target.files;
+    if (files.length > 0) {
+      await validateAndProcessLogo(files[0]);
+    }
+  };
+
+  // Remove uploaded logo
+  const removeLogo = () => {
+    setUploadedLogo(null);
+    setLogoPreview(null);
+    localStorage.removeItem('bankStatementLogo');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Load logo from localStorage on mount
+  useEffect(() => {
+    const savedLogo = localStorage.getItem('bankStatementLogo');
+    if (savedLogo) {
+      setUploadedLogo(savedLogo);
+      setLogoPreview(savedLogo);
+    }
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (bankSearchRef.current && !bankSearchRef.current.contains(event.target)) {
+        setShowBankDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Validated input handler
   const handleAccountNumberChange = (e) => {
@@ -83,7 +254,9 @@ export default function BankStatementForm() {
             accountNumber,
             selectedMonth,
             beginningBalance,
-            transactions
+            transactions,
+            bankName: selectedBank?.id === 'other' ? customBankName : (selectedBank?.name || ''),
+            bankLogo: uploadedLogo
           };
           const previewUrl = await generateBankStatementPreview(formData, selectedTemplate);
           setPdfPreview(previewUrl);
@@ -95,7 +268,7 @@ export default function BankStatementForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [accountName, accountAddress1, accountAddress2, accountNumber, selectedMonth, beginningBalance, transactions, selectedTemplate]);
+  }, [accountName, accountAddress1, accountAddress2, accountNumber, selectedMonth, beginningBalance, transactions, selectedTemplate, selectedBank, customBankName, uploadedLogo]);
 
   const addTransaction = () => {
     setTransactions([...transactions, { date: "", description: "", type: "Purchase", amount: "" }]);
@@ -115,8 +288,6 @@ const createOrder = (data, actions) => {
   return actions.order.create({
     application_context: {
       shipping_preference: "GET_FROM_FILE", 
-      // ✔ Forces ZIP-only, no address collection
-      // ✔ 100% valid for digital goods
     },
     purchase_units: [
       {
@@ -146,7 +317,9 @@ const createOrder = (data, actions) => {
         accountNumber,
         selectedMonth,
         beginningBalance,
-        transactions
+        transactions,
+        bankName: selectedBank?.id === 'other' ? customBankName : (selectedBank?.name || ''),
+        bankLogo: uploadedLogo
       };
       await generateAndDownloadBankStatement(formData, selectedTemplate);
       
@@ -180,6 +353,11 @@ const createOrder = (data, actions) => {
     return balance;
   };
 
+  // Check if form is valid for payment
+  const isFormValid = () => {
+    return selectedBank && uploadedLogo && accountName && accountNumber;
+  };
+
   return (
     <div className="min-h-screen bg-white relative">
       <div className="noise-overlay" />
@@ -191,36 +369,193 @@ const createOrder = (data, actions) => {
           {/* Left: Form */}
           <div className="lg:col-span-7">
             <form className="space-y-8">
-              {/* Template Selection */}
+              {/* Bank Selection */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Choose Template
+                  Select Your Bank
                 </h2>
-                <RadioGroup value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-a' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="template-a" id="bank-template-a" data-testid="bank-template-a-radio" />
-                        <Label htmlFor="bank-template-a" className="cursor-pointer font-medium">Chime</Label>
+                
+                {/* Bank Search Input */}
+                <div className="relative" ref={bankSearchRef}>
+                  <Label htmlFor="bankSearch">Bank Name *</Label>
+                  <div className="relative mt-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      id="bankSearch"
+                      data-testid="bank-search-input"
+                      value={bankSearchQuery}
+                      onChange={(e) => {
+                        setBankSearchQuery(e.target.value);
+                        setShowBankDropdown(true);
+                        if (selectedBank && e.target.value !== selectedBank.name) {
+                          setSelectedBank(null);
+                        }
+                      }}
+                      onFocus={() => setShowBankDropdown(true)}
+                      placeholder="Type to search for your bank..."
+                      className="pl-10 pr-10"
+                      required
+                    />
+                    {selectedBank && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        {selectedBank.logo ? (
+                          <img src={selectedBank.logo} alt={selectedBank.name} className="w-6 h-6 rounded" />
+                        ) : (
+                          <Building2 className="w-5 h-5 text-slate-400" />
+                        )}
                       </div>
-                      <p className="text-xs text-slate-600 mt-2">Chime inspired statement</p>
-                    </div>
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="template-b" id="bank-template-b" data-testid="bank-template-b-radio" />
-                        <Label htmlFor="bank-template-b" className="cursor-pointer font-medium">Bank of America</Label>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-2">Bank of America inspired statement</p>
-                    </div>
-                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-c' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="template-c" id="bank-template-c" data-testid="bank-template-c-radio" />
-                        <Label htmlFor="bank-template-c" className="cursor-pointer font-medium">Chase</Label>
-                      </div>
-                      <p className="text-xs text-slate-600 mt-2">Chase inspired statement</p>
-                    </div>
+                    )}
                   </div>
-                </RadioGroup>
+                  
+                  {/* Bank Dropdown */}
+                  {showBankDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                      {filteredBanks.length > 0 ? (
+                        filteredBanks.map((bank) => (
+                          <div
+                            key={bank.id}
+                            data-testid={`bank-option-${bank.id}`}
+                            onClick={() => handleBankSelect(bank)}
+                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
+                              selectedBank?.id === bank.id ? 'bg-green-100' : ''
+                            }`}
+                          >
+                            {bank.logo ? (
+                              <img 
+                                src={bank.logo} 
+                                alt={bank.name} 
+                                className="w-8 h-8 rounded object-contain bg-white"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div 
+                              className={`w-8 h-8 rounded bg-slate-100 items-center justify-center ${bank.logo ? 'hidden' : 'flex'}`}
+                            >
+                              <Building2 className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <span className="font-medium text-slate-700">{bank.name}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-slate-500 text-center">
+                          No banks found. Select "Other Bank" to enter custom bank name.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Custom Bank Name (for Other Bank) */}
+                {selectedBank?.id === 'other' && (
+                  <div className="space-y-2 mt-4">
+                    <Label htmlFor="customBankName">Enter Bank Name *</Label>
+                    <Input
+                      id="customBankName"
+                      data-testid="custom-bank-name-input"
+                      value={customBankName}
+                      onChange={handleCustomBankName}
+                      placeholder="Enter your bank's name"
+                      required
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Bank Logo Upload */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                      Bank Logo *
+                    </h2>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Upload a custom bank logo. PNG format only, max 250×250 pixels.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Logo Upload Area */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                  onDrop={handleDrop}
+                  className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
+                    isDragging 
+                      ? 'border-green-500 bg-green-50' 
+                      : logoError 
+                        ? 'border-red-300 bg-red-50' 
+                        : 'border-slate-300 hover:border-green-400'
+                  }`}
+                >
+                  {logoPreview ? (
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <img 
+                          src={logoPreview} 
+                          alt="Bank Logo Preview" 
+                          className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white p-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Click the X to remove and upload a different logo.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                      <p className="text-sm text-slate-600 mb-2">
+                        Drag and drop your logo here, or
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Select File
+                      </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".png,image/png"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        data-testid="logo-file-input"
+                      />
+                      <p className="text-xs text-slate-400 mt-3">
+                        PNG only • Max 250×250px • Max 1MB
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {logoError && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <X className="w-4 h-4" />
+                    {logoError}
+                  </p>
+                )}
+                
+                {!uploadedLogo && !logoError && (
+                  <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+                    * A bank logo is required to generate your statement
+                  </p>
+                )}
               </div>
 
               {/* Account Information */}
@@ -367,6 +702,15 @@ const createOrder = (data, actions) => {
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700 font-semibold">Bank:</span>
+                    <span className="font-bold flex items-center gap-2">
+                      {selectedBank?.logo && (
+                        <img src={selectedBank.logo} alt="" className="w-5 h-5 rounded" />
+                      )}
+                      {selectedBank?.id === 'other' ? customBankName || '—' : (selectedBank?.name || '—')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pb-2 border-b border-green-300">
                     <span className="text-slate-700 font-semibold">Account Holder:</span>
                     <span className="font-bold">{accountName || "—"}</span>
                   </div>
@@ -495,12 +839,27 @@ const createOrder = (data, actions) => {
                 <p className="text-sm text-slate-600 mb-4">
                   Total: <strong>$50.00</strong> for bank statement generation
                 </p>
-                <div data-testid="paypal-button-container-bank">
+                
+                {!isFormValid() && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-sm text-amber-700">
+                      Please complete the following before payment:
+                    </p>
+                    <ul className="text-xs text-amber-600 mt-1 list-disc list-inside">
+                      {!selectedBank && <li>Select a bank</li>}
+                      {!uploadedLogo && <li>Upload a bank logo</li>}
+                      {!accountName && <li>Enter account holder name</li>}
+                      {!accountNumber && <li>Enter account number</li>}
+                    </ul>
+                  </div>
+                )}
+                
+                <div data-testid="paypal-button-container-bank" className={!isFormValid() ? 'opacity-50 pointer-events-none' : ''}>
                   <PayPalButtons
                     createOrder={createOrder}
                     onApprove={onApprove}
                     onError={onError}
-                    disabled={isProcessing}
+                    disabled={isProcessing || !isFormValid()}
                     style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
                   />
                 </div>

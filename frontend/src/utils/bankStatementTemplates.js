@@ -538,7 +538,7 @@ export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) 
 
 // Template C: Professional Corporate Statement (Chase style)
 export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) {
-  const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, dateRange, transactions, toFixed, formatShortDate, formatDateLong, parseCurrency } = data;
+  const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, dateRange, transactions, toFixed, formatShortDate, formatDateLong, parseCurrency, bankLogo } = data;
   
   let y = 40;
   
@@ -547,10 +547,28 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.setLineWidth(4);
   doc.line(margin, y - 10, pageWidth - margin, y - 10);
   
-  doc.setFontSize(32);
-  doc.setTextColor(142, 68, 173);
-  doc.setFont("helvetica", "bold");
-  doc.text("FINANCIAL INSTITUTION", margin, y);
+  // Add custom logo if uploaded
+  if (bankLogo) {
+    try {
+      doc.addImage(bankLogo, "PNG", margin, y - 5, 60, 40);
+      // Move text to the right if logo is present
+      doc.setFontSize(18);
+      doc.setTextColor(142, 68, 173);
+      doc.setFont("helvetica", "bold");
+      doc.text("Account Statement", margin + 75, y + 15);
+    } catch (e) {
+      console.error("Failed to add logo to Template C:", e);
+      doc.setFontSize(32);
+      doc.setTextColor(142, 68, 173);
+      doc.setFont("helvetica", "bold");
+      doc.text("FINANCIAL INSTITUTION", margin, y);
+    }
+  } else {
+    doc.setFontSize(32);
+    doc.setTextColor(142, 68, 173);
+    doc.setFont("helvetica", "bold");
+    doc.text("FINANCIAL INSTITUTION", margin, y);
+  }
   
   y += 20;
   doc.setFontSize(18);

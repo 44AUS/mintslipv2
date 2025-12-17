@@ -567,7 +567,7 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(11);
   doc.setTextColor(0, 0, 0);
   doc.setFont(undefined, 'bold');
-  doc.text(payDate.toLocaleDateString(), rightCol, y);
+  doc.text(formatDate(payDate), rightCol, y);
   y += 20;
   doc.setFont(undefined, 'normal');
   doc.setFontSize(9);

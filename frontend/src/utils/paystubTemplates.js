@@ -696,412 +696,173 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     logoDataUrl
   } = data;
   
-  const m = 30; // Tighter margin for single page
+  const m = 30;
   const usableWidth = pageWidth - 2 * m;
   let y = 25;
   
-  // ========== HEADER - Company Logo or Name ==========
+  // ========== HEADER LOGO/NAME ==========
   const isPreview = data.isPreview || false;
-  
   if (isPreview) {
-    // In preview mode, show Workday logo
     try {
-      const workdayLogoUrl = '/assests/workday-logo.png';
+      const workdayLogoUrl = '/workdayLogo.png';
       const workdayLogo = await loadImageAsBase64(workdayLogoUrl);
-      if (workdayLogo) {
-        doc.addImage(workdayLogo, 'PNG', m, y - 10, 100, 30);
-      } else {
-        // Fallback to text if logo fails to load
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont("helvetica", "bold");
-        doc.text("WORKDAY", m, y + 5);
-      }
-    } catch (e) {
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "bold");
-      doc.text("WORKDAY", m, y + 5);
-    }
+      if (workdayLogo) doc.addImage(workdayLogo, 'PNG', m, y - 10, 100, 30);
+      else { doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text("WORKDAY", m, y + 5); }
+    } catch (e) { doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text("WORKDAY", m, y + 5); }
     y += 30;
   } else if (logoDataUrl) {
     try {
-      // Add logo image (max height 40px to fit header)
-      const logoHeight = 35;
-      const logoWidth = 120; // Approximate width, will scale proportionally
-      doc.addImage(logoDataUrl, 'PNG', m, y - 10, logoWidth, logoHeight);
+      doc.addImage(logoDataUrl, 'PNG', m, y - 10, 120, 35);
       y += 30;
     } catch (e) {
-      // Fallback to text if logo fails
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "bold");
-      doc.text(formData.company || "Company Name", m, y);
+      doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
       y += 12;
     }
   } else {
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    doc.text(formData.company || "Company Name", m, y);
+    doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
     y += 12;
   }
   
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
   doc.text(`${formData.companyAddress || ""}, ${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y);
   y += 10;
   doc.text(formData.companyPhone || "", m, y);
   
-  // Employee name and address (right side of header)
-  doc.setFontSize(9);
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(9); doc.setTextColor(0, 0, 0);
   doc.text(formData.name || "", pageWidth - m - 150, 25);
-  doc.setFontSize(8);
-  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(8); doc.setTextColor(60, 60, 60);
   doc.text(formData.address || "", pageWidth - m - 150, 37);
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, pageWidth - m - 150, 47);
   
-  // ========== EMPLOYEE INFO ROW ==========
   y += 15;
-  doc.setDrawColor(180, 180, 180);
-  doc.setLineWidth(0.5);
-  doc.line(m, y, pageWidth - m, y);
-  y += 12;
-  
-  doc.setFontSize(7);
-  doc.setTextColor(100, 100, 100);
-  const infoLabels = ["Name", "Company", "Employee ID", "Pay Period Begin", "Pay Period End", "Check Date"];
-  const infoValues = [
-    formData.name || "",
-    formData.company || "",
-    formData.employeeId || "",
-    formatDate(startDate),
-    formatDate(endDate),
-    formatDate(payDate)
-  ];
-  const colWidth = usableWidth / 6;
-  
-  infoLabels.forEach((label, i) => {
+
+  // HELPER: Refactored for Enclosed Black Borders including Title
+  const drawTableSection = (title, columns, colWidths, rowsData, isBoldLastRow = false, showInternalVerticals = true) => {
+    const startY = y;
+    const titleHeight = title ? 14 : 0;
+    const headerHeight = 12;
+    const rowHeight = 10;
+
+    // 1. Draw Title Area (Dark Grey Background)
+    if (title) {
+      doc.setFillColor(80, 80, 80);
+      doc.rect(m, y, usableWidth, titleHeight, 'F');
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text(title, pageWidth / 2, y + 10, { align: 'center' });
+      y += titleHeight;
+    }
+
+    // 2. Column Header Area (Light Grey Background)
+    doc.setFillColor(240, 240, 240);
+    doc.rect(m, y, usableWidth, headerHeight, 'F');
+    
+    // Header Labels
+    let currentX = m;
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.text(label, m + i * colWidth, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(infoValues[i], m + i * colWidth, y + 10);
-  });
-  
-  y += 25;
-  doc.line(m, y, pageWidth - m, y);
-  
-  // ========== SUMMARY TABLE ==========
-  y += 8;
-  doc.setFillColor(240, 240, 240);
-  doc.rect(m, y, usableWidth, 14, 'F');
-  
-  const sumCols = ["", "Hours Worked", "Gross Pay", "Pre Tax Ded.", "Employee Taxes", "Post Tax Ded.", "Net Pay"];
-  const sumColW = usableWidth / 7;
-  
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(60, 60, 60);
-  sumCols.forEach((col, i) => {
-    doc.text(col, m + i * sumColW + 3, y + 10);
-  });
-  
-  y += 14;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-  
-  // Current row
-  const currentRow = ["Current", hours.toFixed(2), fmt(grossPay), fmt(totalDeductions), fmt(totalTax), "0.00", fmt(netPay)];
-  currentRow.forEach((val, i) => {
-    doc.text(val, m + i * sumColW + 3, y + 10);
-  });
-  
-  y += 12;
-  // YTD row
-  const ytdRow = ["YTD", (hours * (ytdPayPeriods || 1)).toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdDeductions || totalDeductions), fmt(ytdTotalTax || totalTax), "0.00", fmt(ytdNetPay || netPay)];
-  ytdRow.forEach((val, i) => {
-    doc.text(val, m + i * sumColW + 3, y + 10);
-  });
-  
-  y += 18;
-  doc.setLineWidth(0.3);
-  doc.line(m, y, pageWidth - m, y);
-  
-  // ========== EARNING SECTION ==========
-  y += 8;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.text("Earning", m, y);
-  
-  y += 10;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(m, y, usableWidth, 12, 'F');
-  
-  const earnCols = ["Description", "Dates", "Hours", "Rate", "Amount", "YTD"];
-  const earnColW = [usableWidth * 0.25, usableWidth * 0.22, usableWidth * 0.1, usableWidth * 0.12, usableWidth * 0.15, usableWidth * 0.16];
-  let earnX = m;
-  
-  doc.setFontSize(7);
-  doc.setTextColor(80, 80, 80);
-  earnCols.forEach((col, i) => {
-    doc.text(col, earnX + 2, y + 9);
-    earnX += earnColW[i];
-  });
-  
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-  
-  // Regular earning row
-  earnX = m;
-  const earnRow = [
-    "Regular Earning HRLY",
-    `${formatDate(startDate)} - ${formatDate(endDate)}`,
-    hours.toFixed(2),
-    fmt(rate),
-    fmt(regularPay),
-    fmt(ytdRegularPay || regularPay)
-  ];
-  earnRow.forEach((val, i) => {
-    doc.text(val, earnX + 2, y + 8);
-    earnX += earnColW[i];
-  });
-  
-  y += 12;
-  if (overtime > 0) {
-    earnX = m;
-    const otRow = ["Overtime HRLY (1.5x)", `${formatDate(startDate)} - ${formatDate(endDate)}`, overtime.toFixed(2), fmt(rate * 1.5), fmt(overtimePay), fmt(ytdOvertimePay || overtimePay)];
-    otRow.forEach((val, i) => {
-      doc.text(val, earnX + 2, y + 8);
-      earnX += earnColW[i];
+    doc.setTextColor(60, 60, 60);
+    columns.forEach((col, i) => {
+      doc.text(col, currentX + 3, y + 8);
+      currentX += colWidths[i];
     });
-    y += 12;
-  }
-  
-  // Earning total
-  doc.setFont("helvetica", "bold");
-  doc.text("Earning", m + 2, y + 8);
-  doc.text(fmt(grossPay), m + earnColW[0] + earnColW[1] + earnColW[2] + earnColW[3] + 2, y + 8);
-  doc.text(fmt(ytdGrossPay || grossPay), m + earnColW[0] + earnColW[1] + earnColW[2] + earnColW[3] + earnColW[4] + 2, y + 8);
-  
-  y += 15;
-  doc.setLineWidth(0.3);
-  doc.line(m, y, pageWidth - m, y);
-  
-  // ========== EMPLOYEE TAXES SECTION ==========
-  y += 8;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Employee Taxes", m, y);
-  
-  y += 10;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(m, y, usableWidth, 12, 'F');
-  
+    y += headerHeight;
+
+    // 3. Data Rows
+    doc.setTextColor(0, 0, 0);
+    rowsData.forEach((row, rowIndex) => {
+      currentX = m;
+      const isLastRow = rowIndex === rowsData.length - 1;
+      if (isBoldLastRow && isLastRow) doc.setFont("helvetica", "bold");
+      else doc.setFont("helvetica", "normal");
+
+      row.forEach((cell, colIndex) => {
+        doc.text(String(cell), currentX + 3, y + 7);
+        currentX += colWidths[colIndex];
+      });
+      y += rowHeight;
+    });
+
+    const endY = y;
+    
+    // 4. Final Borders
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    
+    // Full Outer Bounding Box (Encloses title, headers, and rows)
+    doc.rect(m, startY, usableWidth, endY - startY);
+    
+    // Line under Title
+    if (title) doc.line(m, startY + titleHeight, pageWidth - m, startY + titleHeight);
+    // Line under Headers
+    doc.line(m, startY + titleHeight + headerHeight, pageWidth - m, startY + titleHeight + headerHeight);
+
+    // Internal Vertical Lines (Only for Info and Summary)
+    if (showInternalVerticals) {
+      let lineX = m;
+      for (let i = 0; i < colWidths.length - 1; i++) {
+        lineX += colWidths[i];
+        // Vertical lines start after the title area
+        doc.line(lineX, startY + titleHeight, lineX, endY);
+      }
+    }
+
+    y += 12; 
+  };
+
+  // ========== RENDER SECTIONS ==========
+
+  // 1. Info Area
+  const infoCols = ["Name", "Company", "Employee ID", "Pay Begin", "Pay End", "Check Date"];
+  const infoWidths = Array(6).fill(usableWidth/6);
+  const infoRow = [formData.name || "", formData.company || "", formData.employeeId || "", formatDate(startDate), formatDate(endDate), formatDate(payDate)];
+  drawTableSection(null, infoCols, infoWidths, [infoRow], false, true);
+
+  // 2. Summary
+  const sumCols = ["", "Hours", "Gross Pay", "Pre Tax Ded.", "Taxes", "Post Tax Ded.", "Net Pay"];
+  const sumWidths = Array(7).fill(usableWidth/7);
+  const sumRows = [
+    ["Current", hours.toFixed(2), fmt(grossPay), fmt(totalDeductions), fmt(totalTax), "0.00", fmt(netPay)],
+    ["YTD", (hours * (ytdPayPeriods || 1)).toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdDeductions || totalDeductions), fmt(ytdTotalTax || totalTax), "0.00", fmt(ytdNetPay || netPay)]
+  ];
+  drawTableSection(null, sumCols, sumWidths, sumRows, false, true);
+
+  // 3. Earnings (With Black Outer Border)
+  const earnCols = ["Description", "Dates", "Hours", "Rate", "Amount", "YTD"];
+  const earnWidths = [usableWidth * 0.25, usableWidth * 0.22, usableWidth * 0.1, usableWidth * 0.12, usableWidth * 0.15, usableWidth * 0.16];
+  const earnRows = [["Regular Earning", `${formatDate(startDate)} - ${formatDate(endDate)}`, hours.toFixed(2), fmt(rate), fmt(regularPay), fmt(ytdRegularPay || regularPay)]];
+  if (overtime > 0) earnRows.push(["Overtime (1.5x)", `${formatDate(startDate)} - ${formatDate(endDate)}`, overtime.toFixed(2), fmt(rate * 1.5), fmt(overtimePay), fmt(ytdOvertimePay || overtimePay)]);
+  earnRows.push(["Total Earnings", "", "", "", fmt(grossPay), fmt(ytdGrossPay || grossPay)]);
+  drawTableSection("Earnings", earnCols, earnWidths, earnRows, true, false);
+
+  // 4. Taxes (With Black Outer Border)
   const taxCols = ["Description", "Amount", "YTD"];
-  const taxColW = [usableWidth * 0.6, usableWidth * 0.2, usableWidth * 0.2];
-  let taxX = m;
-  
-  doc.setFontSize(7);
-  doc.setTextColor(80, 80, 80);
-  taxCols.forEach((col, i) => {
-    doc.text(col, taxX + 2, y + 9);
-    taxX += taxColW[i];
-  });
-  
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-  
-  // Tax rows
+  const taxWidths = [usableWidth * 0.6, usableWidth * 0.2, usableWidth * 0.2];
   const taxRows = [
     ["OASDI (Social Security)", fmt(ssTax), fmt(ytdSsTax || ssTax)],
     ["Medicare", fmt(medTax), fmt(ytdMedTax || medTax)],
-    [`Federal Withholding${formData.federalFilingStatus ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}`, fmt(federalTax || 0), fmt(ytdFederalTax || federalTax || 0)],
-    [`State Tax - ${formData.state || 'ST'}${parseInt(formData.stateAllowances) > 0 ? ` (${formData.stateAllowances} allow.)` : ''}`, fmt(stateTax), fmt(ytdStateTax || stateTax)]
+    ["Federal Withholding", fmt(federalTax || 0), fmt(ytdFederalTax || federalTax || 0)],
+    [`State Tax - ${formData.state || 'ST'}`, fmt(stateTax), fmt(ytdStateTax || stateTax)]
   ];
-  
-  // Add local tax if applicable
-  if (formData.includeLocalTax && localTax > 0) {
-    const localRatePercent = localTaxRate ? (localTaxRate * 100).toFixed(2) : "1.00";
-    taxRows.push([`City Tax - ${formData.city || 'Local'} (${localRatePercent}%)`, fmt(localTax), fmt(ytdLocalTax || localTax)]);
-  }
-  
-  taxRows.forEach(row => {
-    taxX = m;
-    row.forEach((val, i) => {
-      doc.text(val, taxX + 2, y + 8);
-      taxX += taxColW[i];
-    });
-    y += 10;
-  });
-  
-  // Tax total
-  doc.setFont("helvetica", "bold");
-  taxX = m;
-  ["Employee Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)].forEach((val, i) => {
-    doc.text(val, taxX + 2, y + 8);
-    taxX += taxColW[i];
-  });
-  
-  y += 15;
-  doc.setLineWidth(0.3);
-  doc.line(m, y, pageWidth - m, y);
-  
-  // ========== PRE TAX DEDUCTIONS (if any) ==========
+  if (formData.includeLocalTax && localTax > 0) taxRows.push([`City Tax`, fmt(localTax), fmt(ytdLocalTax || localTax)]);
+  taxRows.push(["Total Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
+  drawTableSection("Employee Taxes", taxCols, taxWidths, taxRows, true, false);
+
+  // 5. Deductions
   if (deductionsData && deductionsData.length > 0) {
-    y += 8;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text("Pre Tax Deductions", m, y);
-    
-    y += 10;
-    doc.setFillColor(245, 245, 245);
-    doc.rect(m, y, usableWidth, 12, 'F');
-    
-    taxX = m;
-    doc.setFontSize(7);
-    doc.setTextColor(80, 80, 80);
-    taxCols.forEach((col, i) => {
-      doc.text(col, taxX + 2, y + 9);
-      taxX += taxColW[i];
-    });
-    
-    y += 12;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0);
-    
-    deductionsData.forEach(d => {
-      taxX = m;
-      [d.name || "Deduction", fmt(d.currentAmount), fmt(d.currentAmount * (ytdPayPeriods || 1))].forEach((val, i) => {
-        doc.text(val, taxX + 2, y + 8);
-        taxX += taxColW[i];
-      });
-      y += 10;
-    });
-    
-    doc.setFont("helvetica", "bold");
-    taxX = m;
-    ["Pre Tax Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)].forEach((val, i) => {
-      doc.text(val, taxX + 2, y + 8);
-      taxX += taxColW[i];
-    });
-    
-    y += 15;
-    doc.line(m, y, pageWidth - m, y);
+    const dedRows = deductionsData.map(d => [d.name || "Deduction", fmt(d.currentAmount), fmt(d.currentAmount * (ytdPayPeriods || 1))]);
+    dedRows.push(["Total Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
+    drawTableSection("Pre Tax Deductions", taxCols, taxWidths, dedRows, true, false);
   }
-  
-  // ========== EMPLOYER PAID BENEFITS (Contributions) ==========
-  if (contributionsData && contributionsData.length > 0) {
-    y += 8;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text("Employer Paid Benefits", m, y);
-    
-    y += 10;
-    doc.setFillColor(245, 245, 245);
-    doc.rect(m, y, usableWidth, 12, 'F');
-    
-    taxX = m;
-    doc.setFontSize(7);
-    doc.setTextColor(80, 80, 80);
-    taxCols.forEach((col, i) => {
-      doc.text(col, taxX + 2, y + 9);
-      taxX += taxColW[i];
-    });
-    
-    y += 12;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(0, 0, 0);
-    
-    contributionsData.forEach(c => {
-      taxX = m;
-      [c.name || "Contribution", fmt(c.currentAmount), fmt(c.currentAmount * (ytdPayPeriods || 1))].forEach((val, i) => {
-        doc.text(val, taxX + 2, y + 8);
-        taxX += taxColW[i];
-      });
-      y += 10;
-    });
-    
-    doc.setFont("helvetica", "bold");
-    taxX = m;
-    ["Employer Paid Benefits", fmt(totalContributions), fmt(ytdContributions || totalContributions)].forEach((val, i) => {
-      doc.text(val, taxX + 2, y + 8);
-      taxX += taxColW[i];
-    });
-    
-    y += 15;
-    doc.line(m, y, pageWidth - m, y);
-  }
-  
-  // ========== FILING STATUS INFO ==========
-  y += 10;
-  doc.setFontSize(8);
-  doc.setTextColor(80, 80, 80);
-  
-  const halfW = usableWidth / 2;
-  doc.setFont("helvetica", "bold");
-  doc.text("Federal", m + halfW * 0.3, y);
-  doc.text("State", m + halfW * 0.7, y);
-  
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  doc.text("Marital Status", m, y);
-  const fedStatus = formData.federalFilingStatus 
-    ? (formData.federalFilingStatus === 'married_jointly' ? 'Married filing jointly' : formData.federalFilingStatus === 'head_of_household' ? 'Head of household' : 'Single or Married filing separately')
-    : 'Single';
-  doc.text(fedStatus, m + halfW * 0.2, y);
-  
-  y += 10;
-  doc.text("Allowances", m, y);
-  doc.text("0", m + halfW * 0.35, y);
-  doc.text(formData.stateAllowances || "0", m + halfW * 0.75, y);
-  
-  y += 15;
-  doc.setLineWidth(0.3);
-  doc.line(m, y, pageWidth - m, y);
-  
-  // ========== PAYMENT INFO ==========
-  y += 8;
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("Payment Information", m, y);
-  
-  y += 10;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(m, y, usableWidth, 12, 'F');
-  
-  const payCols = ["Bank", "Account Name", "Account Number", "USD Amount"];
-  const payColW = [usableWidth * 0.2, usableWidth * 0.3, usableWidth * 0.25, usableWidth * 0.25];
-  let payX = m;
-  
-  doc.setFontSize(7);
-  doc.setTextColor(80, 80, 80);
-  payCols.forEach((col, i) => {
-    doc.text(col, payX + 2, y + 9);
-    payX += payColW[i];
-  });
-  
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
-  
-  payX = m;
-  const payRow = [
-    formData.bankName || "Bank",
-    `${formData.bankName || "Account"} ******${formData.bank || "0000"}`,
-    `******${formData.bank || "0000"}`,
-    `${fmt(netPay)} USD`
-  ];
-  payRow.forEach((val, i) => {
-    doc.text(val, payX + 2, y + 8);
-    payX += payColW[i];
-  });
-  
-  // ========== FOOTER ==========
+
+  // 6. Payment Info
+  const payCols = ["Bank Name", "Account Name", "Account Number", "Distribution"];
+  const payWidths = Array(4).fill(usableWidth/4);
+  const payRows = [[formData.bankName || "Bank", formData.name || "Employee", `******${formData.bank || "0000"}`, `${fmt(netPay)}` ]];
+  drawTableSection("Payment Information", payCols, payWidths, payRows, false, true);
+
+  // FOOTER
   doc.setFontSize(7);
   doc.setTextColor(120, 120, 120);
   doc.text(`Page ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 20, { align: 'center' });

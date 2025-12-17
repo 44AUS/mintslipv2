@@ -35,7 +35,6 @@ export default function BankStatementForm() {
   const [bankSearchQuery, setBankSearchQuery] = useState("");
   const [selectedBank, setSelectedBank] = useState(null);
   const [showBankDropdown, setShowBankDropdown] = useState(false);
-  const [customBankName, setCustomBankName] = useState("");
   const bankSearchRef = useRef(null);
   
   // Logo upload state

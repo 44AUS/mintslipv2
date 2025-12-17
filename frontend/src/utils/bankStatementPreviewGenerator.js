@@ -169,7 +169,8 @@ export const generateBankStatementPreview = async (formData, template = 'templat
       toFixed,
       formatShortDate,
       formatDateLong,
-      parseCurrency
+      parseCurrency,
+      bankLogo: bankLogo || null
     };
 
     // Generate the template based on selection

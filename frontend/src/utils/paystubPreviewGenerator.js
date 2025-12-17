@@ -162,7 +162,9 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       );
     }
     
-    const localTax = isContractor ? 0 : (formData.includeLocalTax ? grossPay * 0.01 : 0);
+    // Get actual local tax rate
+    const localTaxRate = getLocalTaxRate(formData.state, formData.city);
+    const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
     const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
     // Calculate deductions for preview

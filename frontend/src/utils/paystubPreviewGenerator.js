@@ -145,9 +145,41 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
 
     const ssTax = isContractor ? 0 : grossPay * 0.062;
     const medTax = isContractor ? 0 : grossPay * 0.0145;
-    const stateTax = isContractor ? 0 : grossPay * stateRate;
+    
+    // Calculate federal income tax based on filing status and exemptions
+    let federalTax = 0;
+    if (!isContractor) {
+      if (formData.federalFilingStatus) {
+        federalTax = calculateFederalTax(
+          grossPay,
+          payFrequency,
+          formData.federalFilingStatus,
+          formData.federalExemptions || 0
+        );
+      } else {
+        federalTax = grossPay * 0.22;
+      }
+    }
+    
+    // Calculate state tax based on filing status and exemptions
+    let stateTax = 0;
+    if (!isContractor) {
+      if (formData.stateFilingStatus) {
+        stateTax = calculateStateTax(
+          grossPay,
+          formData.state,
+          payFrequency,
+          formData.stateFilingStatus,
+          formData.stateExemptions || 0,
+          stateRate
+        );
+      } else {
+        stateTax = grossPay * stateRate;
+      }
+    }
+    
     const localTax = isContractor ? 0 : (formData.includeLocalTax ? grossPay * 0.01 : 0);
-    const totalTax = ssTax + medTax + stateTax + localTax;
+    const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
     // Calculate deductions for preview
     const deductionsData = (formData.deductions || []).map(d => {

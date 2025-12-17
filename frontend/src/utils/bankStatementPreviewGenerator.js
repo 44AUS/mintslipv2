@@ -147,6 +147,8 @@ export const generateBankStatementPreview = async (formData, template = 'templat
     const dateRange = `(${formatDateLong(statementStart)} - ${formatDateLong(statementEnd)})`;
 
     // Prepare template data (matching what the main generator passes)
+    // Note: bankLogo is intentionally NOT passed to preview - preview always uses default logos
+    // The uploaded logo will only appear on the final downloaded PDF
     const templateData = {
       accountName: accountName || "Account Holder",
       accountAddress1: accountAddress1 || "123 Main Street",
@@ -170,7 +172,7 @@ export const generateBankStatementPreview = async (formData, template = 'templat
       formatShortDate,
       formatDateLong,
       parseCurrency,
-      bankLogo: bankLogo || null
+      bankLogo: null  // Always null for preview - use default logos
     };
 
     // Generate the template based on selection

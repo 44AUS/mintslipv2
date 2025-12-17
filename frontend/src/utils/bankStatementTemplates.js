@@ -32,17 +32,25 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   doc.setFontSize(28);
   doc.setTextColor("#00b26a");
   // Use custom uploaded logo if available, otherwise fall back to default Chime logo
-  try {
-    if (bankLogo) {
-      // For base64 data URLs, jsPDF can handle them directly
+  if (bankLogo && typeof bankLogo === 'string' && bankLogo.startsWith('data:image')) {
+    try {
+      // For base64 data URLs from uploaded files
       doc.addImage(bankLogo, "PNG", margin, y - 18, 65, 20);
-    } else {
-      doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
+    } catch (e) {
+      console.error("Template A custom logo error:", e);
+      // Try default logo on failure
+      try {
+        doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
+      } catch (e2) {
+        doc.text("Chime", margin, y);
+      }
     }
-  } catch (e) {
-    // fallback to text if addImage fails
-    console.error("Template A logo error:", e);
-    doc.text("Chime", margin, y);
+  } else {
+    try {
+      doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
+    } catch (e) {
+      doc.text("Chime", margin, y);
+    }
   }
 
   // --- Member Services Header ---

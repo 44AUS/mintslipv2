@@ -167,8 +167,10 @@ function DesktopNavLinks({ location, onNavigate }) {
 // Navigation links component for mobile
 function MobileNavLinks({ location, onNavigate }) {
   const [taxFormsOpen, setTaxFormsOpen] = useState(false);
+  const [otherFormsOpen, setOtherFormsOpen] = useState(false);
   const isActive = (path) => location.pathname === path;
   const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
+  const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
   
   const getButtonClasses = (path) => {
     const base = "flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md transition-all";
@@ -198,6 +200,15 @@ function MobileNavLinks({ location, onNavigate }) {
         <span className="text-base">Bank Statements</span>
       </button>
 
+      <button
+        onClick={() => onNavigate("/utility-bill")}
+        className={getButtonClasses("/utility-bill")}
+        data-testid="nav-utilitybill-link-mobile"
+      >
+        <FileBarChart className="w-5 h-5" />
+        <span className="text-base">Utility Bills</span>
+      </button>
+
       {/* Tax Forms Collapsible for Mobile */}
       <Collapsible open={taxFormsOpen} onOpenChange={setTaxFormsOpen}>
         <CollapsibleTrigger asChild>
@@ -218,6 +229,45 @@ function MobileNavLinks({ location, onNavigate }) {
         </CollapsibleTrigger>
         <CollapsibleContent className="pl-6 space-y-1 mt-1">
           {TAX_FORMS.map((form) => {
+            const IconComponent = form.icon;
+            return (
+              <button
+                key={form.path}
+                onClick={() => onNavigate(form.path)}
+                className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
+                  isActive(form.path) 
+                    ? 'bg-green-100 text-green-800 font-semibold' 
+                    : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+                }`}
+              >
+                <IconComponent className="w-4 h-4" />
+                <span className="text-sm">{form.name}</span>
+              </button>
+            );
+          })}
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Other Forms Collapsible for Mobile */}
+      <Collapsible open={otherFormsOpen} onOpenChange={setOtherFormsOpen}>
+        <CollapsibleTrigger asChild>
+          <button
+            className={`flex items-center justify-between gap-2 px-4 py-3 w-full rounded-md transition-all ${
+              isOtherFormActive 
+                ? 'bg-green-100 text-green-800 font-semibold' 
+                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+            }`}
+            data-testid="nav-otherforms-mobile"
+          >
+            <div className="flex items-center gap-2">
+              <Receipt className="w-5 h-5" />
+              <span className="text-base">Other Forms</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${otherFormsOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pl-6 space-y-1 mt-1">
+          {OTHER_FORMS.map((form) => {
             const IconComponent = form.icon;
             return (
               <button

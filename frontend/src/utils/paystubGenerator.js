@@ -195,15 +195,14 @@ async function generateSingleStub(
   const ssTax = isContractor ? 0 : grossPay * 0.062;
   const medTax = isContractor ? 0 : grossPay * 0.0145;
   
-  // Calculate federal income tax based on filing status and exemptions
+  // Calculate federal income tax based on filing status (no allowances per 2020+ W-4)
   let federalTax = 0;
   if (!isContractor) {
     if (formData.federalFilingStatus) {
       federalTax = calculateFederalTax(
         grossPay,
         payFrequency,
-        formData.federalFilingStatus,
-        formData.federalExemptions || 0
+        formData.federalFilingStatus
       );
     } else {
       // Default flat rate if no filing status selected
@@ -211,22 +210,16 @@ async function generateSingleStub(
     }
   }
   
-  // Calculate state tax based on filing status and exemptions
+  // Calculate state tax with allowances (only for applicable states)
   let stateTax = 0;
   if (!isContractor) {
-    if (formData.stateFilingStatus) {
-      stateTax = calculateStateTax(
-        grossPay,
-        formData.state,
-        payFrequency,
-        formData.stateFilingStatus,
-        formData.stateExemptions || 0,
-        stateRate
-      );
-    } else {
-      // Default flat rate if no filing status selected
-      stateTax = grossPay * stateRate;
-    }
+    stateTax = calculateStateTax(
+      grossPay,
+      formData.state,
+      payFrequency,
+      formData.stateAllowances || 0,
+      stateRate
+    );
   }
   
   const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);

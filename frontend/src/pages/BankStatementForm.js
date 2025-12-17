@@ -235,7 +235,7 @@ export default function BankStatementForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [accountName, accountAddress1, accountAddress2, accountNumber, selectedMonth, beginningBalance, transactions, selectedTemplate, selectedBank, customBankName, uploadedLogo]);
+  }, [accountName, accountAddress1, accountAddress2, accountNumber, selectedMonth, beginningBalance, transactions, selectedTemplate, selectedBank, uploadedLogo]);
 
   const addTransaction = () => {
     setTransactions([...transactions, { date: "", description: "", type: "Purchase", amount: "" }]);

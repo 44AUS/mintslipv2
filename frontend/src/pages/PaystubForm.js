@@ -558,11 +558,12 @@ export default function PaystubForm() {
       await actions.order.capture();
       toast.success("Payment successful! Generating your document...");
       
-      // Prepare formData with deductions and contributions
+      // Prepare formData with deductions, contributions, and company logo
       const fullFormData = {
         ...formData,
         deductions: deductions,
         contributions: contributions,
+        companyLogo: companyLogo, // Include uploaded logo for PDF
       };
       
       // Generate and download PDF

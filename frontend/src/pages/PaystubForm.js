@@ -691,8 +691,16 @@ export default function PaystubForm() {
                 {selectedPayrollCompany && (
                   <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
                     <div className="flex items-center gap-4">
-                      <div className="w-[100px] h-[100px] rounded-lg bg-white border border-slate-200 flex items-center justify-center">
-                        <Building2 className="w-10 h-10 text-slate-300" />
+                      <div className="w-[100px] h-[100px] rounded-lg bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-2">
+                        {selectedPayrollCompany.logo ? (
+                          <img 
+                            src={selectedPayrollCompany.logo} 
+                            alt={`${selectedPayrollCompany.name} logo`} 
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <Building2 className="w-10 h-10 text-slate-300" />
+                        )}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>

@@ -531,6 +531,20 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(formData.address || "", leftCol, y);
   y += 12;
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, leftCol, y);
+  
+  // Filing Status (if provided)
+  if (formData.federalFilingStatus || formData.stateFilingStatus) {
+    y += 15;
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    if (formData.federalFilingStatus) {
+      doc.text(`Federal: ${formatFilingStatus(formData.federalFilingStatus)}`, leftCol, y);
+    }
+    if (formData.stateFilingStatus) {
+      y += 10;
+      doc.text(`State: ${formatFilingStatus(formData.stateFilingStatus)}`, leftCol, y);
+    }
+  }
 
   // Right Column - Payment Info
   y = 130;

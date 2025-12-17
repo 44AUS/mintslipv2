@@ -94,7 +94,7 @@ function DesktopNavLinks({ location, onNavigate }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className={getDropdownTriggerClasses()}
+            className={getDropdownTriggerClasses(isTaxFormActive)}
             data-testid="nav-taxforms-dropdown"
           >
             <Receipt className="w-4 h-4" />

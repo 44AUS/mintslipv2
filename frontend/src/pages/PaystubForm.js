@@ -1692,7 +1692,7 @@ export default function PaystubForm() {
                 </p>
                 
                 {isGeneratingPreview ? (
-                  <div className="flex items-center justify-center h-64 bg-slate-100 rounded-md">
+                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>

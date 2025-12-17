@@ -381,7 +381,7 @@ export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) 
   doc.rect(0, 0, pageWidth, 80, 'F');
   
   // Add custom logo if uploaded (white background area for logo)
-  if (bankLogo) {
+  if (bankLogo && typeof bankLogo === 'string' && bankLogo.startsWith('data:image')) {
     try {
       doc.setFillColor(255, 255, 255);
       doc.rect(pageWidth - margin - 80, 15, 70, 50, 'F');

@@ -43,6 +43,17 @@ export default function PaystubForm() {
   const [deductions, setDeductions] = useState([]);
   const [contributions, setContributions] = useState([]);
   
+  // Company search and logo upload state
+  const [companySearchQuery, setCompanySearchQuery] = useState("");
+  const [selectedPayrollCompany, setSelectedPayrollCompany] = useState(PAYROLL_COMPANIES[0]);
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [logoError, setLogoError] = useState("");
+  const companySearchRef = useRef(null);
+  const logoInputRef = useRef(null);
+  
   const [formData, setFormData] = useState({
     name: "",
     ssn: "",

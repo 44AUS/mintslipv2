@@ -92,23 +92,13 @@ export default function BankStatementForm() {
     bank.name.toLowerCase().includes(bankSearchQuery.toLowerCase())
   );
 
-  // Handle bank selection
+  // Handle bank selection - only changes template, user must still upload logo
   const handleBankSelect = (bank) => {
     setSelectedBank(bank);
     setBankSearchQuery(bank.name);
     setSelectedTemplate(bank.template);
     setShowBankDropdown(false);
-    
-    // If selecting a known bank, use their logo
-    if (bank.logo) {
-      setLogoPreview(bank.logo);
-      setUploadedLogo(bank.logo);
-      setLogoError("");
-    } else {
-      // For "Other Bank", clear logo so user must upload
-      setLogoPreview(null);
-      setUploadedLogo(null);
-    }
+    // Note: We do NOT auto-populate the logo - user must upload their own
   };
 
   // Handle custom bank name for "Other Bank"

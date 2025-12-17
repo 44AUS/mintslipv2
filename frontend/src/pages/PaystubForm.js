@@ -1375,14 +1375,14 @@ export default function PaystubForm() {
                   </div>
                 )}
 
-                {/* Filing Status Section - Only for employees */}
+                {/* Filing Status & Exemptions Section - Only for employees */}
                 {formData.workerType === 'employee' && (
                   <div className="space-y-4">
                     <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                      Filing Status (Optional)
+                      Filing Status & Exemptions (Optional)
                     </h2>
                     <p className="text-xs text-slate-500 -mt-2">
-                      These will appear on your pay stub for informational purposes.
+                      Tax withholding is calculated based on filing status and exemptions. More exemptions = less tax withheld.
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1405,6 +1405,27 @@ export default function PaystubForm() {
                         </Select>
                       </div>
 
+                      {/* Federal Exemptions/Allowances */}
+                      <div className="space-y-2">
+                        <Label htmlFor="federalExemptions">Federal Allowances (W-4)</Label>
+                        <Select 
+                          value={formData.federalExemptions || "0"} 
+                          onValueChange={(val) => setFormData({...formData, federalExemptions: val})}
+                        >
+                          <SelectTrigger data-testid="federal-exemptions">
+                            <SelectValue placeholder="Select allowances..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} {num === 1 ? 'Allowance' : 'Allowances'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-slate-400">Each allowance reduces tax withholding</p>
+                      </div>
+
                       {/* State Filing Status */}
                       <div className="space-y-2">
                         <Label htmlFor="stateFilingStatus">State Filing Status</Label>
@@ -1423,7 +1444,38 @@ export default function PaystubForm() {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* State Exemptions/Allowances */}
+                      <div className="space-y-2">
+                        <Label htmlFor="stateExemptions">State Allowances</Label>
+                        <Select 
+                          value={formData.stateExemptions || "0"} 
+                          onValueChange={(val) => setFormData({...formData, stateExemptions: val})}
+                        >
+                          <SelectTrigger data-testid="state-exemptions">
+                            <SelectValue placeholder="Select allowances..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} {num === 1 ? 'Allowance' : 'Allowances'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-slate-400">State tax allowances (varies by state)</p>
+                      </div>
                     </div>
+                    
+                    {/* Tax Calculation Info */}
+                    {(formData.federalFilingStatus || formData.stateFilingStatus) && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-800">
+                          <strong>Tax Calculation:</strong> Withholding is calculated using 2024 IRS tax brackets based on your filing status. 
+                          Each allowance reduces your taxable income by approximately $4,300/year for federal and $2,500/year for state taxes.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -93,37 +93,16 @@ export default function BankStatementForm() {
       return false;
     }
     
-    // Check file size (max 1MB)
-    if (file.size > 1024 * 1024) {
-      setLogoError("File size must be less than 1MB");
-      return false;
-    }
-    
     return new Promise((resolve) => {
-      const img = new Image();
       const reader = new FileReader();
       
       reader.onload = (e) => {
-        img.onload = () => {
-          // Check dimensions (max 250x250)
-          if (img.width > 250 || img.height > 250) {
-            setLogoError("Image dimensions must be 250x250 pixels or smaller");
-            resolve(false);
-            return;
-          }
-          
-          // Store in localStorage
-          const base64 = e.target.result;
-          localStorage.setItem('bankStatementLogo', base64);
-          setUploadedLogo(base64);
-          setLogoPreview(base64);
-          resolve(true);
-        };
-        img.onerror = () => {
-          setLogoError("Invalid image file");
-          resolve(false);
-        };
-        img.src = e.target.result;
+        // Store in localStorage
+        const base64 = e.target.result;
+        localStorage.setItem('bankStatementLogo', base64);
+        setUploadedLogo(base64);
+        setLogoPreview(base64);
+        resolve(true);
       };
       reader.onerror = () => {
         setLogoError("Error reading file");

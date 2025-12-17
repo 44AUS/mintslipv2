@@ -171,8 +171,19 @@ export const generateBankStatementPreview = async (formData, template = 'templat
       parseCurrency
     };
 
-    // Generate the template
-    generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    // Generate the template based on selection
+    switch (template) {
+      case 'template-b':
+        generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+        break;
+      case 'template-c':
+        generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+        break;
+      case 'template-a':
+      default:
+        generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+        break;
+    }
 
     // Add watermark on ALL pages
     addWatermarkToAllPages(doc, pageWidth, pageHeight);

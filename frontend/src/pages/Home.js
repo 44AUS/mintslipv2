@@ -120,27 +120,6 @@ export default function Home() {
           {/* Right: Visual Element - Enhanced */}
           <div className={`lg:col-span-5 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
             <div className="relative">
-              {/* Floating Elements */}
-              <div className="absolute -top-4 -left-4 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s' }}>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                  <span className="text-sm font-semibold text-slate-700">Instant</span>
-                </div>
-              </div>
-              
-              <div className="absolute -bottom-4 -right-4 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s', animationDelay: '1s' }}>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-semibold text-slate-700">Secure</span>
-                </div>
-              </div>
-
-              {/* Stats Badge */}
-              <div className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg hidden md:block">
-                <p className="text-2xl font-bold">$15</p>
-                <p className="text-xs opacity-90">Per Document</p>
-              </div>
-
               {/* Main Image */}
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
                 <img
@@ -152,8 +131,29 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
               </div>
 
-              {/* Document Count */}
-              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-lg border border-slate-200">
+              {/* Floating Elements - Over the image with z-index */}
+              <div className="absolute -top-4 -left-4 z-20 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s' }}>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-yellow-500" />
+                  <span className="text-sm font-semibold text-slate-700">Instant</span>
+                </div>
+              </div>
+              
+              <div className="absolute -bottom-4 -right-4 z-20 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s', animationDelay: '1s' }}>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-semibold text-slate-700">Secure</span>
+                </div>
+              </div>
+
+              {/* Stats Badge - Over the image */}
+              <div className="absolute top-1/2 -left-8 z-20 transform -translate-y-1/2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg hidden md:block">
+                <p className="text-2xl font-bold">$15</p>
+                <p className="text-xs opacity-90">Per Document</p>
+              </div>
+
+              {/* Document Count - Over the image */}
+              <div className="absolute -bottom-6 left-1/2 z-20 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-lg border border-slate-200">
                 <p className="text-sm text-slate-600">
                   <span className="font-bold text-green-700">50,000+</span> documents generated
                 </p>

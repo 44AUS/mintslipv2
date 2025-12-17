@@ -116,7 +116,8 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     toFixed,
     formatShortDate,
     formatDateLong,
-    parseCurrency
+    parseCurrency,
+    bankLogo: bankLogo || null
   };
 
   // Call appropriate template

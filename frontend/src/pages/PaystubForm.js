@@ -577,7 +577,7 @@ export default function PaystubForm() {
 
     const netPay = totalGross - totalTaxes - totalDeductions - totalContributions;
 
-    return { totalGross, totalTaxes, netPay, ssTax, medTax, stateTax, localTax, numStubs, totalDeductions, totalContributions, stateRate, localTaxRate: actualLocalTaxRate };
+    return { totalGross, totalTaxes, netPay, ssTax, medTax, federalTax, stateTax, localTax, numStubs, totalDeductions, totalContributions, stateRate, localTaxRate: actualLocalTaxRate };
   }, [formData, calculateNumStubs, deductions, contributions]);
 
   const createOrder = (data, actions) => {

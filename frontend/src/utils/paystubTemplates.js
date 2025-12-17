@@ -490,7 +490,7 @@ function drawTable(
 
 // Template B: Modern Minimalist
 export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
-  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs } = data;
+  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs, ytdFederalTax } = data;
   
   let y = 30;
   

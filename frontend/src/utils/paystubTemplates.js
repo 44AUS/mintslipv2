@@ -701,7 +701,20 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   let y = 25;
   
   // ========== HEADER - Company Logo or Name ==========
-  if (logoDataUrl) {
+  const isPreview = data.isPreview || false;
+  
+  if (isPreview) {
+    // In preview mode, show "LOGO" placeholder text
+    doc.setFillColor(240, 240, 240);
+    doc.rect(m, y - 10, 100, 35, 'F');
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(m, y - 10, 100, 35, 'S');
+    doc.setFontSize(16);
+    doc.setTextColor(150, 150, 150);
+    doc.setFont("helvetica", "bold");
+    doc.text("LOGO", m + 35, y + 8);
+    y += 30;
+  } else if (logoDataUrl) {
     try {
       // Add logo image (max height 40px to fit header)
       const logoHeight = 35;

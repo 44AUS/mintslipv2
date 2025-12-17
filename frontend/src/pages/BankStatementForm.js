@@ -506,7 +506,7 @@ const createOrder = (data, actions) => {
                         data-testid="logo-file-input"
                       />
                       <p className="text-xs text-slate-400 mt-3">
-                        PNG only • Max 250×250px • Max 1MB
+                        PNG format only
                       </p>
                     </div>
                   )}

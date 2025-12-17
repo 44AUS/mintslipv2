@@ -1736,7 +1736,7 @@ export default function PaystubForm() {
                       {/* Federal Income Tax */}
                       <div className="flex justify-between">
                         <span className="text-slate-700">
-                          Federal Income Tax{formData.federalFilingStatus ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'married_separately' ? 'MFS' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}:
+                          Federal Income Tax{formData.federalFilingStatus ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}:
                         </span>
                         <span>${preview.federalTax.toFixed(2)}</span>
                       </div>
@@ -1750,7 +1750,7 @@ export default function PaystubForm() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-700">
-                          {formData.state ? `${formData.state} State Tax${formData.stateFilingStatus ? ` (${formData.stateFilingStatus === 'married_jointly' ? 'MFJ' : formData.stateFilingStatus === 'married_separately' ? 'MFS' : formData.stateFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}:` : 'State Tax:'}
+                          {formData.state ? `${formData.state} State Tax${parseInt(formData.stateAllowances) > 0 ? ` (${formData.stateAllowances} allow.)` : ''}:` : 'State Tax:'}
                         </span>
                         <span>${preview.stateTax.toFixed(2)}</span>
                       </div>
@@ -1760,12 +1760,6 @@ export default function PaystubForm() {
                             {formData.city ? `${formData.city} Local Tax (${(preview.localTaxRate * 100).toFixed(2)}%):` : 'Local Tax:'}
                           </span>
                           <span>${preview.localTax.toFixed(2)}</span>
-                        </div>
-                      )}
-                      {/* Exemptions info */}
-                      {(parseInt(formData.federalExemptions) > 0 || parseInt(formData.stateExemptions) > 0) && (
-                        <div className="text-xs text-slate-500 mt-1">
-                          Exemptions: {parseInt(formData.federalExemptions) > 0 ? `Fed: ${formData.federalExemptions}` : ''} {parseInt(formData.stateExemptions) > 0 ? `State: ${formData.stateExemptions}` : ''}
                         </div>
                       )}
                       <div className="border-t border-green-300 pt-2 mt-2">

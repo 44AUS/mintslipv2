@@ -419,55 +419,29 @@ const createOrder = (data, actions) => {
 
                 {/* Selected Bank Confirmation */}
                 {selectedBank && (
-                  <div className="space-y-2 mt-4">
-                    <Label htmlFor="customBankName">Enter Bank Name *</Label>
-                    <Input
-                      id="customBankName"
-                      data-testid="custom-bank-name-input"
-                      value={customBankName}
-                      onChange={handleCustomBankName}
-                      placeholder="Enter your bank's name"
-                      required
-                    />
-                  </div>
-                )}
-
-                {/* Selected Bank Preview - Shows large logo for reference */}
-                {selectedBank && selectedBank.id !== 'other' && (
                   <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800 mb-3">✓ Bank Selected - Template Applied</p>
                     <div className="flex items-center gap-4">
+                      {/* Logo preview - 150x150 */}
                       {selectedBank.logo ? (
-                        <div className="relative">
-                          <img 
-                            src={selectedBank.logo} 
-                            alt={selectedBank.name} 
-                            className="w-[150px] h-[150px] rounded-lg object-contain bg-white border border-slate-200 p-2"
-                            onError={(e) => {
-                              e.target.parentElement.innerHTML = `
-                                <div class="w-[150px] h-[150px] rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
-                                  <span class="text-slate-400 text-sm text-center px-2">Logo preview<br/>unavailable</span>
-                                </div>
-                              `;
-                            }}
-                          />
-                          <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                            Preview
-                          </div>
-                        </div>
+                        <img 
+                          src={selectedBank.logo} 
+                          alt={selectedBank.name} 
+                          className="w-[150px] h-[150px] rounded-lg object-contain bg-white border border-slate-200 p-2"
+                        />
                       ) : (
-                        <div className="w-[150px] h-[150px] rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
-                          <Building2 className="w-12 h-12 text-slate-300" />
+                        <div className="w-[150px] h-[150px] rounded-lg bg-white border border-slate-200 flex items-center justify-center">
+                          <Building2 className="w-16 h-16 text-slate-300" />
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="font-bold text-lg text-slate-800">{selectedBank.name}</p>
+                        <p className="text-sm font-medium text-green-800 mb-1">✓ Bank Selected</p>
+                        <p className="font-bold text-xl text-slate-800">{selectedBank.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
-                          Template: <span className="font-medium">{selectedBank.template === 'template-a' ? 'Style A' : selectedBank.template === 'template-b' ? 'Style B' : 'Style C'}</span>
+                          Template: <span className="font-semibold">{selectedBank.template === 'template-a' ? 'Style A (Chime)' : selectedBank.template === 'template-b' ? 'Style B (Bank of America)' : 'Style C (Chase)'}</span>
                         </p>
                         <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded">
                           <p className="text-xs text-amber-700">
-                            ⚠️ <strong>Important:</strong> You must upload your own bank logo below to generate the statement.
+                            ⚠️ You must upload your own bank logo below to generate the statement.
                           </p>
                         </div>
                       </div>

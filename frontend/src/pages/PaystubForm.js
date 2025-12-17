@@ -92,6 +92,7 @@ export default function PaystubForm() {
     annualSalary: "", // for salary pay type
     federalFilingStatus: "", // optional: single, married_jointly, head_of_household (no more allowances per 2020 W-4)
     stateAllowances: "0", // number of state allowances (only for states that use them)
+    employeeId: "", // Employee ID for Workday template
   });
 
   // Validation errors state

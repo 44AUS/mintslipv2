@@ -98,6 +98,19 @@ export default function Home() {
               </Button>
             </div>
 
+            {/* Telegram Support Button */}
+            <div className="pt-2">
+              <a
+                href="https://t.me/+oV7eIADvNlozYTYx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <TelegramIcon className="w-5 h-5" />
+                <span className="font-medium">Join Telegram Support</span>
+              </a>
+            </div>
+
             {/* Interactive Feature Pills */}
             <div className="flex flex-wrap gap-3 pt-4">
               {features.map((feature, index) => (

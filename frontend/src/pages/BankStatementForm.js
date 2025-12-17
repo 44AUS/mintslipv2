@@ -141,13 +141,11 @@ export default function BankStatementForm() {
     }
   };
 
-  // Load logo from localStorage on mount
+  // Clear any previously saved logo on mount (fresh start each time)
   useEffect(() => {
-    const savedLogo = localStorage.getItem('bankStatementLogo');
-    if (savedLogo) {
-      setUploadedLogo(savedLogo);
-      setLogoPreview(savedLogo);
-    }
+    localStorage.removeItem('bankStatementLogo');
+    setUploadedLogo(null);
+    setLogoPreview(null);
   }, []);
 
   // Close dropdown when clicking outside

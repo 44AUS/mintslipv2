@@ -359,13 +359,24 @@ We will investigate your complaint and will correct any error promptly. If we ta
 
 // Template B: Modern Digital Statement (Bank of America style)
 export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) {
-  const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, transactions, toFixed, formatShortDate, parseCurrency } = data;
+  const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, transactions, toFixed, formatShortDate, parseCurrency, bankLogo } = data;
   
   let y = 30;
   
   // Modern Header - Blue theme
   doc.setFillColor(41, 128, 185);
   doc.rect(0, 0, pageWidth, 80, 'F');
+  
+  // Add custom logo if uploaded (white background area for logo)
+  if (bankLogo) {
+    try {
+      doc.setFillColor(255, 255, 255);
+      doc.rect(pageWidth - margin - 80, 15, 70, 50, 'F');
+      doc.addImage(bankLogo, "PNG", pageWidth - margin - 75, 20, 60, 40);
+    } catch (e) {
+      console.error("Failed to add logo to Template B:", e);
+    }
+  }
   
   y = 35;
   doc.setFontSize(28);

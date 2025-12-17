@@ -384,40 +384,41 @@ const createOrder = (data, actions) => {
                             key={bank.id}
                             data-testid={`bank-option-${bank.id}`}
                             onClick={() => handleBankSelect(bank)}
-                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
+                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
                               selectedBank?.id === bank.id ? 'bg-green-100' : ''
                             }`}
                           >
+                            {/* Logo placeholder - 40x40 in dropdown */}
                             {bank.logo ? (
                               <img 
                                 src={bank.logo} 
                                 alt={bank.name} 
-                                className="w-8 h-8 rounded object-contain bg-white"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextSibling.style.display = 'flex';
-                                }}
+                                className="w-10 h-10 rounded object-contain bg-white border border-slate-200"
                               />
-                            ) : null}
-                            <div 
-                              className={`w-8 h-8 rounded bg-slate-100 items-center justify-center ${bank.logo ? 'hidden' : 'flex'}`}
-                            >
-                              <Building2 className="w-4 h-4 text-slate-400" />
+                            ) : (
+                              <div className="w-10 h-10 rounded bg-slate-100 border border-slate-200 flex items-center justify-center">
+                                <Building2 className="w-5 h-5 text-slate-400" />
+                              </div>
+                            )}
+                            <div>
+                              <span className="font-medium text-slate-700 block">{bank.name}</span>
+                              <span className="text-xs text-slate-500">
+                                {bank.template === 'template-a' ? 'Style A' : bank.template === 'template-b' ? 'Style B' : 'Style C'}
+                              </span>
                             </div>
-                            <span className="font-medium text-slate-700">{bank.name}</span>
                           </div>
                         ))
                       ) : (
                         <div className="px-4 py-3 text-slate-500 text-center">
-                          No banks found. Select "Other Bank" to enter custom bank name.
+                          No banks found matching your search.
                         </div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Custom Bank Name (for Other Bank) */}
-                {selectedBank?.id === 'other' && (
+                {/* Selected Bank Confirmation */}
+                {selectedBank && (
                   <div className="space-y-2 mt-4">
                     <Label htmlFor="customBankName">Enter Bank Name *</Label>
                     <Input

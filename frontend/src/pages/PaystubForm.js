@@ -518,12 +518,11 @@ export default function PaystubForm() {
     let federalTax = 0;
     if (!isContractor) {
       if (formData.federalFilingStatus) {
-        // Use progressive tax calculation with filing status
+        // Use progressive tax calculation with filing status (no allowances per 2020+ W-4)
         federalTax = calculateFederalTax(
           totalGross / (numStubs || 1), // Per period gross
           formData.payFrequency,
-          formData.federalFilingStatus,
-          formData.federalExemptions || 0
+          formData.federalFilingStatus
         ) * (numStubs || 1);
       } else {
         // Default flat rate if no filing status
@@ -531,22 +530,16 @@ export default function PaystubForm() {
       }
     }
     
-    // Calculate state tax based on filing status and exemptions
+    // Calculate state tax with allowances (only for applicable states)
     let stateTax = 0;
     if (!isContractor) {
-      if (formData.stateFilingStatus) {
-        stateTax = calculateStateTax(
-          totalGross / (numStubs || 1), // Per period gross
-          formData.state,
-          formData.payFrequency,
-          formData.stateFilingStatus,
-          formData.stateExemptions || 0,
-          stateRate
-        ) * (numStubs || 1);
-      } else {
-        // Default flat rate if no filing status
-        stateTax = totalGross * stateRate;
-      }
+      stateTax = calculateStateTax(
+        totalGross / (numStubs || 1), // Per period gross
+        formData.state,
+        formData.payFrequency,
+        formData.stateAllowances || 0,
+        stateRate
+      ) * (numStubs || 1);
     }
     
     // Use actual local tax rate from taxRates lookup

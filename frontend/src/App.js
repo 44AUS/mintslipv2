@@ -9,6 +9,7 @@ import FAQ from "@/pages/FAQ";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
+import NotFound from "@/pages/NotFound";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";

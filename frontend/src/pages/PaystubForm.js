@@ -181,11 +181,12 @@ export default function PaystubForm() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
-          // Include deductions and contributions in preview data
+          // Include deductions, contributions, and logo in preview data
           const previewData = {
             ...formData,
             deductions: deductions,
             contributions: contributions,
+            logoDataUrl: logoPreview, // Pass logo for Workday template
           };
           const previewUrl = await generatePreviewPDF(previewData, selectedTemplate);
           setPdfPreview(previewUrl);

@@ -218,6 +218,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const ytdGrossPay = grossPay * ytdPayPeriods;
     const ytdSsTax = ssTax * ytdPayPeriods;
     const ytdMedTax = medTax * ytdPayPeriods;
+    const ytdFederalTax = federalTax * ytdPayPeriods;
     const ytdStateTax = stateTax * ytdPayPeriods;
     const ytdLocalTax = localTax * ytdPayPeriods;
     const ytdTotalTax = totalTax * ytdPayPeriods;
@@ -235,6 +236,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       grossPay,
       ssTax,
       medTax,
+      federalTax,
       stateTax,
       localTax,
       totalTax,
@@ -253,6 +255,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       ytdGrossPay,
       ytdSsTax,
       ytdMedTax,
+      ytdFederalTax,
       ytdStateTax,
       ytdLocalTax,
       ytdTotalTax,

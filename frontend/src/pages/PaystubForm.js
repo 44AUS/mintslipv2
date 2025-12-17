@@ -1433,7 +1433,7 @@ export default function PaystubForm() {
                       {/* State Allowances - Only for states that use them */}
                       <div className="space-y-2">
                         <Label htmlFor="stateAllowances">State Withholding Allowances</Label>
-                        {['CA', 'CO', 'DE', 'DC', 'GA', 'HI', 'ID', 'IL', 'IA', 'KS', 'ME', 'MN', 'MT', 'NE', 'NJ', 'NY', 'NC', 'OK', 'RI', 'SC', 'VT'].includes(formData.state?.toUpperCase()) ? (
+                        {stateUsesAllowances(formData.state) ? (
                           <>
                             <Select 
                               value={formData.stateAllowances || "0"} 
@@ -1452,13 +1452,13 @@ export default function PaystubForm() {
                             </Select>
                             <p className="text-xs text-slate-400">Each allowance reduces state tax withholding</p>
                           </>
-                        ) : ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'].includes(formData.state?.toUpperCase()) ? (
+                        ) : stateHasNoIncomeTax(formData.state) ? (
                           <div className="p-2 bg-slate-100 rounded-md">
                             <p className="text-xs text-slate-500">{formData.state} has no state income tax</p>
                           </div>
                         ) : formData.state ? (
                           <div className="p-2 bg-slate-100 rounded-md">
-                            <p className="text-xs text-slate-500">{formData.state} does not use withholding allowances</p>
+                            <p className="text-xs text-slate-500">{getStateTaxInfo(formData.state).message}</p>
                           </div>
                         ) : (
                           <div className="p-2 bg-slate-100 rounded-md">

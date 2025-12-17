@@ -255,8 +255,8 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     }
 
     const taxYStart = y;
-    const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);
-    const erTaxHeight = drawTable(doc, taxRightX, y, erTaxRows, 16, taxTableWidth, true, true);
+    const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true, 0.60);
+    const erTaxHeight = drawTable(doc, taxRightX, y, erTaxRows, 16, taxTableWidth, true, true, 0.60);
     y = taxYStart + Math.max(empTaxHeight, erTaxHeight) + 10;
 
     // ========== DEDUCTIONS SECTION ==========

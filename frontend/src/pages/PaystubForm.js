@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -16,12 +16,20 @@ import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { Upload, X, Search, Building2 } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
   formatZipCode, validateZipCode,
   formatSSNLast4, validateSSNLast4,
   formatBankLast4, validateBankLast4
 } from "@/utils/validation";
+
+// Payroll company templates
+const PAYROLL_COMPANIES = [
+  { id: 'gusto', name: 'Gusto', template: 'template-a' },
+  { id: 'adp', name: 'ADP', template: 'template-b' },
+  { id: 'workday', name: 'Workday', template: 'template-c' },
+];
 
 export default function PaystubForm() {
   const navigate = useNavigate();

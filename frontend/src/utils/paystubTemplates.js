@@ -121,7 +121,31 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   doc.text(formData.address || "", rightStartX + boxWidth + 18, boxTop + 52);
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightStartX + boxWidth + 18, boxTop + 64);
 
-  y = Math.max(leftY, boxTop + boxHeight) + 30;
+  y = Math.max(leftY, boxTop + boxHeight) + 20;
+
+  // ========== FILING STATUS SECTION (Optional) ==========
+  if (!isContractor && (formData.federalFilingStatus || formData.stateFilingStatus)) {
+    doc.setFillColor(248, 248, 248);
+    doc.rect(left, y, usableWidth, 22, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Filing Status", left + 8, y + 8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    let filingY = y + 17;
+    let filingX = left + 8;
+    if (formData.federalFilingStatus) {
+      doc.text(`Federal: ${formatFilingStatus(formData.federalFilingStatus)}`, filingX, filingY);
+      filingX += 140;
+    }
+    if (formData.stateFilingStatus) {
+      doc.text(`State: ${formatFilingStatus(formData.stateFilingStatus)}`, filingX, filingY);
+    }
+    y += 30;
+  } else {
+    y += 10;
+  }
 
   // ========== EARNINGS SECTION ==========
   const earningsSectionTitle = isContractor ? "Contractor Gross Earnings" : "Employee Gross Earnings";

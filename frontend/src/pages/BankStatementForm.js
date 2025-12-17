@@ -366,11 +366,11 @@ const createOrder = (data, actions) => {
                     />
                     {selectedBank && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        {selectedBank.logo ? (
-                          <img src={selectedBank.logo} alt={selectedBank.name} className="w-6 h-6 rounded" />
-                        ) : (
-                          <Building2 className="w-5 h-5 text-slate-400" />
-                        )}
+                        <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
                       </div>
                     )}
                   </div>

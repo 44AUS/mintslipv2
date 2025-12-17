@@ -727,6 +727,21 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   doc.text(`${formData.address || ""}`, margin + 5, y);
   y += 12;
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, margin + 5, y);
+  // Filing Status (if provided)
+  if (formData.federalFilingStatus || formData.stateFilingStatus) {
+    y += 12;
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    let filingText = "";
+    if (formData.federalFilingStatus) {
+      filingText += `Fed: ${formatFilingStatus(formData.federalFilingStatus)}`;
+    }
+    if (formData.stateFilingStatus) {
+      if (filingText) filingText += " | ";
+      filingText += `State: ${formatFilingStatus(formData.stateFilingStatus)}`;
+    }
+    doc.text(filingText, margin + 5, y);
+  }
 
   // Pay Period Box (Right)
   y = y - 54;

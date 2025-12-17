@@ -222,7 +222,7 @@ export default function BankStatementForm() {
             selectedMonth,
             beginningBalance,
             transactions,
-            bankName: selectedBank?.id === 'other' ? customBankName : (selectedBank?.name || ''),
+            bankName: selectedBank?.name || '',
             bankLogo: uploadedLogo
           };
           const previewUrl = await generateBankStatementPreview(formData, selectedTemplate);

@@ -22,6 +22,17 @@ function fmt(n) {
   });
 }
 
+// Format filing status for display
+function formatFilingStatus(status) {
+  const statusMap = {
+    'single': 'Single',
+    'married_jointly': 'Married Filing Jointly',
+    'married_separately': 'Married Filing Separately',
+    'head_of_household': 'Head of Household'
+  };
+  return statusMap[status] || status;
+}
+
 // Template A: Gusto-Style Professional (matches artifact exactly)
 export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, stateTax, localTax, totalTax, netPay, rate, stateRate, localTaxRate, sutaRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,

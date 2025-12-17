@@ -102,7 +102,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   doc.text(
-    `Pay period: ${startDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}   Pay Day: ${payDate.toLocaleDateString()}`,
+    `Pay period: ${formatDate(startDate)} – ${formatDate(endDate)}   Pay Day: ${formatDate(payDate)}`,
     logoX,
     leftY
   );

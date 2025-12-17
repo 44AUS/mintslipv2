@@ -15,6 +15,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
+import { calculateFederalTax, calculateStateTax } from "@/utils/federalTaxCalculator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { Upload, X, Search, Building2 } from "lucide-react";
 import { 

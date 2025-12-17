@@ -15,34 +15,12 @@ import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenera
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { formatAccountNumber, validateAccountNumber } from "@/utils/validation";
 
-// Bank data with logos (using public bank logo URLs)
+// Bank templates - user will supply logos
+// Logo placeholders - replace these paths with actual logo files when provided
 const BANKS_DATA = [
-  { id: 'bank-of-america', name: 'Bank of America', logo: 'https://logo.clearbit.com/bankofamerica.com', template: 'template-b' },
-  { id: 'chase', name: 'Chase', logo: 'https://logo.clearbit.com/chase.com', template: 'template-c' },
-  { id: 'wells-fargo', name: 'Wells Fargo', logo: 'https://logo.clearbit.com/wellsfargo.com', template: 'template-b' },
-  { id: 'citi', name: 'Citi Bank', logo: 'https://logo.clearbit.com/citi.com', template: 'template-b' },
-  { id: 'capital-one', name: 'Capital One', logo: 'https://logo.clearbit.com/capitalone.com', template: 'template-b' },
-  { id: 'td-bank', name: 'TD Bank', logo: 'https://logo.clearbit.com/td.com', template: 'template-b' },
-  { id: 'pnc', name: 'PNC Bank', logo: 'https://logo.clearbit.com/pnc.com', template: 'template-b' },
-  { id: 'us-bank', name: 'US Bank', logo: 'https://logo.clearbit.com/usbank.com', template: 'template-b' },
-  { id: 'truist', name: 'Truist', logo: 'https://logo.clearbit.com/truist.com', template: 'template-b' },
-  { id: 'goldman-sachs', name: 'Goldman Sachs', logo: 'https://logo.clearbit.com/goldmansachs.com', template: 'template-c' },
-  { id: 'morgan-stanley', name: 'Morgan Stanley', logo: 'https://logo.clearbit.com/morganstanley.com', template: 'template-c' },
-  { id: 'fifth-third', name: 'Fifth Third Bank', logo: 'https://logo.clearbit.com/53.com', template: 'template-b' },
-  { id: 'citizens', name: 'Citizens Bank', logo: 'https://logo.clearbit.com/citizensbank.com', template: 'template-b' },
-  { id: 'regions', name: 'Regions Bank', logo: 'https://logo.clearbit.com/regions.com', template: 'template-b' },
-  { id: 'huntington', name: 'Huntington Bank', logo: 'https://logo.clearbit.com/huntington.com', template: 'template-b' },
-  { id: 'ally', name: 'Ally Bank', logo: 'https://logo.clearbit.com/ally.com', template: 'template-b' },
-  { id: 'discover', name: 'Discover Bank', logo: 'https://logo.clearbit.com/discover.com', template: 'template-b' },
-  { id: 'synchrony', name: 'Synchrony Bank', logo: 'https://logo.clearbit.com/synchrony.com', template: 'template-b' },
-  { id: 'chime', name: 'Chime', logo: 'https://logo.clearbit.com/chime.com', template: 'template-a' },
-  { id: 'sofi', name: 'SoFi', logo: 'https://logo.clearbit.com/sofi.com', template: 'template-b' },
-  { id: 'american-express', name: 'American Express', logo: 'https://logo.clearbit.com/americanexpress.com', template: 'template-c' },
-  { id: 'hsbc', name: 'HSBC', logo: 'https://logo.clearbit.com/hsbc.com', template: 'template-c' },
-  { id: 'navy-federal', name: 'Navy Federal Credit Union', logo: 'https://logo.clearbit.com/navyfederal.org', template: 'template-b' },
-  { id: 'usaa', name: 'USAA', logo: 'https://logo.clearbit.com/usaa.com', template: 'template-b' },
-  { id: 'charles-schwab', name: 'Charles Schwab', logo: 'https://logo.clearbit.com/schwab.com', template: 'template-c' },
-  { id: 'other', name: 'Other Bank', logo: null, template: 'template-b' },
+  { id: 'chime', name: 'Chime', logo: null, template: 'template-a' },
+  { id: 'bank-of-america', name: 'Bank of America', logo: null, template: 'template-b' },
+  { id: 'chase', name: 'Chase', logo: null, template: 'template-c' },
 ];
 
 export default function BankStatementForm() {

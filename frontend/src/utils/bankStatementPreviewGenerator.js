@@ -79,7 +79,8 @@ export const generateBankStatementPreview = async (formData, template = 'templat
       accountNumber,
       selectedMonth,
       beginningBalance,
-      transactions
+      transactions,
+      bankLogo
     } = formData;
 
     // Need minimum data to generate preview

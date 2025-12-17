@@ -32,20 +32,18 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   doc.setFontSize(28);
   doc.setTextColor("#00b26a");
   // Use custom uploaded logo if available, otherwise fall back to default Chime logo
-  if (bankLogo && typeof bankLogo === 'string' && bankLogo.startsWith('data:image')) {
+  let logoAdded = false;
+  if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
     try {
-      // For base64 data URLs from uploaded files
-      doc.addImage(bankLogo, "PNG", margin, y - 18, 65, 20);
+      // For base64 data URLs from uploaded files - jsPDF accepts full data URL
+      doc.addImage(bankLogo, margin, y - 18, 65, 20);
+      logoAdded = true;
     } catch (e) {
       console.error("Template A custom logo error:", e);
-      // Try default logo on failure
-      try {
-        doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
-      } catch (e2) {
-        doc.text("Chime", margin, y);
-      }
     }
-  } else {
+  }
+  
+  if (!logoAdded) {
     try {
       doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
     } catch (e) {

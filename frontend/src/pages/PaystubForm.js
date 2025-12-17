@@ -86,6 +86,8 @@ export default function PaystubForm() {
     annualSalary: "", // for salary pay type
     federalFilingStatus: "", // optional: single, married_jointly, married_separately, head_of_household
     stateFilingStatus: "", // optional: single, married_jointly, married_separately, head_of_household
+    federalExemptions: "0", // number of federal allowances/exemptions
+    stateExemptions: "0", // number of state allowances/exemptions
   });
 
   // Validation errors state

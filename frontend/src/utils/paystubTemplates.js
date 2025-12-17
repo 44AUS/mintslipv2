@@ -440,10 +440,11 @@ function drawTable(
   rowHeight = 16,
   tableWidth = 500,
   underline = true,
-  bottomBorder = false
+  bottomBorder = false,
+  descriptionWidth = 0.55 // 55% for description column by default
 ) {
   const numCols = rows[0].length;
-  const colWidths = [tableWidth * 0.4, ...Array(numCols - 1).fill(tableWidth * 0.6 / (numCols - 1))];
+  const colWidths = [tableWidth * descriptionWidth, ...Array(numCols - 1).fill(tableWidth * (1 - descriptionWidth) / (numCols - 1))];
   let y = startY;
   doc.setFontSize(9);
   doc.setDrawColor(200);

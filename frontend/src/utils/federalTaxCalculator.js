@@ -40,14 +40,75 @@ const STANDARD_DEDUCTIONS = {
   head_of_household: 21900,
 };
 
-// States that use withholding allowances
+// States that use withholding allowances (updated per document)
 const STATES_WITH_ALLOWANCES = [
-  'CA', 'CO', 'DE', 'DC', 'GA', 'HI', 'ID', 'IL', 'IA', 'KS', 
-  'ME', 'MN', 'MT', 'NE', 'NJ', 'NY', 'NC', 'OK', 'RI', 'SC', 'VT'
+  'GA', 'HI', 'ID', 'KS', 'KY', 'ME', 'MN', 'MS', 'MO', 'MT', 
+  'NE', 'NM', 'ND', 'SC', 'UT', 'VT', 'VA', 'WV', 'WI'
 ];
 
 // States with no income tax
-const NO_TAX_STATES = ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'];
+const NO_TAX_STATES = ['AK', 'FL', 'NV', 'SD', 'TX', 'WA', 'WY'];
+
+// States with interest/dividends tax only
+const INTEREST_DIVIDENDS_ONLY_STATES = ['NH', 'TN'];
+
+// States with local/county tax that applies
+const STATES_WITH_LOCAL_TAX = ['IN', 'MD', 'OH', 'PA'];
+
+// State tax rates (2024 approximate flat/top marginal rates)
+const STATE_TAX_RATES = {
+  AL: 0.05,    // Alabama - 2-5% progressive
+  AK: 0,       // Alaska - No state income tax
+  AZ: 0.025,   // Arizona - 2.5% flat
+  AR: 0.047,   // Arkansas - 2-4.7% progressive
+  CA: 0.093,   // California - 1-12.3% progressive (using ~9.3% effective)
+  CO: 0.044,   // Colorado - 4.4% flat
+  CT: 0.0699,  // Connecticut - 3-6.99% progressive
+  DE: 0.066,   // Delaware - 2.2-6.6% progressive
+  FL: 0,       // Florida - No state income tax
+  GA: 0.0549,  // Georgia - 5.49% flat (2024)
+  HI: 0.0825,  // Hawaii - 1.4-11% progressive
+  ID: 0.058,   // Idaho - 5.8% flat
+  IL: 0.0495,  // Illinois - 4.95% flat
+  IN: 0.0305,  // Indiana - 3.05% flat
+  IA: 0.057,   // Iowa - 4.4-5.7% progressive
+  KS: 0.057,   // Kansas - 3.1-5.7% progressive
+  KY: 0.04,    // Kentucky - 4% flat
+  LA: 0.0425,  // Louisiana - 1.85-4.25% progressive
+  ME: 0.0715,  // Maine - 5.8-7.15% progressive
+  MD: 0.0575,  // Maryland - 2-5.75% progressive (+ local)
+  MA: 0.05,    // Massachusetts - 5% flat
+  MI: 0.0425,  // Michigan - 4.25% flat
+  MN: 0.0985,  // Minnesota - 5.35-9.85% progressive
+  MS: 0.05,    // Mississippi - 5% flat (2024)
+  MO: 0.048,   // Missouri - 2-4.8% progressive
+  MT: 0.059,   // Montana - 4.7-5.9% progressive
+  NE: 0.0584,  // Nebraska - 2.46-5.84% progressive
+  NV: 0,       // Nevada - No state income tax
+  NH: 0,       // New Hampshire - Interest/dividends only
+  NJ: 0.0897,  // New Jersey - 1.4-10.75% progressive
+  NM: 0.059,   // New Mexico - 1.7-5.9% progressive
+  NY: 0.0685,  // New York - 4-10.9% progressive
+  NC: 0.0475,  // North Carolina - 4.75% flat (2024)
+  ND: 0.029,   // North Dakota - 1.95-2.9% progressive
+  OH: 0.035,   // Ohio - 0-3.5% progressive (+ school district)
+  OK: 0.0475,  // Oklahoma - 0.25-4.75% progressive
+  OR: 0.099,   // Oregon - 4.75-9.9% progressive
+  PA: 0.0307,  // Pennsylvania - 3.07% flat (+ local)
+  RI: 0.0599,  // Rhode Island - 3.75-5.99% progressive
+  SC: 0.064,   // South Carolina - 0-6.4% progressive
+  SD: 0,       // South Dakota - No state income tax
+  TN: 0,       // Tennessee - Interest/dividends only
+  TX: 0,       // Texas - No state income tax
+  UT: 0.0465,  // Utah - 4.65% flat
+  VT: 0.0875,  // Vermont - 3.35-8.75% progressive
+  VA: 0.0575,  // Virginia - 2-5.75% progressive
+  WA: 0,       // Washington - No state income tax
+  WV: 0.055,   // West Virginia - 3-5.5% progressive
+  WI: 0.0765,  // Wisconsin - 3.5-7.65% progressive
+  WY: 0,       // Wyoming - No state income tax
+  DC: 0.0975,  // DC - 4-10.75% progressive
+};
 
 // State allowance value (approximate annual value per allowance)
 const STATE_ALLOWANCE_VALUE = 2500;
@@ -55,68 +116,46 @@ const STATE_ALLOWANCE_VALUE = 2500;
 /**
  * Calculate federal income tax withholding based on filing status
  * Per 2020+ W-4, federal no longer uses allowances
- * @param {number} grossPay - Gross pay for the period
- * @param {string} payFrequency - 'weekly' or 'biweekly'
- * @param {string} filingStatus - Filing status (single, married_jointly, head_of_household)
- * @returns {number} Federal tax withholding for the period
  */
 export function calculateFederalTax(grossPay, payFrequency, filingStatus = 'single') {
   if (!filingStatus || filingStatus === '') {
-    // Default flat rate if no filing status selected (approximate 22% effective rate)
     return grossPay * 0.22;
   }
 
-  // Convert period pay to annual
   const periodsPerYear = payFrequency === 'weekly' ? 52 : 26;
   const annualGross = grossPay * periodsPerYear;
-
-  // Get standard deduction for filing status
   const standardDeduction = STANDARD_DEDUCTIONS[filingStatus] || STANDARD_DEDUCTIONS.single;
-  
-  // Taxable income after standard deduction (no more allowances for federal per 2020+ W-4)
   const taxableIncome = Math.max(0, annualGross - standardDeduction);
-
-  // Get tax brackets for filing status
   const brackets = FEDERAL_TAX_BRACKETS[filingStatus] || FEDERAL_TAX_BRACKETS.single;
 
-  // Calculate tax using progressive brackets
   let annualTax = 0;
   let remainingIncome = taxableIncome;
 
   for (const bracket of brackets) {
     if (remainingIncome <= 0) break;
-    
     const bracketSize = bracket.max - bracket.min;
     const taxableInBracket = Math.min(remainingIncome, bracketSize);
     annualTax += taxableInBracket * bracket.rate;
     remainingIncome -= taxableInBracket;
   }
 
-  // Convert annual tax to period tax
-  const periodTax = annualTax / periodsPerYear;
-  
-  return Math.max(0, periodTax);
+  return Math.max(0, annualTax / periodsPerYear);
 }
 
 /**
  * Calculate state income tax withholding
- * Some states use allowances, some don't, some have no income tax
- * @param {number} grossPay - Gross pay for the period
- * @param {string} state - State abbreviation
- * @param {string} payFrequency - 'weekly' or 'biweekly'
- * @param {number} allowances - Number of state allowances (only applies to states that use them)
- * @param {number} baseStateRate - Base state tax rate (decimal)
- * @returns {number} State tax withholding for the period
  */
-export function calculateStateTax(grossPay, state, payFrequency, allowances = 0, baseStateRate = 0.05) {
+export function calculateStateTax(grossPay, state, payFrequency, allowances = 0, baseStateRate = null) {
   const stateUpper = state?.toUpperCase() || '';
   
+  // Get actual state rate
+  const stateRate = baseStateRate !== null ? baseStateRate : (STATE_TAX_RATES[stateUpper] || 0.05);
+  
   // States with no income tax
-  if (NO_TAX_STATES.includes(stateUpper)) {
+  if (NO_TAX_STATES.includes(stateUpper) || INTEREST_DIVIDENDS_ONLY_STATES.includes(stateUpper)) {
     return 0;
   }
 
-  // Convert period pay to annual
   const periodsPerYear = payFrequency === 'weekly' ? 52 : 26;
   const annualGross = grossPay * periodsPerYear;
 
@@ -126,14 +165,17 @@ export function calculateStateTax(grossPay, state, payFrequency, allowances = 0,
     allowanceReduction = (parseInt(allowances) || 0) * STATE_ALLOWANCE_VALUE;
   }
 
-  // Taxable income after allowances
   const taxableIncome = Math.max(0, annualGross - allowanceReduction);
+  const annualTax = taxableIncome * stateRate;
 
-  // Apply state rate
-  const annualTax = taxableIncome * baseStateRate;
-  const periodTax = annualTax / periodsPerYear;
+  return Math.max(0, annualTax / periodsPerYear);
+}
 
-  return Math.max(0, periodTax);
+/**
+ * Get state tax rate
+ */
+export function getStateTaxRate(state) {
+  return STATE_TAX_RATES[state?.toUpperCase()] || 0.05;
 }
 
 /**
@@ -147,7 +189,15 @@ export function stateUsesAllowances(state) {
  * Check if a state has no income tax
  */
 export function stateHasNoIncomeTax(state) {
-  return NO_TAX_STATES.includes(state?.toUpperCase());
+  const stateUpper = state?.toUpperCase();
+  return NO_TAX_STATES.includes(stateUpper) || INTEREST_DIVIDENDS_ONLY_STATES.includes(stateUpper);
+}
+
+/**
+ * Check if state has local/county tax
+ */
+export function stateHasLocalTax(state) {
+  return STATES_WITH_LOCAL_TAX.includes(state?.toUpperCase());
 }
 
 /**
@@ -160,4 +210,29 @@ export function getFilingStatusLabel(status) {
     head_of_household: 'HOH',
   };
   return labels[status] || status;
+}
+
+/**
+ * Get state tax info for display
+ */
+export function getStateTaxInfo(state) {
+  const stateUpper = state?.toUpperCase();
+  
+  if (NO_TAX_STATES.includes(stateUpper)) {
+    return { type: 'no_tax', message: `${state} has no state income tax` };
+  }
+  
+  if (INTEREST_DIVIDENDS_ONLY_STATES.includes(stateUpper)) {
+    return { type: 'interest_only', message: `${state} only taxes interest/dividends` };
+  }
+  
+  if (STATES_WITH_ALLOWANCES.includes(stateUpper)) {
+    return { type: 'allowances', message: `${state} uses withholding allowances`, rate: STATE_TAX_RATES[stateUpper] };
+  }
+  
+  if (STATES_WITH_LOCAL_TAX.includes(stateUpper)) {
+    return { type: 'local_tax', message: `${state} has local/county tax`, rate: STATE_TAX_RATES[stateUpper] };
+  }
+  
+  return { type: 'standard', message: `${state} does not use allowances`, rate: STATE_TAX_RATES[stateUpper] };
 }

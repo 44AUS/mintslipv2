@@ -125,7 +125,7 @@ function DesktopNavLinks({ location, onNavigate }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className={getDropdownTriggerClasses()}
+            className={getDropdownTriggerClasses(isOtherFormActive)}
             data-testid="nav-otherforms-dropdown"
           >
             <Receipt className="w-4 h-4" />

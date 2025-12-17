@@ -282,19 +282,18 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   
   if (!isContractor) {
     // Pre-Tax Deductions/Contributions (before taxes) - using deductionsData and contributionsData
-    // For simplicity, treat all deductions/contributions as pre-tax by default
     const totalPreTax = totalDeductions + totalContributions;
     const ytdPreTax = ytdDeductions + ytdContributions;
     
-    if (totalPreTax > 0) {
-      summaryRows.push(["Pre-Tax Deductions/Contributions", `$${fmt(totalPreTax)}`, `$${fmt(ytdPreTax)}`]);
-    }
+    // Always show Pre-Tax row
+    summaryRows.push(["Pre-Tax Deductions/Contributions", `$${fmt(totalPreTax)}`, `$${fmt(ytdPreTax)}`]);
     
     // Taxes
     summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
     
-    // Post-Tax Deductions/Contributions placeholder (can be expanded later if needed)
-    // summaryRows.push(["Post-Tax Deductions/Contributions", "$0.00", "$0.00"]);
+    // Post-Tax Deductions/Contributions (after taxes) - placeholder for now
+    // Could be expanded later to support post-tax deductions like Roth 401k, garnishments, etc.
+    summaryRows.push(["Post-Tax Deductions/Contributions", "$0.00", "$0.00"]);
     
     summaryRows.push(["Net Pay", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);
     summaryRows.push(["Total Reimbursements", "$0.00", "$0.00"]);

@@ -33,6 +33,13 @@ function formatFilingStatus(status) {
   return statusMap[status] || status;
 }
 
+// Format date as "Mar 10, 2025"
+function formatDate(date) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const d = new Date(date);
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
 // Template A: Gusto-Style Professional (matches artifact exactly)
 export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, stateRate, localTaxRate, sutaRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,

@@ -82,16 +82,16 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   leftY += 30;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setTextColor(102, 102, 102);
+  doc.setTextColor(0, 0, 0);
   doc.text(
     `Pay period: ${startDate.toLocaleDateString()} – ${endDate.toLocaleDateString()}   Pay Day: ${payDate.toLocaleDateString()}`,
     logoX,
     leftY
   );
   leftY += 12;
-  doc.text(`${hireLabel}: ${formData.hireDate || startDate.toLocaleDateString()}`, logoX, leftY);
-  leftY += 12;
-  doc.text(`${formData.name || ''} (...Direct Deposit to ${formData.bankName || 'Bank'} ******${formData.bank ? formData.bank.slice(-4) : '0000'})`, logoX, leftY);
+  // doc.text(`${hireLabel}: ${formData.hireDate || startDate.toLocaleDateString()}`, logoX, leftY);
+  // leftY += 12;
+  doc.text(`${formData.name || ''} (...******${formData.bank ? formData.bank.slice(-4) : '0000'})`, logoX, leftY);
 
   // Right: Company + Employee/Contractor boxes
   const boxTop = top + 30;
@@ -111,7 +111,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.setTextColor(102, 102, 102);
+  doc.setTextColor(0, 0, 0);
   doc.text(formData.company || "Company Name", rightStartX + 8, boxTop + 28);
   doc.text(formData.companyAddress || "", rightStartX + 8, boxTop + 40);
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, rightStartX + 8, boxTop + 52);

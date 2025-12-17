@@ -488,7 +488,7 @@ export default function PaystubForm() {
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Gusto style</p>
                     </div>
-                    {/* <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-b" id="template-b" data-testid="template-b-radio" />
                         <Label htmlFor="template-b" className="cursor-pointer font-medium">ADP</Label>
@@ -501,7 +501,7 @@ export default function PaystubForm() {
                         <Label htmlFor="template-c" className="cursor-pointer font-medium">Workday</Label>
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Workday style</p>
-                    </div> */}
+                    </div>
                   </div>
                 </RadioGroup>
               </div>

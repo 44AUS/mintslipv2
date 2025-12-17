@@ -205,7 +205,7 @@ const createOrder = (data, actions) => {
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Chime inspired statement</p>
                     </div>
-                    {/* <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                    <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${selectedTemplate === 'template-b' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="template-b" id="bank-template-b" data-testid="bank-template-b-radio" />
                         <Label htmlFor="bank-template-b" className="cursor-pointer font-medium">Bank of America</Label>
@@ -218,7 +218,7 @@ const createOrder = (data, actions) => {
                         <Label htmlFor="bank-template-c" className="cursor-pointer font-medium">Chase</Label>
                       </div>
                       <p className="text-xs text-slate-600 mt-2">Chase inspired statement</p>
-                    </div> */}
+                    </div>
                   </div>
                 </RadioGroup>
               </div>

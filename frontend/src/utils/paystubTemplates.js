@@ -783,11 +783,11 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont(undefined, 'normal');
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
-  doc.text(`Period Start: ${startDate.toLocaleDateString()}`, rightBoxX + 5, y);
+  doc.text(`Period Start: ${formatDate(startDate)}`, rightBoxX + 5, y);
   y += 15;
-  doc.text(`Period End: ${endDate.toLocaleDateString()}`, rightBoxX + 5, y);
+  doc.text(`Period End: ${formatDate(endDate)}`, rightBoxX + 5, y);
   y += 15;
-  doc.text(`Pay Date: ${payDate.toLocaleDateString()}`, rightBoxX + 5, y);
+  doc.text(`Pay Date: ${formatDate(payDate)}`, rightBoxX + 5, y);
   y += 12;
   doc.setFontSize(9);
   doc.text(`Frequency: ${payFrequency === 'biweekly' ? 'Bi-Weekly' : 'Weekly'}`, rightBoxX + 5, y);

@@ -1372,6 +1372,58 @@ export default function PaystubForm() {
                   </div>
                 )}
 
+                {/* Filing Status Section - Only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                      Filing Status (Optional)
+                    </h2>
+                    <p className="text-xs text-slate-500 -mt-2">
+                      These will appear on your pay stub for informational purposes.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Federal Filing Status */}
+                      <div className="space-y-2">
+                        <Label htmlFor="federalFilingStatus">Federal Filing Status</Label>
+                        <Select 
+                          value={formData.federalFilingStatus || ""} 
+                          onValueChange={(val) => setFormData({...formData, federalFilingStatus: val})}
+                        >
+                          <SelectTrigger data-testid="federal-filing-status">
+                            <SelectValue placeholder="Select federal status..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="single">Single</SelectItem>
+                            <SelectItem value="married_jointly">Married Filing Jointly</SelectItem>
+                            <SelectItem value="married_separately">Married Filing Separately</SelectItem>
+                            <SelectItem value="head_of_household">Head of Household</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* State Filing Status */}
+                      <div className="space-y-2">
+                        <Label htmlFor="stateFilingStatus">State Filing Status</Label>
+                        <Select 
+                          value={formData.stateFilingStatus || ""} 
+                          onValueChange={(val) => setFormData({...formData, stateFilingStatus: val})}
+                        >
+                          <SelectTrigger data-testid="state-filing-status">
+                            <SelectValue placeholder="Select state status..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="single">Single</SelectItem>
+                            <SelectItem value="married_jointly">Married Filing Jointly</SelectItem>
+                            <SelectItem value="married_separately">Married Filing Separately</SelectItem>
+                            <SelectItem value="head_of_household">Head of Household</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Employee Deductions Section - Only for employees */}
                 {formData.workerType === 'employee' && (
                   <div className="space-y-4">

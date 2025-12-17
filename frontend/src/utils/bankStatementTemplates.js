@@ -22,7 +22,8 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
     toFixed, 
     formatShortDate, 
     formatDateLong,
-    parseCurrency 
+    parseCurrency,
+    bankLogo
   } = data;
   
   let y = margin + 20;
@@ -30,10 +31,10 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   // --- Header Section ---
   doc.setFontSize(28);
   doc.setTextColor("#00b26a");
-  // <-- REPLACED: insert Gusto logo instead of the old "chime" text
+  // Use custom uploaded logo if available, otherwise fall back to default Chime logo
   try {
-    // If your bundler provides a URL or base64 string via import, this will work.
-    doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
+    const logoToUse = bankLogo || ChimeLogo;
+    doc.addImage(logoToUse, "PNG", margin, y - 18, 65, 20);
   } catch (e) {
     // fallback to text if addImage fails
     doc.text("Chime", margin, y);

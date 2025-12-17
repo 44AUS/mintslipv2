@@ -689,12 +689,7 @@ const createOrder = (data, actions) => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between pb-2 border-b border-green-300">
                     <span className="text-slate-700 font-semibold">Bank:</span>
-                    <span className="font-bold flex items-center gap-2">
-                      {selectedBank?.logo && (
-                        <img src={selectedBank.logo} alt="" className="w-5 h-5 rounded" />
-                      )}
-                      {selectedBank?.id === 'other' ? customBankName || '—' : (selectedBank?.name || '—')}
-                    </span>
+                    <span className="font-bold">{selectedBank?.name || '—'}</span>
                   </div>
                   <div className="flex justify-between pb-2 border-b border-green-300">
                     <span className="text-slate-700 font-semibold">Account Holder:</span>

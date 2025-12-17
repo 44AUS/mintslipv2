@@ -1,5 +1,6 @@
 // Federal Tax Calculator based on 2024 IRS Tax Brackets and Filing Status
 // Reference: IRS Publication 15-T (Federal Income Tax Withholding Methods)
+// Updated for 2020+ W-4 (no more allowances for federal)
 
 // 2024 Federal Tax Brackets (Annual)
 const FEDERAL_TAX_BRACKETS = {
@@ -21,15 +22,6 @@ const FEDERAL_TAX_BRACKETS = {
     { min: 487450, max: 731200, rate: 0.35 },
     { min: 731200, max: Infinity, rate: 0.37 },
   ],
-  married_separately: [
-    { min: 0, max: 11600, rate: 0.10 },
-    { min: 11600, max: 47150, rate: 0.12 },
-    { min: 47150, max: 100525, rate: 0.22 },
-    { min: 100525, max: 191950, rate: 0.24 },
-    { min: 191950, max: 243725, rate: 0.32 },
-    { min: 243725, max: 365600, rate: 0.35 },
-    { min: 365600, max: Infinity, rate: 0.37 },
-  ],
   head_of_household: [
     { min: 0, max: 16550, rate: 0.10 },
     { min: 16550, max: 63100, rate: 0.12 },
@@ -41,26 +33,34 @@ const FEDERAL_TAX_BRACKETS = {
   ],
 };
 
-// Standard deduction amounts (2024)
+// Standard deduction amounts (2024) - per 2020+ W-4
 const STANDARD_DEDUCTIONS = {
   single: 14600,
   married_jointly: 29200,
-  married_separately: 14600,
   head_of_household: 21900,
 };
 
-// Exemption/allowance value per withholding allowance (approximate annual value)
-const EXEMPTION_VALUE = 4300; // Per allowance annual reduction
+// States that use withholding allowances
+const STATES_WITH_ALLOWANCES = [
+  'CA', 'CO', 'DE', 'DC', 'GA', 'HI', 'ID', 'IL', 'IA', 'KS', 
+  'ME', 'MN', 'MT', 'NE', 'NJ', 'NY', 'NC', 'OK', 'RI', 'SC', 'VT'
+];
+
+// States with no income tax
+const NO_TAX_STATES = ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'];
+
+// State allowance value (approximate annual value per allowance)
+const STATE_ALLOWANCE_VALUE = 2500;
 
 /**
- * Calculate federal income tax withholding based on filing status and exemptions
+ * Calculate federal income tax withholding based on filing status
+ * Per 2020+ W-4, federal no longer uses allowances
  * @param {number} grossPay - Gross pay for the period
  * @param {string} payFrequency - 'weekly' or 'biweekly'
- * @param {string} filingStatus - Filing status (single, married_jointly, etc.)
- * @param {number} exemptions - Number of withholding allowances
+ * @param {string} filingStatus - Filing status (single, married_jointly, head_of_household)
  * @returns {number} Federal tax withholding for the period
  */
-export function calculateFederalTax(grossPay, payFrequency, filingStatus = 'single', exemptions = 0) {
+export function calculateFederalTax(grossPay, payFrequency, filingStatus = 'single') {
   if (!filingStatus || filingStatus === '') {
     // Default flat rate if no filing status selected (approximate 22% effective rate)
     return grossPay * 0.22;
@@ -73,11 +73,8 @@ export function calculateFederalTax(grossPay, payFrequency, filingStatus = 'sing
   // Get standard deduction for filing status
   const standardDeduction = STANDARD_DEDUCTIONS[filingStatus] || STANDARD_DEDUCTIONS.single;
   
-  // Calculate exemption reduction
-  const exemptionReduction = (parseInt(exemptions) || 0) * EXEMPTION_VALUE;
-  
-  // Taxable income after standard deduction and exemptions
-  const taxableIncome = Math.max(0, annualGross - standardDeduction - exemptionReduction);
+  // Taxable income after standard deduction (no more allowances for federal per 2020+ W-4)
+  const taxableIncome = Math.max(0, annualGross - standardDeduction);
 
   // Get tax brackets for filing status
   const brackets = FEDERAL_TAX_BRACKETS[filingStatus] || FEDERAL_TAX_BRACKETS.single;
@@ -102,80 +99,65 @@ export function calculateFederalTax(grossPay, payFrequency, filingStatus = 'sing
 }
 
 /**
- * Calculate state income tax withholding based on filing status and exemptions
- * This is a simplified calculation - actual state taxes vary significantly
+ * Calculate state income tax withholding
+ * Some states use allowances, some don't, some have no income tax
  * @param {number} grossPay - Gross pay for the period
  * @param {string} state - State abbreviation
  * @param {string} payFrequency - 'weekly' or 'biweekly'
- * @param {string} filingStatus - Filing status
- * @param {number} exemptions - Number of state exemptions
+ * @param {number} allowances - Number of state allowances (only applies to states that use them)
  * @param {number} baseStateRate - Base state tax rate (decimal)
  * @returns {number} State tax withholding for the period
  */
-export function calculateStateTax(grossPay, state, payFrequency, filingStatus = 'single', exemptions = 0, baseStateRate = 0.05) {
+export function calculateStateTax(grossPay, state, payFrequency, allowances = 0, baseStateRate = 0.05) {
+  const stateUpper = state?.toUpperCase() || '';
+  
   // States with no income tax
-  const noTaxStates = ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'];
-  if (noTaxStates.includes(state?.toUpperCase())) {
+  if (NO_TAX_STATES.includes(stateUpper)) {
     return 0;
-  }
-
-  if (!filingStatus || filingStatus === '') {
-    // Default flat rate if no filing status selected
-    return grossPay * baseStateRate;
   }
 
   // Convert period pay to annual
   const periodsPerYear = payFrequency === 'weekly' ? 52 : 26;
   const annualGross = grossPay * periodsPerYear;
 
-  // State exemption value (varies by state, using approximate value)
-  const stateExemptionValue = 2500;
-  const exemptionReduction = (parseInt(exemptions) || 0) * stateExemptionValue;
-
-  // State standard deduction (simplified - varies by state and filing status)
-  const stateStandardDeductions = {
-    single: 5000,
-    married_jointly: 10000,
-    married_separately: 5000,
-    head_of_household: 7500,
-  };
-  const stateStandardDeduction = stateStandardDeductions[filingStatus] || stateStandardDeductions.single;
-
-  // Taxable income after deductions
-  const taxableIncome = Math.max(0, annualGross - stateStandardDeduction - exemptionReduction);
-
-  // Apply state rate to taxable income
-  // Many states use progressive brackets, but we'll use effective rate for simplicity
-  // Adjust rate based on filing status (married usually has lower effective rate)
-  let effectiveRate = baseStateRate;
-  if (filingStatus === 'married_jointly') {
-    effectiveRate = baseStateRate * 0.9; // Slightly lower effective rate for married
-  } else if (filingStatus === 'head_of_household') {
-    effectiveRate = baseStateRate * 0.95;
+  // Calculate allowance reduction (only for states that use them)
+  let allowanceReduction = 0;
+  if (STATES_WITH_ALLOWANCES.includes(stateUpper)) {
+    allowanceReduction = (parseInt(allowances) || 0) * STATE_ALLOWANCE_VALUE;
   }
 
-  const annualTax = taxableIncome * effectiveRate;
+  // Taxable income after allowances
+  const taxableIncome = Math.max(0, annualGross - allowanceReduction);
+
+  // Apply state rate
+  const annualTax = taxableIncome * baseStateRate;
   const periodTax = annualTax / periodsPerYear;
 
   return Math.max(0, periodTax);
 }
 
 /**
- * Get effective tax rate description for display
+ * Check if a state uses withholding allowances
  */
-export function getEffectiveTaxInfo(filingStatus, exemptions) {
-  if (!filingStatus) return null;
-  
-  const statusLabels = {
-    single: 'Single',
-    married_jointly: 'Married Filing Jointly',
-    married_separately: 'Married Filing Separately',
-    head_of_household: 'Head of Household',
+export function stateUsesAllowances(state) {
+  return STATES_WITH_ALLOWANCES.includes(state?.toUpperCase());
+}
+
+/**
+ * Check if a state has no income tax
+ */
+export function stateHasNoIncomeTax(state) {
+  return NO_TAX_STATES.includes(state?.toUpperCase());
+}
+
+/**
+ * Get filing status label for display
+ */
+export function getFilingStatusLabel(status) {
+  const labels = {
+    single: 'Single/MFS',
+    married_jointly: 'MFJ',
+    head_of_household: 'HOH',
   };
-  
-  return {
-    status: statusLabels[filingStatus] || filingStatus,
-    exemptions: parseInt(exemptions) || 0,
-    standardDeduction: STANDARD_DEDUCTIONS[filingStatus] || STANDARD_DEDUCTIONS.single,
-  };
+  return labels[status] || status;
 }

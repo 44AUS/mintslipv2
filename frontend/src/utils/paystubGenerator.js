@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { generateTemplateA, generateTemplateB, generateTemplateC } from "./paystubTemplates";
 import { getLocalTaxRate, getSUTARate } from "./taxRates";
-import { calculateFederalTax, calculateStateTax } from "./federalTaxCalculator";
+import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 
 // Helper to calculate next weekday
 const DAY_MAP = {

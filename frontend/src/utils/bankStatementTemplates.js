@@ -568,12 +568,12 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.setTextColor(142, 68, 173);
     doc.setFont("helvetica", "bold");
     doc.text("FINANCIAL INSTITUTION", margin, y);
+    
+    y += 20;
+    doc.setFontSize(18);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Account Statement", margin, y);
   }
-  
-  y += 20;
-  doc.setFontSize(18);
-  doc.setTextColor(100, 100, 100);
-  doc.text("Account Statement", margin, y);
 
   // Statement Period Box
   y += 10;

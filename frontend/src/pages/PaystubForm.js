@@ -169,7 +169,13 @@ export default function PaystubForm() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
-          const previewUrl = await generatePreviewPDF(formData, selectedTemplate);
+          // Include deductions and contributions in preview data
+          const previewData = {
+            ...formData,
+            deductions: deductions,
+            contributions: contributions,
+          };
+          const previewUrl = await generatePreviewPDF(previewData, selectedTemplate);
           setPdfPreview(previewUrl);
         } catch (error) {
           console.error("Preview generation failed:", error);
@@ -179,7 +185,7 @@ export default function PaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate]);
+  }, [formData, selectedTemplate, deductions, contributions]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

@@ -538,16 +538,16 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, leftCol, y);
   
   // Filing Status (if provided)
-  if (formData.federalFilingStatus || formData.stateFilingStatus) {
+  if (formData.federalFilingStatus || parseInt(formData.stateAllowances) > 0) {
     y += 15;
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     if (formData.federalFilingStatus) {
       doc.text(`Federal: ${formatFilingStatus(formData.federalFilingStatus)}`, leftCol, y);
     }
-    if (formData.stateFilingStatus) {
+    if (parseInt(formData.stateAllowances) > 0) {
       y += 10;
-      doc.text(`State: ${formatFilingStatus(formData.stateFilingStatus)}`, leftCol, y);
+      doc.text(`State Allowances: ${formData.stateAllowances}`, leftCol, y);
     }
   }
 

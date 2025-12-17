@@ -689,26 +689,44 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
 }
 
 // Template C: Workday Style Professional Payslip
-export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
+export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, localTaxRate, totalTax, netPay, rate, stateRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdFederalTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay,
-    deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions, ytdPayPeriods
+    deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions, ytdPayPeriods,
+    logoDataUrl
   } = data;
   
   const m = 30; // Tighter margin for single page
   const usableWidth = pageWidth - 2 * m;
   let y = 25;
   
-  // ========== HEADER - Company Info ==========
-  doc.setFontSize(14);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text(formData.company || "Company Name", m, y);
+  // ========== HEADER - Company Logo or Name ==========
+  if (logoDataUrl) {
+    try {
+      // Add logo image (max height 40px to fit header)
+      const logoHeight = 35;
+      const logoWidth = 120; // Approximate width, will scale proportionally
+      doc.addImage(logoDataUrl, 'PNG', m, y - 10, logoWidth, logoHeight);
+      y += 30;
+    } catch (e) {
+      // Fallback to text if logo fails
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text(formData.company || "Company Name", m, y);
+      y += 12;
+    }
+  } else {
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text(formData.company || "Company Name", m, y);
+    y += 12;
+  }
   
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(60, 60, 60);
-  y += 12;
   doc.text(`${formData.companyAddress || ""}, ${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y);
   y += 10;
   doc.text(formData.companyPhone || "", m, y);
@@ -735,7 +753,7 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   const infoValues = [
     formData.name || "",
     formData.company || "",
-    formData.ssn ? `***-**-${formData.ssn}` : "",
+    formData.employeeId || "",
     formatDate(startDate),
     formatDate(endDate),
     formatDate(payDate)

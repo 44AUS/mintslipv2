@@ -235,7 +235,18 @@ export default function BankStatementForm() {
     setTransactions(updated);
   };
 
+// Get price based on selected template
+const getStatementPrice = () => {
+  // Bank of America (template-b) and Chase (template-c) are $70
+  if (selectedTemplate === 'template-b' || selectedTemplate === 'template-c') {
+    return "70.00";
+  }
+  // Chime (template-a) and others are $50
+  return "50.00";
+};
+
 const createOrder = (data, actions) => {
+  const price = getStatementPrice();
   return actions.order.create({
     application_context: {
       shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
@@ -243,7 +254,7 @@ const createOrder = (data, actions) => {
     purchase_units: [
       {
         amount: {
-          value: "50.00",
+          value: price,
           currency_code: "USD",
         },
         description: "Bank Statement Generation",

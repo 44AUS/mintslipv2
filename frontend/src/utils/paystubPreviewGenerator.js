@@ -238,8 +238,19 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       ytdContributions
     };
 
-    // Generate the template
-    await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    // Generate the template based on selection
+    switch (template) {
+      case 'template-b':
+        generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+        break;
+      case 'template-c':
+        generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+        break;
+      case 'template-a':
+      default:
+        await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+        break;
+    }
 
     // Add watermark on ALL pages
     addWatermarkToAllPages(doc, pageWidth, pageHeight);

@@ -823,7 +823,7 @@ const createOrder = (data, actions) => {
                   Complete Payment
                 </h3>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$50.00</strong> for bank statement generation
+                  Total: <strong>${getStatementPrice()}</strong> for bank statement generation
                 </p>
                 
                 {!isFormValid() && (

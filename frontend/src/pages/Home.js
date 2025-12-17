@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Example from '../assests/example.png';
@@ -7,59 +9,172 @@ import secure from '../assests/secure.png';
 
 export default function Home() {
   const navigate = useNavigate();
+  const [activeFeature, setActiveFeature] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Animation on mount
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  // Auto-rotate features
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveFeature((prev) => (prev + 1) % 3);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const features = [
+    { icon: CheckCircle, text: "Instant Download", desc: "Get your documents in seconds" },
+    { icon: Shield, text: "Secure Payment", desc: "256-bit SSL encryption" },
+    { icon: Clock, text: "No Registration", desc: "Start generating immediately" },
+  ];
 
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-white relative overflow-hidden">
       <div className="noise-overlay" />
       
       <Header title="MintSlip" />
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 py-20 md:py-32">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+      {/* Hero Section - Enhanced */}
+      <section className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
+        {/* Background Decorations */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left: Hero Content */}
-          <div className="md:col-span-7 space-y-8">
+          <div className={`lg:col-span-7 space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
+              <Sparkles className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Trusted by 10,000+ users</span>
+              <div className="flex -space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                ))}
+              </div>
+            </div>
+
             <div>
-              <p className="text-xs uppercase tracking-widest text-slate-500 mb-4" style={{ letterSpacing: '0.15em' }}>
-                PROFESSIONAL DOCUMENT GENERATION
-              </p>
-              <h2 className="text-5xl md:text-7xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1' }}>
-                Generate
-                <span className="block" style={{ color: '#1a4731' }}>Authentic</span>
-                <span className="block">Documents</span>
-              </h2>
-              <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl">
-                Create professional pay stubs and bank statements instantly. Simple, secure, and ready to use.
+              <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
+                <span className="block text-slate-800">Generate</span>
+                <span className="block bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Professional</span>
+                <span className="block text-slate-800">Documents</span>
+              </h1>
+              <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl">
+                Create authentic pay stubs, bank statements, and W-2 forms in minutes. No sign-up required.
               </p>
             </div>
 
-            {/* Feature Pills */}
-            <div className="flex flex-wrap gap-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-md border border-green-200">
-                <CheckCircle className="w-4 h-4 text-green-700" />
-                <span className="text-sm font-medium text-green-900">Instant Download</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-md border border-green-200">
-                <Shield className="w-4 h-4 text-green-700" />
-                <span className="text-sm font-medium text-green-900">Secure Payment</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 rounded-md border border-green-200">
-                <Clock className="w-4 h-4 text-green-700" />
-                <span className="text-sm font-medium text-green-900">No Registration</span>
-              </div>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                onClick={() => navigate("/paystub")}
+                size="lg"
+                className="group gap-2 text-lg px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <FileText className="w-5 h-5" />
+                Create Pay Stub
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button
+                onClick={() => navigate("/bank-statement")}
+                size="lg"
+                variant="outline"
+                className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
+              >
+                <FileBarChart className="w-5 h-5" />
+                Bank Statement
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+
+            {/* Interactive Feature Pills */}
+            <div className="flex flex-wrap gap-3 pt-4">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  onClick={() => setActiveFeature(index)}
+                  className={`cursor-pointer inline-flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
+                    activeFeature === index
+                      ? 'bg-green-100 border-green-500 shadow-md scale-105'
+                      : 'bg-white border-slate-200 hover:border-green-300 hover:bg-green-50'
+                  }`}
+                >
+                  <feature.icon className={`w-5 h-5 ${activeFeature === index ? 'text-green-700' : 'text-slate-500'}`} />
+                  <div className="text-left">
+                    <span className={`text-sm font-semibold block ${activeFeature === index ? 'text-green-800' : 'text-slate-700'}`}>
+                      {feature.text}
+                    </span>
+                    <span className={`text-xs ${activeFeature === index ? 'text-green-600' : 'text-slate-500'}`}>
+                      {feature.desc}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Right: Visual Element */}
-          <div className="md:col-span-5">
+          {/* Right: Visual Element - Enhanced */}
+          <div className={`lg:col-span-5 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
             <div className="relative">
-              <img
-                src={Example}
-                alt="Professional workspace"
-                className="w-full h-auto rounded-md shadow-2xl border border-slate-200"
-              />
+              {/* Floating Elements */}
+              <div className="absolute -top-4 -left-4 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s' }}>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-yellow-500" />
+                  <span className="text-sm font-semibold text-slate-700">Instant</span>
+                </div>
+              </div>
+              
+              <div className="absolute -bottom-4 -right-4 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s', animationDelay: '1s' }}>
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-semibold text-slate-700">Secure</span>
+                </div>
+              </div>
+
+              {/* Stats Badge */}
+              <div className="absolute top-1/2 -left-8 transform -translate-y-1/2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg hidden md:block">
+                <p className="text-2xl font-bold">$15</p>
+                <p className="text-xs opacity-90">Per Document</p>
+              </div>
+
+              {/* Main Image */}
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+                <img
+                  src={Example}
+                  alt="Professional document example"
+                  className="w-full h-auto transform hover:scale-105 transition-transform duration-500"
+                />
+                {/* Overlay Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              </div>
+
+              {/* Document Count */}
+              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-lg border border-slate-200">
+                <p className="text-sm text-slate-600">
+                  <span className="font-bold text-green-700">50,000+</span> documents generated
+                </p>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Quick Stats Bar */}
+        <div className={`mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          {[
+            { number: "50K+", label: "Documents Created" },
+            { number: "10K+", label: "Happy Users" },
+            { number: "99.9%", label: "Uptime" },
+            { number: "24/7", label: "Support" },
+          ].map((stat, index) => (
+            <div key={index} className="text-center p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-green-300 hover:shadow-md transition-all">
+              <p className="text-3xl font-black text-green-700" style={{ fontFamily: 'Outfit, sans-serif' }}>{stat.number}</p>
+              <p className="text-sm text-slate-600 mt-1">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 

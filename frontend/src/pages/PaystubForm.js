@@ -581,6 +581,11 @@ export default function PaystubForm() {
       setCompanyLogo(null);
       setLogoPreview(null);
       
+      // Reset payroll company selection to default
+      setSelectedPayrollCompany(PAYROLL_COMPANIES[0]);
+      setCompanySearchQuery(PAYROLL_COMPANIES[0].name);
+      setSelectedTemplate(PAYROLL_COMPANIES[0].template);
+      
       toast.success("Pay stub(s) downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {

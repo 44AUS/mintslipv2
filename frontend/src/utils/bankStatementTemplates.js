@@ -379,11 +379,11 @@ export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) 
   doc.rect(0, 0, pageWidth, 80, 'F');
   
   // Add custom logo if uploaded (white background area for logo)
-  if (bankLogo && typeof bankLogo === 'string' && bankLogo.startsWith('data:image')) {
+  if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
     try {
       doc.setFillColor(255, 255, 255);
       doc.rect(pageWidth - margin - 80, 15, 70, 50, 'F');
-      doc.addImage(bankLogo, "PNG", pageWidth - margin - 75, 20, 60, 40);
+      doc.addImage(bankLogo, pageWidth - margin - 75, 20, 60, 40);
     } catch (e) {
       console.error("Failed to add logo to Template B:", e);
     }

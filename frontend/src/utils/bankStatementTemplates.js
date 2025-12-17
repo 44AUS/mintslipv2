@@ -33,10 +33,15 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   doc.setTextColor("#00b26a");
   // Use custom uploaded logo if available, otherwise fall back to default Chime logo
   try {
-    const logoToUse = bankLogo || ChimeLogo;
-    doc.addImage(logoToUse, "PNG", margin, y - 18, 65, 20);
+    if (bankLogo) {
+      // For base64 data URLs, jsPDF can handle them directly
+      doc.addImage(bankLogo, "PNG", margin, y - 18, 65, 20);
+    } else {
+      doc.addImage(ChimeLogo, "PNG", margin, y - 18, 65, 20);
+    }
   } catch (e) {
     // fallback to text if addImage fails
+    console.error("Template A logo error:", e);
     doc.text("Chime", margin, y);
   }
 

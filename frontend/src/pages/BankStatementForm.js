@@ -440,7 +440,7 @@ const createOrder = (data, actions) => {
                       Bank Logo *
                     </h2>
                     <p className="text-sm text-slate-500 mt-1">
-                      Upload a custom bank logo. PNG format only, max 250×250 pixels.
+                      Upload a custom bank logo. PNG format only.
                     </p>
                   </div>
                 </div>

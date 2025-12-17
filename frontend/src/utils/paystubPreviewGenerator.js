@@ -225,6 +225,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       federalTax,
       stateTax,
       localTax,
+      localTaxRate,
       totalTax,
       netPay,
       rate,

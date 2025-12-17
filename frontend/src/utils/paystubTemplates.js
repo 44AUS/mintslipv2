@@ -217,24 +217,36 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     const empTaxRows = [["Description", "Current", "YTD"]];
     const erTaxRows = [["Company Tax", "Current", "YTD"]];
 
-    empTaxRows.push(["Social Security (6.2%)", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
+    // Federal Income Tax with filing status indicator
+    const fedStatusLabel = formData.federalFilingStatus 
+      ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'married_separately' ? 'MFS' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'}${formData.federalExemptions > 0 ? `-${formData.federalExemptions}` : ''})`
+      : '';
+    empTaxRows.push([`Federal Income Tax${fedStatusLabel}`, `$${fmt(federalTax || 0)}`, `$${fmt(ytdFederalTax || 0)}`]);
     erTaxRows.push(["Social Security (6.2%)", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
 
-    empTaxRows.push(["Medicare (1.45%)", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
+    empTaxRows.push(["Social Security (6.2%)", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
     erTaxRows.push(["Medicare (1.45%)", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
 
-    // State tax with actual rate
-    const stateRatePercent = stateRate ? (stateRate * 100).toFixed(2) : "5.00";
-    empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Tax (${stateRatePercent}%)`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
+    empTaxRows.push(["Medicare (1.45%)", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
     erTaxRows.push(["FUTA (0.6%)", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
+
+    // State tax with actual rate and filing status
+    const stateRatePercent = stateRate ? (stateRate * 100).toFixed(2) : "5.00";
+    const stateStatusLabel = formData.stateFilingStatus
+      ? ` (${formData.stateFilingStatus === 'married_jointly' ? 'MFJ' : formData.stateFilingStatus === 'married_separately' ? 'MFS' : formData.stateFilingStatus === 'head_of_household' ? 'HOH' : 'S'}${formData.stateExemptions > 0 ? `-${formData.stateExemptions}` : ''})`
+      : '';
+    empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Tax${stateStatusLabel}`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
+    
+    // SUTA with actual rate
+    const actualSutaRate = sutaRate || 0.027;
+    const sutaRatePercent = (actualSutaRate * 100).toFixed(2);
+    erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemp. (${sutaRatePercent}%)`, `$${fmt(grossPay * actualSutaRate)}`, `$${fmt(ytdGrossPay * actualSutaRate)}`]);
 
     // Local tax with actual rate
     if (formData.includeLocalTax && localTax > 0 && localTaxRate > 0) {
       const localRatePercent = (localTaxRate * 100).toFixed(2);
       const cityName = formData.city || "Local";
       empTaxRows.push([`${cityName} Tax (${localRatePercent}%)`, `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
-    } else {
-      empTaxRows.push(["Local Tax (none)", "$0.00", "$0.00"]);
     }
     
     // SUTA with actual rate

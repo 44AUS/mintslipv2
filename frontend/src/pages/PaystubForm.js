@@ -84,6 +84,8 @@ export default function PaystubForm() {
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type
+    federalFilingStatus: "", // optional: single, married_jointly, married_separately, head_of_household
+    stateFilingStatus: "", // optional: single, married_jointly, married_separately, head_of_household
   });
 
   // Validation errors state

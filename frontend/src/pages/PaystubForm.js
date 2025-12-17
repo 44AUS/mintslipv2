@@ -259,6 +259,101 @@ export default function PaystubForm() {
     setValidationErrors(prev => ({ ...prev, companyPhone: validation.error }));
   };
 
+  // Filter payroll companies based on search
+  const filteredCompanies = PAYROLL_COMPANIES.filter(company =>
+    company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
+  );
+
+  // Handle payroll company selection
+  const handlePayrollCompanySelect = (company) => {
+    setSelectedPayrollCompany(company);
+    setCompanySearchQuery(company.name);
+    setSelectedTemplate(company.template);
+    setShowCompanyDropdown(false);
+    
+    // Reset worker type to employee if template B or C
+    if ((company.template === "template-b" || company.template === "template-c") && formData.workerType === "contractor") {
+      setFormData(prev => ({ ...prev, workerType: "employee" }));
+    }
+  };
+
+  // Logo upload validation and processing
+  const validateAndProcessLogo = (file) => {
+    setLogoError("");
+    
+    // Check file type
+    if (!file.type.includes('png')) {
+      setLogoError("Only PNG files are accepted");
+      return false;
+    }
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const base64 = e.target.result;
+        localStorage.setItem('paystubCompanyLogo', base64);
+        setCompanyLogo(base64);
+        setLogoPreview(base64);
+        resolve(true);
+      };
+      reader.onerror = () => {
+        setLogoError("Error reading file");
+        resolve(false);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle file drop
+  const handleLogoDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await validateAndProcessLogo(files[0]);
+    }
+  };
+
+  // Handle file select
+  const handleLogoSelect = async (e) => {
+    const files = e.target.files;
+    if (files.length > 0) {
+      await validateAndProcessLogo(files[0]);
+    }
+  };
+
+  // Remove uploaded logo
+  const removeLogo = () => {
+    setCompanyLogo(null);
+    setLogoPreview(null);
+    localStorage.removeItem('paystubCompanyLogo');
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
+  };
+
+  // Load logo from localStorage on mount
+  useEffect(() => {
+    const savedLogo = localStorage.getItem('paystubCompanyLogo');
+    if (savedLogo) {
+      setCompanyLogo(savedLogo);
+      setLogoPreview(savedLogo);
+    }
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (companySearchRef.current && !companySearchRef.current.contains(event.target)) {
+        setShowCompanyDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Handle employee address selection from Google Places
   const handleEmployeeAddressSelect = useCallback((addressData) => {
     setFormData(prev => ({

@@ -314,14 +314,16 @@ async function generateSingleStub(
     payType,
     workerType,
     isContractor,
-    annualSalary
+    annualSalary,
+    // Logo for Workday template
+    logoDataUrl: formData.logoDataUrl || null
   };
 
   // Call the appropriate template
   if (template === 'template-b') {
     generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === 'template-c') {
-    generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+    await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
   } else {
     await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }

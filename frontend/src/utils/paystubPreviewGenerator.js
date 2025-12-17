@@ -258,7 +258,9 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       contributionsData,
       totalContributions,
       ytdDeductions,
-      ytdContributions
+      ytdContributions,
+      // Logo for Workday template
+      logoDataUrl: formData.logoDataUrl || null
     };
 
     // Generate the template based on selection
@@ -267,7 +269,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
         generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
         break;
       case 'template-c':
-        generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+        await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
         break;
       case 'template-a':
       default:

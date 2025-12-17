@@ -248,11 +248,6 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
       const cityName = formData.city || "Local";
       empTaxRows.push([`${cityName} Tax (${localRatePercent}%)`, `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
     }
-    
-    // SUTA with actual rate
-    const actualSutaRate = sutaRate || 0.027;
-    const sutaRatePercent = (actualSutaRate * 100).toFixed(2);
-    erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemp. (${sutaRatePercent}%)`, `$${fmt(grossPay * actualSutaRate)}`, `$${fmt(ytdGrossPay * actualSutaRate)}`]);
 
     const taxYStart = y;
     const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true);

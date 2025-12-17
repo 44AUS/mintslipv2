@@ -621,13 +621,26 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont(undefined, 'normal');
   doc.setFontSize(10);
   doc.setTextColor(60, 60, 60);
+  
+  // Federal Income Tax with filing status
+  const fedLabel = formData.federalFilingStatus 
+    ? `Federal Tax (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'single' ? 'S' : 'HOH'})`
+    : "Federal Tax";
+  doc.text(fedLabel, margin + 10, y);
+  doc.text(`$${(federalTax || 0).toFixed(2)}`, pageWidth - margin - 10, y, { align: 'right' });
+  y += 18;
   doc.text("Social Security", margin + 10, y);
   doc.text(`$${ssTax.toFixed(2)}`, pageWidth - margin - 10, y, { align: 'right' });
   y += 18;
   doc.text("Medicare", margin + 10, y);
   doc.text(`$${medTax.toFixed(2)}`, pageWidth - margin - 10, y, { align: 'right' });
   y += 18;
-  doc.text("State Tax", margin + 10, y);
+  
+  // State Tax with filing status
+  const stateLabel = formData.stateFilingStatus 
+    ? `State Tax (${formData.stateFilingStatus === 'married_jointly' ? 'MFJ' : formData.stateFilingStatus === 'single' ? 'S' : 'HOH'})`
+    : "State Tax";
+  doc.text(stateLabel, margin + 10, y);
   doc.text(`$${stateTax.toFixed(2)}`, pageWidth - margin - 10, y, { align: 'right' });
   
   if (formData.includeLocalTax) {

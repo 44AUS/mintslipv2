@@ -569,6 +569,11 @@ export default function PaystubForm() {
       // Generate and download PDF
       await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs);
       
+      // Clear the uploaded logo from localStorage after successful download
+      localStorage.removeItem('paystubCompanyLogo');
+      setCompanyLogo(null);
+      setLogoPreview(null);
+      
       toast.success("Pay stub(s) downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {
@@ -581,6 +586,13 @@ export default function PaystubForm() {
     toast.error("Payment failed. Please try again.");
     setIsProcessing(false);
   };
+  
+  // Clear logo from localStorage when leaving the page
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem('paystubCompanyLogo');
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white relative">

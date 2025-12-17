@@ -237,7 +237,7 @@ export default function BankStatementForm() {
 const createOrder = (data, actions) => {
   return actions.order.create({
     application_context: {
-      shipping_preference: "GET_FROM_FILE", 
+      shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
     },
     purchase_units: [
       {
@@ -247,7 +247,6 @@ const createOrder = (data, actions) => {
         },
         description: "Bank Statement Generation",
       },
-      
     ],
   });
 };

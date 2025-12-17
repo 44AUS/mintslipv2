@@ -43,6 +43,7 @@ const OTHER_FORMS = [
 function DesktopNavLinks({ location, onNavigate }) {
   const isActive = (path) => location.pathname === path;
   const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
+  const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
   
   const getButtonClasses = (path) => {
     const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
@@ -52,9 +53,9 @@ function DesktopNavLinks({ location, onNavigate }) {
     return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
   };
 
-  const getDropdownTriggerClasses = () => {
+  const getDropdownTriggerClasses = (isDropdownActive) => {
     const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
-    if (isTaxFormActive) {
+    if (isDropdownActive) {
       return `${base} bg-green-100 text-green-800 font-semibold`;
     }
     return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;

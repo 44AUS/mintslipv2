@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { generateTemplateA } from "./paystubTemplates";
+import { generateTemplateA, generateTemplateB, generateTemplateC } from "./paystubTemplates";
 
 // Helper to calculate next weekday
 const DAY_MAP = {

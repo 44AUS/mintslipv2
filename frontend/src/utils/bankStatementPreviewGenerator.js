@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { generateBankTemplateA } from "./bankStatementTemplates";
+import { generateBankTemplateA, generateBankTemplateB, generateBankTemplateC } from "./bankStatementTemplates";
 
 function parseCurrency(s) {
   const cleaned = String(s || "").replace(/[^0-9.-]/g, "");

@@ -704,15 +704,25 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const isPreview = data.isPreview || false;
   
   if (isPreview) {
-    // In preview mode, show "LOGO" placeholder text
-    doc.setFillColor(240, 240, 240);
-    doc.rect(m, y - 10, 100, 35, 'F');
-    doc.setDrawColor(180, 180, 180);
-    doc.rect(m, y - 10, 100, 35, 'S');
-    doc.setFontSize(16);
-    doc.setTextColor(150, 150, 150);
-    doc.setFont("helvetica", "bold");
-    doc.text("LOGO", m + 35, y + 8);
+    // In preview mode, show Workday logo
+    try {
+      const workdayLogoUrl = '/assests/workday-logo.png';
+      const workdayLogo = await loadImageAsBase64(workdayLogoUrl);
+      if (workdayLogo) {
+        doc.addImage(workdayLogo, 'PNG', m, y - 10, 100, 30);
+      } else {
+        // Fallback to text if logo fails to load
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.text("WORKDAY", m, y + 5);
+      }
+    } catch (e) {
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text("WORKDAY", m, y + 5);
+    }
     y += 30;
   } else if (logoDataUrl) {
     try {

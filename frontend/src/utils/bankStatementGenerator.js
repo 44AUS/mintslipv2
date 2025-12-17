@@ -35,7 +35,8 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     accountNumber,
     selectedMonth,
     beginningBalance,
-    transactions
+    transactions,
+    bankLogo
   } = data;
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });

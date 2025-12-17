@@ -281,15 +281,38 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   ];
   
   if (!isContractor) {
-    summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
+    // Pre-Tax Deductions/Contributions (before taxes) - things like 401k, HSA, health insurance
+    const preTaxDeductions = (data.deductions || []).filter(d => d.preTax !== false);
+    const preTaxContributions = (data.contributions || []).filter(c => c.preTax !== false);
+    const totalPreTaxDeductions = preTaxDeductions.reduce((sum, d) => sum + (parseFloat(d.currentAmount) || 0), 0);
+    const totalPreTaxContributions = preTaxContributions.reduce((sum, c) => sum + (parseFloat(c.currentAmount) || 0), 0);
+    const ytdPreTaxDeductions = totalPreTaxDeductions * (data.ytdPayPeriods || 1);
+    const ytdPreTaxContributions = totalPreTaxContributions * (data.ytdPayPeriods || 1);
     
-    // Add deductions if any
-    if (totalDeductions > 0) {
-      summaryRows.push(["Deductions", `$${fmt(totalDeductions)}`, `$${fmt(ytdDeductions)}`]);
+    if (totalPreTaxDeductions > 0 || totalPreTaxContributions > 0) {
+      summaryRows.push(["Pre-Tax Deductions/Contributions", `$${fmt(totalPreTaxDeductions + totalPreTaxContributions)}`, `$${fmt(ytdPreTaxDeductions + ytdPreTaxContributions)}`]);
     }
     
-    // Add contributions if any
-    if (totalContributions > 0) {
+    // Taxes
+    summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
+    
+    // Post-Tax Deductions/Contributions (after taxes) - things like Roth 401k, garnishments
+    const postTaxDeductions = (data.deductions || []).filter(d => d.preTax === false);
+    const postTaxContributions = (data.contributions || []).filter(c => c.preTax === false);
+    const totalPostTaxDeductions = postTaxDeductions.reduce((sum, d) => sum + (parseFloat(d.currentAmount) || 0), 0);
+    const totalPostTaxContributions = postTaxContributions.reduce((sum, c) => sum + (parseFloat(c.currentAmount) || 0), 0);
+    const ytdPostTaxDeductions = totalPostTaxDeductions * (data.ytdPayPeriods || 1);
+    const ytdPostTaxContributions = totalPostTaxContributions * (data.ytdPayPeriods || 1);
+    
+    if (totalPostTaxDeductions > 0 || totalPostTaxContributions > 0) {
+      summaryRows.push(["Post-Tax Deductions/Contributions", `$${fmt(totalPostTaxDeductions + totalPostTaxContributions)}`, `$${fmt(ytdPostTaxDeductions + ytdPostTaxContributions)}`]);
+    }
+    
+    // Legacy deductions/contributions display (if not categorized as pre/post tax)
+    if (totalDeductions > 0 && totalPreTaxDeductions === 0 && totalPostTaxDeductions === 0) {
+      summaryRows.push(["Deductions", `$${fmt(totalDeductions)}`, `$${fmt(ytdDeductions)}`]);
+    }
+    if (totalContributions > 0 && totalPreTaxContributions === 0 && totalPostTaxContributions === 0) {
       summaryRows.push(["Contributions", `$${fmt(totalContributions)}`, `$${fmt(ytdContributions)}`]);
     }
     

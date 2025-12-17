@@ -272,6 +272,11 @@ const createOrder = (data, actions) => {
       };
       await generateAndDownloadBankStatement(formData, selectedTemplate);
       
+      // Clear the uploaded logo from localStorage after successful download
+      localStorage.removeItem('bankStatementLogo');
+      setUploadedLogo(null);
+      setLogoPreview(null);
+      
       toast.success("Bank statement downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {
@@ -284,6 +289,13 @@ const createOrder = (data, actions) => {
     toast.error("Payment failed. Please try again.");
     setIsProcessing(false);
   };
+  
+  // Clear logo from localStorage when leaving the page
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem('bankStatementLogo');
+    };
+  }, []);
 
   // Calculate ending balance for preview
   const calculateEndingBalance = () => {

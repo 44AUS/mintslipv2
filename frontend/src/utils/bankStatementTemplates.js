@@ -559,27 +559,22 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.line(margin, y - 10, pageWidth - margin, y - 10);
   
   // Add custom logo if uploaded
-  if (bankLogo && typeof bankLogo === 'string' && bankLogo.startsWith('data:image')) {
+  let logoAddedC = false;
+  if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
     try {
-      doc.addImage(bankLogo, "PNG", margin, y - 5, 60, 40);
+      doc.addImage(bankLogo, margin, y - 5, 60, 40);
       // Move text to the right if logo is present
       doc.setFontSize(18);
       doc.setTextColor(142, 68, 173);
       doc.setFont("helvetica", "bold");
       doc.text("Account Statement", margin + 75, y + 15);
+      logoAddedC = true;
     } catch (e) {
       console.error("Failed to add logo to Template C:", e);
-      doc.setFontSize(32);
-      doc.setTextColor(142, 68, 173);
-      doc.setFont("helvetica", "bold");
-      doc.text("FINANCIAL INSTITUTION", margin, y);
-      
-      y += 20;
-      doc.setFontSize(18);
-      doc.setTextColor(100, 100, 100);
-      doc.text("Account Statement", margin, y);
     }
-  } else {
+  }
+  
+  if (!logoAddedC) {
     doc.setFontSize(32);
     doc.setTextColor(142, 68, 173);
     doc.setFont("helvetica", "bold");

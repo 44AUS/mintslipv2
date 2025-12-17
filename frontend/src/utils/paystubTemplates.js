@@ -746,7 +746,7 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   y += 12;
   doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, margin + 5, y);
   // Filing Status (if provided)
-  if (formData.federalFilingStatus || formData.stateFilingStatus) {
+  if (formData.federalFilingStatus || parseInt(formData.stateAllowances) > 0) {
     y += 12;
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
@@ -754,9 +754,9 @@ export function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
     if (formData.federalFilingStatus) {
       filingText += `Fed: ${formatFilingStatus(formData.federalFilingStatus)}`;
     }
-    if (formData.stateFilingStatus) {
+    if (parseInt(formData.stateAllowances) > 0) {
       if (filingText) filingText += " | ";
-      filingText += `State: ${formatFilingStatus(formData.stateFilingStatus)}`;
+      filingText += `State Allow: ${formData.stateAllowances}`;
     }
     doc.text(filingText, margin + 5, y);
   }

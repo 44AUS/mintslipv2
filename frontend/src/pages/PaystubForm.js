@@ -659,8 +659,16 @@ export default function PaystubForm() {
                               selectedPayrollCompany?.id === company.id ? 'bg-green-100' : ''
                             }`}
                           >
-                            <div className="w-10 h-10 rounded bg-slate-100 border border-slate-200 flex items-center justify-center">
-                              <Building2 className="w-5 h-5 text-slate-400" />
+                            <div className="w-10 h-10 rounded bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-1">
+                              {company.logo ? (
+                                <img 
+                                  src={company.logo} 
+                                  alt={`${company.name} logo`} 
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <Building2 className="w-5 h-5 text-slate-400" />
+                              )}
                             </div>
                             <div>
                               <span className="font-medium text-slate-700 block">{company.name}</span>

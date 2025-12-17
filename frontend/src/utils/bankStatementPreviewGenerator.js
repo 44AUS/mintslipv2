@@ -174,17 +174,35 @@ export const generateBankStatementPreview = async (formData, template = 'templat
     };
 
     // Generate the template based on selection
-    switch (template) {
-      case 'template-b':
-        generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
-        break;
-      case 'template-c':
-        generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
-        break;
-      case 'template-a':
-      default:
-        generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
-        break;
+    try {
+      switch (template) {
+        case 'template-b':
+          generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+          break;
+        case 'template-c':
+          generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+          break;
+        case 'template-a':
+        default:
+          generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+          break;
+      }
+    } catch (templateError) {
+      console.error("Template generation error:", templateError);
+      // Try to generate without custom logo
+      const safeData = { ...templateData, bankLogo: null };
+      switch (template) {
+        case 'template-b':
+          generateBankTemplateB(doc, safeData, pageWidth, pageHeight, margin);
+          break;
+        case 'template-c':
+          generateBankTemplateC(doc, safeData, pageWidth, pageHeight, margin);
+          break;
+        case 'template-a':
+        default:
+          generateBankTemplateA(doc, safeData, pageWidth, pageHeight, margin);
+          break;
+      }
     }
 
     // Add watermark on ALL pages

@@ -1723,7 +1723,7 @@ export default function PaystubForm() {
                   )}
                   <div className="flex justify-between">
                     <span className="text-slate-700">Total Gross Pay:</span>
-                    <span className="font-bold">${preview.totalGross.toFixed(2)}</span>
+                    <span className="font-bold">${formatCurrency(preview.totalGross)}</span>
                   </div>
                   
                   {formData.workerType === 'employee' ? (
@@ -1733,48 +1733,48 @@ export default function PaystubForm() {
                         <span className="text-slate-700">
                           Federal Income Tax{formData.federalFilingStatus ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}:
                         </span>
-                        <span>${preview.federalTax.toFixed(2)}</span>
+                        <span>${formatCurrency(preview.federalTax)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-700">Social Security (6.2%):</span>
-                        <span>${preview.ssTax.toFixed(2)}</span>
+                        <span>${formatCurrency(preview.ssTax)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-700">Medicare (1.45%):</span>
-                        <span>${preview.medTax.toFixed(2)}</span>
+                        <span>${formatCurrency(preview.medTax)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-700">
                           {formData.state ? `${formData.state} State Tax${parseInt(formData.stateAllowances) > 0 ? ` (${formData.stateAllowances} allow.)` : ''}:` : 'State Tax:'}
                         </span>
-                        <span>${preview.stateTax.toFixed(2)}</span>
+                        <span>${formatCurrency(preview.stateTax)}</span>
                       </div>
                       {formData.includeLocalTax && preview.localTaxRate > 0 && (
                         <div className="flex justify-between">
                           <span className="text-slate-700">
                             {formData.city ? `${formData.city} Local Tax (${(preview.localTaxRate * 100).toFixed(2)}%):` : 'Local Tax:'}
                           </span>
-                          <span>${preview.localTax.toFixed(2)}</span>
+                          <span>${formatCurrency(preview.localTax)}</span>
                         </div>
                       )}
                       <div className="border-t border-green-300 pt-2 mt-2">
                         <div className="flex justify-between text-red-700">
                           <span className="font-bold">Total Taxes:</span>
-                          <span className="font-bold">${preview.totalTaxes.toFixed(2)}</span>
+                          <span className="font-bold">${formatCurrency(preview.totalTaxes)}</span>
                         </div>
                       </div>
                       {/* Deductions */}
                       {preview.totalDeductions > 0 && (
                         <div className="flex justify-between text-orange-700">
                           <span className="font-bold">Total Deductions:</span>
-                          <span className="font-bold">${preview.totalDeductions.toFixed(2)}</span>
+                          <span className="font-bold">${formatCurrency(preview.totalDeductions)}</span>
                         </div>
                       )}
                       {/* Contributions */}
                       {preview.totalContributions > 0 && (
                         <div className="flex justify-between text-purple-700">
                           <span className="font-bold">Total Contributions:</span>
-                          <span className="font-bold">${preview.totalContributions.toFixed(2)}</span>
+                          <span className="font-bold">${formatCurrency(preview.totalContributions)}</span>
                         </div>
                       )}
                     </>
@@ -1789,7 +1789,7 @@ export default function PaystubForm() {
                   
                   <div className="flex justify-between text-green-700 text-lg">
                     <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Net Pay:'}</span>
-                    <span className="font-bold">${preview.netPay.toFixed(2)}</span>
+                    <span className="font-bold">${formatCurrency(preview.netPay)}</span>
                   </div>
                 </div>
               </div>

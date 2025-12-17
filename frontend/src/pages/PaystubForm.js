@@ -85,10 +85,8 @@ export default function PaystubForm() {
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type
-    federalFilingStatus: "", // optional: single, married_jointly, married_separately, head_of_household
-    stateFilingStatus: "", // optional: single, married_jointly, married_separately, head_of_household
-    federalExemptions: "0", // number of federal allowances/exemptions
-    stateExemptions: "0", // number of state allowances/exemptions
+    federalFilingStatus: "", // optional: single, married_jointly, head_of_household (no more allowances per 2020 W-4)
+    stateAllowances: "0", // number of state allowances (only for states that use them)
   });
 
   // Validation errors state

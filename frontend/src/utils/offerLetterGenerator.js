@@ -59,6 +59,25 @@ const getTemplateColors = (template, primaryColor, accentColor) => {
   }
 };
 
+// Helper to embed image from base64
+const embedImage = async (pdfDoc, base64Data) => {
+  try {
+    // Remove data URL prefix if present
+    const base64 = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;
+    const imageBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    
+    // Try PNG first, then JPEG
+    if (base64Data.includes('image/png')) {
+      return await pdfDoc.embedPng(imageBytes);
+    } else {
+      return await pdfDoc.embedJpg(imageBytes);
+    }
+  } catch (error) {
+    console.error('Error embedding image:', error);
+    return null;
+  }
+};
+
 // Generate offer letter PDF
 export const generateOfferLetterPDF = async (formData, isPreview = false) => {
   try {
@@ -71,6 +90,9 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+    
+    // For signature font, we'll use ZapfDingbats as a cursive alternative
+    // Since pdf-lib doesn't have true cursive, we'll use italic for generated signatures
     
     // Get template colors
     const colors = getTemplateColors(formData.template, formData.primaryColor, formData.accentColor);

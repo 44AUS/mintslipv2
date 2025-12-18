@@ -764,14 +764,17 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   y += 55;
   y = drawSectionTitle("Checking Summary", y);
   
-  // Account type label on the right
+  // Account type label - positioned closer to the title box (not far right)
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Chase Personal Checking", pageWidth - margin - 30, y - 5, { align: "right" });
+  doc.text("Chase Personal Checking", margin + 200, y - 5);
   
   y += 10;
   
-  // Summary table
+  // Summary table - narrower width (not full page width)
+  const summaryTableWidth = 300;
+  const summaryRightEdge = margin + summaryTableWidth;
+  
   const summaryItems = [
     { label: "Beginning Balance", amount: beginning },
     { label: "Deposits and Additions", amount: deposits },
@@ -786,8 +789,8 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.setFont("helvetica", "bold");
-  doc.text("AMOUNT", pageWidth - margin - 5, y, { align: "right" });
-  doc.line(margin, y + 5, pageWidth - margin, y + 5);
+  doc.text("AMOUNT", summaryRightEdge, y, { align: "right" });
+  doc.line(margin, y + 5, summaryRightEdge, y + 5);
   y += 15;
   
   summaryItems.forEach((item, index) => {
@@ -797,11 +800,11 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.text(item.label, margin + 5, y);
     
     const amountStr = `$${toFixed(item.amount)}`;
-    doc.text(amountStr, pageWidth - margin - 5, y, { align: "right" });
+    doc.text(amountStr, summaryRightEdge, y, { align: "right" });
     
     if (index < summaryItems.length - 1) {
       doc.setDrawColor(200, 200, 200);
-      doc.line(margin, y + 8, pageWidth - margin, y + 8);
+      doc.line(margin, y + 8, summaryRightEdge, y + 8);
     }
     y += 18;
   });

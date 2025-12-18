@@ -620,26 +620,31 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - margin, pageHeight - 25, { align: "right" });
   };
   
-  // Helper to draw a section title box (Chase style - white background, black border)
+  // Helper to draw a section title box (Chase style - complete rectangle with black border)
   const drawSectionTitle = (title, yPos) => {
-    const boxWidth = 180;
-    const boxHeight = 16;
+    const boxHeight = 18;
+    const paddingX = 10;
+    const paddingY = 5;
     
-    // White background with black border
+    // Calculate box width based on text length
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    const textWidth = doc.getTextWidth(title.toUpperCase());
+    const boxWidth = textWidth + (paddingX * 2);
+    
+    // White background with solid black border (all 4 sides, thicker line)
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(1.5);
     doc.rect(margin, yPos, boxWidth, boxHeight, 'FD');
     
-    // Bold black text, left-aligned with padding
-    doc.setFontSize(9);
+    // Bold black text, centered vertically with left padding
     doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    doc.text(title.toUpperCase(), margin + 5, yPos + 11);
+    doc.text(title.toUpperCase(), margin + paddingX, yPos + 12);
     
-    // Gray horizontal line extending from the box to the right
-    doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.3);
+    // Horizontal line extending from the RIGHT edge of the box to the right margin
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
     doc.line(margin + boxWidth, yPos + boxHeight / 2, pageWidth - margin, yPos + boxHeight / 2);
     
     return yPos + boxHeight;

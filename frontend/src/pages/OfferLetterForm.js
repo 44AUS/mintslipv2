@@ -1040,35 +1040,66 @@ export default function OfferLetterForm() {
                   {formData.employeeSignatureType === "custom" && (
                     <div className="space-y-2 md:col-span-2">
                       <Label>Upload Employee Signature</Label>
-                      <p className="text-xs text-slate-500 mb-2">PNG with transparent background recommended. Max 1MB.</p>
-                      {formData.employeeSignatureImage ? (
-                        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                          <img 
-                            src={formData.employeeSignatureImage} 
-                            alt="Employee Signature" 
-                            className="h-12 max-w-[200px] object-contain"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-700">Signature uploaded</p>
+                      <p className="text-xs text-slate-500 mb-2">PNG with transparent background recommended</p>
+                      
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setIsDraggingEmpSig(true); }}
+                        onDragLeave={(e) => { e.preventDefault(); setIsDraggingEmpSig(false); }}
+                        onDrop={handleSignatureDrop('employeeSignatureImage', setIsDraggingEmpSig)}
+                        className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
+                          isDraggingEmpSig 
+                            ? 'border-green-500 bg-green-50' 
+                            : 'border-slate-300 hover:border-green-400'
+                        }`}
+                      >
+                        {formData.employeeSignatureImage ? (
+                          <div className="flex items-center gap-4">
+                            <div className="relative">
+                              <img 
+                                src={formData.employeeSignatureImage} 
+                                alt="Employee Signature" 
+                                className="h-16 max-w-[200px] object-contain rounded-lg border border-slate-200 bg-white p-2"
+                              />
+                              <button
+                                type="button"
+                                onClick={removeSignature('employeeSignatureImage', empSigInputRef)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-green-700">Signature uploaded!</p>
+                              <p className="text-xs text-slate-500 mt-1">Click the X to remove</p>
+                            </div>
                           </div>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm"
-                            onClick={removeSignature('employeeSignatureImage')}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ) : (
-                        <Input 
-                          type="file"
-                          accept="image/png,image/jpeg,image/jpg"
-                          onChange={handleSignatureUpload('employeeSignatureImage')}
-                          className="cursor-pointer"
-                        />
-                      )}
+                        ) : (
+                          <div className="text-center">
+                            <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                            <p className="text-sm text-slate-600 mb-2">
+                              Drag and drop signature here, or
+                            </p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => empSigInputRef.current?.click()}
+                              className="gap-2"
+                            >
+                              <Upload className="w-4 h-4" />
+                              Select File
+                            </Button>
+                            <input
+                              ref={empSigInputRef}
+                              type="file"
+                              accept="image/png,image/jpeg,image/jpg"
+                              onChange={handleSignatureUpload('employeeSignatureImage', empSigInputRef)}
+                              className="hidden"
+                            />
+                            <p className="text-xs text-slate-400 mt-2">PNG or JPG, max 1MB</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                   

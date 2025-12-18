@@ -547,27 +547,126 @@ export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) 
   });
 }
 
-// Template C: Professional Corporate Statement (Chase style)
+// Template C: Chase Bank Statement Style
 export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) {
   const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, dateRange, transactions, toFixed, formatShortDate, formatDateLong, parseCurrency, bankLogo } = data;
   
-  let y = 40;
+  // Chase blue color
+  const chaseBlue = [0, 50, 120];
   
-  // Corporate Header with Logo Space
-  doc.setDrawColor(142, 68, 173);
-  doc.setLineWidth(4);
-  doc.line(margin, y - 10, pageWidth - margin, y - 10);
+  // Format statement date range for header
+  const formatStatementDateRange = () => {
+    if (statementStart && statementEnd) {
+      const start = new Date(statementStart);
+      const end = new Date(statementEnd);
+      const options = { month: 'long', day: '2-digit', year: 'numeric' };
+      return `${start.toLocaleDateString('en-US', options)} through ${end.toLocaleDateString('en-US', options)}`;
+    }
+    return dateRange;
+  };
   
-  // Add custom logo if uploaded
+  // Separate transactions into deposits and withdrawals
+  const depositsTransactions = transactions.filter(tx => {
+    const type = (tx.type || "").toLowerCase();
+    return type.includes("deposit") || type.includes("credit") || type.includes("refund") || type.includes("incoming");
+  });
+  
+  const withdrawalsTransactions = transactions.filter(tx => {
+    const type = (tx.type || "").toLowerCase();
+    return type.includes("purchase") || type.includes("transfer") || type.includes("payment") || type.includes("withdrawal") || type.includes("debit");
+  });
+  
+  // Track total pages - will be updated after all content is added
+  let currentPage = 1;
+  
+  // Helper function to add page header (statement dates and account number in top right)
+  const addPageHeader = (isFirstPage = false) => {
+    // Statement date range - top right
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.text(formatStatementDateRange(), pageWidth - margin, 25, { align: "right" });
+    doc.text(`Account Number: ${accountNumber}`, pageWidth - margin, 37, { align: "right" });
+  };
+  
+  // Helper function to add page footer with page number
+  const addPageFooter = (pageNum, totalPages) => {
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - margin, pageHeight - 25, { align: "right" });
+  };
+  
+  // Helper to draw a section title box (Chase style)
+  const drawSectionTitle = (title, yPos) => {
+    doc.setFillColor(240, 240, 240);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, yPos, pageWidth - 2 * margin, 16, 'FD');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text(title.toUpperCase(), margin + 5, yPos + 11);
+    return yPos + 16;
+  };
+  
+  // Helper to draw transaction table headers
+  const drawTableHeaders = (yPos) => {
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text("DATE", margin + 5, yPos);
+    doc.text("DESCRIPTION", margin + 60, yPos);
+    doc.text("AMOUNT", pageWidth - margin - 5, yPos, { align: "right" });
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, yPos + 3, pageWidth - margin, yPos + 3);
+    return yPos + 12;
+  };
+  
+  // Helper to draw vertical barcode on right edge (page 1 only)
+  const drawBarcode = () => {
+    const barcodeX = pageWidth - 15;
+    const barcodeStartY = 60;
+    const barcodeHeight = 200;
+    const barWidth = 1;
+    
+    // Generate pseudo-random barcode pattern based on account number
+    const barcodeData = (accountNumber || "000000000000").replace(/\D/g, '');
+    let xPos = barcodeX;
+    
+    doc.setFillColor(0, 0, 0);
+    
+    // Draw barcode bars vertically
+    for (let i = 0; i < 50; i++) {
+      const digit = parseInt(barcodeData[i % barcodeData.length] || '5');
+      const barHeight = 2 + (digit % 3);
+      
+      if (i % 2 === 0) {
+        doc.rect(barcodeX - 8, barcodeStartY + (i * 4), barHeight, 3, 'F');
+      }
+    }
+    
+    // Add barcode number below
+    doc.setFontSize(6);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    
+    // Draw number vertically
+    const barcodeNum = `${accountNumber || '000000000000'}`.slice(0, 16);
+    for (let i = 0; i < barcodeNum.length; i++) {
+      doc.text(barcodeNum[i], barcodeX - 3, barcodeStartY + barcodeHeight + 10 + (i * 8));
+    }
+  };
+
+  // ============ PAGE 1: Header + Summary ============
+  let y = 30;
+  
+  // Chase Logo/Bank Name
   let logoAddedC = false;
   if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
     try {
-      doc.addImage(bankLogo, margin, y - 5, 60, 40);
-      // Move text to the right if logo is present
-      doc.setFontSize(18);
-      doc.setTextColor(142, 68, 173);
-      doc.setFont("helvetica", "bold");
-      doc.text("Account Statement", margin + 75, y + 15);
+      doc.addImage(bankLogo, margin, y - 10, 70, 25);
       logoAddedC = true;
     } catch (e) {
       console.error("Failed to add logo to Template C:", e);
@@ -575,213 +674,261 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   }
   
   if (!logoAddedC) {
-    doc.setFontSize(32);
-    doc.setTextColor(142, 68, 173);
+    doc.setFontSize(24);
+    doc.setTextColor(...chaseBlue);
     doc.setFont("helvetica", "bold");
-    doc.text("FINANCIAL INSTITUTION", margin, y);
-    
-    y += 20;
-    doc.setFontSize(18);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Account Statement", margin, y);
+    doc.text("CHASE", margin, y + 8);
   }
-
-  // Statement Period Box
-  y += 10;
-  doc.setFillColor(245, 242, 248);
-  doc.rect(pageWidth - margin - 150, y - 20, 150, 50, 'F');
-  doc.setDrawColor(142, 68, 173);
-  doc.setLineWidth(1);
-  doc.rect(pageWidth - margin - 150, y - 20, 150, 50, 'S');
   
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 80);
-  doc.setFont("helvetica", "normal");
-  doc.text("STATEMENT PERIOD", pageWidth - margin - 140, y - 5);
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text(monthText, pageWidth - margin - 140, y + 10);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text(dateRange, pageWidth - margin - 140, y + 22);
-
-  // Account Information Grid
-  y = 120;
-  const gridHeight = 90;
-  
-  // Left box - Account Holder
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(1);
-  doc.rect(margin, y, (pageWidth - 2 * margin - 10) / 2, gridHeight, 'S');
-  doc.setFillColor(250, 250, 250);
-  doc.rect(margin, y, (pageWidth - 2 * margin - 10) / 2, 25, 'F');
-  
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  doc.setFont("helvetica", "bold");
-  doc.text("ACCOUNT HOLDER", margin + 10, y + 17);
-  
-  y += 40;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
-  doc.text(accountName, margin + 10, y);
-  y += 15;
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text(accountAddress1, margin + 10, y);
-  y += 12;
-  doc.text(accountAddress2, margin + 10, y);
-
-  // Right box - Account Details
-  y = 120;
-  const rightBoxX = margin + (pageWidth - 2 * margin - 10) / 2 + 10;
-  doc.rect(rightBoxX, y, (pageWidth - 2 * margin - 10) / 2, gridHeight, 'S');
-  doc.setFillColor(250, 250, 250);
-  doc.rect(rightBoxX, y, (pageWidth - 2 * margin - 10) / 2, 25, 'F');
-  
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  doc.text("ACCOUNT DETAILS", rightBoxX + 10, y + 17);
-  
-  y += 40;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`Account Number: ${accountNumber}`, rightBoxX + 10, y);
-  y += 15;
-  doc.text(`Type: Checking Account`, rightBoxX + 10, y);
-  y += 15;
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Statement Date: ${formatDateLong(statementEnd)}`, rightBoxX + 10, y);
-
-  // Summary Table
-  y = 230;
-  doc.setFillColor(245, 242, 248);
-  doc.rect(margin, y, pageWidth - 2 * margin, 30, 'F');
-  doc.setDrawColor(142, 68, 173);
-  doc.setLineWidth(2);
-  doc.rect(margin, y, pageWidth - 2 * margin, 30, 'S');
-  
-  y += 20;
-  doc.setFontSize(12);
-  doc.setTextColor(142, 68, 173);
-  doc.setFont("helvetica", "bold");
-  doc.text("ACCOUNT SUMMARY", margin + 10, y);
-
-  y += 30;
-  const summaryData = [
-    ["Beginning Balance", beginning],
-    ["Total Deposits (+)", deposits],
-    ["Total Purchases (-)", purchases],
-    ["Total Transfers (-)", transfers],
-  ];
-
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.5);
-  
-  summaryData.forEach(([label, amount]) => {
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(label, margin + 10, y);
-    doc.text(`$${toFixed(amount)}`, pageWidth - margin - 10, y, { align: "right" });
-    y += 20;
-    doc.line(margin, y - 10, pageWidth - margin, y - 10);
-  });
-
-  // Ending Balance - Highlighted
-  doc.setFillColor(142, 68, 173);
-  doc.rect(margin, y, pageWidth - 2 * margin, 35, 'F');
-  y += 23;
-  doc.setFontSize(14);
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.text("ENDING BALANCE", margin + 10, y);
-  doc.setFontSize(18);
-  doc.text(`$${toFixed(ending)}`, pageWidth - margin - 10, y, { align: "right" });
-
-  // Transaction Details
-  y += 50;
-  doc.setFillColor(245, 242, 248);
-  doc.rect(margin, y, pageWidth - 2 * margin, 30, 'F');
-  doc.setDrawColor(142, 68, 173);
-  doc.setLineWidth(2);
-  doc.rect(margin, y, pageWidth - 2 * margin, 30, 'S');
-  
-  y += 20;
-  doc.setFontSize(12);
-  doc.setTextColor(142, 68, 173);
-  doc.text("TRANSACTION DETAILS", margin + 10, y);
-
+  // Bank address
   y += 25;
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.5);
-  doc.line(margin, y, pageWidth - margin, y);
-  y += 15;
-
-  // Table headers
+  doc.setFontSize(7);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.text("JPMorgan Chase Bank, N.A.", margin, y);
+  doc.text("PO Box 182051", margin, y + 10);
+  doc.text("Columbus, OH 43218-2051", margin, y + 20);
+  
+  // Add page header (dates and account number)
+  addPageHeader(true);
+  
+  // Draw barcode on right side
+  drawBarcode();
+  
+  // Account holder info
+  y += 45;
   doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  doc.text(accountName, margin, y);
+  doc.text(accountAddress1, margin, y + 12);
+  doc.text(accountAddress2, margin, y + 24);
+  
+  // CHECKING SUMMARY section
+  y += 55;
+  doc.setFillColor(240, 240, 240);
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(margin, y, pageWidth - 2 * margin - 30, 20, 'FD');
+  
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "bold");
+  doc.text("CHECKING SUMMARY", margin + 5, y + 14);
+  
+  // Account type label
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text("Chase Personal Checking", pageWidth - margin - 150, y + 14);
+  
+  y += 30;
+  
+  // Summary table
+  const summaryItems = [
+    { label: "Beginning Balance", amount: beginning },
+    { label: "Deposits and Additions", amount: deposits },
+    { label: "Electronic Withdrawals", amount: purchases },
+    { label: "Ending Balance", amount: ending, bold: true }
+  ];
+  
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.3);
+  
+  // Draw summary header
+  doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.setFont("helvetica", "bold");
-  const col = {
-    date: margin + 10,
-    desc: margin + 100,
-    type: margin + 300,
-    amt: pageWidth - margin - 20,
-  };
-  doc.text("DATE", col.date, y);
-  doc.text("DESCRIPTION", col.desc, y);
-  doc.text("TRANSACTION TYPE", col.type, y);
-  doc.text("AMOUNT", col.amt, y, { align: "right" });
-  
-  y += 8;
-  doc.line(margin, y, pageWidth - margin, y);
+  doc.text("AMOUNT", pageWidth - margin - 40, y, { align: "right" });
+  doc.line(margin, y + 5, pageWidth - margin - 30, y + 5);
   y += 15;
-
-  const bottomLimit = pageHeight - 80;
-  const lineHeight = 18;
-
-  doc.setFont("helvetica", "normal");
-  transactions.forEach((tx) => {
-    if (y + lineHeight > bottomLimit) {
-      doc.addPage();
-      y = margin + 20;
-    }
-
-    const type = (tx.type || "").toLowerCase();
-    const isDeduction = type.includes("purchase") || type.includes("transfer") || type.includes("payment");
-    const amountValue = parseCurrency(tx.amount);
-    const formattedAmount = `${isDeduction ? "-" : "+"}$${amountValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-    const formattedDate = formatShortDate(tx.date);
-
+  
+  summaryItems.forEach((item, index) => {
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(formattedDate, col.date, y);
-    doc.text(tx.description || "", col.desc, y);
-    doc.setTextColor(100, 100, 100);
-    doc.text(tx.type || "", col.type, y);
-    doc.setTextColor(isDeduction ? 220 : 0, isDeduction ? 53 : 150, isDeduction ? 69 : 0);
-    doc.setFont("helvetica", "bold");
-    doc.text(formattedAmount, col.amt, y, { align: "right" });
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", item.bold ? "bold" : "normal");
+    doc.text(item.label, margin + 5, y);
+    
+    const amountStr = `$${toFixed(item.amount)}`;
+    doc.text(amountStr, pageWidth - margin - 40, y, { align: "right" });
+    
+    if (index < summaryItems.length - 1) {
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, y + 8, pageWidth - margin - 30, y + 8);
+    }
+    y += 18;
+  });
+  
+  // ============ PAGE 2: Transaction Details ============
+  doc.addPage();
+  currentPage = 2;
+  y = 50;
+  
+  addPageHeader();
+  
+  // DEPOSITS AND ADDITIONS section
+  y = drawSectionTitle("Deposits and Additions", y);
+  y = drawTableHeaders(y + 8);
+  
+  const lineHeight = 14;
+  const bottomLimit = pageHeight - 100;
+  
+  // Calculate totals
+  let totalDeposits = 0;
+  let totalWithdrawals = 0;
+  
+  // Draw deposit transactions
+  doc.setFont("helvetica", "normal");
+  depositsTransactions.forEach((tx) => {
+    if (y + lineHeight > bottomLimit) {
+      addPageFooter(currentPage, 3);
+      doc.addPage();
+      currentPage++;
+      y = 50;
+      addPageHeader();
+      y = drawSectionTitle("Deposits and Additions (continued)", y);
+      y = drawTableHeaders(y + 8);
+    }
+    
+    const amountValue = parseCurrency(tx.amount);
+    totalDeposits += amountValue;
+    const formattedAmount = `$${amountValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    const formattedDate = formatShortDate(tx.date);
+    
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text(formattedDate, margin + 5, y);
+    
+    // Truncate description if too long
+    let desc = tx.description || "";
+    if (desc.length > 60) desc = desc.substring(0, 57) + "...";
+    doc.text(desc, margin + 60, y);
+    
+    doc.text(formattedAmount, pageWidth - margin - 5, y, { align: "right" });
     
     y += lineHeight;
-    doc.setDrawColor(230, 230, 230);
-    doc.line(margin, y - 5, pageWidth - margin, y - 5);
   });
-
-  // Footer with border
-  const footerY = pageHeight - 50;
-  doc.setDrawColor(142, 68, 173);
-  doc.setLineWidth(2);
-  doc.line(margin, footerY, pageWidth - margin, footerY);
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
+  
+  // Deposits total
+  y += 5;
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 12;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Total Deposits and Additions", margin + 5, y);
+  doc.text(`$${totalDeposits.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, pageWidth - margin - 5, y, { align: "right" });
+  
+  // WITHDRAWALS section
+  y += 30;
+  
+  if (y + 100 > bottomLimit) {
+    addPageFooter(currentPage, 3);
+    doc.addPage();
+    currentPage++;
+    y = 50;
+    addPageHeader();
+  }
+  
+  y = drawSectionTitle("Electronic Withdrawals", y);
+  y = drawTableHeaders(y + 8);
+  
+  // Draw withdrawal transactions
   doc.setFont("helvetica", "normal");
-  doc.text("For questions or concerns, please contact us at (800) 422-3641", pageWidth / 2, footerY + 15, { align: "center" });
+  withdrawalsTransactions.forEach((tx) => {
+    if (y + lineHeight > bottomLimit) {
+      addPageFooter(currentPage, 3);
+      doc.addPage();
+      currentPage++;
+      y = 50;
+      addPageHeader();
+      y = drawSectionTitle("Electronic Withdrawals (continued)", y);
+      y = drawTableHeaders(y + 8);
+    }
+    
+    const amountValue = parseCurrency(tx.amount);
+    totalWithdrawals += amountValue;
+    const formattedAmount = `$${amountValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    const formattedDate = formatShortDate(tx.date);
+    
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text(formattedDate, margin + 5, y);
+    
+    let desc = tx.description || "";
+    if (desc.length > 60) desc = desc.substring(0, 57) + "...";
+    doc.text(desc, margin + 60, y);
+    
+    doc.text(formattedAmount, pageWidth - margin - 5, y, { align: "right" });
+    
+    y += lineHeight;
+  });
+  
+  // Withdrawals total
+  y += 5;
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 12;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Total Electronic Withdrawals", margin + 5, y);
+  doc.text(`$${totalWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, pageWidth - margin - 5, y, { align: "right" });
+  
+  // ============ LAST PAGE: Legal Disclaimer ============
+  doc.addPage();
+  currentPage++;
+  y = 50;
+  
+  addPageHeader();
+  
+  // Legal disclaimer text
+  const legalText1Title = "IN CASE OF ERRORS OR QUESTIONS ABOUT YOUR ELECTRONIC FUNDS TRANSFERS:";
+  const legalText1Body = `Call us at 1-866-564-2262 or write us at the address on the front of this statement (non-personal accounts contact Customer Service) immediately if you think your statement or receipt is incorrect or if you need more information about a transfer listed on the statement or receipt.
+
+For personal accounts only: We must hear from you no later than 60 days after we sent you the FIRST statement on which the problem or error appeared. Be prepared to give us the following information:
+
+    • Your name and account number
+    • The dollar amount of the suspected error
+    • A description of the error or transfer you are unsure of, why you believe it is an error, or why you need more information.
+
+We will investigate your complaint and will correct any error promptly. If we take more than 10 business days (or 20 business days for new accounts) to do this, we will credit your account for the amount you think is in error so that you will have use of the money during the time it takes us to complete our investigation.`;
+
+  const legalText2Title = "IN CASE OF ERRORS OR QUESTIONS ABOUT NON-ELECTRONIC TRANSACTIONS:";
+  const legalText2Body = `Contact the bank immediately if your statement is incorrect or if you need more information about any non-electronic transactions (checks or deposits) on this statement. If any such error appears, you must notify the bank in writing no later than 30 days after the statement was made available to you. For more complete details, see the Account Rules and Regulations or other applicable account agreement that governs your account.
+
+Deposit products and services are offered by JPMorgan Chase Bank, N.A. Member FDIC`;
+
+  // Draw first legal section
+  doc.setFontSize(8);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "bold");
+  const titleLines1 = doc.splitTextToSize(legalText1Title, pageWidth - 2 * margin);
+  doc.text(titleLines1, margin, y);
+  y += titleLines1.length * 10 + 5;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  const bodyLines1 = doc.splitTextToSize(legalText1Body, pageWidth - 2 * margin);
+  doc.text(bodyLines1, margin, y);
+  y += bodyLines1.length * 9 + 25;
+  
+  // Draw second legal section
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  const titleLines2 = doc.splitTextToSize(legalText2Title, pageWidth - 2 * margin);
+  doc.text(titleLines2, margin, y);
+  y += titleLines2.length * 10 + 5;
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  const bodyLines2 = doc.splitTextToSize(legalText2Body, pageWidth - 2 * margin);
+  doc.text(bodyLines2, margin, y);
+  
+  // Now go back and add page footers to all pages
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    addPageFooter(i, totalPages);
+  }
 }

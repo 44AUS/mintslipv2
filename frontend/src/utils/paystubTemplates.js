@@ -762,7 +762,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     let currentX = m;
     doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(191, 191, 191);
     columns.forEach((col, i) => {
       doc.text(col, currentX + 3, y + 8);
       currentX += colWidths[i];

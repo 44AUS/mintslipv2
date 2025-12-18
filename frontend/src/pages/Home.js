@@ -168,7 +168,7 @@ export default function Home() {
 
               {/* Stats Badge - Over the image */}
               <div className="absolute top-1/2 -left-8 z-20 transform -translate-y-1/2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg hidden md:block">
-                <p className="text-2xl font-bold">$15</p>
+                <p className="text-2xl font-bold">$10-$100</p>
                 <p className="text-xs opacity-90">Per Document</p>
               </div>
 

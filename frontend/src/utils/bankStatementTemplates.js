@@ -1,4 +1,5 @@
 import ChimeLogo from "../assests/chime.png";
+import BoALogo from "../assests/boa.png";
 
 
 // Template A: Chime/Sutton Style Bank Statement
@@ -370,181 +371,369 @@ We will investigate your complaint and will correct any error promptly. If we ta
 
 // Template B: Modern Digital Statement (Bank of America style)
 export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) {
-  const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, transactions, toFixed, formatShortDate, parseCurrency, bankLogo } = data;
+  const { 
+    accountName, 
+    accountAddress1, 
+    accountAddress2, 
+    accountNumber, 
+    selectedMonth,
+    statementStart, 
+    statementEnd, 
+    beginning, 
+    ending, 
+    deposits, 
+    purchases, 
+    transfers, 
+    monthText, 
+    dateRange, 
+    transactions, 
+    toFixed, 
+    formatShortDate, 
+    formatDateLong,
+    parseCurrency,
+    bankLogo
+  } = data;
   
-  let y = 30;
+  let y = margin + 20;
   
-  // Modern Header - Blue theme
-  doc.setFillColor(41, 128, 185);
-  doc.rect(0, 0, pageWidth, 80, 'F');
-  
-  // Add custom logo if uploaded (white background area for logo)
+  // --- Header Section ---
+  doc.setFontSize(28);
+  doc.setTextColor("#00b26a");
+  // Use custom uploaded logo if available, otherwise fall back to default Chime logo
+  let logoAdded = false;
   if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
     try {
-      doc.setFillColor(255, 255, 255);
-      doc.rect(pageWidth - margin - 80, 15, 70, 50, 'F');
-      doc.addImage(bankLogo, pageWidth - margin - 75, 20, 60, 40);
+      // For base64 data URLs from uploaded files - jsPDF accepts full data URL
+      doc.addImage(bankLogo, margin, y - 18, 300, 20);
+      logoAdded = true;
     } catch (e) {
-      console.error("Failed to add logo to Template B:", e);
+      console.error("Template B custom logo error:", e);
     }
   }
   
-  y = 35;
-  doc.setFontSize(28);
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.text("ACCOUNT STATEMENT", margin, y);
-  
-  y += 25;
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(monthText, margin, y);
+  if (!logoAdded) {
+    try {
+      doc.addImage(BoALogo, "PNG", margin, y - 18, 65, 20);
+    } catch (e) {
+      doc.text("Bank of America", margin, y);
+    }
+  }
 
-  // Account Holder Card
-  y = 110;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(margin, y, pageWidth - 2 * margin, 70, 'F');
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(1);
-  doc.rect(margin, y, pageWidth - 2 * margin, 70, 'S');
-  
-  y += 20;
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text("ACCOUNT HOLDER", margin + 10, y);
-  y += 18;
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text(accountName, margin + 10, y);
+  // --- Member Services Header ---
+  doc.setFontSize(7);
+  const rightAlignX = pageWidth - margin;
   y += 15;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(80, 80, 80);
-  doc.text(`${accountAddress1} | ${accountAddress2}`, margin + 10, y);
 
-  // Account Number on right
-  y = 110 + 20;
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text("ACCOUNT #", pageWidth - margin - 120, y);
-  y += 18;
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text(String(accountNumber || ""), pageWidth - margin - 120, y);
+  doc.setTextColor("#000"); // Light gray for labels
+  const label = "Customer service information";
+  doc.text(label, rightAlignX, y - 15, { align: "right" });
 
-  // Balance Cards
-  y = 200;
-  const cardWidth = (pageWidth - 2 * margin - 20) / 3;
-  
-  // Beginning Balance Card
-  doc.setFillColor(255, 255, 255);
-  doc.rect(margin, y, cardWidth, 60, 'F');
-  doc.setDrawColor(41, 128, 185);
-  doc.setLineWidth(2);
-  doc.rect(margin, y, cardWidth, 60, 'S');
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
+  // Phone number underneath
+  const textWidth = doc.getTextWidth(label);
+  const leftX = rightAlignX - textWidth;
+  doc.setTextColor("#000000"); // Black for phone number
+  doc.text("Customer service: 1.800.432.1000", leftX, y - 3);
+
+  // --- Account Information Section ---
+  y += 45;
+  doc.setTextColor("#000");
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("BEGINNING BALANCE", margin + 10, y + 20);
+  doc.text(accountName, margin, y);
+  doc.text(accountAddress1, margin, y + 12);
+  doc.text(accountAddress2, margin, y + 24);
+
+  // --- Statement Title ---
+  y += 70;
   doc.setFontSize(16);
-  doc.setTextColor(41, 128, 185);
-  doc.setFont("helvetica", "bold");
-  doc.text(`$${toFixed(beginning)}`, margin + 10, y + 45);
+  doc.setTextColor("#000");
+  doc.text("Your Adv SafeBalance Banking", margin, y);
 
-  // Activity Card
-  const midCard = margin + cardWidth + 10;
-  doc.setFillColor(255, 255, 255);
-  doc.rect(midCard, y, cardWidth, 60, 'F');
-  doc.setDrawColor(41, 128, 185);
-  doc.rect(midCard, y, cardWidth, 60, 'S');
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.setFont("helvetica", "normal");
-  doc.text("ACTIVITY", midCard + 10, y + 20);
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`Deposits: $${toFixed(deposits)}`, midCard + 10, y + 35);
-  doc.text(`Debits: $${toFixed(purchases + transfers)}`, midCard + 10, y + 50);
-
-  // Ending Balance Card
-  const rightCard = midCard + cardWidth + 10;
-  doc.setFillColor(41, 128, 185);
-  doc.rect(rightCard, y, cardWidth, 60, 'F');
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text("ENDING BALANCE", rightCard + 10, y + 20);
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.text(`$${toFixed(ending)}`, rightCard + 10, y + 45);
-
-  // Transactions Table
-  y = 290;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(margin, y, pageWidth - 2 * margin, 30, 'F');
   
-  y += 20;
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text("TRANSACTION HISTORY", margin + 10, y);
+  if (statementStart && statementEnd) {
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const monthTextLocal = new Date(year, month - 1).toLocaleString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
 
-  y += 25;
-  doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
+    const dateRangeLocal = `for ${formatDateLong(statementStart)} to ${formatDateLong(statementEnd)}`;
+
+    // Label for Statement Period
+    // doc.setFontSize(8);
+    // doc.setTextColor("#9c9c9c");
+    // doc.text("Statement period", margin, y + 36);
+
+    // Month and Date Range
+    doc.setFontSize(8);
+    doc.setTextColor("#000");
+    doc.text(monthTextLocal, margin, y + 30);
+    const monthWidth = doc.getTextWidth(monthTextLocal);
+    doc.setFontSize(7);
+    doc.text(` ${dateRangeLocal}`, margin + monthWidth, y + 30);
+  }
+
+  // --- Account Number and Statement Period ---
+  y += 50;
+
+  doc.setTextColor("#000");
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text(accountName, margin, y);
+
+  // doc.setFontSize(8);
+
+  // doc.setTextColor("#9c9c9c");
+  // doc.text("Account number", margin, y);
+
+  // doc.setTextColor("#b4b4b4");
+  // doc.text(String(accountNumber || ""), margin, y + 14);
+
+  // --- Issued By ---
+  y += 70;
+  // doc.setFontSize(7);
+  // doc.setTextColor("#b4b4b4");
+  // doc.text("Issued by Sutton Bank, Member FDIC", margin, y);
+
+  // --- Summary Section ---
+  y += 50;
+  const summaryWidth = 220;
+  doc.setFontSize(8);
+
+  doc.setTextColor("#e5173f"); // Red color for section title
+  doc.text("Account Summary", margin, y);
+  y += 10;
+
+  const beginningDateText = statementStart
+    ? `Beginning balance on ${formatDateLong(statementStart)}`
+    : "Beginning balance";
+  const endingDateText = statementEnd
+    ? `Ending balance on ${formatDateLong(statementEnd)}`
+    : "Ending balance";
+
+  // Define rows for the summary table
+  const summaryRows = [
+    [beginningDateText, beginning, "#000"],
+    ["Deposits and other additions", deposits, "#000"],
+    ["ATM and debit card subtractions", 0, "#000"],
+    ["Other subtractions", purchases, "#000"],
+    ["Service fees", 0, "#000"],
+    [endingDateText, ending, "#1a51aa"], // Blue for ending balance
+  ];
+
+  const rowHeight = 20;
+  summaryRows.forEach(([labelText, val, color], idx) => {
+    const isLastRow = idx === summaryRows.length - 1;
+
+    // Draw divider line before each row
+    doc.setDrawColor("#dddddd");
+    doc.setLineWidth(0.7);
+    doc.line(margin, y, margin + summaryWidth, y);
+    y += rowHeight / 2;
+
+    doc.setFontSize(7);
+    doc.setTextColor(color);
+    doc.text(labelText, margin, y);
+    doc.text(`$${toFixed(val)}`, margin + summaryWidth, y, {
+      align: "right",
+    });
+
+    y += rowHeight / 3;
+
+    // Draw divider line after each row except the last one
+    if (!isLastRow) {
+      doc.line(margin, y, margin + summaryWidth, y);
+    }
+  });
+
+  // --- Transactions Section ---
+  y += 40;
+  doc.setTextColor("#e97032");
+  doc.setFontSize(8);
+  doc.text("Transactions", margin, y);
+  y += 10;
+  doc.setDrawColor("#dcdcdc");
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 14;
+
+  // Define column positions for transaction table headers
   const col = {
-    date: margin + 10,
-    desc: margin + 100,
-    type: margin + 300,
-    amt: pageWidth - margin - 20,
+    date: margin,
+    desc: margin + 90,
+    type: margin + 320,
+    netAmt: margin + 400,
+    amt: margin + 465,
+    settle: margin + 470,
   };
+
+  // Table Headers
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor("#000");
+  doc.setFontSize(7);
   doc.text("DATE", col.date, y);
   doc.text("DESCRIPTION", col.desc, y);
-  doc.text("TYPE", col.type, y);
-  doc.text("AMOUNT", col.amt, y, { align: "right" });
-  
-  y += 5;
-  doc.setDrawColor(200, 200, 200);
+  doc.text("AMOUNT", col.netAmt, y, { align: "right" });
+  y += 8;
   doc.line(margin, y, pageWidth - margin, y);
-  y += 15;
+  y += 10;
 
+  // --- Render Transactions ---
   const bottomLimit = pageHeight - 60;
-  const lineHeight = 20;
+  const lineHeight = 14;
 
-  doc.setFont("helvetica", "normal");
-  transactions.forEach((tx, idx) => {
-    if (y + lineHeight > bottomLimit) {
-      doc.addPage();
-      y = margin + 20;
+  // Helper to auto-generate realistic settlement dates based on transaction type and date
+  const getAutoSettlementDate = (tx) => {
+    if (!tx.date) return "";
+    const baseDate = new Date(tx.date + "T00:00:00");
+    const type = (tx.type || "").toLowerCase();
+
+    // Deposits, Transfers, Refunds typically settle on the same day
+    if (["deposit", "transfer", "refund"].some((t) => type.includes(t))) {
+      return formatShortDate(tx.date);
     }
 
-    // Alternating row colors
-    if (idx % 2 === 0) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(margin, y - 10, pageWidth - 2 * margin, lineHeight, 'F');
+    // Other types settle randomly 1-2 days later
+    const daysToAdd = Math.random() < 0.5 ? 1 : 2;
+    baseDate.setDate(baseDate.getDate() + daysToAdd);
+    const isoDate = baseDate.toISOString().split("T")[0];
+    return formatShortDate(isoDate);
+  };
+
+  doc.setFont("helvetica", "normal");
+  // Iterate through transactions and render them on the PDF
+  transactions.forEach((tx) => {
+    // Add a new page if the current transaction will exceed the bottom limit
+    if (y + lineHeight > bottomLimit) {
+      doc.addPage();
+      y = margin; // Reset vertical position to top margin
     }
 
     const type = (tx.type || "").toLowerCase();
-    const isDeduction = type.includes("purchase") || type.includes("transfer") || type.includes("payment");
-    const amountValue = parseCurrency(tx.amount);
-    const formattedAmount = `${isDeduction ? "-" : "+"}$${amountValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-    const formattedDate = formatShortDate(tx.date);
+    // Determine if the transaction amount is a deduction (negative)
+    const isDeduction =
+      type.includes("withdrawal") ||
+      type.includes("purchase") ||
+      type.includes("fee") ||
+      type.includes("transfer") ||
+      type.includes("payment") ||
+      type.includes("atm");
 
-    doc.setFontSize(9);
-    doc.setTextColor(isDeduction ? 220 : 0, isDeduction ? 53 : 150, isDeduction ? 69 : 0);
-    doc.text(formattedDate, col.date, y);
-    doc.setTextColor(0, 0, 0);
-    doc.text(tx.description || "", col.desc, y);
-    doc.setTextColor(100, 100, 100);
-    doc.text(tx.type || "", col.type, y);
-    doc.setTextColor(isDeduction ? 220 : 0, isDeduction ? 53 : 150, isDeduction ? 69 : 0);
-    doc.setFont("helvetica", "bold");
-    doc.text(formattedAmount, col.amt, y, { align: "right" });
+    const amountValue = parseCurrency(tx.amount);
+    const formattedAmount = `${isDeduction ? "-" : ""}$${amountValue.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+    })}`;
+    const formattedNetAmount = `${isDeduction ? "-" : ""}$${amountValue.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+    })}`;
+
+    const formattedDate = formatShortDate(tx.date);
+    const formattedSettlementDate = getAutoSettlementDate(tx);
+
+    // Logic for splitting description into two lines if it's long
+    const fullDesc = (tx.description || "").trim();
+    let firstLine = "";
+    let secondLine = "";
+
+    if (type.includes("transfer")) {
+      // Transfers are displayed on a single line
+      firstLine = fullDesc;
+      secondLine = "";
+    } else {
+      // Other types get a two-line description format
+      firstLine =
+        fullDesc.length > 22 ? fullDesc.substring(0, 22).trim() + "" : fullDesc;
+      secondLine = fullDesc.toUpperCase();
+    }
+
     doc.setFont("helvetica", "normal");
-    
-    y += lineHeight;
+    doc.setTextColor("#000");
+
+    // Render transaction details
+    doc.text(formattedDate, col.date, y);
+    doc.setFontSize(7);
+    doc.text(firstLine, col.desc, y);
+
+    if (secondLine && !type.includes("transfer")) {
+      doc.setFontSize(6);
+      doc.text(secondLine, col.desc, y + 8);
+      doc.setFontSize(7); // Reset font size for subsequent lines
+    }
+
+    doc.text(tx.type || "", col.type, y);
+    doc.text(formattedAmount, col.amt, y, { align: "right" });
+    doc.text(formattedNetAmount, col.netAmt, y, { align: "right" });
+    doc.text(formattedSettlementDate, col.settle, y);
+
+    // Adjust vertical position based on whether a second line was used
+    y += secondLine && !type.includes("transfer") ? lineHeight * 1.5 : lineHeight;
   });
+
+  // --- Error Resolution Procedures Section ---
+  doc.addPage(); // Add a new page for the error resolution section
+  doc.setFontSize(12);
+
+  doc.setTextColor("#333");
+  doc.text("Error Resolution Procedures", margin, margin + 50);
+
+  doc.setFontSize(10);
+  let yPos = margin + 90;
+
+  // Define text parts for the error resolution procedures
+  const beforePhone =
+    "In case of errors or questions about your electronic transactions, call ";
+  const phoneNumber = "1-800-422-3641";
+  const afterPhone =
+    ", write to Sutton Bank Member Services, P.O. Box 505, Attica, OH 44807-505, as soon as you can, if you think your statement or receipt is wrong or if you need more information about a transfer listed on the statement or receipt. We must hear from you no later than 60 days after we sent the FIRST statement on which the problem or error appeared.";
+
+  const fullText = beforePhone + phoneNumber + afterPhone;
+
+  // Wrap the text to fit within the page width
+  const wrappedText = doc.splitTextToSize(fullText, pageWidth - margin * 2);
+
+  // Render each line, coloring the phone number and making it a clickable link
+  let lineY = yPos;
+  for (const line of wrappedText) {
+    if (line.includes(phoneNumber)) {
+      const parts = line.split(phoneNumber);
+      let x = margin;
+
+      // Text before the phone number
+      doc.setTextColor("#333");
+      doc.text(parts[0], x, lineY);
+      x += doc.getTextWidth(parts[0]);
+
+      // Phone number (blue color and clickable link)
+      const blueColor = "#215e99";
+      doc.setTextColor(blueColor);
+      doc.textWithLink(phoneNumber, x, lineY, { url: "tel:18004223641" });
+      x += doc.getTextWidth(phoneNumber);
+
+      // Text after the phone number
+      if (parts[1]) {
+        doc.setTextColor("#333");
+        doc.text(parts[1], x, lineY);
+      }
+    } else {
+      doc.setTextColor("#333");
+      doc.text(line, margin, lineY);
+    }
+    lineY += 12; // Line spacing
+  }
+
+  // --- Additional steps for error resolution ---
+  lineY += 12; // Space before the numbered list
+  const additionalText = `(1) Tell us your name and account number (if any).
+
+(2) Describe the error or the transfer you are unsure about, and explain as clearly as you can why you believe it is an error or why you need more information.
+
+(3) Tell us the dollar amount of the suspected error.
+
+We will investigate your complaint and will correct any error promptly. If we take more than 10 business days to do this, we will credit your account for the amount you think is in error, so that you will have the use of the money during the time it takes us to complete our investigation.`;
+
+  // Wrap and print the additional text
+  const wrappedAdditional = doc.splitTextToSize(additionalText, pageWidth - margin * 2);
+  doc.setTextColor("#333");
+  doc.text(wrappedAdditional, margin, lineY);
 }
 
 // Template C: Chase Bank Statement Style

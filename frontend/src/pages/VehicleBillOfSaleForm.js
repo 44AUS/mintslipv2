@@ -145,19 +145,17 @@ export default function VehicleBillOfSaleForm() {
     setFormData(prev => ({ ...prev, salePrice: value }));
   };
 
-  // Generate PDF preview when form data changes (debounced)
+  // Generate PDF preview when form data changes (debounced) - always show preview
   useEffect(() => {
     const timer = setTimeout(async () => {
-      if (formData.sellerName && formData.buyerName && formData.vehicleMake) {
-        setIsGeneratingPreview(true);
-        try {
-          const previewUrl = await generateVehicleBillOfSalePreview(formData);
-          setPdfPreview(previewUrl);
-        } catch (error) {
-          console.error("Preview generation failed:", error);
-        }
-        setIsGeneratingPreview(false);
+      setIsGeneratingPreview(true);
+      try {
+        const previewUrl = await generateVehicleBillOfSalePreview(formData);
+        setPdfPreview(previewUrl);
+      } catch (error) {
+        console.error("Preview generation failed:", error);
       }
+      setIsGeneratingPreview(false);
     }, 500);
 
     return () => clearTimeout(timer);

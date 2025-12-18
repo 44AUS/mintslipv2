@@ -614,11 +614,20 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     // Customer Service Information - only on first page
     if (isFirstPage) {
       let csY = 52;
+      const csBoxWidth = 160;
+      const csBoxX = pageWidth - margin - csBoxWidth;
+      
+      // Top thick black border
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(1.5);
+      doc.line(csBoxX, csY - 3, pageWidth - margin, csY - 3);
+      
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      doc.text("CUSTOMER SERVICE INFORMATION", pageWidth - margin, csY, { align: "right" });
+      doc.setTextColor(0, 0, 0);
+      doc.text("CUSTOMER SERVICE INFORMATION", pageWidth - margin, csY + 5, { align: "right" });
       
-      csY += 12;
+      csY += 15;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.text("Web site: Chase.com", pageWidth - margin, csY, { align: "right" });
@@ -630,6 +639,11 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
       doc.text("Para Espanol: 1-877-312-4273", pageWidth - margin, csY, { align: "right" });
       csY += 9;
       doc.text("International Calls: 1-713-262-1679", pageWidth - margin, csY, { align: "right" });
+      
+      // Bottom thick black border
+      csY += 5;
+      doc.setLineWidth(1.5);
+      doc.line(csBoxX, csY, pageWidth - margin, csY);
     }
   };
   

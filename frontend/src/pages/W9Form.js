@@ -7,16 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { generateAndDownloadW9, TAX_CLASSIFICATIONS, LLC_TAX_CLASSIFICATIONS } from "@/utils/w9Generator";
+import { generateAndDownloadW9 } from "@/utils/w9Generator";
 import { generateW9Preview } from "@/utils/w9PreviewGenerator";
 import { 
+  formatSSN, validateSSN,
   formatEIN, validateEIN,
-  formatZipCode, validateZipCode,
-  formatFullSSN, validateFullSSN
+  formatZipCode, validateZipCode
 } from "@/utils/validation";
 
 // US States list
@@ -27,7 +26,25 @@ const US_STATES = [
   "VT", "VA", "WA", "WV", "WI", "WY"
 ];
 
-// Tax years available (2021-2024)
+// Federal tax classification options
+const TAX_CLASSIFICATIONS = [
+  { value: "individual", label: "Individual/sole proprietor or single-member LLC" },
+  { value: "ccorp", label: "C Corporation" },
+  { value: "scorp", label: "S Corporation" },
+  { value: "partnership", label: "Partnership" },
+  { value: "trust", label: "Trust/estate" },
+  { value: "llc", label: "Limited liability company" },
+  { value: "other", label: "Other" }
+];
+
+// LLC tax classification options
+const LLC_TAX_CODES = [
+  { value: "C", label: "C - C corporation" },
+  { value: "S", label: "S - S corporation" },
+  { value: "P", label: "P - Partnership" }
+];
+
+// Available tax years
 const TAX_YEARS = ["2024", "2023", "2022", "2021"];
 
 export default function W9Form() {
@@ -36,7 +53,6 @@ export default function W9Form() {
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-
   const [selectedTaxYear, setSelectedTaxYear] = useState("2024");
 
   const [formData, setFormData] = useState({
@@ -46,55 +62,45 @@ export default function W9Form() {
     // Line 2 - Business name
     businessName: "",
     
-    // Line 3 - Tax classification
+    // Line 3 - Federal tax classification
     taxClassification: "individual",
-    llcClassification: "",
-    otherDescription: "",
+    llcTaxCode: "",
+    otherClassification: "",
     
-    // Line 3b - Foreign partner
-    isForeignPartner: false,
-    
-    // Line 4 - Exemptions
+    // Exemptions
     exemptPayeeCode: "",
     fatcaCode: "",
     
-    // Line 5 - Address
+    // Address
     address: "",
-    apt: "",
-    
-    // Line 6 - City, state, ZIP
     city: "",
     state: "",
-    zip: "",
+    zipCode: "",
     
-    // Line 7 - Account numbers
+    // Account numbers (optional)
     accountNumbers: "",
     
-    // Requester info
-    requesterName: "",
-    
     // Part I - TIN
-    tinType: "ssn",
+    tinType: "ssn", // ssn or ein
     ssn: "",
     ein: "",
     
     // Part II - Certification
-    signature: "",
-    signatureDate: new Date().toLocaleDateString('en-US'),
+    signatureDate: new Date().toISOString().split('T')[0]
   });
 
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState({
     ssn: '',
     ein: '',
-    zip: '',
+    zipCode: ''
   });
 
   // Validated input handlers
   const handleSSNChange = (e) => {
-    const formatted = formatFullSSN(e.target.value);
+    const formatted = formatSSN(e.target.value);
     setFormData(prev => ({ ...prev, ssn: formatted }));
-    const validation = validateFullSSN(formatted);
+    const validation = validateSSN(formatted);
     setValidationErrors(prev => ({ ...prev, ssn: validation.error }));
   };
 
@@ -107,20 +113,15 @@ export default function W9Form() {
 
   const handleZipChange = (e) => {
     const formatted = formatZipCode(e.target.value);
-    setFormData(prev => ({ ...prev, zip: formatted }));
+    setFormData(prev => ({ ...prev, zipCode: formatted }));
     const validation = validateZipCode(formatted);
-    setValidationErrors(prev => ({ ...prev, zip: validation.error }));
+    setValidationErrors(prev => ({ ...prev, zipCode: validation.error }));
   };
 
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle checkbox changes
-  const handleCheckboxChange = (name, checked) => {
-    setFormData(prev => ({ ...prev, [name]: checked }));
   };
 
   // Generate PDF preview when form data changes (debounced)
@@ -148,7 +149,7 @@ export default function W9Form() {
         {
           description: `W-9 Form - ${selectedTaxYear}`,
           amount: {
-            value: "15.00",
+            value: "10.00",
           },
         },
       ],
@@ -179,18 +180,25 @@ export default function W9Form() {
     console.error("PayPal error:", err);
   };
 
-  // Form summary
-  const summary = useMemo(() => {
-    const classification = TAX_CLASSIFICATIONS.find(t => t.value === formData.taxClassification);
-    return {
-      name: formData.name || "Not provided",
-      businessName: formData.businessName || "N/A",
-      classification: classification ? classification.label : "Not selected",
-      tin: formData.tinType === 'ssn' 
-        ? (formData.ssn ? `SSN: ***-**-${formData.ssn.slice(-4)}` : "Not provided")
-        : (formData.ein ? `EIN: ${formData.ein}` : "Not provided"),
-    };
-  }, [formData]);
+  // Get TIN display value
+  const tinDisplay = useMemo(() => {
+    if (formData.tinType === "ssn") {
+      return formData.ssn || "XXX-XX-XXXX";
+    }
+    return formData.ein || "XX-XXXXXXX";
+  }, [formData.tinType, formData.ssn, formData.ein]);
+
+  // Get tax classification label
+  const taxClassificationLabel = useMemo(() => {
+    const found = TAX_CLASSIFICATIONS.find(t => t.value === formData.taxClassification);
+    if (formData.taxClassification === "llc" && formData.llcTaxCode) {
+      return `${found?.label} (${formData.llcTaxCode})`;
+    }
+    if (formData.taxClassification === "other" && formData.otherClassification) {
+      return `Other: ${formData.otherClassification}`;
+    }
+    return found?.label || "";
+  }, [formData.taxClassification, formData.llcTaxCode, formData.otherClassification]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -239,119 +247,101 @@ export default function W9Form() {
                 </div>
               </div>
 
-              {/* Line 1 - Name */}
+              {/* Name Information */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Taxpayer Information
+                  Name Information
                 </h2>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Line 1: Name (as shown on your income tax return) *</Label>
+                    <Label htmlFor="name">Line 1 - Name (as shown on your income tax return) *</Label>
                     <Input 
                       id="name" 
                       name="name" 
-                      placeholder="Enter your full legal name"
+                      placeholder="Enter your name"
                       value={formData.name} 
-                      onChange={handleChange} 
+                      onChange={handleChange}
                     />
                   </div>
-                  
                   <div className="space-y-2">
-                    <Label htmlFor="businessName">Line 2: Business name/disregarded entity name (if different from above)</Label>
+                    <Label htmlFor="businessName">Line 2 - Business name/disregarded entity name (if different)</Label>
                     <Input 
                       id="businessName" 
                       name="businessName" 
-                      placeholder="Enter business name if applicable"
+                      placeholder="Enter business name (optional)"
                       value={formData.businessName} 
-                      onChange={handleChange} 
+                      onChange={handleChange}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Line 3 - Tax Classification */}
+              {/* Federal Tax Classification */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Federal Tax Classification
+                  Line 3 - Federal Tax Classification
                 </h2>
-                <div className="space-y-4">
-                  <Label>Line 3: Check appropriate box for federal tax classification *</Label>
-                  <RadioGroup 
-                    value={formData.taxClassification} 
-                    onValueChange={(value) => setFormData({...formData, taxClassification: value})}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-3"
-                  >
-                    {TAX_CLASSIFICATIONS.map((option) => (
-                      <div key={option.value} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.value} id={option.value} />
-                        <Label htmlFor={option.value} className="text-sm cursor-pointer">{option.label}</Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                  
-                  {/* LLC Classification */}
-                  {formData.taxClassification === 'llc' && (
-                    <div className="space-y-2 ml-6 p-4 bg-slate-50 rounded-md">
-                      <Label htmlFor="llcClassification">LLC Tax Classification *</Label>
-                      <Select 
-                        value={formData.llcClassification} 
-                        onValueChange={(val) => setFormData({...formData, llcClassification: val})}
-                      >
-                        <SelectTrigger className="w-full max-w-xs">
-                          <SelectValue placeholder="Select classification" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LLC_TAX_CLASSIFICATIONS.map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                <RadioGroup 
+                  value={formData.taxClassification} 
+                  onValueChange={(val) => setFormData({...formData, taxClassification: val, llcTaxCode: '', otherClassification: ''})}
+                  className="grid grid-cols-1 gap-3"
+                >
+                  {TAX_CLASSIFICATIONS.map(item => (
+                    <div key={item.value} className="flex items-center space-x-2">
+                      <RadioGroupItem value={item.value} id={item.value} />
+                      <Label htmlFor={item.value} className="cursor-pointer">{item.label}</Label>
                     </div>
-                  )}
-                  
-                  {/* Other Description */}
-                  {formData.taxClassification === 'other' && (
-                    <div className="space-y-2 ml-6">
-                      <Label htmlFor="otherDescription">Specify *</Label>
-                      <Input 
-                        id="otherDescription" 
-                        name="otherDescription" 
-                        placeholder="Enter description"
-                        value={formData.otherDescription} 
-                        onChange={handleChange} 
-                      />
-                    </div>
-                  )}
-                </div>
+                  ))}
+                </RadioGroup>
                 
-                {/* Line 3b - Foreign partner */}
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox 
-                    id="isForeignPartner"
-                    checked={formData.isForeignPartner}
-                    onCheckedChange={(checked) => handleCheckboxChange('isForeignPartner', checked)}
-                  />
-                  <Label htmlFor="isForeignPartner" className="text-sm cursor-pointer">
-                    Line 3b: Check if you are a foreign partner, owner, or beneficiary (partnerships only)
-                  </Label>
-                </div>
+                {/* LLC Tax Code Selection */}
+                {formData.taxClassification === "llc" && (
+                  <div className="ml-6 space-y-2">
+                    <Label>Enter the tax classification (C=C corporation, S=S corporation, P=Partnership)</Label>
+                    <Select value={formData.llcTaxCode} onValueChange={(val) => setFormData({...formData, llcTaxCode: val})}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Select code" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LLC_TAX_CODES.map(item => (
+                          <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
+                {/* Other Classification */}
+                {formData.taxClassification === "other" && (
+                  <div className="ml-6 space-y-2">
+                    <Label htmlFor="otherClassification">Specify classification</Label>
+                    <Input 
+                      id="otherClassification" 
+                      name="otherClassification" 
+                      placeholder="Enter classification"
+                      value={formData.otherClassification} 
+                      onChange={handleChange}
+                      className="w-64"
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Line 4 - Exemptions */}
+              {/* Exemptions */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Exemptions
                 </h2>
-                <p className="text-sm text-slate-500">If applicable, enter exemption codes (see instructions)</p>
+                <p className="text-sm text-slate-500">(codes apply only to certain entities, not individuals)</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="exemptPayeeCode">Exempt payee code (if any)</Label>
                     <Input 
                       id="exemptPayeeCode" 
                       name="exemptPayeeCode" 
-                      placeholder="e.g., 1, 2, 3..."
+                      placeholder="Enter code"
                       value={formData.exemptPayeeCode} 
-                      onChange={handleChange} 
+                      onChange={handleChange}
                     />
                   </div>
                   <div className="space-y-2">
@@ -359,52 +349,39 @@ export default function W9Form() {
                     <Input 
                       id="fatcaCode" 
                       name="fatcaCode" 
-                      placeholder="e.g., A, B, C..."
+                      placeholder="Enter code"
                       value={formData.fatcaCode} 
-                      onChange={handleChange} 
+                      onChange={handleChange}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Lines 5-6 - Address */}
+              {/* Address Information */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Address
                 </h2>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="space-y-2 md:col-span-3">
-                      <Label htmlFor="address">Line 5: Address (number, street) *</Label>
-                      <Input 
-                        id="address" 
-                        name="address" 
-                        placeholder="123 Main Street"
-                        value={formData.address} 
-                        onChange={handleChange} 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="apt">Apt/Suite</Label>
-                      <Input 
-                        id="apt" 
-                        name="apt" 
-                        placeholder="Apt 4B"
-                        value={formData.apt} 
-                        onChange={handleChange} 
-                      />
-                    </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Line 5 - Address (number, street, and apt. or suite no.) *</Label>
+                    <Input 
+                      id="address" 
+                      name="address" 
+                      placeholder="Enter street address"
+                      value={formData.address} 
+                      onChange={handleChange}
+                    />
                   </div>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="city">Line 6: City *</Label>
+                      <Label htmlFor="city">Line 6 - City *</Label>
                       <Input 
                         id="city" 
                         name="city" 
                         placeholder="City"
                         value={formData.city} 
-                        onChange={handleChange} 
+                        onChange={handleChange}
                       />
                     </div>
                     <div className="space-y-2">
@@ -421,48 +398,30 @@ export default function W9Form() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="zip">ZIP Code *</Label>
+                      <Label htmlFor="zipCode">ZIP Code *</Label>
                       <Input 
-                        id="zip" 
-                        name="zip" 
+                        id="zipCode" 
+                        name="zipCode" 
                         placeholder="12345"
-                        value={formData.zip} 
+                        value={formData.zipCode} 
                         onChange={handleZipChange}
-                        className={validationErrors.zip ? 'border-red-500' : ''}
+                        className={validationErrors.zipCode ? 'border-red-500' : ''}
                       />
-                      {validationErrors.zip && (
-                        <p className="text-xs text-red-500 mt-1">{validationErrors.zip}</p>
+                      {validationErrors.zipCode && (
+                        <p className="text-xs text-red-500 mt-1">{validationErrors.zipCode}</p>
                       )}
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Line 7 - Account numbers */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountNumbers">Line 7: List account number(s) here (optional)</Label>
-                  <Input 
-                    id="accountNumbers" 
-                    name="accountNumbers" 
-                    placeholder="Account numbers"
-                    value={formData.accountNumbers} 
-                    onChange={handleChange} 
-                  />
-                </div>
-              </div>
-
-              {/* Requester's info */}
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="requesterName">Requester's name and address (optional)</Label>
-                  <Input 
-                    id="requesterName" 
-                    name="requesterName" 
-                    placeholder="Name of person/entity requesting this form"
-                    value={formData.requesterName} 
-                    onChange={handleChange} 
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="accountNumbers">Line 7 - Account number(s) (optional)</Label>
+                    <Input 
+                      id="accountNumbers" 
+                      name="accountNumbers" 
+                      placeholder="Enter account numbers if applicable"
+                      value={formData.accountNumbers} 
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -471,55 +430,55 @@ export default function W9Form() {
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Part I - Taxpayer Identification Number (TIN)
                 </h2>
-                <p className="text-sm text-slate-500">Enter your TIN in the appropriate box. For individuals, this is your social security number (SSN). For other entities, it is your employer identification number (EIN).</p>
-                
                 <div className="space-y-4">
                   <RadioGroup 
                     value={formData.tinType} 
-                    onValueChange={(value) => setFormData({...formData, tinType: value})}
+                    onValueChange={(val) => setFormData({...formData, tinType: val})}
                     className="flex gap-6"
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="ssn" id="tin-ssn" />
-                      <Label htmlFor="tin-ssn" className="cursor-pointer">Social Security Number</Label>
+                      <Label htmlFor="tin-ssn" className="cursor-pointer">Social Security Number (SSN)</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="ein" id="tin-ein" />
-                      <Label htmlFor="tin-ein" className="cursor-pointer">Employer Identification Number</Label>
+                      <Label htmlFor="tin-ein" className="cursor-pointer">Employer Identification Number (EIN)</Label>
                     </div>
                   </RadioGroup>
                   
-                  {formData.tinType === 'ssn' ? (
-                    <div className="space-y-2 max-w-xs">
-                      <Label htmlFor="ssn">Social Security Number *</Label>
-                      <Input 
-                        id="ssn" 
-                        name="ssn" 
-                        placeholder="XXX-XX-XXXX"
-                        value={formData.ssn} 
-                        onChange={handleSSNChange}
-                        className={validationErrors.ssn ? 'border-red-500' : ''}
-                      />
-                      {validationErrors.ssn && (
-                        <p className="text-xs text-red-500 mt-1">{validationErrors.ssn}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-w-xs">
-                      <Label htmlFor="ein">Employer Identification Number *</Label>
-                      <Input 
-                        id="ein" 
-                        name="ein" 
-                        placeholder="XX-XXXXXXX"
-                        value={formData.ein} 
-                        onChange={handleEINChange}
-                        className={validationErrors.ein ? 'border-red-500' : ''}
-                      />
-                      {validationErrors.ein && (
-                        <p className="text-xs text-red-500 mt-1">{validationErrors.ein}</p>
-                      )}
-                    </div>
-                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {formData.tinType === "ssn" ? (
+                      <div className="space-y-2">
+                        <Label htmlFor="ssn">Social Security Number *</Label>
+                        <Input 
+                          id="ssn" 
+                          name="ssn" 
+                          placeholder="XXX-XX-XXXX"
+                          value={formData.ssn} 
+                          onChange={handleSSNChange}
+                          className={validationErrors.ssn ? 'border-red-500' : ''}
+                        />
+                        {validationErrors.ssn && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.ssn}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Label htmlFor="ein">Employer Identification Number *</Label>
+                        <Input 
+                          id="ein" 
+                          name="ein" 
+                          placeholder="XX-XXXXXXX"
+                          value={formData.ein} 
+                          onChange={handleEINChange}
+                          className={validationErrors.ein ? 'border-red-500' : ''}
+                        />
+                        {validationErrors.ein && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.ein}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -528,37 +487,27 @@ export default function W9Form() {
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Part II - Certification
                 </h2>
-                <div className="p-4 bg-slate-50 rounded-md text-sm text-slate-600">
-                  <p className="mb-2">Under penalties of perjury, I certify that:</p>
-                  <ol className="list-decimal list-inside space-y-1">
+                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <p className="text-sm text-slate-600 mb-4">
+                    Under penalties of perjury, I certify that:
+                  </p>
+                  <ul className="text-sm text-slate-600 space-y-2 list-decimal ml-4">
                     <li>The number shown on this form is my correct taxpayer identification number, and</li>
-                    <li>I am not subject to backup withholding, and</li>
+                    <li>I am not subject to backup withholding because: (a) I am exempt from backup withholding, or (b) I have not been notified by the IRS that I am subject to backup withholding, or (c) I have been notified by the IRS that I am no longer subject to backup withholding, and</li>
                     <li>I am a U.S. citizen or other U.S. person, and</li>
                     <li>The FATCA code(s) entered on this form (if any) indicating that I am exempt from FATCA reporting is correct.</li>
-                  </ol>
+                  </ul>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signature">Signature (Type your name) *</Label>
-                    <Input 
-                      id="signature" 
-                      name="signature" 
-                      placeholder="Type your full legal name"
-                      value={formData.signature} 
-                      onChange={handleChange} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signatureDate">Date *</Label>
-                    <Input 
-                      id="signatureDate" 
-                      name="signatureDate" 
-                      placeholder="MM/DD/YYYY"
-                      value={formData.signatureDate} 
-                      onChange={handleChange} 
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signatureDate">Date</Label>
+                  <Input 
+                    id="signatureDate" 
+                    name="signatureDate" 
+                    type="date"
+                    value={formData.signatureDate} 
+                    onChange={handleChange}
+                    className="w-48"
+                  />
                 </div>
               </div>
 
@@ -577,101 +526,108 @@ export default function W9Form() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-700">Name:</span>
-                    <span className="font-medium text-right max-w-[200px] truncate">{summary.name}</span>
+                    <span className="font-medium text-slate-900">{formData.name || "—"}</span>
+                  </div>
+                  {formData.businessName && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-700">Business Name:</span>
+                      <span className="font-medium text-slate-900">{formData.businessName}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-slate-700">Tax Classification:</span>
+                    <span className="font-medium text-slate-900 text-right max-w-[180px]">{taxClassificationLabel}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-700">Business Name:</span>
-                    <span className="font-medium text-right max-w-[200px] truncate">{summary.businessName}</span>
+                    <span className="text-slate-700">TIN ({formData.tinType.toUpperCase()}):</span>
+                    <span className="font-medium text-slate-900">{tinDisplay}</span>
                   </div>
+                  <div className="border-t border-green-300 my-2"></div>
                   <div className="flex justify-between">
-                    <span className="text-slate-700">Classification:</span>
-                    <span className="font-medium text-right max-w-[200px] truncate">{summary.classification}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-700">TIN:</span>
-                    <span className="font-medium">{summary.tin}</span>
+                    <span className="text-slate-700">Address:</span>
+                    <span className="font-medium text-slate-900 text-right max-w-[180px]">
+                      {formData.address ? `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}` : "—"}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* PDF Preview Section */}
-              <div className="p-4 bg-white border-2 border-slate-200 rounded-md">
-                <h3 className="text-lg font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Document Preview
-                </h3>
-                <p className="text-xs text-slate-500 mb-3">
-                  Click to enlarge • Watermark removed after payment
-                </p>
-                
-                {isGeneratingPreview ? (
-                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
-                      <p className="text-sm text-slate-500">Generating preview...</p>
-                    </div>
-                  </div>
-                ) : pdfPreview ? (
+              {/* PDF Preview */}
+              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+                  <h3 className="font-semibold text-slate-700">PDF Preview</h3>
                   <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
                     <DialogTrigger asChild>
-                      <div className="relative cursor-pointer group">
-                        <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
-                          <iframe
-                            src={pdfPreview}
-                            className="w-full h-96 pointer-events-none"
-                            title="W-9 Preview"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none">
-                              MintSlip
-                            </div>
-                          </div>
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
-                              <span className="text-sm text-slate-700">Click to enlarge</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <Button variant="outline" size="sm" disabled={!pdfPreview}>
+                        Expand Preview
+                      </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
-                      <DialogHeader className="p-4 border-b">
+                    <DialogContent className="max-w-4xl h-[90vh]">
+                      <DialogHeader>
                         <DialogTitle>W-9 Preview - {selectedTaxYear}</DialogTitle>
                       </DialogHeader>
-                      <div className="relative flex-1 h-full overflow-hidden">
-                        <iframe src={pdfPreview} className="w-full h-[calc(90vh-80px)]" title="W-9 Preview Full" />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none">
-                            MintSlip
-                          </div>
-                        </div>
+                      <div className="flex-1 h-full">
+                        {pdfPreview && (
+                          <iframe
+                            src={pdfPreview}
+                            className="w-full h-[calc(90vh-80px)] border-0"
+                            title="W-9 Preview Full"
+                          />
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>
-                ) : (
-                  <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
-                    <p className="text-sm text-slate-500">Select a year to see preview</p>
-                  </div>
-                )}
+                </div>
+                <div className="h-80 bg-slate-100 flex items-center justify-center">
+                  {isGeneratingPreview ? (
+                    <div className="text-slate-500 flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating preview...
+                    </div>
+                  ) : pdfPreview ? (
+                    <iframe
+                      src={pdfPreview}
+                      className="w-full h-full border-0"
+                      title="W-9 Preview"
+                    />
+                  ) : (
+                    <p className="text-slate-500">Preview will appear here</p>
+                  )}
+                </div>
               </div>
 
-              {/* PayPal */}
-              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
-                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Complete Payment
-                </h3>
-                <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$15.00</strong> for W-9 generation
-                </p>
-                <div>
+              {/* Payment Section */}
+              <div className="p-6 bg-white rounded-lg border border-slate-200">
+                <div className="text-center mb-4">
+                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$10.00</p>
+                  <p className="text-sm text-slate-500">One-time payment</p>
+                </div>
+                
+                {isProcessing ? (
+                  <div className="text-center py-4">
+                    <svg className="animate-spin h-8 w-8 mx-auto text-green-700" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="mt-2 text-slate-600">Processing your document...</p>
+                  </div>
+                ) : (
                   <PayPalButtons
+                    style={{ layout: "vertical", color: "gold", shape: "rect" }}
                     createOrder={createOrder}
                     onApprove={onApprove}
                     onError={onError}
-                    disabled={isProcessing}
-                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
                   />
-                </div>
+                )}
+                
+                <p className="text-xs text-slate-500 text-center mt-4">
+                  Secure payment via PayPal. Your W-9 will download immediately after payment.
+                </p>
               </div>
+
             </div>
           </div>
         </div>

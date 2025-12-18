@@ -1,38 +1,70 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
-// Get template URL based on year
+// Get template URL based on tax year
 const getTemplateUrl = (taxYear) => {
   const year = parseInt(taxYear);
   return `/templates/w9-${year}.pdf`;
 };
 
-// Field positions matching the main generator
-const FIELD_POSITIONS = {
-  name: { x: 35, y: 680, fontSize: 10 },
-  businessName: { x: 35, y: 650, fontSize: 10 },
-  checkIndividual: { x: 35, y: 615, fontSize: 10 },
-  checkCCorp: { x: 200, y: 615, fontSize: 10 },
-  checkSCorp: { x: 260, y: 615, fontSize: 10 },
-  checkPartnership: { x: 322, y: 615, fontSize: 10 },
-  checkTrust: { x: 395, y: 615, fontSize: 10 },
-  checkLLC: { x: 35, y: 600, fontSize: 10 },
-  llcClassification: { x: 185, y: 600, fontSize: 10 },
-  checkOther: { x: 260, y: 600, fontSize: 10 },
-  otherText: { x: 300, y: 600, fontSize: 9 },
-  checkForeignPartner: { x: 35, y: 580, fontSize: 10 },
-  exemptPayeeCode: { x: 415, y: 655, fontSize: 9 },
-  fatcaCode: { x: 530, y: 655, fontSize: 9 },
-  address: { x: 35, y: 560, fontSize: 10 },
-  cityStateZip: { x: 35, y: 530, fontSize: 10 },
-  accountNumbers: { x: 35, y: 500, fontSize: 9 },
-  requesterName: { x: 415, y: 580, fontSize: 9 },
-  ssn1: { x: 360, y: 460, fontSize: 11 },
-  ssn2: { x: 395, y: 460, fontSize: 11 },
-  ssn3: { x: 445, y: 460, fontSize: 11 },
-  ein1: { x: 500, y: 460, fontSize: 11 },
-  ein2: { x: 540, y: 460, fontSize: 11 },
-  signatureDate: { x: 435, y: 325, fontSize: 10 },
-  signature: { x: 70, y: 325, fontSize: 12 }
+// Field positions for W-9 form (2018 revision for 2021-2023)
+const FIELD_POSITIONS_2018 = {
+  name: { x: 42, y: 656, fontSize: 11 },
+  businessName: { x: 42, y: 620, fontSize: 10 },
+  individual: { x: 48, y: 584, fontSize: 10 },
+  ccorp: { x: 154, y: 584, fontSize: 10 },
+  scorp: { x: 207, y: 584, fontSize: 10 },
+  partnership: { x: 260, y: 584, fontSize: 10 },
+  trust: { x: 330, y: 584, fontSize: 10 },
+  llc: { x: 400, y: 584, fontSize: 10 },
+  llcCode: { x: 492, y: 584, fontSize: 10 },
+  other: { x: 48, y: 566, fontSize: 10 },
+  otherText: { x: 100, y: 566, fontSize: 9 },
+  exemptPayeeCode: { x: 505, y: 638, fontSize: 9 },
+  fatcaCode: { x: 505, y: 615, fontSize: 9 },
+  address: { x: 42, y: 524, fontSize: 10 },
+  cityStateZip: { x: 42, y: 490, fontSize: 10 },
+  accountNumbers: { x: 42, y: 456, fontSize: 9 },
+  ssn1: { x: 345, y: 430, fontSize: 14 },
+  ssn2: { x: 390, y: 430, fontSize: 14 },
+  ssn3: { x: 460, y: 430, fontSize: 14 },
+  ein1: { x: 345, y: 400, fontSize: 14 },
+  ein2: { x: 420, y: 400, fontSize: 14 },
+  signatureDate: { x: 470, y: 260, fontSize: 10 }
+};
+
+// Field positions for W-9 form (2024 revision)
+const FIELD_POSITIONS_2024 = {
+  name: { x: 42, y: 640, fontSize: 11 },
+  businessName: { x: 42, y: 600, fontSize: 10 },
+  individual: { x: 48, y: 564, fontSize: 10 },
+  ccorp: { x: 154, y: 564, fontSize: 10 },
+  scorp: { x: 207, y: 564, fontSize: 10 },
+  partnership: { x: 260, y: 564, fontSize: 10 },
+  trust: { x: 330, y: 564, fontSize: 10 },
+  llc: { x: 400, y: 564, fontSize: 10 },
+  llcCode: { x: 492, y: 564, fontSize: 10 },
+  other: { x: 48, y: 546, fontSize: 10 },
+  otherText: { x: 100, y: 546, fontSize: 9 },
+  exemptPayeeCode: { x: 505, y: 618, fontSize: 9 },
+  fatcaCode: { x: 505, y: 595, fontSize: 9 },
+  address: { x: 42, y: 498, fontSize: 10 },
+  cityStateZip: { x: 42, y: 464, fontSize: 10 },
+  accountNumbers: { x: 42, y: 430, fontSize: 9 },
+  ssn1: { x: 345, y: 398, fontSize: 14 },
+  ssn2: { x: 390, y: 398, fontSize: 14 },
+  ssn3: { x: 460, y: 398, fontSize: 14 },
+  ein1: { x: 345, y: 368, fontSize: 14 },
+  ein2: { x: 420, y: 368, fontSize: 14 },
+  signatureDate: { x: 470, y: 232, fontSize: 10 }
+};
+
+// Get field positions based on tax year
+const getFieldPositions = (taxYear) => {
+  const year = parseInt(taxYear);
+  if (year >= 2024) {
+    return FIELD_POSITIONS_2024;
+  }
+  return FIELD_POSITIONS_2018;
 };
 
 // Generate W-9 preview with watermark
@@ -53,102 +85,96 @@ export const generateW9Preview = async (formData, taxYear) => {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     
+    // Get field positions for this year
+    const FIELD_POSITIONS = getFieldPositions(taxYear);
+    
     // Helper function to draw text
     const drawText = (text, position, useBold = false) => {
       if (!text) return;
       const textStr = String(text);
-      const selectedFont = useBold ? boldFont : font;
-      const fontSize = position.fontSize || 10;
-      
       page.drawText(textStr, {
         x: position.x,
         y: position.y,
-        size: fontSize,
-        font: selectedFont,
+        size: position.fontSize || 10,
+        font: useBold ? boldFont : font,
         color: rgb(0, 0, 0),
       });
     };
     
-    // Draw checkbox (X mark)
-    const drawCheckbox = (position, checked) => {
-      if (checked) {
-        drawText("X", position, true);
-      }
+    // Helper to draw checkbox mark
+    const drawCheckmark = (position) => {
+      page.drawText("X", {
+        x: position.x,
+        y: position.y,
+        size: position.fontSize || 10,
+        font: boldFont,
+        color: rgb(0, 0, 0),
+      });
     };
     
-    // Fill in form fields
+    // Fill in the form fields
     drawText(formData.name, FIELD_POSITIONS.name, true);
     drawText(formData.businessName, FIELD_POSITIONS.businessName);
     
-    // Tax classification checkboxes
-    drawCheckbox(FIELD_POSITIONS.checkIndividual, formData.taxClassification === 'individual');
-    drawCheckbox(FIELD_POSITIONS.checkCCorp, formData.taxClassification === 'c_corp');
-    drawCheckbox(FIELD_POSITIONS.checkSCorp, formData.taxClassification === 's_corp');
-    drawCheckbox(FIELD_POSITIONS.checkPartnership, formData.taxClassification === 'partnership');
-    drawCheckbox(FIELD_POSITIONS.checkTrust, formData.taxClassification === 'trust');
-    drawCheckbox(FIELD_POSITIONS.checkLLC, formData.taxClassification === 'llc');
-    drawCheckbox(FIELD_POSITIONS.checkOther, formData.taxClassification === 'other');
-    
-    if (formData.taxClassification === 'llc' && formData.llcClassification) {
-      drawText(formData.llcClassification, FIELD_POSITIONS.llcClassification);
+    // Tax classification
+    switch (formData.taxClassification) {
+      case "individual":
+        drawCheckmark(FIELD_POSITIONS.individual);
+        break;
+      case "ccorp":
+        drawCheckmark(FIELD_POSITIONS.ccorp);
+        break;
+      case "scorp":
+        drawCheckmark(FIELD_POSITIONS.scorp);
+        break;
+      case "partnership":
+        drawCheckmark(FIELD_POSITIONS.partnership);
+        break;
+      case "trust":
+        drawCheckmark(FIELD_POSITIONS.trust);
+        break;
+      case "llc":
+        drawCheckmark(FIELD_POSITIONS.llc);
+        if (formData.llcTaxCode) {
+          drawText(formData.llcTaxCode, FIELD_POSITIONS.llcCode);
+        }
+        break;
+      case "other":
+        drawCheckmark(FIELD_POSITIONS.other);
+        if (formData.otherClassification) {
+          drawText(formData.otherClassification, FIELD_POSITIONS.otherText);
+        }
+        break;
     }
     
-    if (formData.taxClassification === 'other' && formData.otherDescription) {
-      drawText(formData.otherDescription, FIELD_POSITIONS.otherText);
-    }
+    // Exemptions
+    drawText(formData.exemptPayeeCode, FIELD_POSITIONS.exemptPayeeCode);
+    drawText(formData.fatcaCode, FIELD_POSITIONS.fatcaCode);
     
-    drawCheckbox(FIELD_POSITIONS.checkForeignPartner, formData.isForeignPartner);
+    // Address
+    drawText(formData.address, FIELD_POSITIONS.address);
     
-    if (formData.exemptPayeeCode) {
-      drawText(formData.exemptPayeeCode, FIELD_POSITIONS.exemptPayeeCode);
-    }
-    if (formData.fatcaCode) {
-      drawText(formData.fatcaCode, FIELD_POSITIONS.fatcaCode);
-    }
-    
-    const addressLine = [formData.address, formData.apt].filter(Boolean).join(', ');
-    drawText(addressLine, FIELD_POSITIONS.address);
-    
-    const cityStateZip = [formData.city, formData.state, formData.zip].filter(Boolean).join(', ');
+    // City, State, ZIP
+    const cityStateZip = [formData.city, formData.state, formData.zipCode].filter(Boolean).join(", ");
     drawText(cityStateZip, FIELD_POSITIONS.cityStateZip);
     
-    if (formData.accountNumbers) {
-      drawText(formData.accountNumbers, FIELD_POSITIONS.accountNumbers);
-    }
-    
-    if (formData.requesterName) {
-      drawText(formData.requesterName, FIELD_POSITIONS.requesterName);
-    }
+    // Account numbers
+    drawText(formData.accountNumbers, FIELD_POSITIONS.accountNumbers);
     
     // TIN
-    if (formData.tinType === 'ssn' && formData.ssn) {
-      const ssnClean = formData.ssn.replace(/-/g, '');
-      if (ssnClean.length >= 3) {
-        drawText(ssnClean.substring(0, 3), FIELD_POSITIONS.ssn1, true);
-      }
-      if (ssnClean.length >= 5) {
-        drawText(ssnClean.substring(3, 5), FIELD_POSITIONS.ssn2, true);
-      }
-      if (ssnClean.length >= 9) {
-        drawText(ssnClean.substring(5, 9), FIELD_POSITIONS.ssn3, true);
-      }
-    } else if (formData.tinType === 'ein' && formData.ein) {
-      const einClean = formData.ein.replace(/-/g, '');
-      if (einClean.length >= 2) {
-        drawText(einClean.substring(0, 2), FIELD_POSITIONS.ein1, true);
-      }
-      if (einClean.length >= 9) {
-        drawText(einClean.substring(2, 9), FIELD_POSITIONS.ein2, true);
-      }
+    if (formData.tinType === "ssn" && formData.ssn) {
+      const ssnParts = formData.ssn.replace(/-/g, "").match(/.{1,3}/g) || [];
+      if (ssnParts[0]) drawText(ssnParts[0], FIELD_POSITIONS.ssn1);
+      if (ssnParts[1]) drawText(ssnParts[1], FIELD_POSITIONS.ssn2);
+      if (ssnParts[2]) drawText(ssnParts[2], FIELD_POSITIONS.ssn3);
+    } else if (formData.tinType === "ein" && formData.ein) {
+      const einParts = formData.ein.split("-");
+      if (einParts[0]) drawText(einParts[0], FIELD_POSITIONS.ein1);
+      if (einParts[1]) drawText(einParts[1], FIELD_POSITIONS.ein2);
     }
     
-    if (formData.signature) {
-      drawText(formData.signature, FIELD_POSITIONS.signature, true);
-    }
-    
-    if (formData.signatureDate) {
-      drawText(formData.signatureDate, FIELD_POSITIONS.signatureDate);
-    }
+    // Date
+    drawText(formData.signatureDate, FIELD_POSITIONS.signatureDate);
     
     // Add WATERMARK - diagonal across the page
     page.drawText("MintSlip", {

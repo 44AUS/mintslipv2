@@ -433,7 +433,36 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       font: font,
       color: rgb(colors.text.r, colors.text.g, colors.text.b),
     });
-    y -= 40;
+    y -= 20;
+    
+    // HR Signature - either custom image or generated
+    if (formData.hrSignatureType === "custom" && formData.hrSignatureImage) {
+      // Custom signature image
+      const hrSigImage = await embedImage(pdfDoc, formData.hrSignatureImage);
+      if (hrSigImage) {
+        const sigDims = hrSigImage.scale(0.3);
+        const sigHeight = Math.min(sigDims.height, 40);
+        const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
+        page.drawImage(hrSigImage, {
+          x: margin,
+          y: y - sigHeight,
+          width: sigWidth,
+          height: sigHeight,
+        });
+        y -= sigHeight + 10;
+      }
+    } else {
+      // Generated signature (cursive-style text)
+      const signatureName = formData.signerName || '[Signer Name]';
+      page.drawText(signatureName, {
+        x: margin,
+        y: y,
+        size: 18,
+        font: italicFont,
+        color: rgb(0.1, 0.1, 0.3),
+      });
+      y -= 25;
+    }
     
     // Signature line
     page.drawLine({

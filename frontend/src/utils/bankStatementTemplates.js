@@ -579,12 +579,16 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   // Track total pages - will be updated after all content is added
   let currentPage = 1;
   
+  // Header margin (more inset than the main content margin)
+  const headerMargin = margin + 20;
+  const headerRightMargin = margin + 20;
+  
   // Helper function to add bank logo (top left of every page)
   const addBankLogo = () => {
     let logoAddedC = false;
     if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
       try {
-        doc.addImage(bankLogo, margin, 15, 70, 25);
+        doc.addImage(bankLogo, headerMargin, 15, 70, 25);
         logoAddedC = true;
       } catch (e) {
         console.error("Failed to add logo:", e);
@@ -595,37 +599,37 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
       doc.setFontSize(24);
       doc.setTextColor(...chaseBlue);
       doc.setFont("helvetica", "bold");
-      doc.text("CHASE", margin, 32);
+      doc.text("CHASE", headerMargin, 32);
     }
   };
   
   // Helper function to add page header (logo + statement dates and account number in top right)
   const addPageHeader = (isFirstPage = false) => {
-    // Bank logo - top left
+    // Bank logo - top left (with header margin)
     addBankLogo();
     
-    // Statement date range - top right
+    // Statement date range - top right (with header margin)
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
-    doc.text(formatStatementDateRange(), pageWidth - margin, 25, { align: "right" });
-    doc.text(`Account Number: ${accountNumber}`, pageWidth - margin, 37, { align: "right" });
+    doc.text(formatStatementDateRange(), pageWidth - headerRightMargin, 25, { align: "right" });
+    doc.text(`Account Number: ${accountNumber}`, pageWidth - headerRightMargin, 37, { align: "right" });
     
     // Customer Service Information - only on first page
     if (isFirstPage) {
       let csY = 52;
       const csBoxWidth = 160;
-      const csBoxX = pageWidth - margin - csBoxWidth;
+      const csBoxX = pageWidth - headerRightMargin - csBoxWidth;
       
       // Top thick black border
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(1.5);
-      doc.line(csBoxX, csY - 3, pageWidth - margin, csY - 3);
+      doc.line(csBoxX, csY - 3, pageWidth - headerRightMargin, csY - 3);
       
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
-      doc.text("CUSTOMER SERVICE INFORMATION", pageWidth - margin, csY + 5, { align: "right" });
+      doc.text("CUSTOMER SERVICE INFORMATION", pageWidth - headerRightMargin, csY + 5, { align: "right" });
       
       csY += 15;
       doc.setFont("helvetica", "normal");

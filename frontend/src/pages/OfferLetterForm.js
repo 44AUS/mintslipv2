@@ -142,6 +142,52 @@ export default function OfferLetterForm() {
     setFormData(prev => ({ ...prev, [field]: formatted }));
   };
 
+  // Handle logo upload
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Logo file size must be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ 
+          ...prev, 
+          companyLogo: reader.result,
+          companyLogoName: file.name
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove logo
+  const removeLogo = () => {
+    setFormData(prev => ({ ...prev, companyLogo: null, companyLogoName: "" }));
+  };
+
+  // Handle signature upload
+  const handleSignatureUpload = (field) => (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1 * 1024 * 1024) {
+        toast.error("Signature file size must be less than 1MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, [field]: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Remove signature
+  const removeSignature = (field) => () => {
+    setFormData(prev => ({ ...prev, [field]: null }));
+  };
+
   // Generate PDF preview when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {

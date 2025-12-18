@@ -724,10 +724,10 @@ export default function OfferLetterForm() {
                 </div>
               </div>
 
-              {/* Signature */}
+              {/* HR Signature */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Signature
+                  HR Director Signature
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -760,6 +760,169 @@ export default function OfferLetterForm() {
                       onChange={handleChange}
                     />
                   </div>
+                  
+                  {/* HR Signature Type */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Signature Type</Label>
+                    <RadioGroup 
+                      value={formData.hrSignatureType} 
+                      onValueChange={(val) => setFormData({...formData, hrSignatureType: val, hrSignatureImage: null})}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="generated" id="hr-generated" />
+                        <Label htmlFor="hr-generated" className="cursor-pointer">Computer Generated</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="custom" id="hr-custom" />
+                        <Label htmlFor="hr-custom" className="cursor-pointer">Upload Custom Signature</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  {formData.hrSignatureType === "generated" ? (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Signature Preview</Label>
+                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <p className="text-2xl italic text-slate-700" style={{ fontFamily: 'cursive' }}>
+                          {formData.signerName || "Signer Name"}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-2">This signature will be auto-generated from the signer name</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Upload Signature Image</Label>
+                      <p className="text-xs text-slate-500 mb-2">PNG with transparent background recommended. Max 1MB.</p>
+                      {formData.hrSignatureImage ? (
+                        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                          <img 
+                            src={formData.hrSignatureImage} 
+                            alt="HR Signature" 
+                            className="h-12 max-w-[200px] object-contain"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-700">Signature uploaded</p>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={removeSignature('hrSignatureImage')}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <Input 
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleSignatureUpload('hrSignatureImage')}
+                          className="cursor-pointer"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Employee Signature */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Employee Signature (Acceptance)
+                </h2>
+                <p className="text-sm text-slate-500">Configure the employee acceptance signature area</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  {/* Employee Signature Type */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Signature Type</Label>
+                    <RadioGroup 
+                      value={formData.employeeSignatureType} 
+                      onValueChange={(val) => setFormData({...formData, employeeSignatureType: val, employeeSignatureImage: null})}
+                      className="flex gap-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="generated" id="emp-generated" />
+                        <Label htmlFor="emp-generated" className="cursor-pointer">Computer Generated</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="custom" id="emp-custom" />
+                        <Label htmlFor="emp-custom" className="cursor-pointer">Upload Custom Signature</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="blank" id="emp-blank" />
+                        <Label htmlFor="emp-blank" className="cursor-pointer">Leave Blank (Sign Later)</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                  
+                  {formData.employeeSignatureType === "generated" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="employeeSignatureName">Employee Signature Name</Label>
+                        <Input 
+                          id="employeeSignatureName" 
+                          name="employeeSignatureName" 
+                          placeholder="Employee full name for signature"
+                          value={formData.employeeSignatureName} 
+                          onChange={handleChange}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Signature Preview</Label>
+                        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                          <p className="text-2xl italic text-slate-700" style={{ fontFamily: 'cursive' }}>
+                            {formData.employeeSignatureName || formData.candidateName || "Employee Name"}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {formData.employeeSignatureType === "custom" && (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Upload Employee Signature</Label>
+                      <p className="text-xs text-slate-500 mb-2">PNG with transparent background recommended. Max 1MB.</p>
+                      {formData.employeeSignatureImage ? (
+                        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                          <img 
+                            src={formData.employeeSignatureImage} 
+                            alt="Employee Signature" 
+                            className="h-12 max-w-[200px] object-contain"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-700">Signature uploaded</p>
+                          </div>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={removeSignature('employeeSignatureImage')}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ) : (
+                        <Input 
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleSignatureUpload('employeeSignatureImage')}
+                          className="cursor-pointer"
+                        />
+                      )}
+                    </div>
+                  )}
+                  
+                  {formData.employeeSignatureType === "blank" && (
+                    <div className="space-y-2 md:col-span-2">
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-sm text-yellow-800">The employee signature area will be left blank with a signature line for the employee to sign manually.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

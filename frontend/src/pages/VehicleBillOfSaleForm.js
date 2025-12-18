@@ -705,7 +705,7 @@ export default function VehicleBillOfSaleForm() {
                     <RadioGroupItem value="as-is" id="condition-asis" />
                     <Label htmlFor="condition-asis" className="cursor-pointer flex-1">
                       <span className="font-medium">AS-IS (No Warranty)</span>
-                      <p className="text-sm text-slate-500">The vehicle is sold "as-is" without any warranty, express or implied</p>
+                      <p className="text-sm text-slate-500">The vehicle is sold &quot;as-is&quot; without any warranty, express or implied</p>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">

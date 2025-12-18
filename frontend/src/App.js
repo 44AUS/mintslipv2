@@ -31,6 +31,7 @@ function App() {
             <Route path="/paystub" element={<PaystubForm />} />
             <Route path="/bank-statement" element={<BankStatementForm />} />
             <Route path="/w2" element={<W2Form />} />
+            <Route path="/w9" element={<W9Form />} />
             <Route path="/schedule-c" element={<ScheduleCForm />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />

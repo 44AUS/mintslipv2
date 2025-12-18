@@ -697,35 +697,17 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   // ============ PAGE 1: Header + Summary ============
   let y = 30;
   
-  // Chase Logo/Bank Name
-  let logoAddedC = false;
-  if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
-    try {
-      doc.addImage(bankLogo, margin, y - 10, 70, 25);
-      logoAddedC = true;
-    } catch (e) {
-      console.error("Failed to add logo to Template C:", e);
-    }
-  }
+  // Add page header (logo + dates + account number)
+  addPageHeader(true);
   
-  if (!logoAddedC) {
-    doc.setFontSize(24);
-    doc.setTextColor(...chaseBlue);
-    doc.setFont("helvetica", "bold");
-    doc.text("CHASE", margin, y + 8);
-  }
-  
-  // Bank address
-  y += 25;
+  // Bank address (below logo)
+  y = 50;
   doc.setFontSize(7);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
   doc.text("JPMorgan Chase Bank, N.A.", margin, y);
   doc.text("PO Box 182051", margin, y + 10);
   doc.text("Columbus, OH 43218-2051", margin, y + 20);
-  
-  // Add page header (dates and account number)
-  addPageHeader(true);
   
   // Draw barcode on right side
   drawBarcode();
@@ -739,24 +721,16 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.text(accountAddress1, margin, y + 12);
   doc.text(accountAddress2, margin, y + 24);
   
-  // CHECKING SUMMARY section
+  // CHECKING SUMMARY section - use the box style
   y += 55;
-  doc.setFillColor(240, 240, 240);
-  doc.setDrawColor(0, 0, 0);
-  doc.setLineWidth(0.5);
-  doc.rect(margin, y, pageWidth - 2 * margin - 30, 20, 'FD');
+  y = drawSectionTitle("Checking Summary", y);
   
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text("CHECKING SUMMARY", margin + 5, y + 14);
-  
-  // Account type label
+  // Account type label on the right
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Chase Personal Checking", pageWidth - margin - 150, y + 14);
+  doc.text("Chase Personal Checking", pageWidth - margin - 30, y - 5, { align: "right" });
   
-  y += 30;
+  y += 10;
   
   // Summary table
   const summaryItems = [
@@ -773,8 +747,8 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.setFontSize(8);
   doc.setTextColor(80, 80, 80);
   doc.setFont("helvetica", "bold");
-  doc.text("AMOUNT", pageWidth - margin - 40, y, { align: "right" });
-  doc.line(margin, y + 5, pageWidth - margin - 30, y + 5);
+  doc.text("AMOUNT", pageWidth - margin - 5, y, { align: "right" });
+  doc.line(margin, y + 5, pageWidth - margin, y + 5);
   y += 15;
   
   summaryItems.forEach((item, index) => {
@@ -784,13 +758,76 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.text(item.label, margin + 5, y);
     
     const amountStr = `$${toFixed(item.amount)}`;
-    doc.text(amountStr, pageWidth - margin - 40, y, { align: "right" });
+    doc.text(amountStr, pageWidth - margin - 5, y, { align: "right" });
     
     if (index < summaryItems.length - 1) {
       doc.setDrawColor(200, 200, 200);
-      doc.line(margin, y + 8, pageWidth - margin - 30, y + 8);
+      doc.line(margin, y + 8, pageWidth - margin, y + 8);
     }
     y += 18;
+  });
+  
+  // ============ CONGRATULATIONS / FEE WAIVER MESSAGE ============
+  y += 15;
+  
+  doc.setFontSize(8);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "bold");
+  doc.text("Congratulations, thanks to your qualifying actions, we waived the $15.00 monthly service fee for this statement period.", margin, y);
+  
+  y += 12;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  const feeWaiverText1 = "Here's how your activity can help you avoid the $15.00 monthly service fee: the fee is waived if any of the following is achieved over the statement period:";
+  const feeWaiverLines1 = doc.splitTextToSize(feeWaiverText1, pageWidth - 2 * margin);
+  doc.text(feeWaiverLines1, margin, y);
+  y += feeWaiverLines1.length * 8 + 5;
+  
+  // Bullet points
+  const bulletPoints = [
+    "Maintain a minimum daily balance of $2,000.00 or more",
+    "Have $500.00 or more in qualifying electronic deposits",
+    "Link your Chase Business Complete Checking to a qualifying Chase Ink Business Card and spend $500.00 or more on that card",
+    "Use QuickAccept, Chase Merchant Services, or other qualifying Chase payment processing services"
+  ];
+  
+  bulletPoints.forEach((point) => {
+    doc.text("•", margin + 5, y);
+    const pointLines = doc.splitTextToSize(point, pageWidth - 2 * margin - 15);
+    doc.text(pointLines, margin + 15, y);
+    y += pointLines.length * 8 + 2;
+  });
+  
+  y += 8;
+  doc.setFont("helvetica", "bold");
+  doc.text("Here's a summary of your activity this period:", margin, y);
+  y += 12;
+  
+  doc.setFont("helvetica", "normal");
+  const activitySummary = [
+    "• Minimum Daily Balance: $" + toFixed(beginning),
+    "• Qualifying electronic deposits into your account: $" + toFixed(deposits),
+    "• QuickAccept and Chase Merchant Services deposits into your account: $0.00"
+  ];
+  
+  activitySummary.forEach((item) => {
+    doc.text(item, margin + 5, y);
+    y += 10;
+  });
+  
+  y += 8;
+  doc.setFontSize(6);
+  doc.setTextColor(80, 80, 80);
+  const footnotes = [
+    "1. Minimum Daily Balance must be maintained as of the beginning of the day for each day of the statement cycle.",
+    "2. Based on aggregated spending (minus returns or refunds) where the Chase Ink Business Card(s) share a business entity legal name with the Chase Business Complete Checking account, using each of their most recently completed monthly card billing period(s).",
+    "3. The cutoff time on this business day is 7 a.m. Eastern Time."
+  ];
+  
+  footnotes.forEach((note) => {
+    const noteLines = doc.splitTextToSize(note, pageWidth - 2 * margin);
+    doc.text(noteLines, margin, y);
+    y += noteLines.length * 7 + 2;
   });
   
   // ============ PAGE 2: Transaction Details ============

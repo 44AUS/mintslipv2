@@ -525,6 +525,38 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       color: rgb(0.4, 0.4, 0.4),
     });
     
+    // Employee signature - handle different types
+    const empSigType = formData.employeeSignatureType || 'blank';
+    
+    if (empSigType === "custom" && formData.employeeSignatureImage) {
+      // Custom signature image
+      const empSigImage = await embedImage(pdfDoc, formData.employeeSignatureImage);
+      if (empSigImage) {
+        const sigDims = empSigImage.scale(0.3);
+        const sigHeight = Math.min(sigDims.height, 35);
+        const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
+        page.drawImage(empSigImage, {
+          x: margin,
+          y: acceptY - 25 - sigHeight,
+          width: sigWidth,
+          height: sigHeight,
+        });
+      }
+    } else if (empSigType === "generated") {
+      // Generated signature (cursive-style text)
+      const empSignatureName = formData.employeeSignatureName || formData.candidateName || '';
+      if (empSignatureName) {
+        page.drawText(empSignatureName, {
+          x: margin + 10,
+          y: acceptY - 25,
+          size: 16,
+          font: italicFont,
+          color: rgb(0.1, 0.1, 0.3),
+        });
+      }
+    }
+    // For 'blank' type, we just leave the signature line empty
+    
     // Candidate signature line
     page.drawLine({
       start: { x: margin, y: acceptY - 30 },
@@ -539,6 +571,23 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       font: font,
       color: rgb(0.5, 0.5, 0.5),
     });
+    
+    // Print name line (for blank signatures)
+    if (empSigType === "blank") {
+      page.drawLine({
+        start: { x: margin, y: acceptY - 55 },
+        end: { x: 250, y: acceptY - 55 },
+        thickness: 1,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      page.drawText('Print Name', {
+        x: margin,
+        y: acceptY - 67,
+        size: 8,
+        font: font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    }
     
     // Date line
     page.drawLine({

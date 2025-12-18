@@ -762,8 +762,8 @@ export async function generateBankTemplateC(doc, data, pageWidth, pageHeight, ma
   doc.text("PO Box 182051", headerMargin, y + 10);
   doc.text("Columbus, OH 43218-2051", headerMargin, y + 20);
   
-  // Draw barcode on right side (horizontal)
-  await drawBarcode();
+  // Draw barcode on right side (horizontal) - HIDDEN FOR NOW
+  // await drawBarcode();
   
   // Account holder info (with header margin - more centered)
   y += 45;

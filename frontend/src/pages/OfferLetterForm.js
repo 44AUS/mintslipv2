@@ -372,6 +372,45 @@ export default function OfferLetterForm() {
                       onChange={handleChange}
                     />
                   </div>
+                  
+                  {/* Company Logo Upload */}
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Company Logo (optional)</Label>
+                    <p className="text-xs text-slate-500 mb-2">Upload a logo to replace the company name text in the header. Max 2MB, PNG/JPG recommended.</p>
+                    {formData.companyLogo ? (
+                      <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <img 
+                          src={formData.companyLogo} 
+                          alt="Company Logo" 
+                          className="h-12 max-w-[200px] object-contain"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-700">{formData.companyLogoName}</p>
+                          <p className="text-xs text-slate-500">Logo uploaded</p>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          onClick={removeLogo}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <Input 
+                          id="companyLogo"
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                          onChange={handleLogoUpload}
+                          className="cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="companyAddress">Company Address</Label>
                     <Input 

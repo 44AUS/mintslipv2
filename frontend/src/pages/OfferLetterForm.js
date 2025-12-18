@@ -472,39 +472,68 @@ export default function OfferLetterForm() {
                   {/* Company Logo Upload */}
                   <div className="space-y-2 md:col-span-2">
                     <Label>Company Logo (optional)</Label>
-                    <p className="text-xs text-slate-500 mb-2">Upload a logo to replace the company name text in the header. Max 2MB, PNG/JPG recommended.</p>
-                    {formData.companyLogo ? (
-                      <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                        <img 
-                          src={formData.companyLogo} 
-                          alt="Company Logo" 
-                          className="h-12 max-w-[200px] object-contain"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-700">{formData.companyLogoName}</p>
-                          <p className="text-xs text-slate-500">Logo uploaded</p>
+                    <p className="text-xs text-slate-500 mb-2">Upload a logo to replace the company name text in the header</p>
+                    
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingLogo(true); }}
+                      onDragLeave={(e) => { e.preventDefault(); setIsDraggingLogo(false); }}
+                      onDrop={handleLogoDrop}
+                      className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
+                        isDraggingLogo 
+                          ? 'border-green-500 bg-green-50' 
+                          : 'border-slate-300 hover:border-green-400'
+                      }`}
+                    >
+                      {formData.companyLogo ? (
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <img 
+                              src={formData.companyLogo} 
+                              alt="Company Logo" 
+                              className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white p-2"
+                            />
+                            <button
+                              type="button"
+                              onClick={removeLogo}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                            <p className="text-xs text-slate-500 mt-1">{formData.companyLogoName}</p>
+                          </div>
                         </div>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          onClick={removeLogo}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-4">
-                        <Input 
-                          id="companyLogo"
-                          type="file"
-                          accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                          onChange={handleLogoUpload}
-                          className="cursor-pointer"
-                        />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="text-center">
+                          <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                          <p className="text-sm text-slate-600 mb-2">
+                            Drag and drop your logo here, or
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => logoInputRef.current?.click()}
+                            className="gap-2"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Select File
+                          </Button>
+                          <input
+                            ref={logoInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                          />
+                          <p className="text-xs text-slate-400 mt-3">
+                            PNG or JPG, max 2MB
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="space-y-2 md:col-span-2">

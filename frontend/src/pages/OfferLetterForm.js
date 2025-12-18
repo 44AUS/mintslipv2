@@ -60,6 +60,16 @@ export default function OfferLetterForm() {
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  
+  // Drag state for file uploads
+  const [isDraggingLogo, setIsDraggingLogo] = useState(false);
+  const [isDraggingHrSig, setIsDraggingHrSig] = useState(false);
+  const [isDraggingEmpSig, setIsDraggingEmpSig] = useState(false);
+  
+  // File input refs
+  const logoInputRef = useRef(null);
+  const hrSigInputRef = useRef(null);
+  const empSigInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     // Template

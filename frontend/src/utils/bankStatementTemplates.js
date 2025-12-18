@@ -610,6 +610,27 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.setFont("helvetica", "normal");
     doc.text(formatStatementDateRange(), pageWidth - margin, 25, { align: "right" });
     doc.text(`Account Number: ${accountNumber}`, pageWidth - margin, 37, { align: "right" });
+    
+    // Customer Service Information - only on first page
+    if (isFirstPage) {
+      let csY = 52;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text("CUSTOMER SERVICE INFORMATION", pageWidth - margin, csY, { align: "right" });
+      
+      csY += 12;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.text("Web site: Chase.com", pageWidth - margin, csY, { align: "right" });
+      csY += 9;
+      doc.text("Service Center: 1-800-935-9935", pageWidth - margin, csY, { align: "right" });
+      csY += 9;
+      doc.text("Deaf and Hard of Hearing: 1-800-242-7383", pageWidth - margin, csY, { align: "right" });
+      csY += 9;
+      doc.text("Para Espanol: 1-877-312-4273", pageWidth - margin, csY, { align: "right" });
+      csY += 9;
+      doc.text("International Calls: 1-713-262-1679", pageWidth - margin, csY, { align: "right" });
+    }
   };
   
   // Helper function to add page footer with page number

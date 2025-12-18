@@ -238,6 +238,18 @@ frontend:
         agent: "testing"
         comment: "OFFER LETTER GENERATOR TESTING COMPLETED ✅ All requested features verified and working correctly: 1) Company Logo Upload Test: 'Company Logo (optional)' label found ✅, help text 'Max 2MB, PNG/JPG recommended' present ✅, file input (type=file) available ✅. 2) HR Director Signature Section: Signer Name and Title fields functional ✅, radio buttons for 'Computer Generated' (default selected) and 'Upload Custom Signature' present ✅, signature preview shows cursive text correctly ✅. 3) HR Signature Type Switch: Toggle between custom upload and computer generated works ✅, file upload input appears/disappears correctly ✅. 4) Employee Signature Section: Three options available - 'Computer Generated', 'Upload Custom Signature', 'Leave Blank (Sign Later)' ✅, yellow info box appears when 'Leave Blank' selected ✅. 5) Full Form Fill Test: All form fields functional (Company Name: Global Tech Inc, Candidate Name: Robert Davis, Job Title: Engineering Manager, Compensation: $175,000) ✅, Summary panel updates correctly with all entered data ✅. Additional features verified: Template selection (Professional/Corporate, Modern/Clean, Custom) ✅, PDF Preview section with watermark ✅, PayPal integration ($12.00 payment) ✅, real-time form validation ✅. Page loads correctly at /offer-letter route ✅. Minor: PayPal SDK network errors in console (expected in test environment). All core functionality working perfectly."
 
+  - task: "Offer Letter UI Polish - Template Selection Visual Indicator and Drag-Drop File Uploads"
+    implemented: true
+    working: "NA"
+    file: "src/pages/OfferLetterForm.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed linting errors (removeSignature undefined, react-hooks/refs errors) and completed UI polish implementation. Features: 1) Template selection now shows clear visual indicator with green border, green background tint, and checkmark badge for selected template. 2) Company logo upload uses drag-and-drop style with upload icon, 'Drag and drop your logo here' text, Select File button, and file size limit info. 3) HR Director signature upload uses same drag-and-drop style when 'Upload Custom Signature' is selected. 4) Employee signature upload uses same drag-and-drop style when 'Upload Custom Signature' is selected. All file upload areas match the style used in BankStatementForm.js. Need comprehensive testing to verify all UI elements work correctly."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

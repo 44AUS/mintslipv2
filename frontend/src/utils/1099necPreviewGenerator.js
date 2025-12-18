@@ -50,7 +50,8 @@ export const generate1099NECPreview = async (formData, taxYear) => {
     // Load the PDF
     const pdfDoc = await PDFDocument.load(templateBytes);
     const pages = pdfDoc.getPages();
-    const page = pages[0];
+    // Use page 3 (index 2) - Copy 1 for State Tax Department
+    const page = pages[2];
     const { width, height } = page.getSize();
     
     // Get fonts

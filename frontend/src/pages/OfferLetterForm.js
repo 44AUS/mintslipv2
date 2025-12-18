@@ -196,7 +196,7 @@ export default function OfferLetterForm() {
   };
 
   // Handle signature upload
-  const handleSignatureUpload = (field, inputRef) => (e) => {
+  const handleSignatureUpload = (field) => (e) => {
     const file = e.target.files?.[0];
     processSignatureFile(file, field);
   };
@@ -227,10 +227,16 @@ export default function OfferLetterForm() {
     processSignatureFile(file, field);
   };
 
-  // Remove signature
-  const removeSignature = (field, inputRef) => () => {
-    setFormData(prev => ({ ...prev, [field]: null }));
-    if (inputRef?.current) inputRef.current.value = '';
+  // Remove HR signature
+  const removeHrSignature = () => {
+    setFormData(prev => ({ ...prev, hrSignatureImage: null }));
+    if (hrSigInputRef.current) hrSigInputRef.current.value = '';
+  };
+
+  // Remove Employee signature
+  const removeEmpSignature = () => {
+    setFormData(prev => ({ ...prev, employeeSignatureImage: null }));
+    if (empSigInputRef.current) empSigInputRef.current.value = '';
   };
 
   // Generate PDF preview when form data changes (debounced)

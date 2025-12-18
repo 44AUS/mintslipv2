@@ -1,0 +1,113 @@
+<analysis>**original_problem_statement:**
+On the frontend, based off the W2 generator make me a generator for W9s with the correct pdf form for each year from 2021 - 2024
+
+**User's preferred language**: English
+
+**what currently exists?**
+The project is a full-stack application with a React frontend and FastAPI backend. The frontend already includes a functional W-2 form generator. The previous agent explored this existing W-2 feature (, ) to understand the implementation pattern. The agent also researched, downloaded, and correctly placed the required W-9 PDF templates for the years 2021-2024 into the  directory after determining that the 2018 revision of the W-9 is applicable for 2021-2023, while 2024 has its own version.
+
+**Last working item**:
+    - **Last item agent was working:** The agent had just completed the analysis and planning phase for the W-9 generator feature. It formulated a clear 5-step plan:
+        1. Create  for the UI.
+        2. Create  for PDF generation.
+        3. Create  for the preview functionality.
+        4. Update  to add the new route.
+        5. Update  to link to the new feature.
+    - **Status:** NOT STARTED
+    - **Agent Testing Done:** N
+    - **Which testing method agent to use?** Frontend testing agent
+    - **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+There are no outstanding issues. The current work is a new feature request.
+
+**In progress Task List**:
+There are no tasks currently in progress. The next step is to begin the implementation of the W-9 generator.
+
+**Upcoming and Future Tasks**
+*   **Task 1 (P0): Implement W-9 Generator Feature.** This task is broken down into the following sub-tasks:
+    *   **Create :** Build the React component for the W-9 form page, using  as a template for the structure and fields.
+    *   **Create :** Develop the utility to populate and download the final W-9 PDF. This script must load the correct template (, , , or ) based on the user's year selection. Use  as a reference.
+    *   **Create :** Implement the logic for generating an in-browser preview of the filled W-9 PDF, mirroring the functionality of .
+    *   **Update :** Add a new route in  to render the  component.
+    *   **Update :** Add a navigation card or link on the home page () to direct users to the new W-9 generator.
+
+**Completed work in this session**
+- **Research & Analysis:**
+  - Explored the existing W-2 generator codebase to understand the implementation pattern.
+  - Researched and identified the correct IRS W-9 PDF forms for the years 2021-2024.
+- **File Preparation:**
+  - Downloaded the 2018 and 2024 revisions of the W-9 PDF.
+  - Copied and renamed the PDFs into  as , , , and .
+- **Planning:**
+  - Created a detailed, step-by-step implementation plan for the new W-9 generator feature.
+
+**Earlier issues found/mentioned but not fixed**
+   - None.
+
+**Known issue recurrence from previous fork**
+  - None.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+- **Frontend Framework:** React
+- **Styling:** TailwindCSS
+- **PDF Manipulation:** The  JavaScript library is used on the client-side to read PDF templates and fill in form fields.
+
+**key DB schema**
+  - N/A (This is a frontend-only feature)
+
+**changes in tech stack**
+  - None.
+
+**All files of reference**
+- **Files to be created:**
+  - 
+  - 
+  - 
+- **Files to be modified:**
+  - 
+  - 
+- **Reference files:**
+  - 
+  - 
+  -  to 
+
+**Areas that need refactoring**:
+- None identified.
+
+**key api endpoints**
+- N/A
+
+**Critical Info for New Agent**
+- The core task is to replicate the functionality of the existing W-2 generator for W-9 forms. Closely follow the code patterns in  and its associated utilities.
+- All necessary PDF templates are already available in .
+- Your implementation must dynamically select the correct PDF template based on the year (2021-2024) chosen by the user. Remember that 2021-2023 share one PDF revision, while 2024 has a new one.
+- Follow the 5-step plan laid out by the previous agent to ensure all parts of the feature are implemented correctly.
+
+**documents created in this job**
+  - None.
+
+**Last 10 User Messages and any pending user messages**
+- The user's initial request to build the W-9 generator is the only and most recent user interaction. There are no pending messages.
+
+**Project Health Check:**
+- **Broken:** None
+- **Mocked:** None
+
+**3rd Party Integrations**
+- ****: Used for client-side PDF generation and manipulation.
+
+**Testing status**
+  - **Testing agent used after significant changes:** NO
+  - **Troubleshoot agent used after agent stuck in loop:** NO
+  - **Test files created:** None
+  - **Known regressions:** None
+
+**Credentials to test flow:**
+- N/A
+
+**What agent forgot to execute**
+- The previous agent did not forget anything. It successfully completed the research and planning phase and was about to begin implementation.</analysis>

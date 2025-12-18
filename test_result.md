@@ -214,6 +214,18 @@ frontend:
         agent: "testing"
         comment: "COMPREHENSIVE W-9 TESTING COMPLETED ✅ All major functionality verified and working: 1) Navigation Test: Homepage W-9 card found with data-testid, successful navigation to /w9 route ✅ 2) Form Fields Test: All form fields functional - Name (John Smith), Business Name (Smith Consulting LLC), Address (456 Oak Avenue), City (Los Angeles), ZIP (90001), SSN (987-65-4321) ✅ 3) W-9 Summary Panel: Updates correctly with entered form data, shows name, business name, address, and TIN information ✅ 4) Tax Classification: LLC selection works, radio buttons functional ✅ 5) Year Selection: Dropdown present with years 2024-2021, year changes update summary ✅ 6) TIN Type Toggle: SSN/EIN radio buttons work, field switching functional ✅ 7) PDF Preview: Section present with iframe preview, 'Expand Preview' button available ✅ 8) PayPal Payment: $10.00 price displayed, payment section with 'One-time payment' and 'Secure payment via PayPal' text ✅ 9) W-9 Templates: All PDF templates present (2021-2024) ✅ Minor Issues: Some dropdown interactions require force clicks due to UI overlays, JavaScript bundle errors visible but don't affect core functionality, PayPal SDK errors expected in test environment. All test cases from review request successfully verified. Feature ready for production use."
 
+  - task: "1099-NEC Generator with PDF Preview"
+    implemented: true
+    working: "NA"
+    file: "src/pages/Form1099NEC.js, src/utils/1099necGenerator.js, src/utils/1099necPreviewGenerator.js, src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "1099-NEC Generator feature needs comprehensive testing based on review request. Implementation includes: Form1099NEC.js page with tax year selection (2025-2021), payer information section (name, TIN/EIN, phone, address), recipient information section (name, TIN/SSN, address, account number), compensation boxes (Box 1 nonemployee compensation, Box 4 federal tax withheld, Box 2 direct sales checkbox), state tax information sections (2 states), 1099-NEC Summary panel with totals, live PDF preview with watermark, PayPal integration for $12.00 payment. Route /1099-nec added to App.js. Home page has 1099-NEC card with data-testid='1099nec-card-button', orange NEW badge, and $12 pricing. Need to test all specified test cases: navigation, form fields (payer/recipient info), compensation boxes, state tax info, year selection, PDF preview, and PayPal buttons."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

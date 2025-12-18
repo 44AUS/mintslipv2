@@ -977,7 +977,7 @@ export default function OfferLetterForm() {
                               ref={hrSigInputRef}
                               type="file"
                               accept="image/png,image/jpeg,image/jpg"
-                              onChange={handleSignatureUpload('hrSignatureImage', hrSigInputRef)}
+                              onChange={handleSignatureUpload('hrSignatureImage')}
                               className="hidden"
                             />
                             <p className="text-xs text-slate-400 mt-2">PNG or JPG, max 1MB</p>
@@ -1099,7 +1099,7 @@ export default function OfferLetterForm() {
                               ref={empSigInputRef}
                               type="file"
                               accept="image/png,image/jpeg,image/jpg"
-                              onChange={handleSignatureUpload('employeeSignatureImage', empSigInputRef)}
+                              onChange={handleSignatureUpload('employeeSignatureImage')}
                               className="hidden"
                             />
                             <p className="text-xs text-slate-400 mt-2">PNG or JPG, max 1MB</p>

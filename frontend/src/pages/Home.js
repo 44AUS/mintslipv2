@@ -396,8 +396,42 @@ export default function Home() {
             </div>
           </div>
           
-          {/* Second Row - Schedule C */}
-          <div className="mt-8 max-w-md mx-auto">
+          {/* Second Row - W-9 and Schedule C */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            {/* W-9 Pricing */}
+            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                NEW
+              </div>
+              <ClipboardList className="w-12 h-12 text-green-700 mx-auto mb-4" />
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>W-9 Form</h4>
+              <div className="mb-4">
+                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                <span className="text-slate-500 ml-2">/ form</span>
+              </div>
+              <ul className="text-left space-y-2 mb-6">
+                <li className="flex items-center gap-2 text-slate-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Request for TIN</span>
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>IRS-Compliant Format</span>
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Multiple Tax Years</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate("/w9")}
+                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
+              >
+                Generate Now
+              </button>
+            </div>
+
+            {/* Schedule C Pricing */}
             <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 NEW

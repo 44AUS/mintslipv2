@@ -205,7 +205,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "W-2 Generator with PDF Preview"
+    - "Schedule C Generator with PDF Preview"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

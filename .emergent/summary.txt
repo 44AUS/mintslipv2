@@ -1,49 +1,70 @@
 <analysis>**original_problem_statement:**
-On the frontend, based off the W2 generator make me a generator for W9s with the correct pdf form for each year from 2021 - 2024
+The user requested the creation of several document generators on the frontend, building upon the existing W-2 generator's functionality. The requests were as follows:
+1.  **W-9 Generator:** Create a generator for W-9 forms for the years 2021-2024.
+2.  **1099-NEC Generator:** Create a generator for 1099-NEC forms for the years 2021-2025. This was later amended to only generate Page 3 (Copy 1) of the PDF.
+3.  **1099-MISC Generator:** Create a generator for 1099-MISC forms, also using only Page 3.
+4.  **Offer Letter Generator:** Create a generator for employment offer letters with three distinct templates (Professional, Modern, Custom).
+5.  **Offer Letter Enhancements:**
+    *   Add the ability to upload a company logo.
+    *   Add options for HR Director and Employee signatures, allowing for computer-generated text signatures or custom uploaded image signatures.
+6.  **Offer Letter UI Polish:**
+    *   Add a clear visual indicator to show which template is currently selected.
+    *   Update the file upload areas (for logo and signatures) to use a more modern drag-and-drop style, similar to the one used in the Bank Statement and Paystub generators.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The project is a full-stack application with a React frontend and FastAPI backend. The frontend already includes a functional W-2 form generator. The previous agent explored this existing W-2 feature (, ) to understand the implementation pattern. The agent also researched, downloaded, and correctly placed the required W-9 PDF templates for the years 2021-2024 into the  directory after determining that the 2018 revision of the W-9 is applicable for 2021-2023, while 2024 has its own version.
+The application now includes four fully functional document generators: W-9, 1099-NEC, 1099-MISC, and a feature-rich Offer Letter generator. All generators have dedicated pages, routing, and navigation links on the homepage. The Offer Letter generator includes functionality for template selection, company logo uploads, and both computer-generated and custom image-based signatures. The agent was in the process of refining the UI for the Offer Letter generator's template selection and file upload components.
 
 **Last working item**:
-    - **Last item agent was working:** The agent had just completed the analysis and planning phase for the W-9 generator feature. It formulated a clear 5-step plan:
-        1. Create  for the UI.
-        2. Create  for PDF generation.
-        3. Create  for the preview functionality.
-        4. Update  to add the new route.
-        5. Update  to link to the new feature.
-    - **Status:** NOT STARTED
+    - **Last item agent was working:** The agent was attempting to implement UI improvements on the Offer Letter form (). This involved adding a visual indicator for the selected template and replacing the basic file inputs with drag-and-drop components for the company logo and signatures. After making several changes, the agent ran the linter and encountered multiple  errors related to passing a  to a function component. The agent's last action was to begin fixing these linting errors.
+    - **Status:** IN PROGRESS
     - **Agent Testing Done:** N
     - **Which testing method agent to use?** Frontend testing agent
     - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-There are no outstanding issues. The current work is a new feature request.
+  - **Issue 1: Linting errors in  (P0)**
+     - **Attempted fixes:** The agent started modifying the component to support a new drag-and-drop UI for file uploads, which introduced errors related to improper  handling in function components. The agent has not yet attempted a fix.
+     - **Next debug checklist:**
+        1.  Examine the  file at line 943 where the first error is reported.
+        2.  Identify the function components receiving a  prop.
+        3.  Wrap these components in  to correctly forward the  to the underlying DOM element.
+        4.  Apply this fix to all components causing the linting error (4 instances reported).
+     - **Why fix this issue and what will be achieved with the fix?** The linting errors are breaking the component and preventing the application from compiling correctly. Fixing them is necessary to proceed with implementing and testing the new UI enhancements.
+     - **Status:** NOT STARTED
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** Frontend
+     - **Blocked on other issue:** None
 
 **In progress Task List**:
-There are no tasks currently in progress. The next step is to begin the implementation of the W-9 generator.
+  - **Task 1: Complete UI Polish for Offer Letter Form (P0)**
+     - **Where to resume:** After resolving the linting errors in , the agent must complete the implementation of the new UI. This includes:
+        1.  Finalizing the drag-and-drop UI for the company logo upload.
+        2.  Finalizing the drag-and-drop UI for the HR Director's signature upload.
+        3.  Finalizing the drag-and-drop UI for the Employee's signature upload.
+        4.  Ensuring the visual indicator for the selected template (border color, checkmark) works correctly.
+     - **What will be achieved with this?** This will fulfill the user's request for a more polished and intuitive user interface on the Offer Letter generator, improving usability.
+     - **Status:** IN PROGRESS
+     - **Should Test frontend/backend/both after fix?** Frontend
+     - **Blocked on something:** Blocked by **Issue 1**.
 
 **Upcoming and Future Tasks**
-*   **Task 1 (P0): Implement W-9 Generator Feature.** This task is broken down into the following sub-tasks:
-    *   **Create :** Build the React component for the W-9 form page, using  as a template for the structure and fields.
-    *   **Create :** Develop the utility to populate and download the final W-9 PDF. This script must load the correct template (, , , or ) based on the user's year selection. Use  as a reference.
-    *   **Create :** Implement the logic for generating an in-browser preview of the filled W-9 PDF, mirroring the functionality of .
-    *   **Update :** Add a new route in  to render the  component.
-    *   **Update :** Add a navigation card or link on the home page () to direct users to the new W-9 generator.
+- None. All user requests are either completed or in progress.
 
 **Completed work in this session**
-- **Research & Analysis:**
-  - Explored the existing W-2 generator codebase to understand the implementation pattern.
-  - Researched and identified the correct IRS W-9 PDF forms for the years 2021-2024.
-- **File Preparation:**
-  - Downloaded the 2018 and 2024 revisions of the W-9 PDF.
-  - Copied and renamed the PDFs into  as , , , and .
-- **Planning:**
-  - Created a detailed, step-by-step implementation plan for the new W-9 generator feature.
+- **W-9 Generator:** Implemented and tested.
+- **1099-NEC Generator:** Implemented, fixed to use only Page 3 of the PDF, and tested.
+- **1099-MISC Generator:** Implemented (using only Page 3) and tested.
+- **Offer Letter Generator (Initial):** Implemented with three templates and tested.
+- **Offer Letter Enhancements:** Added company logo and custom/generated signature functionality. This was tested and verified.
 
 **Earlier issues found/mentioned but not fixed**
-   - None.
+   - **Issue 1: PayPal SDK Error on Form Pages**
+     - **Debug checklist:** This is a known, non-blocking issue where navigating to or re-rendering a page with the PayPal component throws a zoid destroyed all components error. This triggers React's development error overlay.
+     - **Why to solve this issue and what will be achieved with this?** While it does not break functionality and is a dev-only overlay, it's a UI annoyance during development. Fixing it would improve the development experience. A potential solution is to implement a custom error boundary that specifically ignores this zoid error.
+     - **Should Test frontend/backend/both after fix:** Frontend
+     - **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
   - None.
@@ -54,60 +75,62 @@ There are no tasks currently in progress. The next step is to begin the implemen
 **Key Technical Concepts**
 - **Frontend Framework:** React
 - **Styling:** TailwindCSS
-- **PDF Manipulation:** The  JavaScript library is used on the client-side to read PDF templates and fill in form fields.
+- **PDF Manipulation:**  library for client-side PDF creation, modification (filling fields, embedding images), and page extraction.
+- **File Handling:** Client-side file reading using  for image previews and embedding.
 
 **key DB schema**
-  - N/A (This is a frontend-only feature)
+  - N/A
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
-- **Files to be created:**
+- **Created Files:**
   - 
+  - , 
   - 
+  - , 
   - 
-- **Files to be modified:**
+  - , 
   - 
-  - 
-- **Reference files:**
-  - 
-  - 
-  -  to 
+  - , 
+- **Modified Files:**
+  - : Added routes for all new generator pages.
+  - : Added navigation and pricing cards for all new generators.
+  - : Heavily modified to add logo/signature features and currently being modified for UI polish.
+  - : Modified to handle image embedding for logos and signatures.
 
 **Areas that need refactoring**:
-- None identified.
+- The error handling for the PayPal SDK could be improved by creating a custom React Error Boundary to suppress the specific, non-critical zoid error overlay in development mode.
 
 **key api endpoints**
 - N/A
 
 **Critical Info for New Agent**
-- The core task is to replicate the functionality of the existing W-2 generator for W-9 forms. Closely follow the code patterns in  and its associated utilities.
-- All necessary PDF templates are already available in .
-- Your implementation must dynamically select the correct PDF template based on the year (2021-2024) chosen by the user. Remember that 2021-2023 share one PDF revision, while 2024 has a new one.
-- Follow the 5-step plan laid out by the previous agent to ensure all parts of the feature are implemented correctly.
+- Your immediate task is to resolve the  linting errors in . This is a blocker. The likely solution is to use  on the custom components that are receiving a .
+- Once the linter is clean, you must complete the UI polish task: implement the drag-and-drop file uploaders and the visual selection for templates.
+- Be aware of the recurring, non-blocking zoid error from the PayPal SDK. It appears as a React development error overlay on forms but does not break functionality and can be dismissed. Do not spend time trying to fix it unless the user specifically requests it.
 
 **documents created in this job**
   - None.
 
 **Last 10 User Messages and any pending user messages**
-- The user's initial request to build the W-9 generator is the only and most recent user interaction. There are no pending messages.
+1.  **User:** Ok now fix these things: When a template is selected it needs to be shown that that is the current one selected and update the image upload areas to look like the ones on bankstatement generator and paystub generator - **Status: In Progress**
+2.  **User:** I added credits - **Status: Acknowledged**
 
 **Project Health Check:**
-- **Broken:** None
+- **Broken:** The  component is currently broken due to linting errors introduced during the last set of edits.
 - **Mocked:** None
 
 **3rd Party Integrations**
 - ****: Used for client-side PDF generation and manipulation.
+- **PayPal SDK**: Used for payment processing.
 
 **Testing status**
-  - **Testing agent used after significant changes:** NO
-  - **Troubleshoot agent used after agent stuck in loop:** NO
-  - **Test files created:** None
-  - **Known regressions:** None
+  - Testing agent used after significant changes: YES (for all completed features)
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: None
+  - Known regressions: None
 
 **Credentials to test flow:**
-- N/A
-
-**What agent forgot to execute**
-- The previous agent did not forget anything. It successfully completed the research and planning phase and was about to begin implementation.</analysis>
+- N/A</analysis>

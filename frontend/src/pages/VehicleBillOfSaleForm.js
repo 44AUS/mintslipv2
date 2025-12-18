@@ -417,7 +417,7 @@ export default function VehicleBillOfSaleForm() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="sellerId">Driver's License / ID Number</Label>
+                    <Label htmlFor="sellerId">Driver&apos;s License / ID Number</Label>
                     <Input 
                       id="sellerId"
                       name="sellerId"

@@ -146,6 +146,12 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     };
     
     // === HEADER ===
+    // Embed company logo if provided
+    let companyLogoImage = null;
+    if (formData.companyLogo) {
+      companyLogoImage = await embedImage(pdfDoc, formData.companyLogo);
+    }
+    
     if (formData.template === "modern") {
       // Modern template - colored bar at top
       page.drawRectangle({
@@ -156,26 +162,51 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         color: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
       });
       
-      // Company name in header
-      page.drawText(formData.companyName || 'Company Name', {
-        x: margin,
-        y: height - 50,
-        size: 24,
-        font: boldFont,
-        color: rgb(1, 1, 1),
-      });
+      // Company logo or name in header
+      if (companyLogoImage) {
+        const logoDims = companyLogoImage.scale(0.5);
+        const logoHeight = Math.min(logoDims.height, 50);
+        const logoWidth = (logoDims.width / logoDims.height) * logoHeight;
+        page.drawImage(companyLogoImage, {
+          x: margin,
+          y: height - 65,
+          width: logoWidth,
+          height: logoHeight,
+        });
+      } else {
+        page.drawText(formData.companyName || 'Company Name', {
+          x: margin,
+          y: height - 50,
+          size: 24,
+          font: boldFont,
+          color: rgb(1, 1, 1),
+        });
+      }
       
       y = height - 120;
     } else {
       // Professional/Custom template
-      page.drawText(formData.companyName || 'Company Name', {
-        x: margin,
-        y: y,
-        size: 20,
-        font: boldFont,
-        color: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
-      });
-      y -= 18;
+      if (companyLogoImage) {
+        const logoDims = companyLogoImage.scale(0.5);
+        const logoHeight = Math.min(logoDims.height, 50);
+        const logoWidth = (logoDims.width / logoDims.height) * logoHeight;
+        page.drawImage(companyLogoImage, {
+          x: margin,
+          y: y - logoHeight + 15,
+          width: logoWidth,
+          height: logoHeight,
+        });
+        y -= logoHeight + 5;
+      } else {
+        page.drawText(formData.companyName || 'Company Name', {
+          x: margin,
+          y: y,
+          size: 20,
+          font: boldFont,
+          color: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
+        });
+        y -= 18;
+      }
       
       // Company address
       if (formData.companyAddress) {

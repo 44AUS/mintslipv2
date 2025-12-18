@@ -634,20 +634,20 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
       csY += 15;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.text("Web site: Chase.com", pageWidth - margin, csY, { align: "right" });
+      doc.text("Web site: Chase.com", pageWidth - headerRightMargin, csY, { align: "right" });
       csY += 9;
-      doc.text("Service Center: 1-800-935-9935", pageWidth - margin, csY, { align: "right" });
+      doc.text("Service Center: 1-800-935-9935", pageWidth - headerRightMargin, csY, { align: "right" });
       csY += 9;
-      doc.text("Deaf and Hard of Hearing: 1-800-242-7383", pageWidth - margin, csY, { align: "right" });
+      doc.text("Deaf and Hard of Hearing: 1-800-242-7383", pageWidth - headerRightMargin, csY, { align: "right" });
       csY += 9;
-      doc.text("Para Espanol: 1-877-312-4273", pageWidth - margin, csY, { align: "right" });
+      doc.text("Para Espanol: 1-877-312-4273", pageWidth - headerRightMargin, csY, { align: "right" });
       csY += 9;
-      doc.text("International Calls: 1-713-262-1679", pageWidth - margin, csY, { align: "right" });
+      doc.text("International Calls: 1-713-262-1679", pageWidth - headerRightMargin, csY, { align: "right" });
       
       // Bottom thick black border
       csY += 5;
       doc.setLineWidth(1.5);
-      doc.line(csBoxX, csY, pageWidth - margin, csY);
+      doc.line(csBoxX, csY, pageWidth - headerRightMargin, csY);
     }
   };
   

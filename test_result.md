@@ -179,11 +179,23 @@ frontend:
     file: "src/pages/W2Form.js, src/utils/w2Generator.js, src/utils/w2PreviewGenerator.js, src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented complete W-2 Generator feature with IRS-compliant form layout. Features: 1) All standard W-2 boxes (1-20) including Box 12 codes (A-HH) and Box 13 checkboxes. 2) Selectable tax years (current year + 5 years back). 3) Employer/Employee information sections with full address fields. 4) State and Local tax sections (Boxes 15-20). 5) Auto-calculate button for SS/Medicare taxes. 6) Live PDF preview with MintSlip watermark (500ms debounce). 7) Click-to-enlarge preview dialog. 8) W-2 Summary panel showing totals. 9) PayPal integration for $15 payment. 10) PDF layout matches official IRS W-2 form structure. Added route /w2 in App.js and updated Home page card to link to W-2 generator (removed 'Coming Soon' label)."
+
+  - task: "Schedule C Generator with PDF Preview"
+    implemented: true
+    working: true
+    file: "src/pages/ScheduleCForm.js, src/utils/scheduleCGenerator.js, src/utils/scheduleCPreviewGenerator.js, src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented Schedule C (Form 1040) generator for sole proprietors. Features: 1) Tax years 2024, 2023, 2022 with official IRS PDF templates. 2) Proprietor Information section (name, SSN). 3) Business Information (principal business, business code, EIN, address). 4) Accounting method selection (Cash/Accrual/Other). 5) Material participation question. 6) Part I - Income (Lines 1-7) with auto-calculation. 7) Part II - Expenses (Lines 8-26) with collapsible section. 8) Auto-calculated totals (total expenses, tentative profit, net profit/loss). 9) Live PDF preview with MintSlip watermark. 10) Schedule C Summary panel. 11) PayPal integration for $15 payment. 12) Added route /schedule-c and pricing cards on Home page."
 
 metadata:
   created_by: "main_agent"

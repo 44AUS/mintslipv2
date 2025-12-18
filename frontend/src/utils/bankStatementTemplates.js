@@ -697,47 +697,50 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
-    doc.text("DATE", margin + 5, yPos);
-    doc.text("DESCRIPTION", margin + 60, yPos);
-    doc.text("AMOUNT", pageWidth - margin - 5, yPos, { align: "right" });
+    doc.text("DATE", contentMargin + 5, yPos);
+    doc.text("DESCRIPTION", contentMargin + 60, yPos);
+    doc.text("AMOUNT", pageWidth - rightContentMargin - 5, yPos, { align: "right" });
     doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.3);
-    doc.line(margin, yPos + 3, pageWidth - margin, yPos + 3);
+    doc.line(contentMargin, yPos + 3, pageWidth - rightContentMargin, yPos + 3);
     return yPos + 12;
   };
   
-  // Helper to draw vertical barcode on right edge (page 1 only)
-  const drawBarcode = () => {
-    const barcodeX = pageWidth - 15;
-    const barcodeStartY = 60;
-    const barcodeHeight = 200;
-    const barWidth = 1;
+  // Helper to draw horizontal barcode on right edge (page 1 only)
+  const drawBarcode = async () => {
+    // Position barcode horizontally on the right side of page 1
+    const barcodeWidth = 45;
+    const barcodeHeight = 180;
+    const barcodeX = pageWidth - margin - barcodeWidth + 5;
+    const barcodeY = 50;
     
-    // Generate pseudo-random barcode pattern based on account number
-    const barcodeData = (accountNumber || "000000000000").replace(/\D/g, '');
-    let xPos = barcodeX;
-    
-    doc.setFillColor(0, 0, 0);
-    
-    // Draw barcode bars vertically
-    for (let i = 0; i < 50; i++) {
-      const digit = parseInt(barcodeData[i % barcodeData.length] || '5');
-      const barHeight = 2 + (digit % 3);
+    // Try to load the barcode image
+    try {
+      const response = await fetch('/chase-barcode.png');
+      const blob = await response.blob();
+      const reader = new FileReader();
       
-      if (i % 2 === 0) {
-        doc.rect(barcodeX - 8, barcodeStartY + (i * 4), barHeight, 3, 'F');
+      await new Promise((resolve, reject) => {
+        reader.onload = () => {
+          try {
+            doc.addImage(reader.result, 'PNG', barcodeX, barcodeY, barcodeWidth, barcodeHeight);
+          } catch (e) {
+            console.error("Failed to add barcode image:", e);
+          }
+          resolve();
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      // Fallback: draw simple barcode pattern if image fails
+      console.error("Failed to load barcode image:", e);
+      doc.setFillColor(0, 0, 0);
+      for (let i = 0; i < 40; i++) {
+        if (i % 2 === 0) {
+          doc.rect(barcodeX + 5, barcodeY + (i * 4), 35, 2, 'F');
+        }
       }
-    }
-    
-    // Add barcode number below
-    doc.setFontSize(6);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "normal");
-    
-    // Draw number vertically
-    const barcodeNum = `${accountNumber || '000000000000'}`.slice(0, 16);
-    for (let i = 0; i < barcodeNum.length; i++) {
-      doc.text(barcodeNum[i], barcodeX - 3, barcodeStartY + barcodeHeight + 10 + (i * 8));
     }
   };
 

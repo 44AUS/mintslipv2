@@ -703,45 +703,11 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   // ========== HEADER LOGO/NAME ==========
   const isPreview = data.isPreview || false;
   if (isPreview) {
-    // For preview, show Workday logo or text fallback
-    try {
-      const workdayLogoUrl = '/workdayLogo.png';
-      const workdayLogo = await loadImageAsBase64(workdayLogoUrl);
-      if (workdayLogo) {
-        // Use Image object to properly load before adding to PDF
-        const img = new Image();
-        img.src = workdayLogo;
-        await new Promise((resolve, reject) => {
-          img.onload = () => {
-            try {
-              const aspect = img.height / img.width || 0.3;
-              doc.addImage(img, 'PNG', m, y - 10, 100, 100 * aspect);
-            } catch (addImageError) {
-              console.error("Error adding image to PDF:", addImageError);
-              // Fallback to text
-              doc.setFontSize(14); 
-              doc.setTextColor(0, 0, 0); 
-              doc.setFont("helvetica", "bold"); 
-              doc.text("WORKDAY", m, y + 5);
-            }
-            resolve();
-          };
-          img.onerror = () => {
-            console.error("Image failed to load");
-            doc.setFontSize(14); 
-            doc.setTextColor(0, 0, 0); 
-            doc.setFont("helvetica", "bold"); 
-            doc.text("WORKDAY", m, y + 5);
-            resolve();
-          };
-        });
-      } else {
-        doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text("WORKDAY", m, y + 5);
-      }
-    } catch (e) { 
-      console.error("Error in preview logo section:", e);
-      doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text("WORKDAY", m, y + 5); 
-    }
+    // For preview, show Workday text (simpler approach to avoid image loading issues)
+    doc.setFontSize(18); 
+    doc.setTextColor(0, 85, 164); // Workday blue color
+    doc.setFont("helvetica", "bold"); 
+    doc.text("WORKDAY", m, y + 10);
     y += 30;
   } else if (logoDataUrl) {
     try {

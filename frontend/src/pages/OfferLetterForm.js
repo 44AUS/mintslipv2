@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -14,6 +14,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
+import { Upload, X, CheckCircle, Briefcase, Sparkles, Palette } from "lucide-react";
 
 // US States list
 const US_STATES = [

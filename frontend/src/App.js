@@ -5,6 +5,7 @@ import PaystubForm from "@/pages/PaystubForm";
 import BankStatementForm from "@/pages/BankStatementForm";
 import W2Form from "@/pages/W2Form";
 import W9Form from "@/pages/W9Form";
+import Form1099NEC from "@/pages/Form1099NEC";
 import ScheduleCForm from "@/pages/ScheduleCForm";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";

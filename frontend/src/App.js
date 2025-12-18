@@ -33,6 +33,7 @@ function App() {
             <Route path="/bank-statement" element={<BankStatementForm />} />
             <Route path="/w2" element={<W2Form />} />
             <Route path="/w9" element={<W9Form />} />
+            <Route path="/1099-nec" element={<Form1099NEC />} />
             <Route path="/schedule-c" element={<ScheduleCForm />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />

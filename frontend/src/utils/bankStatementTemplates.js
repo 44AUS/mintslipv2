@@ -770,19 +770,31 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   // ============ FEE WAIVER MESSAGE ============
   y += 15;
   
+  // Determine if fee is waived based on user's data
+  const beginningBalance = parseFloat(beginning) || 0;
+  const totalDepositsAmount = parseFloat(deposits) || 0;
+  const feeWaived = beginningBalance >= 2000 || totalDepositsAmount >= 500;
+  
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "normal");
-  doc.text("There is a $15.00 monthly service fee for the statement periods.", margin, y);
+  
+  if (feeWaived) {
+    doc.setFont("helvetica", "bold");
+    doc.text("Congratulations, thanks to your qualifying actions, we waived the $15.00 monthly service fee for this statement period.", margin, y);
+  } else {
+    doc.setFont("helvetica", "normal");
+    doc.text("There is a $15.00 monthly service fee for this statement period.", margin, y);
+  }
   
   y += 12;
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  const feeWaiverText1 = "Here's how you can avoid the $15.00 monthly service fee: the fee is waived if any of the following is achieved over the statement period:";
+  const feeWaiverText1 = "Here's how your activity can help you avoid the $15.00 monthly service fee: the fee is waived if any of the following is achieved over the statement period:";
   const feeWaiverLines1 = doc.splitTextToSize(feeWaiverText1, pageWidth - 2 * margin);
   doc.text(feeWaiverLines1, margin, y);
   y += feeWaiverLines1.length * 8 + 5;
   
-  // Bullet points - simplified to just 2 options
+  // Bullet points
   const bulletPoints = [
     "Maintain a minimum daily balance of $2,000.00 or more",
     "Have $500.00 or more in qualifying electronic deposits"
@@ -793,6 +805,22 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     const pointLines = doc.splitTextToSize(point, pageWidth - 2 * margin - 15);
     doc.text(pointLines, margin + 15, y);
     y += pointLines.length * 8 + 2;
+  });
+  
+  y += 8;
+  doc.setFont("helvetica", "bold");
+  doc.text("Here's a summary of your activity this period:", margin, y);
+  y += 12;
+  
+  doc.setFont("helvetica", "normal");
+  const activitySummary = [
+    "• Minimum Daily Balance: $" + toFixed(beginningBalance),
+    "• Qualifying electronic deposits into your account: $" + toFixed(totalDepositsAmount)
+  ];
+  
+  activitySummary.forEach((item) => {
+    doc.text(item, margin + 5, y);
+    y += 10;
   });
   
   // ============ PAGE 2: Transaction Details ============

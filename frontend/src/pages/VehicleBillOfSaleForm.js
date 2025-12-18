@@ -883,8 +883,8 @@ export default function VehicleBillOfSaleForm() {
                     </div>
                   </>
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">
-                    Fill in the required fields to see a preview
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
                   </div>
                 )}
               </div>

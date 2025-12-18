@@ -9,6 +9,7 @@ import Form1099NEC from "@/pages/Form1099NEC";
 import Form1099MISC from "@/pages/Form1099MISC";
 import OfferLetterForm from "@/pages/OfferLetterForm";
 import ScheduleCForm from "@/pages/ScheduleCForm";
+import VehicleBillOfSaleForm from "@/pages/VehicleBillOfSaleForm";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
 import About from "@/pages/About";

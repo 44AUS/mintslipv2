@@ -678,7 +678,7 @@ export default function VehicleBillOfSaleForm() {
                     <RadioGroupItem value="exceeds" id="odometer-exceeds" />
                     <Label htmlFor="odometer-exceeds" className="cursor-pointer flex-1">
                       <span className="font-medium">Exceeds Mechanical Limits</span>
-                      <p className="text-sm text-slate-500">The odometer reading exceeds the odometer's mechanical limits</p>
+                      <p className="text-sm text-slate-500">The odometer reading exceeds the odometer&apos;s mechanical limits</p>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50">

@@ -207,7 +207,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "W-9 Generator with PDF Preview"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

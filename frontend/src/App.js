@@ -7,6 +7,7 @@ import W2Form from "@/pages/W2Form";
 import W9Form from "@/pages/W9Form";
 import Form1099NEC from "@/pages/Form1099NEC";
 import Form1099MISC from "@/pages/Form1099MISC";
+import OfferLetterForm from "@/pages/OfferLetterForm";
 import ScheduleCForm from "@/pages/ScheduleCForm";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
@@ -36,6 +37,7 @@ function App() {
             <Route path="/w9" element={<W9Form />} />
             <Route path="/1099-nec" element={<Form1099NEC />} />
             <Route path="/1099-misc" element={<Form1099MISC />} />
+            <Route path="/offer-letter" element={<OfferLetterForm />} />
             <Route path="/schedule-c" element={<ScheduleCForm />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />

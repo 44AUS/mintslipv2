@@ -260,8 +260,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Offer Letter UI Polish - Template Selection Visual Indicator and Drag-Drop File Uploads"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

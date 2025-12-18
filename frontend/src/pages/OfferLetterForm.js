@@ -155,10 +155,18 @@ export default function OfferLetterForm() {
 
   // Handle logo upload
   const handleLogoUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    processLogoFile(file);
+  };
+
+  const processLogoFile = (file) => {
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         toast.error("Logo file size must be less than 2MB");
+        return;
+      }
+      if (!file.type.includes('image')) {
+        toast.error("Please upload an image file (PNG, JPG)");
         return;
       }
       const reader = new FileReader();
@@ -173,17 +181,34 @@ export default function OfferLetterForm() {
     }
   };
 
+  // Handle logo drag and drop
+  const handleLogoDrop = (e) => {
+    e.preventDefault();
+    setIsDraggingLogo(false);
+    const file = e.dataTransfer.files[0];
+    processLogoFile(file);
+  };
+
   // Remove logo
   const removeLogo = () => {
     setFormData(prev => ({ ...prev, companyLogo: null, companyLogoName: "" }));
+    if (logoInputRef.current) logoInputRef.current.value = '';
   };
 
   // Handle signature upload
-  const handleSignatureUpload = (field) => (e) => {
-    const file = e.target.files[0];
+  const handleSignatureUpload = (field, inputRef) => (e) => {
+    const file = e.target.files?.[0];
+    processSignatureFile(file, field);
+  };
+
+  const processSignatureFile = (file, field) => {
     if (file) {
       if (file.size > 1 * 1024 * 1024) {
         toast.error("Signature file size must be less than 1MB");
+        return;
+      }
+      if (!file.type.includes('image')) {
+        toast.error("Please upload an image file (PNG, JPG)");
         return;
       }
       const reader = new FileReader();
@@ -194,9 +219,18 @@ export default function OfferLetterForm() {
     }
   };
 
+  // Handle signature drag and drop
+  const handleSignatureDrop = (field, setDragging) => (e) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    processSignatureFile(file, field);
+  };
+
   // Remove signature
-  const removeSignature = (field) => () => {
+  const removeSignature = (field, inputRef) => () => {
     setFormData(prev => ({ ...prev, [field]: null }));
+    if (inputRef?.current) inputRef.current.value = '';
   };
 
   // Generate PDF preview when form data changes (debounced)

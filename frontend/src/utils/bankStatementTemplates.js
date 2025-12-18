@@ -711,10 +711,11 @@ export async function generateBankTemplateC(doc, data, pageWidth, pageHeight, ma
   // Helper to draw horizontal barcode on right edge (page 1 only)
   const drawBarcode = async () => {
     // Position barcode horizontally on the right side of page 1
-    const barcodeWidth = 45;
-    const barcodeHeight = 180;
-    const barcodeX = pageWidth - margin - barcodeWidth + 5;
-    const barcodeY = 50;
+    // The barcode image is horizontal with numbers below it
+    const barcodeWidth = 120;
+    const barcodeHeight = 35;
+    const barcodeX = pageWidth - margin - barcodeWidth;
+    const barcodeY = 140; // Position it below the customer service info
     
     // Try to load the barcode image
     try {
@@ -738,9 +739,9 @@ export async function generateBankTemplateC(doc, data, pageWidth, pageHeight, ma
       // Fallback: draw simple barcode pattern if image fails
       console.error("Failed to load barcode image:", e);
       doc.setFillColor(0, 0, 0);
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 30; i++) {
         if (i % 2 === 0) {
-          doc.rect(barcodeX + 5, barcodeY + (i * 4), 35, 2, 'F');
+          doc.rect(barcodeX + (i * 4), barcodeY, 2, 25, 'F');
         }
       }
     }

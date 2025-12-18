@@ -707,21 +707,12 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       const workdayLogoUrl = '/workdayLogo.png';
       const workdayLogo = await loadImageAsBase64(workdayLogoUrl);
       if (workdayLogo) {
-        // Create Image object and wait for it to load (same pattern as Template A)
-        const img = new Image();
-        img.src = workdayLogo;
-        await new Promise((resolve) => {
-          img.onload = () => {
-            const aspect = img.height / img.width || 0.3;
-            doc.addImage(img, 'PNG', m, y - 10, 100, 100 * aspect);
-            resolve();
-          };
-          img.onerror = resolve;
-        });
+        doc.addImage(workdayLogo, 'PNG', m, y - 10, 100, 30);
       } else {
         doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text("WORKDAY", m, y + 5);
       }
     } catch (e) { 
+      console.error("Error loading Workday logo:", e);
       doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text("WORKDAY", m, y + 5); 
     }
     y += 30;

@@ -767,28 +767,25 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     y += 18;
   });
   
-  // ============ CONGRATULATIONS / FEE WAIVER MESSAGE ============
+  // ============ FEE WAIVER MESSAGE ============
   y += 15;
   
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
-  doc.setFont("helvetica", "bold");
-  doc.text("Congratulations, thanks to your qualifying actions, we waived the $15.00 monthly service fee for this statement period.", margin, y);
+  doc.setFont("helvetica", "normal");
+  doc.text("There is a $15.00 monthly service fee for the statement periods.", margin, y);
   
   y += 12;
-  doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  const feeWaiverText1 = "Here's how your activity can help you avoid the $15.00 monthly service fee: the fee is waived if any of the following is achieved over the statement period:";
+  const feeWaiverText1 = "Here's how you can avoid the $15.00 monthly service fee: the fee is waived if any of the following is achieved over the statement period:";
   const feeWaiverLines1 = doc.splitTextToSize(feeWaiverText1, pageWidth - 2 * margin);
   doc.text(feeWaiverLines1, margin, y);
   y += feeWaiverLines1.length * 8 + 5;
   
-  // Bullet points
+  // Bullet points - simplified to just 2 options
   const bulletPoints = [
     "Maintain a minimum daily balance of $2,000.00 or more",
-    "Have $500.00 or more in qualifying electronic deposits",
-    "Link your Chase Business Complete Checking to a qualifying Chase Ink Business Card and spend $500.00 or more on that card",
-    "Use QuickAccept, Chase Merchant Services, or other qualifying Chase payment processing services"
+    "Have $500.00 or more in qualifying electronic deposits"
   ];
   
   bulletPoints.forEach((point) => {
@@ -796,38 +793,6 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     const pointLines = doc.splitTextToSize(point, pageWidth - 2 * margin - 15);
     doc.text(pointLines, margin + 15, y);
     y += pointLines.length * 8 + 2;
-  });
-  
-  y += 8;
-  doc.setFont("helvetica", "bold");
-  doc.text("Here's a summary of your activity this period:", margin, y);
-  y += 12;
-  
-  doc.setFont("helvetica", "normal");
-  const activitySummary = [
-    "• Minimum Daily Balance: $" + toFixed(beginning),
-    "• Qualifying electronic deposits into your account: $" + toFixed(deposits),
-    "• QuickAccept and Chase Merchant Services deposits into your account: $0.00"
-  ];
-  
-  activitySummary.forEach((item) => {
-    doc.text(item, margin + 5, y);
-    y += 10;
-  });
-  
-  y += 8;
-  doc.setFontSize(6);
-  doc.setTextColor(80, 80, 80);
-  const footnotes = [
-    "1. Minimum Daily Balance must be maintained as of the beginning of the day for each day of the statement cycle.",
-    "2. Based on aggregated spending (minus returns or refunds) where the Chase Ink Business Card(s) share a business entity legal name with the Chase Business Complete Checking account, using each of their most recently completed monthly card billing period(s).",
-    "3. The cutoff time on this business day is 7 a.m. Eastern Time."
-  ];
-  
-  footnotes.forEach((note) => {
-    const noteLines = doc.splitTextToSize(note, pageWidth - 2 * margin);
-    doc.text(noteLines, margin, y);
-    y += noteLines.length * 7 + 2;
   });
   
   // ============ PAGE 2: Transaction Details ============

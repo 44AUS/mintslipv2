@@ -40,6 +40,7 @@ function App() {
             <Route path="/1099-misc" element={<Form1099MISC />} />
             <Route path="/offer-letter" element={<OfferLetterForm />} />
             <Route path="/schedule-c" element={<ScheduleCForm />} />
+            <Route path="/vehicle-bill-of-sale" element={<VehicleBillOfSaleForm />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />

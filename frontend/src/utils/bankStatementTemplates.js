@@ -748,21 +748,21 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.setFontSize(7);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
-  doc.text("JPMorgan Chase Bank, N.A.", margin, y);
-  doc.text("PO Box 182051", margin, y + 10);
-  doc.text("Columbus, OH 43218-2051", margin, y + 20);
+  doc.text("JPMorgan Chase Bank, N.A.", headerMargin, y);
+  doc.text("PO Box 182051", headerMargin, y + 10);
+  doc.text("Columbus, OH 43218-2051", headerMargin, y + 20);
   
   // Draw barcode on right side
   drawBarcode();
   
-  // Account holder info
+  // Account holder info (with header margin - more centered)
   y += 45;
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "normal");
-  doc.text(accountName, margin, y);
-  doc.text(accountAddress1, margin, y + 12);
-  doc.text(accountAddress2, margin, y + 24);
+  doc.text(accountName, headerMargin, y);
+  doc.text(accountAddress1, headerMargin, y + 12);
+  doc.text(accountAddress2, headerMargin, y + 24);
   
   // CHECKING SUMMARY section - use the box style
   y += 55;

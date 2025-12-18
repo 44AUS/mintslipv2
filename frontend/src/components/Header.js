@@ -35,8 +35,8 @@ const OTHER_FORMS = [
   { name: "Voided Check", path: "/voided-check", icon: FileSpreadsheet },
   { name: "Offer Letter Generator", path: "/offer-letter", icon: FileSpreadsheet },
   { name: "Invoice Generator", path: "/invoice-generator", icon: FileSpreadsheet },
-  { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
-  // Add more tax forms here as needed
+  { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale", icon: FileSpreadsheet },
+  // Add more forms here as needed
 ];
 
 // Navigation links component for desktop

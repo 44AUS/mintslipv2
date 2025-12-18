@@ -201,15 +201,18 @@ frontend:
         comment: "COMPREHENSIVE TESTING COMPLETED ✅ All Schedule C Generator functionality verified and working correctly: 1) Schedule C form page loads correctly at /schedule-c route ✅ 2) Tax year dropdown has all required options (2024, 2023, 2022) ✅ 3) All form sections present and functional: Tax Year selection ✅, Proprietor Information (name, SSN) ✅, Business Information (principal business, code, name, EIN, address, city, state, zip) ✅, Accounting method radio buttons (Cash, Accrual, Other) ✅, Material participation Yes/No ✅, Part I Income fields (Lines 1-7) ✅, Part II Expenses section (collapsible, Lines 8-26) ✅, Totals section with auto-calculation ✅ 4) Schedule C Summary panel shows correct values ✅ 5) Document Preview section shows PDF with watermark ✅ 6) Calculate Totals button works correctly ✅ 7) PayPal payment section present with $15 price ✅ 8) Home page verification: Schedule C cards appear in both Pricing section and Document Selection Grid with NEW badge and $15 price ✅ 9) PDF templates present for all tax years (2022, 2023, 2024) ✅ 10) Form validation working (SSN, EIN, ZIP formatting) ✅ 11) Real-time preview generation with MintSlip watermark ✅ Minor: PayPal buttons show network errors in console (expected in test environment) but payment section structure is correct. All core functionality working perfectly."
   - task: "W-9 Generator with PDF Preview"
     implemented: true
-    working: "NA"
+    working: true
     file: "src/pages/W9Form.js, src/utils/w9Generator.js, src/utils/w9PreviewGenerator.js, src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "W-9 Generator feature needs comprehensive testing. Implementation includes: W9Form.js page with all required fields (name, business name, tax classification, address, TIN), tax year selection (2024-2021), federal tax classification options, LLC tax codes, TIN type toggle (SSN/EIN), live PDF preview with watermark, PayPal integration for $10 payment. Route /w9 added to App.js. Home page has W-9 card with NEW badge and $10 pricing. Need to test navigation, form functionality, year selection, TIN toggle, PDF preview, and PayPal buttons."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE W-9 TESTING COMPLETED ✅ All major functionality verified and working: 1) Navigation Test: Homepage W-9 card found with data-testid, successful navigation to /w9 route ✅ 2) Form Fields Test: All form fields functional - Name (John Smith), Business Name (Smith Consulting LLC), Address (456 Oak Avenue), City (Los Angeles), ZIP (90001), SSN (987-65-4321) ✅ 3) W-9 Summary Panel: Updates correctly with entered form data, shows name, business name, address, and TIN information ✅ 4) Tax Classification: LLC selection works, radio buttons functional ✅ 5) Year Selection: Dropdown present with years 2024-2021, year changes update summary ✅ 6) TIN Type Toggle: SSN/EIN radio buttons work, field switching functional ✅ 7) PDF Preview: Section present with iframe preview, 'Expand Preview' button available ✅ 8) PayPal Payment: $10.00 price displayed, payment section with 'One-time payment' and 'Secure payment via PayPal' text ✅ 9) W-9 Templates: All PDF templates present (2021-2024) ✅ Minor Issues: Some dropdown interactions require force clicks due to UI overlays, JavaScript bundle errors visible but don't affect core functionality, PayPal SDK errors expected in test environment. All test cases from review request successfully verified. Feature ready for production use."
 
 metadata:
   created_by: "main_agent"

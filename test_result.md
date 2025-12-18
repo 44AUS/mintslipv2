@@ -258,7 +258,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "1099-NEC Generator with PDF Preview"
+    - "Offer Letter UI Polish - Template Selection Visual Indicator and Drag-Drop File Uploads"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

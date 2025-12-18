@@ -331,28 +331,79 @@ export default function OfferLetterForm() {
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Template Style
                 </h2>
-                <RadioGroup 
-                  value={formData.template} 
-                  onValueChange={(val) => setFormData({...formData, template: val})}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                >
-                  {TEMPLATES.map(template => (
-                    <div key={template.value} className="relative">
-                      <RadioGroupItem 
-                        value={template.value} 
-                        id={template.value} 
-                        className="peer sr-only"
-                      />
-                      <Label 
-                        htmlFor={template.value} 
-                        className="flex flex-col p-4 border-2 rounded-lg cursor-pointer hover:border-green-600 peer-checked:border-green-700 peer-checked:bg-green-50 transition-all"
-                      >
-                        <span className="font-semibold text-slate-800">{template.label}</span>
-                        <span className="text-xs text-slate-500 mt-1">{template.description}</span>
-                      </Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Professional Template */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, template: 'professional'})}
+                    className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                      formData.template === 'professional' 
+                        ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
+                        : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    {formData.template === 'professional' && (
+                      <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                        <CheckCircle className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
+                      formData.template === 'professional' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      <Briefcase className="w-6 h-6" />
                     </div>
-                  ))}
-                </RadioGroup>
+                    <span className="font-semibold text-slate-800">Professional</span>
+                    <span className="text-xs text-slate-500 mt-1 text-center">Traditional business style</span>
+                  </button>
+
+                  {/* Modern Template */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, template: 'modern'})}
+                    className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                      formData.template === 'modern' 
+                        ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
+                        : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    {formData.template === 'modern' && (
+                      <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                        <CheckCircle className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
+                      formData.template === 'modern' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <span className="font-semibold text-slate-800">Modern</span>
+                    <span className="text-xs text-slate-500 mt-1 text-center">Contemporary clean design</span>
+                  </button>
+
+                  {/* Custom Template */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, template: 'custom'})}
+                    className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                      formData.template === 'custom' 
+                        ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
+                        : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    {formData.template === 'custom' && (
+                      <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                        <CheckCircle className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
+                      formData.template === 'custom' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      <Palette className="w-6 h-6" />
+                    </div>
+                    <span className="font-semibold text-slate-800">Custom</span>
+                    <span className="text-xs text-slate-500 mt-1 text-center">Choose your own colors</span>
+                  </button>
+                </div>
                 
                 {/* Custom template colors */}
                 {formData.template === "custom" && (

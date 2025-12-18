@@ -690,11 +690,12 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
 
 // Template C: Workday Style Professional Payslip
 export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
-  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, localTaxRate, totalTax, netPay, rate, stateRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
-    ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdFederalTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay,
-    deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions, ytdPayPeriods,
+  try {
+  const { formData, hours = 0, overtime = 0, regularPay = 0, overtimePay = 0, grossPay = 0, ssTax = 0, medTax = 0, federalTax = 0, stateTax = 0, localTax = 0, localTaxRate = 0, totalTax = 0, netPay = 0, rate = 0, stateRate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
+    ytdRegularPay = 0, ytdOvertimePay = 0, ytdGrossPay = 0, ytdSsTax = 0, ytdMedTax = 0, ytdFederalTax = 0, ytdStateTax = 0, ytdLocalTax = 0, ytdTotalTax = 0, ytdNetPay = 0,
+    deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0, ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
     logoDataUrl
-  } = data;
+  } = data || {};
   
   const m = 30;
   const usableWidth = pageWidth - 2 * m;

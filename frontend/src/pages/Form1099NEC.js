@@ -259,7 +259,7 @@ export default function Form1099NEC() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="payerName">Payer's Name *</Label>
+                    <Label htmlFor="payerName">Payer&apos;s Name *</Label>
                     <Input 
                       id="payerName" 
                       name="payerName" 
@@ -269,7 +269,7 @@ export default function Form1099NEC() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="payerTIN">Payer's TIN (EIN) *</Label>
+                    <Label htmlFor="payerTIN">Payer&apos;s TIN (EIN) *</Label>
                     <Input 
                       id="payerTIN" 
                       name="payerTIN" 
@@ -283,7 +283,7 @@ export default function Form1099NEC() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="payerPhone">Payer's Phone</Label>
+                    <Label htmlFor="payerPhone">Payer&apos;s Phone</Label>
                     <Input 
                       id="payerPhone" 
                       name="payerPhone" 
@@ -297,7 +297,7 @@ export default function Form1099NEC() {
                     )}
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="payerAddress">Payer's Address *</Label>
+                    <Label htmlFor="payerAddress">Payer&apos;s Address *</Label>
                     <Input 
                       id="payerAddress" 
                       name="payerAddress" 
@@ -355,7 +355,7 @@ export default function Form1099NEC() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="recipientName">Recipient's Name *</Label>
+                    <Label htmlFor="recipientName">Recipient&apos;s Name *</Label>
                     <Input 
                       id="recipientName" 
                       name="recipientName" 
@@ -365,7 +365,7 @@ export default function Form1099NEC() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="recipientTIN">Recipient's TIN (SSN) *</Label>
+                    <Label htmlFor="recipientTIN">Recipient&apos;s TIN (SSN) *</Label>
                     <Input 
                       id="recipientTIN" 
                       name="recipientTIN" 
@@ -389,7 +389,7 @@ export default function Form1099NEC() {
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="recipientAddress">Recipient's Address *</Label>
+                    <Label htmlFor="recipientAddress">Recipient&apos;s Address *</Label>
                     <Input 
                       id="recipientAddress" 
                       name="recipientAddress" 
@@ -486,7 +486,7 @@ export default function Form1099NEC() {
                       checked={formData.box2}
                       onCheckedChange={(checked) => handleCheckboxChange('box2', checked)}
                     />
-                    <Label htmlFor="box2" className="text-sm cursor-pointer">Box 2 - Payer made direct sales of $5,000 or more of consumer products to recipient for resale</Label>
+                    <Label htmlFor="box2" className="text-sm cursor-pointer">Box 2 - Payer made direct sales totaling $5,000+ of consumer products to recipient for resale</Label>
                   </div>
                 </div>
               </div>
@@ -516,7 +516,7 @@ export default function Form1099NEC() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="payerStateNo1">Payer's State No.</Label>
+                      <Label htmlFor="payerStateNo1">Payer&apos;s State No.</Label>
                       <Input 
                         id="payerStateNo1" 
                         name="payerStateNo1" 
@@ -570,7 +570,7 @@ export default function Form1099NEC() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="payerStateNo2">Payer's State No.</Label>
+                      <Label htmlFor="payerStateNo2">Payer&apos;s State No.</Label>
                       <Input 
                         id="payerStateNo2" 
                         name="payerStateNo2" 

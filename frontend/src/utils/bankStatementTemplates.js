@@ -1020,30 +1020,31 @@ We will investigate your complaint and will correct any error promptly. If we ta
 Deposit products and services are offered by JPMorgan Chase Bank, N.A. Member FDIC`;
 
   // Draw first legal section
+  const legalTextWidth = pageWidth - contentMargin - rightContentMargin;
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
-  const titleLines1 = doc.splitTextToSize(legalText1Title, pageWidth - 2 * margin);
-  doc.text(titleLines1, margin, y);
+  const titleLines1 = doc.splitTextToSize(legalText1Title, legalTextWidth);
+  doc.text(titleLines1, contentMargin, y);
   y += titleLines1.length * 10 + 5;
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  const bodyLines1 = doc.splitTextToSize(legalText1Body, pageWidth - 2 * margin);
-  doc.text(bodyLines1, margin, y);
+  const bodyLines1 = doc.splitTextToSize(legalText1Body, legalTextWidth);
+  doc.text(bodyLines1, contentMargin, y);
   y += bodyLines1.length * 9 + 25;
   
   // Draw second legal section
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  const titleLines2 = doc.splitTextToSize(legalText2Title, pageWidth - 2 * margin);
-  doc.text(titleLines2, margin, y);
+  const titleLines2 = doc.splitTextToSize(legalText2Title, legalTextWidth);
+  doc.text(titleLines2, contentMargin, y);
   y += titleLines2.length * 10 + 5;
   
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  const bodyLines2 = doc.splitTextToSize(legalText2Body, pageWidth - 2 * margin);
-  doc.text(bodyLines2, margin, y);
+  const bodyLines2 = doc.splitTextToSize(legalText2Body, legalTextWidth);
+  doc.text(bodyLines2, contentMargin, y);
   
   // Now go back and add page footers to all pages
   const totalPages = doc.internal.getNumberOfPages();

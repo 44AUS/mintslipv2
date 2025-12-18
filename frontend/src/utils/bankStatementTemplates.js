@@ -678,16 +678,16 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(1.5);
-    doc.rect(margin, yPos, boxWidth, boxHeight, 'FD');
+    doc.rect(contentMargin, yPos, boxWidth, boxHeight, 'FD');
     
     // Bold black text, centered vertically with left padding
     doc.setTextColor(0, 0, 0);
-    doc.text(title.toUpperCase(), margin + paddingX, yPos + 12);
+    doc.text(title.toUpperCase(), contentMargin + paddingX, yPos + 12);
     
     // Horizontal line extending from the RIGHT edge of the box to the right margin (at bottom of box)
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
-    doc.line(margin + boxWidth, yPos + boxHeight - 1, pageWidth - margin, yPos + boxHeight - 1);
+    doc.line(contentMargin + boxWidth, yPos + boxHeight - 1, pageWidth - rightContentMargin, yPos + boxHeight - 1);
     
     return yPos + boxHeight;
   };

@@ -98,9 +98,9 @@ export default function W9Form() {
 
   // Validated input handlers
   const handleSSNChange = (e) => {
-    const formatted = formatSSN(e.target.value);
+    const formatted = formatFullSSN(e.target.value);
     setFormData(prev => ({ ...prev, ssn: formatted }));
-    const validation = validateSSN(formatted);
+    const validation = validateFullSSN(formatted);
     setValidationErrors(prev => ({ ...prev, ssn: validation.error }));
   };
 

@@ -866,4 +866,11 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   doc.setFontSize(7);
   doc.setTextColor(120, 120, 120);
   doc.text(`Page ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+  } catch (error) {
+    console.error("Error generating Template C:", error);
+    // Add error message to PDF
+    doc.setFontSize(12);
+    doc.setTextColor(255, 0, 0);
+    doc.text("Error generating document. Please check your inputs.", 40, 100);
+  }
 }

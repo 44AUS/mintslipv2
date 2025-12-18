@@ -66,6 +66,8 @@ export default function OfferLetterForm() {
     
     // Company Information
     companyName: "",
+    companyLogo: null, // Base64 logo image
+    companyLogoName: "",
     companyAddress: "",
     companyCity: "",
     companyState: "",
@@ -105,10 +107,17 @@ export default function OfferLetterForm() {
     // Response deadline
     responseDeadline: "",
     
-    // Signature
+    // HR Signature
     signerName: "",
     signerTitle: "",
+    hrSignatureType: "generated", // "generated" or "custom"
+    hrSignatureImage: null, // Base64 signature image
     letterDate: new Date().toISOString().split('T')[0],
+    
+    // Employee Signature
+    employeeSignatureType: "generated", // "generated" or "custom"
+    employeeSignatureImage: null, // Base64 signature image
+    employeeSignatureName: "", // Name for generated signature
     
     // Custom template options
     primaryColor: "#1a4731",

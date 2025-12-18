@@ -624,7 +624,6 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   const drawSectionTitle = (title, yPos) => {
     const boxHeight = 18;
     const paddingX = 10;
-    const paddingY = 5;
     
     // Calculate box width based on text length
     doc.setFontSize(9);
@@ -642,10 +641,10 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.setTextColor(0, 0, 0);
     doc.text(title.toUpperCase(), margin + paddingX, yPos + 12);
     
-    // Horizontal line extending from the RIGHT edge of the box to the right margin
+    // Horizontal line extending from the RIGHT edge of the box to the right margin (at bottom of box)
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
-    doc.line(margin + boxWidth, yPos + boxHeight / 2, pageWidth - margin, yPos + boxHeight / 2);
+    doc.line(margin + boxWidth, yPos + boxHeight - 1, pageWidth - margin, yPos + boxHeight - 1);
     
     return yPos + boxHeight;
   };

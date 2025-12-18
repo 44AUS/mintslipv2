@@ -579,8 +579,31 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   // Track total pages - will be updated after all content is added
   let currentPage = 1;
   
-  // Helper function to add page header (statement dates and account number in top right)
+  // Helper function to add bank logo (top left of every page)
+  const addBankLogo = () => {
+    let logoAddedC = false;
+    if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
+      try {
+        doc.addImage(bankLogo, margin, 15, 70, 25);
+        logoAddedC = true;
+      } catch (e) {
+        console.error("Failed to add logo:", e);
+      }
+    }
+    
+    if (!logoAddedC) {
+      doc.setFontSize(24);
+      doc.setTextColor(...chaseBlue);
+      doc.setFont("helvetica", "bold");
+      doc.text("CHASE", margin, 32);
+    }
+  };
+  
+  // Helper function to add page header (logo + statement dates and account number in top right)
   const addPageHeader = (isFirstPage = false) => {
+    // Bank logo - top left
+    addBankLogo();
+    
     // Statement date range - top right
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
@@ -597,28 +620,40 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - margin, pageHeight - 25, { align: "right" });
   };
   
-  // Helper to draw a section title box (Chase style)
+  // Helper to draw a section title box (Chase style - white background, black border)
   const drawSectionTitle = (title, yPos) => {
-    doc.setFillColor(240, 240, 240);
+    const boxWidth = 180;
+    const boxHeight = 16;
+    
+    // White background with black border
+    doc.setFillColor(255, 255, 255);
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
-    doc.rect(margin, yPos, pageWidth - 2 * margin, 16, 'FD');
+    doc.rect(margin, yPos, boxWidth, boxHeight, 'FD');
+    
+    // Bold black text, left-aligned with padding
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
     doc.text(title.toUpperCase(), margin + 5, yPos + 11);
-    return yPos + 16;
+    
+    // Gray horizontal line extending from the box to the right
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+    doc.line(margin + boxWidth, yPos + boxHeight / 2, pageWidth - margin, yPos + boxHeight / 2);
+    
+    return yPos + boxHeight;
   };
   
   // Helper to draw transaction table headers
   const drawTableHeaders = (yPos) => {
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text("DATE", margin + 5, yPos);
     doc.text("DESCRIPTION", margin + 60, yPos);
     doc.text("AMOUNT", pageWidth - margin - 5, yPos, { align: "right" });
-    doc.setDrawColor(0, 0, 0);
+    doc.setDrawColor(180, 180, 180);
     doc.setLineWidth(0.3);
     doc.line(margin, yPos + 3, pageWidth - margin, yPos + 3);
     return yPos + 12;

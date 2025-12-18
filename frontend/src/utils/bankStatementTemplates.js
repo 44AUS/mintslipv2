@@ -554,6 +554,14 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   // Chase blue color
   const chaseBlue = [0, 50, 120];
   
+  // Increased margins for barcode space - use larger margin for all content
+  const contentMargin = margin + 25;
+  const rightContentMargin = margin + 60; // Extra space on right for barcode
+  
+  // Header margin (even more inset for header area)
+  const headerMargin = contentMargin + 10;
+  const headerRightMargin = rightContentMargin + 10;
+  
   // Format statement date range for header
   const formatStatementDateRange = () => {
     if (statementStart && statementEnd) {
@@ -578,10 +586,6 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   
   // Track total pages - will be updated after all content is added
   let currentPage = 1;
-  
-  // Header margin (more inset than the main content margin)
-  const headerMargin = margin + 20;
-  const headerRightMargin = margin + 20;
   
   // Helper function to add bank logo (top left of every page)
   const addBankLogo = () => {

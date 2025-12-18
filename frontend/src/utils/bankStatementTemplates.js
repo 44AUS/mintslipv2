@@ -778,13 +778,13 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   // Account type label - positioned closer to the title box (not far right)
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text("Chase Personal Checking", margin + 200, y - 5);
+  doc.text("Chase Personal Checking", contentMargin + 180, y - 5);
   
   y += 10;
   
   // Summary table - narrower width (not full page width)
-  const summaryTableWidth = 300;
-  const summaryRightEdge = margin + summaryTableWidth;
+  const summaryTableWidth = 280;
+  const summaryRightEdge = contentMargin + summaryTableWidth;
   
   const summaryItems = [
     { label: "Beginning Balance", amount: beginning },
@@ -801,21 +801,21 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.setTextColor(80, 80, 80);
   doc.setFont("helvetica", "bold");
   doc.text("AMOUNT", summaryRightEdge, y, { align: "right" });
-  doc.line(margin, y + 5, summaryRightEdge, y + 5);
+  doc.line(contentMargin, y + 5, summaryRightEdge, y + 5);
   y += 15;
   
   summaryItems.forEach((item, index) => {
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", item.bold ? "bold" : "normal");
-    doc.text(item.label, margin + 5, y);
+    doc.text(item.label, contentMargin + 5, y);
     
     const amountStr = `$${toFixed(item.amount)}`;
     doc.text(amountStr, summaryRightEdge, y, { align: "right" });
     
     if (index < summaryItems.length - 1) {
       doc.setDrawColor(200, 200, 200);
-      doc.line(margin, y + 8, summaryRightEdge, y + 8);
+      doc.line(contentMargin, y + 8, summaryRightEdge, y + 8);
     }
     y += 18;
   });

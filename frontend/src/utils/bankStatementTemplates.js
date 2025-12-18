@@ -548,7 +548,7 @@ export function generateBankTemplateB(doc, data, pageWidth, pageHeight, margin) 
 }
 
 // Template C: Chase Bank Statement Style
-export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) {
+export async function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) {
   const { accountName, accountAddress1, accountAddress2, accountNumber, year, month, statementStart, statementEnd, beginning, ending, deposits, purchases, transfers, monthText, dateRange, transactions, toFixed, formatShortDate, formatDateLong, parseCurrency, bankLogo } = data;
   
   // Chase blue color

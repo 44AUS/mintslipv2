@@ -59,13 +59,15 @@ export const generate1099NECPDF = async (formData, taxYear) => {
     const templateBytes = await templateResponse.arrayBuffer();
     
     // Load the source PDF template
-    const sourcePdf = await PDFDocument.load(templateBytes);
+    const sourcePdf = await PDFDocument.load(templateBytes, { ignoreEncryption: true });
     
     // Create a new PDF with only page 3 (index 2) - Copy 1 for State Tax Department
     const pdfDoc = await PDFDocument.create();
     const [copiedPage] = await pdfDoc.copyPages(sourcePdf, [2]);
     pdfDoc.addPage(copiedPage);
     const page = pdfDoc.getPages()[0];
+    
+    console.log("PDF Generator: Created single-page PDF");
     
     // Get fonts
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);

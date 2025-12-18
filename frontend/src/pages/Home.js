@@ -555,6 +555,35 @@ export default function Home() {
             </div>
           </button>
 
+          {/* W-9 Card */}
+          <button
+            data-testid="w9-card-button"
+            onClick={() => navigate("/w9")}
+            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
+          >
+            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
+              <ClipboardList className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  W-9 Form
+                </h4>
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
+              </div>
+              <p className="text-slate-600 text-base leading-relaxed pr-16">
+                Generate W-9 Request for Taxpayer Identification Number and Certification forms with all required fields.
+              </p>
+              <div className="pt-4">
+                <div className="inline-flex items-center gap-2">
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-slate-500">per document</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
           {/* Schedule C Card */}
           <button
             data-testid="schedulec-card-button"

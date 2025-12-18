@@ -973,13 +973,13 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
     
     doc.setFontSize(8);
     doc.setTextColor(0, 0, 0);
-    doc.text(formattedDate, margin + 5, y);
+    doc.text(formattedDate, contentMargin + 5, y);
     
     let desc = tx.description || "";
-    if (desc.length > 60) desc = desc.substring(0, 57) + "...";
-    doc.text(desc, margin + 60, y);
+    if (desc.length > 50) desc = desc.substring(0, 47) + "...";
+    doc.text(desc, contentMargin + 60, y);
     
-    doc.text(formattedAmount, pageWidth - margin - 5, y, { align: "right" });
+    doc.text(formattedAmount, pageWidth - rightContentMargin - 5, y, { align: "right" });
     
     y += lineHeight;
   });
@@ -988,12 +988,12 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   y += 5;
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
-  doc.line(margin, y, pageWidth - margin, y);
+  doc.line(contentMargin, y, pageWidth - rightContentMargin, y);
   y += 12;
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text("Total Electronic Withdrawals", margin + 5, y);
-  doc.text(`$${totalWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, pageWidth - margin - 5, y, { align: "right" });
+  doc.text("Total Electronic Withdrawals", contentMargin + 5, y);
+  doc.text(`$${totalWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, pageWidth - rightContentMargin - 5, y, { align: "right" });
   
   // ============ LAST PAGE: Legal Disclaimer ============
   doc.addPage();

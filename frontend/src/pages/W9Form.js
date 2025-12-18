@@ -13,7 +13,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadW9 } from "@/utils/w9Generator";
 import { generateW9Preview } from "@/utils/w9PreviewGenerator";
 import { 
-  formatSSN, validateSSN,
+  formatFullSSN, validateFullSSN,
   formatEIN, validateEIN,
   formatZipCode, validateZipCode
 } from "@/utils/validation";

@@ -272,7 +272,7 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
         borderWidth: 1,
       });
       if (isChecked) {
-        drawText('✓', margin + 12, y - 6, { size: 10, fontType: 'bold' });
+        drawText('X', margin + 12, y - 6, { size: 10, fontType: 'bold' });
       }
       drawText(option.label, margin + 28, y - 5, { size: 9 });
       y -= lineHeight;
@@ -299,7 +299,7 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
         borderWidth: 1,
       });
       if (isChecked) {
-        drawText('✓', margin + 12, y - 6, { size: 10, fontType: 'bold' });
+        drawText('X', margin + 12, y - 6, { size: 10, fontType: 'bold' });
       }
       drawText(option.label, margin + 28, y - 5, { size: 9 });
       y -= lineHeight;

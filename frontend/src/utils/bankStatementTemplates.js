@@ -625,17 +625,24 @@ export async function generateBankTemplateC(doc, data, pageWidth, pageHeight, ma
       const csBoxWidth = 160;
       const csBoxX = pageWidth - headerRightMargin - csBoxWidth;
       
-      // Top thick black border
+      // Top thick black border (ABOVE the title)
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(1.5);
       doc.line(csBoxX, csY - 3, pageWidth - headerRightMargin, csY - 3);
       
+      // Title text
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
       doc.text("CUSTOMER SERVICE INFORMATION", pageWidth - headerRightMargin, csY + 5, { align: "right" });
       
-      csY += 15;
+      // Bottom thick black border (BELOW the title, before the phone numbers)
+      csY += 10;
+      doc.setLineWidth(1.5);
+      doc.line(csBoxX, csY, pageWidth - headerRightMargin, csY);
+      
+      // Phone numbers and website (below the bordered title)
+      csY += 12;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.text("Web site: Chase.com", pageWidth - headerRightMargin, csY, { align: "right" });
@@ -647,11 +654,6 @@ export async function generateBankTemplateC(doc, data, pageWidth, pageHeight, ma
       doc.text("Para Espanol: 1-877-312-4273", pageWidth - headerRightMargin, csY, { align: "right" });
       csY += 9;
       doc.text("International Calls: 1-713-262-1679", pageWidth - headerRightMargin, csY, { align: "right" });
-      
-      // Bottom thick black border
-      csY += 5;
-      doc.setLineWidth(1.5);
-      doc.line(csBoxX, csY, pageWidth - headerRightMargin, csY);
     }
   };
   

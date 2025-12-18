@@ -831,20 +831,22 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   
+  const feeTextWidth = pageWidth - contentMargin - rightContentMargin;
+  
   if (feeWaived) {
     doc.setFont("helvetica", "bold");
-    doc.text("Congratulations, thanks to your qualifying actions, we waived the $15.00 monthly service fee for this statement period.", margin, y);
+    doc.text("Congratulations, thanks to your qualifying actions, we waived the $15.00 monthly service fee for this statement period.", contentMargin, y);
   } else {
     doc.setFont("helvetica", "normal");
-    doc.text("There is a $15.00 monthly service fee for this statement period.", margin, y);
+    doc.text("There is a $15.00 monthly service fee for this statement period.", contentMargin, y);
   }
   
   y += 12;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   const feeWaiverText1 = "Here's how your activity can help you avoid the $15.00 monthly service fee: the fee is waived if any of the following is achieved over the statement period:";
-  const feeWaiverLines1 = doc.splitTextToSize(feeWaiverText1, pageWidth - 2 * margin);
-  doc.text(feeWaiverLines1, margin, y);
+  const feeWaiverLines1 = doc.splitTextToSize(feeWaiverText1, feeTextWidth);
+  doc.text(feeWaiverLines1, contentMargin, y);
   y += feeWaiverLines1.length * 8 + 5;
   
   // Bullet points
@@ -854,15 +856,15 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   ];
   
   bulletPoints.forEach((point) => {
-    doc.text("•", margin + 5, y);
-    const pointLines = doc.splitTextToSize(point, pageWidth - 2 * margin - 15);
-    doc.text(pointLines, margin + 15, y);
+    doc.text("•", contentMargin + 5, y);
+    const pointLines = doc.splitTextToSize(point, feeTextWidth - 15);
+    doc.text(pointLines, contentMargin + 15, y);
     y += pointLines.length * 8 + 2;
   });
   
   y += 8;
   doc.setFont("helvetica", "bold");
-  doc.text("Here's a summary of your activity this period:", margin, y);
+  doc.text("Here's a summary of your activity this period:", contentMargin, y);
   y += 12;
   
   doc.setFont("helvetica", "normal");
@@ -872,7 +874,7 @@ export function generateBankTemplateC(doc, data, pageWidth, pageHeight, margin) 
   ];
   
   activitySummary.forEach((item) => {
-    doc.text(item, margin + 5, y);
+    doc.text(item, contentMargin + 5, y);
     y += 10;
   });
   

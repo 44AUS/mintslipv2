@@ -1059,6 +1059,13 @@ export default function UtilityBillForm() {
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Complete Payment
                 </h3>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  These service expense templates are provided for personal budgeting and household accounting only.
+                </p>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  MintSlip does not provide official records and does not guarantee acceptance for any third-party residency or identity verification.
+                  Users are strictly prohibited from using these mockups for fraudulent or deceptive purposes.
+                </p>
                 <p className="text-sm text-slate-600 mb-4">
                   Total: <strong>$10.00</strong> for service expense generation
                 </p>

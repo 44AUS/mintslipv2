@@ -1909,6 +1909,12 @@ export default function PaystubForm() {
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Complete Payment
                 </h3>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  For lawful payroll documentation and record-keeping only.
+                </p>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  MintSlip does not verify employment or guarantee acceptance by any third party.
+                </p>
                 {calculateNumStubs > 0 && (
                   <p className="text-sm text-slate-600 mb-4">
                     Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)

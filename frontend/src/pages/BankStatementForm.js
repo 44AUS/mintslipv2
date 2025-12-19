@@ -822,6 +822,12 @@ const createOrder = (data, actions) => {
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Complete Payment
                 </h3>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  By proceeding, you agree that these are accounting mockups for lawful record-keeping and personal organization only.
+                </p>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  MintSlip does not provide "official" documents, verify employment, or guarantee acceptance by any third party.
+                </p>
                 <p className="text-sm text-slate-600 mb-4">
                   Total: <strong>${getStatementPrice()}</strong> for accounting mockup generation
                 </p>

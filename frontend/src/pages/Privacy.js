@@ -10,7 +10,7 @@ const PRIVACY_SECTIONS = [
     content: `When you use MintSlip, we may collect certain information to provide our services effectively:
 
 • **Personal Information**: Name, email address, and contact details when you reach out to our support team.
-• **Document Data**: Information you enter into our document generators (pay stubs, bank statements, W-2 forms). This data is processed in your browser and is NOT stored on our servers.
+• **Document Data**: Information you enter into our document generators (pay stubs, accounting mockups, W-2 forms, etc). This data is processed in your browser and is NOT stored on our servers.
 • **Payment Information**: Payment details are processed securely through PayPal. We do not store your credit card or bank account information.
 • **Usage Data**: General analytics about how you interact with our website to improve our services.`
   },

@@ -79,7 +79,7 @@ export default function Home() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={() => navigate("/paystub")}
+                onClick={() => navigate("/paystub-generator")}
                 size="lg"
                 className="group gap-2 text-lg px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
               >
@@ -306,7 +306,7 @@ export default function Home() {
             {/* Pay Stub Pricing */}
             <div className="bg-white rounded-lg p-8 text-center shadow-xl">
               <Receipt className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Pay Stub</h4>
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Pay Stub Generator</h4>
               <div className="mb-4">
                 <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$10</span>
                 <span className="text-slate-500 ml-2">/ stub</span>
@@ -339,7 +339,7 @@ export default function Home() {
                 POPULAR
               </div>
               <PiggyBank className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups</h4>
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups Generator</h4>
               <div className="mb-4">
                 <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$50-70</span>
                 <span className="text-slate-500 ml-2">/ doc</span>
@@ -369,7 +369,7 @@ export default function Home() {
             {/* W-2 Pricing */}
             <div className="bg-white rounded-lg p-8 text-center shadow-xl">
               <Calendar className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>W-2 Form</h4>
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>W-2 Form Generator</h4>
               <div className="mb-4">
                 <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$15</span>
                 <span className="text-slate-500 ml-2">/ form</span>
@@ -421,7 +421,7 @@ export default function Home() {
             
             <div className="space-y-4">
               <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Pay Stub
+                Pay Stub Generator
               </h4>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Generate professional pay stubs with accurate tax calculations, direct deposit information, and customizable pay periods.
@@ -447,7 +447,7 @@ export default function Home() {
             
             <div className="space-y-4">
               <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Accounting Mockups
+                Accounting Mockups Generator
               </h4>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Generate statement templates for personal bookkeeping and organizational purposes.
@@ -473,7 +473,7 @@ export default function Home() {
             
             <div className="space-y-4">
               <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                W-2 Form
+                W-2 Form Generator
               </h4>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Create fully detailed W-2 forms with accurate wage information, tax breakdowns, employer/employee details, and clean, professional formatting.
@@ -500,7 +500,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  W-9 Form
+                  W-9 Form Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
@@ -528,7 +528,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  1099-NEC
+                  1099-NEC Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
@@ -556,7 +556,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  1099-MISC
+                  1099-MISC Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
@@ -584,7 +584,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Offer Letter
+                  Offer Letter Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
@@ -612,7 +612,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Schedule C
+                  Schedule C Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
@@ -640,7 +640,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Vehicle Bill of Sale
+                  Vehicle Bill of Sale Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
@@ -668,7 +668,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Service Expense
+                  Service Expense Generator
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">

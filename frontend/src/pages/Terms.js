@@ -20,7 +20,7 @@ const TERMS_SECTIONS = [
     content: `MintSlip provides online document generation services including:
 
 • **Pay Stub Generator**: Create professional pay stubs for employees and contractors.
-• **Bank Statement Generator**: Generate detailed bank statements.
+• **Accounting Mockups Generator**: Generate detailed accounting mockups statements.
 • **W-2 Form Generator**: Create W-2 tax forms with accurate calculations.
 
 All documents are generated directly in your browser. We do not store your personal or financial information on our servers.`
@@ -43,7 +43,7 @@ All documents are generated directly in your browser. We do not store your perso
     title: "Payment Terms",
     content: `Our payment terms are as follows:
 
-• **Pricing**: Pay stubs are $10 each, bank statements are $50-$70, and W-2 forms are $15 each.
+• **Pricing**: Pay stubs are $10 each, accounting mockups are $50-$70, and W-2 forms are $15 each.
 • **Payment Processing**: All payments are processed securely through PayPal.
 • **Immediate Delivery**: Documents are generated and available for download immediately upon successful payment.
 • **Currency**: All prices are in US Dollars (USD).

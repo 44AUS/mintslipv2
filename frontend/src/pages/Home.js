@@ -4,7 +4,7 @@ import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Example from '../assests/example.png';
+import Example from '../assests/paystub.png';
 import secure from '../assests/secure.png';
 import Paystub from '../assests/paystub.png';
 

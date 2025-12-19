@@ -64,8 +64,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test",
-    "postbuild": "next-sitemap"
+    "test": "craco test"
   },
   "browserslist": {
     "production": [

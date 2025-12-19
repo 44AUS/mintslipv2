@@ -923,6 +923,7 @@ export default function VehicleBillOfSaleForm() {
                 Secure payment via PayPal. Your document will be generated immediately after payment.
               </p>
             </div>
+            </div>
           </div>
         </div>
       </div>

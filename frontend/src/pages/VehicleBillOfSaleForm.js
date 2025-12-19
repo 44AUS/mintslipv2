@@ -776,153 +776,177 @@ export default function VehicleBillOfSaleForm() {
             </form>
           </div>
 
-          {/* Right: Summary & Preview */}
+          {/* Right: Preview and PayPal */}
           <div className="lg:col-span-5">
-            <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
-            {/* Summary Card */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-              <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Bill of Sale Summary
-              </h3>
-              
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-slate-600">Template:</span>
-                  <span className="font-medium capitalize">{formData.template}</span>
-                </div>
-                
-                <div className="py-2 border-b">
-                  <span className="text-slate-600 block mb-1">Vehicle:</span>
-                  <span className="font-medium">
-                    {formData.vehicleYear && formData.vehicleMake && formData.vehicleModel 
-                      ? `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`
-                      : 'Not specified'}
-                  </span>
-                </div>
-                
-                {formData.vehicleVin && (
-                  <div className="flex justify-between py-2 border-b">
-                    <span className="text-slate-600">VIN:</span>
-                    <span className="font-mono text-xs">{formData.vehicleVin}</span>
+            <div className="sticky top-24 space-y-6">
+              {/* Bill of Sale Preview */}
+              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+                <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Bill of Sale Preview
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700 font-semibold">Template:</span>
+                    <span className="font-bold capitalize">{formData.template}</span>
                   </div>
-                )}
-                
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-slate-600">Seller:</span>
-                  <span className="font-medium">{formData.sellerName || 'Not specified'}</span>
-                </div>
-                
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-slate-600">Buyer:</span>
-                  <span className="font-medium">{formData.buyerName || 'Not specified'}</span>
-                </div>
-                
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-slate-600">Sale Price:</span>
-                  <span className="font-bold text-green-700">{formData.salePrice ? formatSalePrice() : '$0.00'}</span>
-                </div>
-                
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-slate-600">Odometer:</span>
-                  <span className="font-medium">{formData.odometerReading ? `${parseInt(formData.odometerReading).toLocaleString()} miles` : 'Not specified'}</span>
-                </div>
-                
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-slate-600">Condition:</span>
-                  <span className="font-medium">{formData.conditionType === 'as-is' ? 'AS-IS' : 'With Warranty'}</span>
-                </div>
-                
-                <div className="flex justify-between py-2">
-                  <span className="text-slate-600">Notary Section:</span>
-                  <span className="font-medium">{formData.includeNotary ? 'Included' : 'Not included'}</span>
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700 font-semibold">Vehicle:</span>
+                    <span className="font-bold">
+                      {formData.vehicleYear && formData.vehicleMake && formData.vehicleModel 
+                        ? `${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`
+                        : '—'}
+                    </span>
+                  </div>
+                  {formData.vehicleVin && (
+                    <div className="flex justify-between pb-2 border-b border-green-300">
+                      <span className="text-slate-700">VIN:</span>
+                      <span className="font-mono text-xs font-medium">{formData.vehicleVin}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700">Seller:</span>
+                    <span className="font-medium">{formData.sellerName || '—'}</span>
+                  </div>
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700">Buyer:</span>
+                    <span className="font-medium">{formData.buyerName || '—'}</span>
+                  </div>
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700">Odometer:</span>
+                    <span className="font-medium">{formData.odometerReading ? `${parseInt(formData.odometerReading).toLocaleString()} miles` : '—'}</span>
+                  </div>
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700">Condition:</span>
+                    <span className="font-medium">{formData.conditionType === 'as-is' ? 'AS-IS' : 'With Warranty'}</span>
+                  </div>
+                  <div className="flex justify-between pb-2 border-b border-green-300">
+                    <span className="text-slate-700">Notary:</span>
+                    <span className="font-medium">{formData.includeNotary ? 'Included' : 'Not included'}</span>
+                  </div>
+                  <div className="border-t border-green-300 pt-2 mt-2">
+                    <div className="flex justify-between text-green-700 text-lg">
+                      <span className="font-bold">Sale Price:</span>
+                      <span className="font-bold">{formData.salePrice ? formatSalePrice() : '$0.00'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* PDF Preview */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              {/* Document Preview Section */}
+              <div className="p-4 bg-white border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Document Preview
                 </h3>
-                {pdfPreview && (
-                  <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Maximize2 className="w-4 h-4" />
-                        Expand Preview
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-[90vh]">
-                      <DialogHeader>
-                        <DialogTitle>Vehicle Bill of Sale Preview</DialogTitle>
-                      </DialogHeader>
-                      <iframe 
-                        src={pdfPreview}
-                        className="w-full h-full rounded-md border"
-                        title="Bill of Sale Preview"
-                      />
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-              
-              <div className="relative bg-slate-100 rounded-md overflow-hidden" style={{ minHeight: '400px' }}>
+                <p className="text-xs text-slate-500 mb-3">
+                  Click to enlarge • Watermark removed after payment
+                </p>
+                
                 {isGeneratingPreview ? (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <p className="text-sm text-slate-500">Generating preview...</p>
+                    </div>
                   </div>
                 ) : pdfPreview ? (
-                  <>
-                    <iframe 
-                      src={pdfPreview}
-                      className="w-full h-96 rounded-md"
-                      title="Bill of Sale Preview"
-                    />
-                    <div className="absolute bottom-2 left-2 right-2 bg-amber-100 text-amber-800 text-xs p-2 rounded text-center">
-                      Watermark removed after payment
-                    </div>
-                  </>
+                  <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+                    <DialogTrigger asChild>
+                      <div className="relative cursor-pointer group">
+                        {/* PDF Preview Thumbnail */}
+                        <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <img 
+                            src={pdfPreview}
+                            alt="Bill of Sale Preview"
+                            className="w-full h-96 object-contain bg-white"
+                          />
+                          {/* Watermark Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div 
+                              className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none"
+                              style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}
+                            >
+                              MintSlip
+                            </div>
+                          </div>
+                          {/* Click to enlarge overlay */}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
+                              <span className="text-sm text-slate-700 flex items-center gap-1">
+                                <Maximize2 className="h-4 w-4" />
+                                Click to enlarge
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+                      <DialogHeader className="p-4 border-b">
+                        <DialogTitle className="flex items-center justify-between">
+                          <span>Document Preview</span>
+                          <span className="text-sm font-normal text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                            Watermark removed after payment
+                          </span>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="relative flex-1 h-full overflow-auto p-4">
+                        <img
+                          src={pdfPreview}
+                          alt="Bill of Sale Preview Full"
+                          className="w-full h-auto"
+                        />
+                        {/* Large Watermark Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div 
+                            className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none"
+                            style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.1)' }}
+                          >
+                            MintSlip
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                  <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
+                    <div className="text-center p-4">
+                      <Car className="h-12 w-12 text-slate-300 mx-auto mb-2" />
+                      <p className="text-sm text-slate-500">
+                        Fill out the form<br />to see a preview
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Payment Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-              <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Generate Your Document
-              </h3>
-              
-              <div className="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-green-800 font-medium">Vehicle Bill of Sale</span>
-                  <span className="text-2xl font-bold text-green-800">$10.00</span>
-                </div>
-                <p className="text-sm text-green-700 mt-1">One-time payment • Instant PDF download</p>
+              {/* PayPal - Right Side */}
+              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Complete Payment
+                </h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  Total: <strong>$10.00</strong> for vehicle bill of sale generation
+                </p>
+                
+                {isProcessing ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                    <span className="ml-2 text-slate-600">Processing...</span>
+                  </div>
+                ) : (
+                  <PayPalButtons
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                    disabled={isProcessing}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                  />
+                )}
+                
+                <p className="text-xs text-slate-500 mt-4 text-center">
+                  Secure payment via PayPal
+                </p>
               </div>
-              
-              {isProcessing ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-                  <span className="ml-2 text-slate-600">Processing...</span>
-                </div>
-              ) : (
-                <PayPalButtons
-                  style={{ layout: "vertical", shape: "rect" }}
-                  createOrder={createOrder}
-                  onApprove={onApprove}
-                  onError={onError}
-                />
-              )}
-              
-              <p className="text-xs text-slate-500 mt-4 text-center">
-                Secure payment via PayPal. Your document will be generated immediately after payment.
-              </p>
-            </div>
             </div>
           </div>
         </div>

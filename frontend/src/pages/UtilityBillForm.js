@@ -22,10 +22,10 @@ const US_STATES = [
   "VT", "VA", "WA", "WV", "WI", "WY"
 ];
 
-// Utility provider templates
+// Service Expense provider templates
 const UTILITY_PROVIDERS = [
   { id: 'xfinity', name: 'Xfinity Style', template: 'template-a', description: 'Modern telecom bill with purple accents' },
-  { id: 'traditional', name: 'Traditional Utility', template: 'template-b', description: 'Classic utility bill with blue theme' },
+  { id: 'traditional', name: 'Traditional', template: 'template-b', description: 'Classic bill with blue theme' },
   { id: 'modern', name: 'Modern Minimal', template: 'template-c', description: 'Clean minimal design with green accents' },
 ];
 
@@ -248,9 +248,9 @@ export default function UtilityBillForm() {
     return actions.order.create({
       purchase_units: [
         {
-          description: `Utility Bill - ${formData.companyName || 'Statement'}`,
+          description: `Service Expense - ${formData.companyName || 'Statement'}`,
           amount: {
-            value: "12.00",
+            value: "10.00",
           },
         },
       ],
@@ -264,7 +264,7 @@ export default function UtilityBillForm() {
     setIsProcessing(true);
     try {
       await actions.order.capture();
-      toast.success("Payment successful! Generating your utility bill...");
+      toast.success("Payment successful! Generating your Service Expense...");
       
       const fullFormData = {
         ...formData,
@@ -272,10 +272,10 @@ export default function UtilityBillForm() {
       };
       await generateAndDownloadUtilityBill(fullFormData, selectedProvider.template);
       
-      toast.success("Utility bill downloaded successfully!");
+      toast.success("Service Expense downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {
-      toast.error("Failed to generate utility bill");
+      toast.error("Failed to generate Service Expense");
       setIsProcessing(false);
     }
   };
@@ -305,9 +305,9 @@ export default function UtilityBillForm() {
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-            Utility Bill Generator
+            Service Expense Generator
           </h1>
-          <p className="text-slate-600">Create professional utility bill statements for electric, gas, water, internet, and more</p>
+          <p className="text-slate-600">Create professional service expense statements for electric, gas, water, internet, and more</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -992,7 +992,7 @@ export default function UtilityBillForm() {
                         <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <img 
                             src={pdfPreview}
-                            alt="Utility Bill Preview"
+                            alt="Service Expense Preview"
                             className="w-full h-96 object-contain bg-white"
                           />
                           {/* Watermark Overlay */}
@@ -1028,7 +1028,7 @@ export default function UtilityBillForm() {
                       <div className="relative flex-1 h-full overflow-auto p-4">
                         <img
                           src={pdfPreview}
-                          alt="Utility Bill Preview Full"
+                          alt="Service Expense Preview Full"
                           className="w-full h-auto"
                         />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -1060,7 +1060,7 @@ export default function UtilityBillForm() {
                   Complete Payment
                 </h3>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$12.00</strong> for utility bill generation
+                  Total: <strong>$10.00</strong> for service expense generation
                 </p>
                 
                 {!isFormValid() && (

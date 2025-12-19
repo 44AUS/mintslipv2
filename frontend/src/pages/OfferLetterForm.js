@@ -264,7 +264,7 @@ export default function OfferLetterForm() {
         {
           description: `Offer Letter - ${formData.candidateName}`,
           amount: {
-            value: "12.00",
+            value: "10.00",
           },
         },
       ],
@@ -1224,7 +1224,7 @@ export default function OfferLetterForm() {
               {/* Payment Section */}
               <div className="p-6 bg-white rounded-lg border border-slate-200">
                 <div className="text-center mb-4">
-                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$12.00</p>
+                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$10.00</p>
                   <p className="text-sm text-slate-500">One-time payment</p>
                 </div>
                 

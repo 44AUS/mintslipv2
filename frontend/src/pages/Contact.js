@@ -23,7 +23,7 @@ const CONTACT_REASONS = [
 const FAQS = [
   {
     question: "How much does it cost to generate a document?",
-    answer: "Our pricing is transparent and affordable. Pay stubs start at $10, bank statements range from $50-$70, and W-2 forms are $15 per document."
+    answer: "Our pricing is transparent and affordable. Pay stubs start at $10, accounting mockups range from $50-$70, and W-2 forms are $15 per document."
   },
   {
     question: "Is MintSlip secure and confidential?",
@@ -31,7 +31,7 @@ const FAQS = [
   },
   {
     question: "Can I generate documents for previous dates?",
-    answer: "Yes, you can create documents with custom dates to match your specific needs, whether for current or past periods."
+    answer: "Yes, you can create documents with custom dates to match your specific needs, whether for current, future, or past periods."
   },
   {
     question: "How quickly will I receive my document?",
@@ -312,7 +312,7 @@ export default function Contact() {
             Ready to generate your documents?
           </h2>
           <p className="text-slate-600 mb-8">
-            Create professional pay stubs, bank statements, and W-2 forms in minutes.
+            Create professional pay stubs, accounting mockups, W-2 forms, and more in minutes.
           </p>
           <Button 
             onClick={() => navigate("/")}

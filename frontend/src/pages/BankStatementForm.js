@@ -18,7 +18,7 @@ import ChimeLogo from '../assests/chime.png';
 import BoA from '../assests/boa2.png';
 import ChaseLogo from '../assests/chase-logo-black-transparent.png';
 
-// Bank templates - user will supply logos
+// Accounting Mockup templates - user will supply logos
 // Logo placeholders - replace these paths with actual logo files when provided
 const BANKS_DATA = [
   { id: 'chime', name: 'Chime', logo: ChimeLogo, template: 'template-a' },
@@ -34,7 +34,7 @@ export default function BankStatementForm() {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
-  // Bank search state
+  // Category search state
   const [bankSearchQuery, setBankSearchQuery] = useState("");
   const [selectedBank, setSelectedBank] = useState(null);
   const [showBankDropdown, setShowBankDropdown] = useState(false);
@@ -72,7 +72,7 @@ export default function BankStatementForm() {
     bank.name.toLowerCase().includes(bankSearchQuery.toLowerCase())
   );
 
-  // Handle bank selection - only changes template, user must still upload logo
+  // Handle category selection - only changes template, user must still upload logo
   const handleBankSelect = (bank) => {
     setSelectedBank(bank);
     setBankSearchQuery(bank.name);
@@ -81,7 +81,7 @@ export default function BankStatementForm() {
     // Note: We do NOT auto-populate the logo - user must upload their own
   };
 
-  // Handle custom bank name for "Other Bank"
+  // Handle custom category name for "Other"
   const handleCustomBankName = (e) => {
     setCustomBankName(e.target.value);
   };
@@ -191,7 +191,7 @@ export default function BankStatementForm() {
   // Only generate when a bank/template is selected
   useEffect(() => {
     const timer = setTimeout(async () => {
-      // Only generate preview if a bank is selected AND we have minimum required data
+      // Only generate preview if a category is selected AND we have minimum required data
       if (selectedBank && selectedMonth) {
         setIsGeneratingPreview(true);
         try {
@@ -213,7 +213,7 @@ export default function BankStatementForm() {
         }
         setIsGeneratingPreview(false);
       } else {
-        // Clear preview if no bank selected
+        // Clear preview if no category selected
         setPdfPreview(null);
       }
     }, 500); // 500ms debounce
@@ -237,7 +237,7 @@ export default function BankStatementForm() {
 
 // Get price based on selected template
 const getStatementPrice = () => {
-  // Bank of America (template-b) and Chase (template-c) are $70
+  // BOA (template-b) and Chase (template-c) are $70
   if (selectedTemplate === 'template-b' || selectedTemplate === 'template-c') {
     return "70.00";
   }
@@ -257,7 +257,7 @@ const createOrder = (data, actions) => {
           value: price,
           currency_code: "USD",
         },
-        description: "Bank Statement Generation",
+        description: "Accounting Mockup Generation",
       },
     ],
   });
@@ -289,7 +289,7 @@ const createOrder = (data, actions) => {
       setUploadedLogo(null);
       setLogoPreview(null);
       
-      toast.success("Bank statement downloaded successfully!");
+      toast.success("Accounting mockup downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {
       toast.error("Failed to generate document");
@@ -335,22 +335,22 @@ const createOrder = (data, actions) => {
     <div className="min-h-screen bg-white relative">
       <div className="noise-overlay" />
       
-      <Header title="Generate Bank Statement" />
+      <Header title="Generate Accounting Mockup" />
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Form */}
           <div className="lg:col-span-7">
             <form className="space-y-8">
-              {/* Bank Selection */}
+              {/* Category Selection */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Select Your Bank
+                  Select Your Category
                 </h2>
                 
-                {/* Bank Search Input */}
+                {/* Category Search Input */}
                 <div className="relative" ref={bankSearchRef}>
-                  <Label htmlFor="bankSearch">Bank Name *</Label>
+                  <Label htmlFor="bankSearch">Template Title *</Label>
                   <div className="relative mt-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
@@ -365,7 +365,7 @@ const createOrder = (data, actions) => {
                         }
                       }}
                       onFocus={() => setShowBankDropdown(true)}
-                      placeholder="Type to search for your bank..."
+                      placeholder="Type to search for your category..."
                       className="pl-10 pr-10"
                       required
                     />
@@ -380,7 +380,7 @@ const createOrder = (data, actions) => {
                     )}
                   </div>
                   
-                  {/* Bank Dropdown */}
+                  {/* Category Dropdown */}
                   {showBankDropdown && (
                     <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                       {filteredBanks.length > 0 ? (
@@ -422,7 +422,7 @@ const createOrder = (data, actions) => {
                   )}
                 </div>
 
-                {/* Selected Bank Confirmation */}
+                {/* Selected Category Confirmation */}
                 {selectedBank && (
                   <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
                     <div className="flex items-center gap-4">
@@ -439,14 +439,14 @@ const createOrder = (data, actions) => {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-800 mb-1">✓ Bank Selected</p>
+                        <p className="text-sm font-medium text-green-800 mb-1">✓ Category Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedBank.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
                           Template: <span className="font-semibold">{selectedBank.template === 'template-a' ? 'Style A (Chime)' : selectedBank.template === 'template-b' ? 'Style B (Bank of America)' : 'Style C (Chase)'}</span>
                         </p>
                         <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded">
                           <p className="text-xs text-amber-700">
-                            ⚠️ You must upload your own bank logo below to generate the statement.
+                            ⚠️ You must upload your own logo below to generate the statement.
                           </p>
                         </div>
                       </div>
@@ -455,15 +455,15 @@ const createOrder = (data, actions) => {
                 )}
               </div>
 
-              {/* Bank Logo Upload */}
+              {/* Logo Upload */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                      Bank Logo *
+                      Category Logo *
                     </h2>
                     <p className="text-sm text-slate-500 mt-1">
-                      Upload a custom bank logo. PNG format only.
+                      Upload a custom logo. PNG format only.
                     </p>
                   </div>
                 </div>
@@ -486,7 +486,7 @@ const createOrder = (data, actions) => {
                       <div className="relative">
                         <img 
                           src={logoPreview} 
-                          alt="Bank Logo Preview" 
+                          alt="Logo Preview" 
                           className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white p-2"
                         />
                         <button
@@ -544,7 +544,7 @@ const createOrder = (data, actions) => {
                 
                 {!uploadedLogo && !logoError && (
                   <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
-                    * A bank logo is required to generate your statement
+                    * A logo is required to generate your statement
                   </p>
                 )}
               </div>
@@ -750,7 +750,7 @@ const createOrder = (data, actions) => {
                           <iframe
                             src={pdfPreview}
                             className="w-full h-96 pointer-events-none"
-                            title="Bank Statement Preview"
+                            title="Accounting Mockup Preview"
                             style={{ transform: 'scale(1)', transformOrigin: 'top left' }}
                           />
                           {/* Watermark Overlay */}
@@ -789,7 +789,7 @@ const createOrder = (data, actions) => {
                         <iframe
                           src={pdfPreview}
                           className="w-full h-[calc(90vh-80px)]"
-                          title="Bank Statement Preview Full"
+                          title="Accounting Mockup Preview Full"
                         />
                         {/* Large Watermark Overlay */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -810,7 +810,7 @@ const createOrder = (data, actions) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       <p className="text-sm text-slate-500">
-                        Select a bank template<br />to see a preview
+                        Select a template<br />to see a preview
                       </p>
                     </div>
                   </div>
@@ -823,7 +823,7 @@ const createOrder = (data, actions) => {
                   Complete Payment
                 </h3>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>${getStatementPrice()}</strong> for bank statement generation
+                  Total: <strong>${getStatementPrice()}</strong> for accounting mockup generation
                 </p>
                 
                 {!isFormValid() && (
@@ -832,8 +832,8 @@ const createOrder = (data, actions) => {
                       Please complete the following before payment:
                     </p>
                     <ul className="text-xs text-amber-600 mt-1 list-disc list-inside">
-                      {!selectedBank && <li>Select a bank</li>}
-                      {!uploadedLogo && <li>Upload a bank logo</li>}
+                      {!selectedBank && <li>Select a category</li>}
+                      {!uploadedLogo && <li>Upload a logo</li>}
                       {!accountName && <li>Enter account holder name</li>}
                       {!accountNumber && <li>Enter account number</li>}
                     </ul>

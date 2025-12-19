@@ -113,7 +113,7 @@ export default function About() {
                 MintSlip began with a mission to revolutionize the way financial documents are created. Frustrated by the inaccuracy, high costs, and complexity of traditional methods, we saw an opportunity for innovation.
               </p>
               <p className="text-slate-600 text-lg leading-relaxed mb-6">
-                Today, we're proud to be recognized as a trusted solution for pay stubs, bank statements, and W-2 forms. Our platform empowers individuals and businesses to generate professional documents in minutes, not hours.
+                Today, we're proud to be recognized as a trusted solution for pay stubs, accounting mockups, W-2 forms, and more. Our platform empowers individuals and businesses to generate professional documents in minutes, not hours.
               </p>
               <p className="text-slate-600 text-lg leading-relaxed">
                 We believe that everyone deserves access to professional-quality financial documents without the need for expensive software or accounting expertise.
@@ -129,13 +129,13 @@ export default function About() {
                   </div>
                   <div className="bg-white rounded-xl p-6 shadow-sm">
                     <Shield className="w-10 h-10 text-green-700 mb-3" />
-                    <p className="font-bold text-green-800 text-lg">Bank Statements</p>
+                    <p className="font-bold text-green-800 text-lg">Accounting Mockups</p>
                     <p className="text-sm text-slate-500">Detailed & Complete</p>
                   </div>
                   <div className="bg-white rounded-xl p-6 shadow-sm">
                     <Award className="w-10 h-10 text-green-700 mb-3" />
                     <p className="font-bold text-green-800 text-lg">W-2 Forms</p>
-                    <p className="text-sm text-slate-500">IRS Compliant</p>
+                    <p className="text-sm text-slate-500">Compliant</p>
                   </div>
                   <div className="bg-white rounded-xl p-6 shadow-sm">
                     <Users className="w-10 h-10 text-green-700 mb-3" />
@@ -224,7 +224,7 @@ export default function About() {
             Ready to Get Started?
           </h2>
           <p className="text-green-100 text-lg mb-8 max-w-xl mx-auto">
-            Create professional pay stubs, bank statements, and W-2 forms in minutes. No complicated software required.
+            Create professional pay stubs, accounting mockups, W-2 forms, and more in minutes. No complicated software required.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Example from '../assests/example.png';
 import secure from '../assests/secure.png';
+import Paystub from '../assests/paystub.png';
 
 // Telegram icon SVG component
 const TelegramIcon = ({ className }) => (
@@ -68,10 +69,10 @@ export default function Home() {
               <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
                 <span className="block text-slate-800">Generate</span>
                 <span className="block bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Professional</span>
-                <span className="block text-slate-800">Documents</span>
+                <span className="block text-slate-800">Paystubs in Minutes</span>
               </h1>
               <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl">
-                Create authentic pay stubs, bank statements, and W-2 forms in minutes. No sign-up required.
+                Create accurate pay stubs, accounting mockups, W-2 forms, and more in minutes. No sign-up required.
               </p>
             </div>
 
@@ -87,13 +88,13 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button
-                onClick={() => navigate("/bank-statement")}
+                onClick={() => navigate("/accounting-mockup-generator")}
                 size="lg"
                 variant="outline"
                 className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
               >
                 <FileBarChart className="w-5 h-5" />
-                Bank Statement
+                Accounting Mockups
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -204,7 +205,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <img
-                src="https://images.pexels.com/photos/5980853/pexels-photo-5980853.jpeg"
+                src={Paystub}
                 alt="What is a pay stub"
                 className="w-full h-auto rounded-md shadow-xl border border-slate-300 object-cover max-h-96"
               />
@@ -222,7 +223,7 @@ export default function Home() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">Proof of income for loans & rentals</span>
+                  <span className="text-slate-700">Create accurate income documentation</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
@@ -238,16 +239,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Income Verification Section */}
+      {/* Accurate Income Documentation Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1 space-y-6">
               <p className="text-xs uppercase tracking-widest text-slate-500" style={{ letterSpacing: '0.15em' }}>
-                INCOME VERIFICATION
+                Accurate Income Documentation
               </p>
               <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Our Paystub Generator Has Your Income Verification Needs
+                Our Paystub Generator Has Your Accurate Income Documentation Needs
               </h3>
               <p className="text-lg leading-relaxed text-slate-600">
                 MintSlip provides a wide selection of paystub templates to suit your needs. Whether you&apos;re a freelancer, small business owner, or employee, we&apos;ve got you covered with professional, accurate documents.
@@ -255,8 +256,8 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div className="p-4 bg-green-50 rounded-md border border-green-200">
                   <FileText className="w-8 h-8 text-green-700 mb-2" />
-                  <h4 className="font-bold text-slate-800">Proof of Income</h4>
-                  <p className="text-sm text-slate-600">For loan & rental applications</p>
+                  <h4 className="font-bold text-slate-800">Earnings Record</h4>
+                  <p className="text-sm text-slate-600">Accurate calculations</p>
                 </div>
                 <div className="p-4 bg-green-50 rounded-md border border-green-200">
                   <FileBarChart className="w-8 h-8 text-green-700 mb-2" />
@@ -265,8 +266,8 @@ export default function Home() {
                 </div>
                 <div className="p-4 bg-green-50 rounded-md border border-green-200">
                   <Shield className="w-8 h-8 text-green-700 mb-2" />
-                  <h4 className="font-bold text-slate-800">Employment Verification</h4>
-                  <p className="text-sm text-slate-600">Verify work history</p>
+                  <h4 className="font-bold text-slate-800">Business Documentation</h4>
+                  <p className="text-sm text-slate-600">Accurate records for freelancers</p>
                 </div>
                 <div className="p-4 bg-green-50 rounded-md border border-green-200">
                   <Clock className="w-8 h-8 text-green-700 mb-2" />
@@ -278,7 +279,7 @@ export default function Home() {
             <div className="order-1 md:order-2">
               <img
                 src="https://images.pexels.com/photos/6289058/pexels-photo-6289058.jpeg"
-                alt="Income verification documents"
+                alt="Accurate Income Documentation"
                 className="w-full h-auto rounded-md shadow-xl border border-slate-300 object-cover max-h-96"
               />
             </div>
@@ -332,13 +333,13 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Bank Statement Pricing */}
+            {/* accounting mockups Pricing */}
             <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 POPULAR
               </div>
               <PiggyBank className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Bank Statement</h4>
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups</h4>
               <div className="mb-4">
                 <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$50-70</span>
                 <span className="text-slate-500 ml-2">/ doc</span>
@@ -358,7 +359,7 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/bank-statement")}
+                onClick={() => navigate("/accounting-mockup-generator")}
                 className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
               >
                 Generate Now
@@ -376,7 +377,7 @@ export default function Home() {
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>IRS-Compliant Format</span>
+                  <span>Compliant Format</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <CheckCircle className="w-4 h-4 text-green-600" />
@@ -389,242 +390,6 @@ export default function Home() {
               </ul>
               <button
                 onClick={() => navigate("/w2")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-          </div>
-          
-          {/* Second Row - W-9, 1099-NEC, and Schedule C */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* W-9 Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <ClipboardList className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>W-9 Form</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$10</span>
-                <span className="text-slate-500 ml-2">/ form</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Request for TIN</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>IRS-Compliant Format</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Multiple Tax Years</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/w9")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* 1099-NEC Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <Users className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>1099-NEC</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$12</span>
-                <span className="text-slate-500 ml-2">/ form</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Nonemployee Compensation</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Contractor Payments</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Years 2021-2025</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/1099-nec")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* 1099-MISC Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <Landmark className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>1099-MISC</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$12</span>
-                <span className="text-slate-500 ml-2">/ form</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Rents, Royalties, Prizes</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Medical &amp; Attorney Payments</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Years 2021-2025</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/1099-misc")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* Schedule C Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <FileBarChart className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Schedule C</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$15</span>
-                <span className="text-slate-500 ml-2">/ form</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>IRS Form 1040 Schedule C</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Profit & Loss Calculation</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>All Business Expenses</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/schedule-c")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-          </div>
-
-          {/* Third Row - Offer Letter and Vehicle Bill of Sale */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <Mail className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Offer Letter</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$12</span>
-                <span className="text-slate-500 ml-2">/ letter</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>3 Professional Templates</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Customizable Content</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Signature Ready</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/offer-letter")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* Vehicle Bill of Sale Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-cyan-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <Car className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Vehicle Bill of Sale</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$10</span>
-                <span className="text-slate-500 ml-2">/ form</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>4 Template Styles</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Odometer Disclosure</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Optional Notary Section</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/vehicle-bill-of-sale")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* Utility Bill Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                NEW
-              </div>
-              <Zap className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Utility Bill</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$12</span>
-                <span className="text-slate-500 ml-2">/ statement</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>3 Template Styles</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Custom Logo Upload</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Usage & Meter Details</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/utility-bill")}
                 className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
               >
                 Generate Now
@@ -670,10 +435,10 @@ export default function Home() {
             </div>
           </button>
 
-          {/* Bank Statement Card */}
+          {/* accounting mockups Card */}
           <button
-            data-testid="bankstatement-card-button"
-            onClick={() => navigate("/bank-statement")}
+            data-testid="accountingmockup-card-button"
+            onClick={() => navigate("/accounting-mockup-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -682,15 +447,15 @@ export default function Home() {
             
             <div className="space-y-4">
               <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Bank Statement
+                Accounting Mockups
               </h4>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Create real detailed bank statements with transaction history, account summaries, and professional formatting.
+                Generate statement templates for personal bookkeeping and organizational purposes.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
                   <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50-$70</span>
-                  <span className="text-slate-500">per document</span>
+                  <span className="text-slate-500">per statement</span>
                 </div>
               </div>
             </div>
@@ -737,7 +502,6 @@ export default function Home() {
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   W-9 Form
                 </h4>
-                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Generate W-9 Request for Taxpayer Identification Number and Certification forms with all required fields.
@@ -766,14 +530,13 @@ export default function Home() {
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   1099-NEC
                 </h4>
-                <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Generate 1099-NEC forms for nonemployee compensation. Perfect for contractor and freelancer payments.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$12</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -795,14 +558,13 @@ export default function Home() {
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   1099-MISC
                 </h4>
-                <span className="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Generate 1099-MISC forms for rents, royalties, prizes, awards, medical payments, and more.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$12</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -824,14 +586,13 @@ export default function Home() {
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Offer Letter
                 </h4>
-                <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Create professional employment offer letters with 3 customizable templates and signature lines.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$12</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -853,10 +614,9 @@ export default function Home() {
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Schedule C
                 </h4>
-                <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate IRS Schedule C forms for sole proprietors with complete income, expenses, and profit/loss calculations.
+                Generate Schedule C forms for sole proprietors with complete income, expenses, and profit/loss calculations.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
@@ -882,7 +642,6 @@ export default function Home() {
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Vehicle Bill of Sale
                 </h4>
-                <span className="bg-cyan-100 text-cyan-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
                 Create professional vehicle bill of sale documents with seller/buyer info, vehicle details, and optional notary section.
@@ -896,10 +655,10 @@ export default function Home() {
             </div>
           </button>
 
-          {/* Utility Bill Card */}
+          {/* Service Expense Bill Card */}
           <button
-            data-testid="utility-bill-card-button"
-            onClick={() => navigate("/utility-bill")}
+            data-testid="service-expense-l-card-button"
+            onClick={() => navigate("/service-expense-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -909,16 +668,15 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Utility Bill
+                  Service Expense
                 </h4>
-                <span className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">NEW</span>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate professional utility bill statements for electric, gas, water, internet, and more with custom logos and 3 template styles.
+                Generate professional service expense statements for electric, gas, water, internet, and more with custom logos and 3 template styles.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$12</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50</span>
                   <span className="text-slate-500">per statement</span>
                 </div>
               </div>

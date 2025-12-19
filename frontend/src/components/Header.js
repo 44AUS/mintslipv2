@@ -22,20 +22,20 @@ import {
 
 // Tax Forms dropdown items
 const TAX_FORMS = [
-  { name: "W-2 Generator", path: "/w2", icon: FileSpreadsheet },
-  { name: "W-9 Generator", path: "/w9", icon: FileSpreadsheet },
-  { name: "1099 NEC Generator", path: "/1099-nec", icon: FileSpreadsheet },
-  { name: "1099 Misc Generator", path: "/1099-misc", icon: FileSpreadsheet },
-  { name: "Schedule C Generator", path: "/schedule-c", icon: FileSpreadsheet },
+  { name: "W-2 Generator", path: "/w2-generator", icon: FileSpreadsheet },
+  { name: "W-9 Generator", path: "/w9-generator", icon: FileSpreadsheet },
+  { name: "1099 NEC Generator", path: "/1099-nec-generator", icon: FileSpreadsheet },
+  { name: "1099 Misc Generator", path: "/1099-misc-generator", icon: FileSpreadsheet },
+  { name: "Schedule C Generator", path: "/schedule-c-generator", icon: FileSpreadsheet },
   // Add more tax forms here as needed
 ];
 
 // Other Forms dropdown items
 const OTHER_FORMS = [
-  { name: "Voided Check", path: "/voided-check", icon: FileSpreadsheet },
-  { name: "Offer Letter Generator", path: "/offer-letter", icon: FileSpreadsheet },
-  { name: "Invoice Generator", path: "/invoice-generator", icon: FileSpreadsheet },
-  { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale", icon: FileSpreadsheet },
+  { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
+  { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
+  { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
+  { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
   // Add more forms here as needed
 ];
 
@@ -64,8 +64,8 @@ function DesktopNavLinks({ location, onNavigate }) {
   return (
     <>
       <button
-        onClick={() => onNavigate("/paystub")}
-        className={getButtonClasses("/paystub")}
+        onClick={() => onNavigate("/paystub-generator")}
+        className={getButtonClasses("/paystub-generator")}
         data-testid="nav-paystub-link"
       >
         <FileText className="w-4 h-4" />
@@ -73,21 +73,21 @@ function DesktopNavLinks({ location, onNavigate }) {
       </button>
       
       <button
-        onClick={() => onNavigate("/bank-statement")}
-        className={getButtonClasses("/bank-statement")}
+        onClick={() => onNavigate("/accounting-mockup-generator")}
+        className={getButtonClasses("/accounting-mockup-generator")}
         data-testid="nav-bankstatement-link"
       >
         <FileBarChart className="w-4 h-4" />
-        <span className="text-sm">Bank Statements</span>
+        <span className="text-sm">Accounting Mockups</span>
       </button>
 
         <button
-        onClick={() => onNavigate("/utility-bill")}
-        className={getButtonClasses("/utility-bill")}
+        onClick={() => onNavigate("/service-expense-generator")}
+        className={getButtonClasses("/service-expense-generator")}
         data-testid="nav-bankstatement-link"
       >
         <FileBarChart className="w-4 h-4" />
-        <span className="text-sm">Utility Bills</span>
+        <span className="text-sm">Service Expense</span>
       </button>
 
       {/* Tax Forms Dropdown */}
@@ -183,8 +183,8 @@ function MobileNavLinks({ location, onNavigate }) {
   return (
     <>
       <button
-        onClick={() => onNavigate("/paystub")}
-        className={getButtonClasses("/paystub")}
+        onClick={() => onNavigate("/paystub-generator")}
+        className={getButtonClasses("/paystub-generator")}
         data-testid="nav-paystub-link-mobile"
       >
         <FileText className="w-5 h-5" />
@@ -192,21 +192,21 @@ function MobileNavLinks({ location, onNavigate }) {
       </button>
       
       <button
-        onClick={() => onNavigate("/bank-statement")}
-        className={getButtonClasses("/bank-statement")}
+        onClick={() => onNavigate("/accounting-mockup-generator")}
+        className={getButtonClasses("/accounting-mockup-generator")}
         data-testid="nav-bankstatement-link-mobile"
       >
         <FileBarChart className="w-5 h-5" />
-        <span className="text-base">Bank Statements</span>
+        <span className="text-base">Accounting Mockups</span>
       </button>
 
       <button
-        onClick={() => onNavigate("/utility-bill")}
-        className={getButtonClasses("/utility-bill")}
+        onClick={() => onNavigate("/service-expense-generator")}
+        className={getButtonClasses("/service-expense-generator")}
         data-testid="nav-utilitybill-link-mobile"
       >
         <FileBarChart className="w-5 h-5" />
-        <span className="text-base">Utility Bills</span>
+        <span className="text-base">Service Expense</span>
       </button>
 
       {/* Tax Forms Collapsible for Mobile */}
@@ -333,21 +333,12 @@ export default function Header({ title }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
-            {!isHome && (
-              <button 
-                onClick={() => navigate("/")} 
-                className="hover:opacity-70 transition-opacity"
-                data-testid="back-button"
-              >
-                <ArrowLeft className="w-5 h-5" style={{ color: '#1a4731' }} />
-              </button>
-            )}
             <h1 
               className="text-xl sm:text-2xl font-black tracking-tight cursor-pointer" 
               style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
               onClick={() => navigate("/")}
             >
-              {title || "MintSlip"}
+              MintSlip
             </h1>
           </div>
           

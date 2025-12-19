@@ -16,7 +16,7 @@ const FAQ_CATEGORIES = {
     questions: [
       {
         question: "Who is MintSlip?",
-        answer: "MintSlip is a professional document generation platform based in the United States. Our goal is to provide easy-to-use tools for creating accurate pay stubs, bank statements, and W-2 forms. We've built this platform to remove the stress of document generation while ensuring accuracy and professionalism."
+        answer: "MintSlip is a professional document generation platform based in the United States. Our goal is to provide easy-to-use tools for creating accurate pay stubs, accounting mockups, W-2 forms, and more. We've built this platform to remove the stress of document generation while ensuring accuracy and professionalism."
       },
       {
         question: "How will I receive my documents?",
@@ -103,24 +103,24 @@ const FAQ_CATEGORIES = {
     ]
   },
   bankstatement: {
-    title: "Bank Statement Questions",
+    title: "Accounting Mockup Questions",
     icon: Building2,
     questions: [
       {
-        question: "What information is included in a bank statement?",
-        answer: "Our bank statements include: account holder information, account number, statement period, beginning and ending balances, detailed transaction history with dates and descriptions, and a comprehensive summary of deposits, withdrawals, and fees."
+        question: "What information is included in a accounting mockup?",
+        answer: "Our accounting mockups include: account holder information, account number, statement period, beginning and ending balances, detailed transaction history with dates and descriptions, and a comprehensive summary of deposits, withdrawals, and fees."
       },
       {
         question: "Can I add custom transactions?",
         answer: "Yes! You can add as many transactions as you need, including deposits, withdrawals, purchases, transfers, and fees. Each transaction can have a custom date, description, and amount."
       },
       {
-        question: "What bank statement templates are available?",
-        answer: "We offer multiple professional templates styled after popular banks. Each template includes authentic formatting, proper sections, and professional layouts that match real bank statements."
+        question: "What accounting mockup templates are available?",
+        answer: "We offer multiple professional templates that are meticulously styled. Each template includes accurate formatting, proper sections, and professional layouts."
       },
       {
         question: "Can I create statements for previous months?",
-        answer: "Yes, you can create bank statements for any month. Simply select the statement month and enter your transactions for that period."
+        answer: "Yes, you can create accounting mockups for any month. Simply select the statement month and enter your transactions for that period."
       },
       {
         question: "How many transactions can I include?",

@@ -5,9 +5,19 @@ const FOOTER_LINKS = {
   documents: {
     title: "Documents",
     links: [
-      { name: "Pay Stubs", path: "/paystub" },
-      { name: "Bank Statements", path: "/bank-statement" },
-      { name: "W-2 Forms", path: "/w2" },
+      { name: "Pay Stub Generator", path: "/paystub-generator" },
+      { name: "Accounting Mockups", path: "/accounting-mockup-generator" },
+      { name: "W-2 Form Generator", path: "/w2-generator" },
+      { name: "W-9 Form Generator", path: "/w9-generator" },
+      { name: "1099-NEC Form Generator", path: "/1099-nec-generator" },
+      { name: "1099-MISC Form Generator", path: "/1099-misc-generator" },
+      { name: "Offer Letter Generator", path: "/offer-letter-generator" },
+      { name: "Schedule C Form Generator", path: "/schedule-c-generator" },
+      { name: "Vehicle Bill of Sale Generator", path: "/vehicle-bill-of-sale-generator" },
+      { name: "Service Expense Generator", path: "/service-expense-generator" },
+      { name: "Contractor Paystub Generator", path: "/contractor-paystub-generator" },
+      { name: "Instant Paystub Generator", path: "/instant-paystub-generator" },
+      { name: "Self Employed Paystub Generator", path: "/self-employed-paystub-generator" },
     ]
   },
   company: {
@@ -29,11 +39,11 @@ const FOOTER_LINKS = {
 };
 
 const SOCIAL_LINKS = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Youtube, href: "#", label: "YouTube" },
+  { icon: Facebook, href: "https://www.facebook.com/MintSlip", label: "Facebook" },
+  { icon: Twitter, href: "https://www.x.com/MintSlip", label: "Twitter" },
+  { icon: Instagram, href: "https://www.instagram.com/MintSlip", label: "Instagram" },
+  { icon: Linkedin, href: "https://www.linkedin.com/MintSlip", label: "LinkedIn" },
+  { icon: Youtube, href: "https://www.youtube.com/MintSlip", label: "YouTube" },
 ];
 
 export default function Footer() {
@@ -154,6 +164,7 @@ export default function Footer() {
                   <a
                     key={social.label}
                     href={social.href}
+                    target="_blank"
                     aria-label={social.label}
                     className="w-10 h-10 rounded-full bg-slate-800 hover:bg-green-600 flex items-center justify-center transition-colors"
                   >

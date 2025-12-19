@@ -756,7 +756,7 @@ export default function PaystubForm() {
                     Company Logo *
                   </h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    Upload your company or payroll provider logo. PNG format only.
+                    Upload company logo. PNG format only.
                   </p>
                 </div>
                 

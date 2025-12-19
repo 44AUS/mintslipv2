@@ -777,9 +777,10 @@ export default function VehicleBillOfSaleForm() {
           </div>
 
           {/* Right: Summary & Preview */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5">
+            <div className="sticky top-6 space-y-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
             {/* Summary Card */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 sticky top-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
               <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                 Bill of Sale Summary
               </h3>

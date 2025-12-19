@@ -1,8 +1,8 @@
 import { generateVehicleBillOfSalePDF } from './vehicleBillOfSaleGenerator';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Disable worker for simpler setup - runs on main thread
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+// Set up pdf.js worker using unpkg CDN with correct version
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 // Generate Vehicle Bill of Sale preview as an image (no iframe needed)
 export const generateVehicleBillOfSalePreview = async (formData) => {

@@ -579,27 +579,23 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y);
 
   // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT SIDE) ====================
-  // Title - positioned to not overlap
+  // Title - "Earnings" in bold, "Statement" in normal
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Earnings ", rightCol, 25);
+  doc.text("Earnings", rightCol, 25);
+  doc.setFontSize(14);
   doc.setFont("helvetica", "normal");
-  doc.text("Statement", rightCol + 48, 25);
+  doc.text("Statement", rightCol + 42, 25);
   
-  // Logo or Company Name on far right
+  // Logo on far right - only show if uploaded, otherwise leave blank
   if (logoDataUrl) {
     try {
       doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 55, 12, 50, 22);
     } catch (e) {
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.text(formData.company || "COMPANY", pageWidth - m, 25, { align: 'right' });
+      // Logo failed to load - leave blank
     }
-  } else {
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text(formData.company || "COMPANY", pageWidth - m, 25, { align: 'right' });
   }
+  // No fallback to company name - leave blank if no logo
   
   // Period info - below title
   doc.setFontSize(7);

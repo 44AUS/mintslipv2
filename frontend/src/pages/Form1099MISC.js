@@ -817,12 +817,12 @@ export default function Form1099MISC() {
                       <DialogHeader>
                         <DialogTitle>1099-MISC Preview - {selectedTaxYear}</DialogTitle>
                       </DialogHeader>
-                      <div className="flex-1 h-full">
+                      <div className="flex-1 h-full overflow-auto p-4">
                         {pdfPreview && (
-                          <iframe
+                          <img
                             src={pdfPreview}
-                            className="w-full h-[calc(90vh-80px)] border-0"
-                            title="1099-MISC Preview Full"
+                            alt="1099-MISC Preview Full"
+                            className="w-full h-auto"
                           />
                         )}
                       </div>
@@ -839,10 +839,10 @@ export default function Form1099MISC() {
                       Generating preview...
                     </div>
                   ) : pdfPreview ? (
-                    <iframe
+                    <img
                       src={pdfPreview}
-                      className="w-full h-full border-0"
-                      title="1099-MISC Preview"
+                      alt="1099-MISC Preview"
+                      className="w-full h-full object-contain bg-white"
                     />
                   ) : (
                     <p className="text-slate-500">Preview will appear here</p>

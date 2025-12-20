@@ -334,6 +334,18 @@ const createOrder = (data, actions) => {
 
   return (
     <div className="min-h-screen bg-slate-50 relative">
+      <Helmet>
+        <title>Bank Statement Generator | MintSlip - Create Accounting Mockups</title>
+        <meta name="description" content="Generate professional bank statement mockups for personal budgeting and financial planning. Multiple bank styles available. Instant PDF download." />
+        <meta name="keywords" content="bank statement generator, accounting mockup, financial statement, budget planning" />
+        <meta property="og:title" content="Bank Statement Generator | MintSlip" />
+        <meta property="og:description" content="Create professional bank statement mockups for budgeting purposes." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Bank Statement Generator | MintSlip" />
+        <meta name="twitter:description" content="Professional accounting mockup generator for personal finance." />
+      </Helmet>
+      
       <div className="noise-overlay" />
       
       <Header title="Generate Accounting Mockup" />

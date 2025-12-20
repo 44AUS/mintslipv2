@@ -1385,8 +1385,8 @@ export default function Home() {
                 We don’t save your personal information or generated documents
               </p>
               <div className="relative">
-                <div className="bg-white rounded-t-lg overflow-hidden shadow-lg h-64 translate-y-4">
-                  <img src={secure} />
+                <div className="bg-gradient-to-br from-white to-red-50 rounded-lg overflow-hidden shadow-lg h-64 flex items-center justify-center">
+                  <NoDataStoredAnimation isVisible={whyChooseInView} />
                 </div>
               </div>
             </div>

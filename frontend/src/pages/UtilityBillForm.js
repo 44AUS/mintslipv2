@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
-import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search } from "lucide-react";
+import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets } from "lucide-react";
 
 // US States list
 const US_STATES = [
@@ -25,7 +27,7 @@ const US_STATES = [
 // Service Expense provider templates
 const UTILITY_PROVIDERS = [
   { id: 'xfinity', name: 'Xfinity Style', template: 'template-a', description: 'Modern telecom bill with purple accents' },
-  { id: 'traditional', name: 'Traditional', template: 'template-b', description: 'Classic bill with blue theme' },
+  { id: 'traditional', name: 'Traditional (Water Bill)', template: 'template-b', description: 'Classic water bill with YTD consumption chart' },
   { id: 'modern', name: 'Modern Minimal', template: 'template-c', description: 'Clean minimal design with green accents' },
 ];
 
@@ -40,6 +42,7 @@ export default function UtilityBillForm() {
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [isWaterChargesOpen, setIsWaterChargesOpen] = useState(false);
   
   // Provider search state
   const [providerSearchQuery, setProviderSearchQuery] = useState("");
@@ -62,7 +65,10 @@ export default function UtilityBillForm() {
     companyState: "",
     companyZip: "",
     companyPhone: "",
+    companyFax: "",
     companyWebsite: "",
+    companyMailingAddress: "",
+    companyMailingCity: "",
     
     // Account Info
     accountNumber: "",
@@ -71,28 +77,42 @@ export default function UtilityBillForm() {
     serviceCity: "",
     serviceState: "",
     serviceZip: "",
+    accountStatus: "Current",
     
     // Billing Info
     billingDate: new Date().toISOString().split('T')[0],
     servicePeriodStart: "",
     servicePeriodEnd: "",
     dueDate: "",
+    daysInPeriod: "",
+    billCycle: "",
     
     // Service Details
-    serviceType: "Electric",
+    serviceType: "Water",
     
     // Previous Balance
     previousBalance: "0.00",
     paymentReceived: "0.00",
     paymentDate: "",
     
-    // Current Charges
+    // Current Charges (Generic)
     baseCharge: "0.00",
     usageCharge: "0.00",
     usageAmount: "",
-    usageUnit: "kWh",
+    usageUnit: "gallons",
     taxes: "0.00",
     fees: "0.00",
+    
+    // Water-specific charges (for Traditional template)
+    waterDepositApplication: "0.00",
+    waterTier1Charge: "0.00",
+    waterTier1Gallons: "",
+    waterTier2Charge: "0.00",
+    waterTier2Gallons: "",
+    costOfBasicService: "0.00",
+    sewerCharge: "0.00",
+    sewerGallons: "",
+    streetLightCharge: "0.00",
     
     // Additional Info
     meterNumber: "",
@@ -102,6 +122,10 @@ export default function UtilityBillForm() {
     // Discounts
     discountDescription: "",
     discountAmount: "0.00",
+    
+    // Notice content
+    importantNotice: "",
+    spanishNotice: "",
     
     // Notes
     notes: ""
@@ -118,6 +142,11 @@ export default function UtilityBillForm() {
     setSelectedProvider(provider);
     setProviderSearchQuery(provider.name);
     setShowProviderDropdown(false);
+    
+    // Auto-expand water charges section for traditional template
+    if (provider.template === 'template-b') {
+      setIsWaterChargesOpen(true);
+    }
   };
 
   // Logo upload validation and processing
@@ -195,19 +224,36 @@ export default function UtilityBillForm() {
     setFormData(prev => ({ ...prev, [field]: formatted }));
   };
 
-  // Calculate total amount due
+  // Calculate total amount due based on template
   const calculateTotalDue = () => {
-    const previous = parseFloat(formData.previousBalance) || 0;
-    const payment = parseFloat(formData.paymentReceived) || 0;
-    const base = parseFloat(formData.baseCharge) || 0;
-    const usage = parseFloat(formData.usageCharge) || 0;
-    const taxes = parseFloat(formData.taxes) || 0;
-    const fees = parseFloat(formData.fees) || 0;
-    const discount = parseFloat(formData.discountAmount) || 0;
-    
-    const balanceForward = previous - payment;
-    const currentCharges = base + usage + taxes + fees - discount;
-    return (balanceForward + currentCharges).toFixed(2);
+    if (selectedProvider?.template === 'template-b') {
+      // Water bill calculation
+      const waterDeposit = parseFloat(formData.waterDepositApplication) || 0;
+      const waterTier1 = parseFloat(formData.waterTier1Charge) || 0;
+      const waterTier2 = parseFloat(formData.waterTier2Charge) || 0;
+      const costOfBasicService = parseFloat(formData.costOfBasicService) || parseFloat(formData.baseCharge) || 0;
+      const sewerCharge = parseFloat(formData.sewerCharge) || 0;
+      const streetLightCharge = parseFloat(formData.streetLightCharge) || 0;
+      const previousBalance = parseFloat(formData.previousBalance) || 0;
+      const paymentReceived = parseFloat(formData.paymentReceived) || 0;
+      
+      const balanceForward = previousBalance - paymentReceived;
+      const currentCharges = waterDeposit + waterTier1 + waterTier2 + costOfBasicService + sewerCharge + streetLightCharge;
+      return (balanceForward + currentCharges).toFixed(2);
+    } else {
+      // Generic utility calculation
+      const previous = parseFloat(formData.previousBalance) || 0;
+      const payment = parseFloat(formData.paymentReceived) || 0;
+      const base = parseFloat(formData.baseCharge) || 0;
+      const usage = parseFloat(formData.usageCharge) || 0;
+      const taxes = parseFloat(formData.taxes) || 0;
+      const fees = parseFloat(formData.fees) || 0;
+      const discount = parseFloat(formData.discountAmount) || 0;
+      
+      const balanceForward = previous - payment;
+      const currentCharges = base + usage + taxes + fees - discount;
+      return (balanceForward + currentCharges).toFixed(2);
+    }
   };
 
   // Generate PDF preview when form data changes
@@ -290,8 +336,23 @@ export default function UtilityBillForm() {
     return selectedProvider && uploadedLogo && formData.companyName && formData.customerName && formData.accountNumber;
   };
 
+  // Check if traditional (water bill) template is selected
+  const isWaterBillTemplate = selectedProvider?.template === 'template-b';
+
   return (
     <div className="min-h-screen bg-slate-50">
+      <Helmet>
+        <title>Service Expense Generator | MintSlip - Create Utility Bills for Budgeting</title>
+        <meta name="description" content="Generate professional service expense statements for personal budgeting. Create water, electric, gas, and internet bill mockups with MintSlip's easy-to-use generator." />
+        <meta name="keywords" content="utility bill generator, service expense, water bill template, electric bill mockup, budgeting tools" />
+        <meta property="og:title" content="Service Expense Generator | MintSlip" />
+        <meta property="og:description" content="Create professional utility bill mockups for personal finance and budgeting purposes." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Service Expense Generator | MintSlip" />
+        <meta name="twitter:description" content="Generate utility bill mockups for budgeting with our professional templates." />
+      </Helmet>
+      
       <Header />
       <div className="max-w-7xl mx-auto px-6 py-8">
 
@@ -357,10 +418,13 @@ export default function UtilityBillForm() {
                               provider.template === 'template-a' ? 'bg-purple-100' :
                               provider.template === 'template-b' ? 'bg-blue-100' : 'bg-green-100'
                             }`}>
-                              <Zap className={`w-5 h-5 ${
-                                provider.template === 'template-a' ? 'text-purple-600' :
-                                provider.template === 'template-b' ? 'text-blue-600' : 'text-green-600'
-                              }`} />
+                              {provider.template === 'template-b' ? (
+                                <Droplets className="w-5 h-5 text-blue-600" />
+                              ) : (
+                                <Zap className={`w-5 h-5 ${
+                                  provider.template === 'template-a' ? 'text-purple-600' : 'text-green-600'
+                                }`} />
+                              )}
                             </div>
                             <div>
                               <span className="font-medium text-slate-700 block">{provider.name}</span>
@@ -388,10 +452,13 @@ export default function UtilityBillForm() {
                         selectedProvider.template === 'template-a' ? 'bg-purple-100' :
                         selectedProvider.template === 'template-b' ? 'bg-blue-100' : 'bg-green-100'
                       }`}>
-                        <Zap className={`w-8 h-8 ${
-                          selectedProvider.template === 'template-a' ? 'text-purple-600' :
-                          selectedProvider.template === 'template-b' ? 'text-blue-600' : 'text-green-600'
-                        }`} />
+                        {selectedProvider.template === 'template-b' ? (
+                          <Droplets className="w-8 h-8 text-blue-600" />
+                        ) : (
+                          <Zap className={`w-8 h-8 ${
+                            selectedProvider.template === 'template-a' ? 'text-purple-600' : 'text-green-600'
+                          }`} />
+                        )}
                       </div>
                       <div className="flex-1">
                         <p className={`text-sm font-medium mb-1 ${
@@ -488,7 +555,7 @@ export default function UtilityBillForm() {
                       name="companyName"
                       value={formData.companyName}
                       onChange={handleChange}
-                      placeholder="e.g., City Power & Light"
+                      placeholder="e.g., County Water System"
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -498,7 +565,7 @@ export default function UtilityBillForm() {
                       name="companyAddress"
                       value={formData.companyAddress}
                       onChange={handleChange}
-                      placeholder="123 Main Street"
+                      placeholder="660 South Main St SE"
                     />
                   </div>
                   <div className="space-y-2">
@@ -544,19 +611,55 @@ export default function UtilityBillForm() {
                       name="companyPhone"
                       value={formData.companyPhone}
                       onChange={handleChange}
-                      placeholder="1-800-555-0123"
+                      placeholder="770-419-6200"
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="companyFax">Fax Number</Label>
+                    <Input 
+                      id="companyFax"
+                      name="companyFax"
+                      value={formData.companyFax}
+                      onChange={handleChange}
+                      placeholder="770-419-6224"
+                    />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="companyWebsite">Website</Label>
                     <Input 
                       id="companyWebsite"
                       name="companyWebsite"
                       value={formData.companyWebsite}
                       onChange={handleChange}
-                      placeholder="www.company.com"
+                      placeholder="www.watercompany.org/waterpay"
                     />
                   </div>
+                  
+                  {/* Mailing address for water bill template */}
+                  {isWaterBillTemplate && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="companyMailingAddress">Mailing Address (Payment)</Label>
+                        <Input 
+                          id="companyMailingAddress"
+                          name="companyMailingAddress"
+                          value={formData.companyMailingAddress}
+                          onChange={handleChange}
+                          placeholder="PO BOX 580440"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="companyMailingCity">Mailing City, State ZIP</Label>
+                        <Input 
+                          id="companyMailingCity"
+                          name="companyMailingCity"
+                          value={formData.companyMailingCity}
+                          onChange={handleChange}
+                          placeholder="CHARLOTTE NC 28258-0440"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -573,19 +676,19 @@ export default function UtilityBillForm() {
                       name="accountNumber"
                       value={formData.accountNumber}
                       onChange={handleChange}
-                      placeholder="e.g., 1234567890"
+                      placeholder="e.g., 1217855-189873"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="serviceType">Service Type</Label>
-                    <Select value={formData.serviceType} onValueChange={handleSelectChange('serviceType')}>
+                    <Label htmlFor="accountStatus">Account Status</Label>
+                    <Select value={formData.accountStatus} onValueChange={handleSelectChange('accountStatus')}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select service" />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        {SERVICE_TYPES.map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
+                        <SelectItem value="Current">Current</SelectItem>
+                        <SelectItem value="Past Due">Past Due</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -596,7 +699,7 @@ export default function UtilityBillForm() {
                       name="customerName"
                       value={formData.customerName}
                       onChange={handleChange}
-                      placeholder="John Doe"
+                      placeholder="JOHN DOE"
                     />
                   </div>
                   <div className="space-y-2 md:col-span-2">
@@ -606,7 +709,7 @@ export default function UtilityBillForm() {
                       name="serviceAddress"
                       value={formData.serviceAddress}
                       onChange={handleChange}
-                      placeholder="456 Oak Avenue"
+                      placeholder="3700 MAIN DR NW"
                     />
                   </div>
                   <div className="space-y-2">
@@ -640,7 +743,7 @@ export default function UtilityBillForm() {
                         name="serviceZip"
                         value={formData.serviceZip}
                         onChange={handleZipChange('serviceZip')}
-                        placeholder="12345"
+                        placeholder="30064-1600"
                         maxLength={10}
                       />
                     </div>
@@ -655,7 +758,7 @@ export default function UtilityBillForm() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="billingDate">Billing Date</Label>
+                    <Label htmlFor="billingDate">Statement Date</Label>
                     <Input 
                       type="date"
                       id="billingDate"
@@ -694,13 +797,38 @@ export default function UtilityBillForm() {
                       onChange={handleChange}
                     />
                   </div>
+                  
+                  {isWaterBillTemplate && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="daysInPeriod">Days in Period</Label>
+                        <Input 
+                          id="daysInPeriod"
+                          name="daysInPeriod"
+                          value={formData.daysInPeriod}
+                          onChange={handleChange}
+                          placeholder="34"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="billCycle">Bill Cycle</Label>
+                        <Input 
+                          id="billCycle"
+                          name="billCycle"
+                          value={formData.billCycle}
+                          onChange={handleChange}
+                          placeholder="16"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* Previous Balance */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Previous Balance
+                  Account Activity
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -712,13 +840,13 @@ export default function UtilityBillForm() {
                         name="previousBalance"
                         value={formData.previousBalance}
                         onChange={handleChange}
-                        placeholder="0.00"
+                        placeholder="58.01"
                         className="pl-8"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="paymentReceived">Payment Received</Label>
+                    <Label htmlFor="paymentReceived">Payments</Label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                       <Input 
@@ -726,7 +854,7 @@ export default function UtilityBillForm() {
                         name="paymentReceived"
                         value={formData.paymentReceived}
                         onChange={handleChange}
-                        placeholder="0.00"
+                        placeholder="58.01"
                         className="pl-8"
                       />
                     </div>
@@ -744,101 +872,251 @@ export default function UtilityBillForm() {
                 </div>
               </div>
 
-              {/* Current Charges */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Current Charges
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="baseCharge">Base/Service Charge</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+              {/* Water-specific charges (for Traditional template) */}
+              {isWaterBillTemplate && (
+                <Collapsible open={isWaterChargesOpen} onOpenChange={setIsWaterChargesOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between bg-blue-50 border-blue-200 hover:bg-blue-100">
+                      <span className="flex items-center gap-2">
+                        <Droplets className="w-5 h-5 text-blue-600" />
+                        <span className="font-bold text-blue-800">Water Bill Charges (Click to expand)</span>
+                      </span>
+                      <ChevronDown className={`w-5 h-5 text-blue-600 transition-transform ${isWaterChargesOpen ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4 space-y-4 p-4 border border-blue-200 rounded-lg bg-blue-50/50">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="waterDepositApplication">Water Deposit Application</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                          <Input 
+                            id="waterDepositApplication"
+                            name="waterDepositApplication"
+                            value={formData.waterDepositApplication}
+                            onChange={handleChange}
+                            placeholder="-50.00"
+                            className="pl-8"
+                          />
+                        </div>
+                        <p className="text-xs text-slate-500">Use negative for credits</p>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-blue-200 pt-4">
+                      <h3 className="font-semibold text-blue-800 mb-3">Water Charges (Tiered)</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="waterTier1Gallons">Water Tier 1 (Gallons)</Label>
+                          <Input 
+                            id="waterTier1Gallons"
+                            name="waterTier1Gallons"
+                            value={formData.waterTier1Gallons}
+                            onChange={handleChange}
+                            placeholder="3,000"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="waterTier1Charge">Water Tier 1 Charge</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                            <Input 
+                              id="waterTier1Charge"
+                              name="waterTier1Charge"
+                              value={formData.waterTier1Charge}
+                              onChange={handleChange}
+                              placeholder="11.31"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="waterTier2Gallons">Water Tier 2 (Gallons)</Label>
+                          <Input 
+                            id="waterTier2Gallons"
+                            name="waterTier2Gallons"
+                            value={formData.waterTier2Gallons}
+                            onChange={handleChange}
+                            placeholder="2,000"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="waterTier2Charge">Water Tier 2 Charge</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                            <Input 
+                              id="waterTier2Charge"
+                              name="waterTier2Charge"
+                              value={formData.waterTier2Charge}
+                              onChange={handleChange}
+                              placeholder="11.64"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-blue-200 pt-4">
+                      <h3 className="font-semibold text-blue-800 mb-3">Other Charges</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="costOfBasicService">Cost Of Basic Service</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                            <Input 
+                              id="costOfBasicService"
+                              name="costOfBasicService"
+                              value={formData.costOfBasicService}
+                              onChange={handleChange}
+                              placeholder="8.00"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sewerGallons">Sewer (Gallons)</Label>
+                          <Input 
+                            id="sewerGallons"
+                            name="sewerGallons"
+                            value={formData.sewerGallons}
+                            onChange={handleChange}
+                            placeholder="5,000"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sewerCharge">Sewer Charge</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                            <Input 
+                              id="sewerCharge"
+                              name="sewerCharge"
+                              value={formData.sewerCharge}
+                              onChange={handleChange}
+                              placeholder="36.35"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="streetLightCharge">Street Light Charge</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                            <Input 
+                              id="streetLightCharge"
+                              name="streetLightCharge"
+                              value={formData.streetLightCharge}
+                              onChange={handleChange}
+                              placeholder="3.80"
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {/* Generic Current Charges (for non-water templates) */}
+              {!isWaterBillTemplate && (
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    Current Charges
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="baseCharge">Base/Service Charge</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                        <Input 
+                          id="baseCharge"
+                          name="baseCharge"
+                          value={formData.baseCharge}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          className="pl-8"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="usageCharge">Usage Charge</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                        <Input 
+                          id="usageCharge"
+                          name="usageCharge"
+                          value={formData.usageCharge}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          className="pl-8"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="usageAmount">Usage Amount</Label>
                       <Input 
-                        id="baseCharge"
-                        name="baseCharge"
-                        value={formData.baseCharge}
+                        id="usageAmount"
+                        name="usageAmount"
+                        value={formData.usageAmount}
                         onChange={handleChange}
-                        placeholder="0.00"
-                        className="pl-8"
+                        placeholder="e.g., 1500"
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="usageCharge">Usage Charge</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                      <Input 
-                        id="usageCharge"
-                        name="usageCharge"
-                        value={formData.usageCharge}
-                        onChange={handleChange}
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="usageUnit">Usage Unit</Label>
+                      <Select value={formData.usageUnit} onValueChange={handleSelectChange('usageUnit')}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kWh">kWh (Electricity)</SelectItem>
+                          <SelectItem value="therms">Therms (Gas)</SelectItem>
+                          <SelectItem value="gallons">Gallons (Water)</SelectItem>
+                          <SelectItem value="CCF">CCF (Gas)</SelectItem>
+                          <SelectItem value="Mbps">Mbps (Internet)</SelectItem>
+                          <SelectItem value="GB">GB (Data)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="usageAmount">Usage Amount</Label>
-                    <Input 
-                      id="usageAmount"
-                      name="usageAmount"
-                      value={formData.usageAmount}
-                      onChange={handleChange}
-                      placeholder="e.g., 1500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="usageUnit">Usage Unit</Label>
-                    <Select value={formData.usageUnit} onValueChange={handleSelectChange('usageUnit')}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kWh">kWh (Electricity)</SelectItem>
-                        <SelectItem value="therms">Therms (Gas)</SelectItem>
-                        <SelectItem value="gallons">Gallons (Water)</SelectItem>
-                        <SelectItem value="CCF">CCF (Gas)</SelectItem>
-                        <SelectItem value="Mbps">Mbps (Internet)</SelectItem>
-                        <SelectItem value="GB">GB (Data)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="taxes">Taxes</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                      <Input 
-                        id="taxes"
-                        name="taxes"
-                        value={formData.taxes}
-                        onChange={handleChange}
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="taxes">Taxes</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                        <Input 
+                          id="taxes"
+                          name="taxes"
+                          value={formData.taxes}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          className="pl-8"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fees">Fees & Other Charges</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                      <Input 
-                        id="fees"
-                        name="fees"
-                        value={formData.fees}
-                        onChange={handleChange}
-                        placeholder="0.00"
-                        className="pl-8"
-                      />
+                    <div className="space-y-2">
+                      <Label htmlFor="fees">Fees & Other Charges</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                        <Input 
+                          id="fees"
+                          name="fees"
+                          value={formData.fees}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          className="pl-8"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Meter Information */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Meter Information (Optional)
+                  Meter Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
@@ -848,7 +1126,7 @@ export default function UtilityBillForm() {
                       name="meterNumber"
                       value={formData.meterNumber}
                       onChange={handleChange}
-                      placeholder="e.g., MTR-12345"
+                      placeholder="52164363"
                     />
                   </div>
                   <div className="space-y-2">
@@ -858,7 +1136,7 @@ export default function UtilityBillForm() {
                       name="previousReading"
                       value={formData.previousReading}
                       onChange={handleChange}
-                      placeholder="e.g., 45000"
+                      placeholder="776"
                     />
                   </div>
                   <div className="space-y-2">
@@ -868,44 +1146,46 @@ export default function UtilityBillForm() {
                       name="currentReading"
                       value={formData.currentReading}
                       onChange={handleChange}
-                      placeholder="e.g., 46500"
+                      placeholder="781 A"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Discounts */}
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Discounts (Optional)
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="discountDescription">Discount Description</Label>
-                    <Input 
-                      id="discountDescription"
-                      name="discountDescription"
-                      value={formData.discountDescription}
-                      onChange={handleChange}
-                      placeholder="e.g., Autopay Discount"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="discountAmount">Discount Amount</Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+              {/* Discounts (only for non-water templates) */}
+              {!isWaterBillTemplate && (
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    Discounts (Optional)
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="discountDescription">Discount Description</Label>
                       <Input 
-                        id="discountAmount"
-                        name="discountAmount"
-                        value={formData.discountAmount}
+                        id="discountDescription"
+                        name="discountDescription"
+                        value={formData.discountDescription}
                         onChange={handleChange}
-                        placeholder="0.00"
-                        className="pl-8"
+                        placeholder="e.g., Autopay Discount"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="discountAmount">Discount Amount</Label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                        <Input 
+                          id="discountAmount"
+                          name="discountAmount"
+                          value={formData.discountAmount}
+                          onChange={handleChange}
+                          placeholder="0.00"
+                          className="pl-8"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
             </form>
           </div>
@@ -937,7 +1217,7 @@ export default function UtilityBillForm() {
                   </div>
                   <div className="flex justify-between pb-2 border-b border-green-300">
                     <span className="text-slate-700">Service:</span>
-                    <span className="font-medium">{formData.serviceType}</span>
+                    <span className="font-medium">{isWaterBillTemplate ? 'Water/Sewer' : formData.serviceType}</span>
                   </div>
                   <div className="flex justify-between pb-2 border-b border-green-300">
                     <span className="text-slate-700">Due Date:</span>

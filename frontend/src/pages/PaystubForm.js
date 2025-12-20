@@ -286,6 +286,46 @@ export default function PaystubForm() {
     setValidationErrors(prev => ({ ...prev, companyPhone: validation.error }));
   };
 
+  // ADP field validation handlers
+  const handleCompanyCodeChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    // Allow alphanumeric, spaces, and slashes - max 20 characters
+    const filtered = value.replace(/[^A-Z0-9\s\/]/g, '').slice(0, 20);
+    setFormData(prev => ({ ...prev, companyCode: filtered }));
+    
+    let error = '';
+    if (filtered && filtered.length < 3) {
+      error = 'Min 3 characters';
+    }
+    setValidationErrors(prev => ({ ...prev, companyCode: error }));
+  };
+
+  const handleLocDeptChange = (e) => {
+    const value = e.target.value;
+    // Only allow numbers - max 3 digits
+    const filtered = value.replace(/[^0-9]/g, '').slice(0, 3);
+    setFormData(prev => ({ ...prev, locDept: filtered }));
+    
+    let error = '';
+    if (filtered && filtered.length !== 3) {
+      error = 'Must be 3 digits';
+    }
+    setValidationErrors(prev => ({ ...prev, locDept: error }));
+  };
+
+  const handleCheckNumberChange = (e) => {
+    const value = e.target.value;
+    // Only allow numbers - max 7 digits
+    const filtered = value.replace(/[^0-9]/g, '').slice(0, 7);
+    setFormData(prev => ({ ...prev, checkNumber: filtered }));
+    
+    let error = '';
+    if (filtered && filtered.length < 6) {
+      error = 'Must be 6-7 digits';
+    }
+    setValidationErrors(prev => ({ ...prev, checkNumber: error }));
+  };
+
   // Filter payroll companies based on search
   const filteredCompanies = PAYROLL_COMPANIES.filter(company =>
     company.name.toLowerCase().includes(companySearchQuery.toLowerCase())

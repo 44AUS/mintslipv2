@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, Star, MessageCircle, ClipboardList, Users, Landmark, Mail, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,112 @@ const TelegramIcon = ({ className }) => (
     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
   </svg>
 );
+
+// Envelope Animation Component
+const EnvelopeAnimation = ({ isVisible }) => (
+  <div className="relative w-full h-full flex items-center justify-center">
+    <svg viewBox="0 0 200 200" className="w-64 h-64">
+      {/* Envelope body */}
+      <rect 
+        x="30" y="70" width="140" height="100" rx="8" 
+        fill="#e8f5e9" 
+        stroke="#1a4731" 
+        strokeWidth="3"
+      />
+      {/* Envelope flap */}
+      <path 
+        d="M30,70 L100,120 L170,70" 
+        fill="none" 
+        stroke="#1a4731" 
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Letter/Document */}
+      <g className={isVisible ? 'animate-letter' : ''}>
+        <rect 
+          x="50" y="40" width="100" height="70" rx="4" 
+          fill="#ffffff" 
+          stroke="#1a4731" 
+          strokeWidth="2"
+          className={isVisible ? 'letter-slide' : ''}
+        />
+        {/* Lines on letter */}
+        <line x1="60" y1="55" x2="140" y2="55" stroke="#1a4731" strokeWidth="2" opacity="0.3"/>
+        <line x1="60" y1="70" x2="130" y2="70" stroke="#1a4731" strokeWidth="2" opacity="0.3"/>
+        <line x1="60" y1="85" x2="120" y2="85" stroke="#1a4731" strokeWidth="2" opacity="0.3"/>
+      </g>
+      {/* Checkmark */}
+      <circle 
+        cx="100" cy="130" r="25" 
+        fill="#1a4731"
+        className={isVisible ? 'checkmark-circle' : ''}
+        style={{ opacity: 0 }}
+      />
+      <path 
+        d="M88,130 L96,140 L115,118" 
+        fill="none" 
+        stroke="#ffffff" 
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={isVisible ? 'checkmark-path' : ''}
+        style={{ 
+          strokeDasharray: 50, 
+          strokeDashoffset: isVisible ? 0 : 50,
+          opacity: 0
+        }}
+      />
+    </svg>
+    <style>{`
+      .letter-slide {
+        animation: slideDown 0.8s ease-out forwards;
+      }
+      .checkmark-circle {
+        animation: fadeInScale 0.4s ease-out 0.8s forwards;
+      }
+      .checkmark-path {
+        animation: drawCheck 0.4s ease-out 1s forwards;
+      }
+      @keyframes slideDown {
+        0% { transform: translateY(-30px); }
+        100% { transform: translateY(0); }
+      }
+      @keyframes fadeInScale {
+        0% { opacity: 0; transform: scale(0); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes drawCheck {
+        0% { stroke-dashoffset: 50; opacity: 0; }
+        1% { opacity: 1; }
+        100% { stroke-dashoffset: 0; opacity: 1; }
+      }
+    `}</style>
+  </div>
+);
+
+// Custom hook for intersection observer
+const useInView = (options = {}) => {
+  const ref = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.3, ...options });
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return [ref, isInView];
+};
 
 export default function Home() {
   const navigate = useNavigate();

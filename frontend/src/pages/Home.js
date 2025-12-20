@@ -820,9 +820,9 @@ export default function Home() {
                       </li>
                     </ul>
                   </div>
-                  <div className="flex justify-center">
-                    <div className="bg-white rounded-lg overflow-hidden h-72 w-full shadow-lg">
-                      {/* Placeholder for customer support illustration */}
+                  <div className="flex justify-center items-center">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg overflow-hidden h-72 w-full shadow-lg flex items-center justify-center">
+                      <SpeedServiceAnimation isVisible={whyChooseInView} />
                     </div>
                   </div>
                 </div>

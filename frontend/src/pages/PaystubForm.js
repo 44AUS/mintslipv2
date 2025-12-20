@@ -641,7 +641,7 @@ export default function PaystubForm() {
     <div className="min-h-screen bg-slate-50 relative">
       <Helmet>
         <title>Pay Stub Generator | MintSlip - Create Professional Paystubs Instantly</title>
-        <meta name="description" content="Generate professional pay stubs with accurate tax calculations. Supports W-2 employees and 1099 contractors. Multiple payroll company templates. Instant PDF download." />
+        <meta name="description" content="Generate professional pay stubs with accurate tax calculations. Supports W-2 employees and 1099 contractors. Multiple templates. Instant PDF download." />
         <meta name="keywords" content="paystub generator, pay stub maker, employee paycheck, contractor payment, tax withholding calculator" />
         <meta property="og:title" content="Pay Stub Generator | MintSlip" />
         <meta property="og:description" content="Create accurate pay stubs with automatic tax calculations. Instant download, no sign-up required." />

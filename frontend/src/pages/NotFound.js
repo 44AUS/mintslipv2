@@ -69,7 +69,7 @@ export default function NotFound() {
             <p className="text-sm text-slate-500 mb-6">Or try one of these popular pages:</p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Button
-                onClick={() => navigate("/paystub")}
+                onClick={() => navigate("/paystub-generator")}
                 variant="ghost"
                 className="gap-2 text-slate-600 hover:text-green-800"
               >
@@ -77,12 +77,12 @@ export default function NotFound() {
                 Generate Pay Stub
               </Button>
               <Button
-                onClick={() => navigate("/bank-statement")}
+                onClick={() => navigate("/accountant-mockup")}
                 variant="ghost"
                 className="gap-2 text-slate-600 hover:text-green-800"
               >
                 <FileBarChart className="w-4 h-4" />
-                Generate Bank Statement
+                Generate Accountant Mockup
               </Button>
               <Button
                 onClick={() => navigate("/faq")}

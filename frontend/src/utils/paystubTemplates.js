@@ -753,20 +753,20 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // ==================== DEPOSITS SECTION (RIGHT) ====================
   rightY += 15;
   doc.setFont("helvetica", "bold");
-  doc.text("Deposits", rightCol + 30, rightY);
+  doc.text("Deposits", rightCol, rightY);
   rightY += 8;
-  doc.text("account number", rightCol + 30, rightY);
-  doc.text("transit/ABA", rightCol + 95, rightY);
-  doc.text("amount", rightCol + 155, rightY);
-  doc.line(rightCol + 30, rightY + 2, pageWidth - m, rightY + 2);
+  doc.text("account number", rightCol, rightY);
+  doc.text("transit/ABA", rightCol + 65, rightY);
+  doc.text("amount", rightCol + 125, rightY);
+  doc.line(rightCol, rightY + 2, pageWidth - m, rightY + 2);
   
   rightY += 12;
   doc.setFont("helvetica", "normal");
   const bankLast4 = formData.bank || "0000";
   const maskedAccount = `XXXXXX${bankLast4}`;
-  doc.text(maskedAccount, rightCol + 30, rightY);
-  doc.text("XXXXXXXXX", rightCol + 95, rightY);
-  doc.text(fmtCurrency(netPay), rightCol + 155, rightY);
+  doc.text(maskedAccount, rightCol, rightY);
+  doc.text("XXXXXXXXX", rightCol + 65, rightY);
+  doc.text(fmtCurrency(netPay), rightCol + 125, rightY);
 
   // ==================== VOLUNTARY DEDUCTIONS ====================
   y += 18;

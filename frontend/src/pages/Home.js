@@ -494,21 +494,21 @@ export default function Home() {
                   <span className="relative inline-block text-blue-500">
                     Paystub
                     <svg 
-                      className="absolute -bottom-3 left-0 w-full" 
-                      viewBox="0 0 150 24" 
+                      className="absolute -bottom-4 left-0 w-full" 
+                      viewBox="0 0 150 30" 
                       preserveAspectRatio="none"
-                      style={{ overflow: 'visible', height: '16px' }}
+                      style={{ overflow: 'visible', height: '24px' }}
                     >
                       <path 
-                        d="M2,12 Q6,4 10,12 Q14,20 18,12 Q22,4 26,12 Q30,20 34,12 Q38,4 42,12 Q46,20 50,12 Q54,4 58,12 Q62,20 66,12 Q70,4 74,12 Q78,20 82,12 Q86,4 90,12 Q94,20 98,12 Q102,4 106,12 Q110,20 114,12 Q118,4 122,12 Q126,20 130,12 Q134,4 138,12 Q142,20 148,12" 
+                        d="M2,15 Q6,3 10,15 Q14,27 18,15 Q22,3 26,15 Q30,27 34,15 Q38,3 42,15 Q46,27 50,15 Q54,3 58,15 Q62,27 66,15 Q70,3 74,15 Q78,27 82,15 Q86,3 90,15 Q94,27 98,15 Q102,3 106,15 Q110,27 114,15 Q118,3 122,15 Q126,27 130,15 Q134,3 138,15 Q142,27 148,15" 
                         stroke="#60a5fa" 
-                        strokeWidth="2.5" 
+                        strokeWidth="3" 
                         fill="none"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         style={{
-                          strokeDasharray: 400,
-                          strokeDashoffset: 400,
+                          strokeDasharray: 500,
+                          strokeDashoffset: 500,
                           animation: 'scribble 1.2s ease-out forwards'
                         }}
                       />
@@ -516,7 +516,7 @@ export default function Home() {
                     <style>{`
                       @keyframes scribble {
                         0% {
-                          stroke-dashoffset: 400;
+                          stroke-dashoffset: 500;
                         }
                         100% {
                           stroke-dashoffset: 0;

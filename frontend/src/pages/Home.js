@@ -602,52 +602,55 @@ export default function Home() {
       </section>
 
       {/* Accurate Income Documentation Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="order-2 md:order-1 space-y-6">
-              <p className="text-xs uppercase tracking-widest text-slate-500" style={{ letterSpacing: '0.15em' }}>
-                Accurate Income Documentation
-              </p>
-              <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Our Paystub Generator Has Your Accurate Income Documentation Needs
-              </h3>
-              <p className="text-lg leading-relaxed text-slate-600">
-                MintSlip provides a wide selection of paystub templates to suit your needs. Whether you&apos;re a freelancer, small business owner, or employee, we&apos;ve got you covered with professional, accurate documents.
-              </p>
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                  <FileText className="w-8 h-8 text-green-700 mb-2" />
-                  <h4 className="font-bold text-slate-800">Earnings Record</h4>
-                  <p className="text-sm text-slate-600">Accurate calculations</p>
+      {(() => {
+        const [docRef, docInView] = useInView();
+        return (
+          <section ref={docRef} className="py-20 bg-white">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="order-2 md:order-1 space-y-6">
+                  <p className="text-xs uppercase tracking-widest text-slate-500" style={{ letterSpacing: '0.15em' }}>
+                    Accurate Income Documentation
+                  </p>
+                  <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    Our Paystub Generator Has Your Accurate Income Documentation Needs
+                  </h3>
+                  <p className="text-lg leading-relaxed text-slate-600">
+                    MintSlip provides a wide selection of paystub templates to suit your needs. Whether you&apos;re a freelancer, small business owner, or employee, we&apos;ve got you covered with professional, accurate documents.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                      <FileText className="w-8 h-8 text-green-700 mb-2" />
+                      <h4 className="font-bold text-slate-800">Earnings Record</h4>
+                      <p className="text-sm text-slate-600">Accurate calculations</p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                      <FileBarChart className="w-8 h-8 text-green-700 mb-2" />
+                      <h4 className="font-bold text-slate-800">Tax Filing</h4>
+                      <p className="text-sm text-slate-600">Accurate tax records</p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                      <Shield className="w-8 h-8 text-green-700 mb-2" />
+                      <h4 className="font-bold text-slate-800">Business Documentation</h4>
+                      <p className="text-sm text-slate-600">Accurate records for freelancers</p>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                      <Clock className="w-8 h-8 text-green-700 mb-2" />
+                      <h4 className="font-bold text-slate-800">Instant Generation</h4>
+                      <p className="text-sm text-slate-600">Ready in minutes</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                  <FileBarChart className="w-8 h-8 text-green-700 mb-2" />
-                  <h4 className="font-bold text-slate-800">Tax Filing</h4>
-                  <p className="text-sm text-slate-600">Accurate tax records</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                  <Shield className="w-8 h-8 text-green-700 mb-2" />
-                  <h4 className="font-bold text-slate-800">Business Documentation</h4>
-                  <p className="text-sm text-slate-600">Accurate records for freelancers</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                  <Clock className="w-8 h-8 text-green-700 mb-2" />
-                  <h4 className="font-bold text-slate-800">Instant Generation</h4>
-                  <p className="text-sm text-slate-600">Ready in minutes</p>
+                <div className="order-1 md:order-2">
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-xl border border-slate-200 h-96 flex items-center justify-center">
+                    <FormTypingAnimation isVisible={docInView} />
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="order-1 md:order-2">
-              <img
-                src="https://images.pexels.com/photos/6289058/pexels-photo-6289058.jpeg"
-                alt="Accurate Income Documentation"
-                className="w-full h-auto rounded-md shadow-xl border border-slate-300 object-cover max-h-96"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* Best Pricing Section */}
       <section className="bg-gradient-to-br from-green-900 to-green-800 py-20">

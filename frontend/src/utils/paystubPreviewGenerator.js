@@ -302,8 +302,8 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       totalContributions,
       ytdDeductions,
       ytdContributions,
-      // For preview, don't show actual logo - show "LOGO" text instead
-      logoDataUrl: null,
+      // Pass the logo for preview - use uploaded logo if available
+      logoDataUrl: formData.logoDataUrl || null,
       isPreview: true
     };
 

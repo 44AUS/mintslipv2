@@ -610,141 +610,94 @@ export default function Home() {
       
       <Header title="MintSlip" />
 
-      {/* Hero Section - Enhanced */}
-      <section className="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
+      {/* Hero Section - Centered */}
+      <section className="relative max-w-5xl mx-auto px-6 py-16 md:py-24">
         {/* Background Decorations */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
         
-        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left: Hero Content */}
-          <div className={`lg:col-span-7 space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
-              <Sparkles className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Trusted by 10,000+ users</span>
-              <div className="flex -space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
-                <span className="block text-slate-800">Generate</span>
-                <span className="block bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Professional</span>
-                <span className="block text-slate-800">Paystubs in Minutes</span>
-              </h1>
-              <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl">
-                Create accurate pay stubs, accounting mockups, W-2 forms, and more in minutes. No sign-up required.
-              </p>
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                onClick={() => navigate("/paystub-generator")}
-                size="lg"
-                className="group gap-2 text-lg px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <FileText className="w-5 h-5" />
-                Create Pay Stub
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                onClick={() => navigate("/accounting-mockup-generator")}
-                size="lg"
-                variant="outline"
-                className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
-              >
-                <FileBarChart className="w-5 h-5" />
-                Accounting Mockups
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-
-            {/* Telegram Support Button */}
-            <div className="pt-2">
-              <a
-                href="https://t.me/+oV7eIADvNlozYTYx"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
-              >
-                <TelegramIcon className="w-5 h-5" />
-                <span className="font-medium">Join Telegram Support</span>
-              </a>
-            </div>
-
-            {/* Interactive Feature Pills */}
-            <div className="flex flex-wrap gap-3 pt-4">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  onClick={() => setActiveFeature(index)}
-                  className={`cursor-pointer inline-flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
-                    activeFeature === index
-                      ? 'bg-green-100 border-green-500 shadow-md scale-105'
-                      : 'bg-white border-slate-200 hover:border-green-300 hover:bg-green-50'
-                  }`}
-                >
-                  <feature.icon className={`w-5 h-5 ${activeFeature === index ? 'text-green-700' : 'text-slate-500'}`} />
-                  <div className="text-left">
-                    <span className={`text-sm font-semibold block ${activeFeature === index ? 'text-green-800' : 'text-slate-700'}`}>
-                      {feature.text}
-                    </span>
-                    <span className={`text-xs ${activeFeature === index ? 'text-green-600' : 'text-slate-500'}`}>
-                      {feature.desc}
-                    </span>
-                  </div>
-                </div>
+        <div className={`relative text-center space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
+            <Sparkles className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Trusted by 10,000+ users</span>
+            <div className="flex -space-x-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-3 h-3 text-yellow-500 fill-yellow-500" />
               ))}
             </div>
           </div>
 
-          {/* Right: Visual Element - Enhanced */}
-          <div className={`lg:col-span-5 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-            <div className="relative">
-              {/* Main Image */}
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
-                <img
-                  src={Example}
-                  alt="Professional document example"
-                  className="w-full h-auto transform hover:scale-105 transition-transform duration-500"
-                />
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-              </div>
+          <div>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
+              <span className="block text-slate-800">Generate</span>
+              <span className="block bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Professional</span>
+              <span className="block text-slate-800">Paystubs in Minutes</span>
+            </h1>
+            <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
+              Create accurate pay stubs, accounting mockups, W-2 forms, and more in minutes. No sign-up required.
+            </p>
+          </div>
 
-              {/* Floating Elements - Over the image with z-index */}
-              <div className="absolute -top-4 -left-4 z-20 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s' }}>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-500" />
-                  <span className="text-sm font-semibold text-slate-700">Instant</span>
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => navigate("/paystub-generator")}
+              size="lg"
+              className="group gap-2 text-lg px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <FileText className="w-5 h-5" />
+              Create Pay Stub
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button
+              onClick={() => navigate("/accounting-mockup-generator")}
+              size="lg"
+              variant="outline"
+              className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
+            >
+              <FileBarChart className="w-5 h-5" />
+              Accounting Mockups
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+
+          {/* Telegram Support Button */}
+          <div className="pt-2">
+            <a
+              href="https://t.me/+oV7eIADvNlozYTYx"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              <TelegramIcon className="w-5 h-5" />
+              <span className="font-medium">Join Telegram Support</span>
+            </a>
+          </div>
+
+          {/* Interactive Feature Pills */}
+          <div className="flex flex-wrap gap-3 pt-4 justify-center">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                onClick={() => setActiveFeature(index)}
+                className={`cursor-pointer inline-flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
+                  activeFeature === index
+                    ? 'bg-green-100 border-green-500 shadow-md scale-105'
+                    : 'bg-white border-slate-200 hover:border-green-300 hover:bg-green-50'
+                }`}
+              >
+                <feature.icon className={`w-5 h-5 ${activeFeature === index ? 'text-green-700' : 'text-slate-500'}`} />
+                <div className="text-left">
+                  <span className={`text-sm font-semibold block ${activeFeature === index ? 'text-green-800' : 'text-slate-700'}`}>
+                    {feature.text}
+                  </span>
+                  <span className={`text-xs ${activeFeature === index ? 'text-green-600' : 'text-slate-500'}`}>
+                    {feature.desc}
+                  </span>
                 </div>
               </div>
-              
-              <div className="absolute -bottom-4 -right-4 z-20 bg-white p-3 rounded-lg shadow-lg border border-slate-200 animate-bounce" style={{ animationDuration: '3s', animationDelay: '1s' }}>
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-semibold text-slate-700">Secure</span>
-                </div>
-              </div>
-
-              {/* Stats Badge - Over the image */}
-              <div className="absolute top-1/2 -left-8 z-20 transform -translate-y-1/2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg hidden md:block">
-                <p className="text-2xl font-bold">$10-$100</p>
-                <p className="text-xs opacity-90">Per Document</p>
-              </div>
-
-              {/* Document Count - Over the image */}
-              <div className="absolute -bottom-6 left-1/2 z-20 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-lg border border-slate-200">
-                <p className="text-sm text-slate-600">
-                  <span className="font-bold text-green-700">50,000+</span> documents generated
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

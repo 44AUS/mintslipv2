@@ -415,7 +415,7 @@ export default function Home() {
       </section>
 
       {/* Steps to Use Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-slate-50 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-6">
           <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-16 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
             Steps to use our Check Stub Maker
@@ -431,7 +431,7 @@ export default function Home() {
                       STEP 1
                     </span>
                   </div>
-                  <div className="bg-slate-200 rounded-lg overflow-hidden h-64 w-full">
+                  <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
                     {/* Placeholder for Step 1 image */}
                   </div>
                 </div>
@@ -450,7 +450,7 @@ export default function Home() {
                       STEP 2
                     </span>
                   </div>
-                  <div className="bg-slate-200 rounded-lg overflow-hidden h-64 w-full">
+                  <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
                     {/* Placeholder for Step 2 image */}
                   </div>
                 </div>
@@ -469,7 +469,7 @@ export default function Home() {
                       STEP 3
                     </span>
                   </div>
-                  <div className="bg-slate-200 rounded-lg overflow-hidden h-64 w-full">
+                  <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
                     {/* Placeholder for Step 3 image */}
                   </div>
                 </div>

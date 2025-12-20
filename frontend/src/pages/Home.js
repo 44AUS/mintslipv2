@@ -414,6 +414,61 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Quick Solution Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-6">
+              <span className="inline-block text-sm font-semibold text-green-700 bg-green-100 px-4 py-1.5 rounded-full">
+                Quick Solution
+              </span>
+              <h3 className="text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                How MintSlip Makes{' '}
+                <span className="relative inline-block" style={{ color: '#1a4731' }}>
+                  Pay Stubs
+                  <span 
+                    className="absolute -bottom-1 left-0 h-1 rounded-full"
+                    style={{
+                      backgroundColor: '#1a4731',
+                      width: '0%',
+                      animation: 'underlineGrow2 0.8s ease-out 0.3s forwards'
+                    }}
+                  />
+                </span>
+                {' '}Instantly
+              </h3>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                With MintSlip, you can instantly create accurate paycheck stubs for any situation. Our platform simplifies the process, offering customized pay stubs ready for use in minutes. Choose from PDF or other digital file types for fast, secure download.
+              </p>
+              <p className="text-lg text-slate-600 leading-relaxed">
+                Whether you need detailed pay stubs or proof of income, MintSlip makes it quick and easy to create accurate and reliable paycheck documentation anytime.
+              </p>
+              <button 
+                onClick={() => navigate("/paystub-generator")}
+                className="inline-flex items-center gap-2 bg-green-800 hover:bg-green-900 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                Get Your Pay Stub Now
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Right Image */}
+            <div className="flex justify-center">
+              <div className="bg-slate-100 rounded-2xl overflow-hidden h-96 w-full shadow-lg">
+                {/* Placeholder for illustration */}
+              </div>
+            </div>
+          </div>
+        </div>
+        <style>{`
+          @keyframes underlineGrow2 {
+            0% { width: 0%; }
+            100% { width: 100%; }
+          }
+        `}</style>
+      </section>
+
       {/* Steps to Use Section */}
       <section className="py-20 bg-slate-50 border-y border-slate-200">
         <div className="max-w-7xl mx-auto px-6">

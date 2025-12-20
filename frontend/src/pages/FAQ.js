@@ -170,6 +170,158 @@ const FAQ_CATEGORIES = {
         answer: "Yes! Our W-2 form includes complete state and local tax sections (Boxes 15-20) where you can enter state wages, state tax withheld, local wages, local tax, and locality name."
       }
     ]
+  },
+  w9: {
+    title: "W-9 Form Questions",
+    icon: FileCheck,
+    questions: [
+      {
+        question: "What is a W-9 form?",
+        answer: "A W-9 form (Request for Taxpayer Identification Number and Certification) is an IRS form used to provide your correct taxpayer identification number (TIN) to a person or entity who is required to file information returns with the IRS. It's commonly used by independent contractors and freelancers."
+      },
+      {
+        question: "Who needs to fill out a W-9?",
+        answer: "You typically need to fill out a W-9 if you're an independent contractor, freelancer, self-employed individual, or business receiving payments from another business. Clients use the information to report payments made to you to the IRS via Form 1099."
+      },
+      {
+        question: "Should I use my SSN or EIN on the W-9?",
+        answer: "If you're a sole proprietor or single-member LLC, you can use either your SSN or EIN. If you have an EIN, it's generally recommended to use it for business purposes to protect your personal SSN. Corporations and partnerships must use their EIN."
+      },
+      {
+        question: "What are the federal tax classifications?",
+        answer: "The W-9 includes several tax classifications: Individual/Sole Proprietor, C Corporation, S Corporation, Partnership, Trust/Estate, Limited Liability Company (LLC), and Exempt Payee. Your classification affects how your income is taxed and reported."
+      },
+      {
+        question: "What is backup withholding?",
+        answer: "Backup withholding is when payers withhold 24% of your payments and send it to the IRS. This happens if you don't provide a valid TIN or if the IRS notifies the payer that you're subject to backup withholding. Properly completing your W-9 helps avoid this."
+      },
+      {
+        question: "Do I need to sign the W-9?",
+        answer: "Yes, the W-9 requires a signature certifying that the information provided is correct. Our generator creates a complete W-9 form ready for your signature. You can sign it electronically or print and sign manually."
+      },
+      {
+        question: "How often do I need to submit a new W-9?",
+        answer: "You generally only need to submit a new W-9 when your information changes (name, address, TIN, or tax classification). Unlike W-2s, W-9s don't need to be submitted annually. Requesters may ask for an updated W-9 periodically for their records."
+      },
+      {
+        question: "Is my W-9 information secure?",
+        answer: "Absolutely! Our W-9 generator processes all information directly in your browser. We do not store your SSN, EIN, or any personal information on our servers. Your data stays private and secure on your device."
+      }
+    ]
+  },
+  form1099nec: {
+    title: "1099-NEC Form Questions",
+    icon: FileBadge,
+    questions: [
+      {
+        question: "What is a 1099-NEC form?",
+        answer: "Form 1099-NEC (Nonemployee Compensation) is used to report payments of $600 or more made to independent contractors, freelancers, and other self-employed individuals during the tax year. It replaced Box 7 of the 1099-MISC starting in 2020."
+      },
+      {
+        question: "Who receives a 1099-NEC?",
+        answer: "Independent contractors, freelancers, consultants, and other self-employed individuals who earned $600 or more from a single client during the tax year receive a 1099-NEC. This includes gig workers, consultants, and anyone providing services as a non-employee."
+      },
+      {
+        question: "What's the difference between 1099-NEC and 1099-MISC?",
+        answer: "The 1099-NEC is specifically for nonemployee compensation (payments to independent contractors), while 1099-MISC is used for other types of miscellaneous income like rent, royalties, prizes, and awards. Before 2020, nonemployee compensation was reported on 1099-MISC Box 7."
+      },
+      {
+        question: "What is Box 1 on the 1099-NEC?",
+        answer: "Box 1 reports nonemployee compensation - the total amount paid to the recipient for services performed. This includes fees, commissions, prizes, awards, and other forms of compensation for services as a nonemployee."
+      },
+      {
+        question: "What is Box 4 (Federal tax withheld)?",
+        answer: "Box 4 shows any federal income tax that was withheld from payments. This typically occurs due to backup withholding (24%) when a contractor hasn't provided a valid TIN or is subject to IRS notification for backup withholding."
+      },
+      {
+        question: "When is the 1099-NEC due?",
+        answer: "The 1099-NEC must be furnished to recipients by January 31st and filed with the IRS by January 31st (no automatic extension). This deadline is earlier than many other 1099 forms to help recipients file their taxes on time."
+      },
+      {
+        question: "Do I need to report state information?",
+        answer: "If you withheld state income tax, you should report the state, state ID number, and state income in Boxes 5-7. Some states require 1099-NEC filing even without withholding. Our generator supports state tax information."
+      },
+      {
+        question: "Can I generate 1099-NEC forms for previous years?",
+        answer: "Yes! Our 1099-NEC generator supports multiple tax years. Simply select the appropriate tax year from the dropdown menu. This is helpful for correcting records or creating forms for prior years."
+      }
+    ]
+  },
+  form1099misc: {
+    title: "1099-MISC Form Questions",
+    icon: FileBadge,
+    questions: [
+      {
+        question: "What is a 1099-MISC form?",
+        answer: "Form 1099-MISC (Miscellaneous Information) is used to report various types of miscellaneous income including rents, royalties, prizes, awards, medical and health care payments, crop insurance proceeds, and other income payments that don't fall under other specific 1099 forms."
+      },
+      {
+        question: "What types of income are reported on 1099-MISC?",
+        answer: "1099-MISC reports: Rents (Box 1), Royalties (Box 2), Other income (Box 3), Medical/healthcare payments (Box 6), Crop insurance proceeds (Box 9), Gross proceeds to attorneys (Box 10), and Section 409A deferrals (Box 12). Nonemployee compensation is now reported on 1099-NEC instead."
+      },
+      {
+        question: "What is Box 1 (Rents)?",
+        answer: "Box 1 reports rental income paid to a landlord totaling $600 or more during the year. This includes payments for real estate rentals, equipment rentals, or any other type of rental property used in the payer's trade or business."
+      },
+      {
+        question: "What is Box 2 (Royalties)?",
+        answer: "Box 2 reports royalty payments of $10 or more. This includes payments for the use of intellectual property such as patents, copyrights, trademarks, trade names, and natural resources like oil, gas, and minerals."
+      },
+      {
+        question: "What is Box 3 (Other income)?",
+        answer: "Box 3 reports other income not covered by other boxes, including prizes and awards, punitive damages, Indian gaming profits, and other taxable income of $600 or more that doesn't fit elsewhere on the form."
+      },
+      {
+        question: "When is the 1099-MISC due?",
+        answer: "The 1099-MISC must be furnished to recipients by January 31st for most boxes (or February 15th for Boxes 8 and 10). The form must be filed with the IRS by February 28th (paper filing) or March 31st (electronic filing)."
+      },
+      {
+        question: "Should I use 1099-MISC or 1099-NEC for contractors?",
+        answer: "Use 1099-NEC for nonemployee compensation (payments to independent contractors). Use 1099-MISC for other types of miscellaneous income like rent, royalties, and prizes. Since 2020, contractor payments are no longer reported on 1099-MISC."
+      },
+      {
+        question: "Can I generate 1099-MISC forms for previous years?",
+        answer: "Yes! Our 1099-MISC generator supports multiple tax years. Select the appropriate tax year from the dropdown menu to generate forms for the current year or prior years as needed."
+      }
+    ]
+  },
+  scheduleC: {
+    title: "Schedule C Form Questions",
+    icon: ClipboardList,
+    questions: [
+      {
+        question: "What is Schedule C?",
+        answer: "Schedule C (Form 1040) is used to report profit or loss from a business you operated as a sole proprietor. It's filed with your personal tax return and calculates your net business income or loss, which is then reported on your Form 1040."
+      },
+      {
+        question: "Who needs to file Schedule C?",
+        answer: "You need to file Schedule C if you operate a business as a sole proprietor, are a single-member LLC (not treated as a corporation), are an independent contractor who received 1099-NEC income, or have self-employment income from freelancing or gig work."
+      },
+      {
+        question: "What business expenses can I deduct?",
+        answer: "Common deductible expenses include: advertising, car/truck expenses, contract labor, insurance, legal/professional services, office expenses, rent, repairs, supplies, travel, meals (50%), utilities, and wages. Our generator includes fields for all standard expense categories."
+      },
+      {
+        question: "What is gross receipts vs net profit?",
+        answer: "Gross receipts is your total business income before any deductions. Net profit is what remains after subtracting all allowable business expenses from your gross receipts. Your net profit is subject to both income tax and self-employment tax."
+      },
+      {
+        question: "What is the home office deduction?",
+        answer: "If you use part of your home exclusively and regularly for business, you may deduct home office expenses. You can use the simplified method ($5 per square foot, up to 300 sq ft) or the regular method (actual expenses based on percentage of home used)."
+      },
+      {
+        question: "Do I need an EIN or can I use my SSN?",
+        answer: "If you're a sole proprietor with no employees, you can use your Social Security Number. However, if you have employees, pay excise taxes, or have a Keogh plan, you need an EIN. Many sole proprietors get an EIN anyway to protect their SSN."
+      },
+      {
+        question: "What accounting method should I use?",
+        answer: "Most small businesses use cash basis accounting, where income is recorded when received and expenses when paid. Accrual accounting records income when earned and expenses when incurred. Once you choose a method, you generally must stick with it."
+      },
+      {
+        question: "Can I generate Schedule C for previous years?",
+        answer: "Yes! Our Schedule C generator supports multiple tax years. Select the appropriate tax year from the dropdown menu to generate forms for the current year or prior years as needed for your records."
+      }
+    ]
   }
 };
 

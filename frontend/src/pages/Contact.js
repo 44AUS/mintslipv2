@@ -79,6 +79,18 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Contact Us | MintSlip - Get Support & Help</title>
+        <meta name="description" content="Contact MintSlip for support with paystubs, tax forms, or any document questions. Our team responds within 24 hours. Located in Arizona, USA." />
+        <meta name="keywords" content="contact MintSlip, customer support, document help, paystub support" />
+        <meta property="og:title" content="Contact MintSlip" />
+        <meta property="og:description" content="Get in touch with our support team. We respond within 24 hours." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Contact MintSlip" />
+        <meta name="twitter:description" content="Reach out for support with any document generation questions." />
+      </Helmet>
+      
       <Header />
       
       {/* Hero Section */}

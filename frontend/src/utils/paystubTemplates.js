@@ -858,15 +858,15 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   y += 10;
   doc.text("Deposited to the account", m, y);
   doc.text("account number", m + 150, y);
-  doc.text("transit/ABA", rightCol + 30, y);
-  doc.text("amount", rightCol + 110, y);
+  doc.text("transit/ABA", rightCol, y);
+  doc.text("amount", rightCol + 80, y);
   
   y += 10;
   doc.setFont("helvetica", "normal");
   doc.text(`${formData.bankName || "Bank"} DirectDeposit`, m, y);
   doc.text(maskedAccount, m + 150, y);
-  doc.text("XXXXXXXXX", rightCol + 30, y);
-  doc.text(fmtCurrency(netPay), rightCol + 110, y);
+  doc.text("XXXXXXXXX", rightCol, y);
+  doc.text(fmtCurrency(netPay), rightCol + 80, y);
 
   // ==================== EMPLOYEE INFO AT BOTTOM ====================
   y += 25;

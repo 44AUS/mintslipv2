@@ -698,12 +698,12 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // ==================== OTHER BENEFITS (RIGHT SIDE) ====================
   let rightY = 135;
   doc.setFont("helvetica", "bold");
-  doc.text("Other Benefits and", rightCol + 30, rightY);
+  doc.text("Other Benefits and", rightCol, rightY);
   rightY += 8;
-  doc.text("Information", rightCol + 30, rightY);
-  doc.text("this period", rightCol + 110, rightY - 8);
-  doc.text("year to date", rightCol + 155, rightY - 8);
-  doc.line(rightCol + 30, rightY + 2, pageWidth - m, rightY + 2);
+  doc.text("Information", rightCol, rightY);
+  doc.text("this period", rightCol + 80, rightY - 8);
+  doc.text("year to date", rightCol + 125, rightY - 8);
+  doc.line(rightCol, rightY + 2, pageWidth - m, rightY + 2);
   
   rightY += 12;
   doc.setFont("helvetica", "normal");
@@ -712,9 +712,9 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   if (contributionsData && contributionsData.length > 0) {
     contributionsData.forEach((c) => {
       if (c.type && c.type.includes('match')) {
-        doc.text(`*${c.name || "Employer match"}`, rightCol + 30, rightY);
-        doc.text(fmtCurrency(c.currentAmount || 0), rightCol + 115, rightY);
-        doc.text(fmtCurrency((c.currentAmount || 0) * (data.ytdPayPeriods || 1)), rightCol + 160, rightY);
+        doc.text(`*${c.name || "Employer match"}`, rightCol, rightY);
+        doc.text(fmtCurrency(c.currentAmount || 0), rightCol + 85, rightY);
+        doc.text(fmtCurrency((c.currentAmount || 0) * (data.ytdPayPeriods || 1)), rightCol + 130, rightY);
         rightY += 10;
       }
     });

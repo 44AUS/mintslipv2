@@ -639,6 +639,96 @@ export default function W9Form() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-green-700" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              W-9 Form FAQ
+            </h2>
+            <p className="text-slate-600">Common questions about W-9 forms and our generator</p>
+          </div>
+          
+          <Accordion type="single" collapsible className="space-y-3">
+            <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is a W-9 form?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                A W-9 form (Request for Taxpayer Identification Number and Certification) is an IRS form used to provide your correct taxpayer identification number (TIN) to a person or entity who is required to file information returns with the IRS. It's commonly used by independent contractors and freelancers.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Who needs to fill out a W-9?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                You typically need to fill out a W-9 if you're an independent contractor, freelancer, self-employed individual, or business receiving payments from another business. Clients use the information to report payments made to you to the IRS via Form 1099.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Should I use my SSN or EIN on the W-9?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                If you're a sole proprietor or single-member LLC, you can use either your SSN or EIN. If you have an EIN, it's generally recommended to use it for business purposes to protect your personal SSN. Corporations and partnerships must use their EIN.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What are the federal tax classifications?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                The W-9 includes several tax classifications: Individual/Sole Proprietor, C Corporation, S Corporation, Partnership, Trust/Estate, Limited Liability Company (LLC), and Exempt Payee. Your classification affects how your income is taxed and reported.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is backup withholding?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Backup withholding is when payers withhold 24% of your payments and send it to the IRS. This happens if you don't provide a valid TIN or if the IRS notifies the payer that you're subject to backup withholding. Properly completing your W-9 helps avoid this.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Do I need to sign the W-9?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Yes, the W-9 requires a signature certifying that the information provided is correct. Our generator creates a complete W-9 form ready for your signature. You can sign it electronically or print and sign manually.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                How often do I need to submit a new W-9?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                You generally only need to submit a new W-9 when your information changes (name, address, TIN, or tax classification). Unlike W-2s, W-9s don't need to be submitted annually. Requesters may ask for an updated W-9 periodically for their records.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Is my W-9 information secure?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Absolutely! Our W-9 generator processes all information directly in your browser. We do not store your SSN, EIN, or any personal information on our servers. Your data stays private and secure on your device.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

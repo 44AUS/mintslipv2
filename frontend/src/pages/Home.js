@@ -8,6 +8,9 @@ import Footer from "@/components/Footer";
 import Example from '../assests/paystub.png';
 import secure from '../assests/secure.png';
 import Paystub from '../assests/paystub.png';
+import select from '../assests/select.png';
+import inputInfo from '../assests/inputInfo.png';
+import download from '../assests/download.png';
 
 // Telegram icon SVG component
 const TelegramIcon = ({ className }) => (
@@ -807,7 +810,7 @@ export default function Home() {
                     With MintSlip, you can instantly create accurate paycheck stubs for any situation. Our platform simplifies the process, offering customized pay stubs ready for use in minutes. Choose from PDF or other digital file types for fast, secure download.
                   </p>
                   <p className="text-lg text-slate-600 leading-relaxed">
-                    Whether you need detailed pay stubs or proof of income, MintSlip makes it quick and easy to create accurate and reliable paycheck documentation anytime.
+                    Whether you need detailed pay stubs or record keeping, MintSlip makes it quick and easy to create accurate and reliable paycheck documentation anytime.
                   </p>
                   <button 
                     onClick={() => navigate("/paystub-generator")}
@@ -840,7 +843,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Step 1 */}
             <div className="flex flex-col">
-              <div className="bg-slate-800 rounded-2xl p-6 flex-1">
+              <div className="bg-slate-white rounded-2xl p-6 flex-1">
                 <div className="relative">
                   <div className="absolute -top-2 -left-2 z-10">
                     <span className="bg-red-500 text-white font-bold px-4 py-1.5 rounded text-sm shadow-lg">
@@ -848,18 +851,18 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
-                    {/* Placeholder for Step 1 image */}
+                    <img src={select} />
                   </div>
                 </div>
               </div>
               <p className="text-lg mt-6 text-center text-slate-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Choose a pay stub template from our 10 designs
+                Choose a pay stub template from our meticulously designed templates
               </p>
             </div>
 
             {/* Step 2 */}
             <div className="flex flex-col">
-              <div className="bg-slate-800 rounded-2xl p-6 flex-1">
+              <div className="bg-slate-white rounded-2xl p-6 flex-1">
                 <div className="relative">
                   <div className="absolute -top-2 -left-2 z-10">
                     <span className="bg-yellow-500 text-white font-bold px-4 py-1.5 rounded text-sm shadow-lg">
@@ -867,7 +870,7 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
-                    {/* Placeholder for Step 2 image */}
+                    <img src={inputInfo} />
                   </div>
                 </div>
               </div>
@@ -878,7 +881,7 @@ export default function Home() {
 
             {/* Step 3 */}
             <div className="flex flex-col">
-              <div className="bg-slate-800 rounded-2xl p-6 flex-1">
+              <div className="bg-slate-white rounded-2xl p-6 flex-1">
                 <div className="relative">
                   <div className="absolute -top-2 -left-2 z-10">
                     <span className="bg-green-500 text-white font-bold px-4 py-1.5 rounded text-sm shadow-lg">
@@ -886,12 +889,12 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
-                    {/* Placeholder for Step 3 image */}
+                    <img src={download} />
                   </div>
                 </div>
               </div>
               <p className="text-lg mt-6 text-center text-slate-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Download your paycheck stubs directly from your email in PDF format
+                Download your paycheck stubs directly to your computer or mobile device in PDF format
               </p>
             </div>
           </div>
@@ -936,7 +939,7 @@ export default function Home() {
                       <br />Generator Vs. Others
                     </h3>
                     <p className="text-lg leading-relaxed text-slate-600">
-                      Our paystub generator, unlike any other online paystub maker, is problem free. In less than two minutes, you can complete your pay stub by simply entering your company name and salary details. Our efficient pay stub calculator software makes it quick and easy for you to get professional results.
+                      Unlike other paystub generators that rely on generic, outdated templates, our paystub generator delivers meticulously designed paystub templates built for a modern, professional look. Each pay stub template is crafted for clarity, accuracy, and real world usability. Our advanced pay stub calculator makes generating accurate, professional pay stubs fast, easy, and problem-free.
                     </p>
                     <ul className="space-y-3">
                       <li className="flex items-center gap-3">
@@ -962,14 +965,14 @@ export default function Home() {
             {/* Personal Profile Card */}
             <div className="bg-green-50 rounded-2xl p-8 pb-0 overflow-hidden">
               <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
-                Personal Profile
+                Instant Download
               </h4>
               <p className="text-slate-600 mb-6 text-center">
-                Where you can download all your old document
+                Download your generated documents immediately after creation
               </p>
               <div className="relative">
                 <div className="bg-white rounded-t-lg overflow-hidden shadow-lg h-64 translate-y-4">
-                  {/* Placeholder for profile dashboard image */}
+                  <img src={download} />
                 </div>
               </div>
             </div>
@@ -977,14 +980,14 @@ export default function Home() {
             {/* 10% Off Card */}
             <div className="bg-red-50 rounded-2xl p-8 pb-0 overflow-hidden">
               <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
-                10% Off First Time
+                No Data Stored
               </h4>
               <p className="text-slate-600 mb-6 text-center">
-                Use coupon code: <span className="font-bold">WELCOME10</span>
+                We don’t save your personal information or generated documents
               </p>
               <div className="relative">
                 <div className="bg-white rounded-t-lg overflow-hidden shadow-lg h-64 translate-y-4">
-                  {/* Placeholder for checkout/coupon image */}
+                  <img src={secure} />
                 </div>
               </div>
             </div>

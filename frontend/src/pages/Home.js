@@ -493,33 +493,20 @@ export default function Home() {
                   Why Choose Our{' '}
                   <span className="relative inline-block text-blue-500">
                     Paystub
-                    <svg 
-                      className="absolute -bottom-4 left-0 w-full" 
-                      viewBox="0 0 150 30" 
-                      preserveAspectRatio="none"
-                      style={{ overflow: 'visible', height: '24px' }}
-                    >
-                      <path 
-                        d="M2,15 Q6,3 10,15 Q14,27 18,15 Q22,3 26,15 Q30,27 34,15 Q38,3 42,15 Q46,27 50,15 Q54,3 58,15 Q62,27 66,15 Q70,3 74,15 Q78,27 82,15 Q86,3 90,15 Q94,27 98,15 Q102,3 106,15 Q110,27 114,15 Q118,3 122,15 Q126,27 130,15 Q134,3 138,15 Q142,27 148,15" 
-                        stroke="#60a5fa" 
-                        strokeWidth="3" 
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{
-                          strokeDasharray: 500,
-                          strokeDashoffset: 500,
-                          animation: 'scribble 1.2s ease-out forwards'
-                        }}
-                      />
-                    </svg>
+                    <span 
+                      className="absolute -bottom-1 left-0 h-1 bg-blue-400 rounded-full"
+                      style={{
+                        width: '0%',
+                        animation: 'underlineGrow 0.8s ease-out 0.3s forwards'
+                      }}
+                    />
                     <style>{`
-                      @keyframes scribble {
+                      @keyframes underlineGrow {
                         0% {
-                          stroke-dashoffset: 500;
+                          width: 0%;
                         }
                         100% {
-                          stroke-dashoffset: 0;
+                          width: 100%;
                         }
                       }
                     `}</style>

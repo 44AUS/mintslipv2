@@ -1166,51 +1166,64 @@ export default function OfferLetterForm() {
                 </div>
               </div>
 
-              {/* PDF Preview */}
-              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-                <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-                  <h3 className="font-semibold text-slate-700">PDF Preview</h3>
+              {/* PDF Preview Section */}
+              <div className="p-4 bg-white border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Document Preview
+                </h3>
+                <p className="text-xs text-slate-500 mb-3">
+                  Click to enlarge • Watermark removed after payment
+                </p>
+                
+                {isGeneratingPreview ? (
+                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <p className="text-sm text-slate-500">Generating preview...</p>
+                    </div>
+                  </div>
+                ) : pdfPreview ? (
                   <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={!pdfPreview}>
-                        Expand Preview
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl h-[90vh]">
-                      <DialogHeader>
-                        <DialogTitle>Offer Letter Preview</DialogTitle>
-                      </DialogHeader>
-                      <div className="flex-1 h-full overflow-auto p-4">
-                        {pdfPreview && (
+                      <div className="relative cursor-pointer group">
+                        <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <img
                             src={pdfPreview}
-                            alt="Offer Letter Preview Full"
-                            className="w-full h-auto"
+                            alt="Offer Letter Preview"
+                            className="w-full h-96 object-contain bg-white"
                           />
-                        )}
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none">
+                              MintSlip
+                            </div>
+                          </div>
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
+                              <span className="text-sm text-slate-700">Click to enlarge</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+                      <DialogHeader className="p-4 border-b">
+                        <DialogTitle>Offer Letter Preview</DialogTitle>
+                      </DialogHeader>
+                      <div className="relative flex-1 h-full overflow-auto p-4">
+                        <img src={pdfPreview} alt="Offer Letter Preview Full" className="w-full h-auto" />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none">
+                            MintSlip
+                          </div>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
-                </div>
-                <div className="h-80 bg-slate-100 flex items-center justify-center">
-                  {isGeneratingPreview ? (
-                    <div className="text-slate-500 flex items-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Generating preview...
-                    </div>
-                  ) : pdfPreview ? (
-                    <img
-                      src={pdfPreview}
-                      alt="Offer Letter Preview"
-                      className="w-full h-full object-contain bg-white"
-                    />
-                  ) : (
-                    <p className="text-slate-500">Fill in company and candidate name to see preview</p>
-                  )}
-                </div>
+                ) : (
+                  <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
+                    <p className="text-sm text-slate-500">Fill in company and candidate name to see preview</p>
+                  </div>
+                )}
               </div>
 
               {/* Payment Section */}

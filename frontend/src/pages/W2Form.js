@@ -266,6 +266,18 @@ export default function W2Form() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <Helmet>
+        <title>W-2 Generator | MintSlip - Create W-2 Wage and Tax Statements</title>
+        <meta name="description" content="Generate professional W-2 forms with all IRS-required boxes. Auto-calculate Social Security and Medicare taxes. Multiple tax years supported. Instant PDF download." />
+        <meta name="keywords" content="W-2 generator, wage tax statement, W2 form creator, tax form generator" />
+        <meta property="og:title" content="W-2 Generator | MintSlip" />
+        <meta property="og:description" content="Create IRS-compliant W-2 forms instantly with automatic tax calculations." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="W-2 Form Generator | MintSlip" />
+        <meta name="twitter:description" content="Generate professional W-2 wage and tax statements." />
+      </Helmet>
+      
       <Header />
       <div className="max-w-7xl mx-auto px-6 py-8">
 

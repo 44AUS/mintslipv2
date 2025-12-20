@@ -22,8 +22,17 @@ import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Reviews from "@/pages/Reviews";
 
-// Use PayPal Sandbox Client ID
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
+// PayPal Client IDs
+const PAYPAL_SANDBOX_CLIENT_ID = "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
+const PAYPAL_LIVE_CLIENT_ID = "AawVFBRkotEckyQ7SZnpA9jeRCVKnrcW0b0mUgWAk_h7eoWSUWIHmwBFWibAKZj-YSFI3vGSH0f3ACuf";
+
+// Determine if we're in production (deployed) or development (localhost)
+const isProduction = window.location.hostname !== 'localhost' && 
+                     !window.location.hostname.includes('127.0.0.1') &&
+                     !window.location.hostname.includes('preview.emergentagent.com');
+
+// Use Live Client ID in production, Sandbox in development
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || (isProduction ? PAYPAL_LIVE_CLIENT_ID : PAYPAL_SANDBOX_CLIENT_ID);
 
 function App() {
   return (

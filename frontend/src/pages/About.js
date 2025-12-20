@@ -59,6 +59,18 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>About MintSlip | Professional Document Generation Platform</title>
+        <meta name="description" content="Learn about MintSlip - your trusted partner for professional document generation. We provide accurate, affordable, and easy-to-use tools for paystubs, tax forms, and more." />
+        <meta name="keywords" content="about MintSlip, document generation company, paystub generator, tax form generator" />
+        <meta property="og:title" content="About MintSlip - Document Generation Platform" />
+        <meta property="og:description" content="Trusted by 50K+ users for professional document generation." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="About MintSlip" />
+        <meta name="twitter:description" content="Professional document generation made simple." />
+      </Helmet>
+      
       <Header />
       
       {/* Hero Section */}

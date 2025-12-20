@@ -47,30 +47,32 @@ const getTemplateUrl = (taxYear) => {
   return `/templates/1099nec-${year}.pdf`;
 };
 
-// Field positions for 1099-NEC form
+// Field positions for 1099-NEC form (Copy 1 for State - page index 2)
+// Page height: 792, coordinates from bottom
 const FIELD_POSITIONS = {
-  payerName: { x: 38, y: 695, fontSize: 9 },
-  payerAddress: { x: 38, y: 680, fontSize: 9 },
-  payerCityStateZip: { x: 38, y: 665, fontSize: 9 },
-  payerPhone: { x: 38, y: 650, fontSize: 8 },
-  payerTIN: { x: 38, y: 620, fontSize: 10 },
-  recipientTIN: { x: 38, y: 585, fontSize: 10 },
-  recipientName: { x: 38, y: 555, fontSize: 10 },
-  recipientAddress: { x: 38, y: 525, fontSize: 9 },
-  recipientCityStateZip: { x: 38, y: 510, fontSize: 9 },
-  accountNumber: { x: 38, y: 475, fontSize: 9 },
-  secondTINNotice: { x: 210, y: 585, fontSize: 10 },
-  box1: { x: 310, y: 620, fontSize: 10 },
-  box2: { x: 415, y: 620, fontSize: 10 },
-  box4: { x: 310, y: 585, fontSize: 10 },
-  state1: { x: 38, y: 440, fontSize: 9 },
-  payerStateNo1: { x: 80, y: 440, fontSize: 8 },
-  stateIncome1: { x: 180, y: 440, fontSize: 9 },
-  stateTaxWithheld1: { x: 280, y: 440, fontSize: 9 },
-  state2: { x: 38, y: 420, fontSize: 9 },
-  payerStateNo2: { x: 80, y: 420, fontSize: 8 },
-  stateIncome2: { x: 180, y: 420, fontSize: 9 },
-  stateTaxWithheld2: { x: 280, y: 420, fontSize: 9 }
+  // Payer information (top left, PAYER'S name section y_top ~37-109)
+  payerName: { x: 60, y: 732, fontSize: 9 },
+  payerAddress: { x: 60, y: 718, fontSize: 9 },
+  payerCityStateZip: { x: 60, y: 704, fontSize: 9 },
+  payerPhone: { x: 60, y: 690, fontSize: 8 },
+  payerTIN: { x: 60, y: 672, fontSize: 10 },
+  recipientTIN: { x: 185, y: 672, fontSize: 10 },
+  recipientName: { x: 60, y: 644, fontSize: 10 },
+  recipientAddress: { x: 60, y: 616, fontSize: 9 },
+  recipientCityStateZip: { x: 60, y: 592, fontSize: 9 },
+  accountNumber: { x: 60, y: 562, fontSize: 9 },
+  secondTINNotice: { x: 265, y: 672, fontSize: 10 },
+  box1: { x: 310, y: 668, fontSize: 10 },
+  box2: { x: 307, y: 645, fontSize: 10 },
+  box4: { x: 310, y: 598, fontSize: 10 },
+  state1: { x: 310, y: 574, fontSize: 9 },
+  payerStateNo1: { x: 390, y: 574, fontSize: 8 },
+  stateTaxWithheld1: { x: 310, y: 560, fontSize: 9 },
+  stateIncome1: { x: 510, y: 574, fontSize: 9 },
+  state2: { x: 310, y: 548, fontSize: 9 },
+  payerStateNo2: { x: 390, y: 548, fontSize: 8 },
+  stateTaxWithheld2: { x: 310, y: 534, fontSize: 9 },
+  stateIncome2: { x: 510, y: 548, fontSize: 9 }
 };
 
 // Generate 1099-NEC preview with watermark

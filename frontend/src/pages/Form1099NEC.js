@@ -744,6 +744,96 @@ export default function Form1099NEC() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-green-700" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              1099-NEC Form FAQ
+            </h2>
+            <p className="text-slate-600">Common questions about 1099-NEC forms and our generator</p>
+          </div>
+          
+          <Accordion type="single" collapsible className="space-y-3">
+            <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is a 1099-NEC form?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Form 1099-NEC (Nonemployee Compensation) is used to report payments of $600 or more made to independent contractors, freelancers, and other self-employed individuals during the tax year. It replaced Box 7 of the 1099-MISC starting in 2020.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Who receives a 1099-NEC?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Independent contractors, freelancers, consultants, and other self-employed individuals who earned $600 or more from a single client during the tax year receive a 1099-NEC. This includes gig workers, consultants, and anyone providing services as a non-employee.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What's the difference between 1099-NEC and 1099-MISC?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                The 1099-NEC is specifically for nonemployee compensation (payments to independent contractors), while 1099-MISC is used for other types of miscellaneous income like rent, royalties, prizes, and awards. Before 2020, nonemployee compensation was reported on 1099-MISC Box 7.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Box 1 on the 1099-NEC?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 1 reports nonemployee compensation - the total amount paid to the recipient for services performed. This includes fees, commissions, prizes, awards, and other forms of compensation for services as a nonemployee.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Box 4 (Federal tax withheld)?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 4 shows any federal income tax that was withheld from payments. This typically occurs due to backup withholding (24%) when a contractor hasn't provided a valid TIN or is subject to IRS notification for backup withholding.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                When is the 1099-NEC due?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                The 1099-NEC must be furnished to recipients by January 31st and filed with the IRS by January 31st (no automatic extension). This deadline is earlier than many other 1099 forms to help recipients file their taxes on time.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Do I need to report state information?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                If you withheld state income tax, you should report the state, state ID number, and state income in Boxes 5-7. Some states require 1099-NEC filing even without withholding. Our generator supports state tax information.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Can I generate 1099-NEC forms for previous years?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Yes! Our 1099-NEC generator supports multiple tax years. Simply select the appropriate tax year from the dropdown menu. This is helpful for correcting records or creating forms for prior years.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

@@ -94,6 +94,10 @@ export default function PaystubForm() {
     federalFilingStatus: "", // optional: single, married_jointly, head_of_household (no more allowances per 2020 W-4)
     stateAllowances: "0", // number of state allowances (only for states that use them)
     employeeId: "", // Employee ID for Workday template
+    // ADP Template B specific fields
+    companyCode: "", // Company Code for ADP template
+    locDept: "", // Loc/Dept for ADP template
+    checkNumber: "", // Check Number for ADP template
   });
 
   // Validation errors state

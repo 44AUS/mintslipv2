@@ -907,7 +907,7 @@ export default function Home() {
               {/* Top Section - Why Choose Us (Full Width) */}
               <div className="bg-slate-50 rounded-2xl p-8 md:p-12 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                  <div className="space-y-6">
+                  <div className="space-y-6 order-2 md:order-1">
                     <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                       Why Choose Our{' '}
                       <span className="relative inline-block" style={{ color: '#1a4731' }}>
@@ -949,7 +949,7 @@ export default function Home() {
                       </li>
                     </ul>
                   </div>
-                  <div className="flex justify-center items-center">
+                  <div className="flex justify-center items-center order-1 md:order-2">
                     <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg overflow-hidden h-72 w-full shadow-lg flex items-center justify-center">
                       <SpeedServiceAnimation isVisible={whyChooseInView} />
                     </div>

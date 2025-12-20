@@ -645,8 +645,8 @@ export default function PaystubForm() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Form */}
-          <div className="lg:col-span-7 space-y-8">
-            <form className="space-y-8">
+          <div className="lg:col-span-7">
+            <form className="space-y-8 bg-white p-8 rounded-lg shadow-sm border border-slate-200">
               {/* Payroll Company Selection */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>

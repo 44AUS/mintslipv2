@@ -975,6 +975,96 @@ export default function W2Form() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-green-700" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              W-2 Form FAQ
+            </h2>
+            <p className="text-slate-600">Common questions about W-2 forms and our generator</p>
+          </div>
+          
+          <Accordion type="single" collapsible className="space-y-3">
+            <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is a W-2 form?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                A W-2 form (Wage and Tax Statement) is an IRS tax form that reports an employee's annual wages and the amount of taxes withheld from their paycheck. Employers must send W-2 forms to employees and the IRS by January 31 each year for the previous tax year.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What are the boxes on a W-2 form?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Key boxes include: Box 1 (Wages, tips, other compensation), Box 2 (Federal income tax withheld), Box 3 (Social Security wages), Box 4 (Social Security tax withheld), Box 5 (Medicare wages), Box 6 (Medicare tax withheld), Box 12 (Various codes for benefits/deductions), Box 13 (Checkboxes for statutory employee, retirement plan, third-party sick pay), and Boxes 15-20 for state and local tax information.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Box 12 on the W-2?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 12 uses letter codes to report various types of compensation or benefits. Common codes include: Code D (401k contributions), Code DD (Cost of employer-sponsored health coverage), Code E (403b contributions), Code W (Health Savings Account contributions). Our generator supports all standard Box 12 codes.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                How do I calculate Social Security and Medicare taxes?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Social Security tax is 6.2% of wages up to the annual wage base ($168,600 for 2024). Medicare tax is 1.45% of all wages, with an additional 0.9% for wages over $200,000. Our generator includes an auto-calculate feature that computes these taxes for you based on the wages you enter.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Can I generate W-2 forms for previous years?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Yes! Our W-2 generator supports multiple tax years, allowing you to create W-2 forms for the current year and several previous years. Simply select the appropriate tax year from the dropdown menu before generating your form.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What's the difference between Box 1 and Box 3?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 1 shows wages subject to federal income tax, while Box 3 shows wages subject to Social Security tax. These amounts can differ because some pre-tax deductions (like 401k contributions) reduce Box 1 but not Box 3, and the Social Security wage base has an annual limit.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Is the W-2 form I generate official?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Our W-2 generator creates professionally formatted documents that match the official IRS W-2 layout. The forms are suitable for record-keeping, tax preparation, and documentation purposes. All information entered must be accurate and truthful.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                How quickly will I receive my W-2?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Your W-2 form is generated and downloaded instantly after payment is confirmed. There's no waiting period - you'll have your professional PDF document within seconds of completing your purchase.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

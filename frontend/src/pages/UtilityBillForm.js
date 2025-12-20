@@ -1223,7 +1223,7 @@ export default function UtilityBillForm() {
                     <span className="text-slate-700">Due Date:</span>
                     <span className="font-medium">{formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : '—'}</span>
                   </div>
-                  <div className="border-t border-green-300 pt-2 mt-2">
+                  <div className="pt-2 mt-2">
                     <div className="flex justify-between text-green-700 text-lg">
                       <span className="font-bold">Amount Due:</span>
                       <span className="font-bold">${calculateTotalDue()}</span>

@@ -341,7 +341,7 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/paystub")}
+                onClick={() => navigate("/paystub-generator")}
                 className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
               >
                 Generate Now
@@ -404,7 +404,7 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/w2")}
+                onClick={() => navigate("/w2-generator")}
                 className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
               >
                 Generate Now
@@ -427,7 +427,7 @@ export default function Home() {
           {/* Pay Stub Card */}
           <button
             data-testid="paystub-card-button"
-            onClick={() => navigate("/paystub")}
+            onClick={() => navigate("/paystub-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -479,7 +479,7 @@ export default function Home() {
            {/* W-2 Card */}
           <button
             data-testid="w2-card-button"
-            onClick={() => navigate("/w2")}
+            onClick={() => navigate("/w2-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -505,7 +505,7 @@ export default function Home() {
           {/* W-9 Card */}
           <button
             data-testid="w9-card-button"
-            onClick={() => navigate("/w9")}
+            onClick={() => navigate("/w9-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -533,7 +533,7 @@ export default function Home() {
           {/* 1099-NEC Card */}
           <button
             data-testid="1099nec-card-button"
-            onClick={() => navigate("/1099-nec")}
+            onClick={() => navigate("/1099-nec-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -561,7 +561,7 @@ export default function Home() {
           {/* 1099-MISC Card */}
           <button
             data-testid="1099misc-card-button"
-            onClick={() => navigate("/1099-misc")}
+            onClick={() => navigate("/1099-misc-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -589,7 +589,7 @@ export default function Home() {
           {/* Offer Letter Card */}
           <button
             data-testid="offer-letter-card-button"
-            onClick={() => navigate("/offer-letter")}
+            onClick={() => navigate("/offer-letter-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -617,7 +617,7 @@ export default function Home() {
           {/* Schedule C Card */}
           <button
             data-testid="schedulec-card-button"
-            onClick={() => navigate("/schedule-c")}
+            onClick={() => navigate("/schedule-c-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
@@ -645,7 +645,7 @@ export default function Home() {
           {/* Vehicle Bill of Sale Card */}
           <button
             data-testid="vehicle-bill-of-sale-card-button"
-            onClick={() => navigate("/vehicle-bill-of-sale")}
+            onClick={() => navigate("/vehicle-bill-of-sale-generator")}
             className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
           >
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">

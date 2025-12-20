@@ -10,47 +10,49 @@ const getTemplateUrl = (taxYear) => {
   return `/templates/w9-2024.pdf`;
 };
 
-// Field positions for W-9 form (2018 revision for 2021-2023)
+// Field positions for W-9 form (2018/2021-2023 revision)
+// Page height: 792, y from bottom
+// Analyzed from actual templates - 2021, 2022, 2023 are identical
 const FIELD_POSITIONS_2018 = {
-  // Line 1 - Name
-  name: { x: 42, y: 656, fontSize: 11 },
+  // Line 1 - Name (y_top ~84, data entry area ~95)
+  name: { x: 65, y: 695, fontSize: 11 },
   
-  // Line 2 - Business name
-  businessName: { x: 42, y: 620, fontSize: 10 },
+  // Line 2 - Business name (y_top ~108, data entry ~120)
+  businessName: { x: 65, y: 670, fontSize: 10 },
   
-  // Line 3 - Federal tax classification checkboxes
-  individual: { x: 48, y: 584, fontSize: 10 },
-  ccorp: { x: 154, y: 584, fontSize: 10 },
-  scorp: { x: 207, y: 584, fontSize: 10 },
-  partnership: { x: 260, y: 584, fontSize: 10 },
-  trust: { x: 330, y: 584, fontSize: 10 },
-  llc: { x: 400, y: 584, fontSize: 10 },
-  llcCode: { x: 492, y: 584, fontSize: 10 },
-  other: { x: 48, y: 566, fontSize: 10 },
-  otherText: { x: 100, y: 566, fontSize: 9 },
+  // Line 3 - Federal tax classification checkboxes (y_top ~159-168)
+  individual: { x: 68, y: 630, fontSize: 10 },
+  ccorp: { x: 180, y: 630, fontSize: 10 },
+  scorp: { x: 240, y: 630, fontSize: 10 },
+  partnership: { x: 300, y: 630, fontSize: 10 },
+  trust: { x: 365, y: 630, fontSize: 10 },
+  llc: { x: 68, y: 606, fontSize: 10 },
+  llcCode: { x: 340, y: 606, fontSize: 10 },
+  other: { x: 68, y: 580, fontSize: 10 },
+  otherText: { x: 140, y: 580, fontSize: 9 },
   
-  // Exemptions (Line 4)
-  exemptPayeeCode: { x: 505, y: 638, fontSize: 9 },
-  fatcaCode: { x: 505, y: 615, fontSize: 9 },
+  // Exemptions (Line 4) - right side (y_top ~170, ~195)
+  exemptPayeeCode: { x: 555, y: 620, fontSize: 9 },
+  fatcaCode: { x: 555, y: 594, fontSize: 9 },
   
-  // Address (Line 5)
-  address: { x: 42, y: 524, fontSize: 10 },
+  // Address (Line 5) - y_top ~240, data entry ~252
+  address: { x: 65, y: 538, fontSize: 10 },
   
-  // City, State, ZIP (Line 6)
-  cityStateZip: { x: 42, y: 490, fontSize: 10 },
+  // City, State, ZIP (Line 6) - y_top ~264, data entry ~276
+  cityStateZip: { x: 65, y: 514, fontSize: 10 },
   
-  // Account numbers (Line 7)
-  accountNumbers: { x: 42, y: 456, fontSize: 9 },
+  // Account numbers (Line 7) - y_top ~288, data entry ~300
+  accountNumbers: { x: 65, y: 490, fontSize: 9 },
   
-  // Part I - TIN
-  ssn1: { x: 345, y: 430, fontSize: 14 },
-  ssn2: { x: 390, y: 430, fontSize: 14 },
-  ssn3: { x: 460, y: 430, fontSize: 14 },
-  ein1: { x: 345, y: 400, fontSize: 14 },
-  ein2: { x: 420, y: 400, fontSize: 14 },
+  // Part I - TIN (Social Security - y_top ~324, EIN - y_top ~372)
+  ssn1: { x: 440, y: 455, fontSize: 12 },
+  ssn2: { x: 490, y: 455, fontSize: 12 },
+  ssn3: { x: 550, y: 455, fontSize: 12 },
+  ein1: { x: 440, y: 408, fontSize: 12 },
+  ein2: { x: 520, y: 408, fontSize: 12 },
   
-  // Part II - Signature and Date
-  signatureDate: { x: 470, y: 260, fontSize: 10 }
+  // Part II - Signature Date (y_top ~553)
+  signatureDate: { x: 400, y: 236, fontSize: 10 }
 };
 
 // Field positions for W-9 form (2024 revision)

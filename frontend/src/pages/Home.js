@@ -217,6 +217,129 @@ const SpeedServiceAnimation = ({ isVisible }) => (
   </div>
 );
 
+// Form Typing Animation Component
+const FormTypingAnimation = ({ isVisible }) => (
+  <div className="relative w-full h-full flex items-center justify-center p-4">
+    <svg viewBox="0 0 280 220" className="w-full h-full max-w-sm">
+      {/* Form container */}
+      <rect x="20" y="10" width="240" height="200" rx="12" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
+      
+      {/* Form header */}
+      <rect x="20" y="10" width="240" height="35" rx="12" fill="#1a4731"/>
+      <text x="140" y="33" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="bold">PAYSTUB GENERATOR</text>
+      
+      {/* Company Name Field */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out' }}>
+        <text x="35" y="65" fill="#666666" fontSize="8">Company Name</text>
+        <rect x="35" y="70" width="110" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
+        <text x="40" y="84" fill="#1a4731" fontSize="10" fontWeight="500"
+          style={{ 
+            opacity: isVisible ? 1 : 0,
+            animation: isVisible ? 'typeText 0.8s steps(10) 0.3s forwards' : 'none'
+          }}>
+          <tspan className="typing-text">MintSlip Inc</tspan>
+        </text>
+        {/* Cursor */}
+        <rect x="100" y="74" width="2" height="12" fill="#1a4731"
+          style={{ 
+            opacity: isVisible ? 1 : 0,
+            animation: isVisible ? 'blink 0.5s infinite 0.3s, moveCursor1 0.8s ease-out 0.3s forwards' : 'none'
+          }}/>
+      </g>
+      
+      {/* Employee Name Field */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 0.5s' }}>
+        <text x="155" y="65" fill="#666666" fontSize="8">Employee Name</text>
+        <rect x="155" y="70" width="95" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
+        <text x="160" y="84" fill="#1a4731" fontSize="10" fontWeight="500"
+          style={{ 
+            opacity: isVisible ? 1 : 0,
+            animation: isVisible ? 'typeText 0.6s steps(8) 1s forwards' : 'none'
+          }}>John Doe</text>
+      </g>
+      
+      {/* Hourly Rate Field */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 1s' }}>
+        <text x="35" y="108" fill="#666666" fontSize="8">Hourly Rate</text>
+        <rect x="35" y="113" width="80" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
+        <text x="40" y="127" fill="#1a4731" fontSize="10" fontWeight="500"
+          style={{ 
+            opacity: isVisible ? 1 : 0,
+            animation: isVisible ? 'typeText 0.4s steps(6) 1.5s forwards' : 'none'
+          }}>$25.00</text>
+      </g>
+      
+      {/* Hours Worked Field */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 1.3s' }}>
+        <text x="125" y="108" fill="#666666" fontSize="8">Hours Worked</text>
+        <rect x="125" y="113" width="60" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
+        <text x="130" y="127" fill="#1a4731" fontSize="10" fontWeight="500"
+          style={{ 
+            opacity: isVisible ? 1 : 0,
+            animation: isVisible ? 'typeText 0.3s steps(2) 1.8s forwards' : 'none'
+          }}>40</text>
+      </g>
+      
+      {/* Pay Period Field */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 1.5s' }}>
+        <text x="195" y="108" fill="#666666" fontSize="8">Pay Period</text>
+        <rect x="195" y="113" width="55" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
+        <text x="200" y="127" fill="#1a4731" fontSize="10" fontWeight="500"
+          style={{ 
+            opacity: isVisible ? 1 : 0,
+            animation: isVisible ? 'typeText 0.5s steps(8) 2s forwards' : 'none'
+          }}>Bi-Weekly</text>
+      </g>
+      
+      {/* Gross Pay Display */}
+      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.5s ease-out 2.3s forwards' : 'none' }}>
+        <rect x="35" y="145" width="100" height="25" rx="4" fill="#e8f5e9" stroke="#1a4731" strokeWidth="1"/>
+        <text x="45" y="155" fill="#666666" fontSize="7">GROSS PAY</text>
+        <text x="45" y="166" fill="#1a4731" fontSize="11" fontWeight="bold">$1,000.00</text>
+      </g>
+      
+      {/* Net Pay Display */}
+      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.5s ease-out 2.5s forwards' : 'none' }}>
+        <rect x="145" y="145" width="100" height="25" rx="4" fill="#1a4731"/>
+        <text x="155" y="155" fill="#a7f3d0" fontSize="7">NET PAY</text>
+        <text x="155" y="166" fill="#ffffff" fontSize="11" fontWeight="bold">$780.00</text>
+      </g>
+      
+      {/* Generate Button */}
+      <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 2.8s forwards' : 'none' }}>
+        <rect x="35" y="180" width="210" height="24" rx="12" fill="#1a4731"/>
+        <text x="140" y="196" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">✓ GENERATE PAYSTUB</text>
+      </g>
+      
+      {/* Floating elements */}
+      <g style={{ opacity: 0, animation: isVisible ? 'floatIn 0.5s ease-out 3s forwards' : 'none' }}>
+        {/* Dollar signs floating */}
+        <text x="5" y="80" fill="#1a4731" fontSize="14" opacity="0.3">$</text>
+        <text x="265" y="120" fill="#1a4731" fontSize="12" opacity="0.3">$</text>
+        <text x="10" y="160" fill="#1a4731" fontSize="10" opacity="0.3">$</text>
+      </g>
+    </svg>
+    <style>{`
+      @keyframes typeText {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+      }
+      @keyframes moveCursor1 {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(55px); }
+      }
+      @keyframes floatIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+    `}</style>
+  </div>
+);
+
 // Custom hook for intersection observer
 const useInView = (options = {}) => {
   const ref = useRef(null);

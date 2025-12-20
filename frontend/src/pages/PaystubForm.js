@@ -703,6 +703,14 @@ export default function PaystubForm() {
       <Header title="Generate Pay Stub" />
 
       <div className="max-w-7xl mx-auto px-6 py-12">
+
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+            Instant Paystub Generator
+          </h1>
+          <p className="text-slate-600">Generate professional pay stubs with accurate tax calculations, direct deposit information, and customizable pay periods.</p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Form */}
           <div className="lg:col-span-7">

@@ -77,12 +77,12 @@ export default function NotFound() {
                 Generate Pay Stub
               </Button>
               <Button
-                onClick={() => navigate("/accountant-mockup")}
+                onClick={() => navigate("/accounting-mockup-generator")}
                 variant="ghost"
                 className="gap-2 text-slate-600 hover:text-green-800"
               >
                 <FileBarChart className="w-4 h-4" />
-                Generate Accountant Mockup
+                Generate Accounting Mockup
               </Button>
               <Button
                 onClick={() => navigate("/faq")}

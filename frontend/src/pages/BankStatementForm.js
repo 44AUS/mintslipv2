@@ -351,6 +351,14 @@ const createOrder = (data, actions) => {
       <Header title="Generate Accounting Mockup" />
 
       <div className="max-w-7xl mx-auto px-6 py-12">
+
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+            Instant Accounting Mockups Generator
+          </h1>
+          <p className="text-slate-600">Generate statement templates for personal bookkeeping and organizational purposes.</p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Form */}
           <div className="lg:col-span-7">

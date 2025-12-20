@@ -707,7 +707,7 @@ export default function Home() {
                 POPULAR
               </div>
               <PiggyBank className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups Generator</h4>
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups</h4>
               <div className="mb-4">
                 <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$50-70</span>
                 <span className="text-slate-500 ml-2">/ doc</span>
@@ -1270,7 +1270,7 @@ export default function Home() {
                 </h4>
               </div>
               <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate professional service expense statements for electric, gas, water, internet, and more with custom logos and 3 template styles.
+                Generate professional service expense statements for home budgeting, and more with custom logos and 3 template styles.
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">

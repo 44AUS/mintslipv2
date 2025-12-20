@@ -1376,7 +1376,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* 10% Off Card */}
+            {/* No Data Stored Card */}
             <div className="bg-red-50 rounded-2xl p-8 pb-0 overflow-hidden">
               <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 No Data Stored

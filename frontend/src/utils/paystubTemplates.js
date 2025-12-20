@@ -811,9 +811,9 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   y = Math.max(y, rightY) + 40;
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, rightCol + 30, y);
+  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, rightCol, y);
   y += 8;
-  doc.text("* Excluded from Federal taxable wages", rightCol + 30, y);
+  doc.text("* Excluded from Federal taxable wages", rightCol, y);
 
   // ==================== BOTTOM DIVIDER ====================
   y += 25;

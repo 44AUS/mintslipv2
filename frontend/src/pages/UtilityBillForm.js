@@ -342,15 +342,15 @@ export default function UtilityBillForm() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Helmet>
-        <title>Service Expense Generator | MintSlip - Create Utility Bills for Budgeting</title>
-        <meta name="description" content="Generate professional service expense statements for personal budgeting. Create water, electric, gas, and internet bill mockups with MintSlip's easy-to-use generator." />
-        <meta name="keywords" content="utility bill generator, service expense, water bill template, electric bill mockup, budgeting tools" />
+        <title>Service Expense Generator | MintSlip - Create Service Expenses for Budgeting</title>
+        <meta name="description" content="Generate professional service expense statements for personal budgeting. Create with MintSlip's easy-to-use generator." />
+        <meta name="keywords" content="service expense generator, service expense, budgeting tools" />
         <meta property="og:title" content="Service Expense Generator | MintSlip" />
-        <meta property="og:description" content="Create professional utility bill mockups for personal finance and budgeting purposes." />
+        <meta property="og:description" content="Create professional service expenses for personal finance and budgeting purposes." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Service Expense Generator | MintSlip" />
-        <meta name="twitter:description" content="Generate utility bill mockups for budgeting with our professional templates." />
+        <meta name="twitter:description" content="Generate service expenses for budgeting with our professional templates." />
       </Helmet>
       
       <Header />

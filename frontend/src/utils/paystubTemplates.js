@@ -509,15 +509,26 @@ function drawTable(
 
 // Template B: Modern Minimalist
 export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
-  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs, ytdFederalTax } = data;
+  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs, ytdFederalTax, logoDataUrl } = data;
   
   let y = 30;
   
-  // Minimalist Header - No background
-  doc.setFontSize(14);
-  doc.setTextColor(100, 100, 100);
-  doc.setFont(undefined, 'normal');
-  doc.text(formData.company || "Company Name", margin, y);
+  // Minimalist Header - Show custom logo if provided, otherwise company name
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', margin, y - 10, 100, 30);
+    } catch (e) {
+      doc.setFontSize(14);
+      doc.setTextColor(100, 100, 100);
+      doc.setFont(undefined, 'normal');
+      doc.text(formData.company || "Company Name", margin, y);
+    }
+  } else {
+    doc.setFontSize(14);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont(undefined, 'normal');
+    doc.text(formData.company || "Company Name", margin, y);
+  }
   doc.setFontSize(8);
   doc.text(`${formData.companyAddress || ""} | ${formData.companyCity || ""}, ${formData.companyState || ""} | ${formData.companyPhone || ""}`, margin, y + 15);
 

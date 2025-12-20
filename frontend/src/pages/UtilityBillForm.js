@@ -14,8 +14,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
-import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets, HelpCircle } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets } from "lucide-react";
 
 // US States list
 const US_STATES = [

@@ -220,6 +220,206 @@ const SpeedServiceAnimation = ({ isVisible }) => (
   </div>
 );
 
+// Paystub Reveal Animation Component - for "What is a Pay Stub?" section
+const PaystubRevealAnimation = ({ isVisible }) => (
+  <div className="relative w-full h-full flex items-center justify-center p-4">
+    <svg viewBox="0 0 300 380" className="w-full h-full max-w-md drop-shadow-2xl">
+      {/* Main paystub document */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0, 
+        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+        transition: 'all 0.6s ease-out'
+      }}>
+        {/* Document shadow */}
+        <rect x="18" y="18" width="264" height="344" rx="8" fill="rgba(0,0,0,0.1)"/>
+        {/* Document background */}
+        <rect x="12" y="12" width="264" height="344" rx="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="2"/>
+        
+        {/* Company Header - slides down */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
+          transition: 'all 0.5s ease-out 0.3s'
+        }}>
+          <rect x="12" y="12" width="264" height="50" rx="8" fill="#1a4731"/>
+          <text x="144" y="35" textAnchor="middle" fill="#ffffff" fontSize="14" fontWeight="bold" style={{ fontFamily: 'system-ui' }}>MINTSLIP CORPORATION</text>
+          <text x="144" y="52" textAnchor="middle" fill="#a7f3d0" fontSize="8">EARNINGS STATEMENT</text>
+        </g>
+
+        {/* Pay Period Info - fades in */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease-out 0.6s'
+        }}>
+          <rect x="24" y="72" width="120" height="32" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
+          <text x="32" y="85" fill="#64748b" fontSize="7">PAY PERIOD</text>
+          <text x="32" y="97" fill="#1a4731" fontSize="9" fontWeight="600">01/01/2025 - 01/15/2025</text>
+          
+          <rect x="152" y="72" width="112" height="32" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
+          <text x="160" y="85" fill="#64748b" fontSize="7">PAY DATE</text>
+          <text x="160" y="97" fill="#1a4731" fontSize="9" fontWeight="600">01/20/2025</text>
+        </g>
+
+        {/* Employee Info Section - slides in from left */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateX(0)' : 'translateX(-30px)',
+          transition: 'all 0.5s ease-out 0.8s'
+        }}>
+          <rect x="24" y="114" width="240" height="40" rx="4" fill="#ecfdf5" stroke="#a7f3d0" strokeWidth="1"/>
+          <text x="32" y="128" fill="#64748b" fontSize="7">EMPLOYEE</text>
+          <text x="32" y="142" fill="#1a4731" fontSize="11" fontWeight="700">John M. Smith</text>
+          <text x="160" y="128" fill="#64748b" fontSize="7">EMPLOYEE ID</text>
+          <text x="160" y="142" fill="#1a4731" fontSize="10" fontWeight="600">EMP-2025-0142</text>
+        </g>
+
+        {/* Earnings Section Header */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease-out 1s'
+        }}>
+          <rect x="24" y="164" width="240" height="20" rx="2" fill="#1a4731"/>
+          <text x="32" y="177" fill="#ffffff" fontSize="8" fontWeight="600">EARNINGS</text>
+          <text x="130" y="177" fill="#ffffff" fontSize="8" fontWeight="600">HOURS</text>
+          <text x="175" y="177" fill="#ffffff" fontSize="8" fontWeight="600">RATE</text>
+          <text x="220" y="177" fill="#ffffff" fontSize="8" fontWeight="600">AMOUNT</text>
+        </g>
+
+        {/* Earnings Row - animates value */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease-out 1.2s'
+        }}>
+          <rect x="24" y="186" width="240" height="22" rx="0" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1"/>
+          <text x="32" y="200" fill="#334155" fontSize="9">Regular Pay</text>
+          <text x="138" y="200" fill="#334155" fontSize="9" fontWeight="500">80.00</text>
+          <text x="175" y="200" fill="#334155" fontSize="9">$25.00</text>
+          <text x="220" y="200" fill="#1a4731" fontSize="9" fontWeight="600"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              animation: isVisible ? 'countUp 0.8s ease-out 1.5s forwards' : 'none'
+            }}>$2,000.00</text>
+        </g>
+
+        {/* Overtime Row */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease-out 1.4s'
+        }}>
+          <rect x="24" y="208" width="240" height="22" rx="0" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
+          <text x="32" y="222" fill="#334155" fontSize="9">Overtime</text>
+          <text x="138" y="222" fill="#334155" fontSize="9" fontWeight="500">8.00</text>
+          <text x="175" y="222" fill="#334155" fontSize="9">$37.50</text>
+          <text x="220" y="222" fill="#1a4731" fontSize="9" fontWeight="600">$300.00</text>
+        </g>
+
+        {/* Gross Pay */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease-out 1.6s'
+        }}>
+          <rect x="24" y="232" width="240" height="22" rx="0" fill="#dcfce7" stroke="#86efac" strokeWidth="1"/>
+          <text x="32" y="246" fill="#166534" fontSize="9" fontWeight="700">GROSS PAY</text>
+          <text x="220" y="246" fill="#166534" fontSize="10" fontWeight="700">$2,300.00</text>
+        </g>
+
+        {/* Deductions Section */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'translateX(0)' : 'translateX(30px)',
+          transition: 'all 0.5s ease-out 1.8s'
+        }}>
+          <rect x="24" y="262" width="240" height="18" rx="2" fill="#fef2f2"/>
+          <text x="32" y="274" fill="#991b1b" fontSize="8" fontWeight="600">DEDUCTIONS</text>
+          
+          <g>
+            <text x="32" y="292" fill="#64748b" fontSize="8">Federal Tax</text>
+            <text x="220" y="292" fill="#dc2626" fontSize="8" fontWeight="500">-$287.50</text>
+          </g>
+          <g>
+            <text x="32" y="306" fill="#64748b" fontSize="8">State Tax</text>
+            <text x="220" y="306" fill="#dc2626" fontSize="8" fontWeight="500">-$115.00</text>
+          </g>
+          <g>
+            <text x="32" y="320" fill="#64748b" fontSize="8">Social Security</text>
+            <text x="220" y="320" fill="#dc2626" fontSize="8" fontWeight="500">-$142.60</text>
+          </g>
+        </g>
+
+        {/* Net Pay - Final reveal with emphasis */}
+        <g style={{ 
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? 'scale(1)' : 'scale(0.9)',
+          transformOrigin: '144px 342px',
+          transition: 'all 0.5s ease-out 2.2s'
+        }}>
+          <rect x="24" y="330" width="240" height="26" rx="4" fill="#1a4731"/>
+          <text x="32" y="347" fill="#ffffff" fontSize="10" fontWeight="700">NET PAY</text>
+          <text x="210" y="347" fill="#4ade80" fontSize="12" fontWeight="800"
+            style={{
+              textShadow: '0 0 10px rgba(74, 222, 128, 0.5)'
+            }}>$1,754.90</text>
+        </g>
+      </g>
+
+      {/* Floating decorative elements */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.5s ease-out 2.5s'
+      }}>
+        {/* Checkmark badge */}
+        <g style={{
+          animation: isVisible ? 'bounceIn 0.6s ease-out 2.6s forwards' : 'none',
+          opacity: 0
+        }}>
+          <circle cx="264" cy="30" r="20" fill="#22c55e" stroke="#ffffff" strokeWidth="3"/>
+          <path d="M254,30 L261,38 L276,22" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+            style={{
+              strokeDasharray: 30,
+              strokeDashoffset: isVisible ? 0 : 30,
+              transition: 'stroke-dashoffset 0.4s ease-out 2.8s'
+            }}/>
+        </g>
+
+        {/* Dollar signs floating */}
+        <text x="8" y="100" fill="#22c55e" fontSize="18" opacity="0.4"
+          style={{ animation: isVisible ? 'floatUp 2s ease-in-out infinite 2.5s' : 'none' }}>$</text>
+        <text x="278" y="200" fill="#22c55e" fontSize="14" opacity="0.3"
+          style={{ animation: isVisible ? 'floatUp 2.5s ease-in-out infinite 2.7s' : 'none' }}>$</text>
+        <text x="5" y="300" fill="#22c55e" fontSize="12" opacity="0.3"
+          style={{ animation: isVisible ? 'floatUp 2.2s ease-in-out infinite 2.9s' : 'none' }}>$</text>
+      </g>
+
+      {/* Sparkle effects */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 2.8s' }}>
+        <circle cx="280" cy="80" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite' : 'none' }}/>
+        <circle cx="20" cy="180" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 0.3s' : 'none' }}/>
+        <circle cx="285" cy="280" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.6s' : 'none' }}/>
+      </g>
+    </svg>
+    
+    <style>{`
+      @keyframes countUp {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes bounceIn {
+        0% { opacity: 0; transform: scale(0); }
+        60% { transform: scale(1.2); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes floatUp {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes sparkle {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.5); }
+      }
+    `}</style>
+  </div>
+);
+
 // Form Typing Animation Component
 const FormTypingAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center p-4">

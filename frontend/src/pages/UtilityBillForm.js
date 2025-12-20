@@ -299,7 +299,7 @@ export default function UtilityBillForm() {
           <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
             Service Expense Generator
           </h1>
-          <p className="text-slate-600">Create professional service expense statements for electric, gas, water, internet, and more</p>
+          <p className="text-slate-600">Create professional service expense statements for home budgeting</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -713,7 +713,7 @@ export default function PaystubForm() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Form */}
-          <div className="lg:col-span-7 order-2 lg:order-1">
+          <div className="lg:col-span-7">
             <form className="space-y-8 bg-white p-8 rounded-lg shadow-sm border border-slate-200">
               {/* Payroll Company Selection */}
               <div className="space-y-4">

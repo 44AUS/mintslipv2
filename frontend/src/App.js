@@ -26,17 +26,31 @@ import Reviews from "@/pages/Reviews";
 const PAYPAL_SANDBOX_CLIENT_ID = "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
 const PAYPAL_LIVE_CLIENT_ID = "AawVFBRkotEckyQ7SZnpA9jeRCVKnrcW0b0mUgWAk_h7eoWSUWIHmwBFWibAKZj-YSFI3vGSH0f3ACuf";
 
-// Determine if we're in production (deployed) or development (localhost)
-const isProduction = window.location.hostname !== 'localhost' && 
-                     !window.location.hostname.includes('127.0.0.1') &&
-                     !window.location.hostname.includes('preview.emergentagent.com');
+// Function to determine environment and get correct PayPal Client ID
+const getPayPalClientId = () => {
+  // Check if running on localhost or preview environments (sandbox)
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    const isDevelopment = hostname === 'localhost' || 
+                          hostname === '127.0.0.1' ||
+                          hostname.includes('preview.emergentagent.com');
+    
+    if (isDevelopment) {
+      console.log('PayPal: Using Sandbox mode');
+      return PAYPAL_SANDBOX_CLIENT_ID;
+    }
+  }
+  
+  // Production - use Live Client ID
+  console.log('PayPal: Using Live mode');
+  return PAYPAL_LIVE_CLIENT_ID;
+};
 
-// Use Live Client ID in production, Sandbox in development
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || (isProduction ? PAYPAL_LIVE_CLIENT_ID : PAYPAL_SANDBOX_CLIENT_ID);
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || getPayPalClientId();
 
 function App() {
   return (
-    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD" }}>
+    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
       <div className="App">
         <Toaster position="top-center" richColors />
         <BrowserRouter>

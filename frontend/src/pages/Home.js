@@ -1381,7 +1381,7 @@ export default function Home() {
               <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 No Data Stored
               </h4>
-              <p className="text-slate-600 mb-6 text-center">
+              <p className="text-slate-600 mb-4 text-center">
                 We don’t save your personal information or generated documents
               </p>
               <div className="relative">

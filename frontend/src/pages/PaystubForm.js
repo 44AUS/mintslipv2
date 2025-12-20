@@ -637,7 +637,7 @@ export default function PaystubForm() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-slate-50 relative">
       <div className="noise-overlay" />
       
       <Header title="Generate Pay Stub" />

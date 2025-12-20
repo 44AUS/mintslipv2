@@ -558,12 +558,12 @@ export default function W9Form() {
                       <DialogHeader>
                         <DialogTitle>W-9 Preview - {selectedTaxYear}</DialogTitle>
                       </DialogHeader>
-                      <div className="flex-1 h-full">
+                      <div className="flex-1 h-full overflow-auto p-4">
                         {pdfPreview && (
-                          <iframe
+                          <img
                             src={pdfPreview}
-                            className="w-full h-[calc(90vh-80px)] border-0"
-                            title="W-9 Preview Full"
+                            alt="W-9 Preview Full"
+                            className="w-full h-auto"
                           />
                         )}
                       </div>
@@ -580,10 +580,10 @@ export default function W9Form() {
                       Generating preview...
                     </div>
                   ) : pdfPreview ? (
-                    <iframe
+                    <img
                       src={pdfPreview}
-                      className="w-full h-full border-0"
-                      title="W-9 Preview"
+                      alt="W-9 Preview"
+                      className="w-full h-full object-contain bg-white"
                     />
                   ) : (
                     <p className="text-slate-500">Preview will appear here</p>

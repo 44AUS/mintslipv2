@@ -747,6 +747,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+        );
+      })()}
 
       {/* Document Selection Grid */}
       <section className="max-w-7xl mx-auto px-6 py-32">

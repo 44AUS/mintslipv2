@@ -321,7 +321,7 @@ async function generateSingleStub(
 
   // Call the appropriate template
   if (template === 'template-b') {
-    await generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+    generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === 'template-c') {
     await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
   } else {

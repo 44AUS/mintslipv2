@@ -1342,8 +1342,8 @@ export default function Home() {
                   </button>
                 </div>
                 
-                {/* Right - Envelope Animation */}
-                <div className="flex justify-center items-center">
+                {/* Right - Animation - appears above text on mobile */}
+                <div className="flex justify-center items-center order-1 lg:order-2">
                   <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl overflow-hidden h-96 w-full shadow-lg flex items-center justify-center">
                     <EnvelopeAnimation isVisible={quickSolutionInView} />
                   </div>

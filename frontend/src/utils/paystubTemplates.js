@@ -703,21 +703,24 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   
   // ========== HEADER LOGO/NAME ==========
   const isPreview = data.isPreview || false;
-  if (isPreview) {
-    // For preview, show Workday text (simpler approach to avoid image loading issues)
+  
+  // Always show custom logo if uploaded, regardless of preview mode
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', m, y - 10, 120, 35);
+      y += 30;
+    } catch (e) {
+      // Fallback to text if logo fails to load
+      doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
+      y += 12;
+    }
+  } else if (isPreview) {
+    // For preview without custom logo, show Workday text
     doc.setFontSize(18); 
     doc.setTextColor(0, 85, 164); // Workday blue color
     doc.setFont("helvetica", "bold"); 
     doc.text("WORKDAY", m, y + 10);
     y += 30;
-  } else if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, 'PNG', m, y - 10, 120, 35);
-      y += 30;
-    } catch (e) {
-      doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
-      y += 12;
-    }
   } else {
     doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
     y += 12;

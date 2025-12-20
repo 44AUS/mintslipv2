@@ -495,28 +495,28 @@ export default function Home() {
                     Paystub
                     <svg 
                       className="absolute -bottom-3 left-0 w-full" 
-                      viewBox="0 0 120 20" 
+                      viewBox="0 0 150 24" 
                       preserveAspectRatio="none"
-                      style={{ overflow: 'visible', height: '14px' }}
+                      style={{ overflow: 'visible', height: '16px' }}
                     >
                       <path 
-                        d="M2,10 C8,4 12,14 20,8 C28,2 32,16 40,10 C48,4 52,14 60,8 C68,2 72,16 80,10 C88,4 92,14 100,8 C108,2 112,14 118,10" 
+                        d="M2,12 Q6,4 10,12 Q14,20 18,12 Q22,4 26,12 Q30,20 34,12 Q38,4 42,12 Q46,20 50,12 Q54,4 58,12 Q62,20 66,12 Q70,4 74,12 Q78,20 82,12 Q86,4 90,12 Q94,20 98,12 Q102,4 106,12 Q110,20 114,12 Q118,4 122,12 Q126,20 130,12 Q134,4 138,12 Q142,20 148,12" 
                         stroke="#60a5fa" 
                         strokeWidth="2.5" 
                         fill="none"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         style={{
-                          strokeDasharray: 300,
-                          strokeDashoffset: 300,
-                          animation: 'scribble 1s ease-out forwards'
+                          strokeDasharray: 400,
+                          strokeDashoffset: 400,
+                          animation: 'scribble 1.2s ease-out forwards'
                         }}
                       />
                     </svg>
                     <style>{`
                       @keyframes scribble {
                         0% {
-                          stroke-dashoffset: 300;
+                          stroke-dashoffset: 400;
                         }
                         100% {
                           stroke-dashoffset: 0;

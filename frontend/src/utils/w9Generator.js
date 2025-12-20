@@ -99,45 +99,6 @@ const FIELD_POSITIONS_2024 = {
   // Part II - Signature Date (y_top ~589)
   signatureDate: { x: 400, y: 200, fontSize: 10 }
 };
-  
-  // Line 2 - Business name (y_top ~133, data entry ~148)
-  businessName: { x: 65, y: 645, fontSize: 10 },
-  
-  // Line 3a - Federal tax classification checkboxes (y_top ~180)
-  individual: { x: 75, y: 610, fontSize: 10 },
-  ccorp: { x: 182, y: 610, fontSize: 10 },
-  scorp: { x: 254, y: 610, fontSize: 10 },
-  partnership: { x: 326, y: 610, fontSize: 10 },
-  trust: { x: 390, y: 610, fontSize: 10 },
-  llc: { x: 74, y: 596, fontSize: 10 },
-  llcCode: { x: 350, y: 596, fontSize: 10 },
-  other: { x: 74, y: 556, fontSize: 10 },
-  otherText: { x: 130, y: 556, fontSize: 9 },
-  
-  // Exemptions (Line 4) - right side (y_top ~193, ~220)
-  exemptPayeeCode: { x: 555, y: 598, fontSize: 9 },
-  fatcaCode: { x: 555, y: 568, fontSize: 9 },
-  
-  // Address (Line 5) - y_top ~277, data entry ~290
-  address: { x: 65, y: 505, fontSize: 10 },
-  
-  // City, State, ZIP (Line 6) - y_top ~301, data entry ~315
-  cityStateZip: { x: 65, y: 478, fontSize: 10 },
-  
-  // Account numbers (Line 7) - y_top ~325, data entry ~340
-  accountNumbers: { x: 65, y: 452, fontSize: 9 },
-  
-  // Part I - TIN (Social Security or EIN)
-  // SSN boxes around y_top ~364-390
-  ssn1: { x: 360, y: 410, fontSize: 14 },
-  ssn2: { x: 415, y: 410, fontSize: 14 },
-  ssn3: { x: 490, y: 410, fontSize: 14 },
-  ein1: { x: 360, y: 380, fontSize: 14 },
-  ein2: { x: 445, y: 380, fontSize: 14 },
-  
-  // Part II - Signature Date (y_top ~589)
-  signatureDate: { x: 400, y: 200, fontSize: 10 }
-};
 
 // Get field positions based on tax year
 const getFieldPositions = (taxYear) => {

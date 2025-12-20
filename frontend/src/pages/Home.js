@@ -2011,42 +2011,45 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="bg-slate-50 border-y border-slate-200 py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <img
-                src={secure}
-                alt="Secure payment"
-                className="w-full h-auto rounded-md shadow-xl border border-slate-300"
-              />
+      {/* Trust Section - Secure & Instant */}
+      {(() => {
+        const [trustRef, trustInView] = useInView();
+        return (
+          <section ref={trustRef} className="bg-slate-50 border-y border-slate-200 py-20">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="order-2 md:order-1">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-xl border border-slate-200 h-[400px] flex items-center justify-center overflow-hidden">
+                    <SecureInstantAnimation isVisible={trustInView} />
+                  </div>
+                </div>
+                <div className="space-y-6 order-1 md:order-2">
+                  <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    Secure & Instant
+                  </h3>
+                  <p className="text-lg leading-relaxed text-slate-600">
+                    Your payment is processed securely through PayPal. Once payment is confirmed, your document is generated and downloaded immediately.
+                  </p>
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <span className="text-slate-700">Industry-standard encryption</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <span className="text-slate-700">No data storage after download</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <span className="text-slate-700">Instant PDF generation</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
-            <div className="space-y-6">
-              <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Secure & Instant
-              </h3>
-              <p className="text-lg leading-relaxed text-slate-600">
-                Your payment is processed securely through PayPal. Once payment is confirmed, your document is generated and downloaded immediately.
-              </p>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">Industry-standard encryption</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">No data storage after download</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">Instant PDF generation</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       <Footer />
     </div>

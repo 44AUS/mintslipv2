@@ -456,17 +456,17 @@ export default function FAQ() {
         ) : (
           /* Category Tabs */
           <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-8">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-transparent h-auto p-0">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 bg-transparent h-auto p-0">
               {Object.entries(FAQ_CATEGORIES).map(([key, category]) => {
                 const IconComponent = category.icon;
                 return (
                   <TabsTrigger 
                     key={key} 
                     value={key}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-slate-200 data-[state=active]:border-green-700 data-[state=active]:bg-green-50 data-[state=active]:text-green-800 hover:border-green-300 transition-all"
+                    className="flex items-center gap-2 px-3 py-3 rounded-xl border-2 border-slate-200 data-[state=active]:border-green-700 data-[state=active]:bg-green-50 data-[state=active]:text-green-800 hover:border-green-300 transition-all"
                   >
-                    <IconComponent className="w-4 h-4" />
-                    <span className="font-medium text-sm">{category.title.split(' ')[0]}</span>
+                    <IconComponent className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium text-xs truncate">{category.title.replace(' Questions', '').replace(' Form', '')}</span>
                   </TabsTrigger>
                 );
               })}

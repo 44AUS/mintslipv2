@@ -764,45 +764,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What is a Pay stub? Section */}
-      <section className="bg-slate-50 border-y border-slate-200 py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <img
-                src={Paystub}
-                alt="What is a pay stub"
-                className="w-full h-auto rounded-md shadow-xl border border-slate-300 object-cover max-h-96"
-              />
+      {/* What is a Pay stub? Section - with scroll-triggered animation */}
+      {(() => {
+        const [paystubRef, paystubInView] = useInView();
+        return (
+          <section ref={paystubRef} className="bg-slate-50 border-y border-slate-200 py-20">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-xl border border-slate-200 h-[450px] flex items-center justify-center overflow-hidden">
+                  <PaystubRevealAnimation isVisible={paystubInView} />
+                </div>
+                <div className="space-y-6">
+                  <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    What is a Pay Stub?
+                  </h3>
+                  <p className="text-lg leading-relaxed text-slate-600">
+                    A pay stub is a document that summarizes an employee&apos;s pay for a specific pay period. It&apos;s typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
+                  </p>
+                  <p className="text-base leading-relaxed text-slate-600">
+                    Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay — the amount you actually take home.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <span className="text-slate-700">Create accurate income documentation</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <span className="text-slate-700">Essential for tax filing & records</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <span className="text-slate-700">Track earnings & deductions clearly</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
-            <div className="space-y-6">
-              <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                What is a Pay Stub?
-              </h3>
-              <p className="text-lg leading-relaxed text-slate-600">
-                A pay stub is a document that summarizes an employee&apos;s pay for a specific pay period. It&apos;s typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
-              </p>
-              <p className="text-base leading-relaxed text-slate-600">
-                Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay — the amount you actually take home.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">Create accurate income documentation</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">Essential for tax filing & records</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
-                  <span className="text-slate-700">Track earnings & deductions clearly</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* Accurate Income Documentation Section */}
       {(() => {

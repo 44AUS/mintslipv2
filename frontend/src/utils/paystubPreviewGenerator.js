@@ -324,10 +324,13 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     // Add watermark on ALL pages
     addWatermarkToAllPages(doc, pageWidth, pageHeight);
 
-    // Convert to base64 data URL
+    // Convert to base64 data URL (PDF)
     const pdfDataUrl = doc.output('dataurlstring');
     
-    return pdfDataUrl;
+    // Convert PDF to image for preview display
+    const imageDataUrl = await convertPdfToImage(pdfDataUrl);
+    
+    return imageDataUrl;
   } catch (error) {
     console.error("Error generating preview:", error);
     return null;

@@ -491,22 +491,35 @@ export default function Home() {
               <div className="space-y-6">
                 <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                   Why Choose Our{' '}
-                  <span className="relative inline-block text-blue-500">
+                  <span className="relative inline-block" style={{ color: '#1a4731' }}>
                     Paystub
-                    <span 
-                      className="absolute -bottom-1 left-0 h-1 bg-blue-400 rounded-full"
-                      style={{
-                        width: '0%',
-                        animation: 'underlineGrow 0.8s ease-out 0.3s forwards'
-                      }}
-                    />
+                    <svg 
+                      className="absolute -bottom-2 left-0 w-full" 
+                      viewBox="0 0 120 20" 
+                      preserveAspectRatio="none"
+                      style={{ overflow: 'visible', height: '12px' }}
+                    >
+                      <path 
+                        d="M2,14 Q30,14 60,12 Q90,10 105,8 Q112,6 118,3" 
+                        stroke="#1a4731" 
+                        strokeWidth="4" 
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          strokeDasharray: 150,
+                          strokeDashoffset: 150,
+                          animation: 'sharpieUnderline 0.6s ease-out 0.3s forwards'
+                        }}
+                      />
+                    </svg>
                     <style>{`
-                      @keyframes underlineGrow {
+                      @keyframes sharpieUnderline {
                         0% {
-                          width: 0%;
+                          stroke-dashoffset: 150;
                         }
                         100% {
-                          width: 100%;
+                          stroke-dashoffset: 0;
                         }
                       }
                     `}</style>

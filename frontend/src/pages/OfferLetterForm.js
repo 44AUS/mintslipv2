@@ -1260,6 +1260,96 @@ export default function OfferLetterForm() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-green-700" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              Offer Letter FAQ
+            </h2>
+            <p className="text-slate-600">Common questions about offer letters and our generator</p>
+          </div>
+          
+          <Accordion type="single" collapsible className="space-y-3">
+            <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is an offer letter?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                An offer letter is a formal document from an employer to a candidate offering them a position. It outlines key employment details including job title, salary, start date, benefits, and other terms of employment. It serves as written confirmation of the job offer.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What should be included in an offer letter?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Key elements include: job title, department, start date, employment type (full-time/part-time), salary/hourly rate, pay frequency, work schedule, benefits summary, reporting structure, and any contingencies (background check, drug test). Our generator includes all essential fields.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Is an offer letter legally binding?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Generally, offer letters are not binding employment contracts unless specified. Most include "at-will" language meaning either party can end employment at any time. However, specific promises in the letter may be enforceable, so accuracy is important.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What's the difference between salary and hourly compensation?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Salaried employees receive a fixed annual amount regardless of hours worked and are typically exempt from overtime. Hourly employees are paid for each hour worked and usually receive overtime (1.5x rate) for hours over 40 per week. Our generator supports both compensation types.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Can I customize the offer letter template?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Yes! Our offer letter generator allows extensive customization. You can upload your company logo, choose from multiple design templates, set custom colors, add specific benefits, include additional terms, and tailor the content to match your company's style.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What benefits can I include in the offer letter?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Common benefits include: health insurance, dental/vision coverage, 401(k) or retirement plans, paid time off (PTO), sick leave, life insurance, disability insurance, professional development, remote work options, and bonuses. You can select which benefits to include.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Should I include at-will employment language?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                In most US states, including at-will employment language is recommended. This clarifies that employment can be terminated by either party at any time for any legal reason. Our templates include standard at-will language that you can modify as needed.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                How quickly will I receive my offer letter?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Your professional offer letter is generated and downloaded instantly after payment. Simply fill in the details, preview your document, complete the payment, and your PDF will download automatically within seconds.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

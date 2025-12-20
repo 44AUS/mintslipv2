@@ -268,6 +268,18 @@ frontend:
         agent: "testing"
         comment: "COMPREHENSIVE VEHICLE BILL OF SALE TESTING COMPLETED ✅ All major functionality verified and working correctly: 1) Navigation Test: Homepage Vehicle Bill of Sale card found with data-testid='vehicle-bill-of-sale-card-button', successful navigation to /vehicle-bill-of-sale route ✅ 2) Template Selection Test: All 4 template options found (Classic, Modern, Minimal, Custom), visual indicators working with green borders and checkmarks, Custom template shows color pickers for Primary and Accent colors ✅ 3) Form Fields Test: All form sections functional - seller info (John Smith, 123 Main St, Los Angeles, 90001, D1234567), buyer info (Jane Doe, 456 Oak Ave, San Francisco, 94102, B7654321), vehicle info (2020 Toyota Camry, VIN: 1HGBH41JXMN109186, Silver, 45000 miles), sale info ($15000, Cash) ✅ 4) VIN Field Validation: Correctly accepts valid characters and filters invalid ones (I, O, Q) ✅ 5) Summary Panel Test: Shows all entered data correctly - Template, Vehicle (2020 Toyota Camry), VIN, Seller/Buyer names, Sale Price, Odometer, Condition ✅ 6) Odometer Disclosure Test: All 3 radio options present (Actual Mileage, Exceeds Mechanical Limits, Discrepancy Exists) ✅ 7) Condition Disclosure Test: Both options available (AS-IS, With Warranty), warranty details textarea appears when With Warranty selected ✅ 8) Optional Notary Section Test: Include Notary Section checkbox found, notary state/county fields appear when checked ✅ 9) PDF Preview Test: Document Preview section shows PDF iframe with preview content, real-time generation working ✅ 10) PayPal Payment Section Test: $10.00 price displayed, PayPal buttons rendered correctly ✅ 11) Home Page Cards Test: Vehicle Bill of Sale appears in both Pricing section and Document Selection Grid with NEW badge and $10 price, navigation from homepage works correctly ✅ Minor: Some UI overlay issues with radio button clicks (expected with shadcn/ui components), PayPal SDK network errors in test environment (expected). All core functionality working perfectly and ready for production use."
 
+  - task: "ADP Paystub Template B Redesign"
+    implemented: true
+    working: "NA"
+    file: "src/utils/paystubTemplates.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Completely redesigned ADP template B to match the official ADP Earnings Statement layout from user-provided reference image. Key features implemented: 1) Header with Company Code, Loc/Dept, Number, Page fields. 2) 'Earnings Statement' title with red ADP logo. 3) Period Starting/Ending/Pay Date section. 4) Taxable Marital Status with Exemptions/Allowances (Federal, State, Local) and Tax Override section. 5) Employee name and address on right side. 6) Earnings table with rate, hours/units, this period, year to date columns. 7) Statutory Deductions section (Federal Income, Social Security, Medicare, State Income). 8) Voluntary Deductions section with asterisk notation for items excluded from taxable wages. 9) Net Pay line. 10) Other Benefits and Information section with Deposits table (account number, transit/ABA, amount). 11) Federal taxable wages note. 12) Bottom check stub section with 'THIS IS NOT A CHECK' watermark. 13) Deposited to account section. 14) Employee name/address at bottom. All calculations properly integrated with YTD values."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

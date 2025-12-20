@@ -79,10 +79,10 @@ const FIELD_POSITIONS = {
   state1: { x: 410, y: 462, fontSize: 9 },
   payerStateNo1: { x: 450, y: 462, fontSize: 8 },
   stateIncome1: { x: 510, y: 452, fontSize: 9 },
-  state2: { x: 38, y: 420, fontSize: 9 },
-  payerStateNo2: { x: 80, y: 420, fontSize: 8 },
-  stateIncome2: { x: 180, y: 420, fontSize: 9 },
-  stateTaxWithheld2: { x: 280, y: 420, fontSize: 9 }
+  stateTaxWithheld2: { x: 310, y: 440, fontSize: 9 },
+  state2: { x: 410, y: 444, fontSize: 9 },
+  payerStateNo2: { x: 450, y: 444, fontSize: 8 },
+  stateIncome2: { x: 510, y: 440, fontSize: 9 }
 };
 
 // Generate 1099-MISC preview with watermark

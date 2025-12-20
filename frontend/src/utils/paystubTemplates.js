@@ -832,9 +832,9 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   
   // Pay Date
   doc.setFont("helvetica", "bold");
-  doc.text("Pay Date:", rightCol + 50, y);
+  doc.text("Pay Date:", rightCol + 30, y);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDateADP(payDate), rightCol + 85, y);
+  doc.text(formatDateADP(payDate), rightCol + 65, y);
 
   // ==================== THIS IS NOT A CHECK WATERMARK ====================
   y += 35;

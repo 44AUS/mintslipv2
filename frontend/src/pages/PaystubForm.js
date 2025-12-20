@@ -107,6 +107,9 @@ export default function PaystubForm() {
     zip: '',
     companyZip: '',
     companyPhone: '',
+    companyCode: '',
+    locDept: '',
+    checkNumber: '',
   });
 
   // Common deduction types for quick selection

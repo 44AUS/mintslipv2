@@ -507,8 +507,8 @@ function drawTable(
   return rows.length * rowHeight;
 }
 
-// Template B: ADP-Style Earnings Statement
-export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
+// Template B: ADP-Style Earnings Statement with Background Image
+export async function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, regularPay, overtimePay, grossPay, 
     ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, 
@@ -520,6 +520,19 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
     ytdDeductions = 0, ytdContributions = 0,
     logoDataUrl
   } = data;
+  
+  // Load the ADP template background image
+  let bgImageLoaded = false;
+  try {
+    const bgImage = await loadImageAsBase64("/adp-template-bg.png");
+    if (bgImage) {
+      // Add background image to fill the entire page
+      doc.addImage(bgImage, 'PNG', 0, 0, pageWidth, pageHeight);
+      bgImageLoaded = true;
+    }
+  } catch (e) {
+    console.log("Could not load ADP background template, using fallback");
+  }
   
   const m = 25; // margin
   const leftWidth = 310; // Left section width

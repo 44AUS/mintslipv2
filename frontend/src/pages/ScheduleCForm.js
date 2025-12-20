@@ -905,6 +905,96 @@ export default function ScheduleCForm() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-green-700" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              Schedule C Form FAQ
+            </h2>
+            <p className="text-slate-600">Common questions about Schedule C forms and our generator</p>
+          </div>
+          
+          <Accordion type="single" collapsible className="space-y-3">
+            <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Schedule C?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Schedule C (Form 1040) is used to report profit or loss from a business you operated as a sole proprietor. It's filed with your personal tax return and calculates your net business income or loss, which is then reported on your Form 1040.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Who needs to file Schedule C?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                You need to file Schedule C if you operate a business as a sole proprietor, are a single-member LLC (not treated as a corporation), are an independent contractor who received 1099-NEC income, or have self-employment income from freelancing or gig work.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What business expenses can I deduct?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Common deductible expenses include: advertising, car/truck expenses, contract labor, insurance, legal/professional services, office expenses, rent, repairs, supplies, travel, meals (50%), utilities, and wages. Our generator includes fields for all standard expense categories.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is gross receipts vs net profit?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Gross receipts is your total business income before any deductions. Net profit is what remains after subtracting all allowable business expenses from your gross receipts. Your net profit is subject to both income tax and self-employment tax.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is the home office deduction?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                If you use part of your home exclusively and regularly for business, you may deduct home office expenses. You can use the simplified method ($5 per square foot, up to 300 sq ft) or the regular method (actual expenses based on percentage of home used).
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Do I need an EIN or can I use my SSN?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                If you're a sole proprietor with no employees, you can use your Social Security Number. However, if you have employees, pay excise taxes, or have a Keogh plan, you need an EIN. Many sole proprietors get an EIN anyway to protect their SSN.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What accounting method should I use?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Most small businesses use cash basis accounting, where income is recorded when received and expenses when paid. Accrual accounting records income when earned and expenses when incurred. Once you choose a method, you generally must stick with it.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Can I generate Schedule C for previous years?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Yes! Our Schedule C generator supports multiple tax years. Select the appropriate tax year from the dropdown menu to generate forms for the current year or prior years as needed for your records.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

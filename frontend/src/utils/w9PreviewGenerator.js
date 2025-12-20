@@ -231,20 +231,13 @@ export const generateW9Preview = async (formData, taxYear) => {
       opacity: 0.5,
     });
     
-    // Save and return as base64 data URL
+    // Save and return as image
     const pdfBytes = await pdfDoc.save();
     
-    // Convert Uint8Array to base64 properly
-    let binary = '';
-    const bytes = new Uint8Array(pdfBytes);
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = window.btoa(binary);
-    const dataUrl = `data:application/pdf;base64,${base64}`;
+    // Convert PDF to image for preview display
+    const imageDataUrl = await convertPdfToImage(pdfBytes);
     
-    return dataUrl;
+    return imageDataUrl;
     
   } catch (error) {
     console.error("Error generating W-9 preview:", error);

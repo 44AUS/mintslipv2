@@ -40,30 +40,31 @@ const getTemplateUrl = (taxYear) => {
   return `/templates/w9-${year}.pdf`;
 };
 
-// Field positions for W-9 form (2018 revision for 2021-2023)
+// Field positions for W-9 form (2018/2021-2023 revision)
+// Page height: 792, y from bottom
 const FIELD_POSITIONS_2018 = {
-  name: { x: 42, y: 656, fontSize: 11 },
-  businessName: { x: 42, y: 620, fontSize: 10 },
-  individual: { x: 48, y: 584, fontSize: 10 },
-  ccorp: { x: 154, y: 584, fontSize: 10 },
-  scorp: { x: 207, y: 584, fontSize: 10 },
-  partnership: { x: 260, y: 584, fontSize: 10 },
-  trust: { x: 330, y: 584, fontSize: 10 },
-  llc: { x: 400, y: 584, fontSize: 10 },
-  llcCode: { x: 492, y: 584, fontSize: 10 },
-  other: { x: 48, y: 566, fontSize: 10 },
-  otherText: { x: 100, y: 566, fontSize: 9 },
-  exemptPayeeCode: { x: 505, y: 638, fontSize: 9 },
-  fatcaCode: { x: 505, y: 615, fontSize: 9 },
-  address: { x: 42, y: 524, fontSize: 10 },
-  cityStateZip: { x: 42, y: 490, fontSize: 10 },
-  accountNumbers: { x: 42, y: 456, fontSize: 9 },
-  ssn1: { x: 345, y: 430, fontSize: 14 },
-  ssn2: { x: 390, y: 430, fontSize: 14 },
-  ssn3: { x: 460, y: 430, fontSize: 14 },
-  ein1: { x: 345, y: 400, fontSize: 14 },
-  ein2: { x: 420, y: 400, fontSize: 14 },
-  signatureDate: { x: 470, y: 260, fontSize: 10 }
+  name: { x: 65, y: 695, fontSize: 11 },
+  businessName: { x: 65, y: 670, fontSize: 10 },
+  individual: { x: 68, y: 630, fontSize: 10 },
+  ccorp: { x: 180, y: 630, fontSize: 10 },
+  scorp: { x: 240, y: 630, fontSize: 10 },
+  partnership: { x: 300, y: 630, fontSize: 10 },
+  trust: { x: 365, y: 630, fontSize: 10 },
+  llc: { x: 68, y: 606, fontSize: 10 },
+  llcCode: { x: 340, y: 606, fontSize: 10 },
+  other: { x: 68, y: 580, fontSize: 10 },
+  otherText: { x: 140, y: 580, fontSize: 9 },
+  exemptPayeeCode: { x: 555, y: 620, fontSize: 9 },
+  fatcaCode: { x: 555, y: 594, fontSize: 9 },
+  address: { x: 65, y: 538, fontSize: 10 },
+  cityStateZip: { x: 65, y: 514, fontSize: 10 },
+  accountNumbers: { x: 65, y: 490, fontSize: 9 },
+  ssn1: { x: 440, y: 455, fontSize: 12 },
+  ssn2: { x: 490, y: 455, fontSize: 12 },
+  ssn3: { x: 550, y: 455, fontSize: 12 },
+  ein1: { x: 440, y: 408, fontSize: 12 },
+  ein2: { x: 520, y: 408, fontSize: 12 },
+  signatureDate: { x: 400, y: 236, fontSize: 10 }
 };
 
 // Field positions for W-9 form (2024 revision)
@@ -78,18 +79,18 @@ const FIELD_POSITIONS_2024 = {
   trust: { x: 390, y: 610, fontSize: 10 },
   llc: { x: 74, y: 596, fontSize: 10 },
   llcCode: { x: 350, y: 596, fontSize: 10 },
-  other: { x: 74, y: 556, fontSize: 10 },
-  otherText: { x: 130, y: 556, fontSize: 9 },
+  other: { x: 74, y: 544, fontSize: 10 },
+  otherText: { x: 130, y: 544, fontSize: 9 },
   exemptPayeeCode: { x: 555, y: 598, fontSize: 9 },
-  fatcaCode: { x: 555, y: 568, fontSize: 9 },
-  address: { x: 65, y: 505, fontSize: 10 },
-  cityStateZip: { x: 65, y: 478, fontSize: 10 },
+  fatcaCode: { x: 555, y: 578, fontSize: 9 },
+  address: { x: 65, y: 500, fontSize: 10 },
+  cityStateZip: { x: 65, y: 475, fontSize: 10 },
   accountNumbers: { x: 65, y: 452, fontSize: 9 },
-  ssn1: { x: 360, y: 410, fontSize: 14 },
-  ssn2: { x: 415, y: 410, fontSize: 14 },
-  ssn3: { x: 490, y: 410, fontSize: 14 },
-  ein1: { x: 360, y: 380, fontSize: 14 },
-  ein2: { x: 445, y: 380, fontSize: 14 },
+  ssn1: { x: 440, y: 420, fontSize: 12 },
+  ssn2: { x: 490, y: 420, fontSize: 12 },
+  ssn3: { x: 550, y: 420, fontSize: 12 },
+  ein1: { x: 440, y: 372, fontSize: 12 },
+  ein2: { x: 520, y: 372, fontSize: 12 },
   signatureDate: { x: 400, y: 200, fontSize: 10 }
 };
 

@@ -310,7 +310,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     // Generate the template based on selection
     switch (template) {
       case 'template-b':
-        await generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+        generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
         break;
       case 'template-c':
         await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);

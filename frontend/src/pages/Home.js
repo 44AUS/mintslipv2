@@ -414,6 +414,127 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Steps to Use Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-16 text-center" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#1a1a1a' }}>
+            Steps to use our Check Stub Maker
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <div className="flex flex-col">
+              <div className="bg-slate-800 rounded-2xl p-6 flex-1 relative overflow-hidden">
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="bg-red-500 text-white font-bold px-3 py-1 rounded text-sm" style={{ fontStyle: 'italic' }}>
+                    STEP 1
+                  </span>
+                </div>
+                <div className="mt-10 bg-white rounded-lg overflow-hidden shadow-lg">
+                  <img 
+                    src="https://customer-assets.emergentagent.com/job_5cbb6ccc-8222-43f0-99c2-1809a4c83b4b/artifacts/step1-template.png" 
+                    alt="Choose template"
+                    className="w-full h-auto"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<div class="h-64 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-center p-4"><div><p class="font-bold text-lg mb-2">Welcome to our Paystub Generator</p><p class="text-sm opacity-80">Choose from multiple professional templates</p></div></div>';
+                    }}
+                  />
+                  <div className="h-64 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-center p-4">
+                    <div>
+                      <p className="font-bold text-lg mb-2">Welcome to our Paystub Generator</p>
+                      <p className="text-sm opacity-80">Choose from multiple professional templates</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xl mt-6 text-center" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#1a1a1a' }}>
+                Choose a pay stub template from our 10 designs
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex flex-col">
+              <div className="bg-slate-800 rounded-2xl p-6 flex-1 relative overflow-hidden">
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="bg-yellow-500 text-white font-bold px-3 py-1 rounded text-sm" style={{ fontStyle: 'italic' }}>
+                    STEP 2
+                  </span>
+                </div>
+                <div className="mt-10 bg-white rounded-lg overflow-hidden shadow-lg">
+                  <div className="h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center p-4">
+                    <div className="w-full max-w-xs space-y-3">
+                      <div className="bg-white rounded p-2 shadow-sm">
+                        <div className="text-xs text-slate-400 mb-1">Company Name</div>
+                        <div className="h-2 bg-slate-200 rounded w-3/4"></div>
+                      </div>
+                      <div className="bg-white rounded p-2 shadow-sm">
+                        <div className="text-xs text-slate-400 mb-1">Employee Name</div>
+                        <div className="h-2 bg-slate-200 rounded w-2/3"></div>
+                      </div>
+                      <div className="bg-white rounded p-2 shadow-sm">
+                        <div className="text-xs text-slate-400 mb-1">Hourly Rate</div>
+                        <div className="h-2 bg-slate-200 rounded w-1/2"></div>
+                      </div>
+                      <div className="bg-white rounded p-2 shadow-sm">
+                        <div className="text-xs text-slate-400 mb-1">Hours Worked</div>
+                        <div className="h-2 bg-slate-200 rounded w-1/3"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xl mt-6 text-center" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#1a1a1a' }}>
+                Enter Information such as company name, your work schedule and salary details
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex flex-col">
+              <div className="bg-slate-800 rounded-2xl p-6 flex-1 relative overflow-hidden">
+                <div className="absolute top-4 left-4 z-10">
+                  <span className="bg-green-500 text-white font-bold px-3 py-1 rounded text-sm" style={{ fontStyle: 'italic' }}>
+                    STEP 3
+                  </span>
+                </div>
+                <div className="mt-10 bg-white rounded-lg overflow-hidden shadow-lg">
+                  <div className="h-64 bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+                    <div className="w-full max-w-xs">
+                      <div className="bg-white rounded-lg shadow-md p-4 border">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-blue-600 text-xs">📧</span>
+                          </div>
+                          <div>
+                            <div className="text-xs font-medium">One attachment</div>
+                            <div className="text-xs text-slate-400">Scanned by Gmail</div>
+                          </div>
+                        </div>
+                        <div className="border rounded p-3 bg-slate-50">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-10 bg-red-100 rounded flex items-center justify-center">
+                              <span className="text-red-600 text-xs font-bold">PDF</span>
+                            </div>
+                            <div className="text-xs text-slate-600">paystub-document.pdf</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button className="text-xs border rounded px-3 py-1 text-slate-600">↩ Reply</button>
+                          <button className="text-xs border rounded px-3 py-1 text-slate-600">↪ Forward</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xl mt-6 text-center" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#1a1a1a' }}>
+                Download your paycheck stubs directly from your email in PDF format
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Document Selection Grid */}
       <section className="max-w-7xl mx-auto px-6 py-32">
         <div className="text-center mb-16">

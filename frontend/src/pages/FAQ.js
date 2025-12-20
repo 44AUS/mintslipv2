@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { HelpCircle, FileText, Building2, Receipt, Search } from "lucide-react";
+import { HelpCircle, FileText, Building2, Receipt, Search, ClipboardList, FileCheck, FileBadge } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 // FAQ Categories and Questions

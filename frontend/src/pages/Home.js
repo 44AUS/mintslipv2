@@ -494,28 +494,29 @@ export default function Home() {
                   <span className="relative inline-block text-blue-500">
                     Paystub
                     <svg 
-                      className="absolute -bottom-2 left-0 w-full" 
-                      viewBox="0 0 100 12" 
+                      className="absolute -bottom-3 left-0 w-full" 
+                      viewBox="0 0 120 20" 
                       preserveAspectRatio="none"
-                      style={{ overflow: 'visible' }}
+                      style={{ overflow: 'visible', height: '14px' }}
                     >
                       <path 
-                        d="M0,8 Q25,0 50,8 T100,8" 
+                        d="M2,10 C8,4 12,14 20,8 C28,2 32,16 40,10 C48,4 52,14 60,8 C68,2 72,16 80,10 C88,4 92,14 100,8 C108,2 112,14 118,10" 
                         stroke="#60a5fa" 
-                        strokeWidth="3" 
+                        strokeWidth="2.5" 
                         fill="none"
                         strokeLinecap="round"
+                        strokeLinejoin="round"
                         style={{
-                          strokeDasharray: 200,
-                          strokeDashoffset: 200,
-                          animation: 'scribble 1.5s ease-out forwards'
+                          strokeDasharray: 300,
+                          strokeDashoffset: 300,
+                          animation: 'scribble 1s ease-out forwards'
                         }}
                       />
                     </svg>
                     <style>{`
                       @keyframes scribble {
                         0% {
-                          stroke-dashoffset: 200;
+                          stroke-dashoffset: 300;
                         }
                         100% {
                           stroke-dashoffset: 0;

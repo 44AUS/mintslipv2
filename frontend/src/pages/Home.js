@@ -1361,17 +1361,17 @@ export default function Home() {
 
           {/* Bottom Section - Two Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Personal Profile Card */}
-            <div className="bg-green-50 rounded-2xl p-8 pb-0 overflow-hidden">
+            {/* Instant Download Card */}
+            <div className="bg-green-50 rounded-2xl p-8 overflow-hidden">
               <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 Instant Download
               </h4>
-              <p className="text-slate-600 mb-6 text-center">
+              <p className="text-slate-600 mb-4 text-center">
                 Download your generated documents immediately after creation
               </p>
               <div className="relative">
-                <div className="bg-white rounded-t-lg overflow-hidden shadow-lg h-64 translate-y-4">
-                  <img src={download} />
+                <div className="bg-gradient-to-br from-white to-green-50 rounded-lg overflow-hidden shadow-lg h-64 flex items-center justify-center">
+                  <InstantDownloadAnimation isVisible={whyChooseInView} />
                 </div>
               </div>
             </div>

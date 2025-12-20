@@ -1295,8 +1295,8 @@ export default function Home() {
           <section ref={quickSolutionRef} className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                {/* Left Content */}
-                <div className="space-y-6">
+                {/* Left Content - appears below animation on mobile */}
+                <div className="space-y-6 order-2 lg:order-1">
                   <span className="inline-block text-sm font-semibold text-green-700 bg-green-100 px-4 py-1.5 rounded-full">
                     Quick Solution
                   </span>

@@ -569,14 +569,25 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(checkNumber, m + 135, y);
   doc.text("1 of 1", m + 175, y);
   
-  // Company name and address
+  // Helper to truncate text to fit within a max width
+  const truncateText = (text, maxWidth) => {
+    if (!text) return "";
+    let truncated = text;
+    while (doc.getTextWidth(truncated) > maxWidth && truncated.length > 0) {
+      truncated = truncated.slice(0, -1);
+    }
+    return truncated;
+  };
+  
+  // Company name and address - truncate to not overlap with Loc/Dept (max width ~65)
+  const maxCompanyWidth = 65;
   y += 8;
   doc.setFont("helvetica", "normal");
-  doc.text(formData.company || "Company Name", m, y);
+  doc.text(truncateText(formData.company || "", maxCompanyWidth), m, y);
   y += 8;
-  doc.text(formData.companyAddress || "", m, y);
+  doc.text(truncateText(formData.companyAddress || "", maxCompanyWidth), m, y);
   y += 8;
-  doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y);
+  doc.text(truncateText(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, maxCompanyWidth), m, y);
 
   // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT SIDE) ====================
   // Title - "Earnings" in bold, "Statement" in normal

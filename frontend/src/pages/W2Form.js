@@ -899,10 +899,10 @@ export default function W2Form() {
                     <DialogTrigger asChild>
                       <div className="relative cursor-pointer group">
                         <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
-                          <iframe
+                          <img
                             src={pdfPreview}
-                            className="w-full h-96 pointer-events-none"
-                            title="W-2 Preview"
+                            alt="W-2 Preview"
+                            className="w-full h-96 object-contain bg-white"
                           />
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none">
@@ -921,8 +921,8 @@ export default function W2Form() {
                       <DialogHeader className="p-4 border-b">
                         <DialogTitle>W-2 Preview - Tax Year {selectedTaxYear}</DialogTitle>
                       </DialogHeader>
-                      <div className="relative flex-1 h-full overflow-hidden">
-                        <iframe src={pdfPreview} className="w-full h-[calc(90vh-80px)]" title="W-2 Preview Full" />
+                      <div className="relative flex-1 h-full overflow-auto p-4">
+                        <img src={pdfPreview} alt="W-2 Preview Full" className="w-full h-auto" />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none">
                             MintSlip

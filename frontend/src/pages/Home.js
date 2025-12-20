@@ -102,119 +102,150 @@ const EnvelopeAnimation = ({ isVisible }) => (
   </div>
 );
 
-// Lightning Fast & Customer Service Animation Component
+// Why Choose Us Animation - Comparison Animation Component
 const SpeedServiceAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center">
-    <svg viewBox="0 0 240 200" className="w-72 h-72">
-      {/* Stopwatch/Clock - representing speed */}
-      <g className={isVisible ? 'animate-clock' : ''} style={{ opacity: isVisible ? 1 : 0 }}>
-        {/* Clock body */}
-        <circle cx="70" cy="100" r="45" fill="#e8f5e9" stroke="#1a4731" strokeWidth="3"/>
-        {/* Clock inner circle */}
-        <circle cx="70" cy="100" r="35" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
-        {/* Clock top button */}
-        <rect x="65" y="50" width="10" height="8" rx="2" fill="#1a4731"/>
-        {/* Clock center dot */}
-        <circle cx="70" cy="100" r="4" fill="#1a4731"/>
-        {/* Clock hand - animated */}
-        <line 
-          x1="70" y1="100" x2="70" y2="72" 
-          stroke="#1a4731" 
-          strokeWidth="3" 
-          strokeLinecap="round"
-          style={{
-            transformOrigin: '70px 100px',
-            animation: isVisible ? 'spinFast 0.8s ease-out forwards' : 'none'
-          }}
-        />
-        {/* Speed lines */}
-        <g style={{ opacity: isVisible ? 1 : 0, animation: isVisible ? 'fadeIn 0.3s ease-out 0.5s forwards' : 'none' }}>
-          <line x1="125" y1="85" x2="140" y2="85" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="125" y1="100" x2="145" y2="100" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="125" y1="115" x2="140" y2="115" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
+    <svg viewBox="0 0 280 220" className="w-full h-full max-w-md">
+      {/* Left side - "Others" (faded, outdated) */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateX(0)' : 'translateX(-20px)',
+        transition: 'all 0.5s ease-out'
+      }}>
+        {/* Outdated document */}
+        <rect x="20" y="40" width="80" height="110" rx="4" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="4 2"/>
+        {/* Messy/faded lines */}
+        <line x1="30" y1="60" x2="85" y2="60" stroke="#cbd5e1" strokeWidth="2" opacity="0.5"/>
+        <line x1="30" y1="75" x2="70" y2="75" stroke="#cbd5e1" strokeWidth="2" opacity="0.4"/>
+        <line x1="30" y1="90" x2="80" y2="90" stroke="#cbd5e1" strokeWidth="2" opacity="0.3"/>
+        <line x1="30" y1="105" x2="65" y2="105" stroke="#cbd5e1" strokeWidth="2" opacity="0.4"/>
+        <line x1="30" y1="120" x2="75" y2="120" stroke="#cbd5e1" strokeWidth="2" opacity="0.3"/>
+        {/* Question mark indicating confusion */}
+        <text x="60" y="145" textAnchor="middle" fill="#94a3b8" fontSize="24" fontWeight="bold"
+          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.6s forwards' : 'none' }}>?</text>
+        {/* "OTHERS" label */}
+        <rect x="30" y="160" width="60" height="18" rx="4" fill="#94a3b8"
+          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.4s forwards' : 'none' }}/>
+        <text x="60" y="173" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold"
+          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.4s forwards' : 'none' }}>OTHERS</text>
+        {/* X mark */}
+        <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 0.8s forwards' : 'none' }}>
+          <circle cx="60" cy="95" r="20" fill="#fee2e2" stroke="#ef4444" strokeWidth="2"/>
+          <path d="M52,87 L68,103 M68,87 L52,103" stroke="#ef4444" strokeWidth="3" strokeLinecap="round"/>
         </g>
       </g>
 
-      {/* Lightning bolt */}
-      <g style={{ opacity: 0, animation: isVisible ? 'boltFlash 0.6s ease-out 0.3s forwards' : 'none' }}>
-        <path 
-          d="M150,60 L135,95 L150,95 L130,140 L155,100 L140,100 Z" 
-          fill="#1a4731"
-          stroke="#1a4731"
-          strokeWidth="1"
-        />
+      {/* VS divider */}
+      <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.5s ease-out 0.3s forwards' : 'none' }}>
+        <circle cx="140" cy="105" r="22" fill="#1a4731"/>
+        <text x="140" y="112" textAnchor="middle" fill="#ffffff" fontSize="14" fontWeight="bold">VS</text>
       </g>
 
-      {/* Customer Service Rep - Headset person */}
-      <g className={isVisible ? 'animate-support' : ''} style={{ opacity: 0, animation: isVisible ? 'slideInRight 0.5s ease-out 0.6s forwards' : 'none' }}>
-        {/* Head */}
-        <circle cx="190" cy="110" r="25" fill="#e8f5e9" stroke="#1a4731" strokeWidth="3"/>
-        {/* Smile */}
-        <path d="M180,118 Q190,128 200,118" fill="none" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
-        {/* Eyes */}
-        <circle cx="182" cy="105" r="3" fill="#1a4731"/>
-        <circle cx="198" cy="105" r="3" fill="#1a4731"/>
-        {/* Headset band */}
-        <path d="M165,100 Q165,75 190,75 Q215,75 215,100" fill="none" stroke="#1a4731" strokeWidth="3" strokeLinecap="round"/>
-        {/* Headset ear pieces */}
-        <rect x="160" y="95" width="10" height="20" rx="3" fill="#1a4731"/>
-        <rect x="210" y="95" width="10" height="20" rx="3" fill="#1a4731"/>
-        {/* Microphone */}
-        <path d="M160,110 Q150,110 150,125 L150,130" fill="none" stroke="#1a4731" strokeWidth="3" strokeLinecap="round"/>
-        <circle cx="150" cy="133" r="5" fill="#1a4731"/>
+      {/* Right side - "MintSlip" (professional, modern) */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(20px) scale(0.95)',
+        transition: 'all 0.6s ease-out 0.2s'
+      }}>
+        {/* Professional document with glow */}
+        <rect x="175" y="35" width="90" height="120" rx="6" fill="#ffffff" stroke="#1a4731" strokeWidth="3" filter="url(#glow)"/>
+        {/* Document header */}
+        <rect x="175" y="35" width="90" height="25" rx="6" fill="#1a4731"/>
+        <text x="220" y="52" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold">MINTSLIP</text>
+        {/* Clean organized lines */}
+        <line x1="185" y1="72" x2="255" y2="72" stroke="#1a4731" strokeWidth="2" opacity="0.8"
+          style={{ strokeDasharray: 70, strokeDashoffset: isVisible ? 0 : 70, transition: 'stroke-dashoffset 0.5s ease-out 0.7s' }}/>
+        <line x1="185" y1="87" x2="245" y2="87" stroke="#1a4731" strokeWidth="2" opacity="0.6"
+          style={{ strokeDasharray: 60, strokeDashoffset: isVisible ? 0 : 60, transition: 'stroke-dashoffset 0.5s ease-out 0.8s' }}/>
+        <line x1="185" y1="102" x2="250" y2="102" stroke="#1a4731" strokeWidth="2" opacity="0.6"
+          style={{ strokeDasharray: 65, strokeDashoffset: isVisible ? 0 : 65, transition: 'stroke-dashoffset 0.5s ease-out 0.9s' }}/>
+        {/* Amount highlight */}
+        <rect x="185" y="115" width="70" height="20" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1"
+          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1s forwards' : 'none' }}/>
+        <text x="220" y="129" textAnchor="middle" fill="#166534" fontSize="10" fontWeight="bold"
+          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$2,450.00</text>
+        {/* MINTSLIP label */}
+        <rect x="185" y="165" width="70" height="18" rx="4" fill="#1a4731"
+          style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}/>
+        <text x="220" y="178" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold"
+          style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}>MINTSLIP</text>
+        {/* Checkmark */}
+        <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1.2s forwards' : 'none' }}>
+          <circle cx="220" cy="95" r="18" fill="#22c55e"/>
+          <path d="M212,95 L217,101 L230,86" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+        </g>
       </g>
 
-      {/* Speech bubble with checkmark */}
-      <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 1s forwards' : 'none' }}>
-        {/* Bubble */}
-        <path d="M195,50 Q195,32 215,32 L240,32 Q258,32 258,50 L258,68 Q258,86 240,86 L215,86 L205,98 L210,86 Q195,86 195,68 Z" fill="#1a4731"/>
-        {/* Circle around checkmark */}
-        <circle cx="226" cy="59" r="18" fill="#ffffff" opacity="0.2"/>
-        <circle cx="226" cy="59" r="14" fill="none" stroke="#ffffff" strokeWidth="2"/>
-        {/* Checkmark in bubble */}
-        <path 
-          d="M218,59 L224,66 L236,52" 
-          fill="none" 
-          stroke="#ffffff" 
-          strokeWidth="3" 
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{
-            strokeDasharray: 40,
-            strokeDashoffset: isVisible ? 0 : 40,
-            transition: 'stroke-dashoffset 0.4s ease-out 1.2s'
-          }}
-        />
+      {/* Floating benefits */}
+      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.4s forwards' : 'none' }}>
+        {/* Speed badge */}
+        <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.5s' : 'none' }}>
+          <rect x="170" y="5" width="50" height="20" rx="10" fill="#fbbf24"/>
+          <text x="195" y="18" textAnchor="middle" fill="#1a1a1a" fontSize="7" fontWeight="bold">⚡ FAST</text>
+        </g>
+        {/* Accurate badge */}
+        <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
+          <rect x="230" y="15" width="48" height="20" rx="10" fill="#22c55e"/>
+          <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✓ ACCURATE</text>
+        </g>
       </g>
 
-      {/* "FAST" text badge */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 0.8s forwards' : 'none' }}>
-        <rect x="45" y="150" width="50" height="20" rx="10" fill="#1a4731"/>
-        <text x="70" y="164" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">FAST</text>
+      {/* Sparkles around MintSlip */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.3s' }}>
+        <circle cx="270" cy="50" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite' : 'none' }}/>
+        <circle cx="175" cy="165" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 0.2s' : 'none' }}/>
+        <circle cx="268" cy="140" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.4s' : 'none' }}/>
       </g>
+
+      {/* Arrow pointing to MintSlip */}
+      <g style={{ opacity: 0, animation: isVisible ? 'slideRight 0.5s ease-out 1s forwards' : 'none' }}>
+        <path d="M120,200 Q140,185 160,195" fill="none" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M155,190 L162,196 L154,200" fill="#1a4731"/>
+        <text x="130" y="215" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">CHOOSE BETTER</text>
+      </g>
+
+      {/* SVG filter for glow effect */}
+      <defs>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
     </svg>
+
     <style>{`
-      @keyframes spinFast {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(720deg); }
-      }
       @keyframes fadeIn {
         0% { opacity: 0; }
         100% { opacity: 1; }
       }
-      @keyframes boltFlash {
-        0% { opacity: 0; transform: scale(0.5); }
-        50% { opacity: 1; transform: scale(1.2); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes slideInRight {
-        0% { opacity: 0; transform: translateX(30px); }
-        100% { opacity: 1; transform: translateX(0); }
-      }
       @keyframes popIn {
         0% { opacity: 0; transform: scale(0); }
-        70% { transform: scale(1.1); }
+        70% { transform: scale(1.15); }
         100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes bounceIn {
+        0% { opacity: 0; transform: scale(0); }
+        60% { transform: scale(1.2); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes slideUp {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes slideRight {
+        0% { opacity: 0; transform: translateX(-10px); }
+        100% { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes floatBadge {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      @keyframes sparkle {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.5); }
       }
     `}</style>
   </div>

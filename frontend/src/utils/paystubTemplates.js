@@ -45,7 +45,8 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, stateRate, localTaxRate, sutaRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdFederalTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours,
     payType, workerType, isContractor, annualSalary,
-    deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions
+    deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions,
+    logoDataUrl
   } = data;
   
   const totalHours = Number(hours) + Number(overtime || 0);
@@ -64,31 +65,43 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   const logoX = left;
   const logoWidth = 70;
 
-  // Load and draw logo
-  try {
-    const logoData = await loadImageAsBase64("/gustoLogo.png");
-    if (logoData) {
-      const img = new Image();
-      img.src = logoData;
-      await new Promise((resolve) => {
-        img.onload = () => {
-          const aspect = img.height / img.width || 0.4;
-          doc.addImage(img, "PNG", logoX, top, logoWidth, logoWidth * aspect);
-          resolve();
-        };
-        img.onerror = resolve;
-      });
-    } else {
+  // Load and draw logo - use custom logo if provided, otherwise default Gusto logo
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', logoX, top, 120, 35);
+    } catch (e) {
+      // Fallback to Gusto text if custom logo fails
       doc.setFont("helvetica", "bold");
       doc.setFontSize(18);
       doc.setTextColor(0, 168, 161);
       doc.text("Gusto", logoX, top + 20);
     }
-  } catch {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(0, 168, 161);
-    doc.text("Gusto", logoX, top + 20);
+  } else {
+    try {
+      const logoData = await loadImageAsBase64("/gustoLogo.png");
+      if (logoData) {
+        const img = new Image();
+        img.src = logoData;
+        await new Promise((resolve) => {
+          img.onload = () => {
+            const aspect = img.height / img.width || 0.4;
+            doc.addImage(img, "PNG", logoX, top, logoWidth, logoWidth * aspect);
+            resolve();
+          };
+          img.onerror = resolve;
+        });
+      } else {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(0, 168, 161);
+        doc.text("Gusto", logoX, top + 20);
+      }
+    } catch {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(0, 168, 161);
+      doc.text("Gusto", logoX, top + 20);
+    }
   }
 
   // Left column: earnings info

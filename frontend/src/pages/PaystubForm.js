@@ -1210,34 +1210,49 @@ export default function PaystubForm() {
                         <p className="text-sm text-slate-600 font-medium mb-3">ADP Document Info (Optional)</p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="companyCode">Company Code</Label>
+                        <Label htmlFor="companyCode">Company Code <span className="text-xs text-slate-400">(max 20 chars)</span></Label>
                         <Input 
                           id="companyCode" 
                           name="companyCode" 
                           value={formData.companyCode} 
-                          onChange={handleChange} 
-                          placeholder="e.g., RJ/ABC 12345678"
+                          onChange={handleCompanyCodeChange} 
+                          placeholder="e.g., RJ/ABCH 12345678"
+                          maxLength={20}
+                          className={validationErrors.companyCode ? 'border-red-500' : ''}
                         />
+                        {validationErrors.companyCode && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.companyCode}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="locDept">Loc/Dept</Label>
+                        <Label htmlFor="locDept">Loc/Dept <span className="text-xs text-slate-400">(3 digits)</span></Label>
                         <Input 
                           id="locDept" 
                           name="locDept" 
                           value={formData.locDept} 
-                          onChange={handleChange} 
+                          onChange={handleLocDeptChange} 
                           placeholder="e.g., 017"
+                          maxLength={3}
+                          className={validationErrors.locDept ? 'border-red-500' : ''}
                         />
+                        {validationErrors.locDept && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.locDept}</p>
+                        )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="checkNumber">Check/Document Number</Label>
+                        <Label htmlFor="checkNumber">Check/Document Number <span className="text-xs text-slate-400">(6-7 digits)</span></Label>
                         <Input 
                           id="checkNumber" 
                           name="checkNumber" 
                           value={formData.checkNumber} 
-                          onChange={handleChange} 
+                          onChange={handleCheckNumberChange} 
                           placeholder="e.g., 1019908"
+                          maxLength={7}
+                          className={validationErrors.checkNumber ? 'border-red-500' : ''}
                         />
+                        {validationErrors.checkNumber && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.checkNumber}</p>
+                        )}
                       </div>
                     </>
                   )}

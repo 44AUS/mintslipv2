@@ -235,10 +235,13 @@ export const generateBankStatementPreview = async (formData, template = 'templat
     // Add watermark on ALL pages
     addWatermarkToAllPages(doc, pageWidth, pageHeight);
 
-    // Convert to base64 data URL
+    // Convert to base64 data URL (PDF)
     const pdfDataUrl = doc.output('dataurlstring');
     
-    return pdfDataUrl;
+    // Convert PDF to image for preview display
+    const imageDataUrl = await convertPdfToImage(pdfDataUrl);
+    
+    return imageDataUrl;
   } catch (error) {
     console.error("Error generating bank statement preview:", error);
     return null;

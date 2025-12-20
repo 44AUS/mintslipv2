@@ -898,6 +898,96 @@ export default function Form1099MISC() {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-green-700" />
+            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              1099-MISC Form FAQ
+            </h2>
+            <p className="text-slate-600">Common questions about 1099-MISC forms and our generator</p>
+          </div>
+          
+          <Accordion type="single" collapsible className="space-y-3">
+            <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is a 1099-MISC form?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Form 1099-MISC (Miscellaneous Information) is used to report various types of miscellaneous income including rents, royalties, prizes, awards, medical and health care payments, crop insurance proceeds, and other income payments that don't fall under other specific 1099 forms.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What types of income are reported on 1099-MISC?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                1099-MISC reports: Rents (Box 1), Royalties (Box 2), Other income (Box 3), Medical/healthcare payments (Box 6), Crop insurance proceeds (Box 9), Gross proceeds to attorneys (Box 10), and Section 409A deferrals (Box 12). Nonemployee compensation is now reported on 1099-NEC instead.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Box 1 (Rents)?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 1 reports rental income paid to a landlord totaling $600 or more during the year. This includes payments for real estate rentals, equipment rentals, or any other type of rental property used in the payer's trade or business.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Box 2 (Royalties)?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 2 reports royalty payments of $10 or more. This includes payments for the use of intellectual property such as patents, copyrights, trademarks, trade names, and natural resources like oil, gas, and minerals.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                What is Box 3 (Other income)?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Box 3 reports other income not covered by other boxes, including prizes and awards, punitive damages, Indian gaming profits, and other taxable income of $600 or more that doesn't fit elsewhere on the form.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                When is the 1099-MISC due?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                The 1099-MISC must be furnished to recipients by January 31st for most boxes (or February 15th for Boxes 8 and 10). The form must be filed with the IRS by February 28th (paper filing) or March 31st (electronic filing).
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Should I use 1099-MISC or 1099-NEC for contractors?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Use 1099-NEC for nonemployee compensation (payments to independent contractors). Use 1099-MISC for other types of miscellaneous income like rent, royalties, and prizes. Since 2020, contractor payments are no longer reported on 1099-MISC.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+                Can I generate 1099-MISC forms for previous years?
+              </AccordionTrigger>
+              <AccordionContent className="text-slate-600 pb-4">
+                Yes! Our 1099-MISC generator supports multiple tax years. Select the appropriate tax year from the dropdown menu to generate forms for the current year or prior years as needed.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

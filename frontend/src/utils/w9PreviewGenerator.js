@@ -67,29 +67,30 @@ const FIELD_POSITIONS_2018 = {
 };
 
 // Field positions for W-9 form (2024 revision)
+// Page height: 792, y from bottom
 const FIELD_POSITIONS_2024 = {
-  name: { x: 42, y: 640, fontSize: 11 },
-  businessName: { x: 42, y: 600, fontSize: 10 },
-  individual: { x: 48, y: 564, fontSize: 10 },
-  ccorp: { x: 154, y: 564, fontSize: 10 },
-  scorp: { x: 207, y: 564, fontSize: 10 },
-  partnership: { x: 260, y: 564, fontSize: 10 },
-  trust: { x: 330, y: 564, fontSize: 10 },
-  llc: { x: 400, y: 564, fontSize: 10 },
-  llcCode: { x: 492, y: 564, fontSize: 10 },
-  other: { x: 48, y: 546, fontSize: 10 },
-  otherText: { x: 100, y: 546, fontSize: 9 },
-  exemptPayeeCode: { x: 505, y: 618, fontSize: 9 },
-  fatcaCode: { x: 505, y: 595, fontSize: 9 },
-  address: { x: 42, y: 498, fontSize: 10 },
-  cityStateZip: { x: 42, y: 464, fontSize: 10 },
-  accountNumbers: { x: 42, y: 430, fontSize: 9 },
-  ssn1: { x: 345, y: 398, fontSize: 14 },
-  ssn2: { x: 390, y: 398, fontSize: 14 },
-  ssn3: { x: 460, y: 398, fontSize: 14 },
-  ein1: { x: 345, y: 368, fontSize: 14 },
-  ein2: { x: 420, y: 368, fontSize: 14 },
-  signatureDate: { x: 470, y: 232, fontSize: 10 }
+  name: { x: 65, y: 680, fontSize: 11 },
+  businessName: { x: 65, y: 645, fontSize: 10 },
+  individual: { x: 75, y: 610, fontSize: 10 },
+  ccorp: { x: 182, y: 610, fontSize: 10 },
+  scorp: { x: 254, y: 610, fontSize: 10 },
+  partnership: { x: 326, y: 610, fontSize: 10 },
+  trust: { x: 390, y: 610, fontSize: 10 },
+  llc: { x: 74, y: 596, fontSize: 10 },
+  llcCode: { x: 350, y: 596, fontSize: 10 },
+  other: { x: 74, y: 556, fontSize: 10 },
+  otherText: { x: 130, y: 556, fontSize: 9 },
+  exemptPayeeCode: { x: 555, y: 598, fontSize: 9 },
+  fatcaCode: { x: 555, y: 568, fontSize: 9 },
+  address: { x: 65, y: 505, fontSize: 10 },
+  cityStateZip: { x: 65, y: 478, fontSize: 10 },
+  accountNumbers: { x: 65, y: 452, fontSize: 9 },
+  ssn1: { x: 360, y: 410, fontSize: 14 },
+  ssn2: { x: 415, y: 410, fontSize: 14 },
+  ssn3: { x: 490, y: 410, fontSize: 14 },
+  ein1: { x: 360, y: 380, fontSize: 14 },
+  ein2: { x: 445, y: 380, fontSize: 14 },
+  signatureDate: { x: 400, y: 200, fontSize: 10 }
 };
 
 // Get field positions based on tax year

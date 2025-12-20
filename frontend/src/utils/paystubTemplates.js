@@ -578,37 +578,38 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   y += 8;
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y);
 
-  // ==================== EARNINGS STATEMENT TITLE & LOGO ====================
+  // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT SIDE) ====================
+  // Title - positioned to not overlap
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("Earnings", rightCol + 30, 25);
+  doc.text("Earnings ", rightCol, 25);
   doc.setFont("helvetica", "normal");
-  doc.text("Statement", rightCol + 75, 25);
+  doc.text("Statement", rightCol + 48, 25);
   
-  // Logo or Company Name on right
+  // Logo or Company Name on far right
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 60, 15, 50, 20);
+      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 55, 12, 50, 22);
     } catch (e) {
-      doc.setFontSize(12);
+      doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
-      doc.text(formData.company || "COMPANY", pageWidth - m - 5, 28, { align: 'right' });
+      doc.text(formData.company || "COMPANY", pageWidth - m, 25, { align: 'right' });
     }
   } else {
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.text(formData.company || "COMPANY", pageWidth - m - 5, 28, { align: 'right' });
+    doc.text(formData.company || "COMPANY", pageWidth - m, 25, { align: 'right' });
   }
   
-  // Period info
+  // Period info - below title
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("Period Starting:", rightCol + 30, 40);
-  doc.text(formatDateADP(startDate), rightCol + 85, 40);
-  doc.text("Period Ending:", rightCol + 30, 48);
-  doc.text(formatDateADP(endDate), rightCol + 85, 48);
-  doc.text("Pay Date:", rightCol + 30, 56);
-  doc.text(formatDateADP(payDate), rightCol + 85, 56);
+  doc.text("Period Starting:", rightCol, 42);
+  doc.text(formatDateADP(startDate), rightCol + 55, 42);
+  doc.text("Period Ending:", rightCol, 51);
+  doc.text(formatDateADP(endDate), rightCol + 55, 51);
+  doc.text("Pay Date:", rightCol, 60);
+  doc.text(formatDateADP(payDate), rightCol + 55, 60);
 
   // ==================== TAX INFO SECTION (LEFT) ====================
   y = 75;

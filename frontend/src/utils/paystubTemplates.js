@@ -579,11 +579,6 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(truncateText(locDept, 25), m + 95, y);  // Max width before Number
   doc.text(truncateText(checkNumber, 30), m + 135, y);  // Max width before Page
   doc.text("1 of 1", m + 175, y);
-    while (doc.getTextWidth(truncated) > maxWidth && truncated.length > 0) {
-      truncated = truncated.slice(0, -1);
-    }
-    return truncated;
-  };
   
   // Company name and address - truncate to not overlap with Loc/Dept (max width ~65)
   const maxCompanyWidth = 65;

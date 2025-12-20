@@ -493,9 +493,35 @@ export default function Home() {
                   Why Choose Our{' '}
                   <span className="relative inline-block text-blue-500">
                     Paystub
-                    <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 12" preserveAspectRatio="none">
-                      <path d="M0,8 Q25,0 50,8 T100,8" stroke="#60a5fa" strokeWidth="3" fill="none" />
+                    <svg 
+                      className="absolute -bottom-2 left-0 w-full" 
+                      viewBox="0 0 100 12" 
+                      preserveAspectRatio="none"
+                      style={{ overflow: 'visible' }}
+                    >
+                      <path 
+                        d="M0,8 Q25,0 50,8 T100,8" 
+                        stroke="#60a5fa" 
+                        strokeWidth="3" 
+                        fill="none"
+                        strokeLinecap="round"
+                        style={{
+                          strokeDasharray: 200,
+                          strokeDashoffset: 200,
+                          animation: 'scribble 1.5s ease-out forwards'
+                        }}
+                      />
                     </svg>
+                    <style>{`
+                      @keyframes scribble {
+                        0% {
+                          stroke-dashoffset: 200;
+                        }
+                        100% {
+                          stroke-dashoffset: 0;
+                        }
+                      }
+                    `}</style>
                   </span>
                   <br />Generator Vs. Others
                 </h3>

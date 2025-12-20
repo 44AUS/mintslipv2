@@ -524,28 +524,32 @@ export default function Home() {
           {/* Bottom Section - Two Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Personal Profile Card */}
-            <div className="bg-green-50 rounded-2xl p-8">
+            <div className="bg-green-50 rounded-2xl p-8 pb-0 overflow-hidden">
               <h4 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 Personal Profile
               </h4>
               <p className="text-slate-600 mb-6">
                 Where you can download all your old document
               </p>
-              <div className="bg-white rounded-lg overflow-hidden shadow-lg h-64">
-                {/* Placeholder for profile dashboard image */}
+              <div className="relative">
+                <div className="bg-white rounded-t-lg overflow-hidden shadow-lg h-64 translate-y-4">
+                  {/* Placeholder for profile dashboard image */}
+                </div>
               </div>
             </div>
 
             {/* 10% Off Card */}
-            <div className="bg-red-50 rounded-2xl p-8">
+            <div className="bg-red-50 rounded-2xl p-8 pb-0 overflow-hidden">
               <h4 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 10% Off First Time
               </h4>
               <p className="text-slate-600 mb-6">
                 Use coupon code: <span className="font-bold">WELCOME10</span>
               </p>
-              <div className="bg-white rounded-lg overflow-hidden shadow-lg h-64">
-                {/* Placeholder for checkout/coupon image */}
+              <div className="relative">
+                <div className="bg-white rounded-t-lg overflow-hidden shadow-lg h-64 translate-y-4">
+                  {/* Placeholder for checkout/coupon image */}
+                </div>
               </div>
             </div>
           </div>

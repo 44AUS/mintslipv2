@@ -164,10 +164,13 @@ const SpeedServiceAnimation = ({ isVisible }) => (
       {/* Speech bubble with checkmark */}
       <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 1s forwards' : 'none' }}>
         {/* Bubble */}
-        <path d="M195,55 Q195,40 215,40 L235,40 Q250,40 250,55 L250,70 Q250,85 235,85 L215,85 L205,95 L210,85 Q195,85 195,70 Z" fill="#1a4731"/>
+        <path d="M195,50 Q195,32 215,32 L240,32 Q258,32 258,50 L258,68 Q258,86 240,86 L215,86 L205,98 L210,86 Q195,86 195,68 Z" fill="#1a4731"/>
+        {/* Circle around checkmark */}
+        <circle cx="226" cy="59" r="18" fill="#ffffff" opacity="0.2"/>
+        <circle cx="226" cy="59" r="14" fill="none" stroke="#ffffff" strokeWidth="2"/>
         {/* Checkmark in bubble */}
         <path 
-          d="M212,60 L220,70 L238,52" 
+          d="M218,59 L224,66 L236,52" 
           fill="none" 
           stroke="#ffffff" 
           strokeWidth="3" 

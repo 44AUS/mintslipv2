@@ -649,11 +649,11 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // ==================== EMPLOYEE NAME & ADDRESS (RIGHT) ====================
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.text(formData.name || "Employee Name", rightCol + 30, 80);
+  doc.text(formData.name || "Employee Name", rightCol, 80);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text(formData.address || "", rightCol + 30, 92);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightCol + 30, 102);
+  doc.text(formData.address || "", rightCol, 92);
+  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightCol, 102);
 
   // ==================== EARNINGS TABLE ====================
   y = 135;

@@ -42,6 +42,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
+      <Helmet>
+        <title>MintSlip - Professional Paystub & Document Generator | Instant Download</title>
+        <meta name="description" content="Generate professional pay stubs, W-2 forms, bank statements, 1099s, and more in minutes. No registration required. Trusted by 10,000+ users. Secure PayPal payment." />
+        <meta name="keywords" content="paystub generator, pay stub maker, W-2 generator, bank statement generator, 1099 form, document generator, instant download" />
+        <meta property="og:title" content="MintSlip - Professional Document Generator" />
+        <meta property="og:description" content="Create professional pay stubs, tax forms, and financial documents instantly. No sign-up required." />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="MintSlip" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="MintSlip - Professional Document Generator" />
+        <meta name="twitter:description" content="Generate pay stubs, W-2s, 1099s, and more in minutes. Instant download." />
+        <link rel="canonical" href="https://mintslip.com" />
+      </Helmet>
+      
       <div className="noise-overlay" />
       
       <Header title="MintSlip" />

@@ -485,36 +485,38 @@ export default function Home() {
       {/* Why Choose Our Paystub Generator Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          {/* Top Section - Why Choose Us */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
-            <div className="space-y-6">
-              <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
-                Why Choose Our{' '}
-                <span className="relative inline-block text-blue-500">
-                  Paystub
-                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 12" preserveAspectRatio="none">
-                    <path d="M0,8 Q25,0 50,8 T100,8" stroke="#60a5fa" strokeWidth="3" fill="none" />
-                  </svg>
-                </span>
-                <br />Generator Vs. Others
-              </h3>
-              <p className="text-lg leading-relaxed text-slate-600">
-                Our paystub generator, unlike any other online paystub maker, is problem free. In less than two minutes, you can complete your pay stub by simply entering your company name and salary details. Our efficient pay stub calculator software makes it quick and easy for you to get professional results.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-slate-700">Lightning-Fast Paystub Generation</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-slate-700">Top-Notch Customer Support</span>
-                </li>
-              </ul>
-            </div>
-            <div className="flex justify-center">
-              <div className="bg-white rounded-lg overflow-hidden h-80 w-full max-w-md">
-                {/* Placeholder for customer support illustration */}
+          {/* Top Section - Why Choose Us (Full Width) */}
+          <div className="bg-slate-50 rounded-2xl p-8 md:p-12 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                  Why Choose Our{' '}
+                  <span className="relative inline-block text-blue-500">
+                    Paystub
+                    <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 12" preserveAspectRatio="none">
+                      <path d="M0,8 Q25,0 50,8 T100,8" stroke="#60a5fa" strokeWidth="3" fill="none" />
+                    </svg>
+                  </span>
+                  <br />Generator Vs. Others
+                </h3>
+                <p className="text-lg leading-relaxed text-slate-600">
+                  Our paystub generator, unlike any other online paystub maker, is problem free. In less than two minutes, you can complete your pay stub by simply entering your company name and salary details. Our efficient pay stub calculator software makes it quick and easy for you to get professional results.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-slate-700">Lightning-Fast Paystub Generation</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-slate-700">Top-Notch Customer Support</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex justify-center">
+                <div className="bg-white rounded-lg overflow-hidden h-72 w-full shadow-lg">
+                  {/* Placeholder for customer support illustration */}
+                </div>
               </div>
             </div>
           </div>

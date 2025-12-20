@@ -99,6 +99,121 @@ const EnvelopeAnimation = ({ isVisible }) => (
   </div>
 );
 
+// Lightning Fast & Customer Service Animation Component
+const SpeedServiceAnimation = ({ isVisible }) => (
+  <div className="relative w-full h-full flex items-center justify-center">
+    <svg viewBox="0 0 240 200" className="w-72 h-72">
+      {/* Stopwatch/Clock - representing speed */}
+      <g className={isVisible ? 'animate-clock' : ''} style={{ opacity: isVisible ? 1 : 0 }}>
+        {/* Clock body */}
+        <circle cx="70" cy="100" r="45" fill="#e8f5e9" stroke="#1a4731" strokeWidth="3"/>
+        {/* Clock inner circle */}
+        <circle cx="70" cy="100" r="35" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
+        {/* Clock top button */}
+        <rect x="65" y="50" width="10" height="8" rx="2" fill="#1a4731"/>
+        {/* Clock center dot */}
+        <circle cx="70" cy="100" r="4" fill="#1a4731"/>
+        {/* Clock hand - animated */}
+        <line 
+          x1="70" y1="100" x2="70" y2="72" 
+          stroke="#1a4731" 
+          strokeWidth="3" 
+          strokeLinecap="round"
+          style={{
+            transformOrigin: '70px 100px',
+            animation: isVisible ? 'spinFast 0.8s ease-out forwards' : 'none'
+          }}
+        />
+        {/* Speed lines */}
+        <g style={{ opacity: isVisible ? 1 : 0, animation: isVisible ? 'fadeIn 0.3s ease-out 0.5s forwards' : 'none' }}>
+          <line x1="125" y1="85" x2="140" y2="85" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="125" y1="100" x2="145" y2="100" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="125" y1="115" x2="140" y2="115" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
+        </g>
+      </g>
+
+      {/* Lightning bolt */}
+      <g style={{ opacity: 0, animation: isVisible ? 'boltFlash 0.6s ease-out 0.3s forwards' : 'none' }}>
+        <path 
+          d="M150,60 L135,95 L150,95 L130,140 L155,100 L140,100 Z" 
+          fill="#1a4731"
+          stroke="#1a4731"
+          strokeWidth="1"
+        />
+      </g>
+
+      {/* Customer Service Rep - Headset person */}
+      <g className={isVisible ? 'animate-support' : ''} style={{ opacity: 0, animation: isVisible ? 'slideInRight 0.5s ease-out 0.6s forwards' : 'none' }}>
+        {/* Head */}
+        <circle cx="190" cy="110" r="25" fill="#e8f5e9" stroke="#1a4731" strokeWidth="3"/>
+        {/* Smile */}
+        <path d="M180,118 Q190,128 200,118" fill="none" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
+        {/* Eyes */}
+        <circle cx="182" cy="105" r="3" fill="#1a4731"/>
+        <circle cx="198" cy="105" r="3" fill="#1a4731"/>
+        {/* Headset band */}
+        <path d="M165,100 Q165,75 190,75 Q215,75 215,100" fill="none" stroke="#1a4731" strokeWidth="3" strokeLinecap="round"/>
+        {/* Headset ear pieces */}
+        <rect x="160" y="95" width="10" height="20" rx="3" fill="#1a4731"/>
+        <rect x="210" y="95" width="10" height="20" rx="3" fill="#1a4731"/>
+        {/* Microphone */}
+        <path d="M160,110 Q150,110 150,125 L150,130" fill="none" stroke="#1a4731" strokeWidth="3" strokeLinecap="round"/>
+        <circle cx="150" cy="133" r="5" fill="#1a4731"/>
+      </g>
+
+      {/* Speech bubble with checkmark */}
+      <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 1s forwards' : 'none' }}>
+        {/* Bubble */}
+        <path d="M195,55 Q195,40 215,40 L235,40 Q250,40 250,55 L250,70 Q250,85 235,85 L215,85 L205,95 L210,85 Q195,85 195,70 Z" fill="#1a4731"/>
+        {/* Checkmark in bubble */}
+        <path 
+          d="M212,60 L220,70 L238,52" 
+          fill="none" 
+          stroke="#ffffff" 
+          strokeWidth="3" 
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            strokeDasharray: 40,
+            strokeDashoffset: isVisible ? 0 : 40,
+            transition: 'stroke-dashoffset 0.4s ease-out 1.2s'
+          }}
+        />
+      </g>
+
+      {/* "FAST" text badge */}
+      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 0.8s forwards' : 'none' }}>
+        <rect x="45" y="150" width="50" height="20" rx="10" fill="#1a4731"/>
+        <text x="70" y="164" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">FAST</text>
+      </g>
+    </svg>
+    <style>{`
+      @keyframes spinFast {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(720deg); }
+      }
+      @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes boltFlash {
+        0% { opacity: 0; transform: scale(0.5); }
+        50% { opacity: 1; transform: scale(1.2); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes slideInRight {
+        0% { opacity: 0; transform: translateX(30px); }
+        100% { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes popIn {
+        0% { opacity: 0; transform: scale(0); }
+        70% { transform: scale(1.1); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+    `}</style>
+  </div>
+);
+
 // Custom hook for intersection observer
 const useInView = (options = {}) => {
   const ref = useRef(null);

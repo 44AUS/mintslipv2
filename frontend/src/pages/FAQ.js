@@ -209,6 +209,18 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>FAQ | MintSlip - Frequently Asked Questions</title>
+        <meta name="description" content="Find answers to common questions about MintSlip's paystub generator, bank statements, W-2 forms, and more. Get help with document generation and payments." />
+        <meta name="keywords" content="MintSlip FAQ, paystub questions, document generator help, tax form questions" />
+        <meta property="og:title" content="FAQ | MintSlip" />
+        <meta property="og:description" content="Get answers to frequently asked questions about our document generation services." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="MintSlip FAQ" />
+        <meta name="twitter:description" content="Answers to common questions about document generation." />
+      </Helmet>
+      
       <Header />
       
       {/* Hero Section */}

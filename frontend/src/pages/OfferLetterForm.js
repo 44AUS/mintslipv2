@@ -1180,12 +1180,12 @@ export default function OfferLetterForm() {
                       <DialogHeader>
                         <DialogTitle>Offer Letter Preview</DialogTitle>
                       </DialogHeader>
-                      <div className="flex-1 h-full">
+                      <div className="flex-1 h-full overflow-auto p-4">
                         {pdfPreview && (
-                          <iframe
+                          <img
                             src={pdfPreview}
-                            className="w-full h-[calc(90vh-80px)] border-0"
-                            title="Offer Letter Preview Full"
+                            alt="Offer Letter Preview Full"
+                            className="w-full h-auto"
                           />
                         )}
                       </div>
@@ -1202,10 +1202,10 @@ export default function OfferLetterForm() {
                       Generating preview...
                     </div>
                   ) : pdfPreview ? (
-                    <iframe
+                    <img
                       src={pdfPreview}
-                      className="w-full h-full border-0"
-                      title="Offer Letter Preview"
+                      alt="Offer Letter Preview"
+                      className="w-full h-full object-contain bg-white"
                     />
                   ) : (
                     <p className="text-slate-500">Fill in company and candidate name to see preview</p>

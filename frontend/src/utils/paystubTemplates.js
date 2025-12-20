@@ -547,24 +547,27 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   
   // Header labels
   doc.text("Company Code", m, y);
-  doc.text("Loc/Dept", m + 85, y);
-  doc.text("Number", m + 120, y);
-  doc.text("Page", m + 160, y);
+  doc.text("Loc/Dept", m + 95, y);
+  doc.text("Number", m + 135, y);
+  doc.text("Page", m + 175, y);
   
   // Header underlines
-  doc.line(m, y + 2, m + 70, y + 2);
-  doc.line(m + 85, y + 2, m + 110, y + 2);
-  doc.line(m + 120, y + 2, m + 150, y + 2);
-  doc.line(m + 160, y + 2, m + 185, y + 2);
+  doc.line(m, y + 2, m + 80, y + 2);
+  doc.line(m + 95, y + 2, m + 125, y + 2);
+  doc.line(m + 135, y + 2, m + 165, y + 2);
+  doc.line(m + 175, y + 2, m + 200, y + 2);
   
-  // Header values
+  // Header values - use form data if provided, otherwise generate random
   y += 10;
-  const companyCode = `RJ/${(formData.company || "XXX").substring(0, 3).toUpperCase()}H ${Math.floor(10000000 + Math.random() * 90000000)}`;
+  const companyCode = formData.companyCode || `RJ/${(formData.company || "XXX").substring(0, 3).toUpperCase()}H ${Math.floor(10000000 + Math.random() * 90000000)}`;
+  const locDept = formData.locDept || String(Math.floor(10 + Math.random() * 90)).padStart(3, '0');
+  const checkNumber = formData.checkNumber || String(Math.floor(1000000 + Math.random() * 9000000));
+  
   doc.setFont("helvetica", "bold");
   doc.text(companyCode, m, y);
-  doc.text(String(Math.floor(10 + Math.random() * 90)).padStart(3, '0'), m + 85, y);
-  doc.text(String(Math.floor(1000000 + Math.random() * 9000000)), m + 120, y);
-  doc.text("1 of 1", m + 160, y);
+  doc.text(locDept, m + 95, y);
+  doc.text(checkNumber, m + 135, y);
+  doc.text("1 of 1", m + 175, y);
   
   // Company name and address
   y += 8;

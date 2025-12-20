@@ -14,53 +14,54 @@ const getTemplateUrl = (taxYear) => {
 };
 
 // Field positions for 1099-MISC form (Copy 1 - page index 2)
+// Page height: 792, coordinates from bottom
 const FIELD_POSITIONS = {
-  // Payer information
-  payerName: { x: 38, y: 695, fontSize: 9 },
-  payerAddress: { x: 38, y: 680, fontSize: 9 },
-  payerCityStateZip: { x: 38, y: 665, fontSize: 9 },
-  payerPhone: { x: 38, y: 650, fontSize: 8 },
-  payerTIN: { x: 38, y: 620, fontSize: 10 },
+  // Payer information (top left, PAYER'S name section y_top ~37-133)
+  payerName: { x: 60, y: 740, fontSize: 9 },
+  payerAddress: { x: 60, y: 724, fontSize: 9 },
+  payerCityStateZip: { x: 60, y: 708, fontSize: 9 },
+  payerPhone: { x: 60, y: 692, fontSize: 8 },
+  payerTIN: { x: 60, y: 650, fontSize: 10 },
   
   // Recipient information
-  recipientTIN: { x: 38, y: 585, fontSize: 10 },
-  recipientName: { x: 38, y: 555, fontSize: 10 },
-  recipientAddress: { x: 38, y: 525, fontSize: 9 },
-  recipientCityStateZip: { x: 38, y: 510, fontSize: 9 },
-  accountNumber: { x: 38, y: 475, fontSize: 9 },
+  recipientTIN: { x: 185, y: 650, fontSize: 10 },
+  recipientName: { x: 60, y: 602, fontSize: 10 },
+  recipientAddress: { x: 60, y: 566, fontSize: 9 },
+  recipientCityStateZip: { x: 60, y: 530, fontSize: 9 },
+  accountNumber: { x: 60, y: 458, fontSize: 9 },
   
   // Checkboxes
-  secondTINNotice: { x: 210, y: 585, fontSize: 10 },
-  fatcaFiling: { x: 210, y: 570, fontSize: 10 },
+  secondTINNotice: { x: 265, y: 650, fontSize: 10 },
+  fatcaFiling: { x: 262, y: 494, fontSize: 10 },
   
-  // Income boxes - Left column
-  box1: { x: 310, y: 695, fontSize: 9 },   // Rents
-  box2: { x: 310, y: 665, fontSize: 9 },   // Royalties
-  box3: { x: 310, y: 635, fontSize: 9 },   // Other income
-  box4: { x: 310, y: 605, fontSize: 9 },   // Federal tax withheld
-  box5: { x: 310, y: 575, fontSize: 9 },   // Fishing boat proceeds
-  box6: { x: 310, y: 545, fontSize: 9 },   // Medical payments
-  box7: { x: 310, y: 515, fontSize: 10 },  // Direct sales checkbox
+  // Income boxes - Left column (x around 300-310)
+  box1: { x: 310, y: 728, fontSize: 9 },   // Rents (y_top=60)
+  box2: { x: 310, y: 692, fontSize: 9 },   // Royalties (y_top=96)
+  box3: { x: 310, y: 668, fontSize: 9 },   // Other income (y_top=120)
+  box5: { x: 310, y: 620, fontSize: 9 },   // Fishing boat proceeds (y_top=168)
+  box7: { x: 310, y: 578, fontSize: 10 },  // Direct sales checkbox area (y_top=181-207)
+  box9: { x: 310, y: 548, fontSize: 9 },   // Crop insurance (y_top=240)
+  box11: { x: 310, y: 512, fontSize: 9 },  // Fish purchased for resale (y_top=276)
   
-  // Income boxes - Right column
-  box8: { x: 450, y: 695, fontSize: 9 },   // Substitute payments
-  box9: { x: 450, y: 665, fontSize: 9 },   // Crop insurance
-  box10: { x: 450, y: 635, fontSize: 9 },  // Gross proceeds to attorney
-  box11: { x: 450, y: 605, fontSize: 9 },  // Fish purchased for resale
-  box12: { x: 450, y: 575, fontSize: 9 },  // Section 409A deferrals
-  box15: { x: 450, y: 515, fontSize: 9 },  // Nonqualified deferred comp
+  // Income boxes - Right column (x around 400-410)
+  box4: { x: 410, y: 668, fontSize: 9 },   // Federal tax withheld (y_top=120)
+  box6: { x: 410, y: 620, fontSize: 9 },   // Medical payments (y_top=168)
+  box8: { x: 410, y: 584, fontSize: 9 },   // Substitute payments (y_top=204)
+  box10: { x: 410, y: 548, fontSize: 9 },  // Gross proceeds to attorney (y_top=240)
+  box12: { x: 410, y: 512, fontSize: 9 },  // Section 409A deferrals (y_top=276)
+  box15: { x: 410, y: 476, fontSize: 9 },  // Nonqualified deferred comp (y_top=312)
   
-  // State information - Row 1
-  state1: { x: 38, y: 440, fontSize: 9 },
-  payerStateNo1: { x: 80, y: 440, fontSize: 8 },
-  stateIncome1: { x: 180, y: 440, fontSize: 9 },
-  stateTaxWithheld1: { x: 280, y: 440, fontSize: 9 },
+  // State information - Row 1 (y_top ~325-348)
+  stateTaxWithheld1: { x: 310, y: 452, fontSize: 9 },
+  state1: { x: 410, y: 462, fontSize: 9 },
+  payerStateNo1: { x: 450, y: 462, fontSize: 8 },
+  stateIncome1: { x: 510, y: 452, fontSize: 9 },
   
   // State information - Row 2
-  state2: { x: 38, y: 420, fontSize: 9 },
-  payerStateNo2: { x: 80, y: 420, fontSize: 8 },
-  stateIncome2: { x: 180, y: 420, fontSize: 9 },
-  stateTaxWithheld2: { x: 280, y: 420, fontSize: 9 }
+  stateTaxWithheld2: { x: 310, y: 440, fontSize: 9 },
+  state2: { x: 410, y: 444, fontSize: 9 },
+  payerStateNo2: { x: 450, y: 444, fontSize: 8 },
+  stateIncome2: { x: 510, y: 440, fontSize: 9 }
 };
 
 // Generate 1099-MISC PDF

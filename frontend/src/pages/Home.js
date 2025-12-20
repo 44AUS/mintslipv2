@@ -525,10 +525,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Personal Profile Card */}
             <div className="bg-green-50 rounded-2xl p-8 pb-0 overflow-hidden">
-              <h4 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+              <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 Personal Profile
               </h4>
-              <p className="text-slate-600 mb-6">
+              <p className="text-slate-600 mb-6 text-center">
                 Where you can download all your old document
               </p>
               <div className="relative">
@@ -540,10 +540,10 @@ export default function Home() {
 
             {/* 10% Off Card */}
             <div className="bg-red-50 rounded-2xl p-8 pb-0 overflow-hidden">
-              <h4 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+              <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
                 10% Off First Time
               </h4>
-              <p className="text-slate-600 mb-6">
+              <p className="text-slate-600 mb-6 text-center">
                 Use coupon code: <span className="font-bold">WELCOME10</span>
               </p>
               <div className="relative">

@@ -1159,6 +1159,45 @@ export default function PaystubForm() {
                       <p className="text-xs text-red-500 mt-1">{validationErrors.companyZip}</p>
                     )}
                   </div>
+                  
+                  {/* ADP Template B Specific Fields */}
+                  {selectedTemplate === 'template-b' && (
+                    <>
+                      <div className="md:col-span-2 pt-2 border-t">
+                        <p className="text-sm text-slate-600 font-medium mb-3">ADP Document Info (Optional)</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="companyCode">Company Code</Label>
+                        <Input 
+                          id="companyCode" 
+                          name="companyCode" 
+                          value={formData.companyCode} 
+                          onChange={handleChange} 
+                          placeholder="e.g., RJ/ABC 12345678"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="locDept">Loc/Dept</Label>
+                        <Input 
+                          id="locDept" 
+                          name="locDept" 
+                          value={formData.locDept} 
+                          onChange={handleChange} 
+                          placeholder="e.g., 017"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="checkNumber">Check/Document Number</Label>
+                        <Input 
+                          id="checkNumber" 
+                          name="checkNumber" 
+                          value={formData.checkNumber} 
+                          onChange={handleChange} 
+                          placeholder="e.g., 1019908"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

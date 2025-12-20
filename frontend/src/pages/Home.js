@@ -420,6 +420,251 @@ const PaystubRevealAnimation = ({ isVisible }) => (
   </div>
 );
 
+// Instant Download Animation Component - for "Instant Download" card
+const InstantDownloadAnimation = ({ isVisible }) => (
+  <div className="relative w-full h-full flex items-center justify-center">
+    <svg viewBox="0 0 200 200" className="w-full h-full max-w-xs">
+      {/* Cloud shape */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
+        transition: 'all 0.5s ease-out'
+      }}>
+        <ellipse cx="100" cy="50" rx="50" ry="25" fill="#e8f5e9"/>
+        <ellipse cx="70" cy="55" rx="30" ry="18" fill="#e8f5e9"/>
+        <ellipse cx="130" cy="55" rx="30" ry="18" fill="#e8f5e9"/>
+        <ellipse cx="100" cy="60" rx="45" ry="20" fill="#e8f5e9"/>
+      </g>
+
+      {/* Document with download animation */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        animation: isVisible ? 'downloadSlide 1.5s ease-out 0.3s infinite' : 'none'
+      }}>
+        {/* Document */}
+        <rect x="75" y="70" width="50" height="65" rx="4" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
+        {/* Document corner fold */}
+        <path d="M115,70 L115,82 L125,82 Z" fill="#e8f5e9" stroke="#1a4731" strokeWidth="1"/>
+        {/* Document lines */}
+        <line x1="82" y1="90" x2="108" y2="90" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
+        <line x1="82" y1="100" x2="115" y2="100" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
+        <line x1="82" y1="110" x2="105" y2="110" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
+        <line x1="82" y1="120" x2="112" y2="120" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
+      </g>
+
+      {/* Download arrow */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        animation: isVisible ? 'arrowBounce 1.5s ease-out 0.3s infinite' : 'none'
+      }}>
+        <path d="M100,140 L100,175" stroke="#1a4731" strokeWidth="4" strokeLinecap="round"/>
+        <path d="M88,163 L100,178 L112,163" fill="none" stroke="#1a4731" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+      </g>
+
+      {/* Download base/device */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.4s ease-out 0.5s'
+      }}>
+        <rect x="60" y="180" width="80" height="12" rx="3" fill="#1a4731"/>
+        <rect x="70" y="176" width="60" height="8" rx="2" fill="#1a4731"/>
+      </g>
+
+      {/* Speed lines */}
+      <g style={{ 
+        opacity: isVisible ? 0.5 : 0,
+        animation: isVisible ? 'speedLines 1.5s ease-out 0.3s infinite' : 'none'
+      }}>
+        <line x1="55" y1="95" x2="45" y2="95" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="105" x2="40" y2="105" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="115" x2="48" y2="115" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="95" x2="155" y2="95" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="105" x2="160" y2="105" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="115" x2="152" y2="115" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+      </g>
+
+      {/* Checkmark that appears */}
+      <g style={{ 
+        opacity: 0,
+        animation: isVisible ? 'checkAppear 1.5s ease-out 0.3s infinite' : 'none'
+      }}>
+        <circle cx="130" cy="160" r="15" fill="#22c55e"/>
+        <path d="M122,160 L128,167 L140,152" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+      </g>
+
+      {/* Sparkles */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 0.8s' }}>
+        <circle cx="45" cy="70" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.2s ease-in-out infinite' : 'none' }}/>
+        <circle cx="160" cy="75" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite 0.2s' : 'none' }}/>
+        <circle cx="170" cy="140" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.3s ease-in-out infinite 0.4s' : 'none' }}/>
+      </g>
+    </svg>
+
+    <style>{`
+      @keyframes downloadSlide {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(15px); }
+      }
+      @keyframes arrowBounce {
+        0%, 100% { transform: translateY(0); opacity: 1; }
+        50% { transform: translateY(8px); opacity: 0.7; }
+      }
+      @keyframes speedLines {
+        0%, 100% { opacity: 0; }
+        40%, 60% { opacity: 0.6; }
+      }
+      @keyframes checkAppear {
+        0%, 60% { opacity: 0; transform: scale(0); }
+        70% { opacity: 1; transform: scale(1.2); }
+        80%, 100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes sparkle {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.4); }
+      }
+    `}</style>
+  </div>
+);
+
+// No Data Stored Animation Component - for "No Data Stored" card  
+const NoDataStoredAnimation = ({ isVisible }) => (
+  <div className="relative w-full h-full flex items-center justify-center">
+    <svg viewBox="0 0 200 200" className="w-full h-full max-w-xs">
+      {/* Shield shape */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'scale(1)' : 'scale(0.8)',
+        transformOrigin: '100px 100px',
+        transition: 'all 0.6s ease-out'
+      }}>
+        <path 
+          d="M100,20 L160,45 L160,100 C160,140 130,170 100,185 C70,170 40,140 40,100 L40,45 Z" 
+          fill="#fef2f2" 
+          stroke="#ef4444" 
+          strokeWidth="3"
+        />
+        {/* Shield inner glow */}
+        <path 
+          d="M100,35 L145,55 L145,100 C145,130 120,155 100,167 C80,155 55,130 55,100 L55,55 Z" 
+          fill="#ffffff" 
+          opacity="0.7"
+        />
+      </g>
+
+      {/* Lock icon */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
+        transition: 'all 0.5s ease-out 0.3s'
+      }}>
+        {/* Lock body */}
+        <rect x="80" y="90" width="40" height="35" rx="5" fill="#dc2626"/>
+        {/* Lock shackle */}
+        <path 
+          d="M85,90 L85,75 C85,60 115,60 115,75 L115,90" 
+          fill="none" 
+          stroke="#dc2626" 
+          strokeWidth="6"
+          strokeLinecap="round"
+        />
+        {/* Keyhole */}
+        <circle cx="100" cy="102" r="6" fill="#ffffff"/>
+        <rect x="97" y="105" width="6" height="12" rx="2" fill="#ffffff"/>
+      </g>
+
+      {/* Crossed out data/document */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.4s ease-out 0.6s'
+      }}>
+        {/* Small document icon */}
+        <rect x="145" y="60" width="30" height="40" rx="3" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
+        <line x1="150" y1="72" x2="170" y2="72" stroke="#ef4444" strokeWidth="1.5" opacity="0.5"/>
+        <line x1="150" y1="80" x2="165" y2="80" stroke="#ef4444" strokeWidth="1.5" opacity="0.5"/>
+        <line x1="150" y1="88" x2="168" y2="88" stroke="#ef4444" strokeWidth="1.5" opacity="0.5"/>
+        {/* X over document */}
+        <line x1="143" y1="55" x2="178" y2="105" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
+          style={{
+            strokeDasharray: 70,
+            strokeDashoffset: isVisible ? 0 : 70,
+            transition: 'stroke-dashoffset 0.5s ease-out 0.8s'
+          }}/>
+        <line x1="178" y1="55" x2="143" y2="105" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
+          style={{
+            strokeDasharray: 70,
+            strokeDashoffset: isVisible ? 0 : 70,
+            transition: 'stroke-dashoffset 0.5s ease-out 1s'
+          }}/>
+      </g>
+
+      {/* Database icon crossed out */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.4s ease-out 0.7s'
+      }}>
+        {/* Database shape */}
+        <ellipse cx="40" cy="75" rx="18" ry="8" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
+        <path d="M22,75 L22,105 C22,113 58,113 58,105 L58,75" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
+        <ellipse cx="40" cy="90" rx="18" ry="5" fill="none" stroke="#ef4444" strokeWidth="1" opacity="0.5"/>
+        {/* X over database */}
+        <line x1="20" y1="65" x2="60" y2="115" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
+          style={{
+            strokeDasharray: 60,
+            strokeDashoffset: isVisible ? 0 : 60,
+            transition: 'stroke-dashoffset 0.5s ease-out 0.9s'
+          }}/>
+        <line x1="60" y1="65" x2="20" y2="115" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
+          style={{
+            strokeDasharray: 60,
+            strokeDashoffset: isVisible ? 0 : 60,
+            transition: 'stroke-dashoffset 0.5s ease-out 1.1s'
+          }}/>
+      </g>
+
+      {/* Privacy checkmarks */}
+      <g style={{ 
+        opacity: 0,
+        animation: isVisible ? 'fadeInCheck 0.4s ease-out 1.3s forwards' : 'none'
+      }}>
+        <circle cx="100" cy="155" r="12" fill="#22c55e"/>
+        <path d="M94,155 L98,160 L108,148" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </g>
+
+      {/* "PRIVATE" badge */}
+      <g style={{ 
+        opacity: 0,
+        animation: isVisible ? 'slideBadge 0.5s ease-out 1.5s forwards' : 'none'
+      }}>
+        <rect x="70" y="175" width="60" height="18" rx="9" fill="#1a4731"/>
+        <text x="100" y="187" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold">PRIVATE</text>
+      </g>
+
+      {/* Floating secure icons */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.2s' }}>
+        <circle cx="25" cy="140" r="3" fill="#22c55e" style={{ animation: isVisible ? 'float 2s ease-in-out infinite' : 'none' }}/>
+        <circle cx="175" cy="145" r="2.5" fill="#22c55e" style={{ animation: isVisible ? 'float 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
+        <circle cx="170" cy="30" r="2" fill="#22c55e" style={{ animation: isVisible ? 'float 2.2s ease-in-out infinite 0.6s' : 'none' }}/>
+      </g>
+    </svg>
+
+    <style>{`
+      @keyframes fadeInCheck {
+        0% { opacity: 0; transform: scale(0); }
+        70% { transform: scale(1.2); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes slideBadge {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+    `}</style>
+  </div>
+);
+
 // Form Typing Animation Component
 const FormTypingAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center p-4">

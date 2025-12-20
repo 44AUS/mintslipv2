@@ -482,6 +482,74 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why Choose Our Paystub Generator Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Top Section - Why Choose Us */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
+            <div className="space-y-6">
+              <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                Why Choose Our{' '}
+                <span className="relative inline-block text-blue-500">
+                  Paystub
+                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 12" preserveAspectRatio="none">
+                    <path d="M0,8 Q25,0 50,8 T100,8" stroke="#60a5fa" strokeWidth="3" fill="none" />
+                  </svg>
+                </span>
+                <br />Generator Vs. Others
+              </h3>
+              <p className="text-lg leading-relaxed text-slate-600">
+                Our paystub generator, unlike any other online paystub maker, is problem free. In less than two minutes, you can complete your pay stub by simply entering your company name and salary details. Our efficient pay stub calculator software makes it quick and easy for you to get professional results.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-slate-700">Lightning-Fast Paystub Generation</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-slate-700">Top-Notch Customer Support</span>
+                </li>
+              </ul>
+            </div>
+            <div className="flex justify-center">
+              <div className="bg-white rounded-lg overflow-hidden h-80 w-full max-w-md">
+                {/* Placeholder for customer support illustration */}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section - Two Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Personal Profile Card */}
+            <div className="bg-green-50 rounded-2xl p-8">
+              <h4 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                Personal Profile
+              </h4>
+              <p className="text-slate-600 mb-6">
+                Where you can download all your old document
+              </p>
+              <div className="bg-white rounded-lg overflow-hidden shadow-lg h-64">
+                {/* Placeholder for profile dashboard image */}
+              </div>
+            </div>
+
+            {/* 10% Off Card */}
+            <div className="bg-red-50 rounded-2xl p-8">
+              <h4 className="text-2xl md:text-3xl font-black mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                10% Off First Time
+              </h4>
+              <p className="text-slate-600 mb-6">
+                Use coupon code: <span className="font-bold">WELCOME10</span>
+              </p>
+              <div className="bg-white rounded-lg overflow-hidden shadow-lg h-64">
+                {/* Placeholder for checkout/coupon image */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Document Selection Grid */}
       <section className="max-w-7xl mx-auto px-6 py-32">
         <div className="text-center mb-16">

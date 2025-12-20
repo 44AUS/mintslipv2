@@ -591,13 +591,10 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(truncateText(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, maxCompanyWidth), m, y);
 
   // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT SIDE) ====================
-  // Title - "Earnings" in bold, "Statement" in normal
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "bold");
-  doc.text("Earnings", rightCol, 25);
+  // Title - both words in normal font
   doc.setFontSize(14);
   doc.setFont("helvetica", "normal");
-  doc.text("Statement", rightCol + 42, 25);
+  doc.text("Earnings Statement", rightCol, 25);
   
   // Logo on far right - only show if uploaded, otherwise leave blank
   if (logoDataUrl) {

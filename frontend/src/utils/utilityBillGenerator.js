@@ -318,8 +318,7 @@ const generateTemplateB = async (doc, formData, fonts, isPreview = false) => {
   // Call Center Hours box
   page.drawRectangle({ x: boxStartX, y: headerY - boxHeight, width: boxWidth, height: boxHeight, borderColor: borderGray, borderWidth: 1 });
   page.drawRectangle({ x: boxStartX, y: headerY - 13, width: boxWidth, height: 13, color: blue });
-  page.drawText('Call Center and', { x: boxStartX + 5, y: headerY - 9, size: 6, font: bold, color: white });
-  page.drawText('Office Hours', { x: boxStartX + 12, y: headerY - 16, size: 6, font: bold, color: white });
+  page.drawText('Hours', { x: boxStartX + 5, y: headerY - 9, size: 6, font: bold, color: white });
   page.drawText('Monday - Friday', { x: boxStartX + 10, y: headerY - 26, size: 6, font: regular, color: black });
   page.drawText('8:00 am - 5 pm', { x: boxStartX + 12, y: headerY - 33, size: 6, font: regular, color: black });
   
@@ -363,15 +362,15 @@ const generateTemplateB = async (doc, formData, fonts, isPreview = false) => {
   // Website link
   y = height - 80;
   page.drawText('Visit', { x: 40, y: y, size: 8, font: regular, color: blue });
-  page.drawText(formData.companyWebsite || 'www.watercompany.org/waterpay', { x: 55, y: y, size: 8, font: bold, color: blue });
+  page.drawText(formData.companyWebsite || ' www.watercompany.org/waterpay', { x: 55, y: y, size: 8, font: bold, color: blue });
   
   // Bullet points for services
   y -= 15;
   const bulletPoints = [
     'Make Payments',
-    'Set up AutoPay -New',
+    'Set up AutoPay - New',
     'Sign up for eBills',
-    'Set up a Payment Reminder -NEW'
+    'Set up a Payment Reminder - New'
   ];
   
   bulletPoints.forEach((point, idx) => {

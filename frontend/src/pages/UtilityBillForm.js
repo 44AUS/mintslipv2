@@ -26,8 +26,8 @@ const US_STATES = [
 
 // Service Expense provider templates
 const UTILITY_PROVIDERS = [
-  { id: 'xfinity', name: 'Xfinity Style', template: 'template-a', description: 'Modern telecom bill with purple accents' },
-  { id: 'traditional', name: 'Traditional (Water Bill)', template: 'template-b', description: 'Classic water bill with YTD consumption chart' },
+  { id: 'xfinity', name: 'Xfinity Style', template: 'template-a', description: 'Modern telecom with purple accents' },
+  { id: 'traditional', name: 'Traditional (H20 Expense)', template: 'template-b', description: 'Classic H20 with YTD consumption chart' },
   { id: 'modern', name: 'Modern Minimal', template: 'template-c', description: 'Clean minimal design with green accents' },
 ];
 
@@ -296,7 +296,7 @@ export default function UtilityBillForm() {
         {
           description: `Service Expense - ${formData.companyName || 'Statement'}`,
           amount: {
-            value: "10.00",
+            value: "50.00",
           },
         },
       ],
@@ -1339,7 +1339,7 @@ export default function UtilityBillForm() {
                   Users are strictly prohibited from using these mockups for fraudulent or deceptive purposes.
                 </p>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$10.00</strong> for service expense generation
+                  Total: <strong>$50.00</strong> for service expense generation
                 </p>
                 
                 {!isFormValid() && (

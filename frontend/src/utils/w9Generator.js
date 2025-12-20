@@ -14,45 +14,28 @@ const getTemplateUrl = (taxYear) => {
 // Page height: 792, y from bottom
 // Analyzed from actual templates - 2021, 2022, 2023 are identical
 const FIELD_POSITIONS_2018 = {
-  // Line 1 - Name (y_top ~84, data entry area ~95)
-  name: { x: 65, y: 695, fontSize: 11 },
-  
-  // Line 2 - Business name (y_top ~108, data entry ~120)
-  businessName: { x: 65, y: 670, fontSize: 10 },
-  
-  // Line 3 - Federal tax classification checkboxes (y_top ~159-168)
-  individual: { x: 68, y: 630, fontSize: 10 },
-  ccorp: { x: 180, y: 630, fontSize: 10 },
-  scorp: { x: 240, y: 630, fontSize: 10 },
-  partnership: { x: 300, y: 630, fontSize: 10 },
-  trust: { x: 365, y: 630, fontSize: 10 },
-  llc: { x: 68, y: 606, fontSize: 10 },
+  name: { x: 65, y: 690, fontSize: 11 },
+  businessName: { x: 65, y: 665, fontSize: 10 },
+  individual: { x: 65, y: 625, fontSize: 10 },
+  ccorp: { x: 180, y: 625, fontSize: 10 },
+  scorp: { x: 252, y: 625, fontSize: 10 },
+  partnership: { x: 324, y: 625, fontSize: 10 },
+  trust: { x: 396, y: 625, fontSize: 10 },
+  llc: { x: 65, y: 600, fontSize: 10 },
   llcCode: { x: 340, y: 606, fontSize: 10 },
-  other: { x: 68, y: 580, fontSize: 10 },
+  other: { x: 65, y: 554, fontSize: 10 },
   otherText: { x: 140, y: 580, fontSize: 9 },
-  
-  // Exemptions (Line 4) - right side (y_top ~170, ~195)
-  exemptPayeeCode: { x: 555, y: 620, fontSize: 9 },
-  fatcaCode: { x: 555, y: 594, fontSize: 9 },
-  
-  // Address (Line 5) - y_top ~240, data entry ~252
-  address: { x: 65, y: 538, fontSize: 10 },
-  
-  // City, State, ZIP (Line 6) - y_top ~264, data entry ~276
-  cityStateZip: { x: 65, y: 514, fontSize: 10 },
-  
-  // Account numbers (Line 7) - y_top ~288, data entry ~300
-  accountNumbers: { x: 65, y: 490, fontSize: 9 },
-  
-  // Part I - TIN (Social Security - y_top ~324, EIN - y_top ~372)
-  ssn1: { x: 440, y: 455, fontSize: 12 },
-  ssn2: { x: 490, y: 455, fontSize: 12 },
-  ssn3: { x: 550, y: 455, fontSize: 12 },
-  ein1: { x: 440, y: 408, fontSize: 12 },
-  ein2: { x: 520, y: 408, fontSize: 12 },
-  
-  // Part II - Signature Date (y_top ~553)
-  signatureDate: { x: 400, y: 236, fontSize: 10 }
+  exemptPayeeCode: { x: 555, y: 617, fontSize: 9 },
+  fatcaCode: { x: 555, y: 580, fontSize: 9 },
+  address: { x: 65, y: 532, fontSize: 10 },
+  cityStateZip: { x: 65, y: 508, fontSize: 10 },
+  accountNumbers: { x: 65, y: 485, fontSize: 9 },
+  ssn1: { x: 430, y: 440, fontSize: 12 },
+  ssn2: { x: 480, y: 440, fontSize: 12 },
+  ssn3: { x: 540, y: 440, fontSize: 12 },
+  ein1: { x: 430, y: 390, fontSize: 12 },
+  ein2: { x: 510, y: 390, fontSize: 12 },
+  signatureDate: { x: 415, y: 236, fontSize: 10 }
 };
 
 // Field positions for W-9 form (2024 revision)

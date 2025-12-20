@@ -61,18 +61,18 @@ const getTemplateUrl = (taxYear) => {
 // Form is in top half of page, labels analyzed with y_top (from top), converted to y (from bottom)
 const FIELD_POSITIONS = {
   // Box a - Employee SSN (y_top ~37-50)
-  employeeSSN: { x: 175, y: 742, fontSize: 11 },
+  employeeSSN: { x: 175, y: 736, fontSize: 11 },
   
   // Box b - Employer EIN (y_top ~61-75)
-  employerEIN: { x: 55, y: 715, fontSize: 10 },
+  employerEIN: { x: 55, y: 712, fontSize: 10 },
   
   // Box c - Employer info (y_top ~85-150)
-  employerName: { x: 55, y: 695, fontSize: 9 },
-  employerAddress: { x: 55, y: 680, fontSize: 9 },
+  employerName: { x: 55, y: 685, fontSize: 9 },
+  employerAddress: { x: 55, y: 675, fontSize: 9 },
   employerCityStateZip: { x: 55, y: 665, fontSize: 9 },
   
   // Box d - Control number (y_top ~157-170)
-  controlNumber: { x: 55, y: 622, fontSize: 9 },
+  controlNumber: { x: 55, y: 617, fontSize: 9 },
   
   // Box e - Employee name (y_top ~181-200)
   employeeFirstName: { x: 55, y: 592, fontSize: 10 },
@@ -83,28 +83,17 @@ const FIELD_POSITIONS = {
   employeeCityStateZip: { x: 55, y: 515, fontSize: 9 },
   
   // Right side - Wage/Tax boxes
-  // Box 1 & 2 (y_top ~61-75)
-  box1: { x: 385, y: 715, fontSize: 10, align: 'right', width: 90 },
-  box2: { x: 515, y: 715, fontSize: 10, align: 'right', width: 85 },
-  
-  // Box 3 & 4 (y_top ~85-100)
-  box3: { x: 385, y: 690, fontSize: 10, align: 'right', width: 90 },
-  box4: { x: 515, y: 690, fontSize: 10, align: 'right', width: 85 },
-  
-  // Box 5 & 6 (y_top ~109-125)
-  box5: { x: 385, y: 665, fontSize: 10, align: 'right', width: 90 },
-  box6: { x: 515, y: 665, fontSize: 10, align: 'right', width: 85 },
-  
-  // Box 7 & 8 (y_top ~133-150)
-  box7: { x: 385, y: 640, fontSize: 10, align: 'right', width: 90 },
-  box8: { x: 515, y: 640, fontSize: 10, align: 'right', width: 85 },
-  
-  // Box 9 & 10 (y_top ~157-173)
-  box9: { x: 385, y: 618, fontSize: 10 },
-  box10: { x: 515, y: 618, fontSize: 10, align: 'right', width: 85 },
-  
-  // Box 11 (y_top ~181-200)
-  box11: { x: 385, y: 592, fontSize: 10, align: 'right', width: 90 },
+  box1: { x: 360, y: 713, fontSize: 10, align: 'right', width: 90 },
+  box2: { x: 490, y: 713, fontSize: 10, align: 'right', width: 85 },
+  box3: { x: 360, y: 690, fontSize: 10, align: 'right', width: 90 },
+  box4: { x: 490, y: 690, fontSize: 10, align: 'right', width: 85 },
+  box5: { x: 360, y: 665, fontSize: 10, align: 'right', width: 90 },
+  box6: { x: 490, y: 665, fontSize: 10, align: 'right', width: 85 },
+  box7: { x: 360, y: 640, fontSize: 10, align: 'right', width: 90 },
+  box8: { x: 490, y: 640, fontSize: 10, align: 'right', width: 85 },
+  box9: { x: 360, y: 618, fontSize: 10 },
+  box10: { x: 490, y: 618, fontSize: 10, align: 'right', width: 85 },
+  box11: { x: 360, y: 592, fontSize: 10, align: 'right', width: 90 },
   
   // Box 12 codes and amounts (y_top ~181-275)
   box12aCode: { x: 470, y: 592, fontSize: 9 },
@@ -117,21 +106,21 @@ const FIELD_POSITIONS = {
   box12dAmount: { x: 515, y: 520, fontSize: 9, align: 'right', width: 75 },
   
   // Box 13 checkboxes (y_top ~205-216)
-  box13Statutory: { x: 358, y: 575, fontSize: 10 },
-  box13Retirement: { x: 398, y: 575, fontSize: 10 },
-  box13ThirdParty: { x: 438, y: 575, fontSize: 10 },
+  box13Statutory: { x: 350, y: 568, fontSize: 10 },
+  box13Retirement: { x: 385, y: 568, fontSize: 10 },
+  box13ThirdParty: { x: 422, y: 568, fontSize: 10 },
   
   // Box 14 - Other (y_top ~229-240)
-  box14: { x: 345, y: 550, fontSize: 8 },
+  box14: { x: 345, y: 540, fontSize: 8 },
   
   // State/Local section (Boxes 15-20) - (y_top ~289-310)
-  state: { x: 55, y: 494, fontSize: 9 },
-  employerStateId: { x: 85, y: 494, fontSize: 8 },
-  box16: { x: 210, y: 494, fontSize: 9, align: 'right', width: 70 },
-  box17: { x: 295, y: 494, fontSize: 9, align: 'right', width: 60 },
-  box18: { x: 375, y: 494, fontSize: 9, align: 'right', width: 70 },
-  box19: { x: 460, y: 494, fontSize: 9, align: 'right', width: 60 },
-  box20: { x: 540, y: 494, fontSize: 8 },
+  state: { x: 50, y: 485, fontSize: 9 },
+  employerStateId: { x: 85, y: 485, fontSize: 8 },
+  box16: { x: 210, y: 485, fontSize: 9, align: 'right', width: 70 },
+  box17: { x: 295, y: 485, fontSize: 9, align: 'right', width: 60 },
+  box18: { x: 375, y: 485, fontSize: 9, align: 'right', width: 70 },
+  box19: { x: 460, y: 485, fontSize: 9, align: 'right', width: 60 },
+  box20: { x: 540, y: 485, fontSize: 8 },
 };
 
 // Generate W-2 by filling in PDF template

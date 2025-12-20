@@ -36,17 +36,18 @@ const getPayPalClientId = () => {
                           hostname.includes('preview.emergentagent.com');
     
     if (isDevelopment) {
-      console.log('PayPal: Using Sandbox mode');
+      console.log('PayPal: Using Sandbox mode for', hostname);
       return PAYPAL_SANDBOX_CLIENT_ID;
     }
   }
   
-  // Production - use Live Client ID
+  // Production - use Live Client ID (ignore env variable in production)
   console.log('PayPal: Using Live mode');
   return PAYPAL_LIVE_CLIENT_ID;
 };
 
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || getPayPalClientId();
+// Always use the dynamic function - don't rely on env variable for PayPal
+const PAYPAL_CLIENT_ID = getPayPalClientId();
 
 function App() {
   return (

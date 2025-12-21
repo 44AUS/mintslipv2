@@ -1,9 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
-// Import Yellowtail font
-import YellowtailFont from "../fonts/Yellowtail-Regular.ttf";
-
 // Helper to convert hex color to RGB
 const hexToRgb = (hex) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);

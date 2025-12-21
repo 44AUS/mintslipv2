@@ -87,6 +87,10 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
   try {
     // Create new PDF document
     const pdfDoc = await PDFDocument.create();
+    
+    // Register fontkit for custom font support
+    pdfDoc.registerFontkit(fontkit);
+    
     const page = pdfDoc.addPage([612, 792]); // Letter size
     const { width, height } = page.getSize();
     
@@ -95,8 +99,16 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
     
-    // For signature font, we'll use ZapfDingbats as a cursive alternative
-    // Since pdf-lib doesn't have true cursive, we'll use italic for generated signatures
+    // Load and embed Yellowtail font for signatures
+    let signatureFont;
+    try {
+      const fontResponse = await fetch(YellowtailFont);
+      const fontBytes = await fontResponse.arrayBuffer();
+      signatureFont = await pdfDoc.embedFont(fontBytes);
+    } catch (fontError) {
+      console.warn('Could not load Yellowtail font, falling back to italic:', fontError);
+      signatureFont = italicFont;
+    }
     
     // Get template colors
     const colors = getTemplateColors(formData.template, formData.primaryColor, formData.accentColor);

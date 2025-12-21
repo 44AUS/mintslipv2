@@ -80,6 +80,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

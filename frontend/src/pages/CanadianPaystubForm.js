@@ -13,16 +13,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { generateAndDownloadCanadianPaystub } from "@/utils/paystubGenerator";
-import { generateCanadianPreviewPDF } from "@/utils/paystubPreviewGenerator";
-import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
-import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
+import { generateCanadianPreviewPDF } from "@/utils/canadianPaystubPreviewGenerator";
+import { CANADIAN_PROVINCES, calculateCanadianTaxes, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
 import { Upload, X, Search, Building2 } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
-  formatZipCode, validateZipCode,
-  formatSSNLast4, validateSSNLast4,
   formatBankLast4, validateBankLast4
 } from "@/utils/validation";
 import GustoLogo from '../assests/gustoLogo.png';

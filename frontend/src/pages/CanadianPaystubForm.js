@@ -902,7 +902,7 @@ export default function CanadianPaystubForm() {
                 {/* Summary Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    <MapleLeaf className="w-5 h-5 text-red-600" />
+                    <span>🍁</span>
                     Pay Stub Summary
                   </h3>
                   

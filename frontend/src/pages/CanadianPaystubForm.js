@@ -730,14 +730,14 @@ export default function CanadianPaystubForm() {
   return (
     <div className="min-h-screen bg-slate-50 relative">
       <Helmet>
-        <title>Pay Stub Generator | MintSlip - Create Professional Paystubs Instantly</title>
+        <title>Canadian Pay Stub Generator | MintSlip - Create Professional Paystubs Instantly</title>
         <meta name="description" content="Generate professional pay stubs with accurate tax calculations. Supports W-2 employees and 1099 contractors. Multiple templates. Instant PDF download." />
         <meta name="keywords" content="paystub generator, pay stub maker, employee paycheck, contractor payment, tax withholding calculator" />
-        <meta property="og:title" content="Pay Stub Generator | MintSlip" />
+        <meta property="og:title" content="Canadian Pay Stub Generator | MintSlip" />
         <meta property="og:description" content="Create accurate pay stubs with automatic tax calculations. Instant download, no sign-up required." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Pay Stub Generator | MintSlip" />
+        <meta name="twitter:title" content="Canadian Pay Stub Generator | MintSlip" />
         <meta name="twitter:description" content="Professional paystub generation with accurate tax calculations." />
       </Helmet>
       

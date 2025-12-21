@@ -19,12 +19,22 @@ import ChimeLogo from '../assests/chime.png';
 import BoA from '../assests/boa2.png';
 import ChaseLogo from '../assests/chase-logo-black-transparent.png';
 
+// Check if running on localhost for development features
+const isLocalhost = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
 // Accounting Mockup templates - user will supply logos
 // Logo placeholders - replace these paths with actual logo files when provided
+// Template B (Bank of America) and Template C (Chase) are only available on localhost during development
 const BANKS_DATA = [
   { id: 'chime', name: 'Chime', logo: ChimeLogo, template: 'template-a' },
-  { id: 'bank-of-america', name: 'Bank of America', logo: BoA, template: 'template-b' },
-  { id: 'chase', name: 'Chase', logo: ChaseLogo, template: 'template-c' },
+  // Template B and C are hidden in production - uncomment below lines when ready to go live:
+  // { id: 'bank-of-america', name: 'Bank of America', logo: BoA, template: 'template-b' },
+  // { id: 'chase', name: 'Chase', logo: ChaseLogo, template: 'template-c' },
+  ...(isLocalhost ? [
+    { id: 'bank-of-america', name: 'Bank of America', logo: BoA, template: 'template-b' },
+    { id: 'chase', name: 'Chase', logo: ChaseLogo, template: 'template-c' },
+  ] : []),
 ];
 
 export default function BankStatementForm() {

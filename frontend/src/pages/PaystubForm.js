@@ -29,6 +29,15 @@ import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
 
+// Canadian Flag SVG component
+const CanadianFlagIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-8 h-8 rounded-full">
+    <circle cx="256" cy="256" r="256" fill="#f0f0f0"/>
+    <path d="M512 256c0-101.5-59.1-189.2-144.7-230.5v461C452.9 445.2 512 357.5 512 256zM0 256c0 101.5 59.1 189.2 144.7 230.5v-461C59.1 66.8 0 154.5 0 256z" fill="#d80027"/>
+    <path d="M303.5 294.9l47-15.7-15.7-10.4 15.7-26.2-31.3 5.2-5.2-36.5-26.2 31.3-31.3-20.9v26.2l-36.5-5.2 20.9 26.1-20.9 15.7 47 15.7-10.4 36.5h26.1V352h20.9v-20.9h26.1l-26.1-36.2z" fill="#d80027"/>
+  </svg>
+);
+
 // Payroll company templates with logos
 const PAYROLL_COMPANIES = [
   { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
@@ -38,6 +47,10 @@ const PAYROLL_COMPANIES = [
 
 export default function PaystubForm() {
   const navigate = useNavigate();
+  
+  // Location detection state
+  const [userCountry, setUserCountry] = useState(null);
+  const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
   const [pdfPreview, setPdfPreview] = useState(null);

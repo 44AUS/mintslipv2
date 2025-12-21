@@ -96,20 +96,8 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
     
-    // Load and embed Yellowtail font for signatures
-    let signatureFont = italicFont; // Default fallback
-    try {
-      const fontUrl = window.location.origin + '/fonts/Yellowtail-Regular.ttf';
-      const fontResponse = await fetch(fontUrl);
-      if (fontResponse.ok) {
-        const fontBytes = await fontResponse.arrayBuffer();
-        signatureFont = await pdfDoc.embedFont(new Uint8Array(fontBytes));
-      } else {
-        console.warn('Could not fetch Yellowtail font, using fallback');
-      }
-    } catch (fontError) {
-      console.warn('Could not load Yellowtail font, falling back to italic:', fontError);
-    }
+    // Use italic font for signatures (Yellowtail requires server-side font file which may not be available)
+    const signatureFont = italicFont;
     
     // Get template colors
     const colors = getTemplateColors(formData.template, formData.primaryColor, formData.accentColor);

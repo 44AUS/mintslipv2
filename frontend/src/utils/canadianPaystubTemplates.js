@@ -1178,9 +1178,22 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   // ========== 9. TAX WITHHOLDING INFORMATION SECTION ==========
   const withholdingCols = ["", "Federal", "Provincial"];
   const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
+  
+  // Map marital status code to display text
+  const maritalStatusMap = {
+    'single': 'Single (Never Married)',
+    'married': 'Married',
+    'common_law': 'Living Common-Law',
+    'separated': 'Separated',
+    'divorced': 'Divorced',
+    'widowed': 'Widowed'
+  };
+  const maritalStatusDisplay = maritalStatusMap[formData.maritalStatus] || 'Single (Never Married)';
   const federalAllowances = formData.federalAllowances || "0";
   const provincialAllowances = formData.provincialAllowances || "0";
+  
   const withholdingRows = [
+    ["Marital Status", maritalStatusDisplay, ""],
     ["Allowances", federalAllowances, provincialAllowances],
   ];
   drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1 });

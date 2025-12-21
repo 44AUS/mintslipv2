@@ -36,7 +36,7 @@ const PAYROLL_COMPANIES = [
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
 ];
 
-export default function PaystubForm() {
+export default function CanadianPaystubForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");

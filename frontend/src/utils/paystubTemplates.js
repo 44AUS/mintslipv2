@@ -1108,6 +1108,12 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   ];
   drawWorkdayTable(null, sumCols, sumWidths, sumRows, { showTitle: false, rightAlignFrom: 1 });
 
+  // Add black border line above Earning section
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.75);
+  doc.line(m, y, pageWidth - m, y);
+  y += 2;
+
   // ========== 3. EARNING SECTION ==========
   const earnCols = ["Description", "Dates", "Hours", "Rate", "Amount", "YTD"];
   const earnWidths = [usableWidth * 0.25, usableWidth * 0.25, usableWidth * 0.10, usableWidth * 0.12, usableWidth * 0.14, usableWidth * 0.14];

@@ -873,10 +873,10 @@ export default function PaystubForm() {
               <div className="space-y-4">
                 <div>
                   <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    Company Logo *
+                    Company Logo (optional)
                   </h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    Upload company logo. PNG format only.
+                    Upload company logo. PNG or JPG, max 2MB. Image will be resized automatically.
                   </p>
                 </div>
                 

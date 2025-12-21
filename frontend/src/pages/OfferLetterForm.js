@@ -1271,10 +1271,14 @@ export default function OfferLetterForm() {
                   </div>
                 ) : (
                   <PayPalButtons
-                    style={{ layout: "vertical", color: "gold", shape: "rect" }}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
                     createOrder={createOrder}
                     onApprove={onApprove}
                     onError={onError}
+                    onCancel={() => {
+                      toast.info("Payment cancelled");
+                    }}
+                    forceReRender={[formData.candidateName, formData.companyName]}
                   />
                 )}
                 

@@ -935,13 +935,13 @@ export default function PaystubForm() {
                       <input
                         ref={logoInputRef}
                         type="file"
-                        accept=".png,image/png"
+                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                         onChange={handleLogoSelect}
                         className="hidden"
                         data-testid="logo-file-input"
                       />
                       <p className="text-xs text-slate-400 mt-3">
-                        PNG format only
+                        PNG or JPG, max 2MB
                       </p>
                     </div>
                   )}

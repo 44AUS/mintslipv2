@@ -1428,6 +1428,39 @@ export default function Home() {
               </button>
             </div>
 
+            {/* Canadian Pay Stub Pricing */}
+            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                NEW
+              </div>
+              <MapPin className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Canadian Pay Stub</h4>
+              <div className="mb-4">
+                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+                <span className="text-slate-500 ml-2">/ stub</span>
+              </div>
+              <ul className="text-left space-y-2 mb-6">
+                <li className="flex items-center gap-2 text-slate-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>CPP/QPP & EI Calculations</span>
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>All Provinces & Territories</span>
+                </li>
+                <li className="flex items-center gap-2 text-slate-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Provincial Tax Brackets</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate("/canadian-paystub-generator")}
+                className="w-full py-3 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700 transition-colors"
+              >
+                Generate Now
+              </button>
+            </div>
+
             {/* accounting mockups Pricing */}
             <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">

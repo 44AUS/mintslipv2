@@ -268,7 +268,7 @@ export function calculateProvincialTax(annualizedIncome, provinceCode) {
 }
 
 // Calculate all taxes for a Canadian pay period
-export function calculateCanadianTaxes(grossPay, payFrequency, provinceCode, ytdEarnings = 0, federalAllowances = 0, provincialAllowances = 0) {
+export function calculateCanadianTaxes(grossPay, payFrequency, provinceCode, ytdEarnings = 0, federalAllowances = 0, provincialAllowances = 0, maritalStatus = 'single') {
   const isQuebec = provinceCode === 'QC';
   const periodsPerYear = payFrequency === 'weekly' ? 52 : 26;
   const annualizedIncome = grossPay * periodsPerYear;
@@ -282,17 +282,34 @@ export function calculateCanadianTaxes(grossPay, payFrequency, provinceCode, ytd
   // QPIP (Quebec only)
   const qpip = isQuebec ? calculateQPIP(grossPay, payFrequency, ytdEarnings) : 0;
   
+  // Marital Status Tax Credit Adjustment
+  // In Canada, married/common-law individuals may claim spousal amount if spouse has low/no income
+  // For simplicity: married/common-law get additional $2,000 credit (partial spousal amount)
+  // Single, separated, divorced, widowed - may claim eligible dependant amount if supporting dependant
+  let maritalStatusCredit = 0;
+  if (maritalStatus === 'married' || maritalStatus === 'common_law') {
+    // Spousal amount credit - assuming spouse has some income, partial credit of ~$2,000
+    maritalStatusCredit = 2000;
+  } else if (maritalStatus === 'separated' || maritalStatus === 'divorced' || maritalStatus === 'widowed') {
+    // Eligible dependant amount - if supporting a dependant, similar to spousal amount
+    // For simplicity, give a smaller credit of ~$1,000 (partial eligible dependant)
+    maritalStatusCredit = 1000;
+  }
+  // Single (never married) - basic personal amount only, no additional credit
+  
   // Federal Tax (per period)
   // Federal allowances reduce taxable income - each allowance is worth approximately $2,500 in 2024
   const federalAllowanceCredit = (parseFloat(federalAllowances) || 0) * 2500;
-  const adjustedFederalIncome = Math.max(0, annualizedIncome - federalAllowanceCredit);
+  const adjustedFederalIncome = Math.max(0, annualizedIncome - federalAllowanceCredit - maritalStatusCredit);
   const annualFederalTax = calculateFederalTax(adjustedFederalIncome);
   const federalTax = annualFederalTax / periodsPerYear;
   
   // Provincial Tax (per period)
   // Provincial allowances reduce taxable income - each allowance is worth approximately $2,000 in 2024
   const provincialAllowanceCredit = (parseFloat(provincialAllowances) || 0) * 2000;
-  const adjustedProvincialIncome = Math.max(0, annualizedIncome - provincialAllowanceCredit);
+  // Provincial marital credit is typically smaller, ~60% of federal
+  const provincialMaritalCredit = maritalStatusCredit * 0.6;
+  const adjustedProvincialIncome = Math.max(0, annualizedIncome - provincialAllowanceCredit - provincialMaritalCredit);
   const annualProvincialTax = calculateProvincialTax(adjustedProvincialIncome, provinceCode);
   const provincialTax = annualProvincialTax / periodsPerYear;
   

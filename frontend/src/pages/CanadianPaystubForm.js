@@ -112,6 +112,7 @@ export default function CanadianPaystubForm() {
     locDept: "", // Loc/Dept for ADP template
     checkNumber: "", // Check Number for ADP template
     // Template C (Workday) Tax Withholding fields - for calculation
+    maritalStatus: "single", // single, married, common_law, separated, divorced, widowed
     federalAllowances: "0",
     provincialAllowances: "0",
   });

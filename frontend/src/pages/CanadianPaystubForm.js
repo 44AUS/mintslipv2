@@ -145,6 +145,23 @@ export default function CanadianPaystubForm() {
     { label: "Other", value: "other" },
   ];
 
+  // Detect user's location on mount
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.country_code === 'US') {
+          setUserCountry('US');
+          setShowLocationAlert(true);
+        }
+      } catch (error) {
+        console.error('Location detection failed:', error);
+      }
+    };
+    detectLocation();
+  }, []);
+
   // Add a new deduction
   const addDeduction = () => {
     setDeductions([...deductions, { 

@@ -746,11 +746,12 @@ export default function PaystubForm() {
       await actions.order.capture();
       toast.success("Payment successful! Generating your document...");
       
-      // Prepare formData with deductions, contributions, and company logo
+      // Prepare formData with deductions, contributions, absence plans, and company logo
       const fullFormData = {
         ...formData,
         deductions: deductions,
         contributions: contributions,
+        absencePlans: absencePlans, // Include absence plans for Template C
         companyLogo: companyLogo, // Include uploaded logo for PDF
         logoDataUrl: logoPreview, // Pass logo data URL for Workday template
       };

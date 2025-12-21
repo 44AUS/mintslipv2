@@ -993,7 +993,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     let currentX = m;
     doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(0, 0, 0);
     columns.forEach((col, i) => {
       if (i >= rightAlignFrom) {
         doc.text(col, currentX + colWidths[i] - 3, y + 8, { align: 'right' });

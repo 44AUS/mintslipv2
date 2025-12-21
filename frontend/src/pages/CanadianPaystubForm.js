@@ -1816,32 +1816,30 @@ export default function CanadianPaystubForm() {
                       {/* Federal Income Tax */}
                       <div className="flex justify-between">
                         <span className="text-slate-700">
-                          Federal Income Tax{formData.federalFilingStatus ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}:
+                          Federal Income Tax:
                         </span>
                         <span>${formatCurrency(preview.federalTax)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-700">Social Security (6.2%):</span>
-                        <span>${formatCurrency(preview.ssTax)}</span>
+                        <span className="text-slate-700">{preview.cppLabel || 'CPP'} ({preview.isQuebec ? '6.40%' : '5.95%'}):</span>
+                        <span>${formatCurrency(preview.cpp)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-700">Medicare (1.45%):</span>
-                        <span>${formatCurrency(preview.medTax)}</span>
+                        <span className="text-slate-700">EI ({preview.isQuebec ? '1.32%' : '1.66%'}):</span>
+                        <span>${formatCurrency(preview.ei)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-700">
-                          {formData.province ? `${formData.province} State Tax${parseInt(formData.provinceAllowances) > 0 ? ` (${formData.provinceAllowances} allow.)` : ''}:` : 'State Tax:'}
-                        </span>
-                        <span>${formatCurrency(preview.stateTax)}</span>
-                      </div>
-                      {formData.includeLocalTax && preview.localTaxRate > 0 && (
+                      {preview.isQuebec && preview.qpip > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-slate-700">
-                            {formData.city ? `${formData.city} Local Tax (${(preview.localTaxRate * 100).toFixed(2)}%):` : 'Local Tax:'}
-                          </span>
-                          <span>${formatCurrency(preview.localTax)}</span>
+                          <span className="text-slate-700">QPIP (0.494%):</span>
+                          <span>${formatCurrency(preview.qpip)}</span>
                         </div>
                       )}
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">
+                          Provincial Tax ({formData.province || 'ON'}):
+                        </span>
+                        <span>${formatCurrency(preview.provincialTax)}</span>
+                      </div>
                       <div className="border-t border-green-300 pt-2 mt-2">
                         <div className="flex justify-between text-red-700">
                           <span className="font-bold">Total Taxes:</span>

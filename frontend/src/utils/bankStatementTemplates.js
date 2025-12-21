@@ -28,6 +28,8 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   } = data;
   
   let y = margin + 20;
+  const maxLogoWidth = 65;  // Maximum width for logo
+  const maxLogoHeight = 20; // Maximum height for logo
   
   // --- Header Section ---
   doc.setFontSize(28);
@@ -36,8 +38,29 @@ export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) 
   let logoAdded = false;
   if (bankLogo && typeof bankLogo === 'string' && bankLogo.includes('base64')) {
     try {
-      // For base64 data URLs from uploaded files - jsPDF accepts full data URL
-      doc.addImage(bankLogo, margin, y - 18, 65, 20);
+      // Calculate proper dimensions to maintain aspect ratio
+      const img = new Image();
+      img.src = bankLogo;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          let renderWidth = maxLogoWidth;
+          let renderHeight = renderWidth * aspectRatio;
+          
+          // If height exceeds max, scale down by height instead
+          if (renderHeight > maxLogoHeight) {
+            renderHeight = maxLogoHeight;
+            renderWidth = renderHeight / aspectRatio;
+          }
+          
+          doc.addImage(bankLogo, margin, y - 18, renderWidth, renderHeight);
+          resolve();
+        };
+        img.onerror = () => {
+          console.error("Template A custom logo load error");
+          resolve();
+        };
+      });
       logoAdded = true;
     } catch (e) {
       console.error("Template A custom logo error:", e);

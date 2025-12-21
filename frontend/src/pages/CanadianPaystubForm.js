@@ -749,7 +749,7 @@ export default function CanadianPaystubForm() {
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-            Instant Paystub Generator
+            Canadian Paystub Generator 🍁
           </h1>
           <p className="text-slate-600">Generate professional pay stubs with accurate tax calculations, direct deposit information, and customizable pay periods.</p>
         </div>

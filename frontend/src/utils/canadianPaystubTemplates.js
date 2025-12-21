@@ -176,14 +176,14 @@ export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, rightStartX + 8, boxTop + 52);
   doc.text(formData.companyPhone || "", rightStartX + 8, boxTop + 64);
   doc.text(formData.name || "", rightStartX + boxWidth + 18, boxTop + 28);
-  doc.text(isContractor ? `EIN/SSN: ***-**-${formData.ssn || "0000"}` : `XXX-XX-${formData.ssn || "0000"}`, rightStartX + boxWidth + 18, boxTop + 40);
+  doc.text(isContractor ? `SIN: ***-**-${formData.sin || "0000"}` : `***-***-${formData.sin || "0000"}`, rightStartX + boxWidth + 18, boxTop + 40);
   doc.text(formData.address || "", rightStartX + boxWidth + 18, boxTop + 52);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightStartX + boxWidth + 18, boxTop + 64);
+  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, rightStartX + boxWidth + 18, boxTop + 64);
 
   y = Math.max(leftY, boxTop + boxHeight) + 20;
 
   // ========== FILING STATUS SECTION (Optional) ==========
-  if (!isContractor && (formData.federalFilingStatus || parseInt(formData.stateAllowances) > 0)) {
+  if (!isContractor && (formData.federalFilingStatus || parseInt(formData.provinceAllowances) > 0)) {
     doc.setFillColor(248, 248, 248);
     doc.rect(left, y, usableWidth, 22, "F");
     doc.setFont("helvetica", "bold");
@@ -198,8 +198,8 @@ export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight
       doc.text(`Federal: ${formatFilingStatus(formData.federalFilingStatus)}`, filingX, filingY);
       filingX += 140;
     }
-    if (parseInt(formData.stateAllowances) > 0) {
-      doc.text(`State Allowances: ${formData.stateAllowances}`, filingX, filingY);
+    if (parseInt(formData.provinceAllowances) > 0) {
+      doc.text(`State Allowances: ${formData.provinceAllowances}`, filingX, filingY);
     }
     y += 30;
   } else {
@@ -653,12 +653,12 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   
   y += 10;
   doc.text("Federal:", m + 10, y);
-  doc.text(formData.stateAllowances || "1", m + 40, y);
+  doc.text(formData.provinceAllowances || "1", m + 40, y);
   doc.text("Federal:", m + 140, y);
   
   y += 8;
   doc.text("State:", m + 10, y);
-  doc.text(formData.stateAllowances || "1", m + 40, y);
+  doc.text(formData.provinceAllowances || "1", m + 40, y);
   doc.text("State:", m + 140, y);
   
   y += 8;
@@ -667,9 +667,9 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.text("Local:", m + 140, y);
   
   y += 10;
-  doc.text("Social Security Number:", m, y);
-  const ssnDisplay = formData.ssn ? `***-**-${formData.ssn}` : "***-**-****";
-  doc.text(ssnDisplay, m + 85, y);
+  doc.text("Social Insurance Number:", m, y);
+  const sinDisplay = formData.sin ? `***-**-${formData.sin}` : "***-**-****";
+  doc.text(sinDisplay, m + 85, y);
 
   // ==================== EMPLOYEE NAME & ADDRESS (RIGHT) ====================
   doc.setFontSize(10);
@@ -678,7 +678,7 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.text(formData.address || "", rightCol, 92);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightCol, 102);
+  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, rightCol, 102);
 
   // ==================== EARNINGS TABLE ====================
   y = 135;
@@ -983,7 +983,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   doc.text(formData.name || "", pageWidth - m - 150, 25);
   doc.setFontSize(8); doc.setTextColor(60, 60, 60);
   doc.text(formData.address || "", pageWidth - m - 150, 37);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, pageWidth - m - 150, 47);
+  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, pageWidth - m - 150, 47);
   
   y += 15;
 

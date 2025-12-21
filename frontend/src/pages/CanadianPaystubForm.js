@@ -1549,11 +1549,11 @@ export default function CanadianPaystubForm() {
                     </div>
                     
                     {/* Tax Calculation Info */}
-                    {formData.federalFilingStatus && (
+                    {formData.province && (
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
                         <p className="text-sm text-blue-800">
-                          <strong>Federal Tax:</strong> Calculated using 2024 IRS tax brackets based on your filing status.
-                          {parseInt(formData.provinceAllowances) > 0 && ` State allowances reduce taxable income by ~$2,500/year each.`}
+                          <strong>Canadian Taxes:</strong> Calculated using 2024 CRA tax brackets for {formData.province === 'QC' ? 'Quebec' : 'your province'}.
+                          {formData.province === 'QC' && ` Includes QPP, EI (reduced), and QPIP deductions.`}
                         </p>
                       </div>
                     )}
@@ -1569,7 +1569,7 @@ export default function CanadianPaystubForm() {
                           Employee Deductions
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
-                          Pre-tax deductions like 401(k), health insurance, etc.
+                          Pre-tax deductions like RRSP, health insurance, etc.
                         </p>
                       </div>
                       <Button

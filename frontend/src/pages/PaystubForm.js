@@ -344,25 +344,77 @@ export default function PaystubForm() {
     }
   };
 
+  // Resize image to fit within target dimensions while maintaining aspect ratio
+  const resizeImageToFit = (base64Data, maxWidth, maxHeight) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        // Calculate scaling factor to fit within bounds
+        const scaleW = maxWidth / img.width;
+        const scaleH = maxHeight / img.height;
+        const scale = Math.min(scaleW, scaleH, 1); // Don't upscale if smaller
+        
+        const newWidth = Math.round(img.width * scale);
+        const newHeight = Math.round(img.height * scale);
+        
+        // Create canvas and resize
+        const canvas = document.createElement('canvas');
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // Enable smooth scaling
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Draw resized image
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+        
+        // Convert to PNG base64
+        const resizedBase64 = canvas.toDataURL('image/png');
+        resolve(resizedBase64);
+      };
+      img.onerror = () => reject(new Error('Failed to load image for resizing'));
+      img.src = base64Data;
+    });
+  };
+
   // Logo upload validation and processing
-  const validateAndProcessLogo = (file) => {
+  const validateAndProcessLogo = async (file) => {
     setLogoError("");
     
-    // Check file type
-    if (!file.type.includes('png')) {
-      setLogoError("Only PNG files are accepted");
+    // Check file type - accept PNG and JPG
+    if (!file.type.includes('png') && !file.type.includes('jpeg') && !file.type.includes('jpg')) {
+      setLogoError("Only PNG or JPG files are accepted");
+      return false;
+    }
+    
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError("File size must be under 2MB");
       return false;
     }
     
     return new Promise((resolve) => {
       const reader = new FileReader();
       
-      reader.onload = (e) => {
-        const base64 = e.target.result;
-        localStorage.setItem('paystubCompanyLogo', base64);
-        setCompanyLogo(base64);
-        setLogoPreview(base64);
-        resolve(true);
+      reader.onload = async (e) => {
+        try {
+          const base64 = e.target.result;
+          
+          // Resize to fit Gusto logo dimensions (120x35 in PDF units ≈ 360x105 pixels for good quality)
+          // Using 3x scale for crisp display
+          const resizedBase64 = await resizeImageToFit(base64, 360, 105);
+          
+          localStorage.setItem('paystubCompanyLogo', resizedBase64);
+          setCompanyLogo(resizedBase64);
+          setLogoPreview(resizedBase64);
+          resolve(true);
+        } catch (err) {
+          console.error('Error processing logo:', err);
+          setLogoError("Error processing image");
+          resolve(false);
+        }
       };
       reader.onerror = () => {
         setLogoError("Error reading file");

@@ -770,6 +770,38 @@ export default function CanadianPaystubForm() {
       
       <Header title="Generate Pay Stub" />
 
+      {/* US Location Alert Banner */}
+      {showLocationAlert && userCountry === 'US' && (
+        <div className="bg-slate-100 border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <USFlagIcon />
+                <div>
+                  <p className="font-semibold text-slate-800">We detected that you're currently in the US</p>
+                  <p className="text-slate-600 text-sm">Do you want to switch to our US pay stub form?</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLocationAlert(false)}
+                  className="border-green-800 text-green-800 hover:bg-green-50"
+                >
+                  No, I Need A Canadian Pay Stub
+                </Button>
+                <Button
+                  onClick={() => navigate('/paystub')}
+                  className="bg-green-800 hover:bg-green-900 text-white"
+                >
+                  Yes, Take Me To US Pay Stub
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 py-12">
 
         <div className="mb-8">

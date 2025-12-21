@@ -994,7 +994,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   
   // ========== HELPER: Draw Table with Dark Header ==========
   const drawWorkdayTable = (title, columns, colWidths, rowsData, options = {}) => {
-    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false } = options;
+    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false, rowDividers = false } = options;
     const startY = y;
     const titleHeight = showTitle && title ? 14 : 0;
     const headerHeight = 12;
@@ -1033,10 +1033,14 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     });
     y += headerHeight;
 
+    // Track row positions for dividers
+    const rowPositions = [];
+    
     // 3. Data Rows
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
     rowsData.forEach((row, rowIndex) => {
+      rowPositions.push(y);
       currentX = m;
 
       row.forEach((cell, colIndex) => {
@@ -1062,6 +1066,13 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       doc.line(m, startY + titleHeight, pageWidth - m, startY + titleHeight);
     }
     doc.line(m, startY + titleHeight + headerHeight, pageWidth - m, startY + titleHeight + headerHeight);
+
+    // Row dividers (horizontal lines between each row)
+    if (rowDividers && rowPositions.length > 1) {
+      for (let i = 1; i < rowPositions.length; i++) {
+        doc.line(m, rowPositions[i], pageWidth - m, rowPositions[i]);
+      }
+    }
 
     // Vertical column dividers
     let lineX = m;

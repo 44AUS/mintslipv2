@@ -268,7 +268,7 @@ export function calculateProvincialTax(annualizedIncome, provinceCode) {
 }
 
 // Calculate all taxes for a Canadian pay period
-export function calculateCanadianTaxes(grossPay, payFrequency, provinceCode, ytdEarnings = 0) {
+export function calculateCanadianTaxes(grossPay, payFrequency, provinceCode, ytdEarnings = 0, federalAllowances = 0, provincialAllowances = 0) {
   const isQuebec = provinceCode === 'QC';
   const periodsPerYear = payFrequency === 'weekly' ? 52 : 26;
   const annualizedIncome = grossPay * periodsPerYear;
@@ -283,11 +283,17 @@ export function calculateCanadianTaxes(grossPay, payFrequency, provinceCode, ytd
   const qpip = isQuebec ? calculateQPIP(grossPay, payFrequency, ytdEarnings) : 0;
   
   // Federal Tax (per period)
-  const annualFederalTax = calculateFederalTax(annualizedIncome);
+  // Federal allowances reduce taxable income - each allowance is worth approximately $2,500 in 2024
+  const federalAllowanceCredit = (parseFloat(federalAllowances) || 0) * 2500;
+  const adjustedFederalIncome = Math.max(0, annualizedIncome - federalAllowanceCredit);
+  const annualFederalTax = calculateFederalTax(adjustedFederalIncome);
   const federalTax = annualFederalTax / periodsPerYear;
   
   // Provincial Tax (per period)
-  const annualProvincialTax = calculateProvincialTax(annualizedIncome, provinceCode);
+  // Provincial allowances reduce taxable income - each allowance is worth approximately $2,000 in 2024
+  const provincialAllowanceCredit = (parseFloat(provincialAllowances) || 0) * 2000;
+  const adjustedProvincialIncome = Math.max(0, annualizedIncome - provincialAllowanceCredit);
+  const annualProvincialTax = calculateProvincialTax(adjustedProvincialIncome, provinceCode);
   const provincialTax = annualProvincialTax / periodsPerYear;
   
   // Total deductions

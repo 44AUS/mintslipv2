@@ -1096,7 +1096,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   // Add blank rows for spacing like the reference
   earnRows.push(["", "", "", "", "", ""]);
   earnRows.push(["Earning", "", "", "", fmt(grossPay), fmt(ytdGrossPay || grossPay)]);
-  drawWorkdayTable("Earning", earnCols, earnWidths, earnRows, { rightAlignFrom: 2, isBoldLastRow: true });
+  drawWorkdayTable("Earning", earnCols, earnWidths, earnRows, { rightAlignFrom: 2 });
 
   // ========== 4. EMPLOYEE TAXES SECTION ==========
   const taxCols = ["Description", "Amount", "YTD"];
@@ -1111,7 +1111,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     taxRows.splice(2, 0, ["QPIP", fmt(qpip), fmt(ytdQpip || qpip)]);
   }
   taxRows.push(["Employee Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
-  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, isBoldLastRow: true });
+  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, whiteHeader: true });
 
   // ========== 5. PRE TAX DEDUCTIONS SECTION ==========
   const dedCols = ["Description", "Amount", "YTD"];
@@ -1126,7 +1126,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     dedRows.push(["No Pre Tax Deductions", "0.00", "0.00"]);
   }
   dedRows.push(["Pre Tax Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
-  drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, isBoldLastRow: true });
+  drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, whiteHeader: true });
 
   // ========== 6. EMPLOYER PAID BENEFITS SECTION ==========
   const benefitCols = ["Description", "Amount", "YTD"];
@@ -1149,7 +1149,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   
   const totalBenefits = employerBenefitsData.length > 0 ? totalEmployerBenefits : 0;
   benefitRows.push(["Employer Paid Benefits", fmt(totalBenefits), fmt(totalBenefits * (ytdPayPeriods || 1))]);
-  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, isBoldLastRow: true });
+  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, whiteHeader: true });
 
   // ========== 7. TAXABLE WAGES SECTION ==========
   const taxableWagesCols = ["Description", "Amount", "YTD"];
@@ -1160,7 +1160,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     ["EI – Taxable Wages", fmt(grossPay), fmt(ytdGrossPay || grossPay)],
     ["Federal Withholding – Taxable Wages", fmt(federalTaxableWages), fmt((ytdGrossPay || grossPay) - (ytdDeductions || totalDeductions))]
   ];
-  drawWorkdayTable("Taxable Wages", taxableWagesCols, taxableWagesWidths, taxableWagesRows, { rightAlignFrom: 1 });
+  drawWorkdayTable("Taxable Wages", taxableWagesCols, taxableWagesWidths, taxableWagesRows, { rightAlignFrom: 1, whiteHeader: true });
 
   // ========== 8. ABSENCE PLANS SECTION (if data provided) ==========
   if (absencePlansData && absencePlansData.length > 0) {

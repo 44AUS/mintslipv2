@@ -40,7 +40,7 @@ const BANKS_DATA = [
 export default function BankStatementForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState("template-b");
+  const [selectedTemplate, setSelectedTemplate] = useState("template-a"); // Default to Chime which is always available
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);

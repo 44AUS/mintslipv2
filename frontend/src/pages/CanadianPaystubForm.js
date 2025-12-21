@@ -232,6 +232,51 @@ export default function CanadianPaystubForm() {
     ));
   };
 
+  // Employer Benefits types for Template C (Canadian)
+  const employerBenefitTypes = [
+    { label: "RRSP Employer Match", value: "rrsp_match" },
+    { label: "Employer Paid Life Insurance", value: "life_insurance" },
+    { label: "Employer Paid Health Insurance", value: "health_insurance" },
+    { label: "Employer Paid Dental", value: "dental" },
+    { label: "Employer Paid Vision", value: "vision" },
+    { label: "Employer Disability Insurance", value: "disability" },
+    { label: "Other Employer Benefit", value: "other" },
+  ];
+
+  // Add a new employer benefit (only for Template C)
+  const addEmployerBenefit = () => {
+    setEmployerBenefits([...employerBenefits, { 
+      id: Date.now(), 
+      type: "rrsp_match",
+      name: "RRSP Employer Match",
+      amount: "", 
+      isPercentage: false 
+    }]);
+  };
+
+  // Remove an employer benefit
+  const removeEmployerBenefit = (id) => {
+    setEmployerBenefits(employerBenefits.filter(b => b.id !== id));
+  };
+
+  // Update an employer benefit
+  const updateEmployerBenefit = (id, field, value) => {
+    setEmployerBenefits(employerBenefits.map(b => {
+      if (b.id === id) {
+        const updated = { ...b, [field]: value };
+        // Auto-set name based on type
+        if (field === 'type') {
+          const benefitType = employerBenefitTypes.find(t => t.value === value);
+          if (benefitType && value !== 'other') {
+            updated.name = benefitType.label;
+          }
+        }
+        return updated;
+      }
+      return b;
+    }));
+  };
+
   // Generate PDF preview when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -239,12 +284,13 @@ export default function CanadianPaystubForm() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
-          // Include deductions, contributions, absence plans, and logo in preview data
+          // Include deductions, contributions, absence plans, employer benefits, and logo in preview data
           const previewData = {
             ...formData,
             deductions: deductions,
             contributions: contributions,
             absencePlans: absencePlans, // Pass absence plans for Template C
+            employerBenefits: employerBenefits, // Pass employer benefits for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
           const previewUrl = await generateCanadianPreviewPDF(previewData, selectedTemplate);
@@ -257,7 +303,7 @@ export default function CanadianPaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate, deductions, contributions, absencePlans, logoPreview]);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

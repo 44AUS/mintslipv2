@@ -310,7 +310,16 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
         description: plan.description || "PTO Plan",
         accrued: plan.accrued || "0",
         reduced: plan.reduced || "0"
-      }))
+      })),
+      // Employer benefits for Template C (Workday)
+      employerBenefitsData: (formData.employerBenefits || []).map(b => {
+        const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+        return { name: b.name || "Employer Benefit", type: b.type, currentAmount: amount };
+      }),
+      totalEmployerBenefits: (formData.employerBenefits || []).reduce((sum, b) => {
+        const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+        return sum + amount;
+      }, 0)
     };
 
     // Generate the template based on selection

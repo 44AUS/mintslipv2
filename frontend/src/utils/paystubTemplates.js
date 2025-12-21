@@ -966,14 +966,14 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       doc.text(formData.company || "COMPANY NAME", m, y + 15);
     }
   } else if (isPreview) {
-    // For preview without logo, show MASTERBRAND style header
+    // For preview without logo, show company style header
     doc.setFontSize(16); 
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold"); 
-    doc.text("MASTERBRAND", m, y + 12);
+    doc.text("COMPANY", m, y + 12);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
-    doc.text("CABINETS, INC.", m, y + 20);
+    doc.text("NAME", m, y + 20);
   } else {
     doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); 
     doc.text(formData.company || "COMPANY NAME", m, y + 15);

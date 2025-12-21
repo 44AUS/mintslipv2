@@ -1160,20 +1160,21 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const benefitWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];
   const benefitRows = [];
   
-  // Calculate employer contributions (401k match, employer paid life, etc.)
-  const employer401kMatch = contributionsData.find(c => c.type === '401k_match');
-  if (employer401kMatch) {
-    benefitRows.push(["401k Employer Match", fmt(employer401kMatch.currentAmount || 0), fmt((employer401kMatch.currentAmount || 0) * (ytdPayPeriods || 1))]);
+  // Use employer benefits data if provided by user
+  const employerBenefitsData = data.employerBenefitsData || [];
+  const totalEmployerBenefits = data.totalEmployerBenefits || 0;
+  
+  if (employerBenefitsData.length > 0) {
+    // User has entered employer benefits - use their data
+    employerBenefitsData.forEach(b => {
+      benefitRows.push([b.name || "Employer Benefit", fmt(b.currentAmount || 0), fmt((b.currentAmount || 0) * (ytdPayPeriods || 1))]);
+    });
+  } else {
+    // No employer benefits entered - show placeholder
+    benefitRows.push(["No Employer Benefits", "0.00", "0.00"]);
   }
   
-  // Add Employer Paid Life as a small fixed amount
-  const employerLifeInsurance = grossPay * 0.001; // 0.1% of gross
-  benefitRows.push(["Employer Paid Life", fmt(employerLifeInsurance), fmt(employerLifeInsurance * (ytdPayPeriods || 1))]);
-  
-  const totalBenefits = benefitRows.reduce((sum, row) => {
-    const amt = parseFloat(row[1].replace(/,/g, '')) || 0;
-    return sum + amt;
-  }, 0);
+  const totalBenefits = employerBenefitsData.length > 0 ? totalEmployerBenefits : 0;
   benefitRows.push(["Employer Paid Benefits", fmt(totalBenefits), fmt(totalBenefits * (ytdPayPeriods || 1))]);
   drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, isBoldLastRow: true });
 

@@ -126,7 +126,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   } else if (template === 'template-c') {
     await generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
   } else {
-    generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
   // Add page numbers

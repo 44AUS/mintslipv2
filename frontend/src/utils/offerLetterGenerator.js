@@ -644,7 +644,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         size: 60,
         font: boldFont,
         color: rgb(0.85, 0.85, 0.85),
-        rotate: { type: 'degrees', angle: -35 },
+        rotate: { angle: -35 * (Math.PI / 180), type: 'radians' },
         opacity: 0.5,
       });
       
@@ -654,7 +654,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         size: 24,
         font: boldFont,
         color: rgb(0.85, 0.85, 0.85),
-        rotate: { type: 'degrees', angle: -35 },
+        rotate: { angle: -35 * (Math.PI / 180), type: 'radians' },
         opacity: 0.5,
       });
     }

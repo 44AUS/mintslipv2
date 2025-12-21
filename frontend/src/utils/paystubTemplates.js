@@ -64,11 +64,39 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   const top = y;
   const logoX = left;
   const logoWidth = 70;
+  const maxLogoWidth = 120;  // Maximum width for custom logo
+  const maxLogoHeight = 35;  // Maximum height for custom logo
 
   // Load and draw logo - use custom logo if provided, otherwise default Gusto logo
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', logoX, top, 120, 35);
+      // Calculate proper dimensions to maintain aspect ratio
+      const img = new Image();
+      img.src = logoDataUrl;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          let renderWidth = maxLogoWidth;
+          let renderHeight = renderWidth * aspectRatio;
+          
+          // If height exceeds max, scale down by height instead
+          if (renderHeight > maxLogoHeight) {
+            renderHeight = maxLogoHeight;
+            renderWidth = renderHeight / aspectRatio;
+          }
+          
+          doc.addImage(logoDataUrl, 'PNG', logoX, top, renderWidth, renderHeight);
+          resolve();
+        };
+        img.onerror = () => {
+          // Fallback to Gusto text if image loading fails
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(18);
+          doc.setTextColor(0, 168, 161);
+          doc.text("Gusto", logoX, top + 20);
+          resolve();
+        };
+      });
     } catch (e) {
       // Fallback to Gusto text if custom logo fails
       doc.setFont("helvetica", "bold");

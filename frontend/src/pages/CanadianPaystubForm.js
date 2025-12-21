@@ -1743,6 +1743,102 @@ export default function CanadianPaystubForm() {
                     )}
                   </div>
                 )}
+
+                {/* Absence Plans Section - Only for Template C (Workday) */}
+                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                          Absence Plans
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Track PTO, vacation, sick leave and other absence balances (Workday template only)
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addAbsencePlan}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Plan
+                      </Button>
+                    </div>
+
+                    {absencePlans.length === 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-md border border-dashed border-slate-300 text-center">
+                        <p className="text-sm text-slate-500">No absence plans added. Click "Add Plan" to add PTO, vacation, or sick leave balances.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {absencePlans.map((plan) => (
+                          <div key={plan.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-xs text-slate-600">Plan Name</Label>
+                                <Input
+                                  type="text"
+                                  value={plan.description}
+                                  onChange={(e) => updateAbsencePlan(plan.id, 'description', e.target.value)}
+                                  placeholder="e.g., PTO Plan, Vacation, Sick Leave"
+                                  className="h-9"
+                                />
+                              </div>
+                              <div className="w-28 space-y-1">
+                                <Label className="text-xs text-slate-600">Accrued (hrs)</Label>
+                                <Input
+                                  type="number"
+                                  value={plan.accrued}
+                                  onChange={(e) => updateAbsencePlan(plan.id, 'accrued', e.target.value)}
+                                  placeholder="0"
+                                  className="h-9"
+                                  min="0"
+                                  step="1"
+                                />
+                              </div>
+                              <div className="w-28 space-y-1">
+                                <Label className="text-xs text-slate-600">Reduced (hrs)</Label>
+                                <Input
+                                  type="number"
+                                  value={plan.reduced}
+                                  onChange={(e) => updateAbsencePlan(plan.id, 'reduced', e.target.value)}
+                                  placeholder="0"
+                                  className="h-9"
+                                  min="0"
+                                  step="1"
+                                />
+                              </div>
+                              <div className="w-28 space-y-1">
+                                <Label className="text-xs text-slate-600">Available</Label>
+                                <div className="h-9 flex items-center px-3 bg-green-50 border border-green-200 rounded-md text-green-700 font-semibold">
+                                  {(parseFloat(plan.accrued) || 0) - (parseFloat(plan.reduced) || 0)}
+                                </div>
+                              </div>
+                              <div className="flex items-end">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeAbsencePlan(plan.id)}
+                                  className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
           </div>

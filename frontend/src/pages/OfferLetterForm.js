@@ -279,26 +279,17 @@ export default function OfferLetterForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      // First capture the payment - this needs to complete before popup closes
-      const orderData = await actions.order.capture();
-      console.log("Payment captured:", orderData);
+      await actions.order.capture();
       toast.success("Payment successful! Generating your offer letter...");
       
-      // Defer PDF generation to ensure PayPal popup has fully closed
-      setTimeout(async () => {
-        try {
-          await generateAndDownloadOfferLetter(formData);
-          toast.success("Offer letter downloaded successfully!");
-        } catch (genError) {
-          console.error("Error generating PDF:", genError);
-          toast.error("Payment succeeded but PDF generation failed. Please contact support.");
-        }
-        setIsProcessing(false);
-      }, 500);
+      // Generate and download PDF
+      await generateAndDownloadOfferLetter(formData);
       
+      toast.success("Offer letter downloaded successfully!");
+      setIsProcessing(false);
     } catch (error) {
       console.error("Payment/generation error:", error);
-      toast.error("Failed to process: " + (error.message || "Unknown error"));
+      toast.error("An error occurred. Please try again.");
       setIsProcessing(false);
     }
   };

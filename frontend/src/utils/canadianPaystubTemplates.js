@@ -531,18 +531,18 @@ function drawTable(
 export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, regularPay, overtimePay, grossPay, 
-    ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, 
+    cpp, ei, qpip, federalTax, provincialTax, totalTax, netPay, rate, 
     startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
-    ytdGrossPay = grossPay, ytdSsTax = ssTax, ytdMedTax = medTax, 
-    ytdFederalTax = federalTax, ytdStateTax = stateTax, ytdLocalTax = localTax,
+    ytdGrossPay = grossPay, ytdCpp = cpp, ytdEi = ei, ytdQpip = qpip,
+    ytdFederalTax = federalTax, ytdProvincialTax = provincialTax,
     ytdRegularPay = regularPay, ytdOvertimePay = overtimePay,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0,
-    logoDataUrl
+    logoDataUrl, isQuebec, cppLabel
   } = data;
   
   // Helper to format currency
-  const fmtCurrency = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtCurrency = (n) => Number(n || 0).toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   
   // Helper function to format date as MM/DD/YYYY
   const formatDateADP = (date) => {

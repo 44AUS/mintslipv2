@@ -1604,8 +1604,8 @@ export default function CanadianPaystubForm() {
                   </div>
                 )}
 
-                {/* Tax Allowances Section - Only for employees (Template C) */}
-                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
+                {/* Tax Allowances Section - For all employees (affects tax calculations) */}
+                {formData.workerType === 'employee' && (
                   <div className="space-y-4">
                     <div>
                       <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>

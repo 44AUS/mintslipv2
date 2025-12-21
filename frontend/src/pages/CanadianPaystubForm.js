@@ -15,7 +15,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import { generateCanadianPreviewPDF } from "@/utils/canadianPaystubPreviewGenerator";
 import { CANADIAN_PROVINCES, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
-import { Upload, X, Search, Building2, ChevronDown, ChevronUp, MapleLeaf } from "lucide-react";
+import { Upload, X, Search, Building2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { formatPhoneNumber, validatePhoneNumber, formatBankLast4, validateBankLast4 } from "@/utils/validation";
 import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';

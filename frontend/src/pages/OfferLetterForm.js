@@ -1110,6 +1110,21 @@ export default function OfferLetterForm() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Employee Sign Date - shown for generated and custom signature types */}
+                  {formData.employeeSignatureType !== "blank" && (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="employeeSignDate">Employee Sign Date</Label>
+                      <Input 
+                        id="employeeSignDate" 
+                        name="employeeSignDate" 
+                        type="date"
+                        value={formData.employeeSignDate} 
+                        onChange={handleChange}
+                      />
+                      <p className="text-xs text-slate-500">Date when the employee signs the acceptance</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

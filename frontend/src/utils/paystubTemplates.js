@@ -1201,7 +1201,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       plan.reduced || "0",
       String((parseFloat(plan.accrued) || 0) - (parseFloat(plan.reduced) || 0))
     ]);
-    drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1 });
+    drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1, whiteHeader: true });
   }
 
   } catch (error) {

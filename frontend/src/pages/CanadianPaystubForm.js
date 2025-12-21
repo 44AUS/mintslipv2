@@ -1792,6 +1792,114 @@ export default function CanadianPaystubForm() {
                   </div>
                 )}
 
+                {/* Employer Paid Benefits Section - Only for Template C (Workday) */}
+                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                          Employer Paid Benefits
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Add employer-provided benefits like RRSP match, life insurance, health insurance (Workday template only)
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addEmployerBenefit}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Benefit
+                      </Button>
+                    </div>
+
+                    {employerBenefits.length === 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-md border border-dashed border-slate-300 text-center">
+                        <p className="text-sm text-slate-500">No employer benefits added. Click &quot;Add Benefit&quot; to add RRSP match, life insurance, etc.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {employerBenefits.map((benefit) => (
+                          <div key={benefit.id} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-xs text-slate-600">Benefit Type</Label>
+                                <Select
+                                  value={benefit.type}
+                                  onValueChange={(value) => updateEmployerBenefit(benefit.id, 'type', value)}
+                                >
+                                  <SelectTrigger className="h-9 bg-white">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {employerBenefitTypes.map(type => (
+                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {benefit.type === 'other' && (
+                                <div className="flex-1 space-y-1">
+                                  <Label className="text-xs text-slate-600">Description</Label>
+                                  <Input
+                                    type="text"
+                                    value={benefit.name}
+                                    onChange={(e) => updateEmployerBenefit(benefit.id, 'name', e.target.value)}
+                                    placeholder="Enter benefit description"
+                                    className="h-9"
+                                  />
+                                </div>
+                              )}
+                              <div className="w-32 space-y-1">
+                                <Label className="text-xs text-slate-600">Amount</Label>
+                                <div className="flex items-center gap-1">
+                                  {!benefit.isPercentage && <span className="text-slate-500">$</span>}
+                                  <Input
+                                    type="number"
+                                    value={benefit.amount}
+                                    onChange={(e) => updateEmployerBenefit(benefit.id, 'amount', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                    min="0"
+                                    step="0.01"
+                                  />
+                                  {benefit.isPercentage && <span className="text-slate-500">%</span>}
+                                </div>
+                              </div>
+                              <div className="flex items-end gap-2">
+                                <div className="flex items-center space-x-1">
+                                  <Checkbox
+                                    id={`benefit-pct-${benefit.id}`}
+                                    checked={benefit.isPercentage}
+                                    onCheckedChange={(checked) => updateEmployerBenefit(benefit.id, 'isPercentage', checked)}
+                                  />
+                                  <Label htmlFor={`benefit-pct-${benefit.id}`} className="text-xs cursor-pointer">%</Label>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeEmployerBenefit(benefit.id)}
+                                  className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Absence Plans Section - Only for Template C (Workday) */}
                 {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
                   <div className="space-y-4">

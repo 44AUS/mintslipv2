@@ -213,6 +213,28 @@ export default function PaystubForm() {
     ));
   };
 
+  // Add a new absence plan (only for Template C)
+  const addAbsencePlan = () => {
+    setAbsencePlans([...absencePlans, { 
+      id: Date.now(), 
+      description: "PTO Plan", 
+      accrued: "", 
+      reduced: "" 
+    }]);
+  };
+
+  // Remove an absence plan
+  const removeAbsencePlan = (id) => {
+    setAbsencePlans(absencePlans.filter(p => p.id !== id));
+  };
+
+  // Update an absence plan
+  const updateAbsencePlan = (id, field, value) => {
+    setAbsencePlans(absencePlans.map(p => 
+      p.id === id ? { ...p, [field]: value } : p
+    ));
+  };
+
   // Generate PDF preview when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -220,11 +242,12 @@ export default function PaystubForm() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
-          // Include deductions, contributions, and logo in preview data
+          // Include deductions, contributions, absence plans, and logo in preview data
           const previewData = {
             ...formData,
             deductions: deductions,
             contributions: contributions,
+            absencePlans: absencePlans, // Pass absence plans for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
           const previewUrl = await generatePreviewPDF(previewData, selectedTemplate);

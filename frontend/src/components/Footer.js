@@ -6,6 +6,7 @@ const FOOTER_LINKS = {
     title: "Documents",
     links: [
       { name: "Pay Stub Generator", path: "/paystub-generator" },
+      { name: "Canadian Pay Stub Generator", path: "/canadian-paystub-generator" },
       { name: "Accounting Mockups", path: "/accounting-mockup-generator" },
       { name: "W-2 Form Generator", path: "/w2-generator" },
       { name: "W-9 Form Generator", path: "/w9-generator" },

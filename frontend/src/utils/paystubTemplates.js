@@ -927,11 +927,36 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   
   // ========== HEADER LOGO/NAME ==========
   const isPreview = data.isPreview || false;
+  const maxLogoWidth = 100;  // Slightly smaller width for Workday template
+  const maxLogoHeight = 30;  // Maximum height for logo
   
   // Always show custom logo if uploaded, regardless of preview mode
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', m, y - 10, 120, 35);
+      // Calculate proper dimensions to maintain aspect ratio
+      const img = new Image();
+      img.src = logoDataUrl;
+      await new Promise((resolve) => {
+        img.onload = () => {
+          const aspectRatio = img.height / img.width;
+          let renderWidth = maxLogoWidth;
+          let renderHeight = renderWidth * aspectRatio;
+          
+          // If height exceeds max, scale down by height instead
+          if (renderHeight > maxLogoHeight) {
+            renderHeight = maxLogoHeight;
+            renderWidth = renderHeight / aspectRatio;
+          }
+          
+          doc.addImage(logoDataUrl, 'PNG', m, y - 10, renderWidth, renderHeight);
+          resolve();
+        };
+        img.onerror = () => {
+          // Fallback to text if image loading fails
+          doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
+          resolve();
+        };
+      });
       y += 30;
     } catch (e) {
       // Fallback to text if logo fails to load

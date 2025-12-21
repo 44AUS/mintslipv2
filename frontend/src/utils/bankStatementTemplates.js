@@ -3,7 +3,7 @@ import BoALogo from "../assests/boa.png";
 
 
 // Template A: Chime/Sutton Style Bank Statement
-export function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) {
+export async function generateBankTemplateA(doc, data, pageWidth, pageHeight, margin) {
   const { 
     accountName, 
     accountAddress1, 

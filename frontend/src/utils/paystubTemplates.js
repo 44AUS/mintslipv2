@@ -1050,9 +1050,9 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
 
     const endY = y;
     
-    // 4. Draw borders
+    // 4. Draw borders (thicker lines)
     doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(0.75);
     doc.rect(m, startY, usableWidth, endY - startY);
     
     // Horizontal lines under title and header

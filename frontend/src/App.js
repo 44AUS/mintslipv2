@@ -2,6 +2,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "@/pages/Home";
 import PaystubForm from "@/pages/PaystubForm";
+import CanadianPaystubForm from "@/pages/CanadianPaystubForm";
 import BankStatementForm from "@/pages/BankStatementForm";
 import W2Form from "@/pages/W2Form";
 import W9Form from "@/pages/W9Form";

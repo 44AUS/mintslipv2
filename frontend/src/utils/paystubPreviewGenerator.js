@@ -304,7 +304,13 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       ytdContributions,
       // Pass the logo for preview - use uploaded logo if available
       logoDataUrl: formData.logoDataUrl || null,
-      isPreview: true
+      isPreview: true,
+      // Absence plans for Template C (Workday)
+      absencePlansData: (formData.absencePlans || []).map(plan => ({
+        description: plan.description || "PTO Plan",
+        accrued: plan.accrued || "0",
+        reduced: plan.reduced || "0"
+      }))
     };
 
     // Generate the template based on selection

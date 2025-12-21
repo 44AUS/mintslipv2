@@ -88,7 +88,7 @@ export async function generateBankTemplateA(doc, data, pageWidth, pageHeight, ma
   const textWidth = doc.getTextWidth(label);
   const leftX = rightAlignX - textWidth;
   doc.setTextColor("#000000"); // Black for phone number
-  doc.text("(800) 422-3641", leftX, y - 3);
+  doc.text("(844) 244-6363", leftX, y - 3);
 
   // --- Account Information Section ---
   y += 45;

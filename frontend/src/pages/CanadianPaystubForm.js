@@ -242,11 +242,11 @@ export default function CanadianPaystubForm() {
   };
 
   // Validated input handlers
-  const handleSSNChange = (e) => {
-    const formatted = formatSSNLast4(e.target.value);
-    setFormData(prev => ({ ...prev, ssn: formatted }));
-    const validation = validateSSNLast4(formatted);
-    setValidationErrors(prev => ({ ...prev, ssn: validation.error }));
+  const handleSINChange = (e) => {
+    const formatted = formatSIN(e.target.value);
+    setFormData(prev => ({ ...prev, sin: formatted }));
+    const validation = validateSIN(formatted);
+    setValidationErrors(prev => ({ ...prev, sin: validation.error }));
   };
 
   const handleBankChange = (e) => {
@@ -256,18 +256,18 @@ export default function CanadianPaystubForm() {
     setValidationErrors(prev => ({ ...prev, bank: validation.error }));
   };
 
-  const handleZipChange = (e) => {
-    const formatted = formatZipCode(e.target.value);
-    setFormData(prev => ({ ...prev, zip: formatted }));
-    const validation = validateZipCode(formatted);
-    setValidationErrors(prev => ({ ...prev, zip: validation.error }));
+  const handlePostalCodeChange = (e) => {
+    const formatted = formatPostalCode(e.target.value);
+    setFormData(prev => ({ ...prev, postalCode: formatted }));
+    const validation = validatePostalCode(formatted);
+    setValidationErrors(prev => ({ ...prev, postalCode: validation.error }));
   };
 
-  const handleCompanyZipChange = (e) => {
-    const formatted = formatZipCode(e.target.value);
-    setFormData(prev => ({ ...prev, companyZip: formatted }));
-    const validation = validateZipCode(formatted);
-    setValidationErrors(prev => ({ ...prev, companyZip: validation.error }));
+  const handleCompanyPostalCodeChange = (e) => {
+    const formatted = formatPostalCode(e.target.value);
+    setFormData(prev => ({ ...prev, companyPostalCode: formatted }));
+    const validation = validatePostalCode(formatted);
+    setValidationErrors(prev => ({ ...prev, companyPostalCode: validation.error }));
   };
 
   const handleCompanyPhoneChange = (e) => {

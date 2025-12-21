@@ -600,7 +600,7 @@ export default function CanadianPaystubForm() {
     const medTax = isContractor ? 0 : totalGross * 0.0145;
     
     // Use actual state tax rate from federalTaxCalculator
-    const stateRate = getStateTaxRate(formData.state);
+    const stateRate = getStateTaxRate(formData.province);
     
     // Calculate federal tax based on filing status and exemptions
     let federalTax = 0;
@@ -623,15 +623,15 @@ export default function CanadianPaystubForm() {
     if (!isContractor) {
       stateTax = calculateStateTax(
         totalGross / (numStubs || 1), // Per period gross
-        formData.state,
+        formData.province,
         formData.payFrequency,
-        formData.stateAllowances || 0,
+        formData.provinceAllowances || 0,
         stateRate
       ) * (numStubs || 1);
     }
     
     // Use actual local tax rate from taxRates lookup
-    const actualLocalTaxRate = getLocalTaxRate(formData.state, formData.city);
+    const actualLocalTaxRate = getLocalTaxRate(formData.province, formData.city);
     const localTax = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? totalGross * actualLocalTaxRate : 0);
     
     const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
@@ -1003,8 +1003,8 @@ export default function CanadianPaystubForm() {
                       data-testid="ssn-input" 
                       id="ssn" 
                       name="ssn" 
-                      value={formData.ssn} 
-                      onChange={handleSSNChange} 
+                      value={formData.sin} 
+                      onChange={handleSINChange} 
                       maxLength="4" 
                       placeholder="1234"
                       className={validationErrors.ssn ? 'border-red-500' : ''}
@@ -1060,7 +1060,7 @@ export default function CanadianPaystubForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State *</Label>
-                    <Select value={formData.state} onValueChange={(val) => setFormData({...formData, state: val})}>
+                    <Select value={formData.province} onValueChange={(val) => setFormData({...formData, state: val})}>
                       <SelectTrigger data-testid="pay-day-select">
                         <SelectValue />
                       </SelectTrigger>
@@ -1124,8 +1124,8 @@ export default function CanadianPaystubForm() {
                       data-testid="zip-input" 
                       id="zip" 
                       name="zip" 
-                      value={formData.zip} 
-                      onChange={handleZipChange} 
+                      value={formData.postalCode} 
+                      onChange={handlePostalCodeChange} 
                       placeholder="12345"
                       className={validationErrors.zip ? 'border-red-500' : ''}
                       required 
@@ -1173,7 +1173,7 @@ export default function CanadianPaystubForm() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="companyState">Company State *</Label>
-                      <Select value={formData.companyState} onValueChange={(val) => setFormData({...formData, companyState: val})}>
+                      <Select value={formData.companyProvince} onValueChange={(val) => setFormData({...formData, companyState: val})}>
                       <SelectTrigger data-testid="pay-day-select">
                         <SelectValue />
                       </SelectTrigger>
@@ -1237,8 +1237,8 @@ export default function CanadianPaystubForm() {
                       data-testid="company-zip-input" 
                       id="companyZip" 
                       name="companyZip" 
-                      value={formData.companyZip} 
-                      onChange={handleCompanyZipChange} 
+                      value={formData.companyPostalCode} 
+                      onChange={handleCompanyPostalCodeChange} 
                       placeholder="12345"
                       className={validationErrors.companyZip ? 'border-red-500' : ''}
                       required 
@@ -1511,7 +1511,7 @@ export default function CanadianPaystubForm() {
                 {/* Local Tax option - only for employees in states with local taxes */}
                 {formData.workerType === 'employee' && (
                   <div className="space-y-3">
-                    {stateHasLocalTax(formData.state) ? (
+                    {stateHasLocalTax(formData.province) ? (
                       <>
                         <div className="flex items-center space-x-2">
                           <Checkbox
@@ -1536,19 +1536,19 @@ export default function CanadianPaystubForm() {
                                 <SelectValue placeholder="Select city..." />
                               </SelectTrigger>
                               <SelectContent>
-                                {getCitiesWithLocalTax(formData.state).map(city => (
+                                {getCitiesWithLocalTax(formData.province).map(city => (
                                   <SelectItem key={city} value={city}>
-                                    {city} ({(getLocalTaxRate(formData.state, city) * 100).toFixed(2)}%)
+                                    {city} ({(getLocalTaxRate(formData.province, city) * 100).toFixed(2)}%)
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            {formData.city && getLocalTaxRate(formData.state, formData.city) > 0 && (
+                            {formData.city && getLocalTaxRate(formData.province, formData.city) > 0 && (
                               <p className="text-xs text-green-700">
-                                Local tax rate for {formData.city}: <strong>{(getLocalTaxRate(formData.state, formData.city) * 100).toFixed(2)}%</strong>
+                                Local tax rate for {formData.city}: <strong>{(getLocalTaxRate(formData.province, formData.city) * 100).toFixed(2)}%</strong>
                               </p>
                             )}
-                            {formData.city && getLocalTaxRate(formData.state, formData.city) === 0 && (
+                            {formData.city && getLocalTaxRate(formData.province, formData.city) === 0 && (
                               <p className="text-xs text-slate-500">
                                 No local income tax found for this city.
                               </p>
@@ -1558,7 +1558,7 @@ export default function CanadianPaystubForm() {
                       </>
                     ) : (
                       <p className="text-xs text-slate-500">
-                        {formData.state ? `${formData.state} does not have local income taxes.` : 'Select a state to see local tax options.'}
+                        {formData.province ? `${formData.province} does not have local income taxes.` : 'Select a state to see local tax options.'}
                       </p>
                     )}
                   </div>
@@ -1605,10 +1605,10 @@ export default function CanadianPaystubForm() {
                       {/* State Allowances - Only for states that use them */}
                       <div className="space-y-2">
                         <Label htmlFor="stateAllowances">State Withholding Allowances</Label>
-                        {stateUsesAllowances(formData.state) ? (
+                        {stateUsesAllowances(formData.province) ? (
                           <>
                             <Select 
-                              value={formData.stateAllowances || "0"} 
+                              value={formData.provinceAllowances || "0"} 
                               onValueChange={(val) => setFormData({...formData, stateAllowances: val})}
                             >
                               <SelectTrigger data-testid="state-allowances">
@@ -1624,13 +1624,13 @@ export default function CanadianPaystubForm() {
                             </Select>
                             <p className="text-xs text-slate-400">Each allowance reduces state tax withholding</p>
                           </>
-                        ) : stateHasNoIncomeTax(formData.state) ? (
+                        ) : stateHasNoIncomeTax(formData.province) ? (
                           <div className="p-2 bg-slate-100 rounded-md">
-                            <p className="text-xs text-slate-500">{formData.state} has no state income tax</p>
+                            <p className="text-xs text-slate-500">{formData.province} has no state income tax</p>
                           </div>
-                        ) : formData.state ? (
+                        ) : formData.province ? (
                           <div className="p-2 bg-slate-100 rounded-md">
-                            <p className="text-xs text-slate-500">{getStateTaxInfo(formData.state).message}</p>
+                            <p className="text-xs text-slate-500">{getStateTaxInfo(formData.province).message}</p>
                           </div>
                         ) : (
                           <div className="p-2 bg-slate-100 rounded-md">
@@ -1645,7 +1645,7 @@ export default function CanadianPaystubForm() {
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
                         <p className="text-sm text-blue-800">
                           <strong>Federal Tax:</strong> Calculated using 2024 IRS tax brackets based on your filing status.
-                          {parseInt(formData.stateAllowances) > 0 && ` State allowances reduce taxable income by ~$2,500/year each.`}
+                          {parseInt(formData.provinceAllowances) > 0 && ` State allowances reduce taxable income by ~$2,500/year each.`}
                         </p>
                       </div>
                     )}
@@ -1922,7 +1922,7 @@ export default function CanadianPaystubForm() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-700">
-                          {formData.state ? `${formData.state} State Tax${parseInt(formData.stateAllowances) > 0 ? ` (${formData.stateAllowances} allow.)` : ''}:` : 'State Tax:'}
+                          {formData.province ? `${formData.province} State Tax${parseInt(formData.provinceAllowances) > 0 ? ` (${formData.provinceAllowances} allow.)` : ''}:` : 'State Tax:'}
                         </span>
                         <span>${formatCurrency(preview.stateTax)}</span>
                       </div>

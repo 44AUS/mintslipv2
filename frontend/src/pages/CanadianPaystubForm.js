@@ -596,45 +596,21 @@ export default function CanadianPaystubForm() {
 
     // Contractors don't have taxes withheld (they handle their own taxes)
     const isContractor = formData.workerType === "contractor";
-    const ssTax = isContractor ? 0 : totalGross * 0.062;
-    const medTax = isContractor ? 0 : totalGross * 0.0145;
+    const isQuebec = formData.province === "QC";
     
-    // Use actual state tax rate from federalTaxCalculator
-    const stateRate = getStateTaxRate(formData.province);
+    // Calculate Canadian taxes
+    let cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0;
     
-    // Calculate federal tax based on filing status and exemptions
-    let federalTax = 0;
-    if (!isContractor) {
-      if (formData.federalFilingStatus) {
-        // Use progressive tax calculation with filing status (no allowances per 2020+ W-4)
-        federalTax = calculateFederalTax(
-          totalGross / (numStubs || 1), // Per period gross
-          formData.payFrequency,
-          formData.federalFilingStatus
-        ) * (numStubs || 1);
-      } else {
-        // Default flat rate if no filing status
-        federalTax = totalGross * 0.22;
-      }
+    if (!isContractor && formData.province) {
+      const taxes = calculateCanadianTaxes(totalGross / (numStubs || 1), formData.payFrequency, formData.province, 0);
+      cpp = taxes.cpp * (numStubs || 1);
+      ei = taxes.ei * (numStubs || 1);
+      qpip = taxes.qpip * (numStubs || 1);
+      federalTax = taxes.federalTax * (numStubs || 1);
+      provincialTax = taxes.provincialTax * (numStubs || 1);
     }
     
-    // Calculate state tax with allowances (only for applicable states)
-    let stateTax = 0;
-    if (!isContractor) {
-      stateTax = calculateStateTax(
-        totalGross / (numStubs || 1), // Per period gross
-        formData.province,
-        formData.payFrequency,
-        formData.provinceAllowances || 0,
-        stateRate
-      ) * (numStubs || 1);
-    }
-    
-    // Use actual local tax rate from taxRates lookup
-    const actualLocalTaxRate = getLocalTaxRate(formData.province, formData.city);
-    const localTax = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? totalGross * actualLocalTaxRate : 0);
-    
-    const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
+    const totalTaxes = cpp + ei + qpip + federalTax + provincialTax;
 
     // Calculate deductions total
     const totalDeductions = deductions.reduce((sum, d) => {
@@ -656,7 +632,21 @@ export default function CanadianPaystubForm() {
 
     const netPay = totalGross - totalTaxes - totalDeductions - totalContributions;
 
-    return { totalGross, totalTaxes, netPay, ssTax, medTax, federalTax, stateTax, localTax, numStubs, totalDeductions, totalContributions, stateRate, localTaxRate: actualLocalTaxRate };
+    return { 
+      totalGross, 
+      totalTaxes, 
+      netPay, 
+      cpp, 
+      ei, 
+      qpip, 
+      federalTax, 
+      provincialTax, 
+      numStubs, 
+      totalDeductions, 
+      totalContributions, 
+      isQuebec,
+      cppLabel: isQuebec ? 'QPP' : 'CPP',
+    };
   }, [formData, calculateNumStubs, deductions, contributions]);
 
   const createOrder = (data, actions) => {

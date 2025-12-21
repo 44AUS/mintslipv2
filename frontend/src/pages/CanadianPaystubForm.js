@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadCanadianPaystub } from "@/utils/paystubGenerator";
-import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
+import { generateCanadianPreviewPDF } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -196,7 +196,7 @@ export default function CanadianPaystubForm() {
             contributions: contributions,
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
-          const previewUrl = await generatePreviewPDF(previewData, selectedTemplate);
+          const previewUrl = await generateCanadianPreviewPDF(previewData, selectedTemplate);
           setPdfPreview(previewUrl);
         } catch (error) {
           console.error("Preview generation failed:", error);

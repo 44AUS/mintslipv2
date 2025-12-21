@@ -447,11 +447,14 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       font: font,
       color: rgb(colors.text.r, colors.text.g, colors.text.b),
     });
-    y -= 20;
+    y -= 30;
     
     // HR Signature - either custom image or generated
+    // First draw the signature line, then position signature above it
+    const hrSignatureLineY = y;
+    
     if (formData.hrSignatureType === "custom" && formData.hrSignatureImage) {
-      // Custom signature image
+      // Custom signature image - position above the line
       const hrSigImage = await embedImage(pdfDoc, formData.hrSignatureImage);
       if (hrSigImage) {
         const sigDims = hrSigImage.scale(0.3);
@@ -459,33 +462,31 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
         page.drawImage(hrSigImage, {
           x: margin,
-          y: y - sigHeight,
+          y: hrSignatureLineY + 2, // Position just above the line
           width: sigWidth,
           height: sigHeight,
         });
-        y -= sigHeight + 10;
       }
     } else {
-      // Generated signature using Yellowtail cursive font
+      // Generated signature using Yellowtail cursive font - position just above the line
       const signatureName = formData.signerName || '[Signer Name]';
       page.drawText(signatureName, {
         x: margin,
-        y: y,
+        y: hrSignatureLineY + 5, // Position just above the line
         size: 22,
         font: signatureFont,
         color: rgb(0.1, 0.1, 0.3),
       });
-      y -= 25;
     }
     
     // Signature line
     page.drawLine({
-      start: { x: margin, y: y },
-      end: { x: margin + 200, y: y },
+      start: { x: margin, y: hrSignatureLineY },
+      end: { x: margin + 200, y: hrSignatureLineY },
       thickness: 1,
       color: rgb(0.3, 0.3, 0.3),
     });
-    y -= 15;
+    y = hrSignatureLineY - 15;
     
     page.drawText(formData.signerName || '[Signer Name]', {
       x: margin,

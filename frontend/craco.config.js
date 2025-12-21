@@ -36,6 +36,12 @@ const webpackConfig = {
     },
     configure: (webpackConfig) => {
 
+      // Add rule to handle TTF font files
+      webpackConfig.module.rules.push({
+        test: /\.(ttf|woff|woff2|eot)$/,
+        type: 'asset/resource',
+      });
+
       // Disable hot reload completely if environment variable is set
       if (config.disableHotReload) {
         // Remove hot reload related plugins

@@ -2231,47 +2231,6 @@ export default function PaystubForm() {
                     )}
                   </div>
                 )}
-
-                {/* Tax Withholding Information Section - Only for Template C (Workday) */}
-                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                        Additional Withholding
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Additional tax withholding amounts (Workday template only)
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-600">Federal Additional Withholding</Label>
-                        <Input
-                          type="number"
-                          value={formData.federalAdditionalWithholding}
-                          onChange={(e) => setFormData({...formData, federalAdditionalWithholding: e.target.value})}
-                          placeholder="0"
-                          className="h-9"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-600">State Additional Withholding</Label>
-                        <Input
-                          type="number"
-                          value={formData.stateAdditionalWithholding}
-                          onChange={(e) => setFormData({...formData, stateAdditionalWithholding: e.target.value})}
-                          placeholder="0"
-                          className="h-9"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </form>
           </div>

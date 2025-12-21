@@ -227,7 +227,7 @@ export const generateBankStatementPreview = async (formData, template = 'templat
         break;
       case 'template-a':
       default:
-        generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+        await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
         break;
     }
 

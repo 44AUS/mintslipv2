@@ -219,6 +219,19 @@ async function generateSingleCanadianStub(
   const ytdContributions = totalContributions * ytdPayPeriods;
   const ytdHours = totalHours * ytdPayPeriods;
   
+  // Process employer benefits for Template C
+  const employerBenefits = formData.employerBenefits || [];
+  let totalEmployerBenefits = 0;
+  const employerBenefitsData = employerBenefits.map(b => {
+    const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    totalEmployerBenefits += amount;
+    return { 
+      name: b.name || "Employer Benefit", 
+      type: b.type,
+      currentAmount: amount 
+    };
+  });
+
   // Prepare template data
   const templateData = {
     formData,
@@ -271,7 +284,10 @@ async function generateSingleCanadianStub(
       description: plan.description || "PTO Plan",
       accrued: plan.accrued || "0",
       reduced: plan.reduced || "0"
-    }))
+    })),
+    // Employer benefits for Template C (Workday)
+    employerBenefitsData,
+    totalEmployerBenefits
   };
   
   // Generate the selected template

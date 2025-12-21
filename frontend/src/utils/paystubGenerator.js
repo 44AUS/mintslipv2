@@ -265,6 +265,13 @@ async function generateSingleStub(
 
   const margin = 40;
   
+  // Prepare absence plans data for Template C
+  const absencePlansData = (formData.absencePlans || []).map(plan => ({
+    description: plan.description || "PTO Plan",
+    accrued: plan.accrued || "0",
+    reduced: plan.reduced || "0"
+  }));
+  
   // Prepare data object for template
   const templateData = {
     formData,
@@ -316,7 +323,9 @@ async function generateSingleStub(
     isContractor,
     annualSalary,
     // Logo for Workday template
-    logoDataUrl: formData.logoDataUrl || null
+    logoDataUrl: formData.logoDataUrl || null,
+    // Absence plans for Template C (Workday)
+    absencePlansData
   };
 
   // Call the appropriate template

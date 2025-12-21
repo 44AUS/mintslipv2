@@ -1567,6 +1567,45 @@ export default function CanadianPaystubForm() {
                   </div>
                 )}
 
+                {/* Tax Allowances Section - Only for employees (Template C) */}
+                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                        Tax Allowances
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-1">
+                        TD1 allowances reduce taxable income (each federal allowance = ~$2,500, provincial = ~$2,000)
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-600">Federal Allowances</Label>
+                        <Input
+                          type="number"
+                          value={formData.federalAllowances}
+                          onChange={(e) => setFormData({...formData, federalAllowances: e.target.value})}
+                          placeholder="0"
+                          className="h-9"
+                          min="0"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-600">Provincial Allowances</Label>
+                        <Input
+                          type="number"
+                          value={formData.provincialAllowances}
+                          onChange={(e) => setFormData({...formData, provincialAllowances: e.target.value})}
+                          placeholder="0"
+                          className="h-9"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Employee Deductions Section - Only for employees */}
                 {formData.workerType === 'employee' && (
                   <div className="space-y-4">

@@ -7,12 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import {
-  LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart
-} from "recharts";
-import { Lock, TrendingUp, Users, DollarSign, FileText, Eye, Calendar, Activity, ExternalLink, RefreshCw, Trash2, Database } from "lucide-react";
-import { getAnalyticsSummary, clearAnalytics, addSampleData, getStoredAnalytics } from "@/utils/analyticsTracker";
+import { Lock, DollarSign, FileText, Activity, ExternalLink, Users } from "lucide-react";
 
 // ============================================
 // CONFIGURATION - UPDATE THESE VALUES
@@ -34,30 +29,17 @@ const GA_PROPERTY_ID = "G-L409EVV9LG";
 
 // ============================================
 
-// Color palette matching MintSlip theme
-const COLORS = ['#1a4731', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#065f46', '#047857'];
-
 export default function AdminAnalytics() {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isIPAllowed, setIsIPAllowed] = useState(null);
   const [password, setPassword] = useState("");
   const [userIP, setUserIP] = useState("");
-  const [dateRange, setDateRange] = useState(30);
-  const [analytics, setAnalytics] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Check IP on mount
   useEffect(() => {
     checkIPAccess();
   }, []);
-
-  // Load analytics when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadAnalytics();
-    }
-  }, [isAuthenticated, dateRange]);
 
   const checkIPAccess = async () => {
     try {
@@ -83,13 +65,6 @@ export default function AdminAnalytics() {
     }
   };
 
-  const loadAnalytics = () => {
-    setIsLoading(true);
-    const data = getAnalyticsSummary(dateRange);
-    setAnalytics(data);
-    setIsLoading(false);
-  };
-
   const handleLogin = (e) => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
@@ -97,20 +72,6 @@ export default function AdminAnalytics() {
       toast.success("Welcome to Admin Analytics!");
     } else {
       toast.error("Incorrect password");
-    }
-  };
-
-  const handleAddSampleData = () => {
-    const count = addSampleData();
-    toast.success(`Added sample data! Total: ${count} documents`);
-    loadAnalytics();
-  };
-
-  const handleClearData = () => {
-    if (window.confirm('Are you sure you want to clear all analytics data? This cannot be undone.')) {
-      clearAnalytics();
-      toast.success('Analytics data cleared');
-      loadAnalytics();
     }
   };
 
@@ -201,24 +162,9 @@ export default function AdminAnalytics() {
             <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Analytics Dashboard
             </h1>
-            <p className="text-slate-600">Track your MintSlip documents and revenue</p>
+            <p className="text-slate-600">Track your MintSlip performance via Google Analytics</p>
           </div>
-          <div className="flex items-center gap-3 mt-4 md:mt-0">
-            <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200">
-              <Calendar className="w-4 h-4 text-slate-500" />
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(parseInt(e.target.value))}
-                className="bg-transparent border-none text-sm focus:outline-none"
-              >
-                <option value={7}>Last 7 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={90}>Last 90 days</option>
-              </select>
-            </div>
-            <Button variant="outline" size="sm" onClick={loadAnalytics}>
-              <RefreshCw className="w-4 h-4" />
-            </Button>
+          <div className="flex items-center gap-4 mt-4 md:mt-0">
             <Button 
               variant="outline" 
               onClick={() => setIsAuthenticated(false)}
@@ -229,340 +175,189 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        {analytics && (
-          <>
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-500">Total Documents</p>
-                      <p className="text-3xl font-bold" style={{ color: '#1a4731' }}>
-                        {analytics.totalDocuments.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-green-700" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">Last {dateRange} days</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-500">Total Revenue</p>
-                      <p className="text-3xl font-bold" style={{ color: '#1a4731' }}>
-                        ${analytics.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <DollarSign className="w-6 h-6 text-yellow-700" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">Last {dateRange} days</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-500">Avg. Order Value</p>
-                      <p className="text-3xl font-bold" style={{ color: '#1a4731' }}>
-                        ${analytics.totalDocuments > 0 
-                          ? (analytics.totalRevenue / analytics.totalDocuments).toFixed(2) 
-                          : '0.00'}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-blue-700" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">Per document</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-500">Document Types</p>
-                      <p className="text-3xl font-bold" style={{ color: '#1a4731' }}>
-                        {analytics.typeData.length}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <Activity className="w-6 h-6 text-purple-700" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-2">Active products</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Charts Row 1 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {/* Documents & Revenue Over Time */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: '#1a4731' }}>Documents & Revenue Over Time</CardTitle>
-                  <CardDescription>Daily breakdown for the last {dateRange} days</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {analytics.dailyStats.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <ComposedChart data={analytics.dailyStats}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis 
-                          dataKey="dateLabel" 
-                          tick={{ fontSize: 11 }} 
-                          stroke="#64748b"
-                          interval={Math.ceil(analytics.dailyStats.length / 7)}
-                        />
-                        <YAxis yAxisId="left" tick={{ fontSize: 12 }} stroke="#64748b" />
-                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} stroke="#64748b" />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '8px'
-                          }}
-                          formatter={(value, name) => [
-                            name === 'revenue' ? `$${value.toFixed(2)}` : value,
-                            name === 'revenue' ? 'Revenue' : 'Documents'
-                          ]}
-                        />
-                        <Legend />
-                        <Bar yAxisId="left" dataKey="documents" fill="#10b981" name="Documents" radius={[4, 4, 0, 0]} />
-                        <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#1a4731" strokeWidth={2} name="Revenue" dot={false} />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center text-slate-400">
-                      No data available for this period
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Revenue Trend */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: '#1a4731' }}>Revenue Trend</CardTitle>
-                  <CardDescription>Cumulative revenue over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {analytics.dailyStats.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart data={analytics.dailyStats.map((day, index, arr) => ({
-                        ...day,
-                        cumulativeRevenue: arr.slice(0, index + 1).reduce((sum, d) => sum + d.revenue, 0)
-                      }))}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis 
-                          dataKey="dateLabel" 
-                          tick={{ fontSize: 11 }} 
-                          stroke="#64748b"
-                          interval={Math.ceil(analytics.dailyStats.length / 7)}
-                        />
-                        <YAxis tick={{ fontSize: 12 }} stroke="#64748b" tickFormatter={(v) => `$${v}`} />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '8px'
-                          }}
-                          formatter={(value) => [`$${value.toFixed(2)}`, 'Cumulative Revenue']}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="cumulativeRevenue" 
-                          stroke="#059669" 
-                          fill="#d1fae5" 
-                          strokeWidth={2}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center text-slate-400">
-                      No data available for this period
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Charts Row 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              {/* Document Types Pie Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: '#1a4731' }}>Documents by Type</CardTitle>
-                  <CardDescription>Distribution of generated documents</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {analytics.typeData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={analytics.typeData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={90}
-                          paddingAngle={2}
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          labelLine={false}
-                        >
-                          {analytics.typeData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '8px'
-                          }}
-                          formatter={(value, name, props) => [
-                            `${value} docs ($${props.payload.revenue.toFixed(2)})`,
-                            props.payload.name
-                          ]}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center text-slate-400">
-                      No data available
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Revenue by Type */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: '#1a4731' }}>Revenue by Type</CardTitle>
-                  <CardDescription>Income from each document type</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {analytics.typeData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={analytics.typeData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis type="number" tick={{ fontSize: 12 }} stroke="#64748b" tickFormatter={(v) => `$${v}`} />
-                        <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="#64748b" width={90} />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '8px'
-                          }}
-                          formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']}
-                        />
-                        <Bar dataKey="revenue" fill="#059669" radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center text-slate-400">
-                      No data available
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Recent Documents */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg" style={{ color: '#1a4731' }}>Recent Documents</CardTitle>
-                  <CardDescription>Latest generated documents</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {analytics.recentDocuments.length > 0 ? (
-                    <div className="space-y-3 max-h-[280px] overflow-y-auto">
-                      {analytics.recentDocuments.map((doc, index) => (
-                        <div key={doc.id} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                          <div className="flex items-center gap-3">
-                            <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-xs font-semibold text-green-700">
-                              {index + 1}
-                            </span>
-                            <div>
-                              <p className="text-sm font-medium text-slate-700">{doc.documentType}</p>
-                              <p className="text-xs text-slate-400">
-                                {new Date(doc.timestamp).toLocaleDateString('en-US', { 
-                                  month: 'short', 
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="text-sm font-semibold text-green-600">${doc.amount.toFixed(2)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="h-[280px] flex items-center justify-center text-slate-400">
-                      No recent documents
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Data Management */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-lg" style={{ color: '#1a4731' }}>Data Management</CardTitle>
-                <CardDescription>Manage your local analytics data</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-4">
-                  <Button variant="outline" onClick={handleAddSampleData}>
-                    <Database className="w-4 h-4 mr-2" />
-                    Add Sample Data (Testing)
-                  </Button>
-                  <Button variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={handleClearData}>
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Clear All Data
-                  </Button>
-                  <a 
-                    href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/dashboard`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="outline">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Open Google Analytics
-                    </Button>
-                  </a>
+        {/* Google Analytics Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <a 
+            href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/dashboard`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Card className="hover:shadow-md transition-shadow cursor-pointer border-green-200 bg-green-50">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-xs text-slate-500 mt-4">
-                  <strong>Note:</strong> Data is stored in your browser's localStorage. It persists across sessions but is specific to this browser.
-                  Data is also sent to Google Analytics for backup.
-                </p>
+                <div className="flex-1">
+                  <p className="font-semibold text-green-800">GA4 Dashboard</p>
+                  <p className="text-xs text-green-600">View full analytics</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-green-600" />
               </CardContent>
             </Card>
+          </a>
 
-            {/* Configuration Info */}
-            <Card className="bg-slate-50 border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg text-slate-700">⚙️ Configuration</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-slate-600 space-y-3">
-                <p><strong>File:</strong> <code className="bg-slate-200 px-1 rounded">/frontend/src/pages/AdminAnalytics.js</code></p>
-                <p><strong>Password (line 25):</strong> <code className="bg-slate-200 px-1 rounded">const ADMIN_PASSWORD = "{ADMIN_PASSWORD}";</code></p>
-                <p><strong>Allowed IPs (line 18-22):</strong> Add your IP addresses to the ALLOWED_IPS array</p>
+          <a 
+            href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/explorer?params=_u..nav%3Dmaui%26_r.explorerCard..startRow%3D0%26_r.explorerCard..selmet%3D%5B%22eventCount%22%5D%26_r.explorerCard..seldim%3D%5B%22eventName%22%5D`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">Events</p>
+                  <p className="text-xs text-slate-500">Document tracking</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-400" />
               </CardContent>
             </Card>
-          </>
-        )}
+          </a>
+
+          <a 
+            href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/monetization-overview`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">Revenue</p>
+                  <p className="text-xs text-slate-500">Monetization data</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-400" />
+              </CardContent>
+            </Card>
+          </a>
+
+          <a 
+            href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/realtime`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800">Realtime</p>
+                  <p className="text-xs text-slate-500">Live visitors</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-400" />
+              </CardContent>
+            </Card>
+          </a>
+        </div>
+
+        {/* Tracking Setup Info */}
+        <Card className="mb-8 border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="text-lg text-green-800 flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Event Tracking Active
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-green-700">
+            <p className="mb-3">Your app is now tracking these events in Google Analytics:</p>
+            <ul className="list-disc list-inside space-y-1 mb-4">
+              <li><code className="bg-green-100 px-1 rounded">document_generated</code> - When a document is created after payment</li>
+              <li><code className="bg-green-100 px-1 rounded">purchase</code> - Revenue tracking with document type and amount</li>
+              <li><code className="bg-green-100 px-1 rounded">begin_checkout</code> - When payment is initiated</li>
+            </ul>
+            <p className="text-xs text-green-600">
+              GA Property ID: <code className="bg-green-100 px-1 rounded">{GA_PROPERTY_ID}</code>
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* How to View Data */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg" style={{ color: '#1a4731' }}>📊 View Document Stats</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-slate-600 space-y-3">
+              <p>To see document generation stats in GA4:</p>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Go to <strong>Reports → Engagement → Events</strong></li>
+                <li>Look for <code className="bg-slate-100 px-1 rounded">document_generated</code> event</li>
+                <li>Click on it to see breakdown by document_type</li>
+              </ol>
+              <a 
+                href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/explorer?params=_u..nav%3Dmaui%26_r.explorerCard..selmet%3D%5B%22eventCount%22%5D%26_r.explorerCard..seldim%3D%5B%22customEvent:document_type%22%5D&r=events-overview`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-green-600 hover:underline"
+              >
+                Open in GA4 <ExternalLink className="w-3 h-3" />
+              </a>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg" style={{ color: '#1a4731' }}>💰 View Revenue Stats</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-slate-600 space-y-3">
+              <p>To see revenue data in GA4:</p>
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Go to <strong>Reports → Monetization → Overview</strong></li>
+                <li>View total revenue and purchases</li>
+                <li>Click <strong>Ecommerce purchases</strong> for item breakdown</li>
+              </ol>
+              <a 
+                href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/monetization-overview`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-green-600 hover:underline"
+              >
+                Open in GA4 <ExternalLink className="w-3 h-3" />
+              </a>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Configuration Info */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-lg text-blue-800">⚙️ Configuration</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-blue-700 space-y-4">
+            <div>
+              <p className="font-semibold mb-2">To change the admin password:</p>
+              <p>Edit <code className="bg-blue-100 px-1 rounded">/frontend/src/pages/AdminAnalytics.js</code></p>
+              <p>Find line: <code className="bg-blue-100 px-1 rounded">const ADMIN_PASSWORD = "MintSlip2025!";</code></p>
+            </div>
+            <div>
+              <p className="font-semibold mb-2">To add allowed IP addresses:</p>
+              <p>Edit the same file, find the <code className="bg-blue-100 px-1 rounded">ALLOWED_IPS</code> array and add your IPs</p>
+            </div>
+            <div>
+              <p className="font-semibold mb-2">To add tracking to other forms:</p>
+              <p>Import and call <code className="bg-blue-100 px-1 rounded">trackDocumentGenerated()</code> from <code className="bg-blue-100 px-1 rounded">@/utils/analyticsTracker.js</code></p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* File Location Reference */}
+        <Card className="mt-6 bg-slate-100 border-slate-200">
+          <CardContent className="p-4">
+            <p className="text-sm text-slate-600">
+              <strong>File locations:</strong><br/>
+              • Analytics page: <code className="bg-slate-200 px-1 rounded text-xs">/frontend/src/pages/AdminAnalytics.js</code><br/>
+              • Tracking utility: <code className="bg-slate-200 px-1 rounded text-xs">/frontend/src/utils/analyticsTracker.js</code>
+            </p>
+          </CardContent>
+        </Card>
 
       </div>
       <Footer />

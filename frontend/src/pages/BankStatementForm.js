@@ -594,13 +594,13 @@ const createOrder = (data, actions) => {
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept=".png,image/png"
+                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                         onChange={handleFileSelect}
                         className="hidden"
                         data-testid="logo-file-input"
                       />
                       <p className="text-xs text-slate-400 mt-3">
-                        PNG format only
+                        PNG or JPG, max 2MB • Best: 195×60px
                       </p>
                     </div>
                   )}

@@ -209,6 +209,28 @@ export default function CanadianPaystubForm() {
     ));
   };
 
+  // Add a new absence plan (only for Template C)
+  const addAbsencePlan = () => {
+    setAbsencePlans([...absencePlans, { 
+      id: Date.now(), 
+      description: "PTO Plan", 
+      accrued: "", 
+      reduced: "" 
+    }]);
+  };
+
+  // Remove an absence plan
+  const removeAbsencePlan = (id) => {
+    setAbsencePlans(absencePlans.filter(p => p.id !== id));
+  };
+
+  // Update an absence plan
+  const updateAbsencePlan = (id, field, value) => {
+    setAbsencePlans(absencePlans.map(p => 
+      p.id === id ? { ...p, [field]: value } : p
+    ));
+  };
+
   // Generate PDF preview when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -216,11 +238,12 @@ export default function CanadianPaystubForm() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
-          // Include deductions, contributions, and logo in preview data
+          // Include deductions, contributions, absence plans, and logo in preview data
           const previewData = {
             ...formData,
             deductions: deductions,
             contributions: contributions,
+            absencePlans: absencePlans, // Pass absence plans for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
           const previewUrl = await generateCanadianPreviewPDF(previewData, selectedTemplate);
@@ -233,7 +256,7 @@ export default function CanadianPaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate, deductions, contributions, logoPreview]);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, logoPreview]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

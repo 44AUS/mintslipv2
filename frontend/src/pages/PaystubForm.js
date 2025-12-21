@@ -260,7 +260,7 @@ export default function PaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate, deductions, contributions, logoPreview]);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, logoPreview]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

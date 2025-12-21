@@ -1091,12 +1091,12 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   const taxCols = ["Description", "Amount", "YTD"];
   const taxWidths = [usableWidth * 0.6, usableWidth * 0.2, usableWidth * 0.2];
   const taxRows = [
-    ["OASDI (Social Security)", fmt(ssTax), fmt(ytdSsTax || ssTax)],
-    ["Medicare", fmt(medTax), fmt(ytdMedTax || medTax)],
-    ["Federal Withholding", fmt(federalTax || 0), fmt(ytdFederalTax || federalTax || 0)],
-    [`State Tax - ${formData.state || 'ST'}`, fmt(stateTax), fmt(ytdStateTax || stateTax)]
+    ["Federal Income Tax", fmt(federalTax || 0), fmt(ytdFederalTax || federalTax || 0)],
+    [cppLabel || "CPP", fmt(cpp), fmt(ytdCpp || cpp)],
+    ["EI", fmt(ei), fmt(ytdEi || ei)],
+    [`${formData.province || 'Prov.'} Income Tax`, fmt(provincialTax), fmt(ytdProvincialTax || provincialTax)]
   ];
-  if (formData.includeLocalTax && localTax > 0) taxRows.push([`City Tax`, fmt(localTax), fmt(ytdLocalTax || localTax)]);
+  if (isQuebec && qpip > 0) taxRows.splice(3, 0, ["QPIP", fmt(qpip), fmt(ytdQpip || qpip)]);
   taxRows.push(["Total Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
   drawTableSection("Employee Taxes", taxCols, taxWidths, taxRows, true, false);
 

@@ -99,12 +99,13 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     // Load and embed Yellowtail font for signatures
     let signatureFont;
     try {
-      const fontResponse = await fetch(YellowtailFont);
+      const fontResponse = await fetch('/fonts/Yellowtail-Regular.ttf');
       const fontBytes = await fontResponse.arrayBuffer();
       signatureFont = await pdfDoc.embedFont(fontBytes);
     } catch (fontError) {
       console.warn('Could not load Yellowtail font, falling back to italic:', fontError);
       signatureFont = italicFont;
+    }
     }
     
     // Get template colors

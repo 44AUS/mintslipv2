@@ -1207,12 +1207,20 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   // ========== 9. TAX WITHHOLDING INFORMATION SECTION ==========
   const withholdingCols = ["", "Federal", "State"];
   const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
-  const filingStatus = formData.filingStatus || "Single or Married filing separately";
+  // Use federalFilingStatus from earlier Tax Withholding section, map to display text
+  let filingStatusDisplay = "Single or Married filing separately";
+  if (formData.federalFilingStatus === "married_jointly") {
+    filingStatusDisplay = "Married filing jointly";
+  } else if (formData.federalFilingStatus === "head_of_household") {
+    filingStatusDisplay = "Head of Household";
+  } else if (formData.federalFilingStatus === "single") {
+    filingStatusDisplay = "Single or Married filing separately";
+  }
   const stateAllowances = formData.stateAllowances || "0";
   const federalAdditionalWithholding = formData.federalAdditionalWithholding || "0";
   const stateAdditionalWithholding = formData.stateAdditionalWithholding || "0";
   const withholdingRows = [
-    ["Marital Status", filingStatus, ""],
+    ["Marital Status", filingStatusDisplay, ""],
     ["Allowances", "0", stateAllowances],  // Federal allowances always 0 (not used since 2020 W-4)
     ["Additional Withholding", federalAdditionalWithholding, stateAdditionalWithholding]
   ];

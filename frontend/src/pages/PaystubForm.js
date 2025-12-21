@@ -953,12 +953,6 @@ export default function PaystubForm() {
                     {logoError}
                   </p>
                 )}
-                
-                {!companyLogo && !logoError && (
-                  <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
-                    * A company logo is required to generate your pay stub
-                  </p>
-                )}
               </div>
 
               {/* Worker Type Selection - Only show contractor option for Template A (Gusto) */}

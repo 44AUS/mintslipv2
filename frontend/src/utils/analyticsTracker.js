@@ -1,22 +1,66 @@
-// Google Analytics 4 Event Tracking for MintSlip
-// This sends custom events to track document generation and revenue
+// Google Analytics 4 Event Tracking + Local Storage for MintSlip
+// This sends custom events to GA AND stores locally for dashboard display
 
-// GA4 Measurement ID (from your index.html)
 const GA_MEASUREMENT_ID = 'G-L409EVV9LG';
+const STORAGE_KEY = 'mintslip_analytics';
+
+/**
+ * Get stored analytics data
+ */
+export const getStoredAnalytics = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Error reading analytics:', e);
+  }
+  return { documents: [], lastUpdated: null };
+};
+
+/**
+ * Save analytics data to localStorage
+ */
+const saveAnalytics = (data) => {
+  try {
+    data.lastUpdated = new Date().toISOString();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error saving analytics:', e);
+  }
+};
 
 /**
  * Track a document generation event
- * @param {string} documentType - Type of document (paystub, w2, bank_statement, etc.)
- * @param {string} template - Template used (optional)
- * @param {number} amount - Payment amount in USD
- * @param {string} paymentMethod - Payment method (paypal, etc.)
  */
 export const trackDocumentGenerated = (documentType, template = null, amount = 0, paymentMethod = 'paypal') => {
-  // Check if gtag is available
+  const timestamp = new Date().toISOString();
+  const entry = {
+    id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    documentType,
+    template: template || 'default',
+    amount,
+    paymentMethod,
+    timestamp,
+    date: timestamp.split('T')[0] // YYYY-MM-DD format
+  };
+
+  // Save to localStorage
+  const data = getStoredAnalytics();
+  data.documents.push(entry);
+  
+  // Keep only last 1000 entries to prevent storage overflow
+  if (data.documents.length > 1000) {
+    data.documents = data.documents.slice(-1000);
+  }
+  
+  saveAnalytics(data);
+
+  // Also send to Google Analytics
   if (typeof window !== 'undefined' && window.gtag) {
-    // Send purchase event (for revenue tracking)
     window.gtag('event', 'purchase', {
-      transaction_id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      transaction_id: entry.id,
       value: amount,
       currency: 'USD',
       items: [{
@@ -29,62 +73,123 @@ export const trackDocumentGenerated = (documentType, template = null, amount = 0
       }]
     });
 
-    // Send custom document_generated event
     window.gtag('event', 'document_generated', {
       document_type: documentType,
       template: template || 'default',
       amount: amount,
       payment_method: paymentMethod
     });
-
-    console.log(`[Analytics] Tracked: ${documentType}, $${amount}`);
-  } else {
-    console.warn('[Analytics] gtag not available');
   }
+
+  console.log(`[Analytics] Tracked: ${documentType}, $${amount}`);
+  return entry;
 };
 
 /**
- * Track a document preview event
- * @param {string} documentType - Type of document
+ * Get analytics summary for dashboard
  */
-export const trackDocumentPreview = (documentType) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'document_preview', {
-      document_type: documentType
-    });
+export const getAnalyticsSummary = (days = 30) => {
+  const data = getStoredAnalytics();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  
+  // Filter documents within date range
+  const filtered = data.documents.filter(doc => new Date(doc.timestamp) >= cutoffDate);
+  
+  // Calculate totals
+  const totalDocuments = filtered.length;
+  const totalRevenue = filtered.reduce((sum, doc) => sum + (doc.amount || 0), 0);
+  
+  // Group by document type
+  const documentsByType = {};
+  const revenueByType = {};
+  
+  filtered.forEach(doc => {
+    const type = doc.documentType || 'unknown';
+    documentsByType[type] = (documentsByType[type] || 0) + 1;
+    revenueByType[type] = (revenueByType[type] || 0) + (doc.amount || 0);
+  });
+  
+  // Daily stats for charts
+  const dailyStats = {};
+  for (let i = 0; i < days; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - (days - 1 - i));
+    const dateStr = date.toISOString().split('T')[0];
+    dailyStats[dateStr] = { date: dateStr, documents: 0, revenue: 0 };
   }
+  
+  filtered.forEach(doc => {
+    const dateStr = doc.date;
+    if (dailyStats[dateStr]) {
+      dailyStats[dateStr].documents += 1;
+      dailyStats[dateStr].revenue += (doc.amount || 0);
+    }
+  });
+  
+  const dailyArray = Object.values(dailyStats).map(day => ({
+    ...day,
+    dateLabel: new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }));
+  
+  // Document type data for pie chart
+  const typeData = Object.entries(documentsByType).map(([name, value]) => ({
+    name: getDocumentName(name),
+    value,
+    revenue: revenueByType[name] || 0
+  })).sort((a, b) => b.value - a.value);
+  
+  return {
+    totalDocuments,
+    totalRevenue,
+    documentsByType,
+    revenueByType,
+    dailyStats: dailyArray,
+    typeData,
+    recentDocuments: filtered.slice(-10).reverse()
+  };
 };
 
 /**
- * Track form start event
- * @param {string} documentType - Type of document form started
+ * Clear all stored analytics (for testing)
  */
-export const trackFormStart = (documentType) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'form_start', {
-      document_type: documentType
-    });
-  }
+export const clearAnalytics = () => {
+  localStorage.removeItem(STORAGE_KEY);
 };
 
 /**
- * Track payment initiated event
- * @param {string} documentType - Type of document
- * @param {number} amount - Payment amount
+ * Add sample data for testing
  */
-export const trackPaymentInitiated = (documentType, amount) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', 'begin_checkout', {
-      currency: 'USD',
-      value: amount,
-      items: [{
-        item_id: documentType,
-        item_name: getDocumentName(documentType),
-        price: amount,
-        quantity: 1
-      }]
-    });
+export const addSampleData = () => {
+  const types = ['paystub', 'w2', 'bank_statement', '1099-nec', 'offer_letter', 'w9'];
+  const prices = { paystub: 9.99, w2: 15.00, bank_statement: 50.00, '1099-nec': 12.00, offer_letter: 9.99, w9: 10.00 };
+  
+  const data = getStoredAnalytics();
+  
+  // Generate 30 days of sample data
+  for (let i = 30; i >= 0; i--) {
+    const numDocs = Math.floor(Math.random() * 8) + 2; // 2-10 docs per day
+    
+    for (let j = 0; j < numDocs; j++) {
+      const type = types[Math.floor(Math.random() * types.length)];
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 60));
+      
+      data.documents.push({
+        id: `sample_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        documentType: type,
+        template: 'default',
+        amount: prices[type],
+        paymentMethod: 'paypal',
+        timestamp: date.toISOString(),
+        date: date.toISOString().split('T')[0]
+      });
+    }
   }
+  
+  saveAnalytics(data);
+  return data.documents.length;
 };
 
 /**
@@ -95,8 +200,8 @@ const getDocumentName = (documentType) => {
     'paystub': 'Paystub',
     'w2': 'W-2 Form',
     'w9': 'W-9 Form',
-    '1099-nec': '1099-NEC Form',
-    '1099-misc': '1099-MISC Form',
+    '1099-nec': '1099-NEC',
+    '1099-misc': '1099-MISC',
     'bank_statement': 'Bank Statement',
     'offer_letter': 'Offer Letter',
     'schedule_c': 'Schedule C',
@@ -107,20 +212,4 @@ const getDocumentName = (documentType) => {
   return names[documentType] || documentType;
 };
 
-/**
- * Document prices for reference
- */
-export const DOCUMENT_PRICES = {
-  'paystub': 9.99,
-  'w2': 15.00,
-  'w9': 10.00,
-  '1099-nec': 12.00,
-  '1099-misc': 12.00,
-  'bank_statement': 50.00,
-  'bank_statement_premium': 70.00,
-  'offer_letter': 9.99,
-  'schedule_c': 15.00,
-  'vehicle_bill_of_sale': 10.00,
-  'utility_bill': 10.00,
-  'canadian_paystub': 9.99
-};
+export { getDocumentName };

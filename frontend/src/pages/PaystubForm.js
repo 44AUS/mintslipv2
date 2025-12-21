@@ -2146,7 +2146,7 @@ export default function PaystubForm() {
                 </p>
                 {calculateNumStubs > 0 && (
                   <p className="text-sm text-slate-600 mb-4">
-                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)
+                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $9.99)
                   </p>
                 )}
                 <div data-testid="paypal-button-container">

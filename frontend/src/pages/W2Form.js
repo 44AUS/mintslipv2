@@ -221,7 +221,7 @@ export default function W2Form() {
         {
           description: `W-2 Form - Tax Year ${selectedTaxYear}`,
           amount: {
-            value: "15.00",
+            value: "14.99",
           },
         },
       ],
@@ -959,7 +959,7 @@ export default function W2Form() {
                   Complete Payment
                 </h3>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$15.00</strong> for W-2 generation
+                  Total: <strong>$14.99</strong> for W-2 generation
                 </p>
                 <div>
                   <PayPalButtons

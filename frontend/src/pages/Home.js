@@ -1403,7 +1403,7 @@ export default function Home() {
               <Receipt className="w-12 h-12 text-green-700 mx-auto mb-4" />
               <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Pay Stub Generator</h4>
               <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                 <span className="text-slate-500 ml-2">/ stub</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
@@ -1469,7 +1469,7 @@ export default function Home() {
               <PiggyBank className="w-12 h-12 text-green-700 mx-auto mb-4" />
               <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups</h4>
               <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$50-70</span>
+                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$49.99</span>
                 <span className="text-slate-500 ml-2">/ doc</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
@@ -1488,36 +1488,6 @@ export default function Home() {
               </ul>
               <button
                 onClick={() => navigate("/accounting-mockup-generator")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* W-2 Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl">
-              <Calendar className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>W-2 Form Generator</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$15</span>
-                <span className="text-slate-500 ml-2">/ form</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Compliant Format</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>All Standard W-2 Boxes</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Auto-Calculate Taxes</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/w2-generator")}
                 className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
               >
                 Generate Now
@@ -1786,7 +1756,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -1839,7 +1809,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50-$70</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$49.99</span>
                   <span className="text-slate-500">per statement</span>
                 </div>
               </div>
@@ -1865,7 +1835,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$15</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$14.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -1893,7 +1863,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -1921,7 +1891,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -1949,7 +1919,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -1977,7 +1947,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -2005,7 +1975,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$15</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -2033,7 +2003,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$10</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
                 </div>
               </div>
@@ -2061,7 +2031,7 @@ export default function Home() {
               </p>
               <div className="pt-4">
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$50</span>
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$49.99</span>
                   <span className="text-slate-500">per statement</span>
                 </div>
               </div>

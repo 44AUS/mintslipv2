@@ -218,7 +218,7 @@ export default function ScheduleCForm() {
         {
           description: `Schedule C (Form 1040) - Tax Year ${selectedTaxYear}`,
           amount: {
-            value: "15.00",
+            value: "14.99",
           },
         },
       ],
@@ -889,7 +889,7 @@ export default function ScheduleCForm() {
                   Complete Payment
                 </h3>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$15.00</strong> for Schedule C generation
+                  Total: <strong>$14.99</strong> for Schedule C generation
                 </p>
                 <div>
                   <PayPalButtons

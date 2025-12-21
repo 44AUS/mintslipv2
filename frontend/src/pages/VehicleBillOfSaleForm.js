@@ -168,7 +168,7 @@ export default function VehicleBillOfSaleForm() {
         {
           description: `Vehicle Bill of Sale - ${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`,
           amount: {
-            value: "10.00",
+            value: "9.99",
           },
         },
       ],
@@ -917,7 +917,7 @@ export default function VehicleBillOfSaleForm() {
                   Complete Payment
                 </h3>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$10.00</strong> for vehicle bill of sale generation
+                  Total: <strong>$9.99</strong> for vehicle bill of sale generation
                 </p>
                 
                 {isProcessing ? (

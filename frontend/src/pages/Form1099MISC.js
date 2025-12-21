@@ -170,7 +170,7 @@ export default function Form1099MISC() {
         {
           description: `1099-MISC Form - Tax Year ${selectedTaxYear}`,
           amount: {
-            value: "10.00",
+            value: "9.99",
           },
         },
       ],
@@ -868,7 +868,7 @@ export default function Form1099MISC() {
               {/* Payment Section */}
               <div className="p-6 bg-white rounded-lg border border-slate-200">
                 <div className="text-center mb-4">
-                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$10.00</p>
+                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</p>
                   <p className="text-sm text-slate-500">One-time payment</p>
                 </div>
                 

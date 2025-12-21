@@ -290,10 +290,10 @@ export default function BankStatementForm() {
 const getStatementPrice = () => {
   // BOA (template-b) and Chase (template-c) are $70
   if (selectedTemplate === 'template-b' || selectedTemplate === 'template-c') {
-    return "70.00";
+    return "69.99";
   }
   // Chime (template-a) and others are $50
-  return "50.00";
+  return "49.99";
 };
 
 const createOrder = (data, actions) => {

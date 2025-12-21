@@ -296,7 +296,7 @@ export default function UtilityBillForm() {
         {
           description: `Service Expense - ${formData.companyName || 'Statement'}`,
           amount: {
-            value: "50.00",
+            value: "49.99",
           },
         },
       ],
@@ -1339,7 +1339,7 @@ export default function UtilityBillForm() {
                   Users are strictly prohibited from using these mockups for fraudulent or deceptive purposes.
                 </p>
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$50.00</strong> for service expense generation
+                  Total: <strong>$49.99</strong> for service expense generation
                 </p>
                 
                 {!isFormValid() && (

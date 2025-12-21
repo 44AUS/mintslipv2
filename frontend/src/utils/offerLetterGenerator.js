@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 
 // Helper to convert hex color to RGB

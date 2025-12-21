@@ -1235,7 +1235,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     ["Allowances", "0", stateAllowances],  // Federal allowances always 0 (not used since 2020 W-4)
     ["Additional Withholding", federalAdditionalWithholding, stateAdditionalWithholding]
   ];
-  drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1 });
+  drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1, rowDividers: true });
 
   // ========== 10. PAYMENT INFORMATION SECTION ==========
   const paymentCols = ["Bank", "Account Name", "Account Number", "USD Amount", "Amount"];

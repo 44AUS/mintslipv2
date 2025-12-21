@@ -542,6 +542,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     
     // Employee signature - handle different types
     const empSigType = formData.employeeSignatureType || 'blank';
+    const empSignatureLineY = acceptY - 30;
     
     if (empSigType === "custom" && formData.employeeSignatureImage) {
       // Custom signature image - position ABOVE the signature line
@@ -550,10 +551,10 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         const sigDims = empSigImage.scale(0.3);
         const sigHeight = Math.min(sigDims.height, 35);
         const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
-        // Position signature so its bottom aligns just above the signature line (which is at acceptY - 30)
+        // Position signature so its bottom aligns just above the signature line
         page.drawImage(empSigImage, {
           x: margin,
-          y: acceptY - 28, // Position above the line (line is at acceptY - 30)
+          y: empSignatureLineY + 2, // Position just above the line
           width: sigWidth,
           height: sigHeight,
         });
@@ -564,7 +565,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       if (empSignatureName) {
         page.drawText(empSignatureName, {
           x: margin + 5,
-          y: acceptY - 20,
+          y: empSignatureLineY + 5, // Position just above the line
           size: 18,
           font: signatureFont,
           color: rgb(0.1, 0.1, 0.3),
@@ -575,14 +576,14 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     
     // Candidate signature line
     page.drawLine({
-      start: { x: margin, y: acceptY - 30 },
-      end: { x: 250, y: acceptY - 30 },
+      start: { x: margin, y: empSignatureLineY },
+      end: { x: 250, y: empSignatureLineY },
       thickness: 1,
       color: rgb(0.3, 0.3, 0.3),
     });
     page.drawText('Signature', {
       x: margin,
-      y: acceptY - 42,
+      y: empSignatureLineY - 12,
       size: 8,
       font: font,
       color: rgb(0.5, 0.5, 0.5),
@@ -591,30 +592,42 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     // Print name line (for blank signatures)
     if (empSigType === "blank") {
       page.drawLine({
-        start: { x: margin, y: acceptY - 55 },
-        end: { x: 250, y: acceptY - 55 },
+        start: { x: margin, y: empSignatureLineY - 25 },
+        end: { x: 250, y: empSignatureLineY - 25 },
         thickness: 1,
         color: rgb(0.3, 0.3, 0.3),
       });
       page.drawText('Print Name', {
         x: margin,
-        y: acceptY - 67,
+        y: empSignatureLineY - 37,
         size: 8,
         font: font,
         color: rgb(0.5, 0.5, 0.5),
       });
     }
     
-    // Date line
+    // Date line and value
     page.drawLine({
-      start: { x: 300, y: acceptY - 30 },
-      end: { x: 450, y: acceptY - 30 },
+      start: { x: 300, y: empSignatureLineY },
+      end: { x: 450, y: empSignatureLineY },
       thickness: 1,
       color: rgb(0.3, 0.3, 0.3),
     });
+    
+    // If employee sign date is provided, display it above the line
+    if (formData.employeeSignDate) {
+      page.drawText(formatDate(formData.employeeSignDate), {
+        x: 305,
+        y: empSignatureLineY + 5,
+        size: 11,
+        font: font,
+        color: rgb(0.1, 0.1, 0.1),
+      });
+    }
+    
     page.drawText('Date', {
       x: 300,
-      y: acceptY - 42,
+      y: empSignatureLineY - 12,
       size: 8,
       font: font,
       color: rgb(0.5, 0.5, 0.5),

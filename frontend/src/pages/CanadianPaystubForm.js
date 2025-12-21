@@ -114,18 +114,16 @@ export default function CanadianPaystubForm() {
     { label: "Life Insurance", value: "life_insurance" },
     { label: "Disability Insurance", value: "disability_insurance" },
     { label: "Union Dues", value: "union_dues" },
-    { label: "Garnishment", value: "garnishment" },
+    { label: "Parking", value: "parking" },
     { label: "Other", value: "other" },
   ];
 
-  // Common contribution types for quick selection
+  // Common contribution types for quick selection (Canadian)
   const contributionTypes = [
-    { label: "401(k) Match", value: "401k_match" },
-    { label: "HSA", value: "hsa" },
-    { label: "FSA", value: "fsa" },
-    { label: "Dependent Care FSA", value: "dependent_care_fsa" },
-    { label: "Commuter Benefits", value: "commuter" },
-    { label: "Roth 401(k)", value: "roth_401k" },
+    { label: "RRSP Match", value: "rrsp_match" },
+    { label: "TFSA", value: "tfsa" },
+    { label: "Group Benefits", value: "group_benefits" },
+    { label: "Pension Plan", value: "pension_plan" },
     { label: "Other", value: "other" },
   ];
 

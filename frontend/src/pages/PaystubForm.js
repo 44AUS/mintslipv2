@@ -113,9 +113,6 @@ export default function PaystubForm() {
     companyCode: "", // Company Code for ADP template
     locDept: "", // Loc/Dept for ADP template
     checkNumber: "", // Check Number for ADP template
-    // Template C (Workday) Additional Withholding fields
-    federalAdditionalWithholding: "0",
-    stateAdditionalWithholding: "0",
   });
 
   // Validation errors state

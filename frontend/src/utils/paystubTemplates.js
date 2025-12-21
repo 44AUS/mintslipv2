@@ -1174,6 +1174,11 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   dedRows.push(["Pre Tax Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
   drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, whiteHeader: true });
 
+  // Add black border line below Pre Tax Deductions section
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.75);
+  doc.line(m, y - 4, pageWidth - m, y - 4);
+
   // ========== 6. EMPLOYER PAID BENEFITS SECTION ==========
   const benefitCols = ["Description", "Amount", "YTD"];
   const benefitWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];

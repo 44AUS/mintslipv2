@@ -266,6 +266,12 @@ async function generateSingleCanadianStub(
     logoDataUrl: formData.logoDataUrl || formData.companyLogo,
     isQuebec,
     cppLabel: isQuebec ? 'QPP' : 'CPP',
+    // Absence plans for Template C (Workday)
+    absencePlansData: (formData.absencePlans || []).map(plan => ({
+      description: plan.description || "PTO Plan",
+      accrued: plan.accrued || "0",
+      reduced: plan.reduced || "0"
+    }))
   };
   
   // Generate the selected template

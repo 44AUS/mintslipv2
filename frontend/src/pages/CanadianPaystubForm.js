@@ -998,20 +998,20 @@ export default function CanadianPaystubForm() {
                     <Input data-testid="employee-name-input" id="name" name="name" value={formData.name} onChange={handleChange} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="ssn">{formData.workerType === 'contractor' ? 'Last 4 of SSN/EIN *' : 'Last 4 of SSN *'}</Label>
+                    <Label htmlFor="sin">SIN (Social Insurance Number) *</Label>
                     <Input 
-                      data-testid="ssn-input" 
-                      id="ssn" 
-                      name="ssn" 
+                      data-testid="sin-input" 
+                      id="sin" 
+                      name="sin" 
                       value={formData.sin} 
                       onChange={handleSINChange} 
-                      maxLength="4" 
-                      placeholder="1234"
-                      className={validationErrors.ssn ? 'border-red-500' : ''}
+                      maxLength="11" 
+                      placeholder="XXX-XXX-XXX"
+                      className={validationErrors.sin ? 'border-red-500' : ''}
                       required 
                     />
-                    {validationErrors.ssn && (
-                      <p className="text-xs text-red-500 mt-1">{validationErrors.ssn}</p>
+                    {validationErrors.sin && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.sin}</p>
                     )}
                   </div>
                   {/* Employee ID - Only for Workday template */}

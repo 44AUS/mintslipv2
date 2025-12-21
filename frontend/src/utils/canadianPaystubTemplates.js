@@ -1178,15 +1178,10 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   // ========== 9. TAX WITHHOLDING INFORMATION SECTION ==========
   const withholdingCols = ["", "Federal", "Provincial"];
   const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
-  const filingStatus = formData.filingStatus || "Single or Married filing separately";
   const federalAllowances = formData.federalAllowances || "0";
-  const provincialAllowances = formData.provincialAllowances || formData.stateAllowances || "0";
-  const federalAdditionalWithholding = formData.federalAdditionalWithholding || "0";
-  const provincialAdditionalWithholding = formData.provincialAdditionalWithholding || formData.stateAdditionalWithholding || "0";
+  const provincialAllowances = formData.provincialAllowances || "0";
   const withholdingRows = [
-    ["Marital Status", filingStatus, ""],
     ["Allowances", federalAllowances, provincialAllowances],
-    ["Additional Withholding", federalAdditionalWithholding, provincialAdditionalWithholding]
   ];
   drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1 });
 

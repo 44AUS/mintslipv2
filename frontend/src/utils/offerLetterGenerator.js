@@ -468,13 +468,13 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         y -= sigHeight + 10;
       }
     } else {
-      // Generated signature (cursive-style text)
+      // Generated signature using Yellowtail cursive font
       const signatureName = formData.signerName || '[Signer Name]';
       page.drawText(signatureName, {
         x: margin,
         y: y,
-        size: 18,
-        font: italicFont,
+        size: 22,
+        font: signatureFont,
         color: rgb(0.1, 0.1, 0.3),
       });
       y -= 25;

@@ -111,12 +111,9 @@ export default function CanadianPaystubForm() {
     companyCode: "", // Company Code for ADP template
     locDept: "", // Loc/Dept for ADP template
     checkNumber: "", // Check Number for ADP template
-    // Template C (Workday) Tax Withholding fields
-    filingStatus: "Single or Married filing separately",
+    // Template C (Workday) Tax Withholding fields - for calculation
     federalAllowances: "0",
     provincialAllowances: "0",
-    federalAdditionalWithholding: "0",
-    provincialAdditionalWithholding: "0",
   });
 
   // Validation errors state

@@ -243,6 +243,9 @@ export default function OfferLetterForm() {
 
   // Generate PDF preview when form data changes (debounced)
   useEffect(() => {
+    // Don't generate preview while processing payment
+    if (isProcessing) return;
+    
     const timer = setTimeout(async () => {
       if (formData.companyName && formData.candidateName) {
         setIsGeneratingPreview(true);
@@ -257,7 +260,7 @@ export default function OfferLetterForm() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [formData]);
+  }, [formData, isProcessing]);
 
   // PayPal handlers
   const createOrder = (data, actions) => {

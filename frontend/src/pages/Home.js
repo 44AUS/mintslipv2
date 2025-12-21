@@ -1760,6 +1760,33 @@ export default function Home() {
             </div>
           </button>
 
+          {/* Canadian Pay Stub Card */}
+          <button
+            data-testid="canadian-paystub-card-button"
+            onClick={() => navigate("/canadian-paystub-generator")}
+            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
+          >
+            <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">NEW</span>
+            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-red-600 transition-colors">
+              <MapPin className="w-8 h-8 text-red-600 group-hover:text-white transition-colors" />
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                Canadian Pay Stub Generator
+              </h4>
+              <p className="text-slate-600 text-base leading-relaxed pr-16">
+                Generate Canadian pay stubs with accurate CPP/QPP, EI, and provincial tax calculations for all provinces and territories.
+              </p>
+              <div className="pt-4">
+                <div className="inline-flex items-center gap-2">
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+                  <span className="text-slate-500">per document</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
           {/* accounting mockups Card */}
           <button
             data-testid="accountingmockup-card-button"

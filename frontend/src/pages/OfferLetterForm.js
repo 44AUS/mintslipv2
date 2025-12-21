@@ -1277,6 +1277,28 @@ export default function OfferLetterForm() {
                   />
                 )}
                 
+                {/* Test Download Button - for debugging */}
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={async () => {
+                    setIsProcessing(true);
+                    try {
+                      console.log("Starting PDF generation test...");
+                      await generateAndDownloadOfferLetter(formData);
+                      toast.success("PDF downloaded successfully!");
+                    } catch (error) {
+                      console.error("PDF generation error:", error);
+                      toast.error("PDF generation failed: " + error.message);
+                    }
+                    setIsProcessing(false);
+                  }}
+                  disabled={isProcessing || !formData.companyName || !formData.candidateName}
+                >
+                  Test Download (No Payment)
+                </Button>
+                
                 <p className="text-xs text-slate-500 text-center mt-4">
                   Secure payment via PayPal. Your offer letter will download immediately after payment.
                 </p>

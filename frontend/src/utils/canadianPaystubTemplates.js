@@ -975,19 +975,19 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     const headerHeight = 12;
     const rowHeight = 11;
 
-    // 1. Dark Gray Title Area (charcoal gray matching Workday style)
+    // 1. Dark Gray Title Area (light gray #bebebe matching Workday style)
     if (showTitle && title) {
-      doc.setFillColor(55, 55, 55);
+      doc.setFillColor(190, 190, 190);
       doc.rect(m, y, usableWidth, titleHeight, 'F');
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(255, 255, 255);
+      doc.setTextColor(0, 0, 0);
       doc.text(title, pageWidth / 2, y + 9, { align: 'center' });
       y += titleHeight;
     }
 
-    // 2. Dark Gray Header Area (charcoal gray matching Workday style)
-    doc.setFillColor(55, 55, 55);
+    // 2. Dark Gray Header Area (light gray #bebebe matching Workday style)
+    doc.setFillColor(190, 190, 190);
     doc.rect(m, y, usableWidth, headerHeight, 'F');
     
     let currentX = m;

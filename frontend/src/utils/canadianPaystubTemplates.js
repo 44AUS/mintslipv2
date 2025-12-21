@@ -969,7 +969,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   
   // ========== HELPER: Draw Table with Dark Header ==========
   const drawWorkdayTable = (title, columns, colWidths, rowsData, options = {}) => {
-    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1 } = options;
+    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false } = options;
     const startY = y;
     const titleHeight = showTitle && title ? 14 : 0;
     const headerHeight = 12;
@@ -986,8 +986,12 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       y += titleHeight;
     }
 
-    // 2. Gray Header Area (light gray #bebebe matching Workday style)
-    doc.setFillColor(190, 190, 190);
+    // 2. Header Area - white or gray based on option
+    if (whiteHeader) {
+      doc.setFillColor(255, 255, 255);
+    } else {
+      doc.setFillColor(190, 190, 190);
+    }
     doc.rect(m, y, usableWidth, headerHeight, 'F');
     
     let currentX = m;

@@ -130,6 +130,7 @@ export default function OfferLetterForm() {
     employeeSignatureType: "generated", // "generated" or "custom"
     employeeSignatureImage: null, // Base64 signature image
     employeeSignatureName: "", // Name for generated signature
+    employeeSignDate: "", // Date when employee signs
     
     // Custom template options
     primaryColor: "#1a4731",

@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
+import { generateAndDownloadCanadianPaystub } from "@/utils/paystubGenerator";
 import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
@@ -702,7 +702,7 @@ export default function CanadianPaystubForm() {
       };
       
       // Generate and download PDF
-      await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs);
+      await generateAndDownloadCanadianPaystub(fullFormData, selectedTemplate, calculateNumStubs);
       
       // Clear the uploaded logo from localStorage after successful download
       localStorage.removeItem('paystubCompanyLogo');

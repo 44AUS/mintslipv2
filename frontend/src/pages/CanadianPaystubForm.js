@@ -1568,6 +1568,42 @@ export default function CanadianPaystubForm() {
                   </div>
                 )}
 
+                {/* Marital Status Section - Only for employees (Template C) */}
+                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                        Marital Status
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Your marital status affects tax credits and withholding calculations
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-slate-600">Marital Status</Label>
+                        <Select
+                          value={formData.maritalStatus}
+                          onValueChange={(value) => setFormData({...formData, maritalStatus: value})}
+                        >
+                          <SelectTrigger className="h-9">
+                            <SelectValue placeholder="Select marital status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="single">Single (Never Married)</SelectItem>
+                            <SelectItem value="married">Married</SelectItem>
+                            <SelectItem value="common_law">Living Common-Law</SelectItem>
+                            <SelectItem value="separated">Separated</SelectItem>
+                            <SelectItem value="divorced">Divorced</SelectItem>
+                            <SelectItem value="widowed">Widowed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Tax Allowances Section - Only for employees (Template C) */}
                 {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
                   <div className="space-y-4">

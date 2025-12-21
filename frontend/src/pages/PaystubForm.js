@@ -115,7 +115,6 @@ export default function PaystubForm() {
     checkNumber: "", // Check Number for ADP template
     // Template C (Workday) Tax Withholding fields
     filingStatus: "Single or Married filing separately",
-    federalAllowances: "0",
     federalAdditionalWithholding: "0",
     stateAdditionalWithholding: "0",
   });

@@ -1405,67 +1405,11 @@ export default function CanadianPaystubForm() {
                     </div>
                   </Collapsible>
                 )}
-
-                {/* Local Tax option - only for employees in states with local taxes */}
-                {formData.workerType === 'employee' && (
-                  <div className="space-y-3">
-                    {stateHasLocalTax(formData.province) ? (
-                      <>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            data-testid="local-tax-checkbox"
-                            id="includeLocalTax"
-                            checked={formData.includeLocalTax}
-                            onCheckedChange={(checked) => setFormData({...formData, includeLocalTax: checked})}
-                          />
-                          <Label htmlFor="includeLocalTax" className="text-sm font-normal cursor-pointer">
-                            Include local/city tax
-                          </Label>
-                        </div>
-                        
-                        {formData.includeLocalTax && (
-                          <div className="ml-6 space-y-2">
-                            <Label className="text-xs text-slate-600">Select City/Municipality for Local Tax</Label>
-                            <Select 
-                              value={formData.city || ""} 
-                              onValueChange={(val) => setFormData({...formData, city: val})}
-                            >
-                              <SelectTrigger className="w-full max-w-xs">
-                                <SelectValue placeholder="Select city..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {getCitiesWithLocalTax(formData.province).map(city => (
-                                  <SelectItem key={city} value={city}>
-                                    {city} ({(getLocalTaxRate(formData.province, city) * 100).toFixed(2)}%)
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            {formData.city && getLocalTaxRate(formData.province, formData.city) > 0 && (
-                              <p className="text-xs text-green-700">
-                                Local tax rate for {formData.city}: <strong>{(getLocalTaxRate(formData.province, formData.city) * 100).toFixed(2)}%</strong>
-                              </p>
-                            )}
-                            {formData.city && getLocalTaxRate(formData.province, formData.city) === 0 && (
-                              <p className="text-xs text-slate-500">
-                                No local income tax found for this city.
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-xs text-slate-500">
-                        {formData.province ? `${formData.province} does not have local income taxes.` : 'Select a state to see local tax options.'}
-                      </p>
-                    )}
-                  </div>
-                )}
                 
                 {formData.workerType === 'contractor' && (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                     <p className="text-sm text-amber-800">
-                      <strong>Note:</strong> As a contractor (1099), no taxes will be withheld. You are responsible for paying your own self-employment taxes.
+                      <strong>Note:</strong> As a contractor, no taxes will be withheld. You are responsible for paying your own taxes to CRA.
                     </p>
                   </div>
                 )}

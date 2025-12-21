@@ -1028,7 +1028,7 @@ export default function OfferLetterForm() {
                       <div className="space-y-2">
                         <Label>Signature Preview</Label>
                         <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                          <p className="text-2xl italic text-slate-700" style={{ fontFamily: 'cursive' }}>
+                          <p className="text-2xl text-slate-700" style={{ fontFamily: "'Yellowtail', cursive" }}>
                             {formData.employeeSignatureName || formData.candidateName || "Employee Name"}
                           </p>
                         </div>

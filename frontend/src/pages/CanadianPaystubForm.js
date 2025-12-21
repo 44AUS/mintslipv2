@@ -500,7 +500,7 @@ export default function CanadianPaystubForm() {
           {/* Hero Section */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <MapleLeaf className="w-8 h-8 text-red-600" />
+              <span className="text-3xl">🍁</span>
               <h1 className="text-4xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                 Canadian Pay Stub Generator
               </h1>

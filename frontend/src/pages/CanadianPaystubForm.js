@@ -25,6 +25,20 @@ import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
 
+// US Flag SVG component
+const USFlagIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-8 h-8 rounded-full">
+    <circle cx="256" cy="256" r="256" fill="#f0f0f0"/>
+    <g fill="#d80027">
+      <path d="M244.9 256H512c0-23.1-3.1-45.5-8.8-66.8H244.9V256z"/>
+      <path d="M244.9 122.4h229.5c-15-24.9-34.5-46.8-57.4-64.5H244.9v64.5z"/>
+      <path d="M256 512c60.2 0 115.6-20.8 159.4-55.7H96.6C140.4 491.2 195.8 512 256 512z"/>
+      <path d="M37.6 389.5h436.8c13.5-20.2 24.3-42.4 31.8-66.3H5.8c7.5 23.9 18.3 46.1 31.8 66.3z"/>
+    </g>
+    <path d="M118.6 39.9h12.2l-9.9 7.2 3.8 11.6-9.9-7.2-9.9 7.2 3.3-10.1C99.2 56.2 90.8 65 83.4 74.6h3.9l-6.3 4.6c-1 1.6-1.9 3.3-2.9 5l3 9.2-5.6-4.1c-1.6 3.3-3.1 6.6-4.4 10l3.3 10.1h14.2l-9.9 7.2 3.8 11.6-9.9-7.2-7.4 5.4c-.7 3.6-1.4 7.2-2 10.9h12.2l-9.9 7.2 3.8 11.6-9.9-7.2-9.9 7.2 3.8-11.6-8.3-6.1C.7 238.9 0 247.4 0 256h256V0c-50.6 0-97.5 14.7-137.1 39.9zm9.9 190.4l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm55.7 111.4l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm55.7 167.1l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6zm0-55.7l-9.9-7.2-9.9 7.2 3.8-11.6-9.9-7.2h12.2l3.8-11.6 3.8 11.6h12.2l-9.9 7.2 3.8 11.6z" fill="#0052b4"/>
+  </svg>
+);
+
 // Payroll company templates with logos
 const PAYROLL_COMPANIES = [
   { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
@@ -38,6 +52,10 @@ export default function CanadianPaystubForm() {
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  
+  // Location detection state
+  const [userCountry, setUserCountry] = useState(null);
+  const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [hoursExpanded, setHoursExpanded] = useState(false);
   const [hoursPerPeriod, setHoursPerPeriod] = useState([]);

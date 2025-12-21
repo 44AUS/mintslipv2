@@ -62,18 +62,18 @@ export default function CanadianPaystubForm() {
   
   const [formData, setFormData] = useState({
     name: "",
-    ssn: "",
+    sin: "",
     bank: "",
     bankName: "",
     address: "",
     city: "",
-    state: "",
-    zip: "",
+    province: "ON",
+    postalCode: "",
     company: "",
     companyAddress: "",
     companyCity: "",
-    companyState: "",
-    companyZip: "",
+    companyProvince: "ON",
+    companyPostalCode: "",
     companyPhone: "",
     hireDate: "",
     startDate: "",
@@ -83,12 +83,9 @@ export default function CanadianPaystubForm() {
     payDay: "Friday",
     hoursList: "",
     overtimeList: "",
-    includeLocalTax: true,
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type
-    federalFilingStatus: "", // optional: single, married_jointly, head_of_household (no more allowances per 2020 W-4)
-    stateAllowances: "0", // number of state allowances (only for states that use them)
     employeeId: "", // Employee ID for Workday template
     // ADP Template B specific fields
     companyCode: "", // Company Code for ADP template
@@ -98,19 +95,19 @@ export default function CanadianPaystubForm() {
 
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState({
-    ssn: '',
+    sin: '',
     bank: '',
-    zip: '',
-    companyZip: '',
+    postalCode: '',
+    companyPostalCode: '',
     companyPhone: '',
     companyCode: '',
     locDept: '',
     checkNumber: '',
   });
 
-  // Common deduction types for quick selection
+  // Common deduction types for quick selection (Canadian)
   const deductionTypes = [
-    { label: "401(k)", value: "401k" },
+    { label: "RRSP", value: "rrsp" },
     { label: "Health Insurance", value: "health_insurance" },
     { label: "Dental Insurance", value: "dental_insurance" },
     { label: "Vision Insurance", value: "vision_insurance" },

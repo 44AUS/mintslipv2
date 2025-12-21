@@ -2264,17 +2264,6 @@ export default function PaystubForm() {
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-slate-600">Federal Allowances</Label>
-                        <Input
-                          type="number"
-                          value={formData.federalAllowances}
-                          onChange={(e) => setFormData({...formData, federalAllowances: e.target.value})}
-                          placeholder="0"
-                          className="h-9"
-                          min="0"
-                        />
-                      </div>
-                      <div className="space-y-1">
                         <Label className="text-xs text-slate-600">State Allowances</Label>
                         <Input
                           type="number"

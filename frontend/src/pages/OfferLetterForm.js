@@ -290,6 +290,9 @@ export default function OfferLetterForm() {
       // Generate and download PDF
       await generateAndDownloadOfferLetter(formData);
       
+      // Track in Google Analytics
+      trackDocumentGenerated('offer_letter', formData.template, 9.99, 'paypal');
+      
       toast.success("Offer letter downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {

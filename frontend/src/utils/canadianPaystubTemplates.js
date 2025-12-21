@@ -908,16 +908,16 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.text(formData.address || "", m, y + 10);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, m, y + 18);
+  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, m, y + 18);
 }
 
 // Template C: Workday Style Professional Payslip
 export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight, margin) {
   try {
-  const { formData, hours = 0, overtime = 0, regularPay = 0, overtimePay = 0, grossPay = 0, ssTax = 0, medTax = 0, federalTax = 0, stateTax = 0, localTax = 0, localTaxRate = 0, totalTax = 0, netPay = 0, rate = 0, stateRate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
-    ytdRegularPay = 0, ytdOvertimePay = 0, ytdGrossPay = 0, ytdSsTax = 0, ytdMedTax = 0, ytdFederalTax = 0, ytdStateTax = 0, ytdLocalTax = 0, ytdTotalTax = 0, ytdNetPay = 0,
+  const { formData, hours = 0, overtime = 0, regularPay = 0, overtimePay = 0, grossPay = 0, cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTax = 0, netPay = 0, rate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
+    ytdRegularPay = 0, ytdOvertimePay = 0, ytdGrossPay = 0, ytdCpp = 0, ytdEi = 0, ytdQpip = 0, ytdFederalTax = 0, ytdProvincialTax = 0, ytdTotalTax = 0, ytdNetPay = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0, ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
-    logoDataUrl
+    logoDataUrl, isQuebec, cppLabel
   } = data || {};
   
   const m = 30;

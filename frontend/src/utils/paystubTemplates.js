@@ -1000,24 +1000,24 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     const headerHeight = 12;
     const rowHeight = 11;
 
-    // 1. Dark Gray Title Area (light gray #bebebe matching Workday style)
+    // 1. Gray Title Area (light gray #bebebe matching Workday style)
     if (showTitle && title) {
       doc.setFillColor(190, 190, 190);
       doc.rect(m, y, usableWidth, titleHeight, 'F');
       doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
+      doc.setFont("helvetica", "normal");
       doc.setTextColor(0, 0, 0);
       doc.text(title, pageWidth / 2, y + 9, { align: 'center' });
       y += titleHeight;
     }
 
-    // 2. Dark Gray Header Area (light gray #bebebe matching Workday style)
+    // 2. Gray Header Area (light gray #bebebe matching Workday style)
     doc.setFillColor(190, 190, 190);
     doc.rect(m, y, usableWidth, headerHeight, 'F');
     
     let currentX = m;
     doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     columns.forEach((col, i) => {
       if (i >= rightAlignFrom) {
@@ -1031,11 +1031,9 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
 
     // 3. Data Rows
     doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
     rowsData.forEach((row, rowIndex) => {
       currentX = m;
-      const isLastRow = rowIndex === rowsData.length - 1;
-      if (isBoldLastRow && isLastRow) doc.setFont("helvetica", "bold");
-      else doc.setFont("helvetica", "normal");
 
       row.forEach((cell, colIndex) => {
         if (colIndex >= rightAlignFrom) {

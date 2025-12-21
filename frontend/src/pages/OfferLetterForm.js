@@ -16,6 +16,7 @@ import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator"
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
 import { Upload, X, CheckCircle, Briefcase, Sparkles, Palette, HelpCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { trackDocumentGenerated, trackPaymentInitiated } from "@/utils/analyticsTracker";
 
 // US States list
 const US_STATES = [

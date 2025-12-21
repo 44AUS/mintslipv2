@@ -887,28 +887,35 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, m, y + 18);
 }
 
-// Template C: Workday Style Professional Payslip
+// Template C: Workday Style Professional Payslip - MasterBrand/Workday Layout (Canadian)
 export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight, margin) {
   try {
   const { formData, hours = 0, overtime = 0, regularPay = 0, overtimePay = 0, grossPay = 0, cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTax = 0, netPay = 0, rate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
-    ytdRegularPay = 0, ytdOvertimePay = 0, ytdGrossPay = 0, ytdCpp = 0, ytdEi = 0, ytdQpip = 0, ytdFederalTax = 0, ytdProvincialTax = 0, ytdTotalTax = 0, ytdNetPay = 0,
+    ytdRegularPay = 0, ytdOvertimePay = 0, ytdGrossPay = 0, ytdCpp = 0, ytdEi = 0, ytdQpip = 0, ytdFederalTax = 0, ytdProvincialTax = 0, ytdTotalTax = 0, ytdNetPay = 0, ytdHours = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0, ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
-    logoDataUrl, isQuebec, cppLabel
+    logoDataUrl, isQuebec, cppLabel, absencePlansData = []
   } = data || {};
   
-  const m = 30;
+  const m = 20; // Left margin
   const usableWidth = pageWidth - 2 * m;
-  let y = 25;
+  let y = 18;
   
-  // ========== HEADER LOGO/NAME ==========
+  // Format date as MM/DD/YYYY
+  const formatDateMDY = (date) => {
+    const d = new Date(date);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  };
+  
+  // ========== HEADER SECTION - LOGO/COMPANY NAME ==========
   const isPreview = data.isPreview || false;
-  const maxLogoWidth = 100;  // Slightly smaller width for Workday template
-  const maxLogoHeight = 30;  // Maximum height for logo
+  const maxLogoWidth = 120;
+  const maxLogoHeight = 35;
   
-  // Always show custom logo if uploaded, regardless of preview mode
   if (logoDataUrl) {
     try {
-      // Calculate proper dimensions to maintain aspect ratio
       const img = new Image();
       img.src = logoDataUrl;
       await new Promise((resolve) => {
@@ -916,82 +923,83 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
           const aspectRatio = img.height / img.width;
           let renderWidth = maxLogoWidth;
           let renderHeight = renderWidth * aspectRatio;
-          
-          // If height exceeds max, scale down by height instead
           if (renderHeight > maxLogoHeight) {
             renderHeight = maxLogoHeight;
             renderWidth = renderHeight / aspectRatio;
           }
-          
-          doc.addImage(logoDataUrl, 'PNG', m, y - 10, renderWidth, renderHeight);
+          doc.addImage(logoDataUrl, 'PNG', m, y - 5, renderWidth, renderHeight);
           resolve();
         };
         img.onerror = () => {
-          // Fallback to text if image loading fails
-          doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
+          doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); 
+          doc.text(formData.company || "COMPANY NAME", m, y + 15);
           resolve();
         };
       });
-      y += 30;
     } catch (e) {
-      // Fallback to text if logo fails to load
-      doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
-      y += 12;
+      doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); 
+      doc.text(formData.company || "COMPANY NAME", m, y + 15);
     }
   } else if (isPreview) {
-    // For preview without custom logo, show Workday text
-    doc.setFontSize(18); 
-    doc.setTextColor(0, 85, 164); // Workday blue color
+    // For preview without logo, show MASTERBRAND style header
+    doc.setFontSize(16); 
+    doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold"); 
-    doc.text("WORKDAY", m, y + 10);
-    y += 30;
+    doc.text("MASTERBRAND", m, y + 12);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text("CABINETS, INC.", m, y + 20);
   } else {
-    doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); doc.text(formData.company || "Company Name", m, y);
-    y += 12;
+    doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); 
+    doc.text(formData.company || "COMPANY NAME", m, y + 15);
   }
   
-  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60);
-  doc.text(`${formData.companyAddress || ""}, ${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y);
+  y += 40;
+  
+  // Company address and phone (centered)
+  doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.setTextColor(0, 0, 0);
+  const companyLine1 = `${formData.company || "Company Name"}   ${formData.companyAddress || "One Company Drive"} ${formData.companyCity || "City"}, ${formData.companyState || formData.province || "Prov"} ${formData.companyZip || formData.postalCode || ""}   ${formData.companyPhone || "+1 (000) 000-0000"}`;
+  doc.text(companyLine1, pageWidth / 2, y, { align: 'center' });
   y += 10;
-  doc.text(formData.companyPhone || "", m, y);
   
-  doc.setFontSize(9); doc.setTextColor(0, 0, 0);
-  doc.text(formData.name || "", pageWidth - m - 150, 25);
-  doc.setFontSize(8); doc.setTextColor(60, 60, 60);
-  doc.text(formData.address || "", pageWidth - m - 150, 37);
-  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, pageWidth - m - 150, 47);
+  // Employee address line
+  const employeeLine = `${formData.name || "Employee Name"}   ${formData.address || ""} ${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`;
+  doc.text(employeeLine, pageWidth / 2, y, { align: 'center' });
+  y += 12;
   
-  y += 15;
-
-  // HELPER: Refactored for Enclosed Black Borders including Title
-  const drawTableSection = (title, columns, colWidths, rowsData, isBoldLastRow = false, showInternalVerticals = true) => {
+  // ========== HELPER: Draw Table with Dark Header ==========
+  const drawWorkdayTable = (title, columns, colWidths, rowsData, options = {}) => {
+    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1 } = options;
     const startY = y;
-    const titleHeight = title ? 14 : 0;
+    const titleHeight = showTitle && title ? 14 : 0;
     const headerHeight = 12;
-    const rowHeight = 10;
+    const rowHeight = 11;
 
-    // 1. Draw Title Area (Dark Grey Background)
-    if (title) {
+    // 1. Dark Gray Title Area
+    if (showTitle && title) {
       doc.setFillColor(80, 80, 80);
       doc.rect(m, y, usableWidth, titleHeight, 'F');
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 255, 255);
-      doc.text(title, pageWidth / 2, y + 10, { align: 'center' });
+      doc.text(title, pageWidth / 2, y + 9, { align: 'center' });
       y += titleHeight;
     }
 
-    // 2. Column Header Area (Light Grey Background)
-    doc.setFillColor(240, 240, 240);
+    // 2. Dark Gray Header Area
+    doc.setFillColor(80, 80, 80);
     doc.rect(m, y, usableWidth, headerHeight, 'F');
     
-    // Header Labels
     let currentX = m;
     doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(191, 191, 191);
+    doc.setTextColor(255, 255, 255);
     columns.forEach((col, i) => {
-      doc.text(col, currentX + 3, y + 8);
+      if (i >= rightAlignFrom) {
+        doc.text(col, currentX + colWidths[i] - 3, y + 8, { align: 'right' });
+      } else {
+        doc.text(col, currentX + 3, y + 8);
+      }
       currentX += colWidths[i];
     });
     y += headerHeight;
@@ -1005,7 +1013,11 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       else doc.setFont("helvetica", "normal");
 
       row.forEach((cell, colIndex) => {
-        doc.text(String(cell), currentX + 3, y + 7);
+        if (colIndex >= rightAlignFrom) {
+          doc.text(String(cell), currentX + colWidths[colIndex] - 3, y + 7, { align: 'right' });
+        } else {
+          doc.text(String(cell), currentX + 3, y + 7);
+        }
         currentX += colWidths[colIndex];
       });
       y += rowHeight;
@@ -1013,89 +1025,155 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
 
     const endY = y;
     
-    // 4. Final Borders
+    // 4. Draw borders
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
-    
-    // Full Outer Bounding Box (Encloses title, headers, and rows)
     doc.rect(m, startY, usableWidth, endY - startY);
     
-    // Line under Title
-    if (title) doc.line(m, startY + titleHeight, pageWidth - m, startY + titleHeight);
-    // Line under Headers
+    // Horizontal lines under title and header
+    if (showTitle && title) {
+      doc.line(m, startY + titleHeight, pageWidth - m, startY + titleHeight);
+    }
     doc.line(m, startY + titleHeight + headerHeight, pageWidth - m, startY + titleHeight + headerHeight);
 
-    // Internal Vertical Lines (Only for Info and Summary)
-    if (showInternalVerticals) {
-      let lineX = m;
-      for (let i = 0; i < colWidths.length - 1; i++) {
-        lineX += colWidths[i];
-        // Vertical lines start after the title area
-        doc.line(lineX, startY + titleHeight, lineX, endY);
-      }
+    // Vertical column dividers
+    let lineX = m;
+    for (let i = 0; i < colWidths.length - 1; i++) {
+      lineX += colWidths[i];
+      doc.line(lineX, startY + titleHeight, lineX, endY);
     }
 
-    y += 12; 
+    y += 6;
   };
 
-  // ========== RENDER SECTIONS ==========
+  // ========== 1. EMPLOYEE INFO TABLE ==========
+  const infoCols = ["Name", "Company", "Employee ID", "Pay Period Begin", "Pay Period End", "Check Date", "Check Number"];
+  const infoWidths = [usableWidth * 0.14, usableWidth * 0.20, usableWidth * 0.12, usableWidth * 0.13, usableWidth * 0.13, usableWidth * 0.12, usableWidth * 0.16];
+  const infoRow = [
+    formData.name || "", 
+    formData.company || "", 
+    formData.employeeId || "", 
+    formatDateMDY(startDate), 
+    formatDateMDY(endDate), 
+    formatDateMDY(payDate),
+    formData.checkNumber || ""
+  ];
+  drawWorkdayTable(null, infoCols, infoWidths, [infoRow], { showTitle: false, rightAlignFrom: 7 });
 
-  // 1. Info Area
-  const infoCols = ["Name", "Company", "Employee ID", "Pay Begin", "Pay End", "Check Date"];
-  const infoWidths = Array(6).fill(usableWidth/6);
-  const infoRow = [formData.name || "", formData.company || "", formData.employeeId || "", formatDate(startDate), formatDate(endDate), formatDate(payDate)];
-  drawTableSection(null, infoCols, infoWidths, [infoRow], false, true);
-
-  // 2. Summary
-  const sumCols = ["", "Hours", "Gross Pay", "Pre Tax Ded.", "Taxes", "Post Tax Ded.", "Net Pay"];
-  const sumWidths = Array(7).fill(usableWidth/7);
+  // ========== 2. CURRENT/YTD SUMMARY ==========
+  const sumCols = ["", "Hours Worked", "Gross Pay", "Pre Tax Deductions", "Employee Taxes", "Post Tax Deductions", "Net Pay"];
+  const sumWidths = [usableWidth * 0.10, usableWidth * 0.13, usableWidth * 0.13, usableWidth * 0.17, usableWidth * 0.15, usableWidth * 0.17, usableWidth * 0.15];
+  const currentYtdHours = ytdHours > 0 ? ytdHours : (hours * (ytdPayPeriods || 1));
   const sumRows = [
     ["Current", hours.toFixed(2), fmt(grossPay), fmt(totalDeductions), fmt(totalTax), "0.00", fmt(netPay)],
-    ["YTD", (hours * (ytdPayPeriods || 1)).toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdDeductions || totalDeductions), fmt(ytdTotalTax || totalTax), "0.00", fmt(ytdNetPay || netPay)]
+    ["YTD", currentYtdHours.toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdDeductions || totalDeductions), fmt(ytdTotalTax || totalTax), "0.00", fmt(ytdNetPay || netPay)]
   ];
-  drawTableSection(null, sumCols, sumWidths, sumRows, false, true);
+  drawWorkdayTable(null, sumCols, sumWidths, sumRows, { showTitle: false, rightAlignFrom: 1 });
 
-  // 3. Earnings (With Black Outer Border)
+  // ========== 3. EARNING SECTION ==========
   const earnCols = ["Description", "Dates", "Hours", "Rate", "Amount", "YTD"];
-  const earnWidths = [usableWidth * 0.25, usableWidth * 0.22, usableWidth * 0.1, usableWidth * 0.12, usableWidth * 0.15, usableWidth * 0.16];
-  const earnRows = [["Regular Earning", `${formatDate(startDate)} - ${formatDate(endDate)}`, hours.toFixed(2), fmt(rate), fmt(regularPay), fmt(ytdRegularPay || regularPay)]];
-  if (overtime > 0) earnRows.push(["Overtime (1.5x)", `${formatDate(startDate)} - ${formatDate(endDate)}`, overtime.toFixed(2), fmt(rate * 1.5), fmt(overtimePay), fmt(ytdOvertimePay || overtimePay)]);
-  earnRows.push(["Total Earnings", "", "", "", fmt(grossPay), fmt(ytdGrossPay || grossPay)]);
-  drawTableSection("Earnings", earnCols, earnWidths, earnRows, true, false);
+  const earnWidths = [usableWidth * 0.25, usableWidth * 0.25, usableWidth * 0.10, usableWidth * 0.12, usableWidth * 0.14, usableWidth * 0.14];
+  const earnRows = [[
+    "Regular Earning HRLY", 
+    `${formatDateMDY(startDate)} – ${formatDateMDY(endDate)}`, 
+    hours.toFixed(2), 
+    fmt(rate), 
+    fmt(regularPay), 
+    fmt(ytdRegularPay || regularPay)
+  ]];
+  if (overtime > 0) {
+    earnRows.push([
+      "Overtime (1.5x)", 
+      `${formatDateMDY(startDate)} – ${formatDateMDY(endDate)}`, 
+      overtime.toFixed(2), 
+      fmt(rate * 1.5), 
+      fmt(overtimePay), 
+      fmt(ytdOvertimePay || overtimePay)
+    ]);
+  }
+  // Add blank rows for spacing like the reference
+  earnRows.push(["", "", "", "", "", ""]);
+  earnRows.push(["Earning", "", "", "", fmt(grossPay), fmt(ytdGrossPay || grossPay)]);
+  drawWorkdayTable("Earning", earnCols, earnWidths, earnRows, { rightAlignFrom: 2, isBoldLastRow: true });
 
-  // 4. Taxes (With Black Outer Border)
+  // ========== 4. EMPLOYEE TAXES SECTION ==========
   const taxCols = ["Description", "Amount", "YTD"];
-  const taxWidths = [usableWidth * 0.6, usableWidth * 0.2, usableWidth * 0.2];
+  const taxWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];
   const taxRows = [
-    ["Federal Income Tax", fmt(federalTax || 0), fmt(ytdFederalTax || federalTax || 0)],
     [cppLabel || "CPP", fmt(cpp), fmt(ytdCpp || cpp)],
     ["EI", fmt(ei), fmt(ytdEi || ei)],
-    [`${formData.province || 'Prov.'} Income Tax`, fmt(provincialTax), fmt(ytdProvincialTax || provincialTax)]
+    ["Federal Withholding", fmt(federalTax || 0), fmt(ytdFederalTax || federalTax || 0)],
+    [`${formData.province || 'Prov.'} Tax`, fmt(provincialTax), fmt(ytdProvincialTax || provincialTax)]
   ];
-  if (isQuebec && qpip > 0) taxRows.splice(3, 0, ["QPIP", fmt(qpip), fmt(ytdQpip || qpip)]);
-  taxRows.push(["Total Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
-  drawTableSection("Employee Taxes", taxCols, taxWidths, taxRows, true, false);
+  if (isQuebec && qpip > 0) {
+    taxRows.splice(2, 0, ["QPIP", fmt(qpip), fmt(ytdQpip || qpip)]);
+  }
+  taxRows.push(["Employee Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
+  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, isBoldLastRow: true });
 
-  // 5. Deductions
+  // ========== 5. PRE TAX DEDUCTIONS SECTION ==========
+  const dedCols = ["Description", "Amount", "YTD"];
+  const dedWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];
+  const dedRows = [];
   if (deductionsData && deductionsData.length > 0) {
-    const dedRows = deductionsData.map(d => [d.name || "Deduction", fmt(d.currentAmount), fmt(d.currentAmount * (ytdPayPeriods || 1))]);
-    dedRows.push(["Total Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
-    drawTableSection("Pre Tax Deductions", taxCols, taxWidths, dedRows, true, false);
+    deductionsData.forEach(d => {
+      dedRows.push([d.name || "Deduction", fmt(d.currentAmount || 0), fmt((d.currentAmount || 0) * (ytdPayPeriods || 1))]);
+    });
+  }
+  if (dedRows.length === 0) {
+    dedRows.push(["No Pre Tax Deductions", "0.00", "0.00"]);
+  }
+  dedRows.push(["Pre Tax Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
+  drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, isBoldLastRow: true });
+
+  // ========== 6. EMPLOYER PAID BENEFITS SECTION ==========
+  const benefitCols = ["Description", "Amount", "YTD"];
+  const benefitWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];
+  const benefitRows = [];
+  
+  // Calculate employer contributions (401k match, employer paid life, etc.)
+  const employerMatch = contributionsData.find(c => c.type === '401k_match' || c.type === 'rrsp_match');
+  if (employerMatch) {
+    benefitRows.push(["Employer Match", fmt(employerMatch.currentAmount || 0), fmt((employerMatch.currentAmount || 0) * (ytdPayPeriods || 1))]);
+  }
+  
+  // Add Employer Paid Life as a small fixed amount
+  const employerLifeInsurance = grossPay * 0.001; // 0.1% of gross
+  benefitRows.push(["Employer Paid Life", fmt(employerLifeInsurance), fmt(employerLifeInsurance * (ytdPayPeriods || 1))]);
+  
+  const totalBenefits = benefitRows.reduce((sum, row) => {
+    const amt = parseFloat(row[1].replace(/,/g, '')) || 0;
+    return sum + amt;
+  }, 0);
+  benefitRows.push(["Employer Paid Benefits", fmt(totalBenefits), fmt(totalBenefits * (ytdPayPeriods || 1))]);
+  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, isBoldLastRow: true });
+
+  // ========== 7. TAXABLE WAGES SECTION ==========
+  const taxableWagesCols = ["Description", "Amount", "YTD"];
+  const taxableWagesWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];
+  const federalTaxableWages = grossPay - totalDeductions;
+  const taxableWagesRows = [
+    [`${cppLabel || "CPP"} – Taxable Wages`, fmt(grossPay), fmt(ytdGrossPay || grossPay)],
+    ["EI – Taxable Wages", fmt(grossPay), fmt(ytdGrossPay || grossPay)],
+    ["Federal Withholding – Taxable Wages", fmt(federalTaxableWages), fmt((ytdGrossPay || grossPay) - (ytdDeductions || totalDeductions))]
+  ];
+  drawWorkdayTable("Taxable Wages", taxableWagesCols, taxableWagesWidths, taxableWagesRows, { rightAlignFrom: 1 });
+
+  // ========== 8. ABSENCE PLANS SECTION (if data provided) ==========
+  if (absencePlansData && absencePlansData.length > 0) {
+    const absenceCols = ["Description", "Accrued", "Reduced", "Available"];
+    const absenceWidths = [usableWidth * 0.40, usableWidth * 0.20, usableWidth * 0.20, usableWidth * 0.20];
+    const absenceRows = absencePlansData.map(plan => [
+      plan.description || "PTO Plan",
+      plan.accrued || "0",
+      plan.reduced || "0",
+      String((parseFloat(plan.accrued) || 0) - (parseFloat(plan.reduced) || 0))
+    ]);
+    drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1 });
   }
 
-  // 6. Payment Info
-  const payCols = ["Bank Name", "Account Name", "Account Number", "Distribution"];
-  const payWidths = Array(4).fill(usableWidth/4);
-  const payRows = [[formData.bankName || "Bank", formData.name || "Employee", `******${formData.bank || "0000"}`, `${fmt(netPay)}` ]];
-  drawTableSection("Payment Information", payCols, payWidths, payRows, false, true);
-
-  // FOOTER
-  doc.setFontSize(7);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`Page ${stubNum + 1} of ${totalStubs}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
   } catch (error) {
-    console.error("Error generating Template C:", error);
-    // Add error message to PDF
+    console.error("Error generating Canadian Template C:", error);
     doc.setFontSize(12);
     doc.setTextColor(255, 0, 0);
     doc.text("Error generating document. Please check your inputs.", 40, 100);

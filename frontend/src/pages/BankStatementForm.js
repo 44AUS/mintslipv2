@@ -534,7 +534,7 @@ const createOrder = (data, actions) => {
                       Category Logo *
                     </h2>
                     <p className="text-sm text-slate-500 mt-1">
-                      Upload a custom logo. PNG format only.
+                      Upload a custom logo. PNG or JPG, max 2MB. Recommended size: 195×60 pixels for best results.
                     </p>
                   </div>
                 </div>

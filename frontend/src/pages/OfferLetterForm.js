@@ -264,9 +264,10 @@ export default function OfferLetterForm() {
     return actions.order.create({
       purchase_units: [
         {
-          description: `Offer Letter - ${formData.candidateName}`,
+          description: `Offer Letter - ${formData.candidateName || 'Document'}`,
           amount: {
             value: "9.99",
+            currency_code: "USD"
           },
         },
       ],

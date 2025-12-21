@@ -2238,41 +2238,14 @@ export default function PaystubForm() {
                   <div className="space-y-4">
                     <div>
                       <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                        Tax Withholding Information
+                        Additional Withholding
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        Federal and state tax withholding details (Workday template only)
+                        Additional tax withholding amounts (Workday template only)
                       </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-600">Filing Status</Label>
-                        <Select
-                          value={formData.filingStatus}
-                          onValueChange={(value) => setFormData({...formData, filingStatus: value})}
-                        >
-                          <SelectTrigger className="h-9">
-                            <SelectValue placeholder="Select filing status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Single or Married filing separately">Single or Married filing separately</SelectItem>
-                            <SelectItem value="Married filing jointly">Married filing jointly</SelectItem>
-                            <SelectItem value="Head of Household">Head of Household</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-slate-600">State Allowances</Label>
-                        <Input
-                          type="number"
-                          value={formData.stateAllowances}
-                          onChange={(e) => setFormData({...formData, stateAllowances: e.target.value})}
-                          placeholder="0"
-                          className="h-9"
-                          min="0"
-                        />
-                      </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-slate-600">Federal Additional Withholding</Label>
                         <Input

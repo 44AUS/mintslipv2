@@ -545,28 +545,29 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     const empSigType = formData.employeeSignatureType || 'blank';
     
     if (empSigType === "custom" && formData.employeeSignatureImage) {
-      // Custom signature image
+      // Custom signature image - position ABOVE the signature line
       const empSigImage = await embedImage(pdfDoc, formData.employeeSignatureImage);
       if (empSigImage) {
         const sigDims = empSigImage.scale(0.3);
         const sigHeight = Math.min(sigDims.height, 35);
         const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
+        // Position signature so its bottom aligns just above the signature line (which is at acceptY - 30)
         page.drawImage(empSigImage, {
           x: margin,
-          y: acceptY - 25 - sigHeight,
+          y: acceptY - 28, // Position above the line (line is at acceptY - 30)
           width: sigWidth,
           height: sigHeight,
         });
       }
     } else if (empSigType === "generated") {
-      // Generated signature (cursive-style text)
+      // Generated signature using Yellowtail cursive font
       const empSignatureName = formData.employeeSignatureName || formData.candidateName || '';
       if (empSignatureName) {
         page.drawText(empSignatureName, {
-          x: margin + 10,
-          y: acceptY - 25,
-          size: 16,
-          font: italicFont,
+          x: margin + 5,
+          y: acceptY - 20,
+          size: 18,
+          font: signatureFont,
           color: rgb(0.1, 0.1, 0.3),
         });
       }

@@ -761,19 +761,26 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.text(fmtCurrency(ytdFederalTax), m + 215, y);
   
   y += 10;
-  doc.text("Social Security", m, y);
-  doc.text(`-${fmtCurrency(ssTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdSsTax), m + 215, y);
+  doc.text(cppLabel || "CPP", m, y);
+  doc.text(`-${fmtCurrency(cpp)}`, m + 165, y);
+  doc.text(fmtCurrency(ytdCpp), m + 215, y);
   
   y += 10;
-  doc.text("Medicare", m, y);
-  doc.text(`-${fmtCurrency(medTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdMedTax), m + 215, y);
+  doc.text("EI", m, y);
+  doc.text(`-${fmtCurrency(ei)}`, m + 165, y);
+  doc.text(fmtCurrency(ytdEi), m + 215, y);
+  
+  if (isQuebec && qpip > 0) {
+    y += 10;
+    doc.text("QPIP", m, y);
+    doc.text(`-${fmtCurrency(qpip)}`, m + 165, y);
+    doc.text(fmtCurrency(ytdQpip), m + 215, y);
+  }
   
   y += 10;
-  doc.text(`${formData.state || "State"} State Income`, m, y);
-  doc.text(`-${fmtCurrency(stateTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdStateTax), m + 215, y);
+  doc.text(`${formData.province || "Prov."} Income Tax`, m, y);
+  doc.text(`-${fmtCurrency(provincialTax)}`, m + 165, y);
+  doc.text(fmtCurrency(ytdProvincialTax), m + 215, y);
 
   // ==================== DEPOSITS SECTION (RIGHT) ====================
   rightY += 15;

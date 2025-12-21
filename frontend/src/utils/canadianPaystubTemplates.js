@@ -42,11 +42,11 @@ function formatDate(date) {
 
 // Template A: Gusto-Style Professional (matches artifact exactly)
 export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight, margin) {
-  const { formData, hours, overtime, regularPay, overtimePay, grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, stateRate, localTaxRate, sutaRate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
-    ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdSsTax, ytdMedTax, ytdFederalTax, ytdStateTax, ytdLocalTax, ytdTotalTax, ytdNetPay, ytdHours,
+  const { formData, hours, overtime, regularPay, overtimePay, grossPay, cpp, ei, qpip, federalTax, provincialTax, totalTax, netPay, rate, startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
+    ytdRegularPay, ytdOvertimePay, ytdGrossPay, ytdCpp, ytdEi, ytdQpip, ytdFederalTax, ytdProvincialTax, ytdTotalTax, ytdNetPay, ytdHours,
     payType, workerType, isContractor, annualSalary,
     deductionsData, totalDeductions, contributionsData, totalContributions, ytdDeductions, ytdContributions,
-    logoDataUrl
+    logoDataUrl, isQuebec, cppLabel
   } = data;
   
   const totalHours = Number(hours) + Number(overtime || 0);

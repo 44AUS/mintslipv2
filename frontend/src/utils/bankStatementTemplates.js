@@ -142,7 +142,7 @@ export async function generateBankTemplateA(doc, data, pageWidth, pageHeight, ma
   y += 70;
   doc.setFontSize(7);
   doc.setTextColor("#b4b4b4");
-  doc.text("Issued by Sutton Bank, Member FDIC", margin, y);
+  doc.text("Issued by Stride Bank, N.A., Member FDIC", margin, y);
 
   // --- Summary Section ---
   y += 50;
@@ -337,9 +337,9 @@ export async function generateBankTemplateA(doc, data, pageWidth, pageHeight, ma
   // Define text parts for the error resolution procedures
   const beforePhone =
     "In case of errors or questions about your electronic transactions, call ";
-  const phoneNumber = "1-800-422-3641";
+  const phoneNumber = "1-844-244-6363";
   const afterPhone =
-    ", write to Sutton Bank Member Services, P.O. Box 505, Attica, OH 44807-505, as soon as you can, if you think your statement or receipt is wrong or if you need more information about a transfer listed on the statement or receipt. We must hear from you no later than 60 days after we sent the FIRST statement on which the problem or error appeared.";
+    ", write to Chime Member Services, P.O. Box 417, San Francisco, CA 94104-0417, as soon as you can, if you think your statement or receipt is wrong or if you need more information about a transfer listed on the statement or receipt. We must hear from you no later than 60 days after we sent the FIRST statement on which the problem or error appeared.";
 
   const fullText = beforePhone + phoneNumber + afterPhone;
 

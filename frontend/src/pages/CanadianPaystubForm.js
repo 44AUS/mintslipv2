@@ -7,16 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
-import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
-import { generateCanadianPreviewPDF } from "@/utils/canadianPaystubPreviewGenerator";
-import { CANADIAN_PROVINCES, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
-import { Upload, X, Search, Building2, ChevronDown, ChevronUp, MapPin } from "lucide-react";
-import { formatPhoneNumber, validatePhoneNumber, formatBankLast4, validateBankLast4 } from "@/utils/validation";
+import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
+import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
+import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
+import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { Upload, X, Search, Building2 } from "lucide-react";
+import { 
+  formatPhoneNumber, validatePhoneNumber,
+  formatZipCode, validateZipCode,
+  formatSSNLast4, validateSSNLast4,
+  formatBankLast4, validateBankLast4
+} from "@/utils/validation";
 import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
@@ -28,7 +36,7 @@ const PAYROLL_COMPANIES = [
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
 ];
 
-export default function CanadianPaystubForm() {
+export default function PaystubForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
@@ -51,25 +59,25 @@ export default function CanadianPaystubForm() {
   const companySearchRef = useRef(null);
   const logoInputRef = useRef(null);
   
-  // Helper to format currency with commas (CAD)
+  // Helper to format currency with commas
   const formatCurrency = (num) => {
-    return Number(num).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
   
   const [formData, setFormData] = useState({
     name: "",
-    sin: "",
+    ssn: "",
     bank: "",
     bankName: "",
     address: "",
     city: "",
-    province: "ON",
-    postalCode: "",
+    state: "",
+    zip: "",
     company: "",
     companyAddress: "",
     companyCity: "",
-    companyProvince: "ON",
-    companyPostalCode: "",
+    companyState: "",
+    companyZip: "",
     companyPhone: "",
     hireDate: "",
     startDate: "",
@@ -79,103 +87,153 @@ export default function CanadianPaystubForm() {
     payDay: "Friday",
     hoursList: "",
     overtimeList: "",
-    workerType: "employee",
-    payType: "hourly",
-    annualSalary: "",
-    employeeId: "",
-    companyCode: "",
-    locDept: "",
-    checkNumber: "",
+    includeLocalTax: true,
+    workerType: "employee", // "employee" or "contractor"
+    payType: "hourly", // "hourly" or "salary"
+    annualSalary: "", // for salary pay type
+    federalFilingStatus: "", // optional: single, married_jointly, head_of_household (no more allowances per 2020 W-4)
+    stateAllowances: "0", // number of state allowances (only for states that use them)
+    employeeId: "", // Employee ID for Workday template
+    // ADP Template B specific fields
+    companyCode: "", // Company Code for ADP template
+    locDept: "", // Loc/Dept for ADP template
+    checkNumber: "", // Check Number for ADP template
   });
 
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState({
-    sin: '',
+    ssn: '',
     bank: '',
-    postalCode: '',
-    companyPostalCode: '',
+    zip: '',
+    companyZip: '',
     companyPhone: '',
+    companyCode: '',
+    locDept: '',
+    checkNumber: '',
   });
 
-  // Deduction types
+  // Common deduction types for quick selection
   const deductionTypes = [
-    { label: "RRSP", value: "rrsp" },
+    { label: "401(k)", value: "401k" },
     { label: "Health Insurance", value: "health_insurance" },
     { label: "Dental Insurance", value: "dental_insurance" },
+    { label: "Vision Insurance", value: "vision_insurance" },
     { label: "Life Insurance", value: "life_insurance" },
+    { label: "Disability Insurance", value: "disability_insurance" },
     { label: "Union Dues", value: "union_dues" },
-    { label: "Parking", value: "parking" },
+    { label: "Garnishment", value: "garnishment" },
     { label: "Other", value: "other" },
   ];
 
-  // Contribution types
+  // Common contribution types for quick selection
   const contributionTypes = [
-    { label: "RRSP Match", value: "rrsp_match" },
-    { label: "TFSA", value: "tfsa" },
-    { label: "Group Benefits", value: "group_benefits" },
-    { label: "Pension Plan", value: "pension_plan" },
+    { label: "401(k) Match", value: "401k_match" },
+    { label: "HSA", value: "hsa" },
+    { label: "FSA", value: "fsa" },
+    { label: "Dependent Care FSA", value: "dependent_care_fsa" },
+    { label: "Commuter Benefits", value: "commuter" },
+    { label: "Roth 401(k)", value: "roth_401k" },
     { label: "Other", value: "other" },
   ];
 
-  // Deduction handlers
+  // Add a new deduction
   const addDeduction = () => {
-    setDeductions([...deductions, { id: Date.now(), type: "other", name: "", amount: "", isPercentage: false }]);
+    setDeductions([...deductions, { 
+      id: Date.now(), 
+      type: "other", 
+      name: "", 
+      amount: "", 
+      isPercentage: false 
+    }]);
   };
-  const removeDeduction = (id) => setDeductions(deductions.filter(d => d.id !== id));
+
+  // Remove a deduction
+  const removeDeduction = (id) => {
+    setDeductions(deductions.filter(d => d.id !== id));
+  };
+
+  // Update a deduction
   const updateDeduction = (id, field, value) => {
-    setDeductions(deductions.map(d => d.id === id ? { ...d, [field]: value } : d));
+    setDeductions(deductions.map(d => 
+      d.id === id ? { ...d, [field]: value } : d
+    ));
   };
 
-  // Contribution handlers
+  // Add a new contribution
   const addContribution = () => {
-    setContributions([...contributions, { id: Date.now(), type: "other", name: "", amount: "", isPercentage: false }]);
-  };
-  const removeContribution = (id) => setContributions(contributions.filter(c => c.id !== id));
-  const updateContribution = (id, field, value) => {
-    setContributions(contributions.map(c => c.id === id ? { ...c, [field]: value } : c));
+    setContributions([...contributions, { 
+      id: Date.now(), 
+      type: "other", 
+      name: "", 
+      amount: "", 
+      isPercentage: false 
+    }]);
   };
 
-  // Generate PDF preview when form data changes
+  // Remove a contribution
+  const removeContribution = (id) => {
+    setContributions(contributions.filter(c => c.id !== id));
+  };
+
+  // Update a contribution
+  const updateContribution = (id, field, value) => {
+    setContributions(contributions.map(c => 
+      c.id === id ? { ...c, [field]: value } : c
+    ));
+  };
+
+  // Generate PDF preview when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {
+      // Only generate preview if we have minimum required data
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
+          // Include deductions, contributions, and logo in preview data
           const previewData = {
             ...formData,
-            deductions,
-            contributions,
-            logoDataUrl: logoPreview,
+            deductions: deductions,
+            contributions: contributions,
+            logoDataUrl: logoPreview, // Pass logo for Workday template
           };
-          const previewUrl = await generateCanadianPreviewPDF(previewData, selectedTemplate);
+          const previewUrl = await generatePreviewPDF(previewData, selectedTemplate);
           setPdfPreview(previewUrl);
         } catch (error) {
           console.error("Preview generation failed:", error);
         }
         setIsGeneratingPreview(false);
       }
-    }, 500);
+    }, 500); // 500ms debounce
+
     return () => clearTimeout(timer);
   }, [formData, selectedTemplate, deductions, contributions, logoPreview]);
 
-  // Contractor only available for Gusto template
+  // Determine if salary option should be available
+  // Contractors on Gusto (template-a) can only use hourly
   const canUseSalary = !(formData.workerType === "contractor" && selectedTemplate === "template-a");
   
+  // Auto-switch to hourly if contractor selects Gusto template
+  // Also clear overtime for contractors
   const handleWorkerTypeChange = (val) => {
     setFormData(prev => {
       const newData = { ...prev, workerType: val };
+      // If contractor on Gusto, force hourly
       if (val === "contractor" && selectedTemplate === "template-a") {
         newData.payType = "hourly";
       }
       return newData;
     });
+    
+    // Clear overtime if switching to contractor
     if (val === "contractor") {
       setHoursPerPeriod(prev => prev.map(p => ({ ...p, overtime: 0 })));
     }
   };
 
+  // Handle template change - reset to employee if template B or C is selected (no contractor option)
   const handleTemplateChange = (val) => {
     setSelectedTemplate(val);
+    // Template B (ADP) and Template C (Workday) don't support contractor - force employee
     if ((val === "template-b" || val === "template-c") && formData.workerType === "contractor") {
       setFormData(prev => ({ ...prev, workerType: "employee" }));
     }
@@ -186,15 +244,18 @@ export default function CanadianPaystubForm() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
   // Validated input handlers
-  const handleSINChange = (e) => {
-    const formatted = formatSIN(e.target.value);
-    setFormData(prev => ({ ...prev, sin: formatted }));
-    const validation = validateSIN(formatted);
-    setValidationErrors(prev => ({ ...prev, sin: validation.error }));
+  const handleSSNChange = (e) => {
+    const formatted = formatSSNLast4(e.target.value);
+    setFormData(prev => ({ ...prev, ssn: formatted }));
+    const validation = validateSSNLast4(formatted);
+    setValidationErrors(prev => ({ ...prev, ssn: validation.error }));
   };
 
   const handleBankChange = (e) => {
@@ -204,18 +265,18 @@ export default function CanadianPaystubForm() {
     setValidationErrors(prev => ({ ...prev, bank: validation.error }));
   };
 
-  const handlePostalCodeChange = (e) => {
-    const formatted = formatPostalCode(e.target.value);
-    setFormData(prev => ({ ...prev, postalCode: formatted }));
-    const validation = validatePostalCode(formatted);
-    setValidationErrors(prev => ({ ...prev, postalCode: validation.error }));
+  const handleZipChange = (e) => {
+    const formatted = formatZipCode(e.target.value);
+    setFormData(prev => ({ ...prev, zip: formatted }));
+    const validation = validateZipCode(formatted);
+    setValidationErrors(prev => ({ ...prev, zip: validation.error }));
   };
 
-  const handleCompanyPostalCodeChange = (e) => {
-    const formatted = formatPostalCode(e.target.value);
-    setFormData(prev => ({ ...prev, companyPostalCode: formatted }));
-    const validation = validatePostalCode(formatted);
-    setValidationErrors(prev => ({ ...prev, companyPostalCode: validation.error }));
+  const handleCompanyZipChange = (e) => {
+    const formatted = formatZipCode(e.target.value);
+    setFormData(prev => ({ ...prev, companyZip: formatted }));
+    const validation = validateZipCode(formatted);
+    setValidationErrors(prev => ({ ...prev, companyZip: validation.error }));
   };
 
   const handleCompanyPhoneChange = (e) => {
@@ -225,66 +286,132 @@ export default function CanadianPaystubForm() {
     setValidationErrors(prev => ({ ...prev, companyPhone: validation.error }));
   };
 
-  // Filter payroll companies
+  // ADP field validation handlers
+  const handleCompanyCodeChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    // Allow alphanumeric, spaces, and slashes - max 20 characters
+    const filtered = value.replace(/[^A-Z0-9\s\/]/g, '').slice(0, 20);
+    setFormData(prev => ({ ...prev, companyCode: filtered }));
+    
+    let error = '';
+    if (filtered && filtered.length < 3) {
+      error = 'Min 3 characters';
+    }
+    setValidationErrors(prev => ({ ...prev, companyCode: error }));
+  };
+
+  const handleLocDeptChange = (e) => {
+    const value = e.target.value;
+    // Only allow numbers - max 3 digits
+    const filtered = value.replace(/[^0-9]/g, '').slice(0, 3);
+    setFormData(prev => ({ ...prev, locDept: filtered }));
+    
+    let error = '';
+    if (filtered && filtered.length !== 3) {
+      error = 'Must be 3 digits';
+    }
+    setValidationErrors(prev => ({ ...prev, locDept: error }));
+  };
+
+  const handleCheckNumberChange = (e) => {
+    const value = e.target.value;
+    // Only allow numbers - max 7 digits
+    const filtered = value.replace(/[^0-9]/g, '').slice(0, 7);
+    setFormData(prev => ({ ...prev, checkNumber: filtered }));
+    
+    let error = '';
+    if (filtered && filtered.length < 6) {
+      error = 'Must be 6-7 digits';
+    }
+    setValidationErrors(prev => ({ ...prev, checkNumber: error }));
+  };
+
+  // Filter payroll companies based on search
   const filteredCompanies = PAYROLL_COMPANIES.filter(company =>
     company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
   );
 
+  // Handle payroll company selection
   const handlePayrollCompanySelect = (company) => {
     setSelectedPayrollCompany(company);
     setCompanySearchQuery(company.name);
     setSelectedTemplate(company.template);
     setShowCompanyDropdown(false);
+    
+    // Reset worker type to employee if template B or C
     if ((company.template === "template-b" || company.template === "template-c") && formData.workerType === "contractor") {
       setFormData(prev => ({ ...prev, workerType: "employee" }));
     }
   };
 
-  // Logo upload handlers
+  // Resize image to fit within target dimensions while maintaining aspect ratio
   const resizeImageToFit = (base64Data, maxWidth, maxHeight) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
+        // Calculate scaling factor to fit within bounds
         const scaleW = maxWidth / img.width;
         const scaleH = maxHeight / img.height;
-        const scale = Math.min(scaleW, scaleH, 1);
+        const scale = Math.min(scaleW, scaleH, 1); // Don't upscale if smaller
+        
         const newWidth = Math.round(img.width * scale);
         const newHeight = Math.round(img.height * scale);
+        
+        // Create canvas and resize
         const canvas = document.createElement('canvas');
         canvas.width = newWidth;
         canvas.height = newHeight;
         const ctx = canvas.getContext('2d');
+        
+        // Enable smooth scaling
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
+        
+        // Draw resized image
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
-        resolve(canvas.toDataURL('image/png'));
+        
+        // Convert to PNG base64
+        const resizedBase64 = canvas.toDataURL('image/png');
+        resolve(resizedBase64);
       };
-      img.onerror = () => reject(new Error('Failed to load image'));
+      img.onerror = () => reject(new Error('Failed to load image for resizing'));
       img.src = base64Data;
     });
   };
 
+  // Logo upload validation and processing
   const validateAndProcessLogo = async (file) => {
     setLogoError("");
+    
+    // Check file type - accept PNG and JPG
     if (!file.type.includes('png') && !file.type.includes('jpeg') && !file.type.includes('jpg')) {
       setLogoError("Only PNG or JPG files are accepted");
       return false;
     }
+    
+    // Check file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       setLogoError("File size must be under 2MB");
       return false;
     }
+    
     return new Promise((resolve) => {
       const reader = new FileReader();
+      
       reader.onload = async (e) => {
         try {
           const base64 = e.target.result;
+          
+          // Resize to fit Gusto logo dimensions (120x35 in PDF units ≈ 360x105 pixels for good quality)
+          // Using 3x scale for crisp display
           const resizedBase64 = await resizeImageToFit(base64, 360, 105);
-          localStorage.setItem('canadianPaystubLogo', resizedBase64);
+          
+          localStorage.setItem('paystubCompanyLogo', resizedBase64);
           setCompanyLogo(resizedBase64);
           setLogoPreview(resizedBase64);
           resolve(true);
         } catch (err) {
+          console.error('Error processing logo:', err);
           setLogoError("Error processing image");
           resolve(false);
         }
@@ -297,33 +424,43 @@ export default function CanadianPaystubForm() {
     });
   };
 
+  // Handle file drop
   const handleLogoDrop = async (e) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files.length > 0) {
-      await validateAndProcessLogo(e.dataTransfer.files[0]);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await validateAndProcessLogo(files[0]);
     }
   };
 
+  // Handle file select
   const handleLogoSelect = async (e) => {
-    if (e.target.files.length > 0) {
-      await validateAndProcessLogo(e.target.files[0]);
+    const files = e.target.files;
+    if (files.length > 0) {
+      await validateAndProcessLogo(files[0]);
     }
   };
 
+  // Remove uploaded logo
   const removeLogo = () => {
     setCompanyLogo(null);
     setLogoPreview(null);
-    localStorage.removeItem('canadianPaystubLogo');
-    if (logoInputRef.current) logoInputRef.current.value = '';
+    localStorage.removeItem('paystubCompanyLogo');
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
   };
 
+  // Clear any previously saved logo on mount (fresh start each time)
   useEffect(() => {
-    localStorage.removeItem('canadianPaystubLogo');
+    localStorage.removeItem('paystubCompanyLogo');
     setCompanyLogo(null);
     setLogoPreview(null);
   }, []);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (companySearchRef.current && !companySearchRef.current.contains(event.target)) {
@@ -334,7 +471,28 @@ export default function CanadianPaystubForm() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Calculate number of stubs
+  // Handle employee address selection from Google Places
+  const handleEmployeeAddressSelect = useCallback((addressData) => {
+    setFormData(prev => ({
+      ...prev,
+      address: addressData.address,
+      city: addressData.city,
+      state: addressData.state,
+      zip: addressData.zip
+    }));
+  }, []);
+
+  // Handle company address selection from Google Places
+  const handleCompanyAddressSelect = useCallback((addressData) => {
+    setFormData(prev => ({
+      ...prev,
+      companyAddress: addressData.address,
+      companyCity: addressData.city,
+      companyState: addressData.state,
+      companyZip: addressData.zip
+    }));
+  }, []);
+
   const calculateNumStubs = useMemo(() => {
     if (!formData.startDate || !formData.endDate) return 0;
     const start = new Date(formData.startDate);
@@ -345,72 +503,98 @@ export default function CanadianPaystubForm() {
     return Math.ceil(diffDays / periodLength);
   }, [formData.startDate, formData.endDate, formData.payFrequency]);
 
-  // Pay periods
+  // Calculate pay periods with start/end dates for hours editing
   const payPeriods = useMemo(() => {
     if (!formData.startDate || !formData.endDate || calculateNumStubs === 0) return [];
+    
     const periods = [];
     const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
     let currentStart = new Date(formData.startDate);
+    
     for (let i = 0; i < calculateNumStubs; i++) {
       const periodEnd = new Date(currentStart);
       periodEnd.setDate(currentStart.getDate() + periodLength - 1);
+      
       periods.push({
         index: i,
         startDate: new Date(currentStart),
         endDate: periodEnd,
-        label: `${currentStart.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })} - ${periodEnd.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        label: `${currentStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${periodEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
       });
+      
       currentStart = new Date(periodEnd);
       currentStart.setDate(currentStart.getDate() + 1);
     }
+    
     return periods;
   }, [formData.startDate, formData.endDate, formData.payFrequency, calculateNumStubs]);
 
+  // Initialize hoursPerPeriod when pay periods change
   useEffect(() => {
     const defaultHours = formData.payFrequency === "biweekly" ? 80 : 40;
+    
     if (payPeriods.length > 0) {
       setHoursPerPeriod(prev => {
-        return payPeriods.map((period, i) => ({
+        const newHours = payPeriods.map((period, i) => ({
           hours: prev[i]?.hours ?? defaultHours,
           overtime: prev[i]?.overtime ?? 0
         }));
+        return newHours;
       });
     } else {
       setHoursPerPeriod([]);
     }
   }, [payPeriods.length, formData.payFrequency]);
 
+  // Update formData hoursList and overtimeList when hoursPerPeriod changes
   useEffect(() => {
     if (hoursPerPeriod.length > 0) {
       const hoursList = hoursPerPeriod.map(p => p.hours).join(', ');
       const overtimeList = hoursPerPeriod.map(p => p.overtime).join(', ');
-      setFormData(prev => ({ ...prev, hoursList, overtimeList }));
+      
+      setFormData(prev => ({
+        ...prev,
+        hoursList,
+        overtimeList
+      }));
     }
   }, [hoursPerPeriod]);
 
+  // Handler for updating individual period hours
   const handlePeriodHoursChange = (index, field, value) => {
     setHoursPerPeriod(prev => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: parseFloat(value) || 0 };
+      updated[index] = {
+        ...updated[index],
+        [field]: parseFloat(value) || 0
+      };
       return updated;
     });
   };
 
-  // Preview calculations
   const preview = useMemo(() => {
     const rate = parseFloat(formData.rate) || 0;
     const annualSalary = parseFloat(formData.annualSalary) || 0;
     const numStubs = calculateNumStubs;
     const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
-    const hoursArray = formData.hoursList.split(",").map((h) => parseFloat(h.trim()) || 0).slice(0, numStubs) || [];
-    const overtimeArray = formData.overtimeList.split(",").map((h) => parseFloat(h.trim()) || 0).slice(0, numStubs) || [];
+    const hoursArray = formData.hoursList
+      .split(",")
+      .map((h) => parseFloat(h.trim()) || 0)
+      .slice(0, numStubs) || [];
+    const overtimeArray = formData.overtimeList
+      .split(",")
+      .map((h) => parseFloat(h.trim()) || 0)
+      .slice(0, numStubs) || [];
 
     let totalGross = 0;
+    
     if (formData.payType === "salary") {
+      // Calculate salary per pay period
       const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
       const salaryPerPeriod = annualSalary / periodsPerYear;
       totalGross = salaryPerPeriod * (numStubs || 1);
     } else {
+      // Hourly calculation
       const results = hoursArray.map((hrs, i) => {
         const baseHours = hrs || defaultHours;
         const overtime = overtimeArray[i] || 0;
@@ -419,21 +603,49 @@ export default function CanadianPaystubForm() {
       totalGross = results.reduce((a, b) => a + b, 0);
     }
 
+    // Contractors don't have taxes withheld (they handle their own taxes)
     const isContractor = formData.workerType === "contractor";
-    const isQuebec = formData.province === "QC";
+    const ssTax = isContractor ? 0 : totalGross * 0.062;
+    const medTax = isContractor ? 0 : totalGross * 0.0145;
     
-    // Canadian tax calculations (approximate for preview)
-    const cppRate = isQuebec ? 0.064 : 0.0595;
-    const eiRate = isQuebec ? 0.0132 : 0.0166;
-    const qpipRate = isQuebec ? 0.00494 : 0;
+    // Use actual state tax rate from federalTaxCalculator
+    const stateRate = getStateTaxRate(formData.state);
     
-    const cpp = isContractor ? 0 : totalGross * cppRate;
-    const ei = isContractor ? 0 : totalGross * eiRate;
-    const qpip = isContractor ? 0 : totalGross * qpipRate;
-    const federalTax = isContractor ? 0 : totalGross * 0.15; // Approximate
-    const provincialTax = isContractor ? 0 : totalGross * 0.05; // Approximate
-    const totalTaxes = cpp + ei + qpip + federalTax + provincialTax;
+    // Calculate federal tax based on filing status and exemptions
+    let federalTax = 0;
+    if (!isContractor) {
+      if (formData.federalFilingStatus) {
+        // Use progressive tax calculation with filing status (no allowances per 2020+ W-4)
+        federalTax = calculateFederalTax(
+          totalGross / (numStubs || 1), // Per period gross
+          formData.payFrequency,
+          formData.federalFilingStatus
+        ) * (numStubs || 1);
+      } else {
+        // Default flat rate if no filing status
+        federalTax = totalGross * 0.22;
+      }
+    }
+    
+    // Calculate state tax with allowances (only for applicable states)
+    let stateTax = 0;
+    if (!isContractor) {
+      stateTax = calculateStateTax(
+        totalGross / (numStubs || 1), // Per period gross
+        formData.state,
+        formData.payFrequency,
+        formData.stateAllowances || 0,
+        stateRate
+      ) * (numStubs || 1);
+    }
+    
+    // Use actual local tax rate from taxRates lookup
+    const actualLocalTaxRate = getLocalTaxRate(formData.state, formData.city);
+    const localTax = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? totalGross * actualLocalTaxRate : 0);
+    
+    const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
 
+    // Calculate deductions total
     const totalDeductions = deductions.reduce((sum, d) => {
       const amount = parseFloat(d.amount) || 0;
       if (d.isPercentage) {
@@ -442,26 +654,35 @@ export default function CanadianPaystubForm() {
       return sum + amount * (numStubs || 1);
     }, 0);
 
-    return {
-      gross: totalGross,
-      cpp,
-      ei,
-      qpip,
-      federalTax,
-      provincialTax,
-      totalTaxes,
-      totalDeductions,
-      net: totalGross - totalTaxes - totalDeductions,
-      numStubs: numStubs || 0,
-      isQuebec,
-      cppLabel: isQuebec ? 'QPP' : 'CPP',
-    };
-  }, [formData, calculateNumStubs, deductions]);
+    // Calculate contributions total
+    const totalContributions = contributions.reduce((sum, c) => {
+      const amount = parseFloat(c.amount) || 0;
+      if (c.isPercentage) {
+        return sum + (totalGross * amount / 100) * (numStubs || 1);
+      }
+      return sum + amount * (numStubs || 1);
+    }, 0);
 
-  // PayPal handlers
+    const netPay = totalGross - totalTaxes - totalDeductions - totalContributions;
+
+    return { totalGross, totalTaxes, netPay, ssTax, medTax, federalTax, stateTax, localTax, numStubs, totalDeductions, totalContributions, stateRate, localTaxRate: actualLocalTaxRate };
+  }, [formData, calculateNumStubs, deductions, contributions]);
+
   const createOrder = (data, actions) => {
+    const totalAmount = (calculateNumStubs * 10).toFixed(2);
     return actions.order.create({
-      purchase_units: [{ amount: { value: "9.99", currency_code: "USD" } }],
+      application_context: {
+        shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
+      },
+      purchase_units: [
+        {
+          amount: {
+            value: totalAmount,
+            currency_code: "USD"
+          },
+          description: `Pay Stub Generation (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''})`
+        },
+      ],
     });
   };
 
@@ -469,563 +690,1418 @@ export default function CanadianPaystubForm() {
     setIsProcessing(true);
     try {
       await actions.order.capture();
-      const downloadData = {
+      toast.success("Payment successful! Generating your document...");
+      
+      // Prepare formData with deductions, contributions, and company logo
+      const fullFormData = {
         ...formData,
-        deductions,
-        contributions,
-        companyLogo,
-        logoDataUrl: logoPreview,
+        deductions: deductions,
+        contributions: contributions,
+        companyLogo: companyLogo, // Include uploaded logo for PDF
+        logoDataUrl: logoPreview, // Pass logo data URL for Workday template
       };
-      await generateAndDownloadCanadianPaystub(downloadData, selectedTemplate);
-      localStorage.removeItem('canadianPaystubLogo');
-      toast.success("Payment successful! Your Canadian pay stub is downloading.");
+      
+      // Generate and download PDF
+      await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs);
+      
+      // Clear the uploaded logo from localStorage after successful download
+      localStorage.removeItem('paystubCompanyLogo');
+      setCompanyLogo(null);
+      setLogoPreview(null);
+      
+      // Reset payroll company selection to empty (clean slate)
+      setSelectedPayrollCompany(null);
+      setCompanySearchQuery("");
+      setSelectedTemplate("template-a");
+      
+      toast.success("Pay stub(s) downloaded successfully!");
+      setIsProcessing(false);
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Failed to generate document");
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
+  const onError = (err) => {
+    toast.error("Payment failed. Please try again.");
+    setIsProcessing(false);
+  };
+  
+  // Clear logo and reset payroll company when leaving the page
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem('paystubCompanyLogo');
+      // Note: State resets are not needed in cleanup since component unmounts,
+      // but we ensure localStorage is cleared
+    };
+  }, []);
+
   return (
-    <>
+    <div className="min-h-screen bg-slate-50 relative">
       <Helmet>
-        <title>Canadian Pay Stub Generator | MintSlip</title>
-        <meta name="description" content="Generate professional Canadian pay stubs with accurate CPP, EI, and provincial tax calculations for all provinces and territories." />
+        <title>Pay Stub Generator | MintSlip - Create Professional Paystubs Instantly</title>
+        <meta name="description" content="Generate professional pay stubs with accurate tax calculations. Supports W-2 employees and 1099 contractors. Multiple templates. Instant PDF download." />
+        <meta name="keywords" content="paystub generator, pay stub maker, employee paycheck, contractor payment, tax withholding calculator" />
+        <meta property="og:title" content="Pay Stub Generator | MintSlip" />
+        <meta property="og:description" content="Create accurate pay stubs with automatic tax calculations. Instant download, no sign-up required." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Pay Stub Generator | MintSlip" />
+        <meta name="twitter:description" content="Professional paystub generation with accurate tax calculations." />
       </Helmet>
       
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-green-50">
-        <Header />
-        
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Hero Section */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="text-3xl">🍁</span>
-              <h1 className="text-4xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Canadian Pay Stub Generator
-              </h1>
-            </div>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Generate professional Canadian pay stubs with accurate CPP/QPP, EI, and provincial tax calculations.
-            </p>
-          </div>
+      <div className="noise-overlay" />
+      
+      <Header title="Generate Pay Stub" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form Section */}
-            <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+            Instant Paystub Generator
+          </h1>
+          <p className="text-slate-600">Generate professional pay stubs with accurate tax calculations, direct deposit information, and customizable pay periods.</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left: Form */}
+          <div className="lg:col-span-7">
+            <form className="space-y-8 bg-white p-8 rounded-lg shadow-sm border border-slate-200">
               {/* Payroll Company Selection */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Payroll Provider
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Select Payroll Company
                 </h2>
                 
-                <div ref={companySearchRef} className="relative mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                {/* Company Search Input */}
+                <div className="relative" ref={companySearchRef}>
+                  <Label htmlFor="companySearch">Payroll Provider *</Label>
+                  <div className="relative mt-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
-                      type="text"
-                      placeholder="Search payroll provider..."
+                      id="companySearch"
+                      data-testid="company-search-input"
                       value={companySearchQuery}
                       onChange={(e) => {
                         setCompanySearchQuery(e.target.value);
                         setShowCompanyDropdown(true);
                       }}
                       onFocus={() => setShowCompanyDropdown(true)}
-                      className="pl-10"
+                      placeholder="Type to search payroll provider..."
+                      className="pl-10 pr-10"
                     />
+                    {selectedPayrollCompany && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
-                  {showCompanyDropdown && filteredCompanies.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg">
-                      {filteredCompanies.map((company) => (
-                        <button
-                          key={company.id}
-                          onClick={() => handlePayrollCompanySelect(company)}
-                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
-                        >
-                          {company.logo ? (
-                            <img src={company.logo} alt={company.name} className="w-8 h-8 object-contain" />
-                          ) : (
-                            <Building2 className="w-8 h-8 text-slate-400" />
-                          )}
-                          <span className="font-medium">{company.name}</span>
-                        </button>
-                      ))}
+                  {/* Company Dropdown */}
+                  {showCompanyDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border-2 border-slate-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                      {filteredCompanies.length > 0 ? (
+                        filteredCompanies.map((company) => (
+                          <div
+                            key={company.id}
+                            data-testid={`company-option-${company.id}`}
+                            onClick={() => handlePayrollCompanySelect(company)}
+                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
+                              selectedPayrollCompany?.id === company.id ? 'bg-green-100' : ''
+                            }`}
+                          >
+                            <div className="w-10 h-10 rounded bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-1">
+                              {company.logo ? (
+                                <img 
+                                  src={company.logo} 
+                                  alt={`${company.name} logo`} 
+                                  className="w-full h-full object-contain"
+                                />
+                              ) : (
+                                <Building2 className="w-5 h-5 text-slate-400" />
+                              )}
+                            </div>
+                            <div>
+                              <span className="font-medium text-slate-700 block">{company.name}</span>
+                              <span className="text-xs text-slate-500">
+                                {company.template === 'template-a' ? 'Style A' : company.template === 'template-b' ? 'Style B' : 'Style C'}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-slate-500 text-center">
+                          No payroll providers found matching your search.
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
 
+                {/* Selected Company Confirmation */}
                 {selectedPayrollCompany && (
-                  <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                    {selectedPayrollCompany.logo ? (
-                      <img src={selectedPayrollCompany.logo} alt={selectedPayrollCompany.name} className="w-10 h-10 object-contain" />
-                    ) : (
-                      <Building2 className="w-10 h-10 text-green-600" />
-                    )}
-                    <div>
-                      <p className="font-medium text-green-800">{selectedPayrollCompany.name}</p>
-                      <p className="text-sm text-green-600">Template selected</p>
+                  <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-[100px] h-[100px] rounded-lg bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-2">
+                        {selectedPayrollCompany.logo ? (
+                          <img 
+                            src={selectedPayrollCompany.logo} 
+                            alt={`${selectedPayrollCompany.name} logo`} 
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <Building2 className="w-10 h-10 text-slate-300" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
+                        <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
+                        <p className="text-sm text-slate-600 mt-1">
+                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Style A (Gusto)' : selectedPayrollCompany.template === 'template-b' ? 'Style B (ADP)' : 'Style C (Workday)'}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Company Logo Upload */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Company Logo (optional)
-                </h2>
-                <p className="text-sm text-slate-500 mb-4">
-                  Upload company logo. PNG or JPG, max 2MB. Image will be resized automatically.
-                </p>
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                    Company Logo (optional)
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Upload company logo. PNG or JPG, max 2MB. Image will be resized automatically.
+                  </p>
+                </div>
                 
+                {/* Logo Upload Area */}
                 <div
                   onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                   onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
                   onDrop={handleLogoDrop}
                   className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
-                    isDragging ? 'border-green-500 bg-green-50' : logoError ? 'border-red-300 bg-red-50' : 'border-slate-300 hover:border-green-400'
+                    isDragging 
+                      ? 'border-green-500 bg-green-50' 
+                      : logoError 
+                        ? 'border-red-300 bg-red-50' 
+                        : 'border-slate-300 hover:border-green-400'
                   }`}
                 >
                   {logoPreview ? (
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <img src={logoPreview} alt="Logo Preview" className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white p-2" />
-                        <button type="button" onClick={removeLogo} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                        <img 
+                          src={logoPreview} 
+                          alt="Company Logo Preview" 
+                          className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-white p-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-green-700">Logo uploaded!</p>
-                        <p className="text-xs text-slate-500">Click X to remove</p>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Click the X to remove and upload a different logo.
+                        </p>
                       </div>
                     </div>
                   ) : (
                     <div className="text-center">
                       <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                      <p className="text-sm text-slate-600 mb-2">Drag and drop your logo here, or</p>
-                      <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()}>
-                        <Upload className="w-4 h-4 mr-2" /> Select File
+                      <p className="text-sm text-slate-600 mb-2">
+                        Drag and drop your logo here, or
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logoInputRef.current?.click()}
+                        className="gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Select File
                       </Button>
-                      <input ref={logoInputRef} type="file" accept=".png,.jpg,.jpeg" onChange={handleLogoSelect} className="hidden" />
-                      <p className="text-xs text-slate-400 mt-3">PNG or JPG, max 2MB</p>
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                        onChange={handleLogoSelect}
+                        className="hidden"
+                        data-testid="logo-file-input"
+                      />
+                      <p className="text-xs text-slate-400 mt-3">
+                        PNG or JPG, max 2MB
+                      </p>
                     </div>
                   )}
                 </div>
-                {logoError && <p className="text-sm text-red-500 mt-2"><X className="w-4 h-4 inline mr-1" />{logoError}</p>}
+                
+                {logoError && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <X className="w-4 h-4" />
+                    {logoError}
+                  </p>
+                )}
               </div>
 
-              {/* Worker Type Selection */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              {/* Worker Type Selection - Only show contractor option for Template A (Gusto) */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Worker Type
                 </h2>
                 {selectedTemplate === 'template-a' ? (
                   <RadioGroup value={formData.workerType} onValueChange={handleWorkerTypeChange}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className={`border-2 rounded-lg p-4 cursor-pointer ${formData.workerType === 'employee' ? 'border-green-600 bg-green-50' : 'border-slate-200'}`}>
-                        <RadioGroupItem value="employee" id="employee" className="sr-only" />
-                        <Label htmlFor="employee" className="cursor-pointer">
-                          <div className="font-semibold">Employee</div>
-                          <div className="text-sm text-slate-500">T4 - CPP/QPP, EI deductions</div>
-                        </Label>
+                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="employee" id="worker-employee" data-testid="worker-employee-radio" />
+                          <Label htmlFor="worker-employee" className="cursor-pointer font-medium">Employee (W-2)</Label>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-2">Standard employee with tax withholdings</p>
                       </div>
-                      <div className={`border-2 rounded-lg p-4 cursor-pointer ${formData.workerType === 'contractor' ? 'border-green-600 bg-green-50' : 'border-slate-200'}`}>
-                        <RadioGroupItem value="contractor" id="contractor" className="sr-only" />
-                        <Label htmlFor="contractor" className="cursor-pointer">
-                          <div className="font-semibold">Contractor</div>
-                          <div className="text-sm text-slate-500">Self-employed - No deductions</div>
-                        </Label>
+                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'contractor' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="contractor" id="worker-contractor" data-testid="worker-contractor-radio" />
+                          <Label htmlFor="worker-contractor" className="cursor-pointer font-medium">Contractor (1099)</Label>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-2">Independent contractor, no tax withholdings</p>
                       </div>
                     </div>
                   </RadioGroup>
                 ) : (
-                  <div className="p-3 bg-slate-50 rounded-lg">
-                    <p className="text-sm text-slate-600">Employee (T4) - Contractor option only available with Gusto template</p>
+                  <div className="p-4 bg-slate-50 border-2 border-slate-200 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-green-600 flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className="font-medium text-slate-800">Employee (W-2)</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2 ml-6">
+                      {selectedTemplate === 'template-b' ? 'ADP' : 'Workday'} template only supports employee pay stubs with tax withholdings.
+                    </p>
                   </div>
                 )}
               </div>
 
-              {/* Pay Type Selection */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Pay Type
-                </h2>
-                <RadioGroup value={formData.payType} onValueChange={(val) => setFormData(prev => ({ ...prev, payType: val }))}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className={`border-2 rounded-lg p-4 cursor-pointer ${formData.payType === 'hourly' ? 'border-green-600 bg-green-50' : 'border-slate-200'}`}>
-                      <RadioGroupItem value="hourly" id="hourly" className="sr-only" />
-                      <Label htmlFor="hourly" className="cursor-pointer">
-                        <div className="font-semibold">Hourly</div>
-                        <div className="text-sm text-slate-500">Paid by the hour</div>
-                      </Label>
-                    </div>
-                    <div className={`border-2 rounded-lg p-4 cursor-pointer ${formData.payType === 'salary' ? 'border-green-600 bg-green-50' : 'border-slate-200'} ${!canUseSalary ? 'opacity-50' : ''}`}>
-                      <RadioGroupItem value="salary" id="salary" className="sr-only" disabled={!canUseSalary} />
-                      <Label htmlFor="salary" className={`cursor-pointer ${!canUseSalary ? 'cursor-not-allowed' : ''}`}>
-                        <div className="font-semibold">Salary</div>
-                        <div className="text-sm text-slate-500">Fixed annual salary</div>
-                      </Label>
-                    </div>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {/* Employee Information */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  {formData.workerType === 'contractor' ? 'Contractor' : 'Employee'} Information
+              {/* Employee/Contractor Information */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  {formData.workerType === 'contractor' ? 'Contractor Information' : 'Employee Information'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="John Smith" />
+                  <div className="space-y-2">
+                    <Label htmlFor="name">{formData.workerType === 'contractor' ? 'Contractor Name *' : 'Employee Name *'}</Label>
+                    <Input data-testid="employee-name-input" id="name" name="name" value={formData.name} onChange={handleChange} required />
                   </div>
-                  <div>
-                    <Label htmlFor="sin">SIN (Last 3 digits shown)</Label>
-                    <Input id="sin" name="sin" value={formData.sin} onChange={handleSINChange} placeholder="XXX-XXX-XXX" maxLength={11} />
-                    {validationErrors.sin && <p className="text-xs text-red-500 mt-1">{validationErrors.sin}</p>}
+                  <div className="space-y-2">
+                    <Label htmlFor="ssn">{formData.workerType === 'contractor' ? 'Last 4 of SSN/EIN *' : 'Last 4 of SSN *'}</Label>
+                    <Input 
+                      data-testid="ssn-input" 
+                      id="ssn" 
+                      name="ssn" 
+                      value={formData.ssn} 
+                      onChange={handleSSNChange} 
+                      maxLength="4" 
+                      placeholder="1234"
+                      className={validationErrors.ssn ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.ssn && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.ssn}</p>
+                    )}
                   </div>
-                  <div>
-                    <Label htmlFor="bank">Bank Account (Last 4)</Label>
-                    <Input id="bank" name="bank" value={formData.bank} onChange={handleBankChange} placeholder="1234" maxLength={4} />
+                  {/* Employee ID - Only for Workday template */}
+                  {selectedTemplate === 'template-c' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="employeeId">Employee ID *</Label>
+                      <Input 
+                        data-testid="employee-id-input" 
+                        id="employeeId" 
+                        name="employeeId" 
+                        value={formData.employeeId} 
+                        onChange={handleChange} 
+                        placeholder="100012345"
+                        required 
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="bankName">Bank Name *</Label>
+                    <Input data-testid="bank-name-input" id="bankName" name="bankName" value={formData.bankName} onChange={handleChange} required />
                   </div>
-                  <div>
-                    <Label htmlFor="bankName">Bank Name</Label>
-                    <Input id="bankName" name="bankName" value={formData.bankName} onChange={handleChange} placeholder="TD Bank" />
+                  <div className="space-y-2">
+                    <Label htmlFor="bank">Last 4 of Bank Account *</Label>
+                    <Input 
+                      data-testid="bank-account-input" 
+                      id="bank" 
+                      name="bank" 
+                      value={formData.bank} 
+                      onChange={handleBankChange} 
+                      maxLength="4" 
+                      placeholder="5678"
+                      className={validationErrors.bank ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.bank && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.bank}</p>
+                    )}
                   </div>
-                  <div className="md:col-span-2">
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input id="address" name="address" value={formData.address} onChange={handleChange} placeholder="123 Main Street" />
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="address">Address *</Label>
+                    <Input data-testid="address-input" id="address" name="address" value={formData.address} onChange={handleChange} required />
                   </div>
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" name="city" value={formData.city} onChange={handleChange} placeholder="Toronto" />
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City *</Label>
+                    <Input data-testid="city-input" id="city" name="city" value={formData.city} onChange={handleChange} required />
                   </div>
-                  <div>
-                    <Label htmlFor="province">Province/Territory</Label>
-                    <Select value={formData.province} onValueChange={(val) => setFormData(prev => ({ ...prev, province: val }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State *</Label>
+                    <Select value={formData.state} onValueChange={(val) => setFormData({...formData, state: val})}>
+                      <SelectTrigger data-testid="pay-day-select">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {CANADIAN_PROVINCES.map(p => (
-                          <SelectItem key={p.code} value={p.code}>{p.name}</SelectItem>
-                        ))}
+                        <SelectItem value="AL">Alabama</SelectItem>
+                        <SelectItem value="AK">Alaska</SelectItem>
+                        <SelectItem value="AZ">Arizona</SelectItem>
+                        <SelectItem value="AR">Arkansas</SelectItem>
+                        <SelectItem value="CA">California</SelectItem>
+                        <SelectItem value="CO">Colorado</SelectItem>
+                        <SelectItem value="CT">Connecticut</SelectItem>
+                        <SelectItem value="DE">Delaware</SelectItem>
+                        <SelectItem value="FL">Florida</SelectItem>
+                        <SelectItem value="GA">Georgia</SelectItem>
+                        <SelectItem value="HI">Hawaii</SelectItem>
+                        <SelectItem value="ID">Idaho</SelectItem>
+                        <SelectItem value="IL">Illinois</SelectItem>
+                        <SelectItem value="IN">Indiana</SelectItem>
+                        <SelectItem value="IA">Iowa</SelectItem>
+                        <SelectItem value="KS">Kansas</SelectItem>
+                        <SelectItem value="KY">Kentucky</SelectItem>
+                        <SelectItem value="LA">Louisiana</SelectItem>
+                        <SelectItem value="ME">Maine</SelectItem>
+                        <SelectItem value="MD">Maryland</SelectItem>
+                        <SelectItem value="MA">Massachusetts</SelectItem>
+                        <SelectItem value="MI">Michigan</SelectItem>
+                        <SelectItem value="MN">Minnesota</SelectItem>
+                        <SelectItem value="MS">Mississippi</SelectItem>
+                        <SelectItem value="MO">Missouri</SelectItem>
+                        <SelectItem value="MT">Montana</SelectItem>
+                        <SelectItem value="NE">Nebraska</SelectItem>
+                        <SelectItem value="NV">Nevada</SelectItem>
+                        <SelectItem value="NH">New Hampshire</SelectItem>
+                        <SelectItem value="NJ">New Jersey</SelectItem>
+                        <SelectItem value="NM">New Mexico</SelectItem>
+                        <SelectItem value="NY">New York</SelectItem>
+                        <SelectItem value="NC">North Carolina</SelectItem>
+                        <SelectItem value="ND">North Dakota</SelectItem>
+                        <SelectItem value="OH">Ohio</SelectItem>
+                        <SelectItem value="OK">Oklahoma</SelectItem>
+                        <SelectItem value="OR">Oregon</SelectItem>
+                        <SelectItem value="PA">Pennsylvania</SelectItem>
+                        <SelectItem value="RI">Rhode Island</SelectItem>
+                        <SelectItem value="SC">South Carolina</SelectItem>
+                        <SelectItem value="SD">South Dakota</SelectItem>
+                        <SelectItem value="TN">Tennessee</SelectItem>
+                        <SelectItem value="TX">Texas</SelectItem>
+                        <SelectItem value="UT">Utah</SelectItem>
+                        <SelectItem value="VT">Vermont</SelectItem>
+                        <SelectItem value="VA">Virginia</SelectItem>
+                        <SelectItem value="WA">Washington</SelectItem>
+                        <SelectItem value="WV">West Virginia</SelectItem>
+                        <SelectItem value="WI">Wisconsin</SelectItem>
+                        <SelectItem value="WY">Wyoming</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="postalCode">Postal Code</Label>
-                    <Input id="postalCode" name="postalCode" value={formData.postalCode} onChange={handlePostalCodeChange} placeholder="A1A 1A1" maxLength={7} />
-                    {validationErrors.postalCode && <p className="text-xs text-red-500 mt-1">{validationErrors.postalCode}</p>}
-                  </div>
-                  <div>
-                    <Label htmlFor="hireDate">{formData.workerType === 'contractor' ? 'Start Date' : 'Hire Date'}</Label>
-                    <Input id="hireDate" name="hireDate" type="date" value={formData.hireDate} onChange={handleChange} />
+                  <div className="space-y-2">
+                    <Label htmlFor="zip">Zip Code *</Label>
+                    <Input 
+                      data-testid="zip-input" 
+                      id="zip" 
+                      name="zip" 
+                      value={formData.zip} 
+                      onChange={handleZipChange} 
+                      placeholder="12345"
+                      className={validationErrors.zip ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.zip && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.zip}</p>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Company Information */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Company Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <Label htmlFor="company">Company Name</Label>
-                    <Input id="company" name="company" value={formData.company} onChange={handleChange} placeholder="Acme Inc." />
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company Name *</Label>
+                    <Input data-testid="company-name-input" id="company" name="company" value={formData.company} onChange={handleChange} required />
                   </div>
-                  <div className="md:col-span-2">
-                    <Label htmlFor="companyAddress">Street Address</Label>
-                    <Input id="companyAddress" name="companyAddress" value={formData.companyAddress} onChange={handleChange} placeholder="456 Business Ave" />
+                  <div className="space-y-2">
+                    <Label htmlFor="companyPhone">Company Phone *</Label>
+                    <Input 
+                      data-testid="company-phone-input" 
+                      id="companyPhone" 
+                      name="companyPhone" 
+                      value={formData.companyPhone} 
+                      onChange={handleCompanyPhoneChange} 
+                      placeholder="(555) 123-4567"
+                      className={validationErrors.companyPhone ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.companyPhone && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.companyPhone}</p>
+                    )}
                   </div>
-                  <div>
-                    <Label htmlFor="companyCity">City</Label>
-                    <Input id="companyCity" name="companyCity" value={formData.companyCity} onChange={handleChange} placeholder="Vancouver" />
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="companyAddress">Company Address *</Label>
+                    <Input data-testid="company-address-input" id="companyAddress" name="companyAddress" value={formData.companyAddress} onChange={handleChange} required />
                   </div>
-                  <div>
-                    <Label htmlFor="companyProvince">Province/Territory</Label>
-                    <Select value={formData.companyProvince} onValueChange={(val) => setFormData(prev => ({ ...prev, companyProvince: val }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyCity">Company City *</Label>
+                    <Input data-testid="company-city-input" id="companyCity" name="companyCity" value={formData.companyCity} onChange={handleChange} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyState">Company State *</Label>
+                      <Select value={formData.companyState} onValueChange={(val) => setFormData({...formData, companyState: val})}>
+                      <SelectTrigger data-testid="pay-day-select">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {CANADIAN_PROVINCES.map(p => (
-                          <SelectItem key={p.code} value={p.code}>{p.name}</SelectItem>
-                        ))}
+                        <SelectItem value="AL">Alabama</SelectItem>
+                        <SelectItem value="AK">Alaska</SelectItem>
+                        <SelectItem value="AZ">Arizona</SelectItem>
+                        <SelectItem value="AR">Arkansas</SelectItem>
+                        <SelectItem value="CA">California</SelectItem>
+                        <SelectItem value="CO">Colorado</SelectItem>
+                        <SelectItem value="CT">Connecticut</SelectItem>
+                        <SelectItem value="DE">Delaware</SelectItem>
+                        <SelectItem value="FL">Florida</SelectItem>
+                        <SelectItem value="GA">Georgia</SelectItem>
+                        <SelectItem value="HI">Hawaii</SelectItem>
+                        <SelectItem value="ID">Idaho</SelectItem>
+                        <SelectItem value="IL">Illinois</SelectItem>
+                        <SelectItem value="IN">Indiana</SelectItem>
+                        <SelectItem value="IA">Iowa</SelectItem>
+                        <SelectItem value="KS">Kansas</SelectItem>
+                        <SelectItem value="KY">Kentucky</SelectItem>
+                        <SelectItem value="LA">Louisiana</SelectItem>
+                        <SelectItem value="ME">Maine</SelectItem>
+                        <SelectItem value="MD">Maryland</SelectItem>
+                        <SelectItem value="MA">Massachusetts</SelectItem>
+                        <SelectItem value="MI">Michigan</SelectItem>
+                        <SelectItem value="MN">Minnesota</SelectItem>
+                        <SelectItem value="MS">Mississippi</SelectItem>
+                        <SelectItem value="MO">Missouri</SelectItem>
+                        <SelectItem value="MT">Montana</SelectItem>
+                        <SelectItem value="NE">Nebraska</SelectItem>
+                        <SelectItem value="NV">Nevada</SelectItem>
+                        <SelectItem value="NH">New Hampshire</SelectItem>
+                        <SelectItem value="NJ">New Jersey</SelectItem>
+                        <SelectItem value="NM">New Mexico</SelectItem>
+                        <SelectItem value="NY">New York</SelectItem>
+                        <SelectItem value="NC">North Carolina</SelectItem>
+                        <SelectItem value="ND">North Dakota</SelectItem>
+                        <SelectItem value="OH">Ohio</SelectItem>
+                        <SelectItem value="OK">Oklahoma</SelectItem>
+                        <SelectItem value="OR">Oregon</SelectItem>
+                        <SelectItem value="PA">Pennsylvania</SelectItem>
+                        <SelectItem value="RI">Rhode Island</SelectItem>
+                        <SelectItem value="SC">South Carolina</SelectItem>
+                        <SelectItem value="SD">South Dakota</SelectItem>
+                        <SelectItem value="TN">Tennessee</SelectItem>
+                        <SelectItem value="TX">Texas</SelectItem>
+                        <SelectItem value="UT">Utah</SelectItem>
+                        <SelectItem value="VT">Vermont</SelectItem>
+                        <SelectItem value="VA">Virginia</SelectItem>
+                        <SelectItem value="WA">Washington</SelectItem>
+                        <SelectItem value="WV">West Virginia</SelectItem>
+                        <SelectItem value="WI">Wisconsin</SelectItem>
+                        <SelectItem value="WY">Wyoming</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="companyPostalCode">Postal Code</Label>
-                    <Input id="companyPostalCode" name="companyPostalCode" value={formData.companyPostalCode} onChange={handlePostalCodeChange} placeholder="V1V 1V1" maxLength={7} />
+                  <div className="space-y-2">
+                    <Label htmlFor="companyZip">Company Zip *</Label>
+                    <Input 
+                      data-testid="company-zip-input" 
+                      id="companyZip" 
+                      name="companyZip" 
+                      value={formData.companyZip} 
+                      onChange={handleCompanyZipChange} 
+                      placeholder="12345"
+                      className={validationErrors.companyZip ? 'border-red-500' : ''}
+                      required 
+                    />
+                    {validationErrors.companyZip && (
+                      <p className="text-xs text-red-500 mt-1">{validationErrors.companyZip}</p>
+                    )}
                   </div>
-                  <div>
-                    <Label htmlFor="companyPhone">Phone</Label>
-                    <Input id="companyPhone" name="companyPhone" value={formData.companyPhone} onChange={handleCompanyPhoneChange} placeholder="(604) 555-1234" />
-                  </div>
+                  
+                  {/* ADP Template B Specific Fields */}
+                  {selectedTemplate === 'template-b' && (
+                    <>
+                      <div className="md:col-span-2 pt-2 border-t">
+                        <p className="text-sm text-slate-600 font-medium mb-3">ADP Document Info (Optional)</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="companyCode">Company Code <span className="text-xs text-slate-400">(max 20 chars)</span></Label>
+                        <Input 
+                          id="companyCode" 
+                          name="companyCode" 
+                          value={formData.companyCode} 
+                          onChange={handleCompanyCodeChange} 
+                          placeholder="e.g., RJ/ABCH 12345678"
+                          maxLength={20}
+                          className={validationErrors.companyCode ? 'border-red-500' : ''}
+                        />
+                        {validationErrors.companyCode && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.companyCode}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="locDept">Loc/Dept <span className="text-xs text-slate-400">(3 digits)</span></Label>
+                        <Input 
+                          id="locDept" 
+                          name="locDept" 
+                          value={formData.locDept} 
+                          onChange={handleLocDeptChange} 
+                          placeholder="e.g., 017"
+                          maxLength={3}
+                          className={validationErrors.locDept ? 'border-red-500' : ''}
+                        />
+                        {validationErrors.locDept && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.locDept}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="checkNumber">Check/Document Number <span className="text-xs text-slate-400">(6-7 digits)</span></Label>
+                        <Input 
+                          id="checkNumber" 
+                          name="checkNumber" 
+                          value={formData.checkNumber} 
+                          onChange={handleCheckNumberChange} 
+                          placeholder="e.g., 1019908"
+                          maxLength={7}
+                          className={validationErrors.checkNumber ? 'border-red-500' : ''}
+                        />
+                        {validationErrors.checkNumber && (
+                          <p className="text-xs text-red-500 mt-1">{validationErrors.checkNumber}</p>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Pay Period Information */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Pay Period
+              {/* Pay Information */}
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Pay Information
                 </h2>
+                
+                {/* Pay Type Selection */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Pay Type *</Label>
+                  <RadioGroup 
+                    value={formData.payType} 
+                    onValueChange={(val) => setFormData({...formData, payType: val})}
+                    className="flex flex-row gap-4"
+                  >
+                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'hourly' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="hourly" id="pay-hourly" data-testid="pay-hourly-radio" />
+                        <Label htmlFor="pay-hourly" className="cursor-pointer font-medium">Hourly</Label>
+                      </div>
+                    </div>
+                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'salary' ? 'border-green-800 bg-green-50' : 'border-slate-200'} ${!canUseSalary ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value="salary" 
+                          id="pay-salary" 
+                          data-testid="pay-salary-radio" 
+                          disabled={!canUseSalary}
+                        />
+                        <Label htmlFor="pay-salary" className={`cursor-pointer font-medium ${!canUseSalary ? 'text-slate-400' : ''}`}>
+                          Salary
+                        </Label>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                  {!canUseSalary && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      * Salary option not available for contractors on Gusto template
+                    </p>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input id="startDate" name="startDate" type="date" value={formData.startDate} onChange={handleChange} />
+                  <div className="space-y-2">
+                    <Label htmlFor="hireDate">{formData.workerType === 'contractor' ? 'Start Date *' : 'Hire Date *'}</Label>
+                    <Input data-testid="hire-date-input" id="hireDate" name="hireDate" type="date" value={formData.hireDate} onChange={handleChange} required />
                   </div>
-                  <div>
-                    <Label htmlFor="endDate">End Date</Label>
-                    <Input id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} />
-                  </div>
-                  <div>
-                    <Label htmlFor="payFrequency">Pay Frequency</Label>
-                    <Select value={formData.payFrequency} onValueChange={(val) => setFormData(prev => ({ ...prev, payFrequency: val }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                  
+                  {formData.payType === 'hourly' ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="rate">Hourly Rate ($) *</Label>
+                      <Input data-testid="hourly-rate-input" id="rate" name="rate" type="number" step="0.01" value={formData.rate} onChange={handleChange} required />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="annualSalary">Annual Salary ($) *</Label>
+                      <Input data-testid="annual-salary-input" id="annualSalary" name="annualSalary" type="number" step="0.01" value={formData.annualSalary} onChange={handleChange} required />
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="payFrequency">Pay Frequency *</Label>
+                    <Select value={formData.payFrequency} onValueChange={(val) => setFormData({...formData, payFrequency: val})}>
+                      <SelectTrigger data-testid="pay-frequency-select">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="biweekly">Bi-weekly</SelectItem>
+                        <SelectItem value="biweekly">Bi-Weekly</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="payDay">Pay Day</Label>
-                    <Select value={formData.payDay} onValueChange={(val) => setFormData(prev => ({ ...prev, payDay: val }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                  <div className="space-y-2">
+                    <Label htmlFor="payDay">Pay Day *</Label>
+                    <Select value={formData.payDay} onValueChange={(val) => setFormData({...formData, payDay: val})}>
+                      <SelectTrigger data-testid="pay-day-select">
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
-                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
-                          <SelectItem key={day} value={day}>{day}</SelectItem>
-                        ))}
+                        <SelectItem value="Monday">Monday</SelectItem>
+                        <SelectItem value="Tuesday">Tuesday</SelectItem>
+                        <SelectItem value="Wednesday">Wednesday</SelectItem>
+                        <SelectItem value="Thursday">Thursday</SelectItem>
+                        <SelectItem value="Friday">Friday</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {formData.payType === "hourly" ? (
-                    <div>
-                      <Label htmlFor="rate">Hourly Rate (CAD)</Label>
-                      <Input id="rate" name="rate" type="number" step="0.01" value={formData.rate} onChange={handleChange} placeholder="25.00" />
+                </div>
+
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Paystub Generation Period *</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input data-testid="start-date-input" id="startDate" name="startDate" type="date" value={formData.startDate} onChange={handleChange} required />
                     </div>
-                  ) : (
-                    <div>
-                      <Label htmlFor="annualSalary">Annual Salary (CAD)</Label>
-                      <Input id="annualSalary" name="annualSalary" type="number" step="0.01" value={formData.annualSalary} onChange={handleChange} placeholder="75000" />
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <Input data-testid="end-date-input" id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} required />
                     </div>
+                  </div>
+                  {calculateNumStubs > 0 && (
+                    <p className="text-sm text-slate-600 mt-2">
+                      This will generate <strong>{calculateNumStubs}</strong> paystub{calculateNumStubs > 1 ? 's' : ''}
+                    </p>
                   )}
                 </div>
 
-                {/* Hours per period */}
-                {formData.payType === "hourly" && payPeriods.length > 0 && (
-                  <Collapsible open={hoursExpanded} onOpenChange={setHoursExpanded} className="mt-6">
-                    <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        Edit Hours per Period ({payPeriods.length} periods)
-                        {hoursExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4 space-y-3">
-                      {payPeriods.map((period, idx) => (
-                        <div key={idx} className="grid grid-cols-3 gap-3 items-center p-3 bg-slate-50 rounded-lg">
-                          <div className="text-sm font-medium">{period.label}</div>
+                {/* Hours input per pay period - only for hourly pay type */}
+                {formData.payType === 'hourly' && payPeriods.length > 0 && (
+                  <Collapsible open={hoursExpanded} onOpenChange={setHoursExpanded}>
+                    <div className="border rounded-lg overflow-hidden">
+                      <CollapsibleTrigger asChild>
+                        <button
+                          type="button"
+                          className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                        >
                           <div>
-                            <Label className="text-xs">Regular Hours</Label>
-                            <Input
-                              type="number"
-                              value={hoursPerPeriod[idx]?.hours || 0}
-                              onChange={(e) => handlePeriodHoursChange(idx, 'hours', e.target.value)}
-                              className="h-8"
-                            />
+                            <Label className="text-base font-semibold cursor-pointer">Hours Per Pay Period</Label>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Click to {hoursExpanded ? 'collapse' : 'expand'} and edit hours for each pay date
+                            </p>
                           </div>
-                          {!formData.workerType.includes('contractor') && (
-                            <div>
-                              <Label className="text-xs">Overtime</Label>
-                              <Input
-                                type="number"
-                                value={hoursPerPeriod[idx]?.overtime || 0}
-                                onChange={(e) => handlePeriodHoursChange(idx, 'overtime', e.target.value)}
-                                className="h-8"
-                              />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`h-5 w-5 text-slate-500 transition-transform ${hoursExpanded ? 'rotate-180' : ''}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="p-4 space-y-3 bg-white border-t">
+                          {/* Only hourly employees can have overtime */}
+                          {formData.workerType === 'contractor' && (
+                            <div className="p-2 bg-amber-50 border border-amber-200 rounded-md mb-2">
+                              <p className="text-xs text-amber-700">
+                                <strong>Note:</strong> Contractors are not legally entitled to overtime pay.
+                              </p>
                             </div>
                           )}
+                          {payPeriods.map((period, index) => (
+                            <div 
+                              key={index} 
+                              className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-slate-50 rounded-lg"
+                            >
+                              <div className="flex-shrink-0 sm:w-48">
+                                <span className="text-sm font-medium text-slate-700">
+                                  Pay Period {index + 1}
+                                </span>
+                                <p className="text-xs text-slate-500">{period.label}</p>
+                              </div>
+                              {/* Show only hours for contractors, hours + overtime for hourly employees */}
+                              {formData.workerType === 'contractor' ? (
+                                <div className="flex-1">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Hours Worked</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
+                                      className="h-9 max-w-32"
+                                      min="0"
+                                      step="0.5"
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Regular Hours</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.5"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Overtime Hours</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.overtime ?? 0}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'overtime', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.5"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </CollapsibleContent>
+                      </CollapsibleContent>
+                    </div>
                   </Collapsible>
                 )}
-              </div>
 
-              {/* Deductions Section */}
-              {formData.workerType !== 'contractor' && (
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                      Additional Deductions
-                    </h2>
-                    <Button variant="outline" size="sm" onClick={addDeduction}>+ Add Deduction</Button>
-                  </div>
-                  {deductions.length === 0 ? (
-                    <p className="text-sm text-slate-500">No additional deductions. Click "Add Deduction" to add RRSP, insurance, etc.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {deductions.map((d) => (
-                        <div key={d.id} className="grid grid-cols-4 gap-3 items-end p-3 bg-slate-50 rounded-lg">
-                          <div>
-                            <Label className="text-xs">Type</Label>
-                            <Select value={d.type} onValueChange={(val) => updateDeduction(d.id, 'type', val)}>
-                              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                {/* Local Tax option - only for employees in states with local taxes */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-3">
+                    {stateHasLocalTax(formData.state) ? (
+                      <>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            data-testid="local-tax-checkbox"
+                            id="includeLocalTax"
+                            checked={formData.includeLocalTax}
+                            onCheckedChange={(checked) => setFormData({...formData, includeLocalTax: checked})}
+                          />
+                          <Label htmlFor="includeLocalTax" className="text-sm font-normal cursor-pointer">
+                            Include local/city tax
+                          </Label>
+                        </div>
+                        
+                        {formData.includeLocalTax && (
+                          <div className="ml-6 space-y-2">
+                            <Label className="text-xs text-slate-600">Select City/Municipality for Local Tax</Label>
+                            <Select 
+                              value={formData.city || ""} 
+                              onValueChange={(val) => setFormData({...formData, city: val})}
+                            >
+                              <SelectTrigger className="w-full max-w-xs">
+                                <SelectValue placeholder="Select city..." />
+                              </SelectTrigger>
                               <SelectContent>
-                                {deductionTypes.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                                {getCitiesWithLocalTax(formData.state).map(city => (
+                                  <SelectItem key={city} value={city}>
+                                    {city} ({(getLocalTaxRate(formData.state, city) * 100).toFixed(2)}%)
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
-                          </div>
-                          <div>
-                            <Label className="text-xs">Name</Label>
-                            <Input value={d.name} onChange={(e) => updateDeduction(d.id, 'name', e.target.value)} placeholder="Label" className="h-9" />
-                          </div>
-                          <div>
-                            <Label className="text-xs">Amount</Label>
-                            <Input type="number" value={d.amount} onChange={(e) => updateDeduction(d.id, 'amount', e.target.value)} placeholder="0.00" className="h-9" />
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => removeDeduction(d.id)} className="text-red-500 h-9">
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Summary & Payment Section */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-6">
-                {/* Summary Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    <span>🍁</span>
-                    Pay Stub Summary
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Province:</span>
-                      <span className="font-medium">{CANADIAN_PROVINCES.find(p => p.code === formData.province)?.name || formData.province}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Pay Stubs:</span>
-                      <span className="font-medium">{preview.numStubs}</span>
-                    </div>
-                    <hr className="border-slate-200" />
-                    <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Gross Pay:</span>
-                      <span className="font-medium">${formatCurrency(preview.gross)}</span>
-                    </div>
-                    {formData.workerType !== 'contractor' && (
-                      <>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">{preview.cppLabel}:</span>
-                          <span className="text-red-600">-${formatCurrency(preview.cpp)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">EI:</span>
-                          <span className="text-red-600">-${formatCurrency(preview.ei)}</span>
-                        </div>
-                        {preview.isQuebec && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">QPIP:</span>
-                            <span className="text-red-600">-${formatCurrency(preview.qpip)}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Federal Tax:</span>
-                          <span className="text-red-600">-${formatCurrency(preview.federalTax)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Provincial Tax:</span>
-                          <span className="text-red-600">-${formatCurrency(preview.provincialTax)}</span>
-                        </div>
-                        {preview.totalDeductions > 0 && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">Other Deductions:</span>
-                            <span className="text-red-600">-${formatCurrency(preview.totalDeductions)}</span>
+                            {formData.city && getLocalTaxRate(formData.state, formData.city) > 0 && (
+                              <p className="text-xs text-green-700">
+                                Local tax rate for {formData.city}: <strong>{(getLocalTaxRate(formData.state, formData.city) * 100).toFixed(2)}%</strong>
+                              </p>
+                            )}
+                            {formData.city && getLocalTaxRate(formData.state, formData.city) === 0 && (
+                              <p className="text-xs text-slate-500">
+                                No local income tax found for this city.
+                              </p>
+                            )}
                           </div>
                         )}
                       </>
+                    ) : (
+                      <p className="text-xs text-slate-500">
+                        {formData.state ? `${formData.state} does not have local income taxes.` : 'Select a state to see local tax options.'}
+                      </p>
                     )}
-                    <hr className="border-slate-200" />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span className="text-slate-800">Net Pay:</span>
-                      <span className="text-green-600">${formatCurrency(preview.net)}</span>
-                    </div>
                   </div>
-                </div>
+                )}
+                
+                {formData.workerType === 'contractor' && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-sm text-amber-800">
+                      <strong>Note:</strong> As a contractor (1099), no taxes will be withheld. You are responsible for paying your own self-employment taxes.
+                    </p>
+                  </div>
+                )}
 
-                {/* Preview Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    Document Preview
-                  </h3>
-                  
-                  {isGeneratingPreview ? (
-                    <div className="aspect-[8.5/11] bg-slate-100 rounded-lg flex items-center justify-center">
-                      <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full" />
+                {/* Filing Status Section - Only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                      Tax Withholding (Optional)
+                    </h2>
+                    <p className="text-xs text-slate-500 -mt-2">
+                      Federal tax is calculated based on filing status per the 2020+ W-4 form. State allowances are available for applicable states.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Federal Filing Status - No more allowances per 2020 W-4 */}
+                      <div className="space-y-2">
+                        <Label htmlFor="federalFilingStatus">Federal Filing Status (W-4)</Label>
+                        <Select 
+                          value={formData.federalFilingStatus || ""} 
+                          onValueChange={(val) => setFormData({...formData, federalFilingStatus: val})}
+                        >
+                          <SelectTrigger data-testid="federal-filing-status">
+                            <SelectValue placeholder="Select federal status..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="single">Single or Married Filing Separately</SelectItem>
+                            <SelectItem value="married_jointly">Married Filing Jointly</SelectItem>
+                            <SelectItem value="head_of_household">Head of Household</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-slate-400">Per 2020+ W-4 (no more allowances)</p>
+                      </div>
+
+                      {/* State Allowances - Only for states that use them */}
+                      <div className="space-y-2">
+                        <Label htmlFor="stateAllowances">State Withholding Allowances</Label>
+                        {stateUsesAllowances(formData.state) ? (
+                          <>
+                            <Select 
+                              value={formData.stateAllowances || "0"} 
+                              onValueChange={(val) => setFormData({...formData, stateAllowances: val})}
+                            >
+                              <SelectTrigger data-testid="state-allowances">
+                                <SelectValue placeholder="Select allowances..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                                  <SelectItem key={num} value={num.toString()}>
+                                    {num} {num === 1 ? 'Allowance' : 'Allowances'}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-slate-400">Each allowance reduces state tax withholding</p>
+                          </>
+                        ) : stateHasNoIncomeTax(formData.state) ? (
+                          <div className="p-2 bg-slate-100 rounded-md">
+                            <p className="text-xs text-slate-500">{formData.state} has no state income tax</p>
+                          </div>
+                        ) : formData.state ? (
+                          <div className="p-2 bg-slate-100 rounded-md">
+                            <p className="text-xs text-slate-500">{getStateTaxInfo(formData.state).message}</p>
+                          </div>
+                        ) : (
+                          <div className="p-2 bg-slate-100 rounded-md">
+                            <p className="text-xs text-slate-500">Select a state to see allowance options</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ) : pdfPreview ? (
-                    <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-                      <DialogTrigger asChild>
-                        <div className="cursor-pointer hover:opacity-90 transition-opacity">
-                          <img src={pdfPreview} alt="Preview" className="w-full rounded-lg border border-slate-200" />
-                          <p className="text-xs text-center text-slate-500 mt-2">Click to enlarge</p>
-                        </div>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-                        <DialogHeader>
-                          <DialogTitle>Pay Stub Preview</DialogTitle>
-                        </DialogHeader>
-                        <img src={pdfPreview} alt="Preview" className="w-full" />
-                      </DialogContent>
-                    </Dialog>
-                  ) : (
-                    <div className="aspect-[8.5/11] bg-slate-100 rounded-lg flex items-center justify-center">
-                      <p className="text-sm text-slate-500 text-center px-4">Fill in the form to see a preview</p>
+                    
+                    {/* Tax Calculation Info */}
+                    {formData.federalFilingStatus && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <p className="text-sm text-blue-800">
+                          <strong>Federal Tax:</strong> Calculated using 2024 IRS tax brackets based on your filing status.
+                          {parseInt(formData.stateAllowances) > 0 && ` State allowances reduce taxable income by ~$2,500/year each.`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Employee Deductions Section - Only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                          Employee Deductions
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Pre-tax deductions like 401(k), health insurance, etc.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addDeduction}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Deduction
+                      </Button>
+                    </div>
+
+                    {deductions.length === 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-md border border-dashed border-slate-300 text-center">
+                        <p className="text-sm text-slate-500">No deductions added. Click "Add Deduction" to add one.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {deductions.map((deduction) => (
+                          <div key={deduction.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-xs text-slate-600">Type</Label>
+                                <Select 
+                                  value={deduction.type} 
+                                  onValueChange={(val) => {
+                                    updateDeduction(deduction.id, 'type', val);
+                                    if (val !== 'other') {
+                                      const label = deductionTypes.find(t => t.value === val)?.label || '';
+                                      updateDeduction(deduction.id, 'name', label);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {deductionTypes.map(type => (
+                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {deduction.type === 'other' && (
+                                <div className="flex-1 space-y-1">
+                                  <Label className="text-xs text-slate-600">Description</Label>
+                                  <Input
+                                    type="text"
+                                    value={deduction.name}
+                                    onChange={(e) => updateDeduction(deduction.id, 'name', e.target.value)}
+                                    placeholder="Enter description"
+                                    className="h-9"
+                                  />
+                                </div>
+                              )}
+                              <div className="w-32 space-y-1">
+                                <Label className="text-xs text-slate-600">Amount</Label>
+                                <div className="flex items-center gap-1">
+                                  {!deduction.isPercentage && <span className="text-slate-500">$</span>}
+                                  <Input
+                                    type="number"
+                                    value={deduction.amount}
+                                    onChange={(e) => updateDeduction(deduction.id, 'amount', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                    min="0"
+                                    step="0.01"
+                                  />
+                                  {deduction.isPercentage && <span className="text-slate-500">%</span>}
+                                </div>
+                              </div>
+                              <div className="flex items-end gap-2">
+                                <div className="flex items-center space-x-1">
+                                  <Checkbox
+                                    id={`ded-pct-${deduction.id}`}
+                                    checked={deduction.isPercentage}
+                                    onCheckedChange={(checked) => updateDeduction(deduction.id, 'isPercentage', checked)}
+                                  />
+                                  <Label htmlFor={`ded-pct-${deduction.id}`} className="text-xs cursor-pointer">%</Label>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeDeduction(deduction.id)}
+                                  className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Employee Contributions Section - Only for employees */}
+                {formData.workerType === 'employee' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                          Employee Contributions
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Voluntary contributions like HSA, FSA, Roth 401(k), etc.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addContribution}
+                        className="flex items-center gap-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Contribution
+                      </Button>
+                    </div>
+
+                    {contributions.length === 0 ? (
+                      <div className="p-4 bg-slate-50 rounded-md border border-dashed border-slate-300 text-center">
+                        <p className="text-sm text-slate-500">No contributions added. Click "Add Contribution" to add one.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {contributions.map((contribution) => (
+                          <div key={contribution.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-xs text-slate-600">Type</Label>
+                                <Select 
+                                  value={contribution.type} 
+                                  onValueChange={(val) => {
+                                    updateContribution(contribution.id, 'type', val);
+                                    if (val !== 'other') {
+                                      const label = contributionTypes.find(t => t.value === val)?.label || '';
+                                      updateContribution(contribution.id, 'name', label);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger className="h-9">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {contributionTypes.map(type => (
+                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {contribution.type === 'other' && (
+                                <div className="flex-1 space-y-1">
+                                  <Label className="text-xs text-slate-600">Description</Label>
+                                  <Input
+                                    type="text"
+                                    value={contribution.name}
+                                    onChange={(e) => updateContribution(contribution.id, 'name', e.target.value)}
+                                    placeholder="Enter description"
+                                    className="h-9"
+                                  />
+                                </div>
+                              )}
+                              <div className="w-32 space-y-1">
+                                <Label className="text-xs text-slate-600">Amount</Label>
+                                <div className="flex items-center gap-1">
+                                  {!contribution.isPercentage && <span className="text-slate-500">$</span>}
+                                  <Input
+                                    type="number"
+                                    value={contribution.amount}
+                                    onChange={(e) => updateContribution(contribution.id, 'amount', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-9"
+                                    min="0"
+                                    step="0.01"
+                                  />
+                                  {contribution.isPercentage && <span className="text-slate-500">%</span>}
+                                </div>
+                              </div>
+                              <div className="flex items-end gap-2">
+                                <div className="flex items-center space-x-1">
+                                  <Checkbox
+                                    id={`cont-pct-${contribution.id}`}
+                                    checked={contribution.isPercentage}
+                                    onCheckedChange={(checked) => updateContribution(contribution.id, 'isPercentage', checked)}
+                                  />
+                                  <Label htmlFor={`cont-pct-${contribution.id}`} className="text-xs cursor-pointer">%</Label>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeContribution(contribution.id)}
+                                  className="h-9 w-9 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </form>
+          </div>
+
+          {/* Right: Preview and PayPal */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-24 space-y-6">
+              {/* Pay Preview */}
+              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+                <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Pay Preview {formData.workerType === 'contractor' && <span className="text-sm font-normal text-amber-700">(1099 Contractor)</span>}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {preview.numStubs > 0 && (
+                    <div className="flex justify-between mb-3 pb-3 border-b border-green-300">
+                      <span className="text-slate-700 font-semibold">Paystubs to Generate:</span>
+                      <span className="font-bold">{preview.numStubs}</span>
                     </div>
                   )}
-                </div>
-
-                {/* Payment Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h3 className="text-xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    Complete Purchase
-                  </h3>
-                  <p className="text-sm text-slate-600 mb-4">
-                    <span className="text-2xl font-bold text-green-600">$9.99 USD</span>
-                    <span className="text-slate-400 ml-2">One-time payment</span>
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <PayPalButtons
-                      style={{ layout: "vertical", shape: "rect", label: "pay" }}
-                      disabled={isProcessing || !formData.startDate || !formData.endDate || (!formData.rate && !formData.annualSalary)}
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                      onError={(err) => {
-                        console.error("PayPal error:", err);
-                        toast.error("Payment failed. Please try again.");
-                      }}
-                    />
+                  <div className="flex justify-between">
+                    <span className="text-slate-700">Total Gross Pay:</span>
+                    <span className="font-bold">${formatCurrency(preview.totalGross)}</span>
                   </div>
                   
-                  <p className="text-xs text-slate-500 text-center mt-4">
-                    Secure payment via PayPal. Watermark removed after payment.
+                  {formData.workerType === 'employee' ? (
+                    <>
+                      {/* Federal Income Tax */}
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">
+                          Federal Income Tax{formData.federalFilingStatus ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})` : ''}:
+                        </span>
+                        <span>${formatCurrency(preview.federalTax)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">Social Security (6.2%):</span>
+                        <span>${formatCurrency(preview.ssTax)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">Medicare (1.45%):</span>
+                        <span>${formatCurrency(preview.medTax)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">
+                          {formData.state ? `${formData.state} State Tax${parseInt(formData.stateAllowances) > 0 ? ` (${formData.stateAllowances} allow.)` : ''}:` : 'State Tax:'}
+                        </span>
+                        <span>${formatCurrency(preview.stateTax)}</span>
+                      </div>
+                      {formData.includeLocalTax && preview.localTaxRate > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-700">
+                            {formData.city ? `${formData.city} Local Tax (${(preview.localTaxRate * 100).toFixed(2)}%):` : 'Local Tax:'}
+                          </span>
+                          <span>${formatCurrency(preview.localTax)}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-green-300 pt-2 mt-2">
+                        <div className="flex justify-between text-red-700">
+                          <span className="font-bold">Total Taxes:</span>
+                          <span className="font-bold">${formatCurrency(preview.totalTaxes)}</span>
+                        </div>
+                      </div>
+                      {/* Deductions */}
+                      {preview.totalDeductions > 0 && (
+                        <div className="flex justify-between text-orange-700">
+                          <span className="font-bold">Total Deductions:</span>
+                          <span className="font-bold">${formatCurrency(preview.totalDeductions)}</span>
+                        </div>
+                      )}
+                      {/* Contributions */}
+                      {preview.totalContributions > 0 && (
+                        <div className="flex justify-between text-purple-700">
+                          <span className="font-bold">Total Contributions:</span>
+                          <span className="font-bold">${formatCurrency(preview.totalContributions)}</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="border-t border-green-300 pt-2 mt-2">
+                      <div className="flex justify-between text-amber-700">
+                        <span className="font-bold">No Taxes Withheld</span>
+                        <span className="font-bold">$0.00</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between text-green-700 text-lg">
+                    <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Net Pay:'}</span>
+                    <span className="font-bold">${formatCurrency(preview.netPay)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PDF Preview Section - Now Above Payment */}
+              <div className="p-4 bg-white border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Document Preview
+                </h3>
+                <p className="text-xs text-slate-500 mb-3">
+                  Click to enlarge • Watermark removed after payment
+                </p>
+                
+                {isGeneratingPreview ? (
+                  <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <p className="text-sm text-slate-500">Generating preview...</p>
+                    </div>
+                  </div>
+                ) : pdfPreview ? (
+                  <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+                    <DialogTrigger asChild>
+                      <div className="relative cursor-pointer group">
+                        {/* PDF Preview Thumbnail */}
+                        <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <img 
+                            src={pdfPreview}
+                            alt="Paystub Preview"
+                            className="w-full h-96 object-contain bg-white"
+                          />
+                          {/* Watermark Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div 
+                              className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none"
+                              style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}
+                            >
+                              MintSlip
+                            </div>
+                          </div>
+                          {/* Click to enlarge overlay */}
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
+                              <span className="text-sm text-slate-700 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                </svg>
+                                Click to enlarge
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+                      <DialogHeader className="p-4 border-b">
+                        <DialogTitle className="flex items-center justify-between">
+                          <span>Document Preview</span>
+                          <span className="text-sm font-normal text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                            Watermark removed after payment
+                          </span>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="relative flex-1 h-full overflow-auto p-4">
+                        <img
+                          src={pdfPreview}
+                          alt="Paystub Preview Full"
+                          className="w-full h-auto"
+                        />
+                        {/* Large Watermark Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div 
+                            className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none"
+                            style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.1)' }}
+                          >
+                            MintSlip
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
+                    <div className="text-center p-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-sm text-slate-500">
+                        Fill in pay period dates and rate<br />to see a preview
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* PayPal - Now Below Preview */}
+              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Complete Payment
+                </h3>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  For lawful payroll documentation and record-keeping only.
+                </p>
+                <p className="text-xs text-slate-500 mb-4 text-center">
+                  MintSlip does not verify employment or guarantee acceptance by any third party.
+                </p>
+                {calculateNumStubs > 0 && (
+                  <p className="text-sm text-slate-600 mb-4">
+                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)
                   </p>
+                )}
+                <div data-testid="paypal-button-container">
+                  <PayPalButtons
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                    disabled={isProcessing || calculateNumStubs === 0}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                  />
                 </div>
               </div>
             </div>
           </div>
-        </main>
-        
-        <Footer />
+        </div>
       </div>
-    </>
+      <Footer />
+    </div>
   );
 }

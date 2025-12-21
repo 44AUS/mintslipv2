@@ -106,7 +106,6 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       console.warn('Could not load Yellowtail font, falling back to italic:', fontError);
       signatureFont = italicFont;
     }
-    }
     
     // Get template colors
     const colors = getTemplateColors(formData.template, formData.primaryColor, formData.accentColor);

@@ -1208,13 +1208,12 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const withholdingCols = ["", "Federal", "State"];
   const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
   const filingStatus = formData.filingStatus || "Single or Married filing separately";
-  const federalAllowances = formData.federalAllowances || "0";
   const stateAllowances = formData.stateAllowances || "0";
   const federalAdditionalWithholding = formData.federalAdditionalWithholding || "0";
   const stateAdditionalWithholding = formData.stateAdditionalWithholding || "0";
   const withholdingRows = [
     ["Marital Status", filingStatus, ""],
-    ["Allowances", federalAllowances, stateAllowances],
+    ["Allowances", "0", stateAllowances],  // Federal allowances always 0 (not used since 2020 W-4)
     ["Additional Withholding", federalAdditionalWithholding, stateAdditionalWithholding]
   ];
   drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1 });

@@ -214,6 +214,12 @@ export async function generateCanadianPreviewPDF(formData, template) {
       isQuebec,
       cppLabel: isQuebec ? 'QPP' : 'CPP',
       isPreview: true,
+      // Absence plans for Template C (Workday)
+      absencePlansData: (formData.absencePlans || []).map(plan => ({
+        description: plan.description || "PTO Plan",
+        accrued: plan.accrued || "0",
+        reduced: plan.reduced || "0"
+      }))
     };
 
     // Generate selected template

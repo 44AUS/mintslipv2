@@ -1277,26 +1277,6 @@ export default function OfferLetterForm() {
                   />
                 )}
                 
-                {/* Direct Download Button */}
-                <Button 
-                  type="button"
-                  className="w-full mt-4 bg-green-700 hover:bg-green-800"
-                  onClick={async () => {
-                    setIsProcessing(true);
-                    try {
-                      await generateAndDownloadOfferLetter(formData);
-                      toast.success("Offer letter downloaded successfully!");
-                    } catch (error) {
-                      console.error("PDF generation error:", error);
-                      toast.error("Failed to generate: " + error.message);
-                    }
-                    setIsProcessing(false);
-                  }}
-                  disabled={isProcessing || !formData.companyName || !formData.candidateName}
-                >
-                  {isProcessing ? "Generating..." : "Download Offer Letter"}
-                </Button>
-                
                 <p className="text-xs text-slate-500 text-center mt-4">
                   Secure payment via PayPal. Your offer letter will download immediately after payment.
                 </p>

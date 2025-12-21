@@ -1207,7 +1207,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     ["Marital Status", maritalStatusDisplay, ""],
     ["Allowances", federalAllowances, provincialAllowances],
   ];
-  drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1 });
+  drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1, rowDividers: true });
 
   // ========== 10. PAYMENT INFORMATION SECTION ==========
   const paymentCols = ["Bank", "Account Name", "Account Number", "CAD Amount", "Amount"];

@@ -61,6 +61,7 @@ export default function CanadianPaystubForm() {
   const [hoursPerPeriod, setHoursPerPeriod] = useState([]);
   const [deductions, setDeductions] = useState([]);
   const [contributions, setContributions] = useState([]);
+  const [absencePlans, setAbsencePlans] = useState([]);
   
   // Company search and logo upload state
   const [companySearchQuery, setCompanySearchQuery] = useState("");

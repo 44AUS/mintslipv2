@@ -287,7 +287,8 @@ export default function OfferLetterForm() {
       toast.success("Offer letter downloaded successfully!");
       setIsProcessing(false);
     } catch (error) {
-      toast.error("Failed to generate offer letter");
+      console.error("Error generating offer letter:", error);
+      toast.error("Failed to generate offer letter: " + (error.message || "Unknown error"));
       setIsProcessing(false);
     }
   };

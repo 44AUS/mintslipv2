@@ -1000,9 +1000,9 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     const headerHeight = 12;
     const rowHeight = 11;
 
-    // 1. Dark Gray Title Area
+    // 1. Dark Gray Title Area (charcoal gray matching Workday style)
     if (showTitle && title) {
-      doc.setFillColor(80, 80, 80);
+      doc.setFillColor(55, 55, 55);
       doc.rect(m, y, usableWidth, titleHeight, 'F');
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
@@ -1011,8 +1011,8 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       y += titleHeight;
     }
 
-    // 2. Light Gray Header Area
-    doc.setFillColor(80, 80, 80);
+    // 2. Dark Gray Header Area (charcoal gray matching Workday style)
+    doc.setFillColor(55, 55, 55);
     doc.rect(m, y, usableWidth, headerHeight, 'F');
     
     let currentX = m;

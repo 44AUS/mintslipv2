@@ -1204,6 +1204,32 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1, whiteHeader: true });
   }
 
+  // ========== 9. TAX WITHHOLDING INFORMATION SECTION ==========
+  const withholdingCols = ["", "Federal", "State"];
+  const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
+  const filingStatus = formData.filingStatus || "Single or Married filing separately";
+  const federalAllowances = formData.federalAllowances || "0";
+  const stateAllowances = formData.stateAllowances || "0";
+  const federalAdditionalWithholding = formData.federalAdditionalWithholding || "0";
+  const stateAdditionalWithholding = formData.stateAdditionalWithholding || "0";
+  const withholdingRows = [
+    ["Marital Status", filingStatus, ""],
+    ["Allowances", federalAllowances, stateAllowances],
+    ["Additional Withholding", federalAdditionalWithholding, stateAdditionalWithholding]
+  ];
+  drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1 });
+
+  // ========== 10. PAYMENT INFORMATION SECTION ==========
+  const paymentCols = ["Bank", "Account Name", "Account Number", "USD Amount", "Amount"];
+  const paymentWidths = [usableWidth * 0.15, usableWidth * 0.25, usableWidth * 0.20, usableWidth * 0.20, usableWidth * 0.20];
+  const bankName = formData.bankName || "Bank";
+  const accountName = formData.name ? `${bankName} ******${formData.bank || '0000'}` : "Account";
+  const accountNumber = `******${formData.bank || '0000'}`;
+  const paymentRows = [
+    [bankName, accountName, accountNumber, "", `${fmt(netPay)} USD`]
+  ];
+  drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true });
+
   } catch (error) {
     console.error("Error generating Template C:", error);
     doc.setFontSize(12);

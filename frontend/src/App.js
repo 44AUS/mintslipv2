@@ -63,6 +63,7 @@ function App() {
             <Route path="/instant-paystub-generator" element={<PaystubForm />} />
             <Route path="/self-employed-paystub-generator" element={<PaystubForm />} />
             <Route path="/contractor-paystub-generator" element={<PaystubForm />} />
+            <Route path="/canadian-paystub-generator" element={<CanadianPaystubForm />} />
             <Route path="/accounting-mockup-generator" element={<BankStatementForm />} />
             <Route path="/w2-generator" element={<W2Form />} />
             <Route path="/w9-generator" element={<W9Form />} />

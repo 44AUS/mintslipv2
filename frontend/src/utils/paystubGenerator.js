@@ -271,6 +271,19 @@ async function generateSingleStub(
     accrued: plan.accrued || "0",
     reduced: plan.reduced || "0"
   }));
+
+  // Prepare employer benefits data for Template C
+  const employerBenefits = formData.employerBenefits || [];
+  let totalEmployerBenefits = 0;
+  const employerBenefitsData = employerBenefits.map(b => {
+    const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    totalEmployerBenefits += amount;
+    return { 
+      name: b.name || "Employer Benefit", 
+      type: b.type,
+      currentAmount: amount 
+    };
+  });
   
   // Prepare data object for template
   const templateData = {
@@ -325,7 +338,10 @@ async function generateSingleStub(
     // Logo for Workday template
     logoDataUrl: formData.logoDataUrl || null,
     // Absence plans for Template C (Workday)
-    absencePlansData
+    absencePlansData,
+    // Employer benefits for Template C (Workday)
+    employerBenefitsData,
+    totalEmployerBenefits
   };
 
   // Call the appropriate template

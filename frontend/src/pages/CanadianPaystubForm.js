@@ -791,7 +791,7 @@ export default function CanadianPaystubForm() {
                   No, I Need A Canadian Pay Stub
                 </Button>
                 <Button
-                  onClick={() => navigate('/paystub')}
+                  onClick={() => navigate('/paystub-generator')}
                   className="bg-green-800 hover:bg-green-900 text-white"
                 >
                   Yes, Take Me To US Pay Stub

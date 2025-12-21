@@ -174,7 +174,11 @@ async function generateSingleCanadianStub(
   let cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTax = 0;
   
   if (!isContractor) {
-    const taxes = calculateCanadianTaxes(grossPay, payFrequency, province, 0);
+    // Get allowances from form data for tax calculation
+    const federalAllowances = parseFloat(formData.federalAllowances) || 0;
+    const provincialAllowances = parseFloat(formData.provincialAllowances) || 0;
+    
+    const taxes = calculateCanadianTaxes(grossPay, payFrequency, province, 0, federalAllowances, provincialAllowances);
     cpp = taxes.cpp;
     ei = taxes.ei;
     qpip = taxes.qpip;

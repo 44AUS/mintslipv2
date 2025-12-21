@@ -263,37 +263,29 @@ export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight
 
     // Employee tax rows - use actual rates
     const empTaxRows = [["Description", "Current", "YTD"]];
-    const erTaxRows = [["Company Tax", "Current", "YTD"]];
+    const erTaxRows = [["Employer Contributions", "Current", "YTD"]];
 
-    // Federal Income Tax with filing status indicator (no more allowances per 2020+ W-4)
-    const fedStatusLabel = formData.federalFilingStatus 
-      ? ` (${formData.federalFilingStatus === 'married_jointly' ? 'MFJ' : formData.federalFilingStatus === 'head_of_household' ? 'HOH' : 'S'})`
-      : '';
-    empTaxRows.push([`Federal Income Tax${fedStatusLabel}`, `$${fmt(federalTax || 0)}`, `$${fmt(ytdFederalTax || 0)}`]);
-    erTaxRows.push(["Social Security (6.2%)", `$${fmt(grossPay * 0.062)}`, `$${fmt(ytdGrossPay * 0.062)}`]);
-
-    empTaxRows.push(["Social Security (6.2%)", `$${fmt(ssTax)}`, `$${fmt(ytdSsTax)}`]);
-    erTaxRows.push(["Medicare (1.45%)", `$${fmt(grossPay * 0.0145)}`, `$${fmt(ytdGrossPay * 0.0145)}`]);
-
-    empTaxRows.push(["Medicare (1.45%)", `$${fmt(medTax)}`, `$${fmt(ytdMedTax)}`]);
-    erTaxRows.push(["FUTA (0.6%)", `$${fmt(grossPay * 0.006)}`, `$${fmt(ytdGrossPay * 0.006)}`]);
-
-    // State tax with allowances (only for states that use them)
-    const stateRatePercent = stateRate ? (stateRate * 100).toFixed(2) : "5.00";
-    const stateAllowLabel = parseInt(formData.stateAllowances) > 0 ? ` (${formData.stateAllowances} allow.)` : '';
-    empTaxRows.push([`${formData.state?.toUpperCase() || "State"} Tax${stateAllowLabel}`, `$${fmt(stateTax)}`, `$${fmt(ytdStateTax)}`]);
+    // Federal Income Tax
+    empTaxRows.push([`Federal Income Tax`, `$${fmt(federalTax || 0)}`, `$${fmt(ytdFederalTax || 0)}`]);
     
-    // SUTA with actual rate
-    const actualSutaRate = sutaRate || 0.027;
-    const sutaRatePercent = (actualSutaRate * 100).toFixed(2);
-    erTaxRows.push([`${formData.state?.toUpperCase() || "State"} Unemp. (${sutaRatePercent}%)`, `$${fmt(grossPay * actualSutaRate)}`, `$${fmt(ytdGrossPay * actualSutaRate)}`]);
+    // CPP/QPP
+    const cppRate = isQuebec ? "6.40" : "5.95";
+    empTaxRows.push([`${cppLabel || 'CPP'} (${cppRate}%)`, `$${fmt(cpp)}`, `$${fmt(ytdCpp)}`]);
+    erTaxRows.push([`${cppLabel || 'CPP'} (${cppRate}%)`, `$${fmt(cpp)}`, `$${fmt(ytdCpp)}`]);
 
-    // Local tax with actual rate
-    if (formData.includeLocalTax && localTax > 0 && localTaxRate > 0) {
-      const localRatePercent = (localTaxRate * 100).toFixed(2);
-      const cityName = formData.city || "Local";
-      empTaxRows.push([`${cityName} Tax (${localRatePercent}%)`, `$${fmt(localTax)}`, `$${fmt(ytdLocalTax)}`]);
+    // EI
+    const eiRate = isQuebec ? "1.32" : "1.66";
+    empTaxRows.push([`EI (${eiRate}%)`, `$${fmt(ei)}`, `$${fmt(ytdEi)}`]);
+    erTaxRows.push([`EI (${isQuebec ? '1.85' : '2.32'}%)`, `$${fmt(ei * 1.4)}`, `$${fmt(ytdEi * 1.4)}`]);
+
+    // QPIP (Quebec only)
+    if (isQuebec && qpip > 0) {
+      empTaxRows.push([`QPIP (0.494%)`, `$${fmt(qpip)}`, `$${fmt(ytdQpip)}`]);
+      erTaxRows.push([`QPIP (0.692%)`, `$${fmt(qpip * 1.4)}`, `$${fmt(ytdQpip * 1.4)}`]);
     }
+
+    // Provincial Tax
+    empTaxRows.push([`${formData.province || "Prov."} Income Tax`, `$${fmt(provincialTax)}`, `$${fmt(ytdProvincialTax)}`]);
 
     const taxYStart = y;
     const empTaxHeight = drawTable(doc, taxLeftX, y, empTaxRows, 16, taxTableWidth, true, true, 0.60);

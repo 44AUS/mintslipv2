@@ -1414,83 +1414,13 @@ export default function CanadianPaystubForm() {
                   </div>
                 )}
 
-                {/* Filing Status Section - Only for employees */}
-                {formData.workerType === 'employee' && (
-                  <div className="space-y-4">
-                    <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                      Tax Withholding (Optional)
-                    </h2>
-                    <p className="text-xs text-slate-500 -mt-2">
-                      Federal tax is calculated based on filing status per the 2020+ W-4 form. State allowances are available for applicable states.
+                {/* Canadian Tax Info - Only for employees */}
+                {formData.workerType === 'employee' && formData.province && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm text-blue-800">
+                      <strong>Canadian Taxes:</strong> Calculated using 2024 CRA tax brackets for {formData.province === 'QC' ? 'Quebec' : 'your province'}.
+                      {formData.province === 'QC' && ` Includes QPP, EI (reduced), and QPIP deductions.`}
                     </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Federal Filing Status - No more allowances per 2020 W-4 */}
-                      <div className="space-y-2">
-                        <Label htmlFor="federalFilingStatus">Federal Filing Status (W-4)</Label>
-                        <Select 
-                          value={formData.federalFilingStatus || ""} 
-                          onValueChange={(val) => setFormData({...formData, federalFilingStatus: val})}
-                        >
-                          <SelectTrigger data-testid="federal-filing-status">
-                            <SelectValue placeholder="Select federal status..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="single">Single or Married Filing Separately</SelectItem>
-                            <SelectItem value="married_jointly">Married Filing Jointly</SelectItem>
-                            <SelectItem value="head_of_household">Head of Household</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-slate-400">Per 2020+ W-4 (no more allowances)</p>
-                      </div>
-
-                      {/* State Allowances - Only for states that use them */}
-                      <div className="space-y-2">
-                        <Label htmlFor="stateAllowances">State Withholding Allowances</Label>
-                        {stateUsesAllowances(formData.province) ? (
-                          <>
-                            <Select 
-                              value={formData.provinceAllowances || "0"} 
-                              onValueChange={(val) => setFormData({...formData, stateAllowances: val})}
-                            >
-                              <SelectTrigger data-testid="state-allowances">
-                                <SelectValue placeholder="Select allowances..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                  <SelectItem key={num} value={num.toString()}>
-                                    {num} {num === 1 ? 'Allowance' : 'Allowances'}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <p className="text-xs text-slate-400">Each allowance reduces state tax withholding</p>
-                          </>
-                        ) : stateHasNoIncomeTax(formData.province) ? (
-                          <div className="p-2 bg-slate-100 rounded-md">
-                            <p className="text-xs text-slate-500">{formData.province} has no state income tax</p>
-                          </div>
-                        ) : formData.province ? (
-                          <div className="p-2 bg-slate-100 rounded-md">
-                            <p className="text-xs text-slate-500">{getStateTaxInfo(formData.province).message}</p>
-                          </div>
-                        ) : (
-                          <div className="p-2 bg-slate-100 rounded-md">
-                            <p className="text-xs text-slate-500">Select a state to see allowance options</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Tax Calculation Info */}
-                    {formData.province && (
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                        <p className="text-sm text-blue-800">
-                          <strong>Canadian Taxes:</strong> Calculated using 2024 CRA tax brackets for {formData.province === 'QC' ? 'Quebec' : 'your province'}.
-                          {formData.province === 'QC' && ` Includes QPP, EI (reduced), and QPIP deductions.`}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 )}
 

@@ -286,7 +286,7 @@ export default function CanadianPaystubForm() {
     }));
   };
 
-  // Generate PDF preview when form data changes (debounced)
+  // Generate PDF previews for all paystubs when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {
       // Only generate preview if we have minimum required data
@@ -302,8 +302,21 @@ export default function CanadianPaystubForm() {
             employerBenefits: employerBenefits, // Pass employer benefits for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
-          const previewUrl = await generateCanadianPreviewPDF(previewData, selectedTemplate);
-          setPdfPreview(previewUrl);
+          // Calculate number of stubs directly
+          const start = new Date(formData.startDate);
+          const end = new Date(formData.endDate);
+          const diffTime = Math.abs(end - start);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
+          const numStubs = Math.max(1, Math.ceil(diffDays / periodLength));
+          
+          // Generate all previews for all paystubs
+          const previews = await generateAllCanadianPreviewPDFs(previewData, selectedTemplate, numStubs);
+          setPdfPreviews(previews);
+          // Reset to first page if current index is out of bounds
+          if (currentPreviewIndex >= previews.length) {
+            setCurrentPreviewIndex(0);
+          }
         } catch (error) {
           console.error("Preview generation failed:", error);
         }
@@ -312,7 +325,7 @@ export default function CanadianPaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview]);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview, currentPreviewIndex]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

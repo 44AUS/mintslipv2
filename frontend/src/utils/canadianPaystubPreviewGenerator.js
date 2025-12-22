@@ -466,11 +466,39 @@ async function generateSingleCanadianStubPreview(formData, template, stubIndex, 
       reduced: plan.reduced || "0"
     })),
     employerBenefitsData: (formData.employerBenefits || []).map(b => {
-      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      let amount;
+      if (b.type === 'rrsp_match') {
+        const employeeRRSP = contributionsData.find(c => c.type === 'rrsp');
+        if (employeeRRSP) {
+          const matchUpTo = parseFloat(b.matchUpTo) || 6;
+          const matchPercent = parseFloat(b.matchPercent) || 50;
+          const maxMatchableAmount = grossPay * (matchUpTo / 100);
+          const matchableAmount = Math.min(employeeRRSP.amount, maxMatchableAmount);
+          amount = matchableAmount * (matchPercent / 100);
+        } else {
+          amount = 0;
+        }
+      } else {
+        amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      }
       return { name: b.name || "Employer Benefit", type: b.type, currentAmount: amount };
     }),
     totalEmployerBenefits: (formData.employerBenefits || []).reduce((sum, b) => {
-      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      let amount;
+      if (b.type === 'rrsp_match') {
+        const employeeRRSP = contributionsData.find(c => c.type === 'rrsp');
+        if (employeeRRSP) {
+          const matchUpTo = parseFloat(b.matchUpTo) || 6;
+          const matchPercent = parseFloat(b.matchPercent) || 50;
+          const maxMatchableAmount = grossPay * (matchUpTo / 100);
+          const matchableAmount = Math.min(employeeRRSP.amount, maxMatchableAmount);
+          amount = matchableAmount * (matchPercent / 100);
+        } else {
+          amount = 0;
+        }
+      } else {
+        amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      }
       return sum + amount;
     }, 0)
   };

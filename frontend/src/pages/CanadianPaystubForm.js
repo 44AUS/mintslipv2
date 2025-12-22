@@ -1565,6 +1565,15 @@ export default function CanadianPaystubForm() {
                                       className="h-9"
                                     />
                                   </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Pay Date</Label>
+                                    <Input
+                                      type="date"
+                                      value={hoursPerPeriod[index]?.payDate || period.pay}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'payDate', e.target.value)}
+                                      className="h-9"
+                                    />
+                                  </div>
                                 </div>
                               </div>
                               {/* Show only hours for contractors, hours + overtime + commission for hourly employees */}

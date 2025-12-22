@@ -251,8 +251,14 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
 
     const netPay = grossPay - totalTax - totalDeductions - totalContributions;
 
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + periodLength - 1);
+    // Use custom end date from first period if available, otherwise calculate from start date
+    const endDate = endDateArray[0] 
+      ? new Date(endDateArray[0])
+      : (() => {
+          const calculated = new Date(startDate);
+          calculated.setDate(startDate.getDate() + periodLength - 1);
+          return calculated;
+        })();
     const payDate = nextWeekday(new Date(endDate), payDay);
 
     // Calculate YTD

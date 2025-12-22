@@ -1115,7 +1115,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   // Add blank rows for spacing like the reference
   earnRows.push(["", "", "", "", "", ""]);
   earnRows.push(["Earning", "", "", "", fmt(grossPay), fmt(ytdGrossPay || grossPay)]);
-  drawWorkdayTable("Earning", earnCols, earnWidths, earnRows, { rightAlignFrom: 2, whiteHeader: true, borderAboveLastRow: true });
+  drawWorkdayTable("Earning", earnCols, earnWidths, earnRows, { rightAlignFrom: 2, whiteHeader: true, borderAboveLastRow: true, noVerticalDividers: true });
 
   // ========== 4. EMPLOYEE TAXES SECTION ==========
   const taxCols = ["Description", "Amount", "YTD"];

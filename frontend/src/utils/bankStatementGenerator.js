@@ -143,5 +143,13 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     );
   }
 
-  doc.save(`Chime-Statement-${accountName || "statement"}.pdf`);
+  const pdfFileName = `Chime-Statement-${accountName || "statement"}.pdf`;
+  
+  // Store download info for payment success page
+  const pdfBlob = doc.output('blob');
+  const blobUrl = URL.createObjectURL(pdfBlob);
+  sessionStorage.setItem('lastDownloadUrl', blobUrl);
+  sessionStorage.setItem('lastDownloadFileName', pdfFileName);
+  
+  doc.save(pdfFileName);
 };

@@ -994,7 +994,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   
   // ========== HELPER: Draw Table with Dark Header ==========
   const drawWorkdayTable = (title, columns, colWidths, rowsData, options = {}) => {
-    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false, rowDividers = false, borderAboveLastRow = false } = options;
+    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false, rowDividers = false, borderAboveLastRow = false, noVerticalDividers = false } = options;
     const startY = y;
     const titleHeight = showTitle && title ? 14 : 0;
     const headerHeight = 12;

@@ -14,9 +14,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
-import { generateCanadianPreviewPDF } from "@/utils/canadianPaystubPreviewGenerator";
+import { generateCanadianPreviewPDF, generateAllCanadianPreviewPDFs } from "@/utils/canadianPaystubPreviewGenerator";
 import { CANADIAN_PROVINCES, calculateCanadianTaxes, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
-import { Upload, X, Search, Building2 } from "lucide-react";
+import { Upload, X, Search, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
   formatBankLast4, validateBankLast4

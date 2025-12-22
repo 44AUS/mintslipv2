@@ -329,14 +329,14 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     sectionHeader(doc, "Employee Deductions", left, y, usableWidth);
     y += 18;
     
-    // Build deductions rows
-    const deductionRows = [["Description", "Type", "Current", "Year-To-Date"]];
+    // Build deductions rows - separate pre-tax and post-tax
+    const deductionRows = [["Description", "Tax Type", "Current", "Year-To-Date"]];
     if (deductionsData && deductionsData.length > 0) {
       deductionsData.forEach(d => {
-        const typeLabel = d.isPercentage ? `${d.amount}% of Gross` : "Fixed";
+        const taxLabel = d.preTax ? "Pre-Tax" : "Post-Tax";
         deductionRows.push([
           d.name || "Deduction",
-          typeLabel,
+          taxLabel,
           `$${fmt(d.currentAmount)}`,
           `$${fmt(d.currentAmount * (data.ytdPayPeriods || 1))}`
         ]);
@@ -352,14 +352,14 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     sectionHeader(doc, "Employee Contributions", left, y, usableWidth);
     y += 18;
     
-    // Build contributions rows
-    const contributionRows = [["Description", "Type", "Current", "Year-To-Date"]];
+    // Build contributions rows - separate pre-tax and post-tax
+    const contributionRows = [["Description", "Tax Type", "Current", "Year-To-Date"]];
     if (contributionsData && contributionsData.length > 0) {
       contributionsData.forEach(c => {
-        const typeLabel = c.isPercentage ? `${c.amount}% of Gross` : "Fixed";
+        const taxLabel = c.preTax ? "Pre-Tax" : "Post-Tax";
         contributionRows.push([
           c.name || "Contribution",
-          typeLabel,
+          taxLabel,
           `$${fmt(c.currentAmount)}`,
           `$${fmt(c.currentAmount * (data.ytdPayPeriods || 1))}`
         ]);

@@ -260,7 +260,9 @@ export default function PaystubForm() {
       type: "401k_match",
       name: "401(k) Employer Match",
       amount: "", 
-      isPercentage: false 
+      isPercentage: false,
+      matchPercent: 50, // Default 50% match
+      matchUpTo: 6, // Default match up to 6% of salary
     }]);
   };
 
@@ -280,11 +282,44 @@ export default function PaystubForm() {
           if (benefitType && value !== 'other') {
             updated.name = benefitType.label;
           }
+          // Reset match settings when switching to/from 401k_match
+          if (value === '401k_match') {
+            updated.matchPercent = updated.matchPercent || 50;
+            updated.matchUpTo = updated.matchUpTo || 6;
+          }
         }
         return updated;
       }
       return b;
     }));
+  };
+
+  // Calculate employer 401k match based on employee contribution
+  const calculate401kMatch = (grossPay, benefit) => {
+    if (benefit.type !== '401k_match') return 0;
+    
+    // Find employee's 401k contribution
+    const employee401k = contributions.find(c => c.type === '401k' || c.type === 'roth_401k');
+    if (!employee401k) return 0;
+    
+    // Calculate employee's contribution amount
+    const employeeContribAmount = employee401k.isPercentage 
+      ? (grossPay * parseFloat(employee401k.amount) / 100) 
+      : parseFloat(employee401k.amount) || 0;
+    
+    // Calculate the employee's contribution as percentage of gross
+    const employeeContribPercent = (employeeContribAmount / grossPay) * 100;
+    
+    // Employer matches up to X% of salary
+    const matchUpTo = parseFloat(benefit.matchUpTo) || 6;
+    const matchPercent = parseFloat(benefit.matchPercent) || 50;
+    
+    // The matchable amount is the lesser of: employee contribution or matchUpTo% of gross
+    const maxMatchableAmount = grossPay * (matchUpTo / 100);
+    const matchableAmount = Math.min(employeeContribAmount, maxMatchableAmount);
+    
+    // Employer matches at matchPercent rate
+    return matchableAmount * (matchPercent / 100);
   };
 
   // Generate PDF previews for all paystubs when form data changes (debounced)

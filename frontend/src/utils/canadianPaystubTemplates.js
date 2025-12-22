@@ -516,12 +516,12 @@ function drawTable(
 // Template B: ADP-Style Earnings Statement (Programmatically Generated)
 export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
-    formData, hours, overtime, regularPay, overtimePay, grossPay, 
+    formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
     cpp, ei, qpip, federalTax, provincialTax, totalTax, netPay, rate, 
     startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdGrossPay = grossPay, ytdCpp = cpp, ytdEi = ei, ytdQpip = qpip,
     ytdFederalTax = federalTax, ytdProvincialTax = provincialTax,
-    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay,
+    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0,
     logoDataUrl, isQuebec, cppLabel

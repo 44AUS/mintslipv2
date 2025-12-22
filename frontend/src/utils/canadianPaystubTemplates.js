@@ -1134,7 +1134,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     taxRows.splice(2, 0, ["QPIP", fmt(qpip), fmt(ytdQpip || qpip)]);
   }
   taxRows.push(["Employee Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
-  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, whiteHeader: true });
+  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
 
   // ========== 5. PRE TAX DEDUCTIONS SECTION ==========
   const dedCols = ["Description", "Amount", "YTD"];

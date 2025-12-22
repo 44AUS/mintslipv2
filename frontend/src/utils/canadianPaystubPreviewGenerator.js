@@ -284,3 +284,230 @@ export async function generateCanadianPreviewPDF(formData, template) {
     throw error;
   }
 }
+
+// Helper function to generate a single Canadian stub preview
+async function generateSingleCanadianStubPreview(formData, template, stubIndex, totalStubs, commonData) {
+  const {
+    rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
+    payType, workerType, isContractor, province, isQuebec, periodsPerYear, 
+    hoursArray, overtimeArray, commissionArray, startDateArray, endDateArray, payDateArray, hireDate
+  } = commonData;
+
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
+
+  // Calculate start date for this stub
+  let startDate;
+  if (startDateArray[stubIndex]) {
+    startDate = new Date(startDateArray[stubIndex]);
+  } else if (formData.startDate) {
+    startDate = new Date(formData.startDate);
+    startDate.setDate(startDate.getDate() + (stubIndex * periodLength));
+  } else {
+    startDate = new Date(hireDate);
+    startDate.setDate(startDate.getDate() + (stubIndex * periodLength));
+  }
+
+  // Get hours for this stub
+  const hours = hoursArray[stubIndex] !== undefined ? hoursArray[stubIndex] : defaultHours;
+  const overtime = isContractor ? 0 : (overtimeArray[stubIndex] || 0);
+  const commission = commissionArray[stubIndex] || 0;
+
+  // Calculate earnings
+  let regularPay, overtimePay, grossPay;
+  if (payType === "salary") {
+    regularPay = annualSalary / periodsPerYear;
+    overtimePay = 0;
+    grossPay = regularPay + commission;
+  } else {
+    regularPay = rate * hours;
+    overtimePay = rate * 1.5 * overtime;
+    grossPay = regularPay + overtimePay + commission;
+  }
+
+  // Calculate end date
+  const endDate = endDateArray[stubIndex] 
+    ? new Date(endDateArray[stubIndex])
+    : (() => {
+        const calculated = new Date(startDate);
+        calculated.setDate(startDate.getDate() + periodLength - 1);
+        return calculated;
+      })();
+
+  // Calculate pay date
+  const payDate = payDateArray[stubIndex] 
+    ? new Date(payDateArray[stubIndex])
+    : nextWeekday(new Date(endDate), payDay);
+
+  // Calculate YTD
+  const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
+
+  // Calculate Canadian taxes
+  let cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTax = 0;
+  
+  if (!isContractor && province) {
+    const federalAllowances = parseFloat(formData.federalAllowances) || 0;
+    const provincialAllowances = parseFloat(formData.provincialAllowances) || 0;
+    const maritalStatus = formData.maritalStatus || 'single';
+    
+    const taxes = calculateCanadianTaxes(grossPay, payFrequency, province, 0, federalAllowances, provincialAllowances, maritalStatus);
+    cpp = taxes.cpp;
+    ei = taxes.ei;
+    qpip = taxes.qpip;
+    federalTax = taxes.federalTax;
+    provincialTax = taxes.provincialTax;
+    totalTax = taxes.totalTax;
+  }
+
+  // Process deductions
+  const deductions = formData.deductions || [];
+  let totalDeductions = 0;
+  const deductionsData = deductions.map(d => {
+    const amount = d.isPercentage ? (grossPay * parseFloat(d.amount) / 100) : parseFloat(d.amount) || 0;
+    totalDeductions += amount;
+    return { ...d, amount, ytdAmount: amount * ytdPayPeriods };
+  });
+
+  // Process contributions
+  const contributions = formData.contributions || [];
+  let totalContributions = 0;
+  const contributionsData = contributions.map(c => {
+    const amount = c.isPercentage ? (grossPay * parseFloat(c.amount) / 100) : parseFloat(c.amount) || 0;
+    totalContributions += amount;
+    return { ...c, amount, ytdAmount: amount * ytdPayPeriods };
+  });
+
+  const netPay = grossPay - totalTax - totalDeductions;
+  const totalHours = hours + overtime;
+
+  const templateData = {
+    formData,
+    hours,
+    overtime,
+    commission,
+    regularPay,
+    overtimePay,
+    grossPay,
+    cpp,
+    ei,
+    qpip,
+    federalTax,
+    provincialTax,
+    totalTax,
+    netPay,
+    rate,
+    startDate,
+    endDate,
+    payDate,
+    payFrequency,
+    stubNum: stubIndex + 1,
+    totalStubs,
+    ytdRegularPay: regularPay * ytdPayPeriods,
+    ytdOvertimePay: overtimePay * ytdPayPeriods,
+    ytdCommission: commission * ytdPayPeriods,
+    ytdGrossPay: grossPay * ytdPayPeriods,
+    ytdCpp: cpp * ytdPayPeriods,
+    ytdEi: ei * ytdPayPeriods,
+    ytdQpip: qpip * ytdPayPeriods,
+    ytdFederalTax: federalTax * ytdPayPeriods,
+    ytdProvincialTax: provincialTax * ytdPayPeriods,
+    ytdTotalTax: totalTax * ytdPayPeriods,
+    ytdNetPay: netPay * ytdPayPeriods,
+    ytdHours: totalHours * ytdPayPeriods,
+    payType,
+    workerType,
+    isContractor,
+    annualSalary,
+    deductionsData,
+    totalDeductions,
+    contributionsData,
+    totalContributions,
+    ytdDeductions: totalDeductions * ytdPayPeriods,
+    ytdContributions: totalContributions * ytdPayPeriods,
+    ytdPayPeriods,
+    logoDataUrl: formData.logoDataUrl || formData.companyLogo,
+    isQuebec,
+    cppLabel: isQuebec ? 'QPP' : 'CPP',
+    isPreview: true,
+    absencePlansData: (formData.absencePlans || []).map(plan => ({
+      description: plan.description || "PTO Plan",
+      accrued: plan.accrued || "0",
+      reduced: plan.reduced || "0"
+    })),
+    employerBenefitsData: (formData.employerBenefits || []).map(b => {
+      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      return { name: b.name || "Employer Benefit", type: b.type, currentAmount: amount };
+    }),
+    totalEmployerBenefits: (formData.employerBenefits || []).reduce((sum, b) => {
+      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      return sum + amount;
+    }, 0)
+  };
+
+  // Generate selected template
+  if (template === "template-b") {
+    await generateCanadianTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+  } else if (template === "template-c") {
+    await generateCanadianTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+  } else {
+    await generateCanadianTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  }
+
+  // Add watermark
+  addWatermarkToAllPages(doc, pageWidth, pageHeight);
+
+  // Convert to image
+  const pdfDataUrl = doc.output('dataurlstring');
+  const imageDataUrl = await convertPdfToImage(pdfDataUrl);
+  
+  return imageDataUrl;
+}
+
+// Generate all Canadian preview PDFs as an array of base64 image URLs
+export async function generateAllCanadianPreviewPDFs(formData, template = 'template-a', numStubs = 1) {
+  try {
+    const rate = parseFloat(formData.rate) || 0;
+    const annualSalary = parseFloat(formData.annualSalary) || 0;
+    const payFrequency = formData.payFrequency || "biweekly";
+    const periodLength = payFrequency === "biweekly" ? 14 : 7;
+    const defaultHours = payFrequency === "weekly" ? 40 : 80;
+    const payDay = formData.payDay || "Friday";
+    const payType = formData.payType || "hourly";
+    const workerType = formData.workerType || "employee";
+    const isContractor = workerType === "contractor";
+    const province = formData.province || "ON";
+    const isQuebec = province === "QC";
+    const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+
+    const hoursArray = (formData.hoursList || "").split(",").map((h) => parseFloat(h.trim()) || 0);
+    const overtimeArray = (formData.overtimeList || "").split(",").map((h) => parseFloat(h.trim()) || 0);
+    const commissionArray = (formData.commissionList || "").split(",").map((c) => parseFloat(c.trim()) || 0);
+    const startDateArray = (formData.startDateList || "").split(",").map((d) => d.trim()).filter(d => d);
+    const endDateArray = (formData.endDateList || "").split(",").map((d) => d.trim()).filter(d => d);
+    const payDateArray = (formData.payDateList || "").split(",").map((d) => d.trim()).filter(d => d);
+
+    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
+
+    const commonData = {
+      rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
+      payType, workerType, isContractor, province, isQuebec, periodsPerYear,
+      hoursArray, overtimeArray, commissionArray, startDateArray, endDateArray, payDateArray, hireDate
+    };
+
+    // Generate previews for all stubs
+    const previews = [];
+    const actualNumStubs = Math.max(1, numStubs);
+    
+    for (let i = 0; i < actualNumStubs; i++) {
+      const preview = await generateSingleCanadianStubPreview(formData, template, i, actualNumStubs, commonData);
+      previews.push(preview);
+    }
+
+    return previews;
+  } catch (error) {
+    console.error("Error generating all Canadian previews:", error);
+    return [null];
+  }
+}

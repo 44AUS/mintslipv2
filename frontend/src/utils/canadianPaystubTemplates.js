@@ -223,6 +223,16 @@ export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight
     ]);
   }
 
+  if (commission > 0) {
+    earningsRows.push([
+      "Commission",
+      "-",
+      "-",
+      `$${fmt(commission)}`,
+      `$${fmt(ytdCommission)}`,
+    ]);
+  }
+
   drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
   y += 60;
 

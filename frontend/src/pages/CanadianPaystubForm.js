@@ -179,7 +179,8 @@ export default function CanadianPaystubForm() {
       type: "other", 
       name: "", 
       amount: "", 
-      isPercentage: false 
+      isPercentage: false,
+      preTax: false
     }]);
   };
 
@@ -190,9 +191,19 @@ export default function CanadianPaystubForm() {
 
   // Update a deduction
   const updateDeduction = (id, field, value) => {
-    setDeductions(deductions.map(d => 
-      d.id === id ? { ...d, [field]: value } : d
-    ));
+    setDeductions(deductions.map(d => {
+      if (d.id === id) {
+        const updated = { ...d, [field]: value };
+        if (field === 'type') {
+          const dedType = deductionTypes.find(t => t.value === value);
+          if (dedType) {
+            updated.preTax = dedType.preTax;
+          }
+        }
+        return updated;
+      }
+      return d;
+    }));
   };
 
   // Add a new contribution
@@ -202,7 +213,8 @@ export default function CanadianPaystubForm() {
       type: "other", 
       name: "", 
       amount: "", 
-      isPercentage: false 
+      isPercentage: false,
+      preTax: false
     }]);
   };
 
@@ -213,9 +225,19 @@ export default function CanadianPaystubForm() {
 
   // Update a contribution
   const updateContribution = (id, field, value) => {
-    setContributions(contributions.map(c => 
-      c.id === id ? { ...c, [field]: value } : c
-    ));
+    setContributions(contributions.map(c => {
+      if (c.id === id) {
+        const updated = { ...c, [field]: value };
+        if (field === 'type') {
+          const contribType = contributionTypes.find(t => t.value === value);
+          if (contribType) {
+            updated.preTax = contribType.preTax;
+          }
+        }
+        return updated;
+      }
+      return c;
+    }));
   };
 
   // Add a new absence plan (only for Template C)

@@ -344,8 +344,14 @@ async function generateSingleStub(
     // Deductions and contributions
     deductionsData,
     totalDeductions,
+    preTaxDeductions,
+    postTaxDeductions,
     contributionsData,
     totalContributions,
+    preTaxContributions,
+    postTaxContributions,
+    totalPreTax,
+    totalPostTax,
     ytdDeductions,
     ytdContributions,
     // YTD values

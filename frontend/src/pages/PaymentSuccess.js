@@ -1,13 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, Mail, HelpCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Download, Mail, HelpCircle, ArrowLeft, FileText, FolderArchive } from 'lucide-react';
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderType = searchParams.get('type') || 'paystub';
   const orderId = searchParams.get('order_id');
+  const fileCount = parseInt(searchParams.get('count') || '1', 10);
+  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [fileName, setFileName] = useState('');
+  const isZipFile = fileCount > 1;
+  
+  // Retrieve download info from sessionStorage (set by generator before redirect)
+  useEffect(() => {
+    const storedDownloadUrl = sessionStorage.getItem('lastDownloadUrl');
+    const storedFileName = sessionStorage.getItem('lastDownloadFileName');
+    if (storedDownloadUrl) {
+      setDownloadUrl(storedDownloadUrl);
+    }
+    if (storedFileName) {
+      setFileName(storedFileName);
+    }
+  }, []);
   
   // Track conversion for Google Analytics
   useEffect(() => {

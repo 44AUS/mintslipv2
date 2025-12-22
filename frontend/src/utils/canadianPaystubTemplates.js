@@ -698,6 +698,16 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
     doc.text(fmtCurrency(ytdOvertimePay), m + 215, y);
   }
   
+  // Commission row
+  if (commission > 0) {
+    y += 10;
+    doc.text("Commission", m, y);
+    doc.text("", m + 80, y);
+    doc.text("", m + 120, y);
+    doc.text(fmtCurrency(commission), m + 165, y);
+    doc.text(fmtCurrency(ytdCommission), m + 215, y);
+  }
+  
   // Gross Pay
   y += 15;
   doc.line(m + 50, y - 5, m + 260, y - 5);

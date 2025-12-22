@@ -1550,6 +1550,22 @@ export default function CanadianPaystubForm() {
                     </div>
                   </Collapsible>
                 )}
+
+                {/* Commission Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="commissionList">Commission (per pay period)</Label>
+                  <Input
+                    data-testid="commission-input"
+                    id="commissionList"
+                    name="commissionList"
+                    value={formData.commissionList}
+                    onChange={handleChange}
+                    placeholder="e.g., 500, 750, 600 (comma-separated for multiple periods)"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Enter commission amounts for each pay period, separated by commas. Leave blank if no commission.
+                  </p>
+                </div>
                 
                 {formData.workerType === 'contractor' && (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">

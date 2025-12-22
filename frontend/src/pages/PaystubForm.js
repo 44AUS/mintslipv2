@@ -287,7 +287,7 @@ export default function PaystubForm() {
     }));
   };
 
-  // Generate PDF preview when form data changes (debounced)
+  // Generate PDF previews for all paystubs when form data changes (debounced)
   useEffect(() => {
     const timer = setTimeout(async () => {
       // Only generate preview if we have minimum required data
@@ -303,8 +303,14 @@ export default function PaystubForm() {
             employerBenefits: employerBenefits, // Pass employer benefits for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
-          const previewUrl = await generatePreviewPDF(previewData, selectedTemplate);
-          setPdfPreview(previewUrl);
+          // Generate all previews for all paystubs
+          const numStubs = calculateNumStubs || 1;
+          const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, numStubs);
+          setPdfPreviews(previews);
+          // Reset to first page if current index is out of bounds
+          if (currentPreviewIndex >= previews.length) {
+            setCurrentPreviewIndex(0);
+          }
         } catch (error) {
           console.error("Preview generation failed:", error);
         }
@@ -313,7 +319,7 @@ export default function PaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview]);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview, calculateNumStubs]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

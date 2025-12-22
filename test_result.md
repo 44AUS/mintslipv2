@@ -107,6 +107,21 @@ user_problem_statement: "Fix deduction/contribution type dropdown not displaying
 backend: []
 
 frontend:
+  - task: "Deduction/Contribution Type Dropdown Display Fix"
+    implemented: true
+    working: "NA"
+    file: "src/pages/PaystubForm.js, src/pages/CanadianPaystubForm.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that when selecting a deduction/contribution type from the dropdown (e.g., Health Insurance), the dropdown continues to show 'Other' instead of the selected value."
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed stale closure bug in updateDeduction and updateContribution functions. Changed from setDeductions(deductions.map(...)) to setDeductions(prev => prev.map(...)) to use functional updates. This ensures sequential calls to updateDeduction don't overwrite each other due to stale closure references. Applied fix to both PaystubForm.js and CanadianPaystubForm.js."
+
   - task: "Mobile-friendly header with hamburger menu"
     implemented: true
     working: true

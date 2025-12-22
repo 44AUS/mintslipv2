@@ -102,6 +102,7 @@ export default function PaystubForm() {
     payDay: "Friday",
     hoursList: "",
     overtimeList: "",
+    commissionList: "", // Commission amounts per pay period
     includeLocalTax: true,
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"

@@ -105,6 +105,7 @@ export default function PaystubForm() {
     commissionList: "", // Commission amounts per pay period
     startDateList: "", // Pay period start dates per check
     endDateList: "", // Pay period end dates per check
+    payDateList: "", // Pay dates per check
     includeLocalTax: true,
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"

@@ -272,15 +272,20 @@ export const generateAndDownloadW2 = async (formData, taxYear) => {
     // Create blob and download
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
+    const pdfFileName = `W2_${taxYear}_${formData.employeeLastName || 'Employee'}.pdf`;
+    
+    // Store download info for payment success page
+    sessionStorage.setItem('lastDownloadUrl', url);
+    sessionStorage.setItem('lastDownloadFileName', pdfFileName);
     
     const link = document.createElement("a");
     link.href = url;
-    link.download = `W2_${taxYear}_${formData.employeeLastName || 'Employee'}.pdf`;
+    link.download = pdfFileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    URL.revokeObjectURL(url);
+    // Don't revoke URL immediately - needed for re-download on success page
     return true;
   } catch (error) {
     console.error("Error downloading W-2:", error);

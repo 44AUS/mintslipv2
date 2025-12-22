@@ -1253,8 +1253,9 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const paymentCols = ["Bank", "Account Name", "Account Number", "USD Amount", "Amount"];
   const paymentWidths = [usableWidth * 0.15, usableWidth * 0.25, usableWidth * 0.20, usableWidth * 0.20, usableWidth * 0.20];
   const bankName = formData.bankName || "Bank";
-  const accountName = formData.name ? `${bankName} ******${formData.bank || '0000'}` : "Account";
-  const accountNumber = `******${formData.bank || '0000'}`;
+  const last4 = (formData.bank || '0000').slice(-4);
+  const accountName = `${bankName} ****${last4}`;
+  const accountNumber = `****${last4}`;
   const paymentRows = [
     [bankName, accountName, accountNumber, "", `${fmt(netPay)} USD`]
   ];

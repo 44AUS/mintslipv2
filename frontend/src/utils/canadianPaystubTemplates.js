@@ -969,11 +969,18 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   
   // ========== HELPER: Draw Table with Dark Header ==========
   const drawWorkdayTable = (title, columns, colWidths, rowsData, options = {}) => {
-    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false, rowDividers = false, borderAboveLastRow = false, noVerticalDividers = false } = options;
+    const { showTitle = true, isBoldLastRow = false, rightAlignFrom = 1, whiteHeader = false, rowDividers = false, borderAboveLastRow = false, noVerticalDividers = false, rightAlignColumns = [], centerColumns = [] } = options;
     const startY = y;
     const titleHeight = showTitle && title ? 14 : 0;
     const headerHeight = 12;
     const rowHeight = 11;
+
+    // Helper to determine column alignment
+    const getAlignment = (colIndex) => {
+      if (centerColumns.includes(colIndex)) return 'center';
+      if (rightAlignColumns.includes(colIndex) || colIndex >= rightAlignFrom) return 'right';
+      return 'left';
+    };
 
     // 1. Gray Title Area (light gray #bebebe matching Workday style)
     if (showTitle && title) {
@@ -999,8 +1006,11 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     columns.forEach((col, i) => {
-      if (i >= rightAlignFrom) {
+      const align = getAlignment(i);
+      if (align === 'right') {
         doc.text(col, currentX + colWidths[i] - 3, y + 8, { align: 'right' });
+      } else if (align === 'center') {
+        doc.text(col, currentX + colWidths[i] / 2, y + 8, { align: 'center' });
       } else {
         doc.text(col, currentX + 3, y + 8);
       }
@@ -1019,8 +1029,11 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       currentX = m;
 
       row.forEach((cell, colIndex) => {
-        if (colIndex >= rightAlignFrom) {
+        const align = getAlignment(colIndex);
+        if (align === 'right') {
           doc.text(String(cell), currentX + colWidths[colIndex] - 3, y + 7, { align: 'right' });
+        } else if (align === 'center') {
+          doc.text(String(cell), currentX + colWidths[colIndex] / 2, y + 7, { align: 'center' });
         } else {
           doc.text(String(cell), currentX + 3, y + 7);
         }

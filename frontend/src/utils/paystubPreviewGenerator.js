@@ -254,11 +254,40 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
       description: plan.description || "PTO Plan", accrued: plan.accrued || "0", reduced: plan.reduced || "0"
     })),
     employerBenefitsData: (formData.employerBenefits || []).map(b => {
-      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      let amount;
+      if (b.type === '401k_match') {
+        // Calculate 401k match based on employee contribution
+        const employee401k = contributionsData.find(c => c.type === '401k' || c.type === 'roth_401k');
+        if (employee401k) {
+          const matchUpTo = parseFloat(b.matchUpTo) || 6;
+          const matchPercent = parseFloat(b.matchPercent) || 50;
+          const maxMatchableAmount = grossPay * (matchUpTo / 100);
+          const matchableAmount = Math.min(employee401k.currentAmount, maxMatchableAmount);
+          amount = matchableAmount * (matchPercent / 100);
+        } else {
+          amount = 0;
+        }
+      } else {
+        amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      }
       return { name: b.name || "Employer Benefit", type: b.type, currentAmount: amount };
     }),
     totalEmployerBenefits: (formData.employerBenefits || []).reduce((sum, b) => {
-      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      let amount;
+      if (b.type === '401k_match') {
+        const employee401k = contributionsData.find(c => c.type === '401k' || c.type === 'roth_401k');
+        if (employee401k) {
+          const matchUpTo = parseFloat(b.matchUpTo) || 6;
+          const matchPercent = parseFloat(b.matchPercent) || 50;
+          const maxMatchableAmount = grossPay * (matchUpTo / 100);
+          const matchableAmount = Math.min(employee401k.currentAmount, maxMatchableAmount);
+          amount = matchableAmount * (matchPercent / 100);
+        } else {
+          amount = 0;
+        }
+      } else {
+        amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      }
       return sum + amount;
     }, 0)
   };

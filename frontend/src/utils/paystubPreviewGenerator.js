@@ -263,7 +263,10 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
           calculated.setDate(startDate.getDate() + periodLength - 1);
           return calculated;
         })();
-    const payDate = nextWeekday(new Date(endDate), payDay);
+    // Use custom pay date if available, otherwise calculate from end date
+    const payDate = payDateArray[0] 
+      ? new Date(payDateArray[0])
+      : nextWeekday(new Date(endDate), payDay);
 
     // Calculate YTD
     const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);

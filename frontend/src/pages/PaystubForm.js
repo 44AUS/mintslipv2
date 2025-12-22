@@ -134,7 +134,6 @@ export default function PaystubForm() {
 
   // Common deduction types for quick selection
   const deductionTypes = [
-    { label: "401(k)", value: "401k", preTax: true },
     { label: "Health Insurance", value: "health_insurance", preTax: true },
     { label: "Dental Insurance", value: "dental_insurance", preTax: true },
     { label: "Vision Insurance", value: "vision_insurance", preTax: true },

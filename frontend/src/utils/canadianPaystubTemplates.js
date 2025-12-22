@@ -1056,10 +1056,12 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     }
 
     // Vertical column dividers
-    let lineX = m;
-    for (let i = 0; i < colWidths.length - 1; i++) {
-      lineX += colWidths[i];
-      doc.line(lineX, startY + titleHeight, lineX, endY);
+    if (!noVerticalDividers) {
+      let lineX = m;
+      for (let i = 0; i < colWidths.length - 1; i++) {
+        lineX += colWidths[i];
+        doc.line(lineX, startY + titleHeight, lineX, endY);
+      }
     }
 
     y += 6;

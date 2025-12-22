@@ -95,7 +95,14 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       // Generate and download ZIP
       console.log("Generating ZIP file...");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, `Paystubs_${formData.name || "Employee"}.zip`);
+      const zipFileName = `Paystubs_${formData.name || "Employee"}.zip`;
+      
+      // Store download info for payment success page
+      const blobUrl = URL.createObjectURL(zipBlob);
+      sessionStorage.setItem('lastDownloadUrl', blobUrl);
+      sessionStorage.setItem('lastDownloadFileName', zipFileName);
+      
+      saveAs(zipBlob, zipFileName);
       console.log("ZIP downloaded successfully");
       
     } else {
@@ -111,7 +118,15 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         payDay, pageWidth, pageHeight, 1, payFrequency
       );
       
-      doc.save(`PayStub-${formData.name || "document"}.pdf`);
+      const pdfFileName = `PayStub-${formData.name || "document"}.pdf`;
+      
+      // Store download info for payment success page
+      const pdfBlob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      sessionStorage.setItem('lastDownloadUrl', blobUrl);
+      sessionStorage.setItem('lastDownloadFileName', pdfFileName);
+      
+      doc.save(pdfFileName);
       console.log("PDF downloaded successfully");
     }
   } catch (error) {

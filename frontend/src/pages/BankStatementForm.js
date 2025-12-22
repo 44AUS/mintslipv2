@@ -328,7 +328,8 @@ const createOrder = (data, actions) => {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `BS-${Date.now()}`;
       toast.success("Payment successful! Generating your document...");
       
       // Generate and download PDF
@@ -352,6 +353,9 @@ const createOrder = (data, actions) => {
       
       toast.success("Accounting mockup downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=bank-statement&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate document");
       setIsProcessing(false);

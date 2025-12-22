@@ -183,13 +183,17 @@ export default function Form1099MISC() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `1099M-${Date.now()}`;
       toast.success("Payment successful! Generating your 1099-MISC...");
       
       await generateAndDownload1099MISC(formData, selectedTaxYear);
       
       toast.success("1099-MISC downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=1099-misc&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate 1099-MISC");
       setIsProcessing(false);

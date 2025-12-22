@@ -172,13 +172,17 @@ export default function Form1099NEC() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `1099N-${Date.now()}`;
       toast.success("Payment successful! Generating your 1099-NEC...");
       
       await generateAndDownload1099NEC(formData, selectedTaxYear);
       
       toast.success("1099-NEC downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=1099-nec&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate 1099-NEC");
       setIsProcessing(false);

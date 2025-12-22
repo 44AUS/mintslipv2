@@ -134,26 +134,26 @@ export default function PaystubForm() {
 
   // Common deduction types for quick selection
   const deductionTypes = [
-    { label: "401(k)", value: "401k" },
-    { label: "Health Insurance", value: "health_insurance" },
-    { label: "Dental Insurance", value: "dental_insurance" },
-    { label: "Vision Insurance", value: "vision_insurance" },
-    { label: "Life Insurance", value: "life_insurance" },
-    { label: "Disability Insurance", value: "disability_insurance" },
-    { label: "Union Dues", value: "union_dues" },
-    { label: "Garnishment", value: "garnishment" },
-    { label: "Other", value: "other" },
+    { label: "401(k)", value: "401k", preTax: true },
+    { label: "Health Insurance", value: "health_insurance", preTax: true },
+    { label: "Dental Insurance", value: "dental_insurance", preTax: true },
+    { label: "Vision Insurance", value: "vision_insurance", preTax: true },
+    { label: "Life Insurance", value: "life_insurance", preTax: false },
+    { label: "Disability Insurance", value: "disability_insurance", preTax: false },
+    { label: "Union Dues", value: "union_dues", preTax: false },
+    { label: "Garnishment", value: "garnishment", preTax: false },
+    { label: "Other", value: "other", preTax: false },
   ];
 
   // Common contribution types for quick selection
   const contributionTypes = [
-    { label: "401(k) Match", value: "401k_match" },
-    { label: "HSA", value: "hsa" },
-    { label: "FSA", value: "fsa" },
-    { label: "Dependent Care FSA", value: "dependent_care_fsa" },
-    { label: "Commuter Benefits", value: "commuter" },
-    { label: "Roth 401(k)", value: "roth_401k" },
-    { label: "Other", value: "other" },
+    { label: "401(k)", value: "401k", preTax: true },
+    { label: "HSA", value: "hsa", preTax: true },
+    { label: "FSA", value: "fsa", preTax: true },
+    { label: "Dependent Care FSA", value: "dependent_care_fsa", preTax: true },
+    { label: "Commuter Benefits", value: "commuter", preTax: true },
+    { label: "Roth 401(k)", value: "roth_401k", preTax: false },
+    { label: "Other", value: "other", preTax: false },
   ];
 
   // Detect user's location on mount

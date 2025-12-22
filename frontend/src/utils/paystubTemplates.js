@@ -401,9 +401,11 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     // Taxes
     summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
     
-    // Post-Tax Deductions/Contributions (after taxes) - placeholder for now
-    // Could be expanded later to support post-tax deductions like Roth 401k, garnishments, etc.
-    summaryRows.push(["Post-Tax Deductions/Contributions", "$0.00", "$0.00"]);
+    // Post-Tax Deductions/Contributions (after taxes)
+    // Includes: Roth 401k, Life Insurance, Disability Insurance, Union Dues, Garnishments, etc.
+    const postTaxTotal = (totalPostTax || 0);
+    const ytdPostTaxTotal = postTaxTotal * ytdPayPeriods;
+    summaryRows.push(["Post-Tax Deductions/Contributions", `$${fmt(postTaxTotal)}`, `$${fmt(ytdPostTaxTotal)}`]);
     
     summaryRows.push(["Net Pay", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);
     summaryRows.push(["Total Reimbursements", "$0.00", "$0.00"]);

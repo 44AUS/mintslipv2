@@ -189,9 +189,9 @@ export default function CanadianPaystubForm() {
     setDeductions(deductions.filter(d => d.id !== id));
   };
 
-  // Update a deduction
+  // Update a deduction - uses functional update to avoid stale closure issues
   const updateDeduction = (id, field, value) => {
-    setDeductions(deductions.map(d => {
+    setDeductions(prev => prev.map(d => {
       if (d.id === id) {
         const updated = { ...d, [field]: value };
         if (field === 'type') {
@@ -223,9 +223,9 @@ export default function CanadianPaystubForm() {
     setContributions(contributions.filter(c => c.id !== id));
   };
 
-  // Update a contribution
+  // Update a contribution - uses functional update to avoid stale closure issues
   const updateContribution = (id, field, value) => {
-    setContributions(contributions.map(c => {
+    setContributions(prev => prev.map(c => {
       if (c.id === id) {
         const updated = { ...c, [field]: value };
         if (field === 'type') {

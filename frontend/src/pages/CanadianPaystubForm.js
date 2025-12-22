@@ -1533,7 +1533,22 @@ export default function CanadianPaystubForm() {
                               </p>
                             </div>
                           )}
-                          {payPeriods.map((period, index) => (
+                          {payPeriods.map((period, index) => {
+                            // Generate dynamic label based on actual dates from hoursPerPeriod
+                            const actualStartDate = hoursPerPeriod[index]?.startDate || period.start;
+                            const actualEndDate = hoursPerPeriod[index]?.endDate || period.end;
+                            // Format the dates for display
+                            const formatLabelDate = (dateStr) => {
+                              if (!dateStr) return '';
+                              const [year, month, day] = dateStr.split('-').map(Number);
+                              const date = new Date(year, month - 1, day);
+                              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            };
+                            const dynamicLabel = actualStartDate && actualEndDate 
+                              ? `${formatLabelDate(actualStartDate).replace(/, \d{4}$/, '')} - ${formatLabelDate(actualEndDate)}`
+                              : period.label;
+                            
+                            return (
                             <div 
                               key={index} 
                               className="flex flex-col gap-3 p-3 bg-slate-50 rounded-lg"
@@ -1543,7 +1558,7 @@ export default function CanadianPaystubForm() {
                                   <span className="text-sm font-medium text-slate-700">
                                     Pay Period {index + 1}
                                   </span>
-                                  <p className="text-xs text-slate-500">{period.label}</p>
+                                  <p className="text-xs text-slate-500">{dynamicLabel}</p>
                                 </div>
                                 {/* Date inputs for pay period */}
                                 <div className="flex-1 grid grid-cols-3 gap-3">

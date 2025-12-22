@@ -1182,9 +1182,13 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const sumCols = ["", "Hours Worked", "Gross Pay", "Pre Tax Deductions", "Employee Taxes", "Post Tax Deductions", "Net Pay"];
   const sumWidths = [usableWidth * 0.18, usableWidth * 0.12, usableWidth * 0.12, usableWidth * 0.15, usableWidth * 0.14, usableWidth * 0.15, usableWidth * 0.14];
   const currentYtdHours = ytdHours > 0 ? ytdHours : (hours * (ytdPayPeriods || 1));
+  const currentPreTax = totalPreTax || totalDeductions || 0;
+  const currentPostTax = totalPostTax || 0;
+  const ytdPreTax = (totalPreTax || totalDeductions || 0) * (ytdPayPeriods || 1);
+  const ytdPostTax = (totalPostTax || 0) * (ytdPayPeriods || 1);
   const sumRows = [
-    ["Current", hours.toFixed(2), fmt(grossPay), fmt(totalDeductions), fmt(totalTax), "0.00", fmt(netPay)],
-    ["YTD", currentYtdHours.toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdDeductions || totalDeductions), fmt(ytdTotalTax || totalTax), "0.00", fmt(ytdNetPay || netPay)]
+    ["Current", hours.toFixed(2), fmt(grossPay), fmt(currentPreTax), fmt(totalTax), fmt(currentPostTax), fmt(netPay)],
+    ["YTD", currentYtdHours.toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdPreTax), fmt(ytdTotalTax || totalTax), fmt(ytdPostTax), fmt(ytdNetPay || netPay)]
   ];
   drawWorkdayTable(null, sumCols, sumWidths, sumRows, { showTitle: false, rightAlignFrom: 1, borderAboveLastRow: true });
 

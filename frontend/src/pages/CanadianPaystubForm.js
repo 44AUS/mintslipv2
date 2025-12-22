@@ -735,6 +735,7 @@ export default function CanadianPaystubForm() {
     const annualSalary = parseFloat(formData.annualSalary) || 0;
     const numStubs = calculateNumStubs;
     const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
+    const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
     const hoursArray = formData.hoursList
       .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
@@ -743,76 +744,90 @@ export default function CanadianPaystubForm() {
       .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
       .slice(0, numStubs) || [];
+    const commissionArray = formData.commissionList
+      ? formData.commissionList.split(",").map((c) => parseFloat(c.trim()) || 0).slice(0, numStubs)
+      : [];
 
-    let totalGross = 0;
-    
-    if (formData.payType === "salary") {
-      // Calculate salary per pay period
-      const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
-      const salaryPerPeriod = annualSalary / periodsPerYear;
-      totalGross = salaryPerPeriod * (numStubs || 1);
-    } else {
-      // Hourly calculation
-      const results = hoursArray.map((hrs, i) => {
-        const baseHours = hrs || defaultHours;
-        const overtime = overtimeArray[i] || 0;
-        return rate * baseHours + rate * 1.5 * overtime;
-      });
-      totalGross = results.reduce((a, b) => a + b, 0);
-    }
-
-    // Contractors don't have taxes withheld (they handle their own taxes)
     const isContractor = formData.workerType === "contractor";
     const isQuebec = formData.province === "QC";
-    
-    // Calculate Canadian taxes
-    let cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0;
-    
-    if (!isContractor && formData.province) {
-      const taxes = calculateCanadianTaxes(totalGross / (numStubs || 1), formData.payFrequency, formData.province, 0);
-      cpp = taxes.cpp * (numStubs || 1);
-      ei = taxes.ei * (numStubs || 1);
-      qpip = taxes.qpip * (numStubs || 1);
-      federalTax = taxes.federalTax * (numStubs || 1);
-      provincialTax = taxes.provincialTax * (numStubs || 1);
+
+    // Calculate individual paystub previews
+    const stubPreviews = [];
+    for (let i = 0; i < (numStubs || 1); i++) {
+      let grossPay = 0;
+      const hours = hoursArray[i] || defaultHours;
+      const overtime = overtimeArray[i] || 0;
+      const commission = commissionArray[i] || 0;
+      
+      if (formData.payType === "salary") {
+        grossPay = (annualSalary / periodsPerYear) + commission;
+      } else {
+        grossPay = (rate * hours) + (rate * 1.5 * overtime) + commission;
+      }
+
+      let cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0;
+      if (!isContractor && formData.province) {
+        const taxes = calculateCanadianTaxes(grossPay, formData.payFrequency, formData.province, 0);
+        cpp = taxes.cpp;
+        ei = taxes.ei;
+        qpip = taxes.qpip;
+        federalTax = taxes.federalTax;
+        provincialTax = taxes.provincialTax;
+      }
+      
+      const totalTaxes = cpp + ei + qpip + federalTax + provincialTax;
+
+      const stubDeductions = deductions.reduce((sum, d) => {
+        const amount = parseFloat(d.amount) || 0;
+        return sum + (d.isPercentage ? (grossPay * amount / 100) : amount);
+      }, 0);
+
+      const stubContributions = contributions.reduce((sum, c) => {
+        const amount = parseFloat(c.amount) || 0;
+        return sum + (c.isPercentage ? (grossPay * amount / 100) : amount);
+      }, 0);
+
+      const netPay = grossPay - totalTaxes - stubDeductions - stubContributions;
+
+      stubPreviews.push({
+        grossPay,
+        hours,
+        overtime,
+        commission,
+        cpp,
+        ei,
+        qpip,
+        federalTax,
+        provincialTax,
+        totalTaxes,
+        totalDeductions: stubDeductions,
+        totalContributions: stubContributions,
+        netPay
+      });
     }
-    
-    const totalTaxes = cpp + ei + qpip + federalTax + provincialTax;
 
-    // Calculate deductions total
-    const totalDeductions = deductions.reduce((sum, d) => {
-      const amount = parseFloat(d.amount) || 0;
-      if (d.isPercentage) {
-        return sum + (totalGross * amount / 100) * (numStubs || 1);
-      }
-      return sum + amount * (numStubs || 1);
-    }, 0);
-
-    // Calculate contributions total
-    const totalContributions = contributions.reduce((sum, c) => {
-      const amount = parseFloat(c.amount) || 0;
-      if (c.isPercentage) {
-        return sum + (totalGross * amount / 100) * (numStubs || 1);
-      }
-      return sum + amount * (numStubs || 1);
-    }, 0);
-
-    const netPay = totalGross - totalTaxes - totalDeductions - totalContributions;
+    // Calculate totals
+    const totalGross = stubPreviews.reduce((sum, s) => sum + s.grossPay, 0);
+    const totalTaxes = stubPreviews.reduce((sum, s) => sum + s.totalTaxes, 0);
+    const totalDeductions = stubPreviews.reduce((sum, s) => sum + s.totalDeductions, 0);
+    const totalContributions = stubPreviews.reduce((sum, s) => sum + s.totalContributions, 0);
+    const netPay = stubPreviews.reduce((sum, s) => sum + s.netPay, 0);
 
     return { 
       totalGross, 
       totalTaxes, 
       netPay, 
-      cpp, 
-      ei, 
-      qpip, 
-      federalTax, 
-      provincialTax, 
+      cpp: stubPreviews.reduce((sum, s) => sum + s.cpp, 0),
+      ei: stubPreviews.reduce((sum, s) => sum + s.ei, 0),
+      qpip: stubPreviews.reduce((sum, s) => sum + s.qpip, 0),
+      federalTax: stubPreviews.reduce((sum, s) => sum + s.federalTax, 0),
+      provincialTax: stubPreviews.reduce((sum, s) => sum + s.provincialTax, 0),
       numStubs, 
       totalDeductions, 
       totalContributions, 
       isQuebec,
       cppLabel: isQuebec ? 'QPP' : 'CPP',
+      stubPreviews
     };
   }, [formData, calculateNumStubs, deductions, contributions]);
 

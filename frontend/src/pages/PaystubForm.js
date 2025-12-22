@@ -14,11 +14,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
-import { generatePreviewPDF } from "@/utils/paystubPreviewGenerator";
+import { generatePreviewPDF, generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import { Upload, X, Search, Building2 } from "lucide-react";
+import { Upload, X, Search, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
   formatZipCode, validateZipCode,

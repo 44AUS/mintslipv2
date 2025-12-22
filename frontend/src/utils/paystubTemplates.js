@@ -247,6 +247,16 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
+  if (commission > 0) {
+    earningsRows.push([
+      "Commission",
+      "-",
+      "-",
+      `$${fmt(commission)}`,
+      `$${fmt(ytdCommission)}`,
+    ]);
+  }
+
   drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
   y += 60;
 

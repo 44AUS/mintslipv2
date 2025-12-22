@@ -1230,7 +1230,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   const paymentRows = [
     [bankName, accountName, accountNumber, "", `${fmt(netPay)} CAD`]
   ];
-  drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true });
+  drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true, noVerticalDividers: true });
 
   } catch (error) {
     console.error("Error generating Canadian Template C:", error);

@@ -189,21 +189,35 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
   const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
+  // Pre-tax deduction types
+  const preTaxDeductionTypes = ['401k', 'health_insurance', 'dental_insurance', 'vision_insurance'];
+  const preTaxContributionTypes = ['401k', 'hsa', 'fsa', 'dependent_care_fsa', 'commuter'];
+
   // Calculate deductions
   const deductionsData = (formData.deductions || []).map(d => {
     const amount = parseFloat(d.amount) || 0;
     const currentAmount = d.isPercentage ? (grossPay * amount / 100) : amount;
-    return { ...d, currentAmount, name: d.type === 'other' ? d.name : d.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
+    const isPreTax = d.preTax !== undefined ? d.preTax : preTaxDeductionTypes.includes(d.type);
+    return { ...d, currentAmount, preTax: isPreTax, name: d.type === 'other' ? d.name : d.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
   });
   const totalDeductions = deductionsData.reduce((sum, d) => sum + d.currentAmount, 0);
+  const preTaxDeductions = deductionsData.filter(d => d.preTax).reduce((sum, d) => sum + d.currentAmount, 0);
+  const postTaxDeductions = deductionsData.filter(d => !d.preTax).reduce((sum, d) => sum + d.currentAmount, 0);
 
   // Calculate contributions
   const contributionsData = (formData.contributions || []).map(c => {
     const amount = parseFloat(c.amount) || 0;
     const currentAmount = c.isPercentage ? (grossPay * amount / 100) : amount;
-    return { ...c, currentAmount, name: c.type === 'other' ? c.name : c.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
+    const isPreTax = c.preTax !== undefined ? c.preTax : preTaxContributionTypes.includes(c.type);
+    return { ...c, currentAmount, preTax: isPreTax, name: c.type === 'other' ? c.name : c.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
   });
   const totalContributions = contributionsData.reduce((sum, c) => sum + c.currentAmount, 0);
+  const preTaxContributions = contributionsData.filter(c => c.preTax).reduce((sum, c) => sum + c.currentAmount, 0);
+  const postTaxContributions = contributionsData.filter(c => !c.preTax).reduce((sum, c) => sum + c.currentAmount, 0);
+
+  // Combined pre-tax and post-tax totals
+  const totalPreTax = preTaxDeductions + preTaxContributions;
+  const totalPostTax = postTaxDeductions + postTaxContributions;
 
   const netPay = grossPay - totalTax - totalDeductions - totalContributions;
 
@@ -246,7 +260,9 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
     ytdPayPeriods, ytdRegularPay, ytdOvertimePay, ytdCommission, ytdGrossPay,
     ytdSsTax, ytdMedTax, ytdFederalTax, ytdStateTax, ytdLocalTax, ytdTotalTax,
     ytdNetPay, ytdHours, payType, workerType, isContractor, annualSalary,
-    deductionsData, totalDeductions, contributionsData, totalContributions,
+    deductionsData, totalDeductions, preTaxDeductions, postTaxDeductions,
+    contributionsData, totalContributions, preTaxContributions, postTaxContributions,
+    totalPreTax, totalPostTax,
     ytdDeductions, ytdContributions,
     logoDataUrl: formData.logoDataUrl || null,
     isPreview: true,

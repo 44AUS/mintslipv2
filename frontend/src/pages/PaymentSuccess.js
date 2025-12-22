@@ -62,15 +62,68 @@ export default function PaymentSuccess() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+      {/* CSS Animation Styles */}
+      <style>{`
+        @keyframes checkmark-pop {
+          0% { transform: scale(0); opacity: 0; }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes checkmark-draw {
+          0% { stroke-dashoffset: 50; }
+          100% { stroke-dashoffset: 0; }
+        }
+        @keyframes circle-fill {
+          0% { transform: scale(0); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse-ring {
+          0% { transform: scale(0.8); opacity: 1; }
+          100% { transform: scale(1.4); opacity: 0; }
+        }
+        .checkmark-container {
+          animation: checkmark-pop 0.5s ease-out forwards;
+        }
+        .checkmark-icon {
+          animation: checkmark-draw 0.6s ease-out 0.3s forwards;
+        }
+        .pulse-ring {
+          animation: pulse-ring 1.5s ease-out infinite;
+        }
+      `}</style>
+      
       <div className="max-w-lg w-full">
         {/* Success Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-green-100 overflow-hidden">
-          {/* Header with checkmark */}
+          {/* Header with animated checkmark */}
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-10 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-lg">
-              <CheckCircle className="w-12 h-12 text-green-600" />
+            <div className="relative inline-flex items-center justify-center">
+              {/* Pulse ring effect */}
+              <div className="absolute w-24 h-24 bg-white/20 rounded-full pulse-ring"></div>
+              {/* Main checkmark container */}
+              <div className="checkmark-container relative inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg">
+                <svg 
+                  className="w-12 h-12" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="3" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                >
+                  <path 
+                    className="checkmark-icon text-green-600" 
+                    d="M5 13l4 4L19 7"
+                    style={{ 
+                      stroke: '#16a34a',
+                      strokeDasharray: 50,
+                      strokeDashoffset: 50 
+                    }}
+                  />
+                </svg>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Payment Successful!</h1>
+            <h1 className="text-3xl font-bold text-white mb-2 mt-4">Payment Successful!</h1>
             <p className="text-green-100">Thank you for your purchase</p>
           </div>
           
@@ -84,15 +137,58 @@ export default function PaymentSuccess() {
               </div>
             )}
             
-            {/* Download info */}
-            <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-lg">
-              <Download className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-slate-800">Your Download</h3>
-                <p className="text-sm text-slate-600 mt-1">
-                  Your document has been downloaded automatically. Check your downloads folder for the PDF file.
-                </p>
+            {/* Your Download Section */}
+            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+              <div className="flex items-center gap-3 mb-4">
+                <Download className="w-5 h-5 text-green-600" />
+                <h3 className="font-semibold text-slate-800 text-lg">Your Download</h3>
               </div>
+              
+              <p className="text-sm text-slate-600 mb-4">
+                Your document has been downloaded automatically. If it didn't download, click below to download again.
+              </p>
+              
+              {/* Download Button with File Icon */}
+              <button
+                onClick={() => {
+                  if (downloadUrl) {
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = fileName || (isZipFile ? 'documents.zip' : 'document.pdf');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  } else {
+                    // Fallback: try to find recent download in browser
+                    alert('Your file was downloaded automatically. Check your Downloads folder.');
+                  }
+                }}
+                className="w-full flex items-center gap-4 p-4 bg-white border-2 border-slate-200 hover:border-green-500 hover:bg-green-50 rounded-xl transition-all group cursor-pointer"
+              >
+                {/* File/Folder Icon */}
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isZipFile ? 'bg-amber-100' : 'bg-red-100'}`}>
+                  {isZipFile ? (
+                    <FolderArchive className="w-7 h-7 text-amber-600" />
+                  ) : (
+                    <FileText className="w-7 h-7 text-red-600" />
+                  )}
+                </div>
+                
+                {/* File Info */}
+                <div className="flex-1 text-left">
+                  <p className="font-medium text-slate-800 group-hover:text-green-700 transition-colors">
+                    {fileName || (isZipFile ? `Documents (${fileCount} files)` : 'Your Document')}
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    {isZipFile ? 'ZIP Archive' : 'PDF Document'}
+                  </p>
+                </div>
+                
+                {/* Download Icon */}
+                <div className="w-10 h-10 rounded-full bg-green-100 group-hover:bg-green-600 flex items-center justify-center transition-colors">
+                  <Download className="w-5 h-5 text-green-600 group-hover:text-white transition-colors" />
+                </div>
+              </button>
             </div>
             
             {/* Support info */}

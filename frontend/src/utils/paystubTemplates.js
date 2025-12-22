@@ -1114,7 +1114,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     ["Current", hours.toFixed(2), fmt(grossPay), fmt(totalDeductions), fmt(totalTax), "0.00", fmt(netPay)],
     ["YTD", currentYtdHours.toFixed(2), fmt(ytdGrossPay || grossPay), fmt(ytdDeductions || totalDeductions), fmt(ytdTotalTax || totalTax), "0.00", fmt(ytdNetPay || netPay)]
   ];
-  drawWorkdayTable(null, sumCols, sumWidths, sumRows, { showTitle: false, rightAlignFrom: 1 });
+  drawWorkdayTable(null, sumCols, sumWidths, sumRows, { showTitle: false, rightAlignFrom: 1, borderAboveLastRow: true });
 
   // ========== 3. EARNING SECTION ==========
   const earnCols = ["Description", "Dates", "Hours", "Rate", "Amount", "YTD"];

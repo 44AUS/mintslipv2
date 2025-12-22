@@ -123,6 +123,10 @@ export async function generateCanadianPreviewPDF(formData, template) {
       .split(",")
       .map((d) => d.trim())
       .filter(d => d);
+    const payDateArray = (formData.payDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d);
 
     // Calculate period dates - use custom dates if available
     const startDate = startDateArray[0] 
@@ -131,7 +135,10 @@ export async function generateCanadianPreviewPDF(formData, template) {
     const endDate = endDateArray[0] 
       ? new Date(endDateArray[0])
       : (formData.endDate ? new Date(formData.endDate) : new Date(startDate.getTime() + (periodLength - 1) * 24 * 60 * 60 * 1000));
-    const payDate = nextWeekday(endDate, payDay);
+    // Use custom pay date if available, otherwise calculate from end date
+    const payDate = payDateArray[0] 
+      ? new Date(payDateArray[0])
+      : nextWeekday(endDate, payDay);
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : startDate;
 
     // Calculate YTD pay periods

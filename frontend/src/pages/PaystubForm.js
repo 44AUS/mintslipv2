@@ -1649,7 +1649,7 @@ export default function PaystubForm() {
                                   <p className="text-xs text-slate-500">{period.label}</p>
                                 </div>
                                 {/* Date inputs for pay period */}
-                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                <div className="flex-1 grid grid-cols-3 gap-3">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Period Start</Label>
                                     <Input
@@ -1665,6 +1665,15 @@ export default function PaystubForm() {
                                       type="date"
                                       value={hoursPerPeriod[index]?.endDate || period.end}
                                       onChange={(e) => handlePeriodHoursChange(index, 'endDate', e.target.value)}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Pay Date</Label>
+                                    <Input
+                                      type="date"
+                                      value={hoursPerPeriod[index]?.payDate || period.pay}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'payDate', e.target.value)}
                                       className="h-9"
                                     />
                                   </div>

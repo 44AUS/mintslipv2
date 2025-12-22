@@ -890,8 +890,8 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
 // Template C: Workday Style Professional Payslip - MasterBrand/Workday Layout (Canadian)
 export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight, margin) {
   try {
-  const { formData, hours = 0, overtime = 0, regularPay = 0, overtimePay = 0, grossPay = 0, cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTax = 0, netPay = 0, rate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
-    ytdRegularPay = 0, ytdOvertimePay = 0, ytdGrossPay = 0, ytdCpp = 0, ytdEi = 0, ytdQpip = 0, ytdFederalTax = 0, ytdProvincialTax = 0, ytdTotalTax = 0, ytdNetPay = 0, ytdHours = 0,
+  const { formData, hours = 0, overtime = 0, commission = 0, regularPay = 0, overtimePay = 0, grossPay = 0, cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTax = 0, netPay = 0, rate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
+    ytdRegularPay = 0, ytdOvertimePay = 0, ytdCommission = 0, ytdGrossPay = 0, ytdCpp = 0, ytdEi = 0, ytdQpip = 0, ytdFederalTax = 0, ytdProvincialTax = 0, ytdTotalTax = 0, ytdNetPay = 0, ytdHours = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0, ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
     logoDataUrl, isQuebec, cppLabel, absencePlansData = [], payType = 'hourly'
   } = data || {};

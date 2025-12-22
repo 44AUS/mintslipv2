@@ -144,9 +144,20 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const commissionArray = (formData.commissionList || "")
       .split(",")
       .map((c) => parseFloat(c.trim()) || 0);
+    const startDateArray = (formData.startDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d);
+    const endDateArray = (formData.endDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
-    const startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
+    // Use custom start date from first period if available, otherwise use formData.startDate
+    const startDate = startDateArray[0] 
+      ? new Date(startDateArray[0]) 
+      : (formData.startDate ? new Date(formData.startDate) : new Date(hireDate));
 
     // Get state tax rate from centralized tax calculator
     const state = formData.state?.toUpperCase() || "";

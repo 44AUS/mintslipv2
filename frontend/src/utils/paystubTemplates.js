@@ -971,12 +971,26 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const usableWidth = pageWidth - 2 * m;
   let y = 18;
   
-  // Format date as MM/DD/YYYY
+  // Format date as MM/DD/YYYY - handles timezone-safe parsing
   const formatDateMDY = (date) => {
-    const d = new Date(date);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const yyyy = d.getFullYear();
+    let mm, dd, yyyy;
+    // Handle string dates (YYYY-MM-DD) to avoid timezone issues
+    if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const parts = date.split('-').map(Number);
+      yyyy = parts[0];
+      mm = String(parts[1]).padStart(2, '0');
+      dd = String(parts[2]).padStart(2, '0');
+    } else if (date instanceof Date) {
+      // Use UTC values for Date objects to avoid timezone shift
+      mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+      dd = String(date.getUTCDate()).padStart(2, '0');
+      yyyy = date.getUTCFullYear();
+    } else {
+      const d = new Date(date);
+      mm = String(d.getMonth() + 1).padStart(2, '0');
+      dd = String(d.getDate()).padStart(2, '0');
+      yyyy = d.getFullYear();
+    }
     return `${mm}/${dd}/${yyyy}`;
   };
   

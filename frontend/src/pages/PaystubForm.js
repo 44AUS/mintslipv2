@@ -2143,7 +2143,9 @@ export default function PaystubForm() {
                                   }}
                                 >
                                   <SelectTrigger className="h-9">
-                                    <SelectValue />
+                                    <SelectValue placeholder="Select type">
+                                      {contributionTypes.find(t => t.value === contribution.type)?.label || 'Select type'}
+                                    </SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
                                     {contributionTypes.map(type => (

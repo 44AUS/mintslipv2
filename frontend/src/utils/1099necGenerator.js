@@ -136,15 +136,20 @@ export const generateAndDownload1099NEC = async (formData, taxYear) => {
     // Create blob and download
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
+    const pdfFileName = `1099NEC_${taxYear}_${formData.recipientName?.replace(/\s+/g, '_') || 'Form'}.pdf`;
+    
+    // Store download info for payment success page
+    sessionStorage.setItem('lastDownloadUrl', url);
+    sessionStorage.setItem('lastDownloadFileName', pdfFileName);
     
     const link = document.createElement("a");
     link.href = url;
-    link.download = `1099NEC_${taxYear}_${formData.recipientName?.replace(/\s+/g, '_') || 'Form'}.pdf`;
+    link.download = pdfFileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    URL.revokeObjectURL(url);
+    // Don't revoke URL immediately - needed for re-download on success page
     return true;
   } catch (error) {
     console.error("Error downloading 1099-NEC:", error);

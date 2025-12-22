@@ -760,7 +760,7 @@ export default function CanadianPaystubForm() {
   }, [formData, calculateNumStubs, deductions, contributions]);
 
   const createOrder = (data, actions) => {
-    const totalAmount = (calculateNumStubs * 10).toFixed(2);
+    const totalAmount = (calculateNumStubs * 9.99).toFixed(2);
     return actions.order.create({
       application_context: {
         shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
@@ -2268,7 +2268,7 @@ export default function CanadianPaystubForm() {
                 </p>
                 {calculateNumStubs > 0 && (
                   <p className="text-sm text-slate-600 mb-4">
-                    Total: <strong>${(calculateNumStubs * 10).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $10)
+                    Total: <strong>${(calculateNumStubs * 9.99).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $9.99)
                   </p>
                 )}
                 <div data-testid="paypal-button-container">

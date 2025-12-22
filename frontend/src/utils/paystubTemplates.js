@@ -1163,7 +1163,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     taxRows.push([`School District Tax – ${formData.schoolDistrict || 'District'}`, fmt(formData.schoolDistrictTax || 0), fmt((formData.schoolDistrictTax || 0) * (ytdPayPeriods || 1))]);
   }
   taxRows.push(["Employee Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
-  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, whiteHeader: true });
+  drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
 
   // ========== 5. PRE TAX DEDUCTIONS SECTION ==========
   const dedCols = ["Description", "Amount", "YTD"];

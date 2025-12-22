@@ -394,21 +394,20 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   ];
   
   if (!isContractor) {
-    // Pre-Tax Deductions/Contributions (before taxes) - using deductionsData and contributionsData
-    const totalPreTax = totalDeductions + totalContributions;
-    const ytdPreTax = ytdDeductions + ytdContributions;
-    
-    // Always show Pre-Tax row
-    summaryRows.push(["Pre-Tax Deductions/Contributions", `$${fmt(totalPreTax)}`, `$${fmt(ytdPreTax)}`]);
+    // Pre-Tax Deductions/Contributions (before taxes)
+    // Includes: 401k, Health/Dental/Vision Insurance, HSA, FSA, Commuter Benefits
+    const currentPreTax = totalPreTax || 0;
+    const ytdPreTax = currentPreTax * (ytdPayPeriods || 1);
+    summaryRows.push(["Pre-Tax Deductions/Contributions", `$${fmt(currentPreTax)}`, `$${fmt(ytdPreTax)}`]);
     
     // Taxes
     summaryRows.push(["Taxes", `$${fmt(totalTax)}`, `$${fmt(ytdTotalTax)}`]);
     
     // Post-Tax Deductions/Contributions (after taxes)
     // Includes: Roth 401k, Life Insurance, Disability Insurance, Union Dues, Garnishments, etc.
-    const postTaxTotal = (totalPostTax || 0);
-    const ytdPostTaxTotal = postTaxTotal * ytdPayPeriods;
-    summaryRows.push(["Post-Tax Deductions/Contributions", `$${fmt(postTaxTotal)}`, `$${fmt(ytdPostTaxTotal)}`]);
+    const currentPostTax = totalPostTax || 0;
+    const ytdPostTax = currentPostTax * (ytdPayPeriods || 1);
+    summaryRows.push(["Post-Tax Deductions/Contributions", `$${fmt(currentPostTax)}`, `$${fmt(ytdPostTax)}`]);
     
     summaryRows.push(["Net Pay", `$${fmt(netPay)}`, `$${fmt(ytdNetPay)}`]);
     summaryRows.push(["Total Reimbursements", "$0.00", "$0.00"]);

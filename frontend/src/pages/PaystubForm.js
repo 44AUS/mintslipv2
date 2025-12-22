@@ -925,7 +925,8 @@ export default function PaystubForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const order = await actions.order.capture();
+      const orderId = order?.id || `order_${Date.now()}`;
       toast.success("Payment successful! Generating your document...");
       
       // Prepare formData with deductions, contributions, absence plans, employer benefits, and company logo
@@ -954,6 +955,9 @@ export default function PaystubForm() {
       
       toast.success("Pay stub(s) downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page for Google Analytics conversion tracking
+      navigate(`/payment-success?type=paystub&order_id=${orderId}`);
     } catch (error) {
       toast.error("Failed to generate document");
       setIsProcessing(false);

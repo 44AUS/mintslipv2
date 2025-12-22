@@ -1172,7 +1172,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   
   const totalBenefits = employerBenefitsData.length > 0 ? totalEmployerBenefits : 0;
   benefitRows.push(["Employer Paid Benefits", fmt(totalBenefits), fmt(totalBenefits * (ytdPayPeriods || 1))]);
-  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
+  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true, borderAboveLastRow: true });
 
   // ========== 7. TAXABLE WAGES SECTION ==========
   const taxableWagesCols = ["Description", "Amount", "YTD"];

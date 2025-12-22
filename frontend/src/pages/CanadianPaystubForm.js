@@ -1657,7 +1657,8 @@ export default function CanadianPaystubForm() {
                                 </div>
                               )}
                             </div>
-                          ))}
+                          );
+                          })}
                         </div>
                       </CollapsibleContent>
                     </div>

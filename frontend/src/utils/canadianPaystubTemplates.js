@@ -1229,7 +1229,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   const accountName = `${bankName} ****${last4}`;
   const accountNumber = `****${last4}`;
   const paymentRows = [
-    [bankName, accountName, accountNumber, `${fmt(netPay)}`, `${fmt(netPay)} CAD`]
+    [bankName, accountName, accountNumber, "" /* `${fmt(netPay)}` */, `${fmt(netPay)} CAD`]
   ];
   drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true, noVerticalDividers: true });
 

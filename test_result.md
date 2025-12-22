@@ -291,14 +291,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "ADP Paystub Template B Redesign"
+    - "Deduction/Contribution Type Dropdown Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Completely redesigned ADP paystub template B (template-b) in paystubTemplates.js to match the official ADP Earnings Statement layout from user-provided reference images. The new template includes: company code header, Earnings Statement title with red ADP logo, period dates, taxable marital status section, exemptions/allowances, employee info, earnings table with rate/hours/YTD columns, statutory and voluntary deductions sections, net pay, other benefits with deposits table, federal taxable wages note, and bottom check stub with 'THIS IS NOT A CHECK' watermark. All calculations properly integrated. Ready for testing."
+    message: "Fixed the deduction/contribution type dropdown bug. The issue was a stale closure problem - when onValueChange handler called updateDeduction/updateContribution twice in succession (once for 'type' and once for 'name'), both calls used the same stale state array from the closure, causing the second update to overwrite the first. Fixed by changing both updateDeduction and updateContribution functions in PaystubForm.js and CanadianPaystubForm.js to use functional state updates (setDeductions(prev => prev.map(...)) instead of setDeductions(deductions.map(...))). This ensures each update sees the latest state. Ready for frontend testing to verify the dropdown now displays selected values correctly."
   - agent: "main"
     message: "Implemented Vehicle Bill of Sale Generator feature. Created 3 new files: VehicleBillOfSaleForm.js (form page), vehicleBillOfSaleGenerator.js (PDF generator), vehicleBillOfSalePreviewGenerator.js (preview with watermark). Added route /vehicle-bill-of-sale in App.js. Added pricing card and document selection card on Home.js. Updated Header.js with correct path. Feature includes: 4 template styles, seller/buyer info with addresses and ID, vehicle info (year/make/model/VIN/color/body type/odometer), sale info (price/payment method), odometer disclosure statement, condition disclosure (AS-IS or warranty), optional notary section, live PDF preview with watermark, PayPal integration for $10. Need testing to verify all functionality."
   - agent: "main"

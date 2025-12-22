@@ -303,8 +303,15 @@ export default function PaystubForm() {
             employerBenefits: employerBenefits, // Pass employer benefits for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };
+          // Calculate number of stubs directly
+          const start = new Date(formData.startDate);
+          const end = new Date(formData.endDate);
+          const diffTime = Math.abs(end - start);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
+          const numStubs = Math.max(1, Math.ceil(diffDays / periodLength));
+          
           // Generate all previews for all paystubs
-          const numStubs = calculateNumStubs || 1;
           const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, numStubs);
           setPdfPreviews(previews);
           // Reset to first page if current index is out of bounds
@@ -319,7 +326,7 @@ export default function PaystubForm() {
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview, calculateNumStubs]);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview, currentPreviewIndex]);
 
   // Determine if salary option should be available
   // Contractors on Gusto (template-a) can only use hourly

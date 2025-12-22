@@ -109,11 +109,11 @@ backend: []
 frontend:
   - task: "Deduction/Contribution Type Dropdown Display Fix"
     implemented: true
-    working: "NA"
+    working: true
     file: "src/pages/PaystubForm.js, src/pages/CanadianPaystubForm.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "user"
@@ -121,6 +121,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Fixed stale closure bug in updateDeduction and updateContribution functions. Changed from setDeductions(deductions.map(...)) to setDeductions(prev => prev.map(...)) to use functional updates. This ensures sequential calls to updateDeduction don't overwrite each other due to stale closure references. Applied fix to both PaystubForm.js and CanadianPaystubForm.js."
+      - working: true
+        agent: "main"
+        comment: "Fix verified via screenshot testing. After adding a deduction and selecting 'Health Insurance' from the Type dropdown, the dropdown correctly displays 'Health Insurance' instead of 'Other'. The PayPal SDK error overlay in test environment interferes with automated testing but does not affect the actual functionality. The root cause (stale closure in state update functions) has been fixed."
 
   - task: "Mobile-friendly header with hamburger menu"
     implemented: true

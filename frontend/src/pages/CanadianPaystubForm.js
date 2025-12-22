@@ -623,17 +623,31 @@ export default function CanadianPaystubForm() {
       const day = String(d.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     };
+
+    // Helper to get next weekday (pay day)
+    const getNextPayDay = (date, targetDay) => {
+      const days = { 'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6 };
+      const target = days[targetDay] ?? 5; // Default to Friday
+      const result = new Date(date);
+      while (result.getDay() !== target) {
+        result.setDate(result.getDate() + 1);
+      }
+      return result;
+    };
     
     for (let i = 0; i < calculateNumStubs; i++) {
       const periodEnd = new Date(currentStart);
       periodEnd.setDate(currentStart.getDate() + periodLength - 1);
+      const payDate = getNextPayDay(periodEnd, formData.payDay);
       
       periods.push({
         index: i,
         startDate: new Date(currentStart),
         endDate: periodEnd,
+        payDate: payDate,
         start: formatDateForInput(currentStart),
         end: formatDateForInput(periodEnd),
+        pay: formatDateForInput(payDate),
         label: `${currentStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${periodEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
       });
       
@@ -642,7 +656,7 @@ export default function CanadianPaystubForm() {
     }
     
     return periods;
-  }, [formData.startDate, formData.endDate, formData.payFrequency, calculateNumStubs]);
+  }, [formData.startDate, formData.endDate, formData.payFrequency, formData.payDay, calculateNumStubs]);
 
   // Initialize hoursPerPeriod when pay periods change
   useEffect(() => {
@@ -655,7 +669,8 @@ export default function CanadianPaystubForm() {
           overtime: prev[i]?.overtime ?? 0,
           commission: prev[i]?.commission ?? 0,
           startDate: prev[i]?.startDate ?? period.start,
-          endDate: prev[i]?.endDate ?? period.end
+          endDate: prev[i]?.endDate ?? period.end,
+          payDate: prev[i]?.payDate ?? period.pay
         }));
         return newHours;
       });

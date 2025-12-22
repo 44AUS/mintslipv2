@@ -1760,7 +1760,8 @@ export default function PaystubForm() {
                                 </div>
                               )}
                             </div>
-                          ))}
+                          );
+                          })}
                         </div>
                       </CollapsibleContent>
                     </div>

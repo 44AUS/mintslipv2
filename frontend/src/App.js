@@ -19,6 +19,7 @@ import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import NotFound from "@/pages/NotFound";
 import AdminAnalytics from "@/pages/AdminAnalytics";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";

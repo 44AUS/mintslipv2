@@ -2458,67 +2458,153 @@ export default function PaystubForm() {
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
-                ) : pdfPreview ? (
-                  <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-                    <DialogTrigger asChild>
-                      <div className="relative cursor-pointer group">
-                        {/* PDF Preview Thumbnail */}
-                        <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
-                          <img 
-                            src={pdfPreview}
-                            alt="Paystub Preview"
-                            className="w-full h-96 object-contain bg-white"
+                ) : pdfPreviews.length > 0 && pdfPreviews[currentPreviewIndex] ? (
+                  <>
+                    <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+                      <DialogTrigger asChild>
+                        <div className="relative cursor-pointer group">
+                          {/* PDF Preview Thumbnail */}
+                          <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <img 
+                              src={pdfPreviews[currentPreviewIndex]}
+                              alt={`Paystub Preview ${currentPreviewIndex + 1}`}
+                              className="w-full h-96 object-contain bg-white"
+                            />
+                            {/* Watermark Overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <div 
+                                className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none"
+                                style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}
+                              >
+                                MintSlip
+                              </div>
+                            </div>
+                            {/* Click to enlarge overlay */}
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
+                                <span className="text-sm text-slate-700 flex items-center gap-1">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                  </svg>
+                                  Click to enlarge
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+                        <DialogHeader className="p-4 border-b">
+                          <DialogTitle className="flex items-center justify-between">
+                            <span>Document Preview {pdfPreviews.length > 1 ? `(${currentPreviewIndex + 1} of ${pdfPreviews.length})` : ''}</span>
+                            <span className="text-sm font-normal text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                              Watermark removed after payment
+                            </span>
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="relative flex-1 h-full overflow-auto p-4">
+                          <img
+                            src={pdfPreviews[currentPreviewIndex]}
+                            alt={`Paystub Preview Full ${currentPreviewIndex + 1}`}
+                            className="w-full h-auto"
                           />
-                          {/* Watermark Overlay */}
+                          {/* Large Watermark Overlay */}
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div 
-                              className="text-4xl font-bold text-slate-300 opacity-60 rotate-[-30deg] select-none"
-                              style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}
+                              className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none"
+                              style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.1)' }}
                             >
                               MintSlip
                             </div>
                           </div>
-                          {/* Click to enlarge overlay */}
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center">
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white px-3 py-1 rounded-full shadow-md">
-                              <span className="text-sm text-slate-700 flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                </svg>
-                                Click to enlarge
-                              </span>
+                        </div>
+                        {/* Pagination controls in dialog */}
+                        {pdfPreviews.length > 1 && (
+                          <div className="p-3 border-t bg-slate-50 flex items-center justify-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
+                              disabled={currentPreviewIndex === 0}
+                              className="flex items-center gap-1"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                              Previous
+                            </Button>
+                            <div className="flex items-center gap-1">
+                              {pdfPreviews.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentPreviewIndex(idx)}
+                                  className={`w-8 h-8 rounded-full text-sm font-medium transition-all ${
+                                    idx === currentPreviewIndex
+                                      ? 'bg-green-700 text-white'
+                                      : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                                  }`}
+                                >
+                                  {idx + 1}
+                                </button>
+                              ))}
                             </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentPreviewIndex(Math.min(pdfPreviews.length - 1, currentPreviewIndex + 1))}
+                              disabled={currentPreviewIndex === pdfPreviews.length - 1}
+                              className="flex items-center gap-1"
+                            >
+                              Next
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
                           </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                    
+                    {/* Pagination controls below preview */}
+                    {pdfPreviews.length > 1 && (
+                      <div className="mt-3 flex items-center justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
+                          disabled={currentPreviewIndex === 0}
+                          className="h-8 px-2"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center gap-1">
+                          {pdfPreviews.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setCurrentPreviewIndex(idx)}
+                              className={`w-7 h-7 rounded-full text-xs font-medium transition-all ${
+                                idx === currentPreviewIndex
+                                  ? 'bg-green-700 text-white shadow-sm'
+                                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                              }`}
+                            >
+                              {idx + 1}
+                            </button>
+                          ))}
                         </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPreviewIndex(Math.min(pdfPreviews.length - 1, currentPreviewIndex + 1))}
+                          disabled={currentPreviewIndex === pdfPreviews.length - 1}
+                          className="h-8 px-2"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
-                      <DialogHeader className="p-4 border-b">
-                        <DialogTitle className="flex items-center justify-between">
-                          <span>Document Preview</span>
-                          <span className="text-sm font-normal text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                            Watermark removed after payment
-                          </span>
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="relative flex-1 h-full overflow-auto p-4">
-                        <img
-                          src={pdfPreview}
-                          alt="Paystub Preview Full"
-                          className="w-full h-auto"
-                        />
-                        {/* Large Watermark Overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div 
-                            className="text-8xl font-bold text-slate-300 opacity-40 rotate-[-30deg] select-none"
-                            style={{ textShadow: '4px 4px 8px rgba(0,0,0,0.1)' }}
-                          >
-                            MintSlip
-                          </div>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                    )}
+                    {pdfPreviews.length > 1 && (
+                      <p className="text-xs text-center text-slate-500 mt-2">
+                        Viewing paystub {currentPreviewIndex + 1} of {pdfPreviews.length}
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-96 bg-slate-50 rounded-md border-2 border-dashed border-slate-300">
                     <div className="text-center p-4">

@@ -564,8 +564,6 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
     }
     return `${mm}/${dd}/${yyyy}`;
   };
-    return `${mm}/${dd}/${yyyy}`;
-  };
 
   const m = 25; // Left margin
   const rightCol = 320; // Right column start

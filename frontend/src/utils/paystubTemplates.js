@@ -1117,7 +1117,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     formatDateMDY(payDate),
     formData.checkNumber || ""
   ];
-  drawWorkdayTable(null, infoCols, infoWidths, [infoRow], { showTitle: false, rightAlignColumns: [2, 4, 5, 6], centerColumns: [3] });
+  drawWorkdayTable(null, infoCols, infoWidths, [infoRow], { showTitle: false, rightAlignFrom: 99, rightAlignColumns: [2, 4, 5, 6], centerColumns: [3] });
 
   // ========== 2. CURRENT/YTD SUMMARY ==========
   const sumCols = ["", "Hours Worked", "Gross Pay", "Pre Tax Deductions", "Employee Taxes", "Post Tax Deductions", "Net Pay"];

@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class DocuMintTester:
-    def __init__(self, base_url="https://payroll-date-sync.preview.emergentagent.com"):
+    def __init__(self, base_url="https://paystub-ui-fixes.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0

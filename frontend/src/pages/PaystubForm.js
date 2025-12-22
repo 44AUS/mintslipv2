@@ -147,12 +147,12 @@ export default function PaystubForm() {
 
   // Common contribution types for quick selection
   const contributionTypes = [
-    { label: "401(k)", value: "401k", preTax: true },
+    { label: "Traditional 401(k)", value: "401k", preTax: true },
+    { label: "Roth 401(k)", value: "roth_401k", preTax: false },
     { label: "HSA", value: "hsa", preTax: true },
     { label: "FSA", value: "fsa", preTax: true },
     { label: "Dependent Care FSA", value: "dependent_care_fsa", preTax: true },
     { label: "Commuter Benefits", value: "commuter", preTax: true },
-    { label: "Roth 401(k)", value: "roth_401k", preTax: false },
     { label: "Other", value: "other", preTax: false },
   ];
 

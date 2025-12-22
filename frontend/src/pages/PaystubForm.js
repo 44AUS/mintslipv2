@@ -1654,6 +1654,22 @@ export default function PaystubForm() {
                   </Collapsible>
                 )}
 
+                {/* Commission Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="commissionList">Commission (per pay period)</Label>
+                  <Input
+                    data-testid="commission-input"
+                    id="commissionList"
+                    name="commissionList"
+                    value={formData.commissionList}
+                    onChange={handleChange}
+                    placeholder="e.g., 500, 750, 600 (comma-separated for multiple periods)"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Enter commission amounts for each pay period, separated by commas. Leave blank if no commission.
+                  </p>
+                </div>
+
                 {/* Local Tax option - only for employees in states with local taxes */}
                 {formData.workerType === 'employee' && (
                   <div className="space-y-3">

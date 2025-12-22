@@ -194,16 +194,16 @@ async function generateSingleCanadianStub(
   
   let totalDeductions = 0;
   const deductionsData = deductions.map(d => {
-    const amount = d.isPercentage ? (grossPay * parseFloat(d.amount) / 100) : parseFloat(d.amount) || 0;
-    totalDeductions += amount;
-    return { ...d, amount };
+    const currentAmount = d.isPercentage ? (grossPay * parseFloat(d.amount) / 100) : parseFloat(d.amount) || 0;
+    totalDeductions += currentAmount;
+    return { ...d, currentAmount };
   });
   
   let totalContributions = 0;
   const contributionsData = contributions.map(c => {
-    const amount = c.isPercentage ? (grossPay * parseFloat(c.amount) / 100) : parseFloat(c.amount) || 0;
-    totalContributions += amount;
-    return { ...c, amount };
+    const currentAmount = c.isPercentage ? (grossPay * parseFloat(c.amount) / 100) : parseFloat(c.amount) || 0;
+    totalContributions += currentAmount;
+    return { ...c, currentAmount };
   });
   
   // Calculate net pay

@@ -103,6 +103,7 @@ export default function CanadianPaystubForm() {
     payDay: "Friday",
     hoursList: "",
     overtimeList: "",
+    commissionList: "", // Commission amounts per pay period
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type

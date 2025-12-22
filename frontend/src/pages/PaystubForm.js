@@ -670,7 +670,8 @@ export default function PaystubForm() {
           overtime: prev[i]?.overtime ?? 0,
           commission: prev[i]?.commission ?? 0,
           startDate: prev[i]?.startDate ?? period.start,
-          endDate: prev[i]?.endDate ?? period.end
+          endDate: prev[i]?.endDate ?? period.end,
+          payDate: prev[i]?.payDate ?? period.pay
         }));
         return newHours;
       });
@@ -687,6 +688,7 @@ export default function PaystubForm() {
       const commissionList = hoursPerPeriod.map(p => p.commission).join(', ');
       const startDateList = hoursPerPeriod.map(p => p.startDate || '').join(', ');
       const endDateList = hoursPerPeriod.map(p => p.endDate || '').join(', ');
+      const payDateList = hoursPerPeriod.map(p => p.payDate || '').join(', ');
       
       setFormData(prev => ({
         ...prev,
@@ -694,7 +696,8 @@ export default function PaystubForm() {
         overtimeList,
         commissionList,
         startDateList,
-        endDateList
+        endDateList,
+        payDateList
       }));
     }
   }, [hoursPerPeriod]);

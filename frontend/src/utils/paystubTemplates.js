@@ -1074,6 +1074,12 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       }
     }
 
+    // Border above last row (for totals row like "Earning")
+    if (borderAboveLastRow && rowPositions.length > 1) {
+      doc.setLineWidth(0.75);
+      doc.line(m, rowPositions[rowPositions.length - 1], pageWidth - m, rowPositions[rowPositions.length - 1]);
+    }
+
     // Vertical column dividers
     let lineX = m;
     for (let i = 0; i < colWidths.length - 1; i++) {

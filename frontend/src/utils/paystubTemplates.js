@@ -572,7 +572,9 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
     ytdFederalTax = federalTax, ytdStateTax = stateTax, ytdLocalTax = localTax,
     ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
-    ytdDeductions = 0, ytdContributions = 0,
+    preTaxDeductions = 0, postTaxDeductions = 0, preTaxContributions = 0, postTaxContributions = 0,
+    totalPreTax = 0, totalPostTax = 0,
+    ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
     logoDataUrl
   } = data;
   

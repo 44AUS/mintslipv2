@@ -114,9 +114,23 @@ export async function generateCanadianPreviewPDF(formData, template) {
       ? parseFloat(formData.commissionList.split(",")[0]) || 0 
       : 0;
 
-    // Calculate period dates
-    const startDate = formData.startDate ? new Date(formData.startDate) : new Date();
-    const endDate = formData.endDate ? new Date(formData.endDate) : new Date(startDate.getTime() + (periodLength - 1) * 24 * 60 * 60 * 1000);
+    // Parse custom dates for each period
+    const startDateArray = (formData.startDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d);
+    const endDateArray = (formData.endDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d);
+
+    // Calculate period dates - use custom dates if available
+    const startDate = startDateArray[0] 
+      ? new Date(startDateArray[0]) 
+      : (formData.startDate ? new Date(formData.startDate) : new Date());
+    const endDate = endDateArray[0] 
+      ? new Date(endDateArray[0])
+      : (formData.endDate ? new Date(formData.endDate) : new Date(startDate.getTime() + (periodLength - 1) * 24 * 60 * 60 * 1000));
     const payDate = nextWeekday(endDate, payDay);
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : startDate;
 

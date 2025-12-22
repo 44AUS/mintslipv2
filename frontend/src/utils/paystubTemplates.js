@@ -1178,7 +1178,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     dedRows.push(["No Pre Tax Deductions", "0.00", "0.00"]);
   }
   dedRows.push(["Pre Tax Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
-  drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, whiteHeader: true });
+  drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
 
   // ========== 6. EMPLOYER PAID BENEFITS SECTION ==========
   const benefitCols = ["Description", "Amount", "YTD"];

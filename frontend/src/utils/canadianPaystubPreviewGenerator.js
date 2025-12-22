@@ -394,18 +394,18 @@ async function generateSingleCanadianStubPreview(formData, template, stubIndex, 
   const deductions = formData.deductions || [];
   let totalDeductions = 0;
   const deductionsData = deductions.map(d => {
-    const amount = d.isPercentage ? (grossPay * parseFloat(d.amount) / 100) : parseFloat(d.amount) || 0;
-    totalDeductions += amount;
-    return { ...d, amount, ytdAmount: amount * ytdPayPeriods };
+    const currentAmount = d.isPercentage ? (grossPay * parseFloat(d.amount) / 100) : parseFloat(d.amount) || 0;
+    totalDeductions += currentAmount;
+    return { ...d, currentAmount, ytdAmount: currentAmount * ytdPayPeriods };
   });
 
   // Process contributions
   const contributions = formData.contributions || [];
   let totalContributions = 0;
   const contributionsData = contributions.map(c => {
-    const amount = c.isPercentage ? (grossPay * parseFloat(c.amount) / 100) : parseFloat(c.amount) || 0;
-    totalContributions += amount;
-    return { ...c, amount, ytdAmount: amount * ytdPayPeriods };
+    const currentAmount = c.isPercentage ? (grossPay * parseFloat(c.amount) / 100) : parseFloat(c.amount) || 0;
+    totalContributions += currentAmount;
+    return { ...c, currentAmount, ytdAmount: currentAmount * ytdPayPeriods };
   });
 
   const netPay = grossPay - totalTax - totalDeductions;

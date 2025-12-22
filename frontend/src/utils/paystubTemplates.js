@@ -1258,7 +1258,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const paymentRows = [
     [bankName, accountName, accountNumber, "", `${fmt(netPay)} USD`]
   ];
-  drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true });
+  drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true, noVerticalDividers: true });
 
   } catch (error) {
     console.error("Error generating Template C:", error);

@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Make header mobile-friendly with dropdown menu, update Bank Statement Template A to match Chime/Sutton style"
+user_problem_statement: "Fix deduction/contribution type dropdown not displaying selected value - shows 'Other' regardless of selection"
 
 backend: []
 

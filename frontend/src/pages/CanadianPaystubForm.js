@@ -1892,9 +1892,7 @@ export default function CanadianPaystubForm() {
                                   }}
                                 >
                                   <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Select type">
-                                      {deductionTypes.find(t => t.value === deduction.type)?.label || 'Select type'}
-                                    </SelectValue>
+                                    <SelectValue placeholder="Select type" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {deductionTypes.map(type => (

@@ -181,13 +181,17 @@ export default function VehicleBillOfSaleForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `VBS-${Date.now()}`;
       toast.success("Payment successful! Generating your bill of sale...");
       
       await generateAndDownloadVehicleBillOfSale(formData);
       
       toast.success("Bill of sale downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=vehicle-bill-of-sale&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate bill of sale");
       setIsProcessing(false);

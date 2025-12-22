@@ -234,13 +234,17 @@ export default function W2Form() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `W2-${Date.now()}`;
       toast.success("Payment successful! Generating your W-2...");
       
       await generateAndDownloadW2(formData, selectedTaxYear);
       
       toast.success("W-2 downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=w2&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate W-2");
       setIsProcessing(false);

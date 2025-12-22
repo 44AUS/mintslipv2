@@ -164,13 +164,17 @@ export default function W9Form() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `W9-${Date.now()}`;
       toast.success("Payment successful! Generating your W-9...");
       
       await generateAndDownloadW9(formData, selectedTaxYear);
       
       toast.success("W-9 downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=w9&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate W-9");
       setIsProcessing(false);

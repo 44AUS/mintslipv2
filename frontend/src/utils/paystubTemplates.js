@@ -1212,7 +1212,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     ["Medicare – Taxable Wages", fmt(grossPay), fmt(ytdGrossPay || grossPay)],
     ["Federal Withholding – Taxable Wages", fmt(federalTaxableWages), fmt((ytdGrossPay || grossPay) - (ytdDeductions || totalDeductions))]
   ];
-  drawWorkdayTable("Taxable Wages", taxableWagesCols, taxableWagesWidths, taxableWagesRows, { rightAlignFrom: 1, whiteHeader: true });
+  drawWorkdayTable("Taxable Wages", taxableWagesCols, taxableWagesWidths, taxableWagesRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
 
   // ========== 8. ABSENCE PLANS SECTION (if data provided) ==========
   if (absencePlansData && absencePlansData.length > 0) {

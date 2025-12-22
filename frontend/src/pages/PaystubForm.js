@@ -736,6 +736,7 @@ export default function PaystubForm() {
     const annualSalary = parseFloat(formData.annualSalary) || 0;
     const numStubs = calculateNumStubs;
     const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
+    const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
     const hoursArray = formData.hoursList
       .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
@@ -744,87 +745,104 @@ export default function PaystubForm() {
       .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
       .slice(0, numStubs) || [];
+    const commissionArray = formData.commissionList
+      ? formData.commissionList.split(",").map((c) => parseFloat(c.trim()) || 0).slice(0, numStubs)
+      : [];
 
-    let totalGross = 0;
-    
-    if (formData.payType === "salary") {
-      // Calculate salary per pay period
-      const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
-      const salaryPerPeriod = annualSalary / periodsPerYear;
-      totalGross = salaryPerPeriod * (numStubs || 1);
-    } else {
-      // Hourly calculation
-      const results = hoursArray.map((hrs, i) => {
-        const baseHours = hrs || defaultHours;
-        const overtime = overtimeArray[i] || 0;
-        return rate * baseHours + rate * 1.5 * overtime;
-      });
-      totalGross = results.reduce((a, b) => a + b, 0);
-    }
-
-    // Contractors don't have taxes withheld (they handle their own taxes)
     const isContractor = formData.workerType === "contractor";
-    const ssTax = isContractor ? 0 : totalGross * 0.062;
-    const medTax = isContractor ? 0 : totalGross * 0.0145;
-    
-    // Use actual state tax rate from federalTaxCalculator
     const stateRate = getStateTaxRate(formData.state);
-    
-    // Calculate federal tax based on filing status and exemptions
-    let federalTax = 0;
-    if (!isContractor) {
-      if (formData.federalFilingStatus) {
-        // Use progressive tax calculation with filing status (no allowances per 2020+ W-4)
-        federalTax = calculateFederalTax(
-          totalGross / (numStubs || 1), // Per period gross
-          formData.payFrequency,
-          formData.federalFilingStatus
-        ) * (numStubs || 1);
-      } else {
-        // Default flat rate if no filing status
-        federalTax = totalGross * 0.22;
-      }
-    }
-    
-    // Calculate state tax with allowances (only for applicable states)
-    let stateTax = 0;
-    if (!isContractor) {
-      stateTax = calculateStateTax(
-        totalGross / (numStubs || 1), // Per period gross
-        formData.state,
-        formData.payFrequency,
-        formData.stateAllowances || 0,
-        stateRate
-      ) * (numStubs || 1);
-    }
-    
-    // Use actual local tax rate from taxRates lookup
     const actualLocalTaxRate = getLocalTaxRate(formData.state, formData.city);
-    const localTax = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? totalGross * actualLocalTaxRate : 0);
-    
-    const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
 
-    // Calculate deductions total
-    const totalDeductions = deductions.reduce((sum, d) => {
-      const amount = parseFloat(d.amount) || 0;
-      if (d.isPercentage) {
-        return sum + (totalGross * amount / 100) * (numStubs || 1);
+    // Calculate individual paystub previews
+    const stubPreviews = [];
+    for (let i = 0; i < (numStubs || 1); i++) {
+      let grossPay = 0;
+      const hours = hoursArray[i] || defaultHours;
+      const overtime = overtimeArray[i] || 0;
+      const commission = commissionArray[i] || 0;
+      
+      if (formData.payType === "salary") {
+        grossPay = (annualSalary / periodsPerYear) + commission;
+      } else {
+        grossPay = (rate * hours) + (rate * 1.5 * overtime) + commission;
       }
-      return sum + amount * (numStubs || 1);
-    }, 0);
 
-    // Calculate contributions total
-    const totalContributions = contributions.reduce((sum, c) => {
-      const amount = parseFloat(c.amount) || 0;
-      if (c.isPercentage) {
-        return sum + (totalGross * amount / 100) * (numStubs || 1);
+      const ssTax = isContractor ? 0 : grossPay * 0.062;
+      const medTax = isContractor ? 0 : grossPay * 0.0145;
+      
+      let federalTax = 0;
+      if (!isContractor) {
+        if (formData.federalFilingStatus) {
+          federalTax = calculateFederalTax(grossPay, formData.payFrequency, formData.federalFilingStatus);
+        } else {
+          federalTax = grossPay * 0.22;
+        }
       }
-      return sum + amount * (numStubs || 1);
-    }, 0);
+      
+      let stateTax = 0;
+      if (!isContractor) {
+        stateTax = calculateStateTax(grossPay, formData.state, formData.payFrequency, formData.stateAllowances || 0, stateRate);
+      }
+      
+      const localTax = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? grossPay * actualLocalTaxRate : 0);
+      const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
 
-    const netPay = totalGross - totalTaxes - totalDeductions - totalContributions;
+      // Calculate deductions for this stub
+      const stubDeductions = deductions.reduce((sum, d) => {
+        const amount = parseFloat(d.amount) || 0;
+        return sum + (d.isPercentage ? (grossPay * amount / 100) : amount);
+      }, 0);
 
-    return { totalGross, totalTaxes, netPay, ssTax, medTax, federalTax, stateTax, localTax, numStubs, totalDeductions, totalContributions, stateRate, localTaxRate: actualLocalTaxRate };
+      // Calculate contributions for this stub
+      const stubContributions = contributions.reduce((sum, c) => {
+        const amount = parseFloat(c.amount) || 0;
+        return sum + (c.isPercentage ? (grossPay * amount / 100) : amount);
+      }, 0);
+
+      const netPay = grossPay - totalTaxes - stubDeductions - stubContributions;
+
+      stubPreviews.push({
+        grossPay,
+        hours,
+        overtime,
+        commission,
+        ssTax,
+        medTax,
+        federalTax,
+        stateTax,
+        localTax,
+        totalTaxes,
+        totalDeductions: stubDeductions,
+        totalContributions: stubContributions,
+        netPay,
+        stateRate,
+        localTaxRate: actualLocalTaxRate
+      });
+    }
+
+    // Calculate totals for all stubs
+    const totalGross = stubPreviews.reduce((sum, s) => sum + s.grossPay, 0);
+    const totalTaxes = stubPreviews.reduce((sum, s) => sum + s.totalTaxes, 0);
+    const totalDeductions = stubPreviews.reduce((sum, s) => sum + s.totalDeductions, 0);
+    const totalContributions = stubPreviews.reduce((sum, s) => sum + s.totalContributions, 0);
+    const netPay = stubPreviews.reduce((sum, s) => sum + s.netPay, 0);
+
+    return { 
+      totalGross, 
+      totalTaxes, 
+      netPay, 
+      ssTax: stubPreviews.reduce((sum, s) => sum + s.ssTax, 0),
+      medTax: stubPreviews.reduce((sum, s) => sum + s.medTax, 0),
+      federalTax: stubPreviews.reduce((sum, s) => sum + s.federalTax, 0),
+      stateTax: stubPreviews.reduce((sum, s) => sum + s.stateTax, 0),
+      localTax: stubPreviews.reduce((sum, s) => sum + s.localTax, 0),
+      numStubs, 
+      totalDeductions, 
+      totalContributions, 
+      stateRate, 
+      localTaxRate: actualLocalTaxRate,
+      stubPreviews // Array of individual stub previews
+    };
   }, [formData, calculateNumStubs, deductions, contributions]);
 
   const createOrder = (data, actions) => {

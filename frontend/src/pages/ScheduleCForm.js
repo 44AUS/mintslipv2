@@ -231,13 +231,17 @@ export default function ScheduleCForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `SC-${Date.now()}`;
       toast.success("Payment successful! Generating your Schedule C...");
       
       await generateAndDownloadScheduleC(formData, selectedTaxYear);
       
       toast.success("Schedule C downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=schedule-c&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate Schedule C");
       setIsProcessing(false);

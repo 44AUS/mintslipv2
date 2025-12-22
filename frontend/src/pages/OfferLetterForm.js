@@ -284,7 +284,8 @@ export default function OfferLetterForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `OL-${Date.now()}`;
       toast.success("Payment successful! Generating your offer letter...");
       
       // Generate and download PDF
@@ -295,6 +296,9 @@ export default function OfferLetterForm() {
       
       toast.success("Offer letter downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=offer-letter&order_id=${orderId}&count=1`);
     } catch (error) {
       console.error("Payment/generation error:", error);
       toast.error("An error occurred. Please try again.");

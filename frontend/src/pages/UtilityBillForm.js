@@ -309,7 +309,8 @@ export default function UtilityBillForm() {
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {
-      await actions.order.capture();
+      const orderData = await actions.order.capture();
+      const orderId = orderData.id || `UB-${Date.now()}`;
       toast.success("Payment successful! Generating your Service Expense...");
       
       const fullFormData = {
@@ -320,6 +321,9 @@ export default function UtilityBillForm() {
       
       toast.success("Service Expense downloaded successfully!");
       setIsProcessing(false);
+      
+      // Redirect to payment success page
+      navigate(`/payment-success?type=utility-bill&order_id=${orderId}&count=1`);
     } catch (error) {
       toast.error("Failed to generate Service Expense");
       setIsProcessing(false);

@@ -1505,23 +1505,35 @@ export default function CanadianPaystubForm() {
                                 </span>
                                 <p className="text-xs text-slate-500">{period.label}</p>
                               </div>
-                              {/* Show only hours for contractors, hours + overtime for hourly employees */}
+                              {/* Show only hours for contractors, hours + overtime + commission for hourly employees */}
                               {formData.workerType === 'contractor' ? (
-                                <div className="flex-1">
+                                <div className="flex-1 grid grid-cols-2 gap-3">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Hours Worked</Label>
                                     <Input
                                       type="number"
                                       value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === 'biweekly' ? 80 : 40)}
                                       onChange={(e) => handlePeriodHoursChange(index, 'hours', e.target.value)}
-                                      className="h-9 max-w-32"
+                                      className="h-9"
                                       min="0"
                                       step="0.5"
                                     />
                                   </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Commission ($)</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.commission ?? 0}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'commission', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                    />
+                                  </div>
                                 </div>
                               ) : (
-                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                <div className="flex-1 grid grid-cols-3 gap-3">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Regular Hours</Label>
                                     <Input
@@ -1544,6 +1556,18 @@ export default function CanadianPaystubForm() {
                                       step="0.5"
                                     />
                                   </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Commission ($)</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.commission ?? 0}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'commission', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                    />
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -1553,22 +1577,6 @@ export default function CanadianPaystubForm() {
                     </div>
                   </Collapsible>
                 )}
-
-                {/* Commission Input */}
-                <div className="space-y-2">
-                  <Label htmlFor="commissionList">Commission (per pay period)</Label>
-                  <Input
-                    data-testid="commission-input"
-                    id="commissionList"
-                    name="commissionList"
-                    value={formData.commissionList}
-                    onChange={handleChange}
-                    placeholder="e.g., 500, 750, 600 (comma-separated for multiple periods)"
-                  />
-                  <p className="text-xs text-slate-500">
-                    Enter commission amounts for each pay period, separated by commas. Leave blank if no commission.
-                  </p>
-                </div>
                 
                 {formData.workerType === 'contractor' && (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">

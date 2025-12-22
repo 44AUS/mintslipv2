@@ -42,8 +42,8 @@ const USFlagIcon = () => (
 // Payroll company templates with logos
 const PAYROLL_COMPANIES = [
   { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
-  { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
+  { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
 ];
 
 export default function CanadianPaystubForm() {

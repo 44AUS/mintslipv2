@@ -917,11 +917,17 @@ export const generateAndDownloadUtilityBill = async (formData, template) => {
   
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
+  const pdfFileName = `utility-bill-${formData.customerName?.replace(/\s+/g, '-') || 'statement'}-${new Date().toISOString().split('T')[0]}.pdf`;
+  
+  // Store download info for payment success page
+  sessionStorage.setItem('lastDownloadUrl', url);
+  sessionStorage.setItem('lastDownloadFileName', pdfFileName);
+  
   const link = document.createElement('a');
   link.href = url;
-  link.download = `utility-bill-${formData.customerName?.replace(/\s+/g, '-') || 'statement'}-${new Date().toISOString().split('T')[0]}.pdf`;
+  link.download = pdfFileName;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // Don't revoke URL immediately - needed for re-download on success page
 };

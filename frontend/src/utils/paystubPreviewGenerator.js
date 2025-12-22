@@ -152,6 +152,10 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       .split(",")
       .map((d) => d.trim())
       .filter(d => d);
+    const payDateArray = (formData.payDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     // Use custom start date from first period if available, otherwise use formData.startDate

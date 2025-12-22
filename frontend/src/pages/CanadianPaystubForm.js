@@ -642,7 +642,9 @@ export default function CanadianPaystubForm() {
         const newHours = payPeriods.map((period, i) => ({
           hours: prev[i]?.hours ?? defaultHours,
           overtime: prev[i]?.overtime ?? 0,
-          commission: prev[i]?.commission ?? 0
+          commission: prev[i]?.commission ?? 0,
+          startDate: prev[i]?.startDate ?? period.start,
+          endDate: prev[i]?.endDate ?? period.end
         }));
         return newHours;
       });
@@ -651,29 +653,35 @@ export default function CanadianPaystubForm() {
     }
   }, [payPeriods.length, formData.payFrequency]);
 
-  // Update formData hoursList, overtimeList, and commissionList when hoursPerPeriod changes
+  // Update formData hoursList, overtimeList, commissionList, and date lists when hoursPerPeriod changes
   useEffect(() => {
     if (hoursPerPeriod.length > 0) {
       const hoursList = hoursPerPeriod.map(p => p.hours).join(', ');
       const overtimeList = hoursPerPeriod.map(p => p.overtime).join(', ');
       const commissionList = hoursPerPeriod.map(p => p.commission).join(', ');
+      const startDateList = hoursPerPeriod.map(p => p.startDate || '').join(', ');
+      const endDateList = hoursPerPeriod.map(p => p.endDate || '').join(', ');
       
       setFormData(prev => ({
         ...prev,
         hoursList,
         overtimeList,
-        commissionList
+        commissionList,
+        startDateList,
+        endDateList
       }));
     }
   }, [hoursPerPeriod]);
 
-  // Handler for updating individual period hours
+  // Handler for updating individual period data (hours, overtime, commission, dates)
   const handlePeriodHoursChange = (index, field, value) => {
     setHoursPerPeriod(prev => {
       const updated = [...prev];
+      // For date fields, keep the string value; for numeric fields, parse as float
+      const processedValue = (field === 'startDate' || field === 'endDate') ? value : (parseFloat(value) || 0);
       updated[index] = {
         ...updated[index],
-        [field]: parseFloat(value) || 0
+        [field]: processedValue
       };
       return updated;
     });

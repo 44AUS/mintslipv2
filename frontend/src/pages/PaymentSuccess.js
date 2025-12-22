@@ -42,7 +42,7 @@ export default function PaymentSuccess() {
       
       // Also fire a conversion event
       window.gtag('event', 'conversion', {
-        send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL', // Replace with your actual conversion ID
+        send_to: 'G-L409EVV9LG', // Replace with your actual conversion ID
         value: orderType === 'paystub' ? 9.99 : 14.99,
         currency: 'USD',
         transaction_id: orderId || `order_${Date.now()}`

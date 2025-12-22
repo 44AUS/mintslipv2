@@ -53,7 +53,8 @@ export default function PaystubForm() {
   const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
-  const [pdfPreview, setPdfPreview] = useState(null);
+  const [pdfPreviews, setPdfPreviews] = useState([]); // Array of preview images
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [hoursExpanded, setHoursExpanded] = useState(false);

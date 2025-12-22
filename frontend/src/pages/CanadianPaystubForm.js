@@ -2237,74 +2237,193 @@ export default function CanadianPaystubForm() {
                       <span className="font-bold">{preview.numStubs}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-slate-700">Total Gross Pay:</span>
-                    <span className="font-bold">${formatCurrency(preview.totalGross)}</span>
-                  </div>
                   
-                  {formData.workerType === 'employee' ? (
+                  {/* Individual stub preview with pagination */}
+                  {preview.stubPreviews && preview.stubPreviews.length > 0 && (
                     <>
-                      {/* Federal Income Tax */}
-                      <div className="flex justify-between">
-                        <span className="text-slate-700">
-                          Federal Income Tax:
-                        </span>
-                        <span>${formatCurrency(preview.federalTax)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-700">{preview.cppLabel || 'CPP'} ({preview.isQuebec ? '6.40%' : '5.95%'}):</span>
-                        <span>${formatCurrency(preview.cpp)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-700">EI ({preview.isQuebec ? '1.32%' : '1.66%'}):</span>
-                        <span>${formatCurrency(preview.ei)}</span>
-                      </div>
-                      {preview.isQuebec && preview.qpip > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-slate-700">QPIP (0.494%):</span>
-                          <span>${formatCurrency(preview.qpip)}</span>
+                      <div className="bg-white rounded-lg p-3 border border-green-200 mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-green-800">
+                            Paystub {currentPreviewIndex + 1} of {preview.stubPreviews.length}
+                          </span>
+                          {preview.stubPreviews.length > 1 && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
+                                disabled={currentPreviewIndex === 0}
+                                className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-green-200 transition-colors"
+                              >
+                                <ChevronLeft className="h-3 w-3" />
+                              </button>
+                              {preview.stubPreviews.map((_, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentPreviewIndex(idx)}
+                                  className={`w-5 h-5 rounded-full text-xs font-medium transition-all ${
+                                    idx === currentPreviewIndex
+                                      ? 'bg-green-700 text-white'
+                                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                  }`}
+                                >
+                                  {idx + 1}
+                                </button>
+                              ))}
+                              <button
+                                onClick={() => setCurrentPreviewIndex(Math.min(preview.stubPreviews.length - 1, currentPreviewIndex + 1))}
+                                disabled={currentPreviewIndex === preview.stubPreviews.length - 1}
+                                className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-green-200 transition-colors"
+                              >
+                                <ChevronRight className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-slate-700">
-                          Provincial Tax ({formData.province || 'ON'}):
-                        </span>
-                        <span>${formatCurrency(preview.provincialTax)}</span>
+                        
+                        {/* Individual stub amounts */}
+                        {preview.stubPreviews[currentPreviewIndex] && (
+                          <div className="space-y-1">
+                            <div className="flex justify-between">
+                              <span className="text-slate-700">Gross Pay:</span>
+                              <span className="font-bold">${formatCurrency(preview.stubPreviews[currentPreviewIndex].grossPay)}</span>
+                            </div>
+                            
+                            {formData.workerType === 'employee' ? (
+                              <>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-600">Federal Tax:</span>
+                                  <span>${formatCurrency(preview.stubPreviews[currentPreviewIndex].federalTax)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-600">{preview.cppLabel || 'CPP'}:</span>
+                                  <span>${formatCurrency(preview.stubPreviews[currentPreviewIndex].cpp)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-600">EI:</span>
+                                  <span>${formatCurrency(preview.stubPreviews[currentPreviewIndex].ei)}</span>
+                                </div>
+                                {preview.isQuebec && preview.stubPreviews[currentPreviewIndex].qpip > 0 && (
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-slate-600">QPIP:</span>
+                                    <span>${formatCurrency(preview.stubPreviews[currentPreviewIndex].qpip)}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-slate-600">Provincial Tax:</span>
+                                  <span>${formatCurrency(preview.stubPreviews[currentPreviewIndex].provincialTax)}</span>
+                                </div>
+                                <div className="flex justify-between text-red-700 pt-1 border-t border-green-200">
+                                  <span className="font-medium">Total Taxes:</span>
+                                  <span className="font-medium">${formatCurrency(preview.stubPreviews[currentPreviewIndex].totalTaxes)}</span>
+                                </div>
+                                {preview.stubPreviews[currentPreviewIndex].totalDeductions > 0 && (
+                                  <div className="flex justify-between text-orange-700 text-xs">
+                                    <span className="font-medium">Deductions:</span>
+                                    <span className="font-medium">${formatCurrency(preview.stubPreviews[currentPreviewIndex].totalDeductions)}</span>
+                                  </div>
+                                )}
+                                {preview.stubPreviews[currentPreviewIndex].totalContributions > 0 && (
+                                  <div className="flex justify-between text-purple-700 text-xs">
+                                    <span className="font-medium">Contributions:</span>
+                                    <span className="font-medium">${formatCurrency(preview.stubPreviews[currentPreviewIndex].totalContributions)}</span>
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="flex justify-between text-amber-700 text-xs">
+                                <span className="font-medium">No Taxes Withheld</span>
+                                <span className="font-medium">$0.00</span>
+                              </div>
+                            )}
+                            
+                            <div className="flex justify-between text-green-700 pt-1 border-t border-green-200">
+                              <span className="font-bold">{formData.workerType === 'contractor' ? 'Payment:' : 'Net Pay:'}</span>
+                              <span className="font-bold">${formatCurrency(preview.stubPreviews[currentPreviewIndex].netPay)}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="border-t border-green-300 pt-2 mt-2">
-                        <div className="flex justify-between text-red-700">
-                          <span className="font-bold">Total Taxes:</span>
-                          <span className="font-bold">${formatCurrency(preview.totalTaxes)}</span>
-                        </div>
-                      </div>
-                      {/* Deductions */}
-                      {preview.totalDeductions > 0 && (
-                        <div className="flex justify-between text-orange-700">
-                          <span className="font-bold">Total Deductions:</span>
-                          <span className="font-bold">${formatCurrency(preview.totalDeductions)}</span>
-                        </div>
-                      )}
-                      {/* Contributions */}
-                      {preview.totalContributions > 0 && (
-                        <div className="flex justify-between text-purple-700">
-                          <span className="font-bold">Total Contributions:</span>
-                          <span className="font-bold">${formatCurrency(preview.totalContributions)}</span>
+                      
+                      {/* Totals section */}
+                      {preview.numStubs > 1 && (
+                        <div className="pt-2 border-t border-green-300">
+                          <div className="flex justify-between mb-1">
+                            <span className="text-slate-700 font-semibold">All {preview.numStubs} Paystubs Total:</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-700">Total Gross Pay:</span>
+                            <span className="font-bold">${formatCurrency(preview.totalGross)}</span>
+                          </div>
+                          {formData.workerType === 'employee' && (
+                            <div className="flex justify-between text-red-700">
+                              <span className="font-medium">Total Taxes:</span>
+                              <span className="font-medium">${formatCurrency(preview.totalTaxes)}</span>
+                            </div>
+                          )}
+                          {preview.totalDeductions > 0 && (
+                            <div className="flex justify-between text-orange-700">
+                              <span className="font-medium">Total Deductions:</span>
+                              <span className="font-medium">${formatCurrency(preview.totalDeductions)}</span>
+                            </div>
+                          )}
+                          {preview.totalContributions > 0 && (
+                            <div className="flex justify-between text-purple-700">
+                              <span className="font-medium">Total Contributions:</span>
+                              <span className="font-medium">${formatCurrency(preview.totalContributions)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-green-700 text-lg pt-1">
+                            <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Total Net Pay:'}</span>
+                            <span className="font-bold">${formatCurrency(preview.netPay)}</span>
+                          </div>
                         </div>
                       )}
                     </>
-                  ) : (
-                    <div className="border-t border-green-300 pt-2 mt-2">
-                      <div className="flex justify-between text-amber-700">
-                        <span className="font-bold">No Taxes Withheld</span>
-                        <span className="font-bold">$0.00</span>
-                      </div>
-                    </div>
                   )}
                   
-                  <div className="flex justify-between text-green-700 text-lg">
-                    <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Net Pay:'}</span>
-                    <span className="font-bold">${formatCurrency(preview.netPay)}</span>
-                  </div>
+                  {/* Single stub fallback view */}
+                  {(!preview.stubPreviews || preview.stubPreviews.length === 0) && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-700">Total Gross Pay:</span>
+                        <span className="font-bold">${formatCurrency(preview.totalGross)}</span>
+                      </div>
+                      
+                      {formData.workerType === 'employee' ? (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-slate-700">Federal Income Tax:</span>
+                            <span>${formatCurrency(preview.federalTax)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-700">{preview.cppLabel || 'CPP'}:</span>
+                            <span>${formatCurrency(preview.cpp)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-700">EI:</span>
+                            <span>${formatCurrency(preview.ei)}</span>
+                          </div>
+                          <div className="border-t border-green-300 pt-2 mt-2">
+                            <div className="flex justify-between text-red-700">
+                              <span className="font-bold">Total Taxes:</span>
+                              <span className="font-bold">${formatCurrency(preview.totalTaxes)}</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="border-t border-green-300 pt-2 mt-2">
+                          <div className="flex justify-between text-amber-700">
+                            <span className="font-bold">No Taxes Withheld</span>
+                            <span className="font-bold">$0.00</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between text-green-700 text-lg">
+                        <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Net Pay:'}</span>
+                        <span className="font-bold">${formatCurrency(preview.netPay)}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

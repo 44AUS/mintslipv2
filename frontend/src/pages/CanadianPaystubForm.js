@@ -639,7 +639,8 @@ export default function CanadianPaystubForm() {
       setHoursPerPeriod(prev => {
         const newHours = payPeriods.map((period, i) => ({
           hours: prev[i]?.hours ?? defaultHours,
-          overtime: prev[i]?.overtime ?? 0
+          overtime: prev[i]?.overtime ?? 0,
+          commission: prev[i]?.commission ?? 0
         }));
         return newHours;
       });
@@ -648,16 +649,18 @@ export default function CanadianPaystubForm() {
     }
   }, [payPeriods.length, formData.payFrequency]);
 
-  // Update formData hoursList and overtimeList when hoursPerPeriod changes
+  // Update formData hoursList, overtimeList, and commissionList when hoursPerPeriod changes
   useEffect(() => {
     if (hoursPerPeriod.length > 0) {
       const hoursList = hoursPerPeriod.map(p => p.hours).join(', ');
       const overtimeList = hoursPerPeriod.map(p => p.overtime).join(', ');
+      const commissionList = hoursPerPeriod.map(p => p.commission).join(', ');
       
       setFormData(prev => ({
         ...prev,
         hoursList,
-        overtimeList
+        overtimeList,
+        commissionList
       }));
     }
   }, [hoursPerPeriod]);

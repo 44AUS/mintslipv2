@@ -120,7 +120,221 @@ function addWatermarkToAllPages(doc, pageWidth, pageHeight) {
   }
 }
 
-// Generate preview PDF as base64 data URL
+// Helper function to generate a single stub preview
+async function generateSingleStubPreview(formData, template, stubIndex, totalStubs, commonData) {
+  const {
+    rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
+    payType, workerType, isContractor, periodsPerYear, hoursArray, overtimeArray,
+    commissionArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
+  } = commonData;
+
+  const doc = new jsPDF({ unit: "pt", format: "letter" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
+
+  // Calculate start date for this stub
+  let startDate;
+  if (startDateArray[stubIndex]) {
+    startDate = new Date(startDateArray[stubIndex]);
+  } else if (formData.startDate) {
+    startDate = new Date(formData.startDate);
+    // Move forward by stub index * period length
+    startDate.setDate(startDate.getDate() + (stubIndex * periodLength));
+  } else {
+    startDate = new Date(hireDate);
+    startDate.setDate(startDate.getDate() + (stubIndex * periodLength));
+  }
+
+  // Calculate pay values for this stub
+  let hours = 0;
+  let overtime = 0;
+  let regularPay = 0;
+  let overtimePay = 0;
+  let commission = commissionArray[stubIndex] || 0;
+  let grossPay = 0;
+
+  if (payType === "salary") {
+    grossPay = annualSalary / periodsPerYear + commission;
+    regularPay = annualSalary / periodsPerYear;
+    hours = defaultHours;
+    overtime = 0;
+    overtimePay = 0;
+  } else {
+    hours = hoursArray[stubIndex] || defaultHours;
+    overtime = overtimeArray[stubIndex] || 0;
+    regularPay = rate * hours;
+    overtimePay = rate * 1.5 * overtime;
+    grossPay = regularPay + overtimePay + commission;
+  }
+
+  const ssTax = isContractor ? 0 : grossPay * 0.062;
+  const medTax = isContractor ? 0 : grossPay * 0.0145;
+  
+  let federalTax = 0;
+  if (!isContractor) {
+    if (formData.federalFilingStatus) {
+      federalTax = calculateFederalTax(grossPay, payFrequency, formData.federalFilingStatus);
+    } else {
+      federalTax = grossPay * 0.22;
+    }
+  }
+  
+  let stateTax = 0;
+  if (!isContractor) {
+    stateTax = calculateStateTax(grossPay, formData.state, payFrequency, formData.stateAllowances || 0, stateRate);
+  }
+  
+  const localTaxRate = getLocalTaxRate(formData.state, formData.city);
+  const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
+  const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
+
+  // Calculate deductions
+  const deductionsData = (formData.deductions || []).map(d => {
+    const amount = parseFloat(d.amount) || 0;
+    const currentAmount = d.isPercentage ? (grossPay * amount / 100) : amount;
+    return { ...d, currentAmount, name: d.type === 'other' ? d.name : d.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
+  });
+  const totalDeductions = deductionsData.reduce((sum, d) => sum + d.currentAmount, 0);
+
+  // Calculate contributions
+  const contributionsData = (formData.contributions || []).map(c => {
+    const amount = parseFloat(c.amount) || 0;
+    const currentAmount = c.isPercentage ? (grossPay * amount / 100) : amount;
+    return { ...c, currentAmount, name: c.type === 'other' ? c.name : c.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) };
+  });
+  const totalContributions = contributionsData.reduce((sum, c) => sum + c.currentAmount, 0);
+
+  const netPay = grossPay - totalTax - totalDeductions - totalContributions;
+
+  // Calculate end date
+  const endDate = endDateArray[stubIndex] 
+    ? new Date(endDateArray[stubIndex])
+    : (() => {
+        const calculated = new Date(startDate);
+        calculated.setDate(startDate.getDate() + periodLength - 1);
+        return calculated;
+      })();
+
+  // Calculate pay date
+  const payDate = payDateArray[stubIndex] 
+    ? new Date(payDateArray[stubIndex])
+    : nextWeekday(new Date(endDate), payDay);
+
+  // Calculate YTD
+  const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
+  const ytdRegularPay = regularPay * ytdPayPeriods;
+  const ytdOvertimePay = overtimePay * ytdPayPeriods;
+  const ytdCommission = commission * ytdPayPeriods;
+  const ytdGrossPay = grossPay * ytdPayPeriods;
+  const ytdSsTax = ssTax * ytdPayPeriods;
+  const ytdMedTax = medTax * ytdPayPeriods;
+  const ytdFederalTax = federalTax * ytdPayPeriods;
+  const ytdStateTax = stateTax * ytdPayPeriods;
+  const ytdLocalTax = localTax * ytdPayPeriods;
+  const ytdTotalTax = totalTax * ytdPayPeriods;
+  const ytdDeductions = totalDeductions * ytdPayPeriods;
+  const ytdContributions = totalContributions * ytdPayPeriods;
+  const ytdNetPay = netPay * ytdPayPeriods;
+  const ytdHours = (hours + overtime) * ytdPayPeriods;
+
+  const templateData = {
+    formData, hours, overtime, commission, regularPay, overtimePay, grossPay,
+    ssTax, medTax, federalTax, stateTax, localTax, localTaxRate, totalTax, netPay,
+    rate, stateRate, startDate, endDate, payDate, payFrequency,
+    stubNum: stubIndex, totalStubs,
+    ytdPayPeriods, ytdRegularPay, ytdOvertimePay, ytdCommission, ytdGrossPay,
+    ytdSsTax, ytdMedTax, ytdFederalTax, ytdStateTax, ytdLocalTax, ytdTotalTax,
+    ytdNetPay, ytdHours, payType, workerType, isContractor, annualSalary,
+    deductionsData, totalDeductions, contributionsData, totalContributions,
+    ytdDeductions, ytdContributions,
+    logoDataUrl: formData.logoDataUrl || null,
+    isPreview: true,
+    absencePlansData: (formData.absencePlans || []).map(plan => ({
+      description: plan.description || "PTO Plan", accrued: plan.accrued || "0", reduced: plan.reduced || "0"
+    })),
+    employerBenefitsData: (formData.employerBenefits || []).map(b => {
+      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      return { name: b.name || "Employer Benefit", type: b.type, currentAmount: amount };
+    }),
+    totalEmployerBenefits: (formData.employerBenefits || []).reduce((sum, b) => {
+      const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+      return sum + amount;
+    }, 0)
+  };
+
+  // Generate the template
+  switch (template) {
+    case 'template-b':
+      generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+      break;
+    case 'template-c':
+      await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+      break;
+    case 'template-a':
+    default:
+      await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+      break;
+  }
+
+  // Add watermark
+  addWatermarkToAllPages(doc, pageWidth, pageHeight);
+
+  // Convert to image
+  const pdfDataUrl = doc.output('dataurlstring');
+  const imageDataUrl = await convertPdfToImage(pdfDataUrl);
+  
+  return imageDataUrl;
+}
+
+// Generate all preview PDFs as an array of base64 image URLs
+export const generateAllPreviewPDFs = async (formData, template = 'template-a', numStubs = 1) => {
+  try {
+    const rate = parseFloat(formData.rate) || 0;
+    const annualSalary = parseFloat(formData.annualSalary) || 0;
+    const payFrequency = formData.payFrequency || "biweekly";
+    const periodLength = payFrequency === "biweekly" ? 14 : 7;
+    const defaultHours = payFrequency === "weekly" ? 40 : 80;
+    const payDay = formData.payDay || "Friday";
+    const payType = formData.payType || "hourly";
+    const workerType = formData.workerType || "employee";
+    const isContractor = workerType === "contractor";
+    const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+
+    const hoursArray = (formData.hoursList || "").split(",").map((h) => parseFloat(h.trim()) || 0);
+    const overtimeArray = (formData.overtimeList || "").split(",").map((h) => parseFloat(h.trim()) || 0);
+    const commissionArray = (formData.commissionList || "").split(",").map((c) => parseFloat(c.trim()) || 0);
+    const startDateArray = (formData.startDateList || "").split(",").map((d) => d.trim()).filter(d => d);
+    const endDateArray = (formData.endDateList || "").split(",").map((d) => d.trim()).filter(d => d);
+    const payDateArray = (formData.payDateList || "").split(",").map((d) => d.trim()).filter(d => d);
+
+    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
+    const state = formData.state?.toUpperCase() || "";
+    const stateRate = isContractor ? 0 : getStateTaxRate(state);
+
+    const commonData = {
+      rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
+      payType, workerType, isContractor, periodsPerYear, hoursArray, overtimeArray,
+      commissionArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
+    };
+
+    // Generate previews for all stubs
+    const previews = [];
+    const actualNumStubs = Math.max(1, numStubs);
+    
+    for (let i = 0; i < actualNumStubs; i++) {
+      const preview = await generateSingleStubPreview(formData, template, i, actualNumStubs, commonData);
+      previews.push(preview);
+    }
+
+    return previews;
+  } catch (error) {
+    console.error("Error generating all previews:", error);
+    return [null];
+  }
+};
+
+// Generate preview PDF as base64 data URL (legacy - returns first stub only)
 export const generatePreviewPDF = async (formData, template = 'template-a') => {
   try {
     const rate = parseFloat(formData.rate) || 0;

@@ -688,6 +688,7 @@ export default function CanadianPaystubForm() {
       const commissionList = hoursPerPeriod.map(p => p.commission).join(', ');
       const startDateList = hoursPerPeriod.map(p => p.startDate || '').join(', ');
       const endDateList = hoursPerPeriod.map(p => p.endDate || '').join(', ');
+      const payDateList = hoursPerPeriod.map(p => p.payDate || '').join(', ');
       
       setFormData(prev => ({
         ...prev,
@@ -695,7 +696,8 @@ export default function CanadianPaystubForm() {
         overtimeList,
         commissionList,
         startDateList,
-        endDateList
+        endDateList,
+        payDateList
       }));
     }
   }, [hoursPerPeriod]);
@@ -705,7 +707,7 @@ export default function CanadianPaystubForm() {
     setHoursPerPeriod(prev => {
       const updated = [...prev];
       // For date fields, keep the string value; for numeric fields, parse as float
-      const processedValue = (field === 'startDate' || field === 'endDate') ? value : (parseFloat(value) || 0);
+      const processedValue = (field === 'startDate' || field === 'endDate' || field === 'payDate') ? value : (parseFloat(value) || 0);
       updated[index] = {
         ...updated[index],
         [field]: processedValue

@@ -548,12 +548,12 @@ function drawTable(
 // Template B: ADP-Style Earnings Statement (Programmatically Generated)
 export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
-    formData, hours, overtime, regularPay, overtimePay, grossPay, 
+    formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
     ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, 
     startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdGrossPay = grossPay, ytdSsTax = ssTax, ytdMedTax = medTax, 
     ytdFederalTax = federalTax, ytdStateTax = stateTax, ytdLocalTax = localTax,
-    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay,
+    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0,
     logoDataUrl

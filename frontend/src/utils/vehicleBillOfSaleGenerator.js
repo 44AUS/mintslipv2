@@ -452,14 +452,19 @@ export const generateAndDownloadVehicleBillOfSale = async (formData) => {
     
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
+    const pdfFileName = `Vehicle_Bill_of_Sale_${formData.vehicleYear || ''}_${formData.vehicleMake || ''}_${formData.vehicleModel || ''}.pdf`.replace(/\s+/g, '_');
+    
+    // Store download info for payment success page
+    sessionStorage.setItem('lastDownloadUrl', url);
+    sessionStorage.setItem('lastDownloadFileName', pdfFileName);
+    
     const link = document.createElement('a');
     link.href = url;
-    const fileName = `Vehicle_Bill_of_Sale_${formData.vehicleYear || ''}_${formData.vehicleMake || ''}_${formData.vehicleModel || ''}.pdf`.replace(/\s+/g, '_');
-    link.download = fileName;
+    link.download = pdfFileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Don't revoke URL immediately - needed for re-download on success page
     
   } catch (error) {
     console.error('Error downloading Vehicle Bill of Sale:', error);

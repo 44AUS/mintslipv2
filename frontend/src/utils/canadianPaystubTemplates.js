@@ -941,14 +941,11 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       doc.text(formData.company || "COMPANY NAME", m, y + 15);
     }
   } else if (isPreview) {
-    // For preview without logo, show company style header
+    // For preview without logo, show company name from form data
     doc.setFontSize(16); 
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold"); 
-    doc.text("COMPANY", m, y + 12);
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.text("NAME", m, y + 20);
+    doc.text(formData.company || "COMPANY NAME", m, y + 15);
   } else {
     doc.setFontSize(14); doc.setTextColor(0, 0, 0); doc.setFont("helvetica", "bold"); 
     doc.text(formData.company || "COMPANY NAME", m, y + 15);

@@ -1201,7 +1201,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   
   const totalBenefits = employerBenefitsData.length > 0 ? totalEmployerBenefits : 0;
   benefitRows.push(["Employer Paid Benefits", fmt(totalBenefits), fmt(totalBenefits * (ytdPayPeriods || 1))]);
-  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, whiteHeader: true });
+  drawWorkdayTable("Employer Paid Benefits", benefitCols, benefitWidths, benefitRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
 
   // ========== 7. TAXABLE WAGES SECTION ==========
   const taxableWagesCols = ["Description", "Amount", "YTD"];

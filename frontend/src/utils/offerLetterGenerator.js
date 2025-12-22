@@ -677,16 +677,20 @@ export const generateAndDownloadOfferLetter = async (formData) => {
     // Create blob and download
     const blob = new Blob([pdfBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
+    const pdfFileName = `Offer_Letter_${formData.candidateName?.replace(/\s+/g, '_') || 'Candidate'}_${formData.companyName?.replace(/\s+/g, '_') || 'Company'}.pdf`;
+    
+    // Store download info for payment success page
+    sessionStorage.setItem('lastDownloadUrl', url);
+    sessionStorage.setItem('lastDownloadFileName', pdfFileName);
     
     const link = document.createElement("a");
     link.href = url;
-    const fileName = `Offer_Letter_${formData.candidateName?.replace(/\s+/g, '_') || 'Candidate'}_${formData.companyName?.replace(/\s+/g, '_') || 'Company'}.pdf`;
-    link.download = fileName;
+    link.download = pdfFileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    URL.revokeObjectURL(url);
+    // Don't revoke URL immediately - needed for re-download on success page
     return true;
   } catch (error) {
     console.error("Error downloading Offer Letter:", error);

@@ -1257,7 +1257,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   const accountName = `${bankName} ****${last4}`;
   const accountNumber = `****${last4}`;
   const paymentRows = [
-    [bankName, accountName, accountNumber, `${fmt(netPay)}`, `${fmt(netPay)} USD`]
+    [bankName, accountName, accountNumber, "" /* `${fmt(netPay)}` */, `${fmt(netPay)} USD`]
   ];
   drawWorkdayTable("Payment Information", paymentCols, paymentWidths, paymentRows, { rightAlignFrom: 3, whiteHeader: true, noVerticalDividers: true });
 

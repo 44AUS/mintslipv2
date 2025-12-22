@@ -2006,9 +2006,7 @@ export default function CanadianPaystubForm() {
                                   }}
                                 >
                                   <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Select type">
-                                      {contributionTypes.find(t => t.value === contribution.type)?.label || 'Select type'}
-                                    </SelectValue>
+                                    <SelectValue placeholder="Select type" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {contributionTypes.map(type => (

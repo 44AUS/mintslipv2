@@ -1069,7 +1069,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
 
   // ========== 1. EMPLOYEE INFO TABLE ==========
   const infoCols = ["Name", "Company", "Employee ID", "Pay Period Begin", "Pay Period End", "Check Date", "Check Number"];
-  const infoWidths = [usableWidth * 0.14, usableWidth * 0.20, usableWidth * 0.12, usableWidth * 0.13, usableWidth * 0.13, usableWidth * 0.12, usableWidth * 0.16];
+  const infoWidths = [usableWidth * 0.18, usableWidth * 0.18, usableWidth * 0.12, usableWidth * 0.13, usableWidth * 0.13, usableWidth * 0.12, usableWidth * 0.14];
   const infoRow = [
     formData.name || "", 
     formData.company || "", 
@@ -1083,7 +1083,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
 
   // ========== 2. CURRENT/YTD SUMMARY ==========
   const sumCols = ["", "Hours Worked", "Gross Pay", "Pre Tax Deductions", "Employee Taxes", "Post Tax Deductions", "Net Pay"];
-  const sumWidths = [usableWidth * 0.10, usableWidth * 0.13, usableWidth * 0.13, usableWidth * 0.17, usableWidth * 0.15, usableWidth * 0.17, usableWidth * 0.15];
+  const sumWidths = [usableWidth * 0.18, usableWidth * 0.12, usableWidth * 0.12, usableWidth * 0.15, usableWidth * 0.14, usableWidth * 0.15, usableWidth * 0.14];
   const currentYtdHours = ytdHours > 0 ? ytdHours : (hours * (ytdPayPeriods || 1));
   const sumRows = [
     ["Current", hours.toFixed(2), fmt(grossPay), fmt(totalDeductions), fmt(totalTax), "0.00", fmt(netPay)],

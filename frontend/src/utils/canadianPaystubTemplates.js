@@ -33,10 +33,22 @@ function formatFilingStatus(status) {
   return statusMap[status] || status;
 }
 
-// Format date as "Mar 10, 2025"
+// Format date as "Mar 10, 2025" - handles timezone-safe parsing
 function formatDate(date) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const d = new Date(date);
+  // Handle both Date objects and string dates (YYYY-MM-DD)
+  let d;
+  if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    // Parse YYYY-MM-DD format manually to avoid timezone issues
+    const [year, month, day] = date.split('-').map(Number);
+    d = new Date(year, month - 1, day);
+  } else {
+    d = new Date(date);
+    // If it's a Date object passed from the generator, use UTC values to avoid timezone shift
+    if (date instanceof Date) {
+      return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+    }
+  }
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 

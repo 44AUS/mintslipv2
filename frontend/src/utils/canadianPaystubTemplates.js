@@ -1123,6 +1123,16 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       fmt(ytdOvertimePay || overtimePay)
     ]);
   }
+  if (commission > 0) {
+    earnRows.push([
+      "Commission", 
+      `${formatDateMDY(startDate)} – ${formatDateMDY(endDate)}`, 
+      "", 
+      "", 
+      fmt(commission), 
+      fmt(ytdCommission || commission)
+    ]);
+  }
   // Add blank rows for spacing like the reference
   earnRows.push(["", "", "", "", "", ""]);
   earnRows.push(["", "", "", "", "", ""]);

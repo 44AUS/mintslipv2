@@ -1610,17 +1610,39 @@ export default function PaystubForm() {
                           {payPeriods.map((period, index) => (
                             <div 
                               key={index} 
-                              className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-slate-50 rounded-lg"
+                              className="flex flex-col gap-3 p-3 bg-slate-50 rounded-lg"
                             >
-                              <div className="flex-shrink-0 sm:w-48">
-                                <span className="text-sm font-medium text-slate-700">
-                                  Pay Period {index + 1}
-                                </span>
-                                <p className="text-xs text-slate-500">{period.label}</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                <div className="flex-shrink-0 sm:w-32">
+                                  <span className="text-sm font-medium text-slate-700">
+                                    Pay Period {index + 1}
+                                  </span>
+                                </div>
+                                {/* Date inputs for pay period */}
+                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Period Start</Label>
+                                    <Input
+                                      type="date"
+                                      value={hoursPerPeriod[index]?.startDate || period.start}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'startDate', e.target.value)}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Period End</Label>
+                                    <Input
+                                      type="date"
+                                      value={hoursPerPeriod[index]?.endDate || period.end}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'endDate', e.target.value)}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                </div>
                               </div>
                               {/* Show only hours for contractors, hours + overtime + commission for hourly employees */}
                               {formData.workerType === 'contractor' ? (
-                                <div className="flex-1 grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-3 sm:ml-32">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Hours Worked</Label>
                                     <Input
@@ -1646,7 +1668,7 @@ export default function PaystubForm() {
                                   </div>
                                 </div>
                               ) : (
-                                <div className="flex-1 grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-3 gap-3 sm:ml-32">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Regular Hours</Label>
                                     <Input

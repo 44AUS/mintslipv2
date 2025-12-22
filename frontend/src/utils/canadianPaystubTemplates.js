@@ -1104,11 +1104,12 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   // ========== 3. EARNING SECTION ==========
   const earnCols = ["Description", "Dates", "Hours", "Rate", "Amount", "YTD"];
   const earnWidths = [usableWidth * 0.25, usableWidth * 0.25, usableWidth * 0.10, usableWidth * 0.12, usableWidth * 0.14, usableWidth * 0.14];
+  const isSalary = payType === 'salary';
   const earnRows = [[
-    "Regular Earning HRLY", 
+    isSalary ? "Regular Earnings SLRY" : "Regular Earning HRLY", 
     `${formatDateMDY(startDate)} – ${formatDateMDY(endDate)}`, 
     hours.toFixed(2), 
-    fmt(rate), 
+    isSalary ? "" : fmt(rate), 
     fmt(regularPay), 
     fmt(ytdRegularPay || regularPay)
   ]];

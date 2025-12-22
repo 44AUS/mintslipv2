@@ -104,6 +104,8 @@ export default function CanadianPaystubForm() {
     hoursList: "",
     overtimeList: "",
     commissionList: "", // Commission amounts per pay period
+    startDateList: "", // Pay period start dates per check
+    endDateList: "", // Pay period end dates per check
     workerType: "employee", // "employee" or "contractor"
     payType: "hourly", // "hourly" or "salary"
     annualSalary: "", // for salary pay type

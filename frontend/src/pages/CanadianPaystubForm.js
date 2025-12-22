@@ -937,7 +937,7 @@ export default function CanadianPaystubForm() {
       setIsProcessing(false);
       
       // Redirect to payment success page for Google Analytics conversion tracking
-      navigate(`/payment-success?type=canadian-paystub&order_id=${orderId}`);
+      navigate(`/payment-success?type=canadian-paystub&order_id=${orderId}&count=${calculateNumStubs}`);
     } catch (error) {
       toast.error("Failed to generate document");
       setIsProcessing(false);

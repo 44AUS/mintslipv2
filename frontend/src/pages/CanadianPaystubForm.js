@@ -2110,31 +2110,78 @@ export default function CanadianPaystubForm() {
                                   />
                                 </div>
                               )}
-                              <div className="w-32 space-y-1">
-                                <Label className="text-xs text-slate-600">Amount</Label>
-                                <div className="flex items-center gap-1">
-                                  {!benefit.isPercentage && <span className="text-slate-500">$</span>}
-                                  <Input
-                                    type="number"
-                                    value={benefit.amount}
-                                    onChange={(e) => updateEmployerBenefit(benefit.id, 'amount', e.target.value)}
-                                    placeholder="0.00"
-                                    className="h-9"
-                                    min="0"
-                                    step="0.01"
-                                  />
-                                  {benefit.isPercentage && <span className="text-slate-500">%</span>}
+                              {/* RRSP Match specific fields */}
+                              {benefit.type === 'rrsp_match' ? (
+                                <>
+                                  <div className="w-24 space-y-1">
+                                    <Label className="text-xs text-slate-600">Match %</Label>
+                                    <div className="flex items-center gap-1">
+                                      <Input
+                                        type="number"
+                                        value={benefit.matchPercent || 50}
+                                        onChange={(e) => updateEmployerBenefit(benefit.id, 'matchPercent', e.target.value)}
+                                        placeholder="50"
+                                        className="h-9"
+                                        min="0"
+                                        max="100"
+                                        step="1"
+                                      />
+                                      <span className="text-slate-500 text-sm">%</span>
+                                    </div>
+                                  </div>
+                                  <div className="w-28 space-y-1">
+                                    <Label className="text-xs text-slate-600">Up to % of Pay</Label>
+                                    <div className="flex items-center gap-1">
+                                      <Input
+                                        type="number"
+                                        value={benefit.matchUpTo || 6}
+                                        onChange={(e) => updateEmployerBenefit(benefit.id, 'matchUpTo', e.target.value)}
+                                        placeholder="6"
+                                        className="h-9"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
+                                      />
+                                      <span className="text-slate-500 text-sm">%</span>
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-slate-500 flex items-center">
+                                    <span className="bg-blue-100 px-2 py-1 rounded">
+                                      {contributions.some(c => c.type === 'rrsp') 
+                                        ? `Based on employee RRSP`
+                                        : 'Add employee RRSP first'}
+                                    </span>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="w-32 space-y-1">
+                                  <Label className="text-xs text-slate-600">Amount</Label>
+                                  <div className="flex items-center gap-1">
+                                    {!benefit.isPercentage && <span className="text-slate-500">$</span>}
+                                    <Input
+                                      type="number"
+                                      value={benefit.amount}
+                                      onChange={(e) => updateEmployerBenefit(benefit.id, 'amount', e.target.value)}
+                                      placeholder="0.00"
+                                      className="h-9"
+                                      min="0"
+                                      step="0.01"
+                                    />
+                                    {benefit.isPercentage && <span className="text-slate-500">%</span>}
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                               <div className="flex items-end gap-2">
-                                <div className="flex items-center space-x-1">
-                                  <Checkbox
-                                    id={`benefit-pct-${benefit.id}`}
-                                    checked={benefit.isPercentage}
-                                    onCheckedChange={(checked) => updateEmployerBenefit(benefit.id, 'isPercentage', checked)}
-                                  />
-                                  <Label htmlFor={`benefit-pct-${benefit.id}`} className="text-xs cursor-pointer">%</Label>
-                                </div>
+                                {benefit.type !== 'rrsp_match' && (
+                                  <div className="flex items-center space-x-1">
+                                    <Checkbox
+                                      id={`benefit-pct-${benefit.id}`}
+                                      checked={benefit.isPercentage}
+                                      onCheckedChange={(checked) => updateEmployerBenefit(benefit.id, 'isPercentage', checked)}
+                                    />
+                                    <Label htmlFor={`benefit-pct-${benefit.id}`} className="text-xs cursor-pointer">%</Label>
+                                  </div>
+                                )}
                                 <Button
                                   type="button"
                                   variant="ghost"

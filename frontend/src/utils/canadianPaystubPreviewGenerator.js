@@ -110,6 +110,9 @@ export async function generateCanadianPreviewPDF(formData, template) {
     const overtime = isContractor ? 0 : (formData.overtimeList 
       ? parseFloat(formData.overtimeList.split(",")[0]) || 0 
       : 0);
+    const commission = formData.commissionList 
+      ? parseFloat(formData.commissionList.split(",")[0]) || 0 
+      : 0;
 
     // Calculate period dates
     const startDate = formData.startDate ? new Date(formData.startDate) : new Date();
@@ -125,11 +128,11 @@ export async function generateCanadianPreviewPDF(formData, template) {
     if (payType === "salary") {
       regularPay = annualSalary / periodsPerYear;
       overtimePay = 0;
-      grossPay = regularPay;
+      grossPay = regularPay + commission;
     } else {
       regularPay = rate * hours;
       overtimePay = rate * 1.5 * overtime;
-      grossPay = regularPay + overtimePay;
+      grossPay = regularPay + overtimePay + commission;
     }
 
     // Calculate Canadian taxes

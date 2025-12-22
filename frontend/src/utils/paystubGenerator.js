@@ -276,7 +276,22 @@ async function generateSingleStub(
   const employerBenefits = formData.employerBenefits || [];
   let totalEmployerBenefits = 0;
   const employerBenefitsData = employerBenefits.map(b => {
-    const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    let amount;
+    if (b.type === '401k_match') {
+      // Calculate 401k match based on employee contribution
+      const employee401k = contributionsData.find(c => c.type === '401k' || c.type === 'roth_401k');
+      if (employee401k) {
+        const matchUpTo = parseFloat(b.matchUpTo) || 6;
+        const matchPercent = parseFloat(b.matchPercent) || 50;
+        const maxMatchableAmount = grossPay * (matchUpTo / 100);
+        const matchableAmount = Math.min(employee401k.currentAmount, maxMatchableAmount);
+        amount = matchableAmount * (matchPercent / 100);
+      } else {
+        amount = 0;
+      }
+    } else {
+      amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    }
     totalEmployerBenefits += amount;
     return { 
       name: b.name || "Employer Benefit", 

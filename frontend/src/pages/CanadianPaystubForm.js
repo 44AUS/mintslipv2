@@ -136,24 +136,23 @@ export default function CanadianPaystubForm() {
 
   // Common deduction types for quick selection (Canadian)
   const deductionTypes = [
-    { label: "RRSP", value: "rrsp" },
-    { label: "Health Insurance", value: "health_insurance" },
-    { label: "Dental Insurance", value: "dental_insurance" },
-    { label: "Vision Insurance", value: "vision_insurance" },
-    { label: "Life Insurance", value: "life_insurance" },
-    { label: "Disability Insurance", value: "disability_insurance" },
-    { label: "Union Dues", value: "union_dues" },
-    { label: "Parking", value: "parking" },
-    { label: "Other", value: "other" },
+    { label: "Health Insurance", value: "health_insurance", preTax: true },
+    { label: "Dental Insurance", value: "dental_insurance", preTax: true },
+    { label: "Vision Insurance", value: "vision_insurance", preTax: true },
+    { label: "Life Insurance", value: "life_insurance", preTax: false },
+    { label: "Disability Insurance", value: "disability_insurance", preTax: false },
+    { label: "Union Dues", value: "union_dues", preTax: false },
+    { label: "Parking", value: "parking", preTax: false },
+    { label: "Other", value: "other", preTax: false },
   ];
 
   // Common contribution types for quick selection (Canadian)
   const contributionTypes = [
-    { label: "RRSP Match", value: "rrsp_match" },
-    { label: "TFSA", value: "tfsa" },
-    { label: "Group Benefits", value: "group_benefits" },
-    { label: "Pension Plan", value: "pension_plan" },
-    { label: "Other", value: "other" },
+    { label: "RRSP (Pre-Tax)", value: "rrsp", preTax: true },
+    { label: "TFSA (Post-Tax)", value: "tfsa", preTax: false },
+    { label: "Group Benefits", value: "group_benefits", preTax: true },
+    { label: "Pension Plan", value: "pension_plan", preTax: true },
+    { label: "Other", value: "other", preTax: false },
   ];
 
   // Detect user's location on mount

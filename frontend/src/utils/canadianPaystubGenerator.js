@@ -228,7 +228,22 @@ async function generateSingleCanadianStub(
   const employerBenefits = formData.employerBenefits || [];
   let totalEmployerBenefits = 0;
   const employerBenefitsData = employerBenefits.map(b => {
-    const amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    let amount;
+    if (b.type === 'rrsp_match') {
+      // Calculate RRSP match based on employee contribution
+      const employeeRRSP = contributionsData.find(c => c.type === 'rrsp');
+      if (employeeRRSP) {
+        const matchUpTo = parseFloat(b.matchUpTo) || 6;
+        const matchPercent = parseFloat(b.matchPercent) || 50;
+        const maxMatchableAmount = grossPay * (matchUpTo / 100);
+        const matchableAmount = Math.min(employeeRRSP.currentAmount, maxMatchableAmount);
+        amount = matchableAmount * (matchPercent / 100);
+      } else {
+        amount = 0;
+      }
+    } else {
+      amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    }
     totalEmployerBenefits += amount;
     return { 
       name: b.name || "Employer Benefit", 

@@ -615,6 +615,15 @@ export default function CanadianPaystubForm() {
     const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
     let currentStart = new Date(formData.startDate);
     
+    // Helper to format date as YYYY-MM-DD for input fields
+    const formatDateForInput = (date) => {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
     for (let i = 0; i < calculateNumStubs; i++) {
       const periodEnd = new Date(currentStart);
       periodEnd.setDate(currentStart.getDate() + periodLength - 1);
@@ -623,6 +632,8 @@ export default function CanadianPaystubForm() {
         index: i,
         startDate: new Date(currentStart),
         endDate: periodEnd,
+        start: formatDateForInput(currentStart),
+        end: formatDateForInput(periodEnd),
         label: `${currentStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${periodEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
       });
       

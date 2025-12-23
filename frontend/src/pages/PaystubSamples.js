@@ -421,7 +421,7 @@ export default function PaystubSamples() {
   };
   
   return (
-    <div className="min-h-screen bg-slate-50">
+    <>
       <Helmet>
         <title>Paystub Sample Templates | MintSlip - Preview Professional Pay Stub Designs</title>
         <meta name="description" content="Browse our collection of professional paystub templates. Preview Gusto, ADP, and Workday style pay stubs. Choose your template and create accurate paystubs instantly." />
@@ -435,6 +435,7 @@ export default function PaystubSamples() {
         <link rel="canonical" href="https://mintslip.com/paystub-samples" />
       </Helmet>
       
+      <div className="min-h-screen bg-slate-50">
       <Header />
       
       {/* Hero Section */}

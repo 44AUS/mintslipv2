@@ -195,9 +195,11 @@ function DesktopNavLinks({ location, onNavigate }) {
 function MobileNavLinks({ location, onNavigate }) {
   const [taxFormsOpen, setTaxFormsOpen] = useState(false);
   const [otherFormsOpen, setOtherFormsOpen] = useState(false);
+  const [paystubsOpen, setPaystubsOpen] = useState(false);
   const isActive = (path) => location.pathname === path;
   const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
   const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
+  const isPaystubActive = location.pathname === '/paystub-generator' || location.pathname === '/paystub-samples';
   
   const getButtonClasses = (path) => {
     const base = "flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md transition-all";
@@ -209,14 +211,49 @@ function MobileNavLinks({ location, onNavigate }) {
 
   return (
     <>
-      <button
-        onClick={() => onNavigate("/paystub-generator")}
-        className={getButtonClasses("/paystub-generator")}
-        data-testid="nav-paystub-link-mobile"
-      >
-        <FileText className="w-5 h-5" />
-        <span className="text-base">Pay Stubs</span>
-      </button>
+      {/* Pay Stubs Collapsible for Mobile */}
+      <Collapsible open={paystubsOpen} onOpenChange={setPaystubsOpen}>
+        <CollapsibleTrigger asChild>
+          <button
+            className={`flex items-center justify-between gap-2 px-4 py-3 w-full rounded-md transition-all ${
+              isPaystubActive 
+                ? 'bg-green-100 text-green-800 font-semibold' 
+                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+            }`}
+            data-testid="nav-paystub-mobile"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              <span className="text-base">Pay Stubs</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${paystubsOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pl-6 space-y-1 mt-1">
+          <button
+            onClick={() => onNavigate("/paystub-generator")}
+            className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
+              isActive("/paystub-generator") 
+                ? 'bg-green-100 text-green-800 font-semibold' 
+                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Create Paystub</span>
+          </button>
+          <button
+            onClick={() => onNavigate("/paystub-samples")}
+            className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
+              isActive("/paystub-samples") 
+                ? 'bg-green-100 text-green-800 font-semibold' 
+                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Sample Templates</span>
+          </button>
+        </CollapsibleContent>
+      </Collapsible>
       
       <button
         onClick={() => onNavigate("/accounting-mockup-generator")}

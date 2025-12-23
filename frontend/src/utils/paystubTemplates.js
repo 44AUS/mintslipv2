@@ -1259,20 +1259,143 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   taxRows.push(["Employee Taxes", fmt(totalTax), fmt(ytdTotalTax || totalTax)]);
   drawWorkdayTable("Employee Taxes", taxCols, taxWidths, taxRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
 
-  // ========== 5. PRE TAX DEDUCTIONS SECTION ==========
-  const dedCols = ["Description", "Amount", "YTD"];
-  const dedWidths = [usableWidth * 0.60, usableWidth * 0.20, usableWidth * 0.20];
-  const dedRows = [];
+  // ========== 5. PRE TAX & POST TAX DEDUCTIONS SECTION (SIDE BY SIDE) ==========
+  // Helper to draw side-by-side tables
+  const drawSideBySideTables = (leftTitle, rightTitle, leftRows, rightRows, cols, options = {}) => {
+    const { rightAlignFrom = 1, whiteHeader = false, noVerticalDividers = false, borderAboveLastRow = false } = options;
+    const tableGap = 8;
+    const tableWidth = (usableWidth - tableGap) / 2;
+    const leftX = m;
+    const rightX = m + tableWidth + tableGap;
+    const startY = y;
+    const titleHeight = 14;
+    const headerHeight = 12;
+    const rowHeight = 11;
+    
+    // Calculate column widths for each table (proportional to half width)
+    const colWidths = [tableWidth * 0.50, tableWidth * 0.25, tableWidth * 0.25];
+    
+    // Helper to get alignment
+    const getAlignment = (colIndex) => colIndex >= rightAlignFrom ? 'right' : 'left';
+    
+    // Draw a single table at given X position
+    const drawTable = (x, title, rows, tableW, colW) => {
+      let localY = startY;
+      
+      // 1. Gray Title Area
+      doc.setFillColor(190, 190, 190);
+      doc.rect(x, localY, tableW, titleHeight, 'F');
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      doc.text(title, x + tableW / 2, localY + 9, { align: 'center' });
+      localY += titleHeight;
+      
+      // 2. Header Area
+      if (whiteHeader) {
+        doc.setFillColor(255, 255, 255);
+      } else {
+        doc.setFillColor(190, 190, 190);
+      }
+      doc.rect(x, localY, tableW, headerHeight, 'F');
+      
+      let currentX = x;
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      cols.forEach((col, i) => {
+        const align = getAlignment(i);
+        if (align === 'right') {
+          doc.text(col, currentX + colW[i] - 3, localY + 8, { align: 'right' });
+        } else {
+          doc.text(col, currentX + 3, localY + 8);
+        }
+        currentX += colW[i];
+      });
+      localY += headerHeight;
+      
+      // Track row positions for border above last row
+      const rowPositions = [];
+      
+      // 3. Data Rows
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+      rows.forEach((row, rowIndex) => {
+        rowPositions.push(localY);
+        currentX = x;
+        row.forEach((cell, colIndex) => {
+          const align = getAlignment(colIndex);
+          if (align === 'right') {
+            doc.text(String(cell), currentX + colW[colIndex] - 3, localY + 7, { align: 'right' });
+          } else {
+            doc.text(String(cell), currentX + 3, localY + 7);
+          }
+          currentX += colW[colIndex];
+        });
+        localY += rowHeight;
+      });
+      
+      const endY = localY;
+      
+      // 4. Draw borders
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.75);
+      doc.rect(x, startY, tableW, endY - startY);
+      
+      // Horizontal lines under title and header
+      doc.line(x, startY + titleHeight, x + tableW, startY + titleHeight);
+      doc.line(x, startY + titleHeight + headerHeight, x + tableW, startY + titleHeight + headerHeight);
+      
+      // Border above last row
+      if (borderAboveLastRow && rowPositions.length > 1) {
+        doc.setLineWidth(0.75);
+        doc.line(x, rowPositions[rowPositions.length - 1], x + tableW, rowPositions[rowPositions.length - 1]);
+      }
+      
+      return endY;
+    };
+    
+    // Draw both tables
+    const leftEndY = drawTable(leftX, leftTitle, leftRows, tableWidth, colWidths);
+    const rightEndY = drawTable(rightX, rightTitle, rightRows, tableWidth, colWidths);
+    
+    // Set y to the max of both tables
+    y = Math.max(leftEndY, rightEndY) + 6;
+  };
+  
+  // Separate deductions into pre-tax and post-tax
+  const preTaxDeductionRows = [];
+  const postTaxDeductionRows = [];
+  
   if (deductionsData && deductionsData.length > 0) {
     deductionsData.forEach(d => {
-      dedRows.push([d.name || "Deduction", fmt(d.currentAmount || 0), fmt((d.currentAmount || 0) * (ytdPayPeriods || 1))]);
+      const row = [d.name || "Deduction", fmt(d.currentAmount || 0), fmt((d.currentAmount || 0) * (ytdPayPeriods || 1))];
+      if (d.preTax === true || d.preTax === undefined) {
+        preTaxDeductionRows.push(row);
+      } else {
+        postTaxDeductionRows.push(row);
+      }
     });
   }
-  if (dedRows.length === 0) {
-    dedRows.push(["No Pre Tax Deductions", "0.00", "0.00"]);
+  
+  // Add placeholder if no deductions
+  if (preTaxDeductionRows.length === 0) {
+    preTaxDeductionRows.push(["No Pre Tax Deductions", "0.00", "0.00"]);
   }
-  dedRows.push(["Pre Tax Deductions", fmt(totalDeductions), fmt(ytdDeductions || totalDeductions)]);
-  drawWorkdayTable("Pre Tax Deductions", dedCols, dedWidths, dedRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true, borderAboveLastRow: true });
+  if (postTaxDeductionRows.length === 0) {
+    postTaxDeductionRows.push(["No Post Tax Deductions", "0.00", "0.00"]);
+  }
+  
+  // Calculate totals
+  const preTaxTotal = deductionsData ? deductionsData.filter(d => d.preTax === true || d.preTax === undefined).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  const postTaxTotal = deductionsData ? deductionsData.filter(d => d.preTax === false).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  
+  // Add totals row
+  preTaxDeductionRows.push(["Pre Tax Deductions", fmt(preTaxTotal), fmt(preTaxTotal * (ytdPayPeriods || 1))]);
+  postTaxDeductionRows.push(["Post Tax Deductions", fmt(postTaxTotal), fmt(postTaxTotal * (ytdPayPeriods || 1))]);
+  
+  const dedCols = ["Description", "Amount", "YTD"];
+  drawSideBySideTables("Pre Tax Deductions", "Post Tax Deductions", preTaxDeductionRows, postTaxDeductionRows, dedCols, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true, borderAboveLastRow: true });
 
   // ========== 6. EMPLOYER PAID BENEFITS SECTION ==========
   const benefitCols = ["Description", "Amount", "YTD"];

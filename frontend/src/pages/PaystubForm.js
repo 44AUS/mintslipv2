@@ -47,12 +47,20 @@ const PAYROLL_COMPANIES = [
 
 export default function PaystubForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get template from URL query parameter
+  const templateFromUrl = searchParams.get('template');
   
   // Location detection state
   const [userCountry, setUserCountry] = useState(null);
   const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState("template-a");
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    templateFromUrl && ['template-a', 'template-b', 'template-c'].includes(templateFromUrl) 
+      ? templateFromUrl 
+      : "template-a"
+  );
   const [pdfPreviews, setPdfPreviews] = useState([]); // Array of preview images
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);

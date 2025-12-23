@@ -1546,7 +1546,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     absenceRows.push(["PTO Plan", "0", "0", "0"]);
   }
   
-  drawSideBySideTablesCustom("Tax Withholding Information", "Absence Plans", withholdingCols, absenceCols, withholdingColWidths, absenceColWidths, withholdingRows, absenceRows, { whiteHeader: true, rowDividers: true });
+  drawSideBySideTablesCustom("Tax Withholding Information", "Absence Plans", withholdingCols, absenceCols, withholdingColWidths, absenceColWidths, withholdingRows, absenceRows, { whiteHeader: true, leftRowDividers: true, rightRowDividers: false });
 
   // ========== 8. PAYMENT INFORMATION SECTION ==========
   const paymentCols = ["Bank", "Account Name", "Account Number", "CAD Amount", "Amount"];

@@ -139,7 +139,6 @@ export default function PaystubForm() {
     { label: "Vision Insurance", value: "vision_insurance", preTax: true },
     { label: "Life Insurance", value: "life_insurance", preTax: false },
     { label: "Disability Insurance", value: "disability_insurance", preTax: false },
-    { label: "Traditional 401(k)", value: "traditional_401k", preTax: true },
     { label: "Union Dues", value: "union_dues", preTax: false },
     { label: "Garnishment", value: "garnishment", preTax: false },
     { label: "Other", value: "other", preTax: false },

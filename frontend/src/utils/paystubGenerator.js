@@ -123,8 +123,8 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency
         );
         
-        // Simple filename with date
-        const fileName = `${formData.name}-paystub-${stubData.payDate.toISOString().split('T')[0]}.pdf`;
+        // Template-specific filename with pay date
+        const fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
         console.log(`Adding ${fileName} to ZIP`);
         
         // Add PDF directly to zip root
@@ -134,10 +134,10 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         currentStartDate.setDate(currentStartDate.getDate() + periodLength);
       }
       
-      // Generate and download ZIP
+      // Generate and download ZIP with template-specific naming
       console.log("Generating ZIP file...");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      const zipFileName = `Paystubs_${formData.name || "Employee"}.zip`;
+      const zipFileName = getMultiplePaystubsZipFilename(template, formData.name);
       
       // Store download info for payment success page
       const blobUrl = URL.createObjectURL(zipBlob);

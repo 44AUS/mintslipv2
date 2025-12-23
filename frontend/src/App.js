@@ -63,6 +63,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/paystub-generator" element={<PaystubForm />} />
+            <Route path="/paystub-samples" element={<PaystubSamples />} />
             <Route path="/instant-paystub-generator" element={<PaystubForm />} />
             <Route path="/self-employed-paystub-generator" element={<PaystubForm />} />
             <Route path="/contractor-paystub-generator" element={<PaystubForm />} />

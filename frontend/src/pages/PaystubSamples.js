@@ -422,6 +422,19 @@ export default function PaystubSamples() {
   
   return (
     <div className="min-h-screen bg-slate-50">
+      <Helmet>
+        <title>Paystub Sample Templates | MintSlip - Preview Professional Pay Stub Designs</title>
+        <meta name="description" content="Browse our collection of professional paystub templates. Preview Gusto, ADP, and Workday style pay stubs. Choose your template and create accurate paystubs instantly." />
+        <meta name="keywords" content="paystub templates, pay stub samples, paystub examples, Gusto paystub, ADP paystub, Workday paystub, payroll templates, check stub templates" />
+        <meta property="og:title" content="Paystub Sample Templates | MintSlip" />
+        <meta property="og:description" content="Preview professional paystub templates. Choose from Gusto, ADP, and Workday styles. Create accurate pay stubs with automatic tax calculations." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Paystub Sample Templates | MintSlip" />
+        <meta name="twitter:description" content="Browse and preview professional paystub templates. Multiple styles available for instant download." />
+        <link rel="canonical" href="https://mintslip.com/paystub-samples" />
+      </Helmet>
+      
       <Header />
       
       {/* Hero Section */}

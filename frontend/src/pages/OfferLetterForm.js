@@ -1258,11 +1258,13 @@ export default function OfferLetterForm() {
               </div>
 
               {/* Payment Section */}
-              <div className="p-6 bg-white rounded-lg border border-slate-200">
-                <div className="text-center mb-4">
-                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</p>
-                  <p className="text-sm text-slate-500">One-time payment</p>
-                </div>
+              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Complete Payment
+                </h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  Total: <strong>$9.99</strong> for Offer Letter generation
+                </p>
                 
                 {isProcessing ? (
                   <div className="text-center py-4">
@@ -1284,10 +1286,6 @@ export default function OfferLetterForm() {
                     forceReRender={[formData.candidateName, formData.companyName]}
                   />
                 )}
-                
-                <p className="text-xs text-slate-500 text-center mt-4">
-                  Secure payment via PayPal. Your offer letter will download immediately after payment.
-                </p>
               </div>
 
             </div>

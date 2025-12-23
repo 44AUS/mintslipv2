@@ -1926,8 +1926,8 @@ export default function PaystubForm() {
                   </div>
                 )}
 
-                {/* Filing Status Section - Only for employees and not Gusto template */}
-                {formData.workerType === 'employee' && selectedTemplate !== 'template-a' && (
+                {/* Filing Status Section - Only for employees */}
+                {formData.workerType === 'employee' && (
                   <div className="space-y-4">
                     <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                       Tax Withholding (Optional)

@@ -45,6 +45,7 @@ function DesktopNavLinks({ location, onNavigate }) {
   const isActive = (path) => location.pathname === path;
   const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
   const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
+  const isPaystubActive = location.pathname === '/paystub-generator' || location.pathname === '/paystub-samples';
   
   const getButtonClasses = (path) => {
     const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
@@ -64,14 +65,39 @@ function DesktopNavLinks({ location, onNavigate }) {
 
   return (
     <>
-      <button
-        onClick={() => onNavigate("/paystub-generator")}
-        className={getButtonClasses("/paystub-generator")}
-        data-testid="nav-paystub-link"
-      >
-        <FileText className="w-4 h-4" />
-        <span className="text-sm">Pay Stubs</span>
-      </button>
+      {/* Pay Stubs Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={getDropdownTriggerClasses(isPaystubActive)}
+            data-testid="nav-paystub-dropdown"
+          >
+            <FileText className="w-4 h-4" />
+            <span className="text-sm">Pay Stubs</span>
+            <ChevronDown className="w-3 h-3 ml-1" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          <DropdownMenuItem
+            onClick={() => onNavigate("/paystub-generator")}
+            className={`flex items-center gap-2 cursor-pointer ${
+              isActive("/paystub-generator") ? 'bg-green-50 text-green-800 font-semibold' : ''
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Create Paystub</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onNavigate("/paystub-samples")}
+            className={`flex items-center gap-2 cursor-pointer ${
+              isActive("/paystub-samples") ? 'bg-green-50 text-green-800 font-semibold' : ''
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Sample Templates</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       
       <button
         onClick={() => onNavigate("/accounting-mockup-generator")}

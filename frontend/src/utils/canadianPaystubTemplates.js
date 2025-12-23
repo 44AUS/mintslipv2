@@ -1397,7 +1397,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
   }
 
-  // ========== 9. TAX WITHHOLDING INFORMATION SECTION ==========
+  // ========== 8. TAX WITHHOLDING INFORMATION SECTION ==========
   const withholdingCols = ["", "Federal", "Provincial"];
   const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
   

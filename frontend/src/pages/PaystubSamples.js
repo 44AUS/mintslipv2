@@ -180,21 +180,35 @@ async function generateSamplePreview(template) {
   const overtimePay = overtimeRate * overtime;
   const grossPay = regularPay + overtimePay;
   
-  // Tax calculations
+  // Tax calculations (Texas has no state income tax)
   const ssTax = grossPay * 0.062;
   const medTax = grossPay * 0.0145;
-  const federalTax = grossPay * 0.12; // Simplified
-  const stateTax = grossPay * 0.04; // CA rate simplified
-  const totalTax = ssTax + medTax + federalTax + stateTax;
+  const federalTax = grossPay * 0.12;
+  const stateTax = 0; // Texas - no state tax
+  const localTax = 0;
+  const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
   const netPay = grossPay - totalTax;
   
   // YTD calculations (assuming 6 pay periods)
   const ytdMultiplier = 6;
   
+  // Parse dates
+  const startDate = new Date(SAMPLE_DATA.periodStart);
+  const endDate = new Date(SAMPLE_DATA.periodEnd);
+  const payDate = new Date(SAMPLE_DATA.payDate);
+  
   const templateData = {
     formData: {
       ...SAMPLE_DATA,
       employeeName: SAMPLE_DATA.employeeName,
+      companyName: SAMPLE_DATA.companyName,
+      address: SAMPLE_DATA.address,
+      city: SAMPLE_DATA.city,
+      state: SAMPLE_DATA.state,
+      zip: SAMPLE_DATA.zip,
+      periodStart: SAMPLE_DATA.periodStart,
+      periodEnd: SAMPLE_DATA.periodEnd,
+      payDate: SAMPLE_DATA.payDate,
     },
     rate,
     hours,
@@ -207,9 +221,17 @@ async function generateSamplePreview(template) {
     medTax,
     federalTax,
     stateTax,
-    localTax: 0,
+    localTax,
     totalTax,
     netPay,
+    // Dates at top level for template
+    startDate,
+    endDate,
+    payDate,
+    payFrequency: SAMPLE_DATA.payFrequency,
+    stubNum: 1,
+    totalStubs: 1,
+    // YTD values
     ytdRegularPay: regularPay * ytdMultiplier,
     ytdOvertimePay: overtimePay * ytdMultiplier,
     ytdGrossPay: grossPay * ytdMultiplier,
@@ -224,10 +246,36 @@ async function generateSamplePreview(template) {
     ytdOvertimeHours: overtime * ytdMultiplier,
     ytdCommission: 0,
     ytdBonus: 0,
+    ytdPayPeriods: ytdMultiplier,
     commission: 0,
     bonus: 0,
+    // Deductions/Contributions
     deductionsData: [],
     contributionsData: [],
+    absencePlansData: [],
+    employerBenefitsData: [],
+    totalDeductions: 0,
+    totalContributions: 0,
+    preTaxDeductions: 0,
+    postTaxDeductions: 0,
+    preTaxContributions: 0,
+    postTaxContributions: 0,
+    totalPreTax: 0,
+    totalPostTax: 0,
+    ytdDeductions: 0,
+    ytdContributions: 0,
+    // Pay type info
+    payType: SAMPLE_DATA.payType,
+    annualSalary: SAMPLE_DATA.annualSalary,
+    workerType: SAMPLE_DATA.workerType,
+    isContractor: false,
+    // Logo
+    logoDataUrl: mintSlipLogo,
+    // Tax rates
+    stateRate: 0,
+    localTaxRate: 0,
+    sutaRate: 0,
+  };
     absencePlansData: [],
     employerBenefitsData: [],
     payType: "hourly",

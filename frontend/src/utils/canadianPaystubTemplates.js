@@ -1331,10 +1331,11 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     y = Math.max(leftEndY, rightEndY) + 6;
   };
   
-  // Separate deductions into pre-tax and post-tax
+  // Separate deductions AND contributions into pre-tax and post-tax
   const preTaxDeductionRows = [];
   const postTaxDeductionRows = [];
   
+  // Add deductions
   if (deductionsData && deductionsData.length > 0) {
     deductionsData.forEach(d => {
       const row = [d.name || "Deduction", fmt(d.currentAmount || 0), fmt((d.currentAmount || 0) * (ytdPayPeriods || 1))];
@@ -1346,7 +1347,19 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     });
   }
   
-  // Add placeholder if no deductions
+  // Add contributions (like RRSP, TFSA, etc.) to the appropriate column
+  if (contributionsData && contributionsData.length > 0) {
+    contributionsData.forEach(c => {
+      const row = [c.name || "Contribution", fmt(c.currentAmount || 0), fmt((c.currentAmount || 0) * (ytdPayPeriods || 1))];
+      if (c.preTax) {
+        preTaxDeductionRows.push(row);
+      } else {
+        postTaxDeductionRows.push(row);
+      }
+    });
+  }
+  
+  // Add placeholder if no deductions/contributions
   if (preTaxDeductionRows.length === 0) {
     preTaxDeductionRows.push(["No Pre Tax Deductions", "0.00", "0.00"]);
   }
@@ -1354,9 +1367,14 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     postTaxDeductionRows.push(["No Post Tax Deductions", "0.00", "0.00"]);
   }
   
-  // Calculate totals
-  const preTaxTotal = deductionsData ? deductionsData.filter(d => d.preTax).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
-  const postTaxTotal = deductionsData ? deductionsData.filter(d => !d.preTax).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  // Calculate totals (include both deductions and contributions)
+  const preTaxDedTotal = deductionsData ? deductionsData.filter(d => d.preTax).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  const postTaxDedTotal = deductionsData ? deductionsData.filter(d => !d.preTax).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  const preTaxContribTotal = contributionsData ? contributionsData.filter(c => c.preTax).reduce((sum, c) => sum + (c.currentAmount || 0), 0) : 0;
+  const postTaxContribTotal = contributionsData ? contributionsData.filter(c => !c.preTax).reduce((sum, c) => sum + (c.currentAmount || 0), 0) : 0;
+  
+  const preTaxTotal = preTaxDedTotal + preTaxContribTotal;
+  const postTaxTotal = postTaxDedTotal + postTaxContribTotal;
   
   // Add totals row
   preTaxDeductionRows.push(["Pre Tax Deductions", fmt(preTaxTotal), fmt(preTaxTotal * (ytdPayPeriods || 1))]);

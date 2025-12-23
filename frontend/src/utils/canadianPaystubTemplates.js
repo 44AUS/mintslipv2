@@ -1420,7 +1420,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   ];
   drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1, rowDividers: true });
 
-  // ========== 10. PAYMENT INFORMATION SECTION ==========
+  // ========== 9. PAYMENT INFORMATION SECTION ==========
   const paymentCols = ["Bank", "Account Name", "Account Number", "CAD Amount", "Amount"];
   const paymentWidths = [usableWidth * 0.15, usableWidth * 0.25, usableWidth * 0.20, usableWidth * 0.20, usableWidth * 0.20];
   const bankName = formData.bankName || "Bank";

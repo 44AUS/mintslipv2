@@ -557,6 +557,7 @@ export default function PaystubSamples() {
       </section>
       
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

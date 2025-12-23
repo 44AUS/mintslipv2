@@ -141,7 +141,6 @@ export default function CanadianPaystubForm() {
     { label: "Vision Insurance", value: "vision_insurance", preTax: true },
     { label: "Life Insurance", value: "life_insurance", preTax: false },
     { label: "Disability Insurance", value: "disability_insurance", preTax: false },
-    { label: "RRSP (Pre-Tax)", value: "rrsp_ded", preTax: true },
     { label: "Union Dues", value: "union_dues", preTax: false },
     { label: "Parking", value: "parking", preTax: false },
     { label: "Other", value: "other", preTax: false },

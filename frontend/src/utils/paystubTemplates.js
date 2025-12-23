@@ -1275,6 +1275,16 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     // Calculate column widths for each table (proportional to half width)
     const colWidths = [tableWidth * 0.50, tableWidth * 0.25, tableWidth * 0.25];
     
+    // Pad rows to make both tables the same length
+    const maxRows = Math.max(leftRows.length, rightRows.length);
+    const emptyRow = cols.map(() => "");
+    while (leftRows.length < maxRows) {
+      leftRows.splice(leftRows.length - 1, 0, emptyRow); // Insert before last (totals) row
+    }
+    while (rightRows.length < maxRows) {
+      rightRows.splice(rightRows.length - 1, 0, emptyRow); // Insert before last (totals) row
+    }
+    
     // Helper to get alignment
     const getAlignment = (colIndex) => colIndex >= rightAlignFrom ? 'right' : 'left';
     

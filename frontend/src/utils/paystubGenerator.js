@@ -26,6 +26,48 @@ function nextWeekday(date, weekday) {
   return result;
 }
 
+// Helper to format name for filenames (firstName-lastName format)
+function formatNameForFilename(name) {
+  if (!name) return 'Employee';
+  // Replace spaces with dashes and remove any special characters
+  return name.trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+}
+
+// Helper to get template-specific individual paystub filename
+function getIndividualPaystubFilename(template, name, payDate) {
+  const date = new Date(payDate);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const yearShort = String(year).slice(-2);
+  
+  switch (template) {
+    case 'template-a': // Gusto: firstName-lastName-paystub-2025-03-21.pdf
+      return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
+    
+    case 'template-c': // Workday: Payslip-03_21_2025.pdf
+      return `Payslip-${month}_${day}_${year}.pdf`;
+    
+    case 'template-b': // ADP: Name-Earning Statement_04-21-23.pdf
+      return `${formatNameForFilename(name)}-Earning Statement_${month}-${day}-${yearShort}.pdf`;
+    
+    default:
+      return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
+  }
+}
+
+// Helper to get template-specific ZIP filename for multiple paystubs
+function getMultiplePaystubsZipFilename(template, name) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const downloadDate = `${year}-${month}-${day}`;
+  
+  // All templates use the same ZIP naming format: name-paystubs-downloadDate.zip
+  return `${formatNameForFilename(name)}-paystubs-${downloadDate}.zip`;
+}
+
 export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs) => {
   try {
     console.log("Starting PDF generation...", { formData, template, numStubs });

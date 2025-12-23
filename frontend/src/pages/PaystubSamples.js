@@ -123,6 +123,25 @@ async function convertPdfToImage(pdfDataUrl, scale = 1.5) {
   return canvas.toDataURL('image/png', 0.9);
 }
 
+// Generate MintSlip logo as data URL
+function generateMintSlipLogo() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 200;
+  canvas.height = 60;
+  const ctx = canvas.getContext('2d');
+  
+  // Clear background (transparent)
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw "MintSlip" text
+  ctx.font = 'bold 36px "Segoe UI", Arial, sans-serif';
+  ctx.fillStyle = '#1a4731'; // MintSlip dark green
+  ctx.textBaseline = 'middle';
+  ctx.fillText('MintSlip', 10, 32);
+  
+  return canvas.toDataURL('image/png');
+}
+
 // Generate sample preview for a template
 async function generateSamplePreview(template) {
   const doc = new jsPDF({
@@ -134,6 +153,9 @@ async function generateSamplePreview(template) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 40;
+  
+  // Generate MintSlip logo for the preview
+  const mintSlipLogo = generateMintSlipLogo();
   
   // Calculate sample values
   const rate = SAMPLE_DATA.rate;

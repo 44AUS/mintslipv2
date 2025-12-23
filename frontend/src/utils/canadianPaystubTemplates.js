@@ -1384,24 +1384,111 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   const benefitTaxCols = ["Description", "Amount", "YTD"];
   drawSideBySideTables("Employer Paid Benefits", "Taxable Wages", benefitRows, taxableWagesRows, benefitTaxCols, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true, borderAboveLastRow: true });
 
-  // ========== 7. ABSENCE PLANS SECTION (if data provided) ==========
-  if (absencePlansData && absencePlansData.length > 0) {
-    const absenceCols = ["Description", "Accrued", "Reduced", "Available"];
-    const absenceWidths = [usableWidth * 0.40, usableWidth * 0.20, usableWidth * 0.20, usableWidth * 0.20];
-    const absenceRows = absencePlansData.map(plan => [
-      plan.description || "PTO Plan",
-      plan.accrued || "0",
-      plan.reduced || "0",
-      String((parseFloat(plan.accrued) || 0) - (parseFloat(plan.reduced) || 0))
-    ]);
-    drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
-  }
-
-  // ========== 8. TAX WITHHOLDING INFORMATION SECTION ==========
-  const withholdingCols = ["", "Federal", "Provincial"];
-  const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
+  // ========== 7. TAX WITHHOLDING & ABSENCE PLANS SECTION (SIDE BY SIDE) ==========
+  // Helper to draw side-by-side tables with different column structures
+  const drawSideBySideTablesCustom = (leftTitle, rightTitle, leftCols, rightCols, leftColWidths, rightColWidths, leftRows, rightRows, options = {}) => {
+    const { whiteHeader = false, borderAboveLastRow = false, rowDividers = false } = options;
+    const tableGap = 8;
+    const tableWidth = (usableWidth - tableGap) / 2;
+    const leftX = m;
+    const rightX = m + tableWidth + tableGap;
+    const startY = y;
+    const titleHeight = 14;
+    const headerHeight = 12;
+    const rowHeight = 11;
+    
+    // Draw a single table at given X position with custom columns
+    const drawTableCustom = (x, title, cols, colWidths, rows, tableW) => {
+      let localY = startY;
+      
+      // 1. Gray Title Area
+      doc.setFillColor(190, 190, 190);
+      doc.rect(x, localY, tableW, titleHeight, 'F');
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      doc.text(title, x + tableW / 2, localY + 9, { align: 'center' });
+      localY += titleHeight;
+      
+      // 2. Header Area
+      if (whiteHeader) {
+        doc.setFillColor(255, 255, 255);
+      } else {
+        doc.setFillColor(190, 190, 190);
+      }
+      doc.rect(x, localY, tableW, headerHeight, 'F');
+      
+      let currentX = x;
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(0, 0, 0);
+      cols.forEach((col, i) => {
+        // Right align numeric columns (all except first)
+        if (i === 0) {
+          doc.text(col, currentX + 3, localY + 8);
+        } else {
+          doc.text(col, currentX + colWidths[i] - 3, localY + 8, { align: 'right' });
+        }
+        currentX += colWidths[i];
+      });
+      localY += headerHeight;
+      
+      // Track row positions
+      const rowPositions = [];
+      
+      // 3. Data Rows
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+      rows.forEach((row, rowIndex) => {
+        rowPositions.push(localY);
+        currentX = x;
+        row.forEach((cell, colIndex) => {
+          if (colIndex === 0) {
+            doc.text(String(cell), currentX + 3, localY + 7);
+          } else {
+            doc.text(String(cell), currentX + colWidths[colIndex] - 3, localY + 7, { align: 'right' });
+          }
+          currentX += colWidths[colIndex];
+        });
+        localY += rowHeight;
+      });
+      
+      const endY = localY;
+      
+      // 4. Draw borders
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.75);
+      doc.rect(x, startY, tableW, endY - startY);
+      
+      // Horizontal lines under title and header
+      doc.line(x, startY + titleHeight, x + tableW, startY + titleHeight);
+      doc.line(x, startY + titleHeight + headerHeight, x + tableW, startY + titleHeight + headerHeight);
+      
+      // Row dividers
+      if (rowDividers && rowPositions.length > 1) {
+        for (let i = 1; i < rowPositions.length; i++) {
+          doc.line(x, rowPositions[i], x + tableW, rowPositions[i]);
+        }
+      }
+      
+      // Border above last row
+      if (borderAboveLastRow && rowPositions.length > 1) {
+        doc.setLineWidth(0.75);
+        doc.line(x, rowPositions[rowPositions.length - 1], x + tableW, rowPositions[rowPositions.length - 1]);
+      }
+      
+      return endY;
+    };
+    
+    // Draw both tables
+    const leftEndY = drawTableCustom(leftX, leftTitle, leftCols, leftColWidths, leftRows, tableWidth);
+    const rightEndY = drawTableCustom(rightX, rightTitle, rightCols, rightColWidths, rightRows, tableWidth);
+    
+    // Set y to the max of both tables
+    y = Math.max(leftEndY, rightEndY) + 6;
+  };
   
-  // Map marital status code to display text
+  // Build Tax Withholding rows (Canadian version with Provincial instead of State)
   const maritalStatusMap = {
     'single': 'Single (Never Married)',
     'married': 'Married',
@@ -1414,13 +1501,33 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   const federalAllowances = formData.federalAllowances || "0";
   const provincialAllowances = formData.provincialAllowances || "0";
   
+  const withholdingCols = ["", "Federal", "Provincial"];
+  const halfTableWidth = (usableWidth - 8) / 2;
+  const withholdingColWidths = [halfTableWidth * 0.40, halfTableWidth * 0.30, halfTableWidth * 0.30];
   const withholdingRows = [
     ["Marital Status", maritalStatusDisplay, ""],
-    ["Allowances", federalAllowances, provincialAllowances],
+    ["Allowances", federalAllowances, provincialAllowances]
   ];
-  drawWorkdayTable(null, withholdingCols, withholdingWidths, withholdingRows, { showTitle: false, rightAlignFrom: 1, rowDividers: true });
+  
+  // Build Absence Plans rows - always show, with placeholder if no data
+  const absenceCols = ["Description", "Accrued", "Reduced", "Available"];
+  const absenceColWidths = [halfTableWidth * 0.40, halfTableWidth * 0.20, halfTableWidth * 0.20, halfTableWidth * 0.20];
+  let absenceRows = [];
+  if (absencePlansData && absencePlansData.length > 0) {
+    absenceRows = absencePlansData.map(plan => [
+      plan.description || "PTO Plan",
+      plan.accrued || "0",
+      plan.reduced || "0",
+      String((parseFloat(plan.accrued) || 0) - (parseFloat(plan.reduced) || 0))
+    ]);
+  } else {
+    // Placeholder row when no absence plans data
+    absenceRows.push(["PTO Plan", "0", "0", "0"]);
+  }
+  
+  drawSideBySideTablesCustom("Tax Withholding Information", "Absence Plans", withholdingCols, absenceCols, withholdingColWidths, absenceColWidths, withholdingRows, absenceRows, { whiteHeader: true, rowDividers: true });
 
-  // ========== 9. PAYMENT INFORMATION SECTION ==========
+  // ========== 8. PAYMENT INFORMATION SECTION ==========
   const paymentCols = ["Bank", "Account Name", "Account Number", "CAD Amount", "Amount"];
   const paymentWidths = [usableWidth * 0.15, usableWidth * 0.25, usableWidth * 0.20, usableWidth * 0.20, usableWidth * 0.20];
   const bankName = formData.bankName || "Bank";

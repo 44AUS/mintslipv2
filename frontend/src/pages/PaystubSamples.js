@@ -16,49 +16,63 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLi
 const SAMPLE_DATA = {
   // Company Info
   companyName: "MintSlip",
-  address: "100 Main Street, Suite 500",
-  city: "New York",
-  state: "NY",
-  zip: "10001",
+  address: "123 Financial Way",
+  city: "Austin",
+  state: "TX",
+  zip: "78701",
+  phone: "(512) 555-0100",
+  ein: "12-3456789",
   
   // Employee Info
   employeeName: "John Doe",
-  employeeAddress: "456 Elm Avenue, Apt 3B",
-  employeeCity: "Brooklyn",
-  employeeState: "NY",
-  employeeZip: "11201",
-  employeeId: "EMP-001234",
+  employeeAddress: "456 Oak Street",
+  employeeCity: "Austin",
+  employeeState: "TX",
+  employeeZip: "78702",
+  employeeId: "1234",
   ssn: "XXX-XX-1234",
   
   // Pay Info
   payFrequency: "biweekly",
   rate: 25.00,
   hours: 80,
-  overtime: 4,
+  overtime: 0,
   commission: 0,
   bonus: 0,
   workerType: "employee",
   payType: "hourly",
-  annualSalary: 0,
+  annualSalary: 52000,
   
   // Dates
-  hireDate: "2023-01-15",
+  hireDate: "2023-06-15",
   periodStart: "2024-12-01",
   periodEnd: "2024-12-14",
+  payDate: "2024-12-20",
   
   // Tax Info
   federalFilingStatus: "single",
   stateAllowances: "1",
   includeLocalTax: false,
+  maritalStatus: "single",
+  federalExemptions: "1",
+  stateExemptions: "1",
   
   // ADP-specific fields
   companyCode: "MINT01",
-  locDept: "001/HR",
-  checkNumber: "5001",
+  locDept: "100/ADM",
+  checkNumber: "1001",
+  pageNumber: "1",
   
   // Bank Info (for ADP template)
   bankName: "Mint Bank",
   bankLast4: "1234",
+  routingNumber: "021000021",
+  accountType: "Checking",
+  
+  // Workday-specific fields
+  positionTitle: "Staff Accountant",
+  department: "Finance",
+  costCenter: "1000",
   
   // Deductions & Contributions (empty for clean sample)
   deductions: [],

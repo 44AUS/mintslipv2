@@ -14,23 +14,24 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLi
 
 // Sample data for generating previews - default preview data
 const SAMPLE_DATA = {
-  // Company Info
-  companyName: "MintSlip",
-  address: "123 Financial Way",
-  city: "Austin",
-  state: "TX",
-  zip: "78701",
-  phone: "(512) 555-0100",
+  // Company Info (template uses 'company', 'companyAddress', etc.)
+  company: "MintSlip",
+  companyAddress: "123 Financial Way",
+  companyCity: "Austin",
+  companyState: "TX",
+  companyZip: "78701",
+  companyPhone: "(512) 555-0100",
   ein: "12-3456789",
   
-  // Employee Info
-  employeeName: "John Doe",
-  employeeAddress: "456 Oak Street",
-  employeeCity: "Austin",
-  employeeState: "TX",
-  employeeZip: "78702",
+  // Employee Info (template uses 'name', 'address', 'city', etc.)
+  name: "John Doe",
+  address: "456 Oak Street",
+  city: "Austin",
+  state: "TX",
+  zip: "78702",
   employeeId: "1234",
-  ssn: "XXX-XX-1234",
+  ssn: "1234", // Just last 4 digits - template adds XXX-XX- prefix
+  bank: "1234", // Just last 4 digits of bank account
   
   // Pay Info
   payFrequency: "biweekly",

@@ -1338,7 +1338,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   if (deductionsData && deductionsData.length > 0) {
     deductionsData.forEach(d => {
       const row = [d.name || "Deduction", fmt(d.currentAmount || 0), fmt((d.currentAmount || 0) * (ytdPayPeriods || 1))];
-      if (d.preTax === true || d.preTax === undefined) {
+      if (d.preTax) {
         preTaxDeductionRows.push(row);
       } else {
         postTaxDeductionRows.push(row);
@@ -1355,8 +1355,8 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   }
   
   // Calculate totals
-  const preTaxTotal = deductionsData ? deductionsData.filter(d => d.preTax === true || d.preTax === undefined).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
-  const postTaxTotal = deductionsData ? deductionsData.filter(d => d.preTax === false).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  const preTaxTotal = deductionsData ? deductionsData.filter(d => d.preTax).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
+  const postTaxTotal = deductionsData ? deductionsData.filter(d => !d.preTax).reduce((sum, d) => sum + (d.currentAmount || 0), 0) : 0;
   
   // Add totals row
   preTaxDeductionRows.push(["Pre Tax Deductions", fmt(preTaxTotal), fmt(preTaxTotal * (ytdPayPeriods || 1))]);

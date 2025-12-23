@@ -12,29 +12,29 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Set up pdf.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
-// Sample data for generating previews - realistic computer-generated data
+// Sample data for generating previews - default preview data
 const SAMPLE_DATA = {
   // Company Info
-  companyName: "Acme Corporation Inc.",
-  address: "1234 Business Park Drive",
-  city: "San Francisco",
-  state: "CA",
-  zip: "94102",
+  companyName: "MintSlip",
+  address: "100 Main Street, Suite 500",
+  city: "New York",
+  state: "NY",
+  zip: "10001",
   
   // Employee Info
-  employeeName: "John M. Smith",
-  employeeAddress: "567 Oak Street, Apt 12",
-  employeeCity: "San Francisco",
-  employeeState: "CA",
-  employeeZip: "94103",
-  employeeId: "EMP-2024-0847",
+  employeeName: "John Doe",
+  employeeAddress: "456 Elm Avenue, Apt 3B",
+  employeeCity: "Brooklyn",
+  employeeState: "NY",
+  employeeZip: "11201",
+  employeeId: "EMP-001234",
   ssn: "XXX-XX-1234",
   
   // Pay Info
   payFrequency: "biweekly",
-  rate: 32.50,
+  rate: 25.00,
   hours: 80,
-  overtime: 8,
+  overtime: 4,
   commission: 0,
   bonus: 0,
   workerType: "employee",
@@ -42,19 +42,23 @@ const SAMPLE_DATA = {
   annualSalary: 0,
   
   // Dates
-  hireDate: "2022-03-15",
-  periodStart: new Date().toISOString().split('T')[0],
-  periodEnd: new Date(Date.now() + 13 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  hireDate: "2023-01-15",
+  periodStart: "2024-12-01",
+  periodEnd: "2024-12-14",
   
   // Tax Info
   federalFilingStatus: "single",
-  stateAllowances: "2",
+  stateAllowances: "1",
   includeLocalTax: false,
   
   // ADP-specific fields
-  companyCode: "ACME01",
-  locDept: "001/IT",
-  checkNumber: "10847",
+  companyCode: "MINT01",
+  locDept: "001/HR",
+  checkNumber: "5001",
+  
+  // Bank Info (for ADP template)
+  bankName: "Mint Bank",
+  bankLast4: "1234",
   
   // Deductions & Contributions (empty for clean sample)
   deductions: [],

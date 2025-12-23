@@ -276,14 +276,6 @@ async function generateSamplePreview(template) {
     localTaxRate: 0,
     sutaRate: 0,
   };
-    absencePlansData: [],
-    employerBenefitsData: [],
-    payType: "hourly",
-    annualSalary: 0,
-    payFrequency: "biweekly",
-    isContractor: false,
-    logoDataUrl: mintSlipLogo, // Use MintSlip logo for preview
-  };
   
   // Generate using the appropriate template
   await template.generator(doc, templateData, pageWidth, pageHeight, margin);

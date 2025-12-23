@@ -220,7 +220,7 @@ async function generateSamplePreview(template) {
     annualSalary: 0,
     payFrequency: "biweekly",
     isContractor: false,
-    logoDataUrl: null,
+    logoDataUrl: mintSlipLogo, // Use MintSlip logo for preview
   };
   
   // Generate using the appropriate template

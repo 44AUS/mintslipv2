@@ -197,29 +197,9 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
 
   y = Math.max(leftY, boxTop + boxHeight) + 20;
 
-  // ========== FILING STATUS SECTION (Optional) ==========
-  if (!isContractor && (formData.federalFilingStatus || parseInt(formData.stateAllowances) > 0)) {
-    doc.setFillColor(248, 248, 248);
-    doc.rect(left, y, usableWidth, 22, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Tax Withholding Info", left + 8, y + 8);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    let filingY = y + 17;
-    let filingX = left + 8;
-    if (formData.federalFilingStatus) {
-      doc.text(`Federal: ${formatFilingStatus(formData.federalFilingStatus)}`, filingX, filingY);
-      filingX += 140;
-    }
-    if (parseInt(formData.stateAllowances) > 0) {
-      doc.text(`State Allowances: ${formData.stateAllowances}`, filingX, filingY);
-    }
-    y += 30;
-  } else {
-    y += 10;
-  }
+  // ========== FILING STATUS SECTION - Hidden for Gusto template ==========
+  // Tax withholding info box is not shown on Gusto template PDF
+  y += 10;
 
   // ========== EARNINGS SECTION ==========
   const earningsSectionTitle = isContractor ? "Contractor Gross Earnings" : "Employee Gross Earnings";

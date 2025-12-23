@@ -1449,6 +1449,17 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     const headerHeight = 12;
     const rowHeight = 11;
     
+    // Pad rows to make both tables the same length
+    const maxRows = Math.max(leftRows.length, rightRows.length);
+    const emptyLeftRow = leftCols.map(() => "");
+    const emptyRightRow = rightCols.map(() => "");
+    while (leftRows.length < maxRows) {
+      leftRows.push(emptyLeftRow);
+    }
+    while (rightRows.length < maxRows) {
+      rightRows.push(emptyRightRow);
+    }
+    
     // Draw a single table at given X position with custom columns
     const drawTableCustom = (x, title, cols, colWidths, rows, tableW) => {
       let localY = startY;

@@ -1439,7 +1439,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     drawWorkdayTable("Absence Plans", absenceCols, absenceWidths, absenceRows, { rightAlignFrom: 1, whiteHeader: true, noVerticalDividers: true });
   }
 
-  // ========== 9. TAX WITHHOLDING INFORMATION SECTION ==========
+  // ========== 8. TAX WITHHOLDING INFORMATION SECTION ==========
   const withholdingCols = ["", "Federal", "State"];
   const withholdingWidths = [usableWidth * 0.40, usableWidth * 0.30, usableWidth * 0.30];
   // Use federalFilingStatus from earlier Tax Withholding section, map to display text

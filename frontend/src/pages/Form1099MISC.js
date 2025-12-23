@@ -870,11 +870,13 @@ export default function Form1099MISC() {
               </div>
 
               {/* Payment Section */}
-              <div className="p-6 bg-white rounded-lg border border-slate-200">
-                <div className="text-center mb-4">
-                  <p className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</p>
-                  <p className="text-sm text-slate-500">One-time payment</p>
-                </div>
+              <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
+                <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Complete Payment
+                </h3>
+                <p className="text-sm text-slate-600 mb-4">
+                  Total: <strong>$9.99</strong> for 1099-MISC generation
+                </p>
                 
                 {isProcessing ? (
                   <div className="text-center py-4">
@@ -886,16 +888,12 @@ export default function Form1099MISC() {
                   </div>
                 ) : (
                   <PayPalButtons
-                    style={{ layout: "vertical", color: "gold", shape: "rect" }}
+                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
                     createOrder={createOrder}
                     onApprove={onApprove}
                     onError={onError}
                   />
                 )}
-                
-                <p className="text-xs text-slate-500 text-center mt-4">
-                  Secure payment via PayPal. Your 1099-MISC will download immediately after payment.
-                </p>
               </div>
 
             </div>

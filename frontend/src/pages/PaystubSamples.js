@@ -89,7 +89,7 @@ const TEMPLATES = [
     description: "Clean, modern paystub design inspired by Gusto payroll. Features a compact layout with clear earnings breakdown, tax withholdings, and YTD totals. Perfect for small to medium businesses.",
     features: ["Modern clean design", "Compact single-page layout", "Clear earnings breakdown", "Employee & employer info sections"],
     generator: generateTemplateA,
-    color: "#00aa6c", // Gusto green
+    color: "#F4A460", // Orange peachy
   },
   {
     id: "template-b",

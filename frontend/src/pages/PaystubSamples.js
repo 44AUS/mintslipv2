@@ -201,15 +201,7 @@ async function generateSamplePreview(template) {
   const templateData = {
     formData: {
       ...SAMPLE_DATA,
-      employeeName: SAMPLE_DATA.employeeName,
-      companyName: SAMPLE_DATA.companyName,
-      address: SAMPLE_DATA.address,
-      city: SAMPLE_DATA.city,
-      state: SAMPLE_DATA.state,
-      zip: SAMPLE_DATA.zip,
-      periodStart: SAMPLE_DATA.periodStart,
-      periodEnd: SAMPLE_DATA.periodEnd,
-      payDate: SAMPLE_DATA.payDate,
+      // These are already correct in SAMPLE_DATA with proper field names
     },
     rate,
     hours,

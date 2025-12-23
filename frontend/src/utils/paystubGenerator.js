@@ -154,13 +154,14 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       
-      await generateSingleStub(
+      const stubData = await generateSingleStub(
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, stateRate,
         payDay, pageWidth, pageHeight, 1, payFrequency
       );
       
-      const pdfFileName = `PayStub-${formData.name || "document"}.pdf`;
+      // Template-specific filename with pay date
+      const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
       
       // Store download info for payment success page
       const pdfBlob = doc.output('blob');

@@ -1397,7 +1397,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
   // ========== 7. TAX WITHHOLDING & ABSENCE PLANS SECTION (SIDE BY SIDE) ==========
   // Helper to draw side-by-side tables with different column structures
   const drawSideBySideTablesCustom = (leftTitle, rightTitle, leftCols, rightCols, leftColWidths, rightColWidths, leftRows, rightRows, options = {}) => {
-    const { whiteHeader = false, borderAboveLastRow = false, rowDividers = false } = options;
+    const { whiteHeader = false, borderAboveLastRow = false, leftRowDividers = false, rightRowDividers = false } = options;
     const tableGap = 8;
     const tableWidth = (usableWidth - tableGap) / 2;
     const leftX = m;
@@ -1419,7 +1419,7 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     }
     
     // Draw a single table at given X position with custom columns
-    const drawTableCustom = (x, title, cols, colWidths, rows, tableW) => {
+    const drawTableCustom = (x, title, cols, colWidths, rows, tableW, showRowDividers) => {
       let localY = startY;
       
       // 1. Gray Title Area
@@ -1485,8 +1485,8 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       doc.line(x, startY + titleHeight, x + tableW, startY + titleHeight);
       doc.line(x, startY + titleHeight + headerHeight, x + tableW, startY + titleHeight + headerHeight);
       
-      // Row dividers
-      if (rowDividers && rowPositions.length > 1) {
+      // Row dividers (only if enabled for this table)
+      if (showRowDividers && rowPositions.length > 1) {
         for (let i = 1; i < rowPositions.length; i++) {
           doc.line(x, rowPositions[i], x + tableW, rowPositions[i]);
         }
@@ -1501,9 +1501,9 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       return endY;
     };
     
-    // Draw both tables
-    const leftEndY = drawTableCustom(leftX, leftTitle, leftCols, leftColWidths, leftRows, tableWidth);
-    const rightEndY = drawTableCustom(rightX, rightTitle, rightCols, rightColWidths, rightRows, tableWidth);
+    // Draw both tables with their respective row divider settings
+    const leftEndY = drawTableCustom(leftX, leftTitle, leftCols, leftColWidths, leftRows, tableWidth, leftRowDividers);
+    const rightEndY = drawTableCustom(rightX, rightTitle, rightCols, rightColWidths, rightRows, tableWidth, rightRowDividers);
     
     // Set y to the max of both tables
     y = Math.max(leftEndY, rightEndY) + 6;

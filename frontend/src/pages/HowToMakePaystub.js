@@ -353,7 +353,7 @@ export default function HowToMakePaystub() {
               Paystubs serve multiple important purposes in today&apos;s financial landscape. For employees, they provide a clear breakdown of earnings and deductions, helping you verify that your pay is correct and understand where your money goes. For self-employed individuals and contractors, paystubs serve as proof of income for loan applications, apartment rentals, and other financial transactions.
             </p>
 
-            <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg mb-8">
+            <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg mb-4">
               <h3 className="font-bold text-green-800 mb-3">Common Uses for Paystubs</h3>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-700">
                 <li className="flex items-center gap-2">
@@ -382,6 +382,10 @@ export default function HowToMakePaystub() {
                 </li>
               </ul>
             </div>
+
+            <p className="text-sm text-slate-500 italic mb-8">
+              <strong>Important:</strong> MintSlip is intended for lawful and legitimate use only. Users are responsible for ensuring all information entered is accurate and compliant with applicable laws and requirements.
+            </p>
           </div>
         </div>
       </section>

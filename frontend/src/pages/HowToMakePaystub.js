@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { 
   FileText, 
@@ -23,14 +23,220 @@ import {
   Zap,
   MousePointer,
   Edit3,
-  CreditCard
+  CreditCard,
+  Expand,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import select from '../assests/select.png';
 import inputInfo from '../assests/inputInfo.png';
 import download from '../assests/download.png';
+import { jsPDF } from "jspdf";
+import { generateTemplateA, generateTemplateB, generateTemplateC } from "@/utils/paystubTemplates";
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set up pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+// Sample data for generating previews
+const SAMPLE_DATA = {
+  company: "MintSlip",
+  companyAddress: "123 Financial Way",
+  companyCity: "Austin",
+  companyState: "TX",
+  companyZip: "78701",
+  companyPhone: "(512) 555-0100",
+  ein: "12-3456789",
+  name: "John Doe",
+  address: "456 Oak Street",
+  city: "Austin",
+  state: "TX",
+  zip: "78702",
+  employeeId: "1234",
+  ssn: "1234",
+  bank: "1234",
+  payFrequency: "biweekly",
+  rate: 25.00,
+  hours: 80,
+  overtime: 0,
+  commission: 0,
+  bonus: 0,
+  workerType: "employee",
+  payType: "hourly",
+  annualSalary: 52000,
+  hireDate: "2023-06-15",
+  periodStart: "2024-12-01",
+  periodEnd: "2024-12-14",
+  payDate: "2024-12-20",
+  federalFilingStatus: "single",
+  stateAllowances: "1",
+  includeLocalTax: false,
+  maritalStatus: "single",
+  federalExemptions: "1",
+  stateExemptions: "1",
+  companyCode: "MINT01",
+  locDept: "100/ADM",
+  checkNumber: "1001",
+  pageNumber: "1",
+  bankName: "Mint Bank",
+  bankLast4: "1234",
+  routingNumber: "021000021",
+  accountType: "Checking",
+  positionTitle: "Staff Accountant",
+  department: "Finance",
+  costCenter: "1000",
+  deductions: [],
+  contributions: [],
+  absencePlans: [],
+  employerBenefits: [],
+};
+
+// Template configurations
+const TEMPLATES = [
+  {
+    id: "template-a",
+    name: "Gusto Style",
+    description: "Clean, modern paystub design inspired by Gusto payroll. Features a compact layout with clear earnings breakdown.",
+    features: ["Modern clean design", "Compact single-page layout", "Clear earnings breakdown", "Employee & employer info sections"],
+    generator: generateTemplateA,
+    color: "#F4A460",
+  },
+  {
+    id: "template-b",
+    name: "ADP Style",
+    description: "Professional enterprise-style paystub matching ADP's Earnings Statement format with detailed tax sections.",
+    features: ["Enterprise professional format", "Detailed tax breakdown", "Marital status & exemptions", "Check stub with bank info"],
+    generator: generateTemplateB,
+    color: "#d0271d",
+  },
+  {
+    id: "template-c",
+    name: "Workday Style",
+    description: "Corporate HR-focused paystub design inspired by Workday. Features absence plan tracking and employer benefits.",
+    features: ["Corporate HR style", "Absence plan tracking", "Employer benefits section", "Side-by-side tables"],
+    generator: generateTemplateC,
+    color: "#0066cc",
+  },
+];
+
+// Convert PDF to image
+async function convertPdfToImage(pdfDataUrl, scale = 1.5) {
+  const base64Data = pdfDataUrl.split(',')[1];
+  const binaryString = atob(base64Data);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  
+  const loadingTask = pdfjsLib.getDocument({ data: bytes.buffer });
+  const pdf = await loadingTask.promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale });
+  
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  
+  await page.render({
+    canvasContext: context,
+    viewport: viewport
+  }).promise;
+  
+  return canvas.toDataURL('image/png', 0.9);
+}
+
+// Generate MintSlip logo
+function generateMintSlipLogo() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 200;
+  canvas.height = 60;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = 'bold 36px "Segoe UI", Arial, sans-serif';
+  ctx.fillStyle = '#1a4731';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('MintSlip', 10, 32);
+  return canvas.toDataURL('image/png');
+}
+
+// Generate sample preview for a template
+async function generateSamplePreview(template) {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "pt",
+    format: "letter",
+  });
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
+  const mintSlipLogo = generateMintSlipLogo();
+  
+  const rate = SAMPLE_DATA.rate;
+  const hours = SAMPLE_DATA.hours;
+  const overtime = SAMPLE_DATA.overtime;
+  const regularPay = rate * hours;
+  const overtimeRate = rate * 1.5;
+  const overtimePay = overtimeRate * overtime;
+  const grossPay = regularPay + overtimePay;
+  
+  const ssTax = grossPay * 0.062;
+  const medTax = grossPay * 0.0145;
+  const federalTax = grossPay * 0.12;
+  const stateTax = 0;
+  const localTax = 0;
+  const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
+  const netPay = grossPay - totalTax;
+  
+  const ytdMultiplier = 6;
+  const startDate = new Date(SAMPLE_DATA.periodStart);
+  const endDate = new Date(SAMPLE_DATA.periodEnd);
+  const payDate = new Date(SAMPLE_DATA.payDate);
+  
+  const templateData = {
+    formData: { ...SAMPLE_DATA },
+    rate, hours, overtime, overtimeRate, regularPay, overtimePay, grossPay,
+    ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay,
+    startDate, endDate, payDate,
+    payFrequency: SAMPLE_DATA.payFrequency,
+    stubNum: 1, totalStubs: 1,
+    ytdRegularPay: regularPay * ytdMultiplier,
+    ytdOvertimePay: overtimePay * ytdMultiplier,
+    ytdGrossPay: grossPay * ytdMultiplier,
+    ytdSsTax: ssTax * ytdMultiplier,
+    ytdMedTax: medTax * ytdMultiplier,
+    ytdFederalTax: federalTax * ytdMultiplier,
+    ytdStateTax: stateTax * ytdMultiplier,
+    ytdLocalTax: 0,
+    ytdTotalTax: totalTax * ytdMultiplier,
+    ytdNetPay: netPay * ytdMultiplier,
+    ytdHours: hours * ytdMultiplier,
+    ytdOvertimeHours: overtime * ytdMultiplier,
+    ytdCommission: 0, ytdBonus: 0, ytdPayPeriods: ytdMultiplier,
+    commission: 0, bonus: 0,
+    deductionsData: [], contributionsData: [], absencePlansData: [], employerBenefitsData: [],
+    totalDeductions: 0, totalContributions: 0,
+    preTaxDeductions: 0, postTaxDeductions: 0,
+    preTaxContributions: 0, postTaxContributions: 0,
+    totalPreTax: 0, totalPostTax: 0,
+    ytdDeductions: 0, ytdContributions: 0,
+    payType: SAMPLE_DATA.payType,
+    annualSalary: SAMPLE_DATA.annualSalary,
+    workerType: SAMPLE_DATA.workerType,
+    isContractor: false,
+    logoDataUrl: mintSlipLogo,
+    stateRate: 0, localTaxRate: 0, sutaRate: 0,
+  };
+  
+  await template.generator(doc, templateData, pageWidth, pageHeight, margin);
+  const pdfDataUrl = doc.output('datauristring');
+  return await convertPdfToImage(pdfDataUrl, 2);
+}
 
 // FAQ Accordion Component
 const FAQItem = ({ question, answer, isOpen, onClick }) => (

@@ -504,7 +504,7 @@ export default function HowToMakePaystub() {
                   </div>
                   
                   <p className="text-slate-600 mb-6 leading-relaxed">
-                    Fill in your details in our intuitive form. Our smart system automatically calculates taxes and deductions based on current rates. Here's what you'll need:
+                    Fill in your details in our intuitive form. Our smart system automatically calculates taxes and deductions based on current rates. Here&apos;s what you&apos;ll need:
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

@@ -747,15 +747,15 @@ export default function HowToMakePaystub() {
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">Paystubs for Different Worker Types</h3>
 
             <p className="text-slate-600 leading-relaxed mb-4">
-              <strong>W-2 Employees</strong> receive the most comprehensive paystubs with all taxes automatically withheld. Employers are legally required to withhold federal, state, and FICA taxes from each paycheck. If you're a W-2 employee needing documentation, MintSlip creates authentic-looking paystubs that match what major employers provide.
+              <strong>W-2 Employees</strong> receive the most comprehensive paystubs with all taxes automatically withheld. Employers are legally required to withhold federal, state, and FICA taxes from each paycheck. If you&apos;re a W-2 employee needing documentation, MintSlip creates authentic-looking paystubs that match what major employers provide.
             </p>
 
             <p className="text-slate-600 leading-relaxed mb-4">
-              <strong>1099 Contractors</strong> are responsible for their own taxes, so their payment statements don't include tax withholdings. Instead, contractors receive the full payment amount and must make quarterly estimated tax payments. MintSlip offers a contractor paystub option that clearly shows the payment without misleading tax withholding information.
+              <strong>1099 Contractors</strong> are responsible for their own taxes, so their payment statements don&apos;t include tax withholdings. Instead, contractors receive the full payment amount and must make quarterly estimated tax payments. MintSlip offers a contractor paystub option that clearly shows the payment without misleading tax withholding information.
             </p>
 
             <p className="text-slate-600 leading-relaxed mb-4">
-              <strong>Self-Employed Individuals</strong> often need to create paystubs as proof of income even though they don't receive traditional paychecks. Whether you're a freelancer, gig worker, or small business owner, MintSlip helps you document your earnings professionally for mortgage applications, rental agreements, or other financial purposes.
+              <strong>Self-Employed Individuals</strong> often need to create paystubs as proof of income even though they don&apos;t receive traditional paychecks. Whether you&apos;re a freelancer, gig worker, or small business owner, MintSlip helps you document your earnings professionally for mortgage applications, rental agreements, or other financial purposes.
             </p>
 
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">Best Practices for Creating Paystubs</h3>
@@ -766,10 +766,10 @@ export default function HowToMakePaystub() {
 
             <ol className="list-decimal pl-6 mb-4 text-slate-600 space-y-3">
               <li><strong>Double-check all personal information</strong> - Names, addresses, and identification numbers must be accurate</li>
-              <li><strong>Use correct pay period dates</strong> - The pay period should accurately reflect the dates you're documenting</li>
+              <li><strong>Use correct pay period dates</strong> - The pay period should accurately reflect the dates you&apos;re documenting</li>
               <li><strong>Verify hourly rates or salary</strong> - Ensure your compensation matches your actual agreement</li>
               <li><strong>Account for overtime correctly</strong> - Overtime is typically paid at 1.5x your regular rate</li>
-              <li><strong>Include all relevant deductions</strong> - Don't forget health insurance, retirement contributions, or other regular deductions</li>
+              <li><strong>Include all relevant deductions</strong> - Don&apos;t forget health insurance, retirement contributions, or other regular deductions</li>
               <li><strong>Keep records</strong> - Save copies of all paystubs for tax purposes and financial documentation</li>
             </ol>
 

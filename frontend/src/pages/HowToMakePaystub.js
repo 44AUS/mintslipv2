@@ -453,7 +453,7 @@ export default function HowToMakePaystub() {
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-sm text-blue-800">
-                      <strong>Pro Tip:</strong> Choose a template that matches your employer's actual payroll provider for the most authentic appearance.
+                      <strong>Pro Tip:</strong> Choose a template that matches your employer&apos;s actual payroll provider for the most authentic appearance.
                     </p>
                   </div>
                 </div>

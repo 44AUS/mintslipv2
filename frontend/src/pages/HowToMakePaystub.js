@@ -346,11 +346,11 @@ export default function HowToMakePaystub() {
             </h2>
             
             <p className="text-slate-600 text-lg leading-relaxed mb-6">
-              A <strong>paystub</strong> (also called a pay stub, paycheck stub, or earnings statement) is a document that itemizes your earnings for a specific pay period. It shows your gross pay, deductions for taxes and benefits, and your net (take-home) pay. Whether you're an employee, freelancer, or small business owner, understanding how to make a paystub is essential for financial documentation.
+              A <strong>paystub</strong> (also called a pay stub, paycheck stub, or earnings statement) is a document that itemizes your earnings for a specific pay period. It shows your gross pay, deductions for taxes and benefits, and your net (take-home) pay. Whether you&apos;re an employee, freelancer, or small business owner, understanding how to make a paystub is essential for financial documentation.
             </p>
 
             <p className="text-slate-600 text-lg leading-relaxed mb-6">
-              Paystubs serve multiple important purposes in today's financial landscape. For employees, they provide a clear breakdown of earnings and deductions, helping you verify that your pay is correct and understand where your money goes. For self-employed individuals and contractors, paystubs serve as proof of income for loan applications, apartment rentals, and other financial transactions.
+              Paystubs serve multiple important purposes in today&apos;s financial landscape. For employees, they provide a clear breakdown of earnings and deductions, helping you verify that your pay is correct and understand where your money goes. For self-employed individuals and contractors, paystubs serve as proof of income for loan applications, apartment rentals, and other financial transactions.
             </p>
 
             <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg mb-8">

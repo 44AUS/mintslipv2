@@ -362,7 +362,7 @@ export default function HowToMakePaystub() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Mortgage and loan applications</span>
+                  <span>Mortgage and loan documentation</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -370,15 +370,15 @@ export default function HowToMakePaystub() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Proof of employment</span>
+                  <span>Proof of employment or income</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Child support documentation</span>
+                  <span>Child support and income verification</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span>Government benefit applications</span>
+                  <span>Government benefit eligibility documentation</span>
                 </li>
               </ul>
             </div>

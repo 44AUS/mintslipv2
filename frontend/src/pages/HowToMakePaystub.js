@@ -501,27 +501,6 @@ export default function HowToMakePaystub() {
     }
   ];
 
-  const templates = [
-    {
-      name: "Gusto-Style Template",
-      description: "Clean, modern design used by 300,000+ businesses",
-      features: ["Modern layout", "Clear earnings breakdown", "Digital-first design"],
-      imageBg: "bg-gradient-to-br from-green-600 to-green-800"
-    },
-    {
-      name: "ADP-Style Template",
-      description: "Classic corporate paystub format",
-      features: ["Traditional format", "Detailed tax sections", "Professional appearance"],
-      imageBg: "bg-gradient-to-br from-red-600 to-red-800"
-    },
-    {
-      name: "Workday-Style Template",
-      description: "Enterprise-grade paystub layout",
-      features: ["Enterprise format", "Comprehensive details", "YTD tracking"],
-      imageBg: "bg-gradient-to-br from-orange-500 to-orange-700"
-    }
-  ];
-
   // Schema.org structured data for SEO
   const schemaData = {
     "@context": "https://schema.org",

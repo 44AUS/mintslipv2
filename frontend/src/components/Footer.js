@@ -27,6 +27,7 @@ const FOOTER_LINKS = {
       { name: "About Us", path: "/about" },
       { name: "Contact", path: "/contact" },
       { name: "FAQ", path: "/faq" },
+      { name: "How to Make a Paystub", path: "/how-to-make-a-paystub" },
     ]
   },
   legal: {

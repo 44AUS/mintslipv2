@@ -109,16 +109,12 @@ const TemplateCard = ({ name, description, features, imageBg }) => {
 export default function HowToMakePaystub() {
   const navigate = useNavigate();
   const [openFAQ, setOpenFAQ] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+  const [isVisible] = useState(true);
 
   const faqs = [
     {
       question: "What information do I need to create a paystub?",
-      answer: "To create an accurate paystub, you'll need: your employer's name and address, employee name and details, pay period dates, hourly rate or salary, hours worked, federal and state tax information, and any deductions like insurance or retirement contributions. Our generator guides you through each field step by step."
+      answer: "To create an accurate paystub, you&apos;ll need: your employer&apos;s name and address, employee name and details, pay period dates, hourly rate or salary, hours worked, federal and state tax information, and any deductions like insurance or retirement contributions. Our generator guides you through each field step by step."
     },
     {
       question: "How long does it take to generate a paystub with MintSlip?",

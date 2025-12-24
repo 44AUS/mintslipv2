@@ -13,6 +13,7 @@ import OfferLetterForm from "@/pages/OfferLetterForm";
 import ScheduleCForm from "@/pages/ScheduleCForm";
 import VehicleBillOfSaleForm from "@/pages/VehicleBillOfSaleForm";
 import UtilityBillForm from "@/pages/UtilityBillForm";
+import HowToMakePaystub from "@/pages/HowToMakePaystub";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
 import About from "@/pages/About";

@@ -1,106 +1,170 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
   <url>
-    <loc>https://www.mintslip.com/</loc>
+    <loc>https://mintslip.com/</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
+  <!-- Paystub Generators -->
   <url>
-    <loc>https://www.mintslip.com/self-employed-paystub-generator</loc>
+    <loc>https://mintslip.com/paystub-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://www.mintslip.com/canadian-employed-paystub-generator</loc>
+    <loc>https://mintslip.com/paystub-samples</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.mintslip.com/instant-paystub-generator</loc>
+    <loc>https://mintslip.com/instant-paystub-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.mintslip.com/contractor-paystub-generator</loc>
+    <loc>https://mintslip.com/self-employed-paystub-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.mintslip.com/accounting-mockup-generator</loc>
+    <loc>https://mintslip.com/contractor-paystub-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/service-expense-generator</loc>
+  <url>
+    <loc>https://mintslip.com/canadian-paystub-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/w2-generator</loc>
+  <!-- Tax Forms -->
+  <url>
+    <loc>https://mintslip.com/w2-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/w9-generator</loc>
+  <url>
+    <loc>https://mintslip.com/w9-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/1099-nec-generator</loc>
+  <url>
+    <loc>https://mintslip.com/1099-nec-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/1099-misc-generator</loc>
+  <url>
+    <loc>https://mintslip.com/1099-misc-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/schedule-c-generator</loc>
+  <url>
+    <loc>https://mintslip.com/schedule-c-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/offer-letter-generator</loc>
+  <!-- Other Document Generators -->
+  <url>
+    <loc>https://mintslip.com/accounting-mockup-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/vehicle-bill-of-sale-generator</loc>
+  <url>
+    <loc>https://mintslip.com/offer-letter-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/contact</loc>
+  <url>
+    <loc>https://mintslip.com/vehicle-bill-of-sale-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/about</loc>
+  <url>
+    <loc>https://mintslip.com/service-expense-generator</loc>
+    <lastmod>2025-01-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
-    <url>
-    <loc>https://www.mintslip.com/faq</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+  <!-- SEO Content Pages -->
+  <url>
+    <loc>https://mintslip.com/how-to-make-a-paystub</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Company Pages -->
+  <url>
+    <loc>https://mintslip.com/about</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://mintslip.com/contact</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://mintslip.com/faq</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://mintslip.com/reviews</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://mintslip.com/privacy</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://mintslip.com/terms</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
 
 </urlset>

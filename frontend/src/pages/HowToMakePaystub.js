@@ -960,8 +960,14 @@ export default function HowToMakePaystub() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {templates.map((template, idx) => (
-              <TemplateCard key={idx} {...template} />
+            {TEMPLATES.map((template) => (
+              <TemplatePreviewCard
+                key={template.id}
+                template={template}
+                previewImage={previews[template.id]}
+                isLoading={loading[template.id]}
+                onUseTemplate={handleUseTemplate}
+              />
             ))}
           </div>
 

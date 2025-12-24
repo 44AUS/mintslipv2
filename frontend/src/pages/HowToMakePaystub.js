@@ -398,6 +398,30 @@ export default function HowToMakePaystub() {
   const navigate = useNavigate();
   const [openFAQ, setOpenFAQ] = useState(0);
   const [isVisible] = useState(true);
+  const [previews, setPreviews] = useState({});
+  const [loading, setLoading] = useState({});
+  
+  // Generate previews on mount
+  useEffect(() => {
+    const generateAllPreviews = async () => {
+      for (const template of TEMPLATES) {
+        setLoading(prev => ({ ...prev, [template.id]: true }));
+        try {
+          const preview = await generateSamplePreview(template);
+          setPreviews(prev => ({ ...prev, [template.id]: preview }));
+        } catch (error) {
+          console.error(`Error generating preview for ${template.name}:`, error);
+        }
+        setLoading(prev => ({ ...prev, [template.id]: false }));
+      }
+    };
+    
+    generateAllPreviews();
+  }, []);
+  
+  const handleUseTemplate = (templateId) => {
+    navigate(`/paystub-generator?template=${templateId}`);
+  };
 
   const faqs = [
     {

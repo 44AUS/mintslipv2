@@ -78,6 +78,7 @@ function App() {
             <Route path="/schedule-c-generator" element={<ScheduleCForm />} />
             <Route path="/vehicle-bill-of-sale-generator" element={<VehicleBillOfSaleForm />} />
             <Route path="/service-expense-generator" element={<UtilityBillForm />} />
+            <Route path="/how-to-make-a-paystub" element={<HowToMakePaystub />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/faq" element={<FAQ />} />

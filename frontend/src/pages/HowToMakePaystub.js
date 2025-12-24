@@ -578,7 +578,7 @@ export default function HowToMakePaystub() {
                   </div>
                   
                   <p className="text-slate-600 mb-6 leading-relaxed">
-                    Before finalizing, you'll see a live preview of your paystub with a MintSlip watermark. This lets you verify all information is correct. Once satisfied:
+                    Before finalizing, you&apos;ll see a live preview of your paystub with a MintSlip watermark. This lets you verify all information is correct. Once satisfied:
                   </p>
                   
                   <ol className="space-y-4 mb-6">

@@ -695,7 +695,7 @@ export default function HowToMakePaystub() {
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">Understanding Paystub Components</h3>
             
             <p className="text-slate-600 leading-relaxed mb-4">
-              Before you learn how to make a paystub, it's important to understand what information a professional pay stub contains. Every paystub, regardless of the template or employer, includes several key sections that break down your compensation and deductions.
+              Before you learn how to make a paystub, it&apos;s important to understand what information a professional pay stub contains. Every paystub, regardless of the template or employer, includes several key sections that break down your compensation and deductions.
             </p>
 
             <p className="text-slate-600 leading-relaxed mb-4">
@@ -703,7 +703,7 @@ export default function HowToMakePaystub() {
             </p>
 
             <p className="text-slate-600 leading-relaxed mb-4">
-              <strong>Federal Income Tax</strong> is withheld based on the information you provided on your W-4 form. The amount withheld depends on your filing status, number of dependents, and whether you've elected additional withholding. MintSlip's paystub generator uses current IRS tax tables to calculate accurate federal withholding amounts.
+              <strong>Federal Income Tax</strong> is withheld based on the information you provided on your W-4 form. The amount withheld depends on your filing status, number of dependents, and whether you&apos;ve elected additional withholding. MintSlip&apos;s paystub generator uses current IRS tax tables to calculate accurate federal withholding amounts.
             </p>
 
             <p className="text-slate-600 leading-relaxed mb-4">

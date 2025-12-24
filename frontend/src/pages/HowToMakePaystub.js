@@ -282,30 +282,112 @@ const InternalLinkCard = ({ title, description, path, icon: Icon }) => {
   );
 };
 
-// Template Preview Card
-const TemplateCard = ({ name, description, features, imageBg }) => {
-  const navigate = useNavigate();
+// Template Preview Card with actual PDF preview
+const TemplatePreviewCard = ({ template, previewImage, isLoading, onUseTemplate }) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
-      <div className={`h-40 ${imageBg} flex items-center justify-center`}>
-        <FileText className="w-16 h-16 text-white/80" />
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+      {/* Preview Image */}
+      <div className="relative aspect-[8.5/11] bg-slate-100 overflow-hidden">
+        {isLoading ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+          </div>
+        ) : previewImage ? (
+          <>
+            <img 
+              src={previewImage} 
+              alt={`${template.name} preview`}
+              className="w-full h-full object-cover object-top"
+            />
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <FileText className="w-16 h-16 text-slate-300" />
+          </div>
+        )}
+        
+        {/* Template name badge */}
+        <div 
+          className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-white text-sm font-semibold shadow-lg"
+          style={{ backgroundColor: template.color }}
+        >
+          {template.name}
+        </div>
+        
+        {/* Expand button */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <button 
+              className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors"
+              disabled={isLoading || !previewImage}
+            >
+              <Expand className="w-4 h-4 text-slate-700" />
+            </button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <span 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: template.color }}
+                />
+                {template.name} Preview
+              </DialogTitle>
+            </DialogHeader>
+            {previewImage && (
+              <div className="mt-4">
+                <img 
+                  src={previewImage} 
+                  alt={`${template.name} full preview`}
+                  className="w-full rounded-lg border border-slate-200 shadow-lg"
+                />
+              </div>
+            )}
+            <div className="mt-4 flex justify-end">
+              <Button 
+                onClick={() => {
+                  setDialogOpen(false);
+                  onUseTemplate(template.id);
+                }}
+                className="bg-green-700 hover:bg-green-800"
+              >
+                Use This Template
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
+      
+      {/* Card Content */}
       <div className="p-5">
-        <h4 className="font-bold text-lg text-slate-800 mb-2">{name}</h4>
-        <p className="text-sm text-slate-500 mb-4">{description}</p>
-        <ul className="space-y-2 mb-4">
-          {features.map((feature, idx) => (
+        <h3 className="text-lg font-bold text-slate-800 mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
+          {template.name}
+        </h3>
+        <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+          {template.description}
+        </p>
+        
+        {/* Features list */}
+        <ul className="space-y-1.5 mb-5">
+          {template.features.map((feature, idx) => (
             <li key={idx} className="flex items-center gap-2 text-sm text-slate-600">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
               {feature}
             </li>
           ))}
         </ul>
-        <Button
-          onClick={() => navigate("/paystub-generator")}
-          className="w-full bg-green-700 hover:bg-green-800"
+        
+        {/* Action Button */}
+        <Button 
+          onClick={() => onUseTemplate(template.id)}
+          className="w-full bg-green-700 hover:bg-green-800 text-white"
         >
           Use This Template
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
     </div>

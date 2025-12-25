@@ -1637,3 +1637,459 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
     doc.text("Error generating document. Please check your inputs.", 40, 100);
   }
 }
+
+// Template H: Modern Colorful Pay Stub with Blue Headers and Orange Accents (Canadian)
+// Exact match to the provided screenshot design with Canadian tax fields
+export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, margin) {
+  const { 
+    formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
+    cpp, ei, qpip, federalTax, provincialTax, totalTax, netPay, rate, 
+    startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
+    ytdGrossPay = grossPay, ytdCpp = cpp, ytdEi = ei, ytdQpip = qpip,
+    ytdFederalTax = federalTax, ytdProvincialTax = provincialTax,
+    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
+    deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
+    ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
+    logoDataUrl, isQuebec, cppLabel
+  } = data;
+  
+  // Color scheme
+  const colors = {
+    blue: [0, 102, 153],        // #006699 - Header blue
+    darkBlue: [0, 51, 102],     // #003366 - Footer dark blue
+    orange: [255, 153, 0],      // #FF9900 - Orange accent
+    darkOrange: [230, 115, 0],  // #E67300 - Darker orange for headers
+    lightGray: [245, 245, 245], // #F5F5F5 - Light background
+    borderGray: [200, 200, 200], // #C8C8C8 - Borders
+    white: [255, 255, 255],
+    black: [0, 0, 0],
+  };
+  
+  // Helper to format currency
+  const fmtCurrency = (n) => Number(n || 0).toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  
+  // Helper function to format date as MM/DD/YYYY
+  const formatDate = (date) => {
+    let mm, dd, yyyy;
+    if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const parts = date.split('-').map(Number);
+      yyyy = parts[0];
+      mm = String(parts[1]).padStart(2, '0');
+      dd = String(parts[2]).padStart(2, '0');
+    } else if (date instanceof Date) {
+      mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+      dd = String(date.getUTCDate()).padStart(2, '0');
+      yyyy = date.getUTCFullYear();
+    } else {
+      const d = new Date(date);
+      mm = String(d.getMonth() + 1).padStart(2, '0');
+      dd = String(d.getDate()).padStart(2, '0');
+      yyyy = d.getFullYear();
+    }
+    return `${mm}/${dd}/${yyyy}`;
+  };
+
+  const m = 15; // Margin
+  let y = 15;
+
+  // ==================== TOP SECTION - DIRECT DEPOSIT HEADER ====================
+  // Blue background banner
+  doc.setFillColor(...colors.blue);
+  doc.rect(m, y, pageWidth - 2 * m, 25, 'F');
+  
+  // Employee name on left
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...colors.black);
+  doc.text(formData.name || "Employee Name", m + 5, y - 3);
+  
+  // ***DD*** badge on right
+  doc.setFillColor(...colors.blue);
+  doc.setTextColor(...colors.white);
+  doc.setFontSize(9);
+  doc.text("***DD***", pageWidth - m - 40, y + 15);
+  
+  // DIRECT DEPOSIT banner text
+  doc.setTextColor(...colors.white);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  const ddText = "DIRECT DEPOSIT *** DIRECT DEPOSIT *** DIRECT DEPOSIT *** DIRECT DEPOSIT";
+  doc.text(ddText, m + 5, y + 15);
+  
+  y += 30;
+
+  // ==================== EMPLOYEE INFO & VOID SECTION ====================
+  doc.setFillColor(...colors.lightGray);
+  doc.rect(m, y, pageWidth - 2 * m, 45, 'F');
+  
+  // Employee address on left
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...colors.black);
+  doc.text(formData.name || "Employee Name", m + 5, y + 12);
+  doc.text(formData.address || "123 Employee Street", m + 5, y + 22);
+  doc.text(`${formData.city || "City"}, ${formData.province || "ON"} ${formData.postalCode || "A0A 0A0"}`, m + 5, y + 32);
+  
+  // "Thank you for your hard work" message
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("Thank you for your hard work.", m + 5, y + 42);
+  
+  // *** VOID *** watermark on right
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(24);
+  doc.setTextColor(180, 180, 180);
+  doc.text("*** VOID ***", pageWidth - m - 100, y + 30);
+  
+  doc.setTextColor(...colors.black);
+  y += 50;
+
+  // ==================== ORANGE INFO BAR ====================
+  doc.setFillColor(...colors.orange);
+  doc.rect(m, y, pageWidth - 2 * m, 40, 'F');
+  doc.setDrawColor(...colors.borderGray);
+  doc.setLineWidth(0.5);
+  doc.rect(m, y, pageWidth - 2 * m, 40);
+  
+  // Employee name in orange bar
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...colors.black);
+  doc.text(formData.name || "Employee Name", m + 5, y + 12);
+  
+  // Check info row
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  const checkNum = formData.checkNumber || String(Math.floor(1 + Math.random() * 999));
+  const empNum = formData.employeeId || String(Math.floor(1000 + Math.random() * 9000));
+  
+  // Labels
+  doc.text("Cheque #", m + 5, y + 24);
+  doc.text("Pay Date", m + 55, y + 24);
+  doc.text("Period Start", m + 115, y + 24);
+  doc.text("Period Ending", m + 175, y + 24);
+  doc.text("MEMO", m + 245, y + 24);
+  doc.text("EMP#", pageWidth - m - 50, y + 24);
+  
+  // Values
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(checkNum, m + 5, y + 34);
+  doc.text(formatDate(payDate), m + 55, y + 34);
+  doc.text(formatDate(startDate), m + 115, y + 34);
+  doc.text(formatDate(endDate), m + 175, y + 34);
+  doc.text("", m + 245, y + 34); // Empty MEMO
+  doc.text(empNum, pageWidth - m - 50, y + 34);
+  
+  y += 45;
+
+  // ==================== MAIN DATA TABLES ====================
+  // Three column layout
+  const colWidth = (pageWidth - 2 * m - 10) / 3;
+  const col1X = m;
+  const col2X = m + colWidth + 5;
+  const col3X = m + 2 * colWidth + 10;
+  
+  // Table header height
+  const headerHeight = 14;
+  const subHeaderHeight = 12;
+  const rowHeight = 10;
+  
+  // ==================== GROSS WAGES TABLE ====================
+  // Main header
+  doc.setFillColor(...colors.darkOrange);
+  doc.rect(col1X, y, colWidth, headerHeight, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...colors.white);
+  doc.text("Gross Wages", col1X + colWidth/2, y + 9, { align: 'center' });
+  
+  y += headerHeight;
+  
+  // Sub headers
+  doc.setFillColor(...colors.blue);
+  doc.rect(col1X, y, colWidth, subHeaderHeight, 'F');
+  doc.setFontSize(6);
+  doc.setTextColor(...colors.white);
+  const gwCols = ["Desc", "Hours", "Rate", "Amt", "YTD"];
+  const gwColWidths = [colWidth * 0.3, colWidth * 0.15, colWidth * 0.18, colWidth * 0.18, colWidth * 0.19];
+  let xPos = col1X + 2;
+  gwCols.forEach((col, i) => {
+    doc.text(col, xPos + gwColWidths[i]/2, y + 8, { align: 'center' });
+    xPos += gwColWidths[i];
+  });
+  
+  y += subHeaderHeight;
+  
+  // Gross Wages data rows
+  const earningsData = [
+    ["Regular", hours > 0 ? hours.toFixed(2) : "", rate > 0 ? fmtCurrency(rate) : "", fmtCurrency(regularPay), fmtCurrency(ytdRegularPay)],
+    ["Overtime", overtime > 0 ? overtime.toFixed(2) : "", overtime > 0 ? fmtCurrency(rate * 1.5) : "", overtime > 0 ? fmtCurrency(overtimePay) : "", overtime > 0 ? fmtCurrency(ytdOvertimePay) : ""],
+    ["Cash Tip", "", "", "", ""],
+    ["Bonus", "", "", "", ""],
+    ["Vacation", "", "", "", ""],
+    ["Commissi", commission > 0 ? "" : "", "", commission > 0 ? fmtCurrency(commission) : "", commission > 0 ? fmtCurrency(ytdCommission) : ""],
+    ["Stat Hol", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+  ];
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(...colors.black);
+  
+  const startYEarnings = y;
+  earningsData.forEach((row, rowIdx) => {
+    doc.setDrawColor(...colors.borderGray);
+    doc.setLineWidth(0.3);
+    doc.rect(col1X, y, colWidth, rowHeight);
+    
+    let xPos = col1X + 2;
+    row.forEach((cell, i) => {
+      if (i === 0) {
+        doc.text(cell, xPos + 2, y + 7);
+      } else {
+        doc.text(cell, xPos + gwColWidths[i] - 2, y + 7, { align: 'right' });
+      }
+      xPos += gwColWidths[i];
+    });
+    y += rowHeight;
+  });
+  
+  const endYEarnings = y;
+
+  // ==================== WITHHOLDING TAXES TABLE ====================
+  y = startYEarnings - headerHeight - subHeaderHeight;
+  
+  // Main header
+  doc.setFillColor(...colors.darkOrange);
+  doc.rect(col2X, y, colWidth, headerHeight, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...colors.white);
+  doc.text("Statutory Deductions", col2X + colWidth/2, y + 9, { align: 'center' });
+  
+  y += headerHeight;
+  
+  // Sub headers
+  doc.setFillColor(...colors.blue);
+  doc.rect(col2X, y, colWidth, subHeaderHeight, 'F');
+  doc.setFontSize(6);
+  doc.setTextColor(...colors.white);
+  const wtCols = ["Desc", "Amt", "YTD"];
+  const wtColWidths = [colWidth * 0.5, colWidth * 0.25, colWidth * 0.25];
+  xPos = col2X + 2;
+  wtCols.forEach((col, i) => {
+    doc.text(col, xPos + wtColWidths[i]/2, y + 8, { align: 'center' });
+    xPos += wtColWidths[i];
+  });
+  
+  y += subHeaderHeight;
+  
+  // Canadian tax data
+  const taxData = [
+    [cppLabel || "CPP", fmtCurrency(cpp), fmtCurrency(ytdCpp)],
+    ["EI", fmtCurrency(ei), fmtCurrency(ytdEi)],
+    ["Federal Tax", fmtCurrency(federalTax), fmtCurrency(ytdFederalTax)],
+    [`${formData.province || "Prov"} Tax`, fmtCurrency(provincialTax), fmtCurrency(ytdProvincialTax)],
+    isQuebec && qpip > 0 ? ["QPIP", fmtCurrency(qpip), fmtCurrency(ytdQpip)] : ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+  ];
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(...colors.black);
+  
+  taxData.forEach((row, rowIdx) => {
+    doc.setDrawColor(...colors.borderGray);
+    doc.setLineWidth(0.3);
+    doc.rect(col2X, y, colWidth, rowHeight);
+    
+    let xPos = col2X + 2;
+    row.forEach((cell, i) => {
+      if (i === 0) {
+        doc.text(cell, xPos + 2, y + 7);
+      } else {
+        doc.text(cell, xPos + wtColWidths[i] - 2, y + 7, { align: 'right' });
+      }
+      xPos += wtColWidths[i];
+    });
+    y += rowHeight;
+  });
+
+  // ==================== DEDUCTIONS/BENEFITS TABLE ====================
+  y = startYEarnings - headerHeight - subHeaderHeight;
+  
+  // Main header
+  doc.setFillColor(...colors.darkOrange);
+  doc.rect(col3X, y, colWidth, headerHeight, 'F');
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...colors.white);
+  doc.text("Deductions/Benefits", col3X + colWidth/2, y + 9, { align: 'center' });
+  
+  y += headerHeight;
+  
+  // Sub headers
+  doc.setFillColor(...colors.blue);
+  doc.rect(col3X, y, colWidth, subHeaderHeight, 'F');
+  doc.setFontSize(6);
+  doc.setTextColor(...colors.white);
+  const dbCols = ["Desc", "Ben", "Amt", "YTD"];
+  const dbColWidths = [colWidth * 0.35, colWidth * 0.2, colWidth * 0.22, colWidth * 0.23];
+  xPos = col3X + 2;
+  dbCols.forEach((col, i) => {
+    doc.text(col, xPos + dbColWidths[i]/2, y + 8, { align: 'center' });
+    xPos += dbColWidths[i];
+  });
+  
+  y += subHeaderHeight;
+  
+  // Build deductions data from deductionsData array
+  const dedRows = [];
+  if (deductionsData && deductionsData.length > 0) {
+    deductionsData.forEach(d => {
+      const name = (d.name || d.type || "Deduction").substring(0, 10);
+      dedRows.push([name, "", fmtCurrency(d.currentAmount || 0), fmtCurrency((d.currentAmount || 0) * ytdPayPeriods)]);
+    });
+  }
+  // Add contributions
+  if (contributionsData && contributionsData.length > 0) {
+    contributionsData.forEach(c => {
+      const name = (c.name || c.type || "Contrib").substring(0, 10);
+      dedRows.push([name, "", fmtCurrency(c.currentAmount || 0), fmtCurrency((c.currentAmount || 0) * ytdPayPeriods)]);
+    });
+  }
+  // Fill remaining rows
+  while (dedRows.length < 10) {
+    dedRows.push(["", "", "", ""]);
+  }
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(...colors.black);
+  
+  dedRows.slice(0, 10).forEach((row, rowIdx) => {
+    doc.setDrawColor(...colors.borderGray);
+    doc.setLineWidth(0.3);
+    doc.rect(col3X, y, colWidth, rowHeight);
+    
+    let xPos = col3X + 2;
+    row.forEach((cell, i) => {
+      if (i === 0) {
+        doc.text(cell, xPos + 2, y + 7);
+      } else {
+        doc.text(cell, xPos + dbColWidths[i] - 2, y + 7, { align: 'right' });
+      }
+      xPos += dbColWidths[i];
+    });
+    y += rowHeight;
+  });
+
+  // ==================== TOTALS ROW ====================
+  y = endYEarnings;
+  
+  // Gross Wages Total
+  doc.setFillColor(240, 240, 240);
+  doc.rect(col1X, y, colWidth, rowHeight + 2, 'F');
+  doc.setDrawColor(...colors.borderGray);
+  doc.rect(col1X, y, colWidth, rowHeight + 2);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...colors.black);
+  doc.text("Total:", col1X + 5, y + 8);
+  doc.text(fmtCurrency(grossPay), col1X + colWidth * 0.65, y + 8);
+  doc.text(fmtCurrency(ytdGrossPay), col1X + colWidth - 5, y + 8, { align: 'right' });
+  
+  // Withholding Total
+  doc.rect(col2X, y, colWidth, rowHeight + 2, 'F');
+  doc.rect(col2X, y, colWidth, rowHeight + 2);
+  doc.text("Total:", col2X + 5, y + 8);
+  doc.text(fmtCurrency(totalTax), col2X + colWidth * 0.55, y + 8);
+  doc.text(fmtCurrency(ytdCpp + ytdEi + ytdFederalTax + ytdProvincialTax + (ytdQpip || 0)), col2X + colWidth - 5, y + 8, { align: 'right' });
+  
+  // Deductions Total
+  doc.rect(col3X, y, colWidth, rowHeight + 2, 'F');
+  doc.rect(col3X, y, colWidth, rowHeight + 2);
+  doc.text("Total:", col3X + 5, y + 8);
+  doc.text(fmtCurrency(totalDeductions + totalContributions), col3X + colWidth * 0.55, y + 8);
+  doc.text(fmtCurrency(ytdDeductions + ytdContributions), col3X + colWidth - 5, y + 8, { align: 'right' });
+  
+  y += rowHeight + 8;
+
+  // ==================== FOOTER SECTION ====================
+  const footerY = y;
+  const footerHeight = 70;
+  const footerColWidth = (pageWidth - 2 * m) / 4;
+  
+  // Dark blue footer background
+  doc.setFillColor(...colors.darkBlue);
+  doc.rect(m, footerY, pageWidth - 2 * m, footerHeight, 'F');
+  
+  // Footer column headers
+  const footerHeaders = ["Accruals", "ACH", "Net Pay", "Company"];
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...colors.white);
+  
+  footerHeaders.forEach((header, i) => {
+    const colX = m + i * footerColWidth;
+    doc.setFillColor(...colors.blue);
+    doc.rect(colX, footerY, footerColWidth, 14, 'F');
+    doc.text(header, colX + footerColWidth/2, footerY + 10, { align: 'center' });
+  });
+  
+  // Footer content
+  const contentY = footerY + 18;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...colors.white);
+  
+  // Accruals column
+  const accrualsX = m + 5;
+  doc.text("Vacation/PTO:", accrualsX, contentY + 5);
+  doc.text("Available: 0.00", accrualsX, contentY + 15);
+  doc.text("Used: 0.00", accrualsX, contentY + 25);
+  doc.text("Accrued: 0.00", accrualsX, contentY + 35);
+  
+  // ACH column
+  const achX = m + footerColWidth + 5;
+  doc.text("Direct Deposit", achX, contentY + 5);
+  doc.text(`****${formData.bank || "0000"}`, achX, contentY + 15);
+  doc.text(`$${fmtCurrency(netPay)}`, achX, contentY + 25);
+  
+  // Net Pay column
+  const netPayX = m + 2 * footerColWidth + 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("Net Pay:", netPayX, contentY + 5);
+  doc.setFontSize(12);
+  doc.text(`$${fmtCurrency(netPay)}`, netPayX, contentY + 20);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("Direct Deposit:", netPayX, contentY + 32);
+  doc.text(`$${fmtCurrency(netPay)}`, netPayX, contentY + 42);
+  
+  // Company column
+  const companyX = m + 3 * footerColWidth + 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text(formData.company || "Company Name", companyX, contentY + 5);
+  doc.setFont("helvetica", "normal");
+  doc.text(formData.companyAddress || "123 Company St", companyX, contentY + 15);
+  doc.text(`${formData.companyCity || "City"}, ${formData.province || "ON"}`, companyX, contentY + 25);
+  doc.text(formData.postalCode || "A0A 0A0", companyX, contentY + 35);
+
+  // Draw vertical dividers in footer
+  doc.setDrawColor(100, 100, 100);
+  doc.setLineWidth(0.5);
+  for (let i = 1; i < 4; i++) {
+    const divX = m + i * footerColWidth;
+    doc.line(divX, footerY + 14, divX, footerY + footerHeight);
+  }
+}

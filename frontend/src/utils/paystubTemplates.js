@@ -542,7 +542,7 @@ function drawTable(
 }
 
 // Template B: ADP-Style Earnings Statement (Programmatically Generated)
-// Updated to match exact ADP layout with hatched Gross Pay/Net Pay bars
+// Exact layout matching ADP format with two-column design
 export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
@@ -561,7 +561,7 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // Helper to format currency
   const fmtCurrency = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   
-  // Helper function to format date as MM/DD/YYYY - handles timezone-safe parsing
+  // Helper function to format date as MM/DD/YYYY
   const formatDateADP = (date) => {
     let mm, dd, yyyy;
     if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -584,12 +584,11 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
 
   // Helper to draw hatched/textured background bar
   const drawHatchedBar = (x, y, width, height) => {
-    doc.setFillColor(220, 220, 220);
+    doc.setFillColor(230, 230, 230);
     doc.rect(x, y, width, height, 'F');
-    doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.2);
-    // Draw diagonal lines for hatched effect
-    const spacing = 3;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.15);
+    const spacing = 2;
     for (let i = 0; i < width + height; i += spacing) {
       const x1 = x + Math.max(0, i - height);
       const y1 = y + Math.min(i, height);
@@ -603,339 +602,345 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
     doc.setLineWidth(0.3);
   };
 
-  const m = 20; // Left margin
-  const rightColStart = 310; // Right column start for "Other Benefits" section
+  // Layout constants - narrower left column design
+  const m = 15; // Left margin
+  const leftColWidth = 200; // Left column width (approx 55% of usable width)
+  const rightColStart = m + leftColWidth + 10; // Right column start
+  const rightColWidth = pageWidth - rightColStart - m; // Right column width
   
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
 
-  // ==================== TOP HEADER ROW ====================
-  let y = 18;
+  // ==================== TOP HEADER ROW (LEFT SIDE) ====================
+  let y = 15;
   doc.setFontSize(6);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setTextColor(0, 0, 0);
   
-  // Header labels - CO. FILE DEPT. CLOCK VCHR. NO. Page
-  doc.text("CO.", m, y);
-  doc.text("FILE", m + 25, y);
-  doc.text("DEPT.", m + 60, y);
-  doc.text("CLOCK", m + 95, y);
-  doc.text("VCHR. NO.", m + 130, y);
-  doc.text("Page", m + 185, y);
+  // Header labels with hatched background
+  const headerHeight = 10;
+  drawHatchedBar(m, y - 3, leftColWidth, headerHeight);
+  
+  doc.text("CO", m + 3, y + 2);
+  doc.text("FILE", m + 25, y + 2);
+  doc.text("DEPT", m + 60, y + 2);
+  doc.text("CLOCK", m + 90, y + 2);
+  doc.text("VCHR NO", m + 125, y + 2);
+  doc.text("NO", m + 170, y + 2);
   
   // Header values row
-  y += 8;
-  const companyCode = formData.companyCode || "DH4";
-  const fileNum = formData.fileNum || String(Math.floor(100000 + Math.random() * 900000));
-  const deptNum = formData.deptNum || String(Math.floor(10000 + Math.random() * 90000));
-  const clockNum = formData.clockNum || "USPOM";
-  const vchrNum = formData.voucherNumber || String(Math.floor(1000000000 + Math.random() * 9000000000));
+  y += 10;
+  const companyCode = formData.companyCode || "74F";
+  const fileNum = formData.fileNum || String(Math.floor(1000000 + Math.random() * 9000000));
+  const deptNum = formData.deptNum || "01";
+  const clockNum = formData.clockNum || String(Math.floor(10000000 + Math.random() * 90000000));
+  const vchrNum = formData.voucherNumber || String(Math.floor(100 + Math.random() * 900));
   
-  doc.setFont("helvetica", "bold");
-  doc.text(companyCode, m, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(companyCode, m + 3, y);
   doc.text(fileNum, m + 25, y);
   doc.text(deptNum, m + 60, y);
-  doc.text(clockNum, m + 95, y);
-  doc.text(vchrNum, m + 130, y);
-  doc.text("1", m + 185, y);
+  doc.text(clockNum, m + 90, y);
+  doc.text(vchrNum, m + 125, y);
+  doc.text("1", m + 170, y);
 
-  // ==================== EARNINGS STATEMENT TITLE & LOGO ====================
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "normal");
-  doc.text("Earnings Statement", rightColStart - 30, 20);
-  
-  // Logo on far right - only show if uploaded
-  if (logoDataUrl) {
-    try {
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 50, 8, 45, 20);
-    } catch (e) {
-      // Logo failed - leave blank
-    }
-  }
-
-  // ==================== COMPANY INFO (LEFT) ====================
-  y = 35;
+  // ==================== COMPANY INFO (LEFT COLUMN) ====================
+  y += 12;
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text(formData.company || "COMPANY NAME", m, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  y += 10;
+  y += 9;
   doc.text(formData.companyAddress || "123 Main Street", m, y);
   y += 8;
   doc.text(`${formData.companyCity || "City"}, ${formData.companyState || "ST"} ${formData.companyZip || "00000"}`, m, y);
 
-  // ==================== PERIOD INFO (RIGHT SIDE UNDER TITLE) ====================
-  let periodY = 35;
+  // ==================== TAX INFO SECTION (LEFT COLUMN) ====================
+  y += 15;
   doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("Period Beginning:", rightColStart - 30, periodY);
-  doc.text(formatDateADP(startDate), rightColStart + 40, periodY);
-  periodY += 9;
-  doc.text("Period Ending:", rightColStart - 30, periodY);
-  doc.text(formatDateADP(endDate), rightColStart + 40, periodY);
-  periodY += 9;
-  doc.text("Pay Date:", rightColStart - 30, periodY);
-  doc.text(formatDateADP(payDate), rightColStart + 40, periodY);
-
-  // ==================== TAX INFO SECTION (LEFT) ====================
-  y = 68;
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "bold");
-  doc.text("Taxable Marital Status:", m, y);
-  doc.setFont("helvetica", "normal");
+  doc.text("Taxable Marital Status: ", m + 20, y);
   const maritalStatus = formData.federalFilingStatus === 'married_jointly' || formData.federalFilingStatus === 'married_separately' ? 'Married' : 'Single';
-  doc.text(maritalStatus, m + 55, y);
-  
-  y += 10;
-  doc.setFont("helvetica", "bold");
-  doc.text("Exemptions / Allowances:", m, y);
+  doc.text(maritalStatus, m + 70, y);
   
   y += 9;
-  doc.setFont("helvetica", "normal");
-  doc.text("Federal:", m + 8, y);
-  doc.text(formData.federalAllowances || "Std W/HT", m + 35, y);
+  doc.text("Exemptions / Allowances:", m + 20, y);
+  
+  y += 9;
+  doc.text("Federal:", m + 25, y);
+  doc.text(formData.federalAllowances || "0", m + 80, y);
   
   y += 8;
-  doc.text("State:", m + 8, y);
-  doc.text(formData.stateAllowances || "0", m + 35, y);
+  doc.text("State:", m + 25, y);
+  doc.text(formData.stateAllowances || "0", m + 80, y);
+  
+  y += 8;
+  doc.text("Local:", m + 25, y);
+  doc.text("0", m + 80, y);
   
   y += 10;
-  doc.setFont("helvetica", "bold");
-  doc.text("SSN:", m, y);
-  doc.setFont("helvetica", "normal");
+  doc.text("SOCIAL SECURITY NO:", m + 20, y);
   const ssnDisplay = formData.ssn ? `XXX-XX-${formData.ssn}` : "XXX-XX-XXXX";
-  doc.text(ssnDisplay, m + 25, y);
+  doc.text(ssnDisplay, m + 75, y);
 
-  // ==================== EMPLOYEE NAME & ADDRESS (RIGHT) ====================
-  let empY = 68;
-  doc.setFontSize(10);
+  // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT COLUMN) ====================
+  let rightY = 15;
+  doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(formData.name || "EMPLOYEE NAME", rightColStart - 30, empY);
+  doc.text("Earnings Statement", rightColStart, rightY);
+  
+  // Logo on far right
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 40, rightY - 5, 35, 15);
+    } catch (e) {
+      // Logo failed
+    }
+  }
+
+  // ==================== PERIOD INFO (RIGHT COLUMN) ====================
+  rightY += 18;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("Period Beginning:", rightColStart, rightY);
+  doc.text(formatDateADP(startDate), rightColStart + 50, rightY);
+  rightY += 9;
+  doc.text("Period Ending:", rightColStart, rightY);
+  doc.text(formatDateADP(endDate), rightColStart + 50, rightY);
+  rightY += 9;
+  doc.text("Pay Date:", rightColStart, rightY);
+  doc.text(formatDateADP(payDate), rightColStart + 50, rightY);
+
+  // ==================== EMPLOYEE NAME & ADDRESS (RIGHT COLUMN) ====================
+  rightY += 15;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(formData.name || "EMPLOYEE NAME", rightColStart, rightY);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  empY += 10;
-  doc.text(formData.address || "123 Employee Street", rightColStart - 30, empY);
-  empY += 8;
-  doc.text(`${formData.city || "City"}, ${formData.state || "ST"} ${formData.zip || "00000"}`, rightColStart - 30, empY);
+  rightY += 9;
+  doc.text(formData.address || "123 Employee Street", rightColStart, rightY);
+  rightY += 8;
+  doc.text(`${formData.city || "City"}, ${formData.state || "ST"} ${formData.zip || "00000"}`, rightColStart, rightY);
 
-  // ==================== EARNINGS SECTION (LEFT) ====================
-  y = 120;
+  // ==================== EARNINGS SECTION (LEFT COLUMN) ====================
+  y += 15;
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
   doc.text("Earnings", m, y);
   
-  // Column headers for earnings
-  const earningsColRate = m + 70;
-  const earningsColHour = m + 100;
-  const earningsColSalary = m + 145;
-  const earningsColYTD = m + 195;
+  // Column positions for earnings
+  const eRateCol = m + 55;
+  const eHoursCol = m + 85;
+  const ePeriodCol = m + 120;
+  const eYtdCol = m + 165;
   
-  doc.setFontSize(7);
-  doc.text("rate", earningsColRate, y);
-  doc.text("hour", earningsColHour, y);
-  doc.text("Salary", earningsColSalary, y);
-  doc.text("year to date", earningsColYTD, y);
-  
-  // Underline for earnings header
-  y += 3;
-  doc.line(m, y, m + 240, y);
-  
-  // Salary/Regular row
-  y += 10;
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
+  doc.text("rate", eRateCol, y);
+  doc.text("hours", eHoursCol, y);
+  doc.text("this period", ePeriodCol, y);
+  doc.text("year to date", eYtdCol, y);
   
-  // Determine if it's hourly or salary
+  // Underline
+  y += 2;
+  doc.line(m, y, m + leftColWidth, y);
+  
+  // Regular/Salary row
+  y += 10;
+  doc.setFontSize(7);
   const isHourly = rate > 0 && hours > 0;
   
   if (isHourly) {
     doc.text("Regular", m, y);
-    doc.text(fmtCurrency(rate), earningsColRate, y);
-    doc.text(hours.toFixed(2), earningsColHour, y);
+    doc.text(fmtCurrency(rate), eRateCol, y);
+    doc.text(hours.toFixed(2), eHoursCol, y);
   } else {
     doc.text("Salary", m, y);
   }
-  doc.text(fmtCurrency(regularPay), earningsColSalary, y);
-  doc.text(fmtCurrency(ytdRegularPay), earningsColYTD, y);
+  doc.text(fmtCurrency(regularPay), ePeriodCol, y);
+  doc.text(fmtCurrency(ytdRegularPay), eYtdCol, y);
   
   // Overtime row (if applicable)
   if (overtime > 0) {
     y += 9;
     doc.text("Overtime", m, y);
-    doc.text(fmtCurrency(rate * 1.5), earningsColRate, y);
-    doc.text(overtime.toFixed(2), earningsColHour, y);
-    doc.text(fmtCurrency(overtimePay), earningsColSalary, y);
-    doc.text(fmtCurrency(ytdOvertimePay), earningsColYTD, y);
+    doc.text(fmtCurrency(rate * 1.5), eRateCol, y);
+    doc.text(overtime.toFixed(2), eHoursCol, y);
+    doc.text(fmtCurrency(overtimePay), ePeriodCol, y);
+    doc.text(fmtCurrency(ytdOvertimePay), eYtdCol, y);
   }
   
   // Commission row (if applicable)
   if (commission > 0) {
     y += 9;
     doc.text("Commission", m, y);
-    doc.text(fmtCurrency(commission), earningsColSalary, y);
-    doc.text(fmtCurrency(ytdCommission), earningsColYTD, y);
+    doc.text(fmtCurrency(commission), ePeriodCol, y);
+    doc.text(fmtCurrency(ytdCommission), eYtdCol, y);
   }
 
-  // ==================== OTHER BENEFITS SECTION (RIGHT) ====================
-  let rightY = 120;
+  // ==================== GROSS PAY BAR ====================
+  y += 12;
+  const barHeight = 10;
+  drawHatchedBar(m, y - 6, leftColWidth, barHeight);
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text("Gross Pay", m + 3, y);
+  doc.text(`$${fmtCurrency(grossPay)}`, ePeriodCol, y);
+  doc.text(fmtCurrency(ytdGrossPay), eYtdCol, y);
+
+  // ==================== OTHER BENEFITS SECTION (RIGHT COLUMN) ====================
+  rightY += 15;
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text("Other Benefits and Information", rightColStart, rightY);
+  doc.text("Other Benefits and", rightColStart, rightY);
+  rightY += 8;
+  doc.text("Information", rightColStart, rightY);
   
-  const otherColPeriod = rightColStart + 90;
-  const otherColYTD = rightColStart + 130;
+  const otherPeriodCol = rightColStart + 60;
+  const otherYtdCol = rightColStart + 95;
   
-  doc.setFontSize(7);
-  doc.text("this period", otherColPeriod, rightY);
-  doc.text("total to date", otherColYTD, rightY);
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("this period", otherPeriodCol, rightY - 8);
+  doc.text("total to date", otherYtdCol, rightY - 8);
   
-  rightY += 3;
+  rightY += 2;
   doc.line(rightColStart, rightY, pageWidth - m, rightY);
   
+  // Show contributions if any
   rightY += 10;
-  doc.setFont("helvetica", "normal");
-  
-  // Show contributions/benefits if any
   if (contributionsData && contributionsData.length > 0) {
     contributionsData.forEach((c) => {
       if (c.type && c.type.includes('match')) {
+        doc.setFontSize(6);
         doc.text(`${c.name || "Employer Match"}`, rightColStart, rightY);
-        doc.text(fmtCurrency(c.currentAmount || 0), otherColPeriod + 10, rightY);
-        doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), otherColYTD + 10, rightY);
-        rightY += 9;
+        doc.text(fmtCurrency(c.currentAmount || 0), otherPeriodCol, rightY);
+        doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), otherYtdCol, rightY);
+        rightY += 8;
       }
     });
   }
 
-  // ==================== GROSS PAY BAR ====================
-  y += 18;
-  const grossBarHeight = 12;
-  drawHatchedBar(m, y - 8, 240, grossBarHeight);
-  
-  doc.setFont("helvetica", "bold");
+  // ==================== IMPORTANT NOTES (RIGHT COLUMN) ====================
+  rightY += 8;
   doc.setFontSize(8);
-  doc.text("Gross Pay", m + 5, y);
-  doc.text(fmtCurrency(grossPay), earningsColSalary, y);
-  doc.text(fmtCurrency(ytdGrossPay), earningsColYTD, y);
+  doc.setFont("helvetica", "bold");
+  doc.text("Important Notes", rightColStart, rightY);
+  rightY += 2;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  rightY += 10;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text(`BASIS OF PAY: ${isHourly ? 'HOURLY' : 'SALARY'}`, rightColStart, rightY);
 
-  // ==================== DEDUCTIONS SECTION ====================
-  y += 20;
+  // ==================== DEDUCTIONS SECTION (LEFT COLUMN) ====================
+  y += 15;
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.text("Deductions", m, y);
   
-  // Deductions column headers
-  const dedColPeriod = m + 160;
-  const dedColYTD = m + 205;
-  
   y += 10;
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.text("Statutory", m, y);
+  doc.text("Statutory", m + 5, y);
   
-  // Underline
-  y += 3;
-  doc.line(m, y, m + 240, y);
+  y += 2;
+  doc.line(m, y, m + leftColWidth, y);
   
-  // FICA - Medicare
-  y += 10;
-  doc.setFont("helvetica", "normal");
-  doc.text("FICA - Medicare", m + 8, y);
-  doc.text(`${fmtCurrency(medTax)}`, dedColPeriod, y);
-  doc.text(fmtCurrency(ytdMedTax), dedColYTD, y);
-  
-  // FICA - Social Security
-  y += 9;
-  doc.text("FICA - Social Security", m + 8, y);
-  doc.text(`${fmtCurrency(ssTax)}`, dedColPeriod, y);
-  doc.text(fmtCurrency(ytdSsTax), dedColYTD, y);
+  // Deduction column positions
+  const dPeriodCol = m + 100;
+  const dYtdCol = m + 150;
   
   // Federal Income Tax
+  y += 10;
+  doc.setFont("helvetica", "normal");
+  doc.text("Federal Income Tax", m + 10, y);
+  doc.text(`-${fmtCurrency(federalTax)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdFederalTax), dYtdCol, y);
+  
+  // Social Security Tax
   y += 9;
-  doc.text("Federal Income Tax", m + 8, y);
-  doc.text(`${fmtCurrency(federalTax)}`, dedColPeriod, y);
-  doc.text(fmtCurrency(ytdFederalTax), dedColYTD, y);
+  doc.text("Social Security Tax", m + 10, y);
+  doc.text(`-${fmtCurrency(ssTax)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdSsTax), dYtdCol, y);
+  
+  // Medicare Tax
+  y += 9;
+  doc.text("Medicare Tax", m + 10, y);
+  doc.text(`-${fmtCurrency(medTax)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdMedTax), dYtdCol, y);
   
   // State Income Tax
   y += 9;
-  doc.text("State Income Tax", m + 8, y);
-  doc.text(`${fmtCurrency(stateTax)}`, dedColPeriod, y);
-  doc.text(fmtCurrency(ytdStateTax), dedColYTD, y);
+  doc.text(`${formData.state || "ST"} State Income Tax`, m + 10, y);
+  doc.text(`-${fmtCurrency(stateTax)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdStateTax), dYtdCol, y);
 
   // Voluntary deductions if any
   if (deductionsData && deductionsData.length > 0) {
-    y += 12;
-    doc.setFont("helvetica", "bold");
-    doc.text("Other", m, y);
-    y += 3;
-    doc.line(m, y, m + 240, y);
-    
-    y += 10;
-    doc.setFont("helvetica", "normal");
     deductionsData.forEach((d) => {
-      doc.text(`${d.name || d.type || "Deduction"}`, m + 8, y);
-      doc.text(`${fmtCurrency(d.currentAmount || 0)}`, dedColPeriod, y);
-      doc.text(fmtCurrency((d.currentAmount || 0) * (ytdPayPeriods || 1)), dedColYTD, y);
       y += 9;
+      doc.text(`${d.name || d.type || "Deduction"}`, m + 10, y);
+      doc.text(`-${fmtCurrency(d.currentAmount || 0)}`, dPeriodCol, y);
+      doc.text(fmtCurrency((d.currentAmount || 0) * (ytdPayPeriods || 1)), dYtdCol, y);
     });
   }
-  
-  // Employee contributions if any
-  if (contributionsData && contributionsData.length > 0) {
-    const hasNonMatch = contributionsData.some(c => !c.type || !c.type.includes('match'));
-    if (hasNonMatch) {
-      contributionsData.forEach((c) => {
-        if (!c.type || !c.type.includes('match')) {
-          doc.text(`${c.name || c.type || "Contribution"}`, m + 8, y);
-          doc.text(`${fmtCurrency(c.currentAmount || 0)}`, dedColPeriod, y);
-          doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), dedColYTD, y);
-          y += 9;
-        }
-      });
-    }
-  }
+
+  // ==================== ADDITIONAL TAX INFO (RIGHT COLUMN) ====================
+  rightY += 15;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text("Additional Tax Withholding Information", rightColStart, rightY);
+  rightY += 2;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  rightY += 10;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text(`Taxable Marital Status: ${maritalStatus}`, rightColStart, rightY);
+  rightY += 8;
+  doc.text(`Exemptions/ Allowances: ${formData.stateAllowances || "0"}`, rightColStart, rightY);
 
   // ==================== NET PAY BAR ====================
-  y += 12;
-  const netBarHeight = 12;
-  drawHatchedBar(m, y - 8, 240, netBarHeight);
+  y += 15;
+  drawHatchedBar(m, y - 6, leftColWidth, barHeight);
   
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("Net Pay", m + 5, y);
-  doc.text(`$${fmtCurrency(netPay)}`, dedColPeriod - 10, y);
-  
-  // Checking and Net Check lines
-  y += 15;
-  doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.text("Checking", m + 8, y);
-  doc.text(fmtCurrency(netPay), dedColPeriod, y);
+  doc.text("Net Pay", m + 3, y);
+  doc.text(`$${fmtCurrency(netPay)}`, dPeriodCol, y);
   
-  y += 9;
-  doc.text("Net Check", m + 8, y);
-  doc.text("$0.00", dedColPeriod, y);
+  // Checking line
+  y += 12;
+  doc.setFont("helvetica", "normal");
+  doc.text("Checking 1", m + 10, y);
+  doc.text(`-${fmtCurrency(netPay)}`, dPeriodCol, y);
   
-  // Underline after Net Check
-  y += 3;
-  doc.line(m, y, m + 240, y);
+  // Net Check bar
+  y += 10;
+  drawHatchedBar(m, y - 6, leftColWidth, barHeight);
+  doc.setFont("helvetica", "bold");
+  doc.text("Net Check", m + 3, y);
+  doc.text("$0.00", dPeriodCol, y);
 
   // ==================== FEDERAL TAXABLE WAGES NOTE ====================
-  y += 12;
-  doc.setFontSize(6);
+  y += 20;
+  doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("* Excluded from federal taxable wages", m, y);
-  y += 8;
   const taxableWages = grossPay - (totalDeductions || 0);
-  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, m, y);
+  doc.text("Your federal taxable wages this period are", m, y);
+  y += 8;
+  doc.text(`$${fmtCurrency(taxableWages)}`, m, y);
 
   // ==================== BOTTOM DIVIDER ====================
-  y += 20;
+  y += 15;
   doc.setLineWidth(0.5);
   doc.line(m, y, pageWidth - m, y);
 
   // ==================== CHECK STUB SECTION ====================
-  y += 15;
+  y += 12;
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
   
@@ -944,7 +949,7 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text(formData.companyAddress || "", m, y + 8);
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y + 16);
   
-  // Pay Date
+  // Pay Date on right
   doc.setFont("helvetica", "bold");
   doc.text("Pay Date:", rightColStart, y);
   doc.setFont("helvetica", "normal");
@@ -952,7 +957,7 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
 
   // ==================== THIS IS NOT A CHECK WATERMARK ====================
   y += 35;
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setTextColor(180, 180, 180);
   doc.setFont("helvetica", "bold");
   
@@ -963,35 +968,35 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.setTextColor(0, 0, 0);
 
   // ==================== BOTTOM DEPOSIT TABLE ====================
-  y += 30;
-  doc.setFontSize(7);
+  y += 25;
+  doc.setFontSize(6);
   doc.setFont("helvetica", "bold");
   doc.line(m, y, pageWidth - m, y);
   
-  y += 10;
+  y += 8;
   doc.text("Deposited to the account", m, y);
-  doc.text("account number", m + 150, y);
-  doc.text("transit/ABA", rightColStart, y);
-  doc.text("amount", rightColStart + 80, y);
+  doc.text("account number", m + 100, y);
+  doc.text("transit/ABA", m + 160, y);
+  doc.text("amount", rightColStart + 50, y);
   
-  y += 10;
+  y += 8;
   doc.setFont("helvetica", "normal");
   const bankLast4 = formData.bank || "0000";
   const maskedAccount = `XXXXXX${bankLast4}`;
   doc.text(`${formData.bankName || "Bank"} DirectDeposit`, m, y);
-  doc.text(maskedAccount, m + 150, y);
-  doc.text("XXXXXXXXX", rightColStart, y);
-  doc.text(fmtCurrency(netPay), rightColStart + 80, y);
+  doc.text(maskedAccount, m + 100, y);
+  doc.text("XXXXXXXXX", m + 160, y);
+  doc.text(fmtCurrency(netPay), rightColStart + 50, y);
 
   // ==================== EMPLOYEE INFO AT BOTTOM ====================
-  y += 25;
-  doc.setFontSize(9);
+  y += 18;
+  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.text(formData.name || "Employee Name", m, y);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text(formData.address || "", m, y + 10);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, m, y + 18);
+  doc.setFontSize(7);
+  doc.text(formData.address || "", m, y + 8);
+  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, m, y + 15);
 }
 
 // Template C: Workday Style Professional Payslip - MasterBrand/Workday Layout

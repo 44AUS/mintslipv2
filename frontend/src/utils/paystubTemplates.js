@@ -2157,20 +2157,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     doc.line(divX, footerY + 12, divX, footerY + footerHeight);
   }
 }
-  
-  // "Thank you for your hard work" message
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(8);
-  doc.text("Thank you for your hard work.", m + 5, y + 42);
-  
-  // *** VOID *** watermark on right
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.setTextColor(180, 180, 180);
-  doc.text("*** VOID ***", pageWidth - m - 100, y + 30);
-  
-  doc.setTextColor(...colors.black);
-  y += 50;
+ 
 
   // ==================== ORANGE INFO BAR ====================
   doc.setFillColor(...colors.orange);

@@ -911,16 +911,16 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.line(m, y, m + 240, y);
 
   // ==================== FEDERAL TAXABLE WAGES NOTE ====================
-  const taxableWages = grossPay - (totalDeductions || 0);
-  y = Math.max(y, rightY) + 40;
-  doc.setFontSize(7);
+  y += 12;
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, rightCol, y);
+  doc.text("* Excluded from federal taxable wages", m, y);
   y += 8;
-  doc.text("* Excluded from Federal taxable wages", rightCol, y);
+  const taxableWages = grossPay - (totalDeductions || 0);
+  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, m, y);
 
   // ==================== BOTTOM DIVIDER ====================
-  y += 25;
+  y += 20;
   doc.setLineWidth(0.5);
   doc.line(m, y, pageWidth - m, y);
 
@@ -932,13 +932,13 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   // Company info repeated
   doc.text(formData.company || "Company Name", m, y);
   doc.text(formData.companyAddress || "", m, y + 8);
-  doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, m, y + 16);
+  doc.text(`${formData.companyCity || ""}, ${formData.companyState || formData.province || ""} ${formData.companyZip || formData.postalCode || ""}`, m, y + 16);
   
   // Pay Date
   doc.setFont("helvetica", "bold");
-  doc.text("Pay Date:", rightCol + 30, y);
+  doc.text("Pay Date:", rightColStart, y);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDateADP(payDate), rightCol + 65, y);
+  doc.text(formatDateADP(payDate), rightColStart + 35, y);
 
   // ==================== THIS IS NOT A CHECK WATERMARK ====================
   y += 35;
@@ -946,8 +946,7 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.setTextColor(180, 180, 180);
   doc.setFont("helvetica", "bold");
   
-  // Draw diagonal watermark text
-  const watermarkText = "THIS IS NOT A CHECK";
+  const watermarkText = "THIS IS NOT A CHEQUE";
   const centerX = pageWidth / 2;
   doc.text(watermarkText, centerX, y, { align: 'center', angle: -12 });
   
@@ -962,15 +961,17 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   y += 10;
   doc.text("Deposited to the account", m, y);
   doc.text("account number", m + 150, y);
-  doc.text("transit/ABA", rightCol, y);
-  doc.text("amount", rightCol + 80, y);
+  doc.text("transit", rightColStart, y);
+  doc.text("amount", rightColStart + 80, y);
   
   y += 10;
   doc.setFont("helvetica", "normal");
+  const bankLast4 = formData.bank || "0000";
+  const maskedAccount = `XXXXXX${bankLast4}`;
   doc.text(`${formData.bankName || "Bank"} DirectDeposit`, m, y);
   doc.text(maskedAccount, m + 150, y);
-  doc.text("XXXXXXXXX", rightCol, y);
-  doc.text(fmtCurrency(netPay), rightCol + 80, y);
+  doc.text("XXXXXXXXX", rightColStart, y);
+  doc.text(fmtCurrency(netPay), rightColStart + 80, y);
 
   // ==================== EMPLOYEE INFO AT BOTTOM ====================
   y += 25;

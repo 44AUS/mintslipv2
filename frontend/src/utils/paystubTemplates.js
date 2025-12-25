@@ -2156,14 +2156,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     const divX = m + i * footerColWidth;
     doc.line(divX, footerY + 12, divX, footerY + footerHeight);
   }
-  
-  // Employee address on left
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(...colors.black);
-  doc.text(formData.name || "Employee Name", m + 5, y + 12);
-  doc.text(formData.address || "123 Employee Street", m + 5, y + 22);
-  doc.text(`${formData.city || "City"}, ${formData.state || "ST"} ${formData.zip || "00000"}`, m + 5, y + 32);
+}
   
   // "Thank you for your hard work" message
   doc.setFont("helvetica", "italic");

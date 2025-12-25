@@ -138,12 +138,6 @@ export default function PaystubForApartment() {
       description: "Documentation for freelancers and self-employed individuals",
       path: "/self-employed-paystub-generator",
       icon: Briefcase
-    },
-    {
-      title: "Bank Statement Generator",
-      description: "Create professional bank statement templates",
-      path: "/accounting-mockup-generator",
-      icon: Building2
     }
   ];
 

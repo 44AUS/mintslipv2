@@ -546,14 +546,12 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   // Helper function to format date as MM/DD/YYYY - handles timezone-safe parsing
   const formatDateADP = (date) => {
     let mm, dd, yyyy;
-    // Handle string dates (YYYY-MM-DD) to avoid timezone issues
     if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
       const parts = date.split('-').map(Number);
       yyyy = parts[0];
       mm = String(parts[1]).padStart(2, '0');
       dd = String(parts[2]).padStart(2, '0');
     } else if (date instanceof Date) {
-      // Use UTC values for Date objects to avoid timezone shift
       mm = String(date.getUTCMonth() + 1).padStart(2, '0');
       dd = String(date.getUTCDate()).padStart(2, '0');
       yyyy = date.getUTCFullYear();
@@ -566,8 +564,29 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
     return `${mm}/${dd}/${yyyy}`;
   };
 
-  const m = 25; // Left margin
-  const rightCol = 320; // Right column start
+  // Helper to draw hatched/textured background bar
+  const drawHatchedBar = (x, y, width, height) => {
+    doc.setFillColor(220, 220, 220);
+    doc.rect(x, y, width, height, 'F');
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.2);
+    // Draw diagonal lines for hatched effect
+    const spacing = 3;
+    for (let i = 0; i < width + height; i += spacing) {
+      const x1 = x + Math.max(0, i - height);
+      const y1 = y + Math.min(i, height);
+      const x2 = x + Math.min(i, width);
+      const y2 = y + Math.max(0, i - width);
+      if (x1 <= x + width && x2 >= x && y1 <= y + height && y2 >= y) {
+        doc.line(x1, y1, x2, y2);
+      }
+    }
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+  };
+
+  const m = 20; // Left margin
+  const rightColStart = 310; // Right column start for "Other Benefits" section
   
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);

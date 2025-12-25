@@ -109,6 +109,14 @@ const TEMPLATES = [
     generator: generateTemplateC,
     color: "#0066cc", // Workday blue
   },
+  {
+    id: "template-h",
+    name: "Colorful Direct Deposit",
+    description: "Modern, colorful paystub with blue headers and orange accents. Features three-column layout for earnings, taxes, and deductions with a professional dark blue footer section.",
+    features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
+    generator: generateTemplateH,
+    color: "#FF9900", // Orange accent
+  },
 ];
 
 // Convert PDF to image

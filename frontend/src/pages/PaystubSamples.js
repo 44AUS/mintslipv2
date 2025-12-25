@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Expand, ArrowRight, FileText, CheckCircle, Loader2 } from "lucide-react";
 import { jsPDF } from "jspdf";
-import { generateTemplateA, generateTemplateB, generateTemplateC } from "@/utils/paystubTemplates";
+import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "@/utils/paystubTemplates";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker

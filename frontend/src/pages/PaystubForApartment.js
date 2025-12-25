@@ -195,6 +195,9 @@ export default function PaystubForApartment() {
         <script type="application/ld+json">
           {JSON.stringify(schemaData)}
         </script>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
+        </script>
       </Helmet>
       
       <Header />

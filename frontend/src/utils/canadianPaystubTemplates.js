@@ -621,41 +621,44 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.text(vchrNum, m + 130, y);
   doc.text("1", m + 185, y);
   
-  // Company name and address - truncate to not overlap with Loc/Dept (max width ~65)
-  const maxCompanyWidth = 65;
-  y += 8;
+  // ==================== EARNINGS STATEMENT TITLE & LOGO ====================
+  doc.setFontSize(16);
   doc.setFont("helvetica", "normal");
-  doc.text(truncateText(formData.company || "", maxCompanyWidth), m, y);
-  y += 8;
-  doc.text(truncateText(formData.companyAddress || "", maxCompanyWidth), m, y);
-  y += 8;
-  doc.text(truncateText(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, maxCompanyWidth), m, y);
-
-  // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT SIDE) ====================
-  // Title - both words in normal font
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "normal");
-  doc.text("Earnings Statement", rightCol, 25);
+  doc.text("Earnings Statement", rightColStart - 30, 20);
   
-  // Logo on far right - only show if uploaded, otherwise leave blank
+  // Logo on far right - only show if uploaded
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 55, 12, 50, 22);
+      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 50, 8, 45, 20);
     } catch (e) {
-      // Logo failed to load - leave blank
+      // Logo failed - leave blank
     }
   }
-  // No fallback to company name - leave blank if no logo
-  
-  // Period info - below title
+
+  // ==================== COMPANY INFO (LEFT) ====================
+  y = 35;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(formData.company || "COMPANY NAME", m, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  y += 10;
+  doc.text(formData.companyAddress || "123 Main Street", m, y);
+  y += 8;
+  doc.text(`${formData.companyCity || "City"}, ${formData.companyState || formData.province || "ON"} ${formData.companyZip || formData.postalCode || "A0A 0A0"}`, m, y);
+
+  // ==================== PERIOD INFO (RIGHT SIDE UNDER TITLE) ====================
+  let periodY = 35;
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  doc.text("Period Starting:", rightCol, 42);
-  doc.text(formatDateADP(startDate), rightCol + 55, 42);
-  doc.text("Period Ending:", rightCol, 51);
-  doc.text(formatDateADP(endDate), rightCol + 55, 51);
-  doc.text("Pay Date:", rightCol, 60);
-  doc.text(formatDateADP(payDate), rightCol + 55, 60);
+  doc.text("Period Beginning:", rightColStart - 30, periodY);
+  doc.text(formatDateADP(startDate), rightColStart + 40, periodY);
+  periodY += 9;
+  doc.text("Period Ending:", rightColStart - 30, periodY);
+  doc.text(formatDateADP(endDate), rightColStart + 40, periodY);
+  periodY += 9;
+  doc.text("Pay Date:", rightColStart - 30, periodY);
+  doc.text(formatDateADP(payDate), rightColStart + 40, periodY);
 
   // ==================== TAX INFO SECTION (LEFT) ====================
   y = 75;

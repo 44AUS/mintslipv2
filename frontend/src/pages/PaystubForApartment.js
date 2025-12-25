@@ -92,7 +92,7 @@ export default function PaystubForApartment() {
     },
     {
       question: "Can self-employed individuals use paystubs for apartment applications?",
-      answer: "Self-employed individuals often face additional scrutiny but can still document their income effectively. Instead of traditional paystubs, they may need to provide bank statements, tax returns, or create income documentation that shows their earnings. Many landlords will accept alternative forms of income verification for freelancers and business owners."
+      answer: "Self-employed individuals often face additional scrutiny but can still document their income effectively. Instead of traditional paystubs, they may need to provide tax returns or create income documentation that shows their earnings. Many landlords will accept alternative forms of income verification for freelancers and business owners."
     },
     {
       question: "What if my paystubs show variable income?",

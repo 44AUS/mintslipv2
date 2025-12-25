@@ -361,6 +361,15 @@ function MobileNavLinks({ location, onNavigate }) {
       </Collapsible>
 
       <button
+        onClick={() => onNavigate("/generators")}
+        className={getButtonClasses("/generators")}
+        data-testid="nav-generators-link-mobile"
+      >
+        <FileSpreadsheet className="w-5 h-5" />
+        <span className="text-base">All Generators</span>
+      </button>
+
+      <button
         onClick={() => onNavigate("/about")}
         className={getButtonClasses("/about")}
         data-testid="nav-about-link-mobile"

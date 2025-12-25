@@ -536,6 +536,20 @@ export default function HowToMakePaystub() {
     ]
   };
 
+  // FAQ Schema for SEO
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer.replace(/&apos;/g, "'")
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Helmet>

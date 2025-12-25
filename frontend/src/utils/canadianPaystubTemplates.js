@@ -591,46 +591,35 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
 
-  // ==================== TOP HEADER ====================
-  let y = 22;
-  doc.setFontSize(7);
+  // ==================== TOP HEADER ROW ====================
+  let y = 18;
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(0, 0, 0);
   
-  // Header labels
-  doc.text("Company Code", m, y);
-  doc.text("Loc/Dept", m + 95, y);
-  doc.text("Number", m + 135, y);
-  doc.text("Page", m + 175, y);
+  // Header labels - CO. FILE DEPT. CLOCK VCHR. NO. Page
+  doc.text("CO.", m, y);
+  doc.text("FILE", m + 25, y);
+  doc.text("DEPT.", m + 60, y);
+  doc.text("CLOCK", m + 95, y);
+  doc.text("VCHR. NO.", m + 130, y);
+  doc.text("Page", m + 185, y);
   
-  // Header underlines
-  doc.line(m, y + 2, m + 80, y + 2);
-  doc.line(m + 95, y + 2, m + 125, y + 2);
-  doc.line(m + 135, y + 2, m + 165, y + 2);
-  doc.line(m + 175, y + 2, m + 200, y + 2);
-  
-  // Helper to truncate text to fit within a max width
-  const truncateText = (text, maxWidth) => {
-    if (!text) return "";
-    let truncated = text;
-    while (doc.getTextWidth(truncated) > maxWidth && truncated.length > 0) {
-      truncated = truncated.slice(0, -1);
-    }
-    return truncated;
-  };
-  
-  // Header values - use form data if provided, otherwise generate random
-  // Apply truncation to fit within column widths
-  y += 10;
-  const companyCode = formData.companyCode || `RJ/${(formData.company || "XXX").substring(0, 3).toUpperCase()}H ${Math.floor(10000000 + Math.random() * 90000000)}`;
-  const locDept = formData.locDept || String(Math.floor(100 + Math.random() * 900)).padStart(3, '0');
-  const checkNumber = formData.checkNumber || String(Math.floor(1000000 + Math.random() * 9000000));
+  // Header values row
+  y += 8;
+  const companyCode = formData.companyCode || "DH4";
+  const fileNum = formData.fileNum || String(Math.floor(100000 + Math.random() * 900000));
+  const deptNum = formData.deptNum || String(Math.floor(10000 + Math.random() * 90000));
+  const clockNum = formData.clockNum || "CAPOM";
+  const vchrNum = formData.voucherNumber || String(Math.floor(1000000000 + Math.random() * 9000000000));
   
   doc.setFont("helvetica", "bold");
-  doc.text(truncateText(companyCode, 70), m, y);  // Max width before Loc/Dept
-  doc.text(truncateText(locDept, 25), m + 95, y);  // Max width before Number
-  doc.text(truncateText(checkNumber, 30), m + 135, y);  // Max width before Page
-  doc.text("1 of 1", m + 175, y);
+  doc.text(companyCode, m, y);
+  doc.text(fileNum, m + 25, y);
+  doc.text(deptNum, m + 60, y);
+  doc.text(clockNum, m + 95, y);
+  doc.text(vchrNum, m + 130, y);
+  doc.text("1", m + 185, y);
   
   // Company name and address - truncate to not overlap with Loc/Dept (max width ~65)
   const maxCompanyWidth = 65;

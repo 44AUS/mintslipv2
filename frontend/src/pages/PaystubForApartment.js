@@ -500,7 +500,7 @@ export default function PaystubForApartment() {
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">1099 Contractors</h3>
 
             <p className="text-slate-600 leading-relaxed mb-4">
-              Independent contractors who receive 1099 forms do not have taxes withheld from their payments. Their payment statements look different from traditional W-2 paystubs. Landlords reviewing contractor income will want to see consistent payment history and may request additional documentation like contracts or bank statements to verify income stability.
+              Independent contractors who receive 1099 forms do not have taxes withheld from their payments. Their payment statements look different from traditional W-2 paystubs. Landlords reviewing contractor income will want to see consistent payment history and may request additional documentation like contracts to verify income stability.
             </p>
 
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">Multiple Income Sources</h3>

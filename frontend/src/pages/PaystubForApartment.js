@@ -494,7 +494,7 @@ export default function PaystubForApartment() {
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">Self-Employed and Freelancers</h3>
 
             <p className="text-slate-600 leading-relaxed mb-4">
-              Self-employed individuals and freelancers may not receive traditional paystubs. In these cases, landlords typically accept alternative documentation such as bank statements showing deposits, tax returns from the previous year, profit and loss statements, or 1099 forms. Some self-employed individuals create their own income statements to document their earnings professionally.
+              Self-employed individuals and freelancers may not receive traditional paystubs. In these cases, landlords typically accept alternative documentation such as tax returns from the previous year, profit and loss statements, or 1099 forms. Some self-employed individuals create their own income statements to document their earnings professionally.
             </p>
 
             <h3 className="text-2xl font-bold text-slate-800 mt-8 mb-4">1099 Contractors</h3>

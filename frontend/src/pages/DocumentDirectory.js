@@ -383,7 +383,7 @@ export default function DocumentDirectory() {
               </div>
               <h3 className="text-2xl font-bold text-slate-700 mb-2">No generators found</h3>
               <p className="text-slate-500 mb-6 max-w-md mx-auto">
-                We couldn't find any generators matching "{searchQuery}". Try adjusting your search or browse all categories.
+                We couldn&apos;t find any generators matching &ldquo;{searchQuery}&rdquo;. Try adjusting your search or browse all categories.
               </p>
               <Button
                 onClick={() => {

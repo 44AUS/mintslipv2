@@ -701,80 +701,104 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   empY += 8;
   doc.text(`${formData.city || "City"}, ${formData.province || "ON"} ${formData.postalCode || "A0A 0A0"}`, rightColStart - 30, empY);
 
-  // ==================== EARNINGS TABLE ====================
-  y = 135;
-  doc.setFontSize(7);
+  // ==================== EARNINGS SECTION (LEFT) ====================
+  y = 120;
+  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  
-  // Earnings header
   doc.text("Earnings", m, y);
-  doc.text("rate", m + 80, y);
-  doc.text("hours/units", m + 110, y);
-  doc.text("this period", m + 160, y);
-  doc.text("year to date", m + 210, y);
-  doc.line(m, y + 2, m + 260, y + 2);
   
-  // Regular row
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  doc.text("Regular", m, y);
-  if (rate > 0) doc.text(fmtCurrency(rate), m + 80, y);
-  doc.text(hours > 0 ? hours.toFixed(2) : "0.00", m + 120, y);
-  doc.text(fmtCurrency(regularPay), m + 165, y);
-  doc.text(fmtCurrency(ytdRegularPay), m + 215, y);
+  // Column headers for earnings
+  const earningsColRate = m + 70;
+  const earningsColHour = m + 100;
+  const earningsColSalary = m + 145;
+  const earningsColYTD = m + 195;
   
-  // Overtime row
+  doc.setFontSize(7);
+  doc.text("rate", earningsColRate, y);
+  doc.text("hour", earningsColHour, y);
+  doc.text("Salary", earningsColSalary, y);
+  doc.text("year to date", earningsColYTD, y);
+  
+  // Underline for earnings header
+  y += 3;
+  doc.line(m, y, m + 240, y);
+  
+  // Salary/Regular row
   y += 10;
-  doc.text("Overtime", m, y);
-  if (overtime > 0) {
-    doc.text(fmtCurrency(rate * 1.5), m + 80, y);
-    doc.text(overtime.toFixed(2), m + 120, y);
-    doc.text(fmtCurrency(overtimePay), m + 165, y);
-    doc.text(fmtCurrency(ytdOvertimePay), m + 215, y);
-  }
-  
-  // Commission row
-  if (commission > 0) {
-    y += 10;
-    doc.text("Commission", m, y);
-    doc.text("", m + 80, y);
-    doc.text("", m + 120, y);
-    doc.text(fmtCurrency(commission), m + 165, y);
-    doc.text(fmtCurrency(ytdCommission), m + 215, y);
-  }
-  
-  // Gross Pay
-  y += 15;
-  doc.line(m + 50, y - 5, m + 260, y - 5);
-  doc.setFont("helvetica", "bold");
-  doc.text("Gross Pay", m + 50, y);
-  doc.text(`$${fmtCurrency(grossPay)}`, m + 160, y);
-  doc.text(`$${fmtCurrency(ytdGrossPay)}`, m + 210, y);
-
-  // ==================== OTHER BENEFITS (RIGHT SIDE) ====================
-  let rightY = 135;
-  doc.setFont("helvetica", "bold");
-  doc.text("Other Benefits and", rightCol, rightY);
-  rightY += 8;
-  doc.text("Information", rightCol, rightY);
-  doc.text("this period", rightCol + 80, rightY - 8);
-  doc.text("year to date", rightCol + 125, rightY - 8);
-  doc.line(rightCol, rightY + 2, pageWidth - m, rightY + 2);
-  
-  rightY += 12;
   doc.setFont("helvetica", "normal");
   
-  // Employer match
+  // Determine if it's hourly or salary
+  const isHourly = rate > 0 && hours > 0;
+  
+  if (isHourly) {
+    doc.text("Regular", m, y);
+    doc.text(fmtCurrency(rate), earningsColRate, y);
+    doc.text(hours.toFixed(2), earningsColHour, y);
+  } else {
+    doc.text("Salary", m, y);
+  }
+  doc.text(fmtCurrency(regularPay), earningsColSalary, y);
+  doc.text(fmtCurrency(ytdRegularPay), earningsColYTD, y);
+  
+  // Overtime row (if applicable)
+  if (overtime > 0) {
+    y += 9;
+    doc.text("Overtime", m, y);
+    doc.text(fmtCurrency(rate * 1.5), earningsColRate, y);
+    doc.text(overtime.toFixed(2), earningsColHour, y);
+    doc.text(fmtCurrency(overtimePay), earningsColSalary, y);
+    doc.text(fmtCurrency(ytdOvertimePay), earningsColYTD, y);
+  }
+  
+  // Commission row (if applicable)
+  if (commission > 0) {
+    y += 9;
+    doc.text("Commission", m, y);
+    doc.text(fmtCurrency(commission), earningsColSalary, y);
+    doc.text(fmtCurrency(ytdCommission), earningsColYTD, y);
+  }
+
+  // ==================== OTHER BENEFITS SECTION (RIGHT) ====================
+  let rightY = 120;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Other Benefits and Information", rightColStart, rightY);
+  
+  const otherColPeriod = rightColStart + 90;
+  const otherColYTD = rightColStart + 130;
+  
+  doc.setFontSize(7);
+  doc.text("this period", otherColPeriod, rightY);
+  doc.text("total to date", otherColYTD, rightY);
+  
+  rightY += 3;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  
+  rightY += 10;
+  doc.setFont("helvetica", "normal");
+  
+  // Show contributions/benefits if any
   if (contributionsData && contributionsData.length > 0) {
     contributionsData.forEach((c) => {
       if (c.type && c.type.includes('match')) {
-        doc.text(`*${c.name || "Employer match"}`, rightCol, rightY);
-        doc.text(fmtCurrency(c.currentAmount || 0), rightCol + 85, rightY);
-        doc.text(fmtCurrency((c.currentAmount || 0) * (data.ytdPayPeriods || 1)), rightCol + 130, rightY);
-        rightY += 10;
+        doc.text(`${c.name || "Employer Match"}`, rightColStart, rightY);
+        doc.text(fmtCurrency(c.currentAmount || 0), otherColPeriod + 10, rightY);
+        doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), otherColYTD + 10, rightY);
+        rightY += 9;
       }
     });
   }
+
+  // ==================== GROSS PAY BAR ====================
+  y += 18;
+  const grossBarHeight = 12;
+  drawHatchedBar(m, y - 8, 240, grossBarHeight);
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("Gross Pay", m + 5, y);
+  doc.text(fmtCurrency(grossPay), earningsColSalary, y);
+  doc.text(fmtCurrency(ytdGrossPay), earningsColYTD, y);
 
   // ==================== STATUTORY DEDUCTIONS ====================
   y += 20;

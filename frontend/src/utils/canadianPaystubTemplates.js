@@ -526,7 +526,7 @@ function drawTable(
 }
 
 // Template B: ADP-Style Earnings Statement (Programmatically Generated)
-// Updated to match exact ADP layout with hatched Gross Pay/Net Pay bars
+// Exact layout matching ADP format with two-column design
 export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
@@ -542,6 +542,447 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   
   // Helper to format currency
   const fmtCurrency = (n) => Number(n || 0).toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  
+  // Helper function to format date as MM/DD/YYYY
+  const formatDateADP = (date) => {
+    let mm, dd, yyyy;
+    if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const parts = date.split('-').map(Number);
+      yyyy = parts[0];
+      mm = String(parts[1]).padStart(2, '0');
+      dd = String(parts[2]).padStart(2, '0');
+    } else if (date instanceof Date) {
+      mm = String(date.getUTCMonth() + 1).padStart(2, '0');
+      dd = String(date.getUTCDate()).padStart(2, '0');
+      yyyy = date.getUTCFullYear();
+    } else {
+      const d = new Date(date);
+      mm = String(d.getMonth() + 1).padStart(2, '0');
+      dd = String(d.getDate()).padStart(2, '0');
+      yyyy = d.getFullYear();
+    }
+    return `${mm}/${dd}/${yyyy}`;
+  };
+
+  // Helper to draw hatched/textured background bar
+  const drawHatchedBar = (x, y, width, height) => {
+    doc.setFillColor(230, 230, 230);
+    doc.rect(x, y, width, height, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.15);
+    const spacing = 2;
+    for (let i = 0; i < width + height; i += spacing) {
+      const x1 = x + Math.max(0, i - height);
+      const y1 = y + Math.min(i, height);
+      const x2 = x + Math.min(i, width);
+      const y2 = y + Math.max(0, i - width);
+      if (x1 <= x + width && x2 >= x && y1 <= y + height && y2 >= y) {
+        doc.line(x1, y1, x2, y2);
+      }
+    }
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+  };
+
+  // Layout constants - narrower left column design
+  const m = 15; // Left margin
+  const leftColWidth = 200; // Left column width
+  const rightColStart = m + leftColWidth + 10; // Right column start
+  const rightColWidth = pageWidth - rightColStart - m; // Right column width
+  
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+
+  // ==================== TOP HEADER ROW (LEFT SIDE) ====================
+  let y = 15;
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  
+  // Header labels with hatched background
+  const headerHeight = 10;
+  drawHatchedBar(m, y - 3, leftColWidth, headerHeight);
+  
+  doc.text("CO", m + 3, y + 2);
+  doc.text("FILE", m + 25, y + 2);
+  doc.text("DEPT", m + 60, y + 2);
+  doc.text("CLOCK", m + 90, y + 2);
+  doc.text("VCHR NO", m + 125, y + 2);
+  doc.text("NO", m + 170, y + 2);
+  
+  // Header values row
+  y += 10;
+  const companyCode = formData.companyCode || "74C";
+  const fileNum = formData.fileNum || String(Math.floor(1000000 + Math.random() * 9000000));
+  const deptNum = formData.deptNum || "01";
+  const clockNum = formData.clockNum || String(Math.floor(10000000 + Math.random() * 90000000));
+  const vchrNum = formData.voucherNumber || String(Math.floor(100 + Math.random() * 900));
+  
+  doc.setFont("helvetica", "normal");
+  doc.text(companyCode, m + 3, y);
+  doc.text(fileNum, m + 25, y);
+  doc.text(deptNum, m + 60, y);
+  doc.text(clockNum, m + 90, y);
+  doc.text(vchrNum, m + 125, y);
+  doc.text("1", m + 170, y);
+
+  // ==================== COMPANY INFO (LEFT COLUMN) ====================
+  y += 12;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(formData.company || "COMPANY NAME", m, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  y += 9;
+  doc.text(formData.companyAddress || "123 Main Street", m, y);
+  y += 8;
+  doc.text(`${formData.companyCity || "City"}, ${formData.province || "ON"} ${formData.postalCode || "A0A 0A0"}`, m, y);
+
+  // ==================== TAX INFO SECTION (LEFT COLUMN) ====================
+  y += 15;
+  doc.setFontSize(7);
+  doc.text("Taxable Marital Status: ", m + 20, y);
+  const maritalStatus = formData.federalFilingStatus === 'married_jointly' || formData.federalFilingStatus === 'married_separately' ? 'Married' : 'Single';
+  doc.text(maritalStatus, m + 70, y);
+  
+  y += 9;
+  doc.text("Exemptions / Allowances:", m + 20, y);
+  
+  y += 9;
+  doc.text("Federal:", m + 25, y);
+  doc.text(formData.federalAllowances || "0", m + 80, y);
+  
+  y += 8;
+  doc.text("Provincial:", m + 25, y);
+  doc.text(formData.provinceAllowances || "0", m + 80, y);
+  
+  y += 10;
+  doc.text("SOCIAL INSURANCE NO:", m + 20, y);
+  const sinDisplay = formData.sin ? `XXX-XXX-${formData.sin}` : "XXX-XXX-XXX";
+  doc.text(sinDisplay, m + 75, y);
+
+  // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT COLUMN) ====================
+  let rightY = 15;
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Earnings Statement", rightColStart, rightY);
+  
+  // Logo on far right
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 40, rightY - 5, 35, 15);
+    } catch (e) {
+      // Logo failed
+    }
+  }
+
+  // ==================== PERIOD INFO (RIGHT COLUMN) ====================
+  rightY += 18;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("Period Beginning:", rightColStart, rightY);
+  doc.text(formatDateADP(startDate), rightColStart + 50, rightY);
+  rightY += 9;
+  doc.text("Period Ending:", rightColStart, rightY);
+  doc.text(formatDateADP(endDate), rightColStart + 50, rightY);
+  rightY += 9;
+  doc.text("Pay Date:", rightColStart, rightY);
+  doc.text(formatDateADP(payDate), rightColStart + 50, rightY);
+
+  // ==================== EMPLOYEE NAME & ADDRESS (RIGHT COLUMN) ====================
+  rightY += 15;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(formData.name || "EMPLOYEE NAME", rightColStart, rightY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  rightY += 9;
+  doc.text(formData.address || "123 Employee Street", rightColStart, rightY);
+  rightY += 8;
+  doc.text(`${formData.city || "City"}, ${formData.province || "ON"} ${formData.postalCode || "A0A 0A0"}`, rightColStart, rightY);
+
+  // ==================== EARNINGS SECTION (LEFT COLUMN) ====================
+  y += 15;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Earnings", m, y);
+  
+  // Column positions for earnings
+  const eRateCol = m + 55;
+  const eHoursCol = m + 85;
+  const ePeriodCol = m + 120;
+  const eYtdCol = m + 165;
+  
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("rate", eRateCol, y);
+  doc.text("hours", eHoursCol, y);
+  doc.text("this period", ePeriodCol, y);
+  doc.text("year to date", eYtdCol, y);
+  
+  // Underline
+  y += 2;
+  doc.line(m, y, m + leftColWidth, y);
+  
+  // Regular/Salary row
+  y += 10;
+  doc.setFontSize(7);
+  const isHourly = rate > 0 && hours > 0;
+  
+  if (isHourly) {
+    doc.text("Regular", m, y);
+    doc.text(fmtCurrency(rate), eRateCol, y);
+    doc.text(hours.toFixed(2), eHoursCol, y);
+  } else {
+    doc.text("Salary", m, y);
+  }
+  doc.text(fmtCurrency(regularPay), ePeriodCol, y);
+  doc.text(fmtCurrency(ytdRegularPay), eYtdCol, y);
+  
+  // Overtime row
+  if (overtime > 0) {
+    y += 9;
+    doc.text("Overtime", m, y);
+    doc.text(fmtCurrency(rate * 1.5), eRateCol, y);
+    doc.text(overtime.toFixed(2), eHoursCol, y);
+    doc.text(fmtCurrency(overtimePay), ePeriodCol, y);
+    doc.text(fmtCurrency(ytdOvertimePay), eYtdCol, y);
+  }
+  
+  // Commission row
+  if (commission > 0) {
+    y += 9;
+    doc.text("Commission", m, y);
+    doc.text(fmtCurrency(commission), ePeriodCol, y);
+    doc.text(fmtCurrency(ytdCommission), eYtdCol, y);
+  }
+
+  // ==================== GROSS PAY BAR ====================
+  y += 12;
+  const barHeight = 10;
+  drawHatchedBar(m, y - 6, leftColWidth, barHeight);
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text("Gross Pay", m + 3, y);
+  doc.text(`$${fmtCurrency(grossPay)}`, ePeriodCol, y);
+  doc.text(fmtCurrency(ytdGrossPay), eYtdCol, y);
+
+  // ==================== OTHER BENEFITS SECTION (RIGHT COLUMN) ====================
+  rightY += 15;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Other Benefits and", rightColStart, rightY);
+  rightY += 8;
+  doc.text("Information", rightColStart, rightY);
+  
+  const otherPeriodCol = rightColStart + 60;
+  const otherYtdCol = rightColStart + 95;
+  
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "normal");
+  doc.text("this period", otherPeriodCol, rightY - 8);
+  doc.text("total to date", otherYtdCol, rightY - 8);
+  
+  rightY += 2;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  
+  rightY += 10;
+  if (contributionsData && contributionsData.length > 0) {
+    contributionsData.forEach((c) => {
+      if (c.type && c.type.includes('match')) {
+        doc.setFontSize(6);
+        doc.text(`${c.name || "Employer Match"}`, rightColStart, rightY);
+        doc.text(fmtCurrency(c.currentAmount || 0), otherPeriodCol, rightY);
+        doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), otherYtdCol, rightY);
+        rightY += 8;
+      }
+    });
+  }
+
+  // ==================== IMPORTANT NOTES (RIGHT COLUMN) ====================
+  rightY += 8;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Important Notes", rightColStart, rightY);
+  rightY += 2;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  rightY += 10;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text(`BASIS OF PAY: ${isHourly ? 'HOURLY' : 'SALARY'}`, rightColStart, rightY);
+
+  // ==================== DEDUCTIONS SECTION (LEFT COLUMN) ====================
+  y += 15;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Deductions", m, y);
+  
+  y += 10;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text("Statutory", m + 5, y);
+  
+  y += 2;
+  doc.line(m, y, m + leftColWidth, y);
+  
+  // Deduction column positions
+  const dPeriodCol = m + 100;
+  const dYtdCol = m + 150;
+  
+  // CPP/QPP
+  y += 10;
+  doc.setFont("helvetica", "normal");
+  doc.text(cppLabel || "CPP", m + 10, y);
+  doc.text(`-${fmtCurrency(cpp)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdCpp), dYtdCol, y);
+  
+  // EI
+  y += 9;
+  doc.text("EI", m + 10, y);
+  doc.text(`-${fmtCurrency(ei)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdEi), dYtdCol, y);
+  
+  // QPIP (Quebec only)
+  if (isQuebec && qpip > 0) {
+    y += 9;
+    doc.text("QPIP", m + 10, y);
+    doc.text(`-${fmtCurrency(qpip)}`, dPeriodCol, y);
+    doc.text(fmtCurrency(ytdQpip), dYtdCol, y);
+  }
+  
+  // Federal Income Tax
+  y += 9;
+  doc.text("Federal Income Tax", m + 10, y);
+  doc.text(`-${fmtCurrency(federalTax)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdFederalTax), dYtdCol, y);
+  
+  // Provincial Income Tax
+  y += 9;
+  doc.text(`${formData.province || "Prov."} Income Tax`, m + 10, y);
+  doc.text(`-${fmtCurrency(provincialTax)}`, dPeriodCol, y);
+  doc.text(fmtCurrency(ytdProvincialTax), dYtdCol, y);
+
+  // Voluntary deductions
+  if (deductionsData && deductionsData.length > 0) {
+    deductionsData.forEach((d) => {
+      y += 9;
+      doc.text(`${d.name || d.type || "Deduction"}`, m + 10, y);
+      doc.text(`-${fmtCurrency(d.currentAmount || 0)}`, dPeriodCol, y);
+      doc.text(fmtCurrency((d.currentAmount || 0) * (ytdPayPeriods || 1)), dYtdCol, y);
+    });
+  }
+
+  // ==================== ADDITIONAL TAX INFO (RIGHT COLUMN) ====================
+  rightY += 15;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text("Additional Tax Withholding Information", rightColStart, rightY);
+  rightY += 2;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  rightY += 10;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.text(`Taxable Marital Status: ${maritalStatus}`, rightColStart, rightY);
+  rightY += 8;
+  doc.text(`Exemptions/ Allowances: ${formData.provinceAllowances || "0"}`, rightColStart, rightY);
+
+  // ==================== NET PAY BAR ====================
+  y += 15;
+  drawHatchedBar(m, y - 6, leftColWidth, barHeight);
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text("Net Pay", m + 3, y);
+  doc.text(`$${fmtCurrency(netPay)}`, dPeriodCol, y);
+  
+  // Direct Deposit line
+  y += 12;
+  doc.setFont("helvetica", "normal");
+  doc.text("Direct Deposit", m + 10, y);
+  doc.text(`-${fmtCurrency(netPay)}`, dPeriodCol, y);
+  
+  // Net Cheque bar
+  y += 10;
+  drawHatchedBar(m, y - 6, leftColWidth, barHeight);
+  doc.setFont("helvetica", "bold");
+  doc.text("Net Cheque", m + 3, y);
+  doc.text("$0.00", dPeriodCol, y);
+
+  // ==================== FEDERAL TAXABLE WAGES NOTE ====================
+  y += 20;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  const taxableWages = grossPay - (totalDeductions || 0);
+  doc.text("Your federal taxable wages this period are", m, y);
+  y += 8;
+  doc.text(`$${fmtCurrency(taxableWages)}`, m, y);
+
+  // ==================== BOTTOM DIVIDER ====================
+  y += 15;
+  doc.setLineWidth(0.5);
+  doc.line(m, y, pageWidth - m, y);
+
+  // ==================== CHECK STUB SECTION ====================
+  y += 12;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  
+  // Company info repeated
+  doc.text(formData.company || "Company Name", m, y);
+  doc.text(formData.companyAddress || "", m, y + 8);
+  doc.text(`${formData.companyCity || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, m, y + 16);
+  
+  // Pay Date on right
+  doc.setFont("helvetica", "bold");
+  doc.text("Pay Date:", rightColStart, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(formatDateADP(payDate), rightColStart + 35, y);
+
+  // ==================== THIS IS NOT A CHEQUE WATERMARK ====================
+  y += 35;
+  doc.setFontSize(11);
+  doc.setTextColor(180, 180, 180);
+  doc.setFont("helvetica", "bold");
+  
+  const watermarkText = "THIS IS NOT A CHEQUE";
+  const centerX = pageWidth / 2;
+  doc.text(watermarkText, centerX, y, { align: 'center', angle: -12 });
+  
+  doc.setTextColor(0, 0, 0);
+
+  // ==================== BOTTOM DEPOSIT TABLE ====================
+  y += 25;
+  doc.setFontSize(6);
+  doc.setFont("helvetica", "bold");
+  doc.line(m, y, pageWidth - m, y);
+  
+  y += 8;
+  doc.text("Deposited to the account", m, y);
+  doc.text("account number", m + 100, y);
+  doc.text("transit", m + 160, y);
+  doc.text("amount", rightColStart + 50, y);
+  
+  y += 8;
+  doc.setFont("helvetica", "normal");
+  const bankLast4 = formData.bank || "0000";
+  const maskedAccount = `XXXXXX${bankLast4}`;
+  doc.text(`${formData.bankName || "Bank"} DirectDeposit`, m, y);
+  doc.text(maskedAccount, m + 100, y);
+  doc.text("XXXXXXXXX", m + 160, y);
+  doc.text(fmtCurrency(netPay), rightColStart + 50, y);
+
+  // ==================== EMPLOYEE INFO AT BOTTOM ====================
+  y += 18;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text(formData.name || "Employee Name", m, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.text(formData.address || "", m, y + 8);
+  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, m, y + 15);
+}
   
   // Helper function to format date as MM/DD/YYYY - handles timezone-safe parsing
   const formatDateADP = (date) => {

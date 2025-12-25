@@ -567,6 +567,9 @@ export default function HowToMakePaystub() {
         <script type="application/ld+json">
           {JSON.stringify(schemaData)}
         </script>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
+        </script>
       </Helmet>
       
       <Header />

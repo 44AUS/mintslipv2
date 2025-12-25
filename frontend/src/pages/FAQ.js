@@ -394,6 +394,9 @@ export default function FAQ() {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="MintSlip FAQ" />
         <meta name="twitter:description" content="Answers to common questions about document generation." />
+        <script type="application/ld+json">
+          {JSON.stringify(generateFAQSchema())}
+        </script>
       </Helmet>
       
       <Header />

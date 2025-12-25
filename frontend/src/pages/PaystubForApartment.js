@@ -104,7 +104,7 @@ export default function PaystubForApartment() {
     },
     {
       question: "What other documents might landlords request besides paystubs?",
-      answer: "Landlords commonly request additional documentation such as bank statements, tax returns (W-2s or 1099s), employment verification letters, government-issued ID, rental history, and credit reports. Being prepared with these documents can speed up your application."
+      answer: "Landlords commonly request additional documentation such as tax returns (W-2s or 1099s), employment verification letters, government-issued ID, rental history, and credit reports. Being prepared with these documents can speed up your application."
     }
   ];
 

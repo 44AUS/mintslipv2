@@ -708,7 +708,7 @@ export default function ComparisonPage() {
                   className="gap-2 px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all"
                 >
                   <FileText className="w-5 h-5" />
-                  Try MintSlip Free
+                  Create a Paystub
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>

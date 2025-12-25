@@ -526,6 +526,7 @@ function drawTable(
 }
 
 // Template B: ADP-Style Earnings Statement (Programmatically Generated)
+// Updated to match exact ADP layout with hatched Gross Pay/Net Pay bars
 export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
@@ -535,7 +536,7 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
     ytdFederalTax = federalTax, ytdProvincialTax = provincialTax,
     ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
-    ytdDeductions = 0, ytdContributions = 0,
+    ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
     logoDataUrl, isQuebec, cppLabel
   } = data;
   

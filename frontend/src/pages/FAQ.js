@@ -325,6 +325,29 @@ const FAQ_CATEGORIES = {
   }
 };
 
+// Generate FAQ Schema for SEO
+const generateFAQSchema = () => {
+  const allQuestions = [];
+  Object.values(FAQ_CATEGORIES).forEach(category => {
+    category.questions.forEach(q => {
+      allQuestions.push({
+        "@type": "Question",
+        "name": q.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": q.answer
+        }
+      });
+    });
+  });
+  
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": allQuestions
+  };
+};
+
 export default function FAQ() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");

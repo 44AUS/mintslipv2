@@ -39,11 +39,20 @@ const CanadianFlagIcon = () => (
 );
 
 // Payroll company templates with logos
+// Check if running on localhost
+const isLocalhost = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1'
+);
+
 const PAYROLL_COMPANIES = [
   { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
-  { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
-  { id: 'colorful', name: 'Colorful', template: 'template-h', logo: null },
+  // ADP and Colorful templates only visible on localhost
+  ...(isLocalhost ? [
+    { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
+    { id: 'colorful', name: 'Colorful', template: 'template-h', logo: null },
+  ] : []),
 ];
 
 export default function PaystubForm() {

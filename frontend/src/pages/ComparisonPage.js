@@ -440,63 +440,118 @@ const NoDataStoredAnimation = ({ isVisible }) => (
   </div>
 );
 
-// Speed Animation for "Fast Generation" feature
-const SpeedAnimation = ({ isVisible }) => (
+// Lightning Bolt Animation for "Fast Generation" feature
+const LightningBoltAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center">
     <svg viewBox="0 0 200 200" className="w-full h-full max-w-xs">
-      {/* Speedometer background */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transition: 'all 0.5s ease-out'
-      }}>
-        <circle cx="100" cy="100" r="70" fill="#f0fdf4" stroke="#dcfce7" strokeWidth="4"/>
-        <circle cx="100" cy="100" r="55" fill="none" stroke="#1a4731" strokeWidth="8" strokeLinecap="round"
-          strokeDasharray="173" strokeDashoffset="50" opacity="0.2"/>
-      </g>
-
-      {/* Speedometer arc fill */}
-      <circle cx="100" cy="100" r="55" fill="none" stroke="#22c55e" strokeWidth="8" strokeLinecap="round"
-        strokeDasharray="173"
-        style={{
-          strokeDashoffset: isVisible ? 70 : 173,
-          transition: 'stroke-dashoffset 1s ease-out 0.3s',
-          transform: 'rotate(-90deg)',
+      {/* Background circle with pulse */}
+      <circle cx="100" cy="100" r="75" fill="#fef3c7" opacity="0.5"
+        style={{ 
+          animation: isVisible ? 'pulseBg 2s ease-in-out infinite' : 'none',
           transformOrigin: '100px 100px'
         }}/>
+      
+      {/* Inner glow circle */}
+      <circle cx="100" cy="100" r="55" fill="#fef9c3" opacity="0.8"
+        style={{ 
+          opacity: isVisible ? 0.8 : 0,
+          transition: 'opacity 0.5s ease-out'
+        }}/>
 
-      {/* Speed needle */}
-      <g style={{
+      {/* Main Lightning Bolt */}
+      <g style={{ 
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.5) translateY(-20px)',
         transformOrigin: '100px 100px',
-        transform: isVisible ? 'rotate(60deg)' : 'rotate(-90deg)',
-        transition: 'transform 1s ease-out 0.3s'
+        transition: 'all 0.6s ease-out 0.2s'
       }}>
-        <line x1="100" y1="100" x2="100" y2="50" stroke="#1a4731" strokeWidth="4" strokeLinecap="round"/>
-        <circle cx="100" cy="100" r="8" fill="#1a4731"/>
+        <path 
+          d="M115,45 L85,95 L100,95 L75,155 L125,90 L105,90 L125,45 Z" 
+          fill="#fbbf24" 
+          stroke="#f59e0b" 
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        {/* Inner highlight */}
+        <path 
+          d="M110,55 L90,90 L100,90 L85,135 L115,95 L105,95 L115,55 Z" 
+          fill="#fde68a" 
+          opacity="0.6"
+        />
       </g>
 
-      {/* Speed labels */}
+      {/* Electric sparks around bolt */}
       <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 0.8s' }}>
-        <text x="45" y="130" fill="#64748b" fontSize="10">Slow</text>
-        <text x="140" y="130" fill="#22c55e" fontSize="10" fontWeight="bold">Fast</text>
+        {/* Left sparks */}
+        <line x1="55" y1="80" x2="45" y2="75" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"
+          style={{ animation: isVisible ? 'sparkFlash 0.8s ease-in-out infinite' : 'none' }}/>
+        <line x1="50" y1="100" x2="38" y2="100" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round"
+          style={{ animation: isVisible ? 'sparkFlash 0.8s ease-in-out infinite 0.2s' : 'none' }}/>
+        <line x1="55" y1="120" x2="45" y2="125" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"
+          style={{ animation: isVisible ? 'sparkFlash 0.8s ease-in-out infinite 0.4s' : 'none' }}/>
+        
+        {/* Right sparks */}
+        <line x1="145" y1="80" x2="155" y2="75" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"
+          style={{ animation: isVisible ? 'sparkFlash 0.8s ease-in-out infinite 0.1s' : 'none' }}/>
+        <line x1="150" y1="100" x2="162" y2="100" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round"
+          style={{ animation: isVisible ? 'sparkFlash 0.8s ease-in-out infinite 0.3s' : 'none' }}/>
+        <line x1="145" y1="120" x2="155" y2="125" stroke="#fbbf24" strokeWidth="3" strokeLinecap="round"
+          style={{ animation: isVisible ? 'sparkFlash 0.8s ease-in-out infinite 0.5s' : 'none' }}/>
       </g>
 
-      {/* Lightning bolt */}
+      {/* Small lightning bolts around */}
+      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.6s forwards' : 'none' }}>
+        {/* Top left mini bolt */}
+        <path d="M45,50 L40,60 L45,60 L38,72 L50,58 L45,58 L52,48 Z" fill="#fbbf24" opacity="0.7"
+          style={{ animation: isVisible ? 'miniFloat 2s ease-in-out infinite' : 'none' }}/>
+        {/* Top right mini bolt */}
+        <path d="M155,55 L150,65 L155,65 L148,77 L160,63 L155,63 L162,53 Z" fill="#fbbf24" opacity="0.7"
+          style={{ animation: isVisible ? 'miniFloat 2s ease-in-out infinite 0.5s' : 'none' }}/>
+        {/* Bottom mini bolt */}
+        <path d="M60,145 L55,155 L60,155 L53,167 L65,153 L60,153 L67,143 Z" fill="#fbbf24" opacity="0.6"
+          style={{ animation: isVisible ? 'miniFloat 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
+      </g>
+
+      {/* "INSTANT" badge */}
       <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1s forwards' : 'none' }}>
-        <path d="M100,145 L106,155 L103,155 L106,168 L96,158 L100,158 L96,148 Z" fill="#fbbf24" stroke="#f59e0b" strokeWidth="1"/>
+        <rect x="55" y="170" width="90" height="24" rx="12" fill="#1a4731"/>
+        <text x="100" y="186" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">⚡ INSTANT</text>
       </g>
 
-      {/* "2 MIN" badge */}
-      <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1.2s forwards' : 'none' }}>
-        <rect x="65" y="175" width="70" height="20" rx="10" fill="#1a4731"/>
-        <text x="100" y="189" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">⚡ Under 2 Min</text>
+      {/* Sparkle dots */}
+      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 0.9s' }}>
+        <circle cx="30" cy="90" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.2s ease-in-out infinite' : 'none' }}/>
+        <circle cx="170" cy="95" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite 0.2s' : 'none' }}/>
+        <circle cx="140" cy="160" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.3s ease-in-out infinite 0.4s' : 'none' }}/>
+        <circle cx="35" cy="140" r="2" fill="#22c55e" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.3s' : 'none' }}/>
       </g>
     </svg>
 
     <style>{`
+      @keyframes pulseBg {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.05); opacity: 0.7; }
+      }
+      @keyframes sparkFlash {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+      @keyframes miniFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
       @keyframes bounceIn {
         0% { opacity: 0; transform: scale(0); }
         60% { transform: scale(1.2); }
         100% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes sparkle {
+        0%, 100% { opacity: 0.4; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.4); }
       }
     `}</style>
   </div>

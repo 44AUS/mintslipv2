@@ -603,7 +603,7 @@ export default function PaystubForApartment() {
                 <div>
                   <h3 className="font-bold text-slate-800 mb-2">Provide Additional Documentation</h3>
                   <p className="text-slate-600 text-sm">
-                    Strengthen your application by offering additional documents like bank statements, tax returns, or an employment verification letter from your employer.
+                    Strengthen your application by offering additional documents like tax returns or an employment verification letter from your employer.
                   </p>
                 </div>
               </div>

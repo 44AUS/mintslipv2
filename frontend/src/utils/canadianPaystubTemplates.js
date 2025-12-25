@@ -661,48 +661,45 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.text(formatDateADP(payDate), rightColStart + 40, periodY);
 
   // ==================== TAX INFO SECTION (LEFT) ====================
-  y = 75;
+  y = 68;
   doc.setFontSize(7);
-  
-  // Taxable Marital Status
+  doc.setFont("helvetica", "bold");
   doc.text("Taxable Marital Status:", m, y);
+  doc.setFont("helvetica", "normal");
   const maritalStatus = formData.federalFilingStatus === 'married_jointly' || formData.federalFilingStatus === 'married_separately' ? 'Married' : 'Single';
-  doc.text(maritalStatus, m + 85, y);
-  
-  // Tax Override
-  doc.text("Tax Override:", m + 140, y);
+  doc.text(maritalStatus, m + 55, y);
   
   y += 10;
-  doc.text("Exemptions/Allowances:", m, y);
+  doc.setFont("helvetica", "bold");
+  doc.text("Exemptions / Allowances:", m, y);
   
-  y += 10;
-  doc.text("Federal:", m + 10, y);
-  doc.text(formData.provinceAllowances || "1", m + 40, y);
-  doc.text("Federal:", m + 140, y);
+  y += 9;
+  doc.setFont("helvetica", "normal");
+  doc.text("Federal:", m + 8, y);
+  doc.text(formData.federalAllowances || "Std W/HT", m + 35, y);
   
   y += 8;
-  doc.text("State:", m + 10, y);
-  doc.text(formData.provinceAllowances || "1", m + 40, y);
-  doc.text("State:", m + 140, y);
-  
-  y += 8;
-  doc.text("Local:", m + 10, y);
-  doc.text("0", m + 40, y);
-  doc.text("Local:", m + 140, y);
+  doc.text("Provincial:", m + 8, y);
+  doc.text(formData.provinceAllowances || "0", m + 40, y);
   
   y += 10;
-  doc.text("Social Insurance Number:", m, y);
-  const sinDisplay = formData.sin ? `***-**-${formData.sin}` : "***-**-****";
-  doc.text(sinDisplay, m + 85, y);
+  doc.setFont("helvetica", "bold");
+  doc.text("SIN:", m, y);
+  doc.setFont("helvetica", "normal");
+  const sinDisplay = formData.sin ? `XXX-XXX-${formData.sin}` : "XXX-XXX-XXX";
+  doc.text(sinDisplay, m + 20, y);
 
   // ==================== EMPLOYEE NAME & ADDRESS (RIGHT) ====================
+  let empY = 68;
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.text(formData.name || "Employee Name", rightCol, 80);
+  doc.text(formData.name || "EMPLOYEE NAME", rightColStart - 30, empY);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text(formData.address || "", rightCol, 92);
-  doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, rightCol, 102);
+  empY += 10;
+  doc.text(formData.address || "123 Employee Street", rightColStart - 30, empY);
+  empY += 8;
+  doc.text(`${formData.city || "City"}, ${formData.province || "ON"} ${formData.postalCode || "A0A 0A0"}`, rightColStart - 30, empY);
 
   // ==================== EARNINGS TABLE ====================
   y = 135;

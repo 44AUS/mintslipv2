@@ -645,7 +645,7 @@ export default function ComparisonPage() {
     {
       icon: Award,
       title: "Professional Quality",
-      description: "Industry-standard templates that look authentic and professional."
+      description: "Industry-standard templates designed for clarity and accuracy."
     },
     {
       icon: Users,

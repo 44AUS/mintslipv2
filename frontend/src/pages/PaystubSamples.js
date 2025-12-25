@@ -93,14 +93,14 @@ const TEMPLATES = [
     generator: generateTemplateA,
     color: "#F4A460", // Orange peachy
   },
-  {
-    id: "template-b",
-    name: "ADP Style",
-    description: "Professional enterprise-style paystub matching ADP's Earnings Statement format. Includes detailed tax withholding sections, marital status, and comprehensive deduction breakdowns.",
-    features: ["Enterprise professional format", "Detailed tax breakdown", "Marital status & exemptions", "Check stub with bank info"],
-    generator: generateTemplateB,
-    color: "#d0271d", // ADP red
-  },
+  // {
+  //   id: "template-b",
+  //   name: "ADP Style",
+  //   description: "Professional enterprise-style paystub matching ADP's Earnings Statement format. Includes detailed tax withholding sections, marital status, and comprehensive deduction breakdowns.",
+  //   features: ["Enterprise professional format", "Detailed tax breakdown", "Marital status & exemptions", "Check stub with bank info"],
+  //   generator: generateTemplateB,
+  //   color: "#d0271d", // ADP red
+  // },
   {
     id: "template-c",
     name: "Workday Style",
@@ -109,14 +109,14 @@ const TEMPLATES = [
     generator: generateTemplateC,
     color: "#0066cc", // Workday blue
   },
-  {
-    id: "template-h",
-    name: "Colorful Direct Deposit",
-    description: "Modern, colorful paystub with blue headers and orange accents. Features three-column layout for earnings, taxes, and deductions with a professional dark blue footer section.",
-    features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
-    generator: generateTemplateH,
-    color: "#FF9900", // Orange accent
-  },
+  // {
+  //   id: "template-h",
+  //   name: "Colorful Direct Deposit",
+  //   description: "Modern, colorful paystub with blue headers and orange accents. Features three-column layout for earnings, taxes, and deductions with a professional dark blue footer section.",
+  //   features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
+  //   generator: generateTemplateH,
+  //   color: "#FF9900", // Orange accent
+  // },
 ];
 
 // Convert PDF to image

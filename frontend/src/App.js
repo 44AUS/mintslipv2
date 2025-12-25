@@ -28,6 +28,7 @@ import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Reviews from "@/pages/Reviews";
 import ComparisonPage from "@/pages/ComparisonPage";
+import DocumentDirectory from "@/pages/DocumentDirectory";
 
 // PayPal Client IDs
 const PAYPAL_SANDBOX_CLIENT_ID = "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";

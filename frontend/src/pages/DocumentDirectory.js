@@ -333,7 +333,7 @@ export default function DocumentDirectory() {
               <h2 className="text-xl font-bold text-slate-800">
                 {searchQuery ? (
                   <>
-                    {filteredGenerators.length} result{filteredGenerators.length !== 1 ? 's' : ''} for "{searchQuery}"
+                    {filteredGenerators.length} result{filteredGenerators.length !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
                   </>
                 ) : selectedCategory !== "All" ? (
                   <>

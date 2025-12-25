@@ -800,98 +800,115 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   doc.text(fmtCurrency(grossPay), earningsColSalary, y);
   doc.text(fmtCurrency(ytdGrossPay), earningsColYTD, y);
 
-  // ==================== STATUTORY DEDUCTIONS ====================
+  // ==================== DEDUCTIONS SECTION ====================
   y += 20;
+  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.text("Statutory Deductions", m, y);
-  doc.text("this period", m + 160, y);
-  doc.text("year to date", m + 210, y);
-  doc.line(m, y + 2, m + 260, y + 2);
+  doc.text("Deductions", m, y);
   
-  y += 12;
+  // Deductions column headers
+  const dedColPeriod = m + 160;
+  const dedColYTD = m + 205;
+  
+  y += 10;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text("Statutory", m, y);
+  
+  // Underline
+  y += 3;
+  doc.line(m, y, m + 240, y);
+  
+  // CPP/QPP
+  y += 10;
   doc.setFont("helvetica", "normal");
+  doc.text(cppLabel || "CPP", m + 8, y);
+  doc.text(`${fmtCurrency(cpp)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdCpp), dedColYTD, y);
   
-  doc.text("Federal Income", m, y);
-  doc.text(`-${fmtCurrency(federalTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdFederalTax), m + 215, y);
+  // EI
+  y += 9;
+  doc.text("EI", m + 8, y);
+  doc.text(`${fmtCurrency(ei)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdEi), dedColYTD, y);
   
-  y += 10;
-  doc.text(cppLabel || "CPP", m, y);
-  doc.text(`-${fmtCurrency(cpp)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdCpp), m + 215, y);
-  
-  y += 10;
-  doc.text("EI", m, y);
-  doc.text(`-${fmtCurrency(ei)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdEi), m + 215, y);
-  
+  // QPIP (Quebec only)
   if (isQuebec && qpip > 0) {
-    y += 10;
-    doc.text("QPIP", m, y);
-    doc.text(`-${fmtCurrency(qpip)}`, m + 165, y);
-    doc.text(fmtCurrency(ytdQpip), m + 215, y);
+    y += 9;
+    doc.text("QPIP", m + 8, y);
+    doc.text(`${fmtCurrency(qpip)}`, dedColPeriod, y);
+    doc.text(fmtCurrency(ytdQpip), dedColYTD, y);
   }
   
-  y += 10;
-  doc.text(`${formData.province || "Prov."} Income Tax`, m, y);
-  doc.text(`-${fmtCurrency(provincialTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdProvincialTax), m + 215, y);
+  // Federal Income Tax
+  y += 9;
+  doc.text("Federal Income Tax", m + 8, y);
+  doc.text(`${fmtCurrency(federalTax)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdFederalTax), dedColYTD, y);
+  
+  // Provincial Income Tax
+  y += 9;
+  doc.text(`${formData.province || "Prov."} Income Tax`, m + 8, y);
+  doc.text(`${fmtCurrency(provincialTax)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdProvincialTax), dedColYTD, y);
 
-  // ==================== DEPOSITS SECTION (RIGHT) ====================
-  rightY += 15;
-  doc.setFont("helvetica", "bold");
-  doc.text("Deposits", rightCol, rightY);
-  rightY += 8;
-  doc.text("account number", rightCol, rightY);
-  doc.text("transit/ABA", rightCol + 65, rightY);
-  doc.text("amount", rightCol + 125, rightY);
-  doc.line(rightCol, rightY + 2, pageWidth - m, rightY + 2);
-  
-  rightY += 12;
-  doc.setFont("helvetica", "normal");
-  const bankLast4 = formData.bank || "0000";
-  const maskedAccount = `XXXXXX${bankLast4}`;
-  doc.text(maskedAccount, rightCol, rightY);
-  doc.text("XXXXXXXXX", rightCol + 65, rightY);
-  doc.text(fmtCurrency(netPay), rightCol + 125, rightY);
-
-  // ==================== VOLUNTARY DEDUCTIONS ====================
-  y += 18;
-  doc.setFont("helvetica", "bold");
-  doc.text("Voluntary Deductions", m, y);
-  doc.text("this period", m + 160, y);
-  doc.text("year to date", m + 210, y);
-  doc.line(m, y + 2, m + 260, y + 2);
-  
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  
+  // Voluntary deductions if any
   if (deductionsData && deductionsData.length > 0) {
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.text("Other", m, y);
+    y += 3;
+    doc.line(m, y, m + 240, y);
+    
+    y += 10;
+    doc.setFont("helvetica", "normal");
     deductionsData.forEach((d) => {
-      doc.text(`*${d.name || d.type || "Deduction"}`, m, y);
-      doc.text(`-${fmtCurrency(d.currentAmount || 0)}`, m + 165, y);
-      doc.text(fmtCurrency((d.currentAmount || 0) * (data.ytdPayPeriods || 1)), m + 215, y);
-      y += 10;
+      doc.text(`${d.name || d.type || "Deduction"}`, m + 8, y);
+      doc.text(`${fmtCurrency(d.currentAmount || 0)}`, dedColPeriod, y);
+      doc.text(fmtCurrency((d.currentAmount || 0) * (ytdPayPeriods || 1)), dedColYTD, y);
+      y += 9;
     });
   }
   
+  // Employee contributions if any
   if (contributionsData && contributionsData.length > 0) {
-    contributionsData.forEach((c) => {
-      if (!c.type || !c.type.includes('match')) {
-        doc.text(`*${c.name || c.type || "Contribution"}`, m, y);
-        doc.text(`-${fmtCurrency(c.currentAmount || 0)}`, m + 165, y);
-        doc.text(fmtCurrency((c.currentAmount || 0) * (data.ytdPayPeriods || 1)), m + 215, y);
-        y += 10;
-      }
-    });
+    const hasNonMatch = contributionsData.some(c => !c.type || !c.type.includes('match'));
+    if (hasNonMatch) {
+      contributionsData.forEach((c) => {
+        if (!c.type || !c.type.includes('match')) {
+          doc.text(`${c.name || c.type || "Contribution"}`, m + 8, y);
+          doc.text(`${fmtCurrency(c.currentAmount || 0)}`, dedColPeriod, y);
+          doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), dedColYTD, y);
+          y += 9;
+        }
+      });
+    }
   }
 
-  // ==================== NET PAY ====================
-  y += 10;
-  doc.line(m, y - 5, m + 260, y - 5);
+  // ==================== NET PAY BAR ====================
+  y += 12;
+  const netBarHeight = 12;
+  drawHatchedBar(m, y - 8, 240, netBarHeight);
+  
   doc.setFont("helvetica", "bold");
-  doc.text("Net Pay", m, y);
-  doc.text(`$${fmtCurrency(netPay)}`, m + 160, y);
+  doc.setFontSize(8);
+  doc.text("Net Pay", m + 5, y);
+  doc.text(`$${fmtCurrency(netPay)}`, dedColPeriod - 10, y);
+  
+  // Checking and Net Check lines
+  y += 15;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.text("Direct Deposit", m + 8, y);
+  doc.text(fmtCurrency(netPay), dedColPeriod, y);
+  
+  y += 9;
+  doc.text("Net Cheque", m + 8, y);
+  doc.text("$0.00", dedColPeriod, y);
+  
+  // Underline after Net Cheque
+  y += 3;
+  doc.line(m, y, m + 240, y);
 
   // ==================== FEDERAL TAXABLE WAGES NOTE ====================
   const taxableWages = grossPay - (totalDeductions || 0);

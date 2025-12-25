@@ -28,6 +28,7 @@ const FOOTER_LINKS = {
       { name: "Contact", path: "/contact" },
       { name: "FAQ", path: "/faq" },
       { name: "How to Make a Paystub", path: "/how-to-make-a-paystub" },
+      { name: "Paystub for Apartment", path: "/paystub-for-apartment" },
     ]
   },
   legal: {

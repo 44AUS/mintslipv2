@@ -1665,7 +1665,7 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   }
 }
 
-// Template H: Modern Colorful Pay Stub with Blue Headers and Orange Accents
+// Template H: Modern Colorful Pay Stub with Blue Headers
 // Exact match to the provided screenshot design
 export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const { 
@@ -1680,16 +1680,16 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     logoDataUrl
   } = data;
   
-  // Color scheme
+  // Color scheme - Blue themed, no orange
   const colors = {
-    blue: [0, 102, 153],        // #006699 - Header blue
-    darkBlue: [0, 51, 102],     // #003366 - Footer dark blue
-    orange: [255, 153, 0],      // #FF9900 - Orange accent
-    darkOrange: [230, 115, 0],  // #E67300 - Darker orange for headers
-    lightGray: [245, 245, 245], // #F5F5F5 - Light background
-    borderGray: [200, 200, 200], // #C8C8C8 - Borders
+    blue: [28, 104, 183],         // #1C68B7 - Header blue
+    darkBlue: [0, 51, 102],       // #003366 - Footer dark blue  
+    lightBlue: [200, 220, 240],   // Light blue for sub-headers
+    lightGray: [245, 245, 245],   // #F5F5F5 - Light background
+    borderGray: [200, 200, 200],  // #C8C8C8 - Borders
     white: [255, 255, 255],
     black: [0, 0, 0],
+    red: [190, 0, 0],             // For VOID text
   };
   
   // Helper to format currency

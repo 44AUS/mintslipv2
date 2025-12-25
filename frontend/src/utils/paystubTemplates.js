@@ -542,6 +542,7 @@ function drawTable(
 }
 
 // Template B: ADP-Style Earnings Statement (Programmatically Generated)
+// Updated to match exact ADP layout with hatched Gross Pay/Net Pay bars
 export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
@@ -563,14 +564,12 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // Helper function to format date as MM/DD/YYYY - handles timezone-safe parsing
   const formatDateADP = (date) => {
     let mm, dd, yyyy;
-    // Handle string dates (YYYY-MM-DD) to avoid timezone issues
     if (typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
       const parts = date.split('-').map(Number);
       yyyy = parts[0];
       mm = String(parts[1]).padStart(2, '0');
       dd = String(parts[2]).padStart(2, '0');
     } else if (date instanceof Date) {
-      // Use UTC values for Date objects to avoid timezone shift
       mm = String(date.getUTCMonth() + 1).padStart(2, '0');
       dd = String(date.getUTCDate()).padStart(2, '0');
       yyyy = date.getUTCFullYear();
@@ -583,305 +582,355 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
     return `${mm}/${dd}/${yyyy}`;
   };
 
-  const m = 25; // Left margin
-  const rightCol = 320; // Right column start
+  // Helper to draw hatched/textured background bar
+  const drawHatchedBar = (x, y, width, height) => {
+    doc.setFillColor(220, 220, 220);
+    doc.rect(x, y, width, height, 'F');
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.2);
+    // Draw diagonal lines for hatched effect
+    const spacing = 3;
+    for (let i = 0; i < width + height; i += spacing) {
+      const x1 = x + Math.max(0, i - height);
+      const y1 = y + Math.min(i, height);
+      const x2 = x + Math.min(i, width);
+      const y2 = y + Math.max(0, i - width);
+      if (x1 <= x + width && x2 >= x && y1 <= y + height && y2 >= y) {
+        doc.line(x1, y1, x2, y2);
+      }
+    }
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+  };
+
+  const m = 20; // Left margin
+  const rightColStart = 310; // Right column start for "Other Benefits" section
   
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
 
-  // ==================== TOP HEADER ====================
-  let y = 22;
-  doc.setFontSize(7);
+  // ==================== TOP HEADER ROW ====================
+  let y = 18;
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(0, 0, 0);
   
-  // Header labels
-  doc.text("Company Code", m, y);
-  doc.text("Loc/Dept", m + 95, y);
-  doc.text("Number", m + 135, y);
-  doc.text("Page", m + 175, y);
+  // Header labels - CO. FILE DEPT. CLOCK VCHR. NO. Page
+  doc.text("CO.", m, y);
+  doc.text("FILE", m + 25, y);
+  doc.text("DEPT.", m + 60, y);
+  doc.text("CLOCK", m + 95, y);
+  doc.text("VCHR. NO.", m + 130, y);
+  doc.text("Page", m + 185, y);
   
-  // Header underlines
-  doc.line(m, y + 2, m + 80, y + 2);
-  doc.line(m + 95, y + 2, m + 125, y + 2);
-  doc.line(m + 135, y + 2, m + 165, y + 2);
-  doc.line(m + 175, y + 2, m + 200, y + 2);
-  
-  // Helper to truncate text to fit within a max width
-  const truncateText = (text, maxWidth) => {
-    if (!text) return "";
-    let truncated = text;
-    while (doc.getTextWidth(truncated) > maxWidth && truncated.length > 0) {
-      truncated = truncated.slice(0, -1);
-    }
-    return truncated;
-  };
-  
-  // Header values - use form data if provided, otherwise generate random
-  // Apply truncation to fit within column widths
-  y += 10;
-  const companyCode = formData.companyCode || `RJ/${(formData.company || "XXX").substring(0, 3).toUpperCase()}H ${Math.floor(10000000 + Math.random() * 90000000)}`;
-  const locDept = formData.locDept || String(Math.floor(100 + Math.random() * 900)).padStart(3, '0');
-  const checkNumber = formData.checkNumber || String(Math.floor(1000000 + Math.random() * 9000000));
+  // Header values row
+  y += 8;
+  const companyCode = formData.companyCode || "DH4";
+  const fileNum = formData.fileNum || String(Math.floor(100000 + Math.random() * 900000));
+  const deptNum = formData.deptNum || String(Math.floor(10000 + Math.random() * 90000));
+  const clockNum = formData.clockNum || "USPOM";
+  const vchrNum = formData.voucherNumber || String(Math.floor(1000000000 + Math.random() * 9000000000));
   
   doc.setFont("helvetica", "bold");
-  doc.text(truncateText(companyCode, 70), m, y);  // Max width before Loc/Dept
-  doc.text(truncateText(locDept, 25), m + 95, y);  // Max width before Number
-  doc.text(truncateText(checkNumber, 30), m + 135, y);  // Max width before Page
-  doc.text("1 of 1", m + 175, y);
-  
-  // Company name and address - truncate to not overlap with Loc/Dept (max width ~65)
-  const maxCompanyWidth = 65;
-  y += 8;
-  doc.setFont("helvetica", "normal");
-  doc.text(truncateText(formData.company || "", maxCompanyWidth), m, y);
-  y += 8;
-  doc.text(truncateText(formData.companyAddress || "", maxCompanyWidth), m, y);
-  y += 8;
-  doc.text(truncateText(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, maxCompanyWidth), m, y);
+  doc.text(companyCode, m, y);
+  doc.text(fileNum, m + 25, y);
+  doc.text(deptNum, m + 60, y);
+  doc.text(clockNum, m + 95, y);
+  doc.text(vchrNum, m + 130, y);
+  doc.text("1", m + 185, y);
 
-  // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT SIDE) ====================
-  // Title - both words in normal font
-  doc.setFontSize(14);
+  // ==================== EARNINGS STATEMENT TITLE & LOGO ====================
+  doc.setFontSize(16);
   doc.setFont("helvetica", "normal");
-  doc.text("Earnings Statement", rightCol, 25);
+  doc.text("Earnings Statement", rightColStart - 30, 20);
   
-  // Logo on far right - only show if uploaded, otherwise leave blank
+  // Logo on far right - only show if uploaded
   if (logoDataUrl) {
     try {
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 55, 12, 50, 22);
+      doc.addImage(logoDataUrl, 'PNG', pageWidth - m - 50, 8, 45, 20);
     } catch (e) {
-      // Logo failed to load - leave blank
+      // Logo failed - leave blank
     }
   }
-  // No fallback to company name - leave blank if no logo
-  
-  // Period info - below title
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("Period Starting:", rightCol, 42);
-  doc.text(formatDateADP(startDate), rightCol + 55, 42);
-  doc.text("Period Ending:", rightCol, 51);
-  doc.text(formatDateADP(endDate), rightCol + 55, 51);
-  doc.text("Pay Date:", rightCol, 60);
-  doc.text(formatDateADP(payDate), rightCol + 55, 60);
 
-  // ==================== TAX INFO SECTION (LEFT) ====================
-  y = 75;
-  doc.setFontSize(7);
-  
-  // Taxable Marital Status
-  doc.text("Taxable Marital Status:", m, y);
-  const maritalStatus = formData.federalFilingStatus === 'married_jointly' || formData.federalFilingStatus === 'married_separately' ? 'Married' : 'Single';
-  doc.text(maritalStatus, m + 85, y);
-  
-  // Tax Override
-  doc.text("Tax Override:", m + 140, y);
-  
-  y += 10;
-  doc.text("Exemptions/Allowances:", m, y);
-  
-  y += 10;
-  doc.text("Federal:", m + 10, y);
-  doc.text(formData.stateAllowances || "1", m + 40, y);
-  doc.text("Federal:", m + 140, y);
-  
-  y += 8;
-  doc.text("State:", m + 10, y);
-  doc.text(formData.stateAllowances || "1", m + 40, y);
-  doc.text("State:", m + 140, y);
-  
-  y += 8;
-  doc.text("Local:", m + 10, y);
-  doc.text("0", m + 40, y);
-  doc.text("Local:", m + 140, y);
-  
-  y += 10;
-  doc.text("Social Security Number:", m, y);
-  const ssnDisplay = formData.ssn ? `***-**-${formData.ssn}` : "***-**-****";
-  doc.text(ssnDisplay, m + 85, y);
-
-  // ==================== EMPLOYEE NAME & ADDRESS (RIGHT) ====================
-  doc.setFontSize(10);
+  // ==================== COMPANY INFO (LEFT) ====================
+  y = 35;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
-  doc.text(formData.name || "Employee Name", rightCol, 80);
+  doc.text(formData.company || "COMPANY NAME", m, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text(formData.address || "", rightCol, 92);
-  doc.text(`${formData.city || ""}, ${formData.state || ""} ${formData.zip || ""}`, rightCol, 102);
+  y += 10;
+  doc.text(formData.companyAddress || "123 Main Street", m, y);
+  y += 8;
+  doc.text(`${formData.companyCity || "City"}, ${formData.companyState || "ST"} ${formData.companyZip || "00000"}`, m, y);
 
-  // ==================== EARNINGS TABLE ====================
-  y = 135;
+  // ==================== PERIOD INFO (RIGHT SIDE UNDER TITLE) ====================
+  let periodY = 35;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("Period Beginning:", rightColStart - 30, periodY);
+  doc.text(formatDateADP(startDate), rightColStart + 40, periodY);
+  periodY += 9;
+  doc.text("Period Ending:", rightColStart - 30, periodY);
+  doc.text(formatDateADP(endDate), rightColStart + 40, periodY);
+  periodY += 9;
+  doc.text("Pay Date:", rightColStart - 30, periodY);
+  doc.text(formatDateADP(payDate), rightColStart + 40, periodY);
+
+  // ==================== TAX INFO SECTION (LEFT) ====================
+  y = 68;
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  
-  // Earnings header
-  doc.text("Earnings", m, y);
-  doc.text("rate", m + 80, y);
-  doc.text("hours/units", m + 110, y);
-  doc.text("this period", m + 160, y);
-  doc.text("year to date", m + 210, y);
-  doc.line(m, y + 2, m + 260, y + 2);
-  
-  // Regular row
-  y += 12;
+  doc.text("Taxable Marital Status:", m, y);
   doc.setFont("helvetica", "normal");
-  doc.text("Regular", m, y);
-  if (rate > 0) doc.text(fmtCurrency(rate), m + 80, y);
-  doc.text(hours > 0 ? hours.toFixed(2) : "0.00", m + 120, y);
-  doc.text(fmtCurrency(regularPay), m + 165, y);
-  doc.text(fmtCurrency(ytdRegularPay), m + 215, y);
+  const maritalStatus = formData.federalFilingStatus === 'married_jointly' || formData.federalFilingStatus === 'married_separately' ? 'Married' : 'Single';
+  doc.text(maritalStatus, m + 55, y);
   
-  // Overtime row
   y += 10;
-  doc.text("Overtime", m, y);
-  if (overtime > 0) {
-    doc.text(fmtCurrency(rate * 1.5), m + 80, y);
-    doc.text(overtime.toFixed(2), m + 120, y);
-    doc.text(fmtCurrency(overtimePay), m + 165, y);
-    doc.text(fmtCurrency(ytdOvertimePay), m + 215, y);
-  }
-  
-  // Commission row
-  if (commission > 0) {
-    y += 10;
-    doc.text("Commission", m, y);
-    doc.text("", m + 80, y);
-    doc.text("", m + 120, y);
-    doc.text(fmtCurrency(commission), m + 165, y);
-    doc.text(fmtCurrency(ytdCommission), m + 215, y);
-  }
-  
-  // Gross Pay
-  y += 15;
-  doc.line(m + 50, y - 5, m + 260, y - 5);
   doc.setFont("helvetica", "bold");
-  doc.text("Gross Pay", m + 50, y);
-  doc.text(`$${fmtCurrency(grossPay)}`, m + 160, y);
-  doc.text(`$${fmtCurrency(ytdGrossPay)}`, m + 210, y);
+  doc.text("Exemptions / Allowances:", m, y);
+  
+  y += 9;
+  doc.setFont("helvetica", "normal");
+  doc.text("Federal:", m + 8, y);
+  doc.text(formData.federalAllowances || "Std W/HT", m + 35, y);
+  
+  y += 8;
+  doc.text("State:", m + 8, y);
+  doc.text(formData.stateAllowances || "0", m + 35, y);
+  
+  y += 10;
+  doc.setFont("helvetica", "bold");
+  doc.text("SSN:", m, y);
+  doc.setFont("helvetica", "normal");
+  const ssnDisplay = formData.ssn ? `XXX-XX-${formData.ssn}` : "XXX-XX-XXXX";
+  doc.text(ssnDisplay, m + 25, y);
 
-  // ==================== OTHER BENEFITS (RIGHT SIDE) ====================
-  let rightY = 135;
+  // ==================== EMPLOYEE NAME & ADDRESS (RIGHT) ====================
+  let empY = 68;
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
-  doc.text("Other Benefits and", rightCol, rightY);
-  rightY += 8;
-  doc.text("Information", rightCol, rightY);
-  doc.text("this period", rightCol + 80, rightY - 8);
-  doc.text("year to date", rightCol + 125, rightY - 8);
-  doc.line(rightCol, rightY + 2, pageWidth - m, rightY + 2);
+  doc.text(formData.name || "EMPLOYEE NAME", rightColStart - 30, empY);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  empY += 10;
+  doc.text(formData.address || "123 Employee Street", rightColStart - 30, empY);
+  empY += 8;
+  doc.text(`${formData.city || "City"}, ${formData.state || "ST"} ${formData.zip || "00000"}`, rightColStart - 30, empY);
+
+  // ==================== EARNINGS SECTION (LEFT) ====================
+  y = 120;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Earnings", m, y);
   
-  rightY += 12;
+  // Column headers for earnings
+  const earningsColRate = m + 70;
+  const earningsColHour = m + 100;
+  const earningsColSalary = m + 145;
+  const earningsColYTD = m + 195;
+  
+  doc.setFontSize(7);
+  doc.text("rate", earningsColRate, y);
+  doc.text("hour", earningsColHour, y);
+  doc.text("Salary", earningsColSalary, y);
+  doc.text("year to date", earningsColYTD, y);
+  
+  // Underline for earnings header
+  y += 3;
+  doc.line(m, y, m + 240, y);
+  
+  // Salary/Regular row
+  y += 10;
   doc.setFont("helvetica", "normal");
   
-  // Employer match
+  // Determine if it's hourly or salary
+  const isHourly = rate > 0 && hours > 0;
+  
+  if (isHourly) {
+    doc.text("Regular", m, y);
+    doc.text(fmtCurrency(rate), earningsColRate, y);
+    doc.text(hours.toFixed(2), earningsColHour, y);
+  } else {
+    doc.text("Salary", m, y);
+  }
+  doc.text(fmtCurrency(regularPay), earningsColSalary, y);
+  doc.text(fmtCurrency(ytdRegularPay), earningsColYTD, y);
+  
+  // Overtime row (if applicable)
+  if (overtime > 0) {
+    y += 9;
+    doc.text("Overtime", m, y);
+    doc.text(fmtCurrency(rate * 1.5), earningsColRate, y);
+    doc.text(overtime.toFixed(2), earningsColHour, y);
+    doc.text(fmtCurrency(overtimePay), earningsColSalary, y);
+    doc.text(fmtCurrency(ytdOvertimePay), earningsColYTD, y);
+  }
+  
+  // Commission row (if applicable)
+  if (commission > 0) {
+    y += 9;
+    doc.text("Commission", m, y);
+    doc.text(fmtCurrency(commission), earningsColSalary, y);
+    doc.text(fmtCurrency(ytdCommission), earningsColYTD, y);
+  }
+
+  // ==================== OTHER BENEFITS SECTION (RIGHT) ====================
+  let rightY = 120;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Other Benefits and Information", rightColStart, rightY);
+  
+  const otherColPeriod = rightColStart + 90;
+  const otherColYTD = rightColStart + 130;
+  
+  doc.setFontSize(7);
+  doc.text("this period", otherColPeriod, rightY);
+  doc.text("total to date", otherColYTD, rightY);
+  
+  rightY += 3;
+  doc.line(rightColStart, rightY, pageWidth - m, rightY);
+  
+  rightY += 10;
+  doc.setFont("helvetica", "normal");
+  
+  // Show contributions/benefits if any
   if (contributionsData && contributionsData.length > 0) {
     contributionsData.forEach((c) => {
       if (c.type && c.type.includes('match')) {
-        doc.text(`*${c.name || "Employer match"}`, rightCol, rightY);
-        doc.text(fmtCurrency(c.currentAmount || 0), rightCol + 85, rightY);
-        doc.text(fmtCurrency((c.currentAmount || 0) * (data.ytdPayPeriods || 1)), rightCol + 130, rightY);
-        rightY += 10;
+        doc.text(`${c.name || "Employer Match"}`, rightColStart, rightY);
+        doc.text(fmtCurrency(c.currentAmount || 0), otherColPeriod + 10, rightY);
+        doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), otherColYTD + 10, rightY);
+        rightY += 9;
       }
     });
   }
 
-  // ==================== STATUTORY DEDUCTIONS ====================
-  y += 20;
-  doc.setFont("helvetica", "bold");
-  doc.text("Statutory Deductions", m, y);
-  doc.text("this period", m + 160, y);
-  doc.text("year to date", m + 210, y);
-  doc.line(m, y + 2, m + 260, y + 2);
-  
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  
-  doc.text("Federal Income", m, y);
-  doc.text(`-${fmtCurrency(federalTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdFederalTax), m + 215, y);
-  
-  y += 10;
-  doc.text("Social Security", m, y);
-  doc.text(`-${fmtCurrency(ssTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdSsTax), m + 215, y);
-  
-  y += 10;
-  doc.text("Medicare", m, y);
-  doc.text(`-${fmtCurrency(medTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdMedTax), m + 215, y);
-  
-  y += 10;
-  doc.text(`${formData.state || "State"} State Income`, m, y);
-  doc.text(`-${fmtCurrency(stateTax)}`, m + 165, y);
-  doc.text(fmtCurrency(ytdStateTax), m + 215, y);
-
-  // ==================== DEPOSITS SECTION (RIGHT) ====================
-  rightY += 15;
-  doc.setFont("helvetica", "bold");
-  doc.text("Deposits", rightCol, rightY);
-  rightY += 8;
-  doc.text("account number", rightCol, rightY);
-  doc.text("transit/ABA", rightCol + 65, rightY);
-  doc.text("amount", rightCol + 125, rightY);
-  doc.line(rightCol, rightY + 2, pageWidth - m, rightY + 2);
-  
-  rightY += 12;
-  doc.setFont("helvetica", "normal");
-  const bankLast4 = formData.bank || "0000";
-  const maskedAccount = `XXXXXX${bankLast4}`;
-  doc.text(maskedAccount, rightCol, rightY);
-  doc.text("XXXXXXXXX", rightCol + 65, rightY);
-  doc.text(fmtCurrency(netPay), rightCol + 125, rightY);
-
-  // ==================== VOLUNTARY DEDUCTIONS ====================
+  // ==================== GROSS PAY BAR ====================
   y += 18;
+  const grossBarHeight = 12;
+  drawHatchedBar(m, y - 8, 240, grossBarHeight);
+  
   doc.setFont("helvetica", "bold");
-  doc.text("Voluntary Deductions", m, y);
-  doc.text("this period", m + 160, y);
-  doc.text("year to date", m + 210, y);
-  doc.line(m, y + 2, m + 260, y + 2);
+  doc.setFontSize(8);
+  doc.text("Gross Pay", m + 5, y);
+  doc.text(fmtCurrency(grossPay), earningsColSalary, y);
+  doc.text(fmtCurrency(ytdGrossPay), earningsColYTD, y);
+
+  // ==================== DEDUCTIONS SECTION ====================
+  y += 20;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.text("Deductions", m, y);
   
-  y += 12;
+  // Deductions column headers
+  const dedColPeriod = m + 160;
+  const dedColYTD = m + 205;
+  
+  y += 10;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.text("Statutory", m, y);
+  
+  // Underline
+  y += 3;
+  doc.line(m, y, m + 240, y);
+  
+  // FICA - Medicare
+  y += 10;
   doc.setFont("helvetica", "normal");
+  doc.text("FICA - Medicare", m + 8, y);
+  doc.text(`${fmtCurrency(medTax)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdMedTax), dedColYTD, y);
   
+  // FICA - Social Security
+  y += 9;
+  doc.text("FICA - Social Security", m + 8, y);
+  doc.text(`${fmtCurrency(ssTax)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdSsTax), dedColYTD, y);
+  
+  // Federal Income Tax
+  y += 9;
+  doc.text("Federal Income Tax", m + 8, y);
+  doc.text(`${fmtCurrency(federalTax)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdFederalTax), dedColYTD, y);
+  
+  // State Income Tax
+  y += 9;
+  doc.text("State Income Tax", m + 8, y);
+  doc.text(`${fmtCurrency(stateTax)}`, dedColPeriod, y);
+  doc.text(fmtCurrency(ytdStateTax), dedColYTD, y);
+
+  // Voluntary deductions if any
   if (deductionsData && deductionsData.length > 0) {
+    y += 12;
+    doc.setFont("helvetica", "bold");
+    doc.text("Other", m, y);
+    y += 3;
+    doc.line(m, y, m + 240, y);
+    
+    y += 10;
+    doc.setFont("helvetica", "normal");
     deductionsData.forEach((d) => {
-      doc.text(`*${d.name || d.type || "Deduction"}`, m, y);
-      doc.text(`-${fmtCurrency(d.currentAmount || 0)}`, m + 165, y);
-      doc.text(fmtCurrency((d.currentAmount || 0) * (data.ytdPayPeriods || 1)), m + 215, y);
-      y += 10;
+      doc.text(`${d.name || d.type || "Deduction"}`, m + 8, y);
+      doc.text(`${fmtCurrency(d.currentAmount || 0)}`, dedColPeriod, y);
+      doc.text(fmtCurrency((d.currentAmount || 0) * (ytdPayPeriods || 1)), dedColYTD, y);
+      y += 9;
     });
   }
   
+  // Employee contributions if any
   if (contributionsData && contributionsData.length > 0) {
-    contributionsData.forEach((c) => {
-      if (!c.type || !c.type.includes('match')) {
-        doc.text(`*${c.name || c.type || "Contribution"}`, m, y);
-        doc.text(`-${fmtCurrency(c.currentAmount || 0)}`, m + 165, y);
-        doc.text(fmtCurrency((c.currentAmount || 0) * (data.ytdPayPeriods || 1)), m + 215, y);
-        y += 10;
-      }
-    });
+    const hasNonMatch = contributionsData.some(c => !c.type || !c.type.includes('match'));
+    if (hasNonMatch) {
+      contributionsData.forEach((c) => {
+        if (!c.type || !c.type.includes('match')) {
+          doc.text(`${c.name || c.type || "Contribution"}`, m + 8, y);
+          doc.text(`${fmtCurrency(c.currentAmount || 0)}`, dedColPeriod, y);
+          doc.text(fmtCurrency((c.currentAmount || 0) * (ytdPayPeriods || 1)), dedColYTD, y);
+          y += 9;
+        }
+      });
+    }
   }
 
-  // ==================== NET PAY ====================
-  y += 10;
-  doc.line(m, y - 5, m + 260, y - 5);
+  // ==================== NET PAY BAR ====================
+  y += 12;
+  const netBarHeight = 12;
+  drawHatchedBar(m, y - 8, 240, netBarHeight);
+  
   doc.setFont("helvetica", "bold");
-  doc.text("Net Pay", m, y);
-  doc.text(`$${fmtCurrency(netPay)}`, m + 160, y);
+  doc.setFontSize(8);
+  doc.text("Net Pay", m + 5, y);
+  doc.text(`$${fmtCurrency(netPay)}`, dedColPeriod - 10, y);
+  
+  // Checking and Net Check lines
+  y += 15;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.text("Checking", m + 8, y);
+  doc.text(fmtCurrency(netPay), dedColPeriod, y);
+  
+  y += 9;
+  doc.text("Net Check", m + 8, y);
+  doc.text("$0.00", dedColPeriod, y);
+  
+  // Underline after Net Check
+  y += 3;
+  doc.line(m, y, m + 240, y);
 
   // ==================== FEDERAL TAXABLE WAGES NOTE ====================
-  const taxableWages = grossPay - (totalDeductions || 0);
-  y = Math.max(y, rightY) + 40;
-  doc.setFontSize(7);
+  y += 12;
+  doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, rightCol, y);
+  doc.text("* Excluded from federal taxable wages", m, y);
   y += 8;
-  doc.text("* Excluded from Federal taxable wages", rightCol, y);
+  const taxableWages = grossPay - (totalDeductions || 0);
+  doc.text(`Your federal taxable wages this period are $${fmtCurrency(taxableWages)}`, m, y);
 
   // ==================== BOTTOM DIVIDER ====================
-  y += 25;
+  y += 20;
   doc.setLineWidth(0.5);
   doc.line(m, y, pageWidth - m, y);
 
@@ -897,9 +946,9 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   
   // Pay Date
   doc.setFont("helvetica", "bold");
-  doc.text("Pay Date:", rightCol + 30, y);
+  doc.text("Pay Date:", rightColStart, y);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDateADP(payDate), rightCol + 65, y);
+  doc.text(formatDateADP(payDate), rightColStart + 35, y);
 
   // ==================== THIS IS NOT A CHECK WATERMARK ====================
   y += 35;
@@ -907,7 +956,6 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.setTextColor(180, 180, 180);
   doc.setFont("helvetica", "bold");
   
-  // Draw diagonal watermark text
   const watermarkText = "THIS IS NOT A CHECK";
   const centerX = pageWidth / 2;
   doc.text(watermarkText, centerX, y, { align: 'center', angle: -12 });
@@ -923,15 +971,17 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   y += 10;
   doc.text("Deposited to the account", m, y);
   doc.text("account number", m + 150, y);
-  doc.text("transit/ABA", rightCol, y);
-  doc.text("amount", rightCol + 80, y);
+  doc.text("transit/ABA", rightColStart, y);
+  doc.text("amount", rightColStart + 80, y);
   
   y += 10;
   doc.setFont("helvetica", "normal");
+  const bankLast4 = formData.bank || "0000";
+  const maskedAccount = `XXXXXX${bankLast4}`;
   doc.text(`${formData.bankName || "Bank"} DirectDeposit`, m, y);
   doc.text(maskedAccount, m + 150, y);
-  doc.text("XXXXXXXXX", rightCol, y);
-  doc.text(fmtCurrency(netPay), rightCol + 80, y);
+  doc.text("XXXXXXXXX", rightColStart, y);
+  doc.text(fmtCurrency(netPay), rightColStart + 80, y);
 
   // ==================== EMPLOYEE INFO AT BOTTOM ====================
   y += 25;

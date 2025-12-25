@@ -606,15 +606,10 @@ const FeatureRow = ({ feature, mintslip, others, isVisible, delay }) => (
 
 export default function ComparisonPage() {
   const navigate = useNavigate();
-  const [isVisible, setIsVisible] = useState(false);
   const [heroRef, heroInView] = useInView();
   const [tableRef, tableInView] = useInView();
   const [cardsRef, cardsInView] = useInView();
   const [featuresRef, featuresInView] = useInView();
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const comparisonFeatures = [
     { name: "Instant PDF Download", icon: Download, mintslip: true, others: "Sometimes" },

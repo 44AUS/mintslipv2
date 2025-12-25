@@ -178,6 +178,15 @@ function DesktopNavLinks({ location, onNavigate }) {
           })}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <button
+        onClick={() => onNavigate("/generators")}
+        className={getButtonClasses("/generators")}
+        data-testid="nav-generators-link"
+      >
+        <FileText className="w-4 h-4" />
+        <span className="text-sm">All Generators</span>
+      </button>
       
       <button
         onClick={() => onNavigate("/contact")}

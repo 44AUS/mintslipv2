@@ -613,16 +613,16 @@ export default function ComparisonPage() {
 
   const comparisonFeatures = [
     { name: "Instant PDF Download", icon: Download, mintslip: true, others: "Sometimes" },
-    { name: "No Registration Required", icon: Users, mintslip: true, others: false },
-    { name: "Professional Templates", icon: FileText, mintslip: "7+ Templates", others: "1-2 Templates" },
-    { name: "Real-Time Preview", icon: Eye, mintslip: true, others: false },
+    { name: "No Registration Required", icon: Users, mintslip: true, others: "Sometimes" },
+    { name: "Professional Templates", icon: FileText, mintslip: "Modern Templates", others: "Generic Templates" },
+    { name: "Real-Time Preview", icon: Eye, mintslip: true, others: true },
     { name: "Mobile Friendly", icon: Smartphone, mintslip: true, others: "Limited" },
     { name: "Secure Payment (PayPal)", icon: CreditCard, mintslip: true, others: "Varies" },
     { name: "No Data Storage", icon: Lock, mintslip: true, others: false },
-    { name: "Auto Tax Calculations", icon: Zap, mintslip: true, others: "Manual" },
+    { name: "Auto Tax Calculations", icon: Zap, mintslip: true, others: "Sometimes" },
     { name: "YTD Calculations", icon: Clock, mintslip: true, others: false },
     { name: "Customer Support", icon: Users, mintslip: "24/7", others: "Limited" },
-    { name: "Contractor/1099 Support", icon: FileText, mintslip: true, others: false },
+    { name: "Contractor/1099 Support", icon: FileText, mintslip: true, others: "Sometimes" },
     { name: "Canadian Paystubs", icon: FileText, mintslip: true, others: false },
   ];
 

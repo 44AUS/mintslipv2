@@ -873,7 +873,7 @@ export default function ComparisonPage() {
               </h3>
               <p className="text-slate-600 mb-6">Generate documents in under 2 minutes</p>
               <div className="h-48">
-                <SpeedAnimation isVisible={cardsInView} />
+                <LightningBoltAnimation isVisible={cardsInView} />
               </div>
             </div>
 

@@ -567,10 +567,10 @@ export default function DocumentDirectory() {
       <section className="py-16 bg-gradient-to-br from-green-800 to-emerald-900">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-black text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            Can't Find What You Need?
+            Can&apos;t Find What You Need?
           </h2>
           <p className="text-green-100 text-lg mb-8 max-w-2xl mx-auto">
-            We're constantly adding new document generators. Contact us if you need a specific document type.
+            We&apos;re constantly adding new document generators. Contact us if you need a specific document type.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button

@@ -111,11 +111,11 @@ const TEMPLATES = [
   },
   // {
   //   id: "template-h",
-  //   name: "Colorful Direct Deposit",
-  //   description: "Modern, colorful paystub with blue headers and orange accents. Features three-column layout for earnings, taxes, and deductions with a professional dark blue footer section.",
+  //   name: "OnPay Style",
+  //   description: "Clean, modern paystub design inspired by OnPay payroll. Features a compact layout with clear earnings breakdown, tax withholdings, and YTD totals. Perfect for small to medium businesses.",
   //   features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
   //   generator: generateTemplateH,
-  //   color: "#FF9900", // Orange accent
+  //   color: "#2580d8", // Orange accent
   // },
 ];
 

@@ -1682,14 +1682,12 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   // Color scheme - Blue themed, no orange
   const colors = {
-    blue: [28, 104, 183],         // #1C68B7 - Header blue
-    darkBlue: [0, 51, 102],       // #003366 - Footer dark blue  
-    lightBlue: [200, 220, 240],   // Light blue for sub-headers
+    blue: [37, 128, 216],         // #2580d8 - Header blue
+    lightBlue: [215, 215, 215],   // Light gray for sub-headers
     lightGray: [245, 245, 245],   // #F5F5F5 - Light background
     borderGray: [200, 200, 200],  // #C8C8C8 - Borders
     white: [255, 255, 255],
     black: [0, 0, 0],
-    red: [190, 0, 0],             // For VOID text
   };
   
   // Helper to format currency
@@ -1720,14 +1718,14 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   let y = 12;
 
   // ==================== TOP SECTION - EMPLOYEE NAME ====================
-  doc.setFont("helvetica", "bold");
+  doc.setFont("times roman", "bold");
   doc.setFontSize(14);
   doc.setTextColor(...colors.black);
   doc.text(formData.name || "Employee Name", m, y + 5);
   
   // ***DD*** badge on right
   doc.setFillColor(...colors.blue);
-  doc.roundedRect(pageWidth - m - 35, y - 2, 30, 12, 2, 2, 'F');
+  doc.roundedRect(pageWidth - m - 35, y - 2, 40, 12, 2, 2, 'F');
   doc.setTextColor(...colors.white);
   doc.setFontSize(8);
   doc.text("***DD***", pageWidth - m - 33, y + 6);
@@ -1736,20 +1734,18 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
 
   // ==================== DIRECT DEPOSIT BLUE BANNER ====================
   doc.setFillColor(...colors.blue);
-  doc.rect(m, y, pageWidth - 2 * m, 12, 'F');
+  doc.rect(m, y, pageWidth - 2 * m, 20, 'F');
   
   doc.setTextColor(...colors.white);
-  doc.setFontSize(9);
+  doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  const ddText = "DIRECT DEPOSIT *** DIRECT DEPOSIT *** DIRECT DEPOSIT *** DIRECT DEPOSIT *** DIRECT DEPOSIT";
-  doc.text(ddText, m + 5, y + 8);
+  const ddText = "DIRECT DEPOSIT *** DIRECT DEPOSIT **************************************************************************";
+  doc.text(ddText, m + 10, y + 12);
   
   y += 16;
 
   // ==================== EMPLOYEE ADDRESS SECTION ====================
-  doc.setFillColor(...colors.lightGray);
   doc.rect(m, y, pageWidth - 2 * m, 35, 'F');
-  doc.setDrawColor(...colors.borderGray);
   doc.rect(m, y, pageWidth - 2 * m, 35);
   
   // Employee address on left
@@ -1768,7 +1764,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   // *** VOID *** watermark on right
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.setTextColor(...colors.red);
+  doc.setTextColor(...colors.black);
   doc.text("*** VOID ***", pageWidth - m - 70, y + 22);
   
   doc.setTextColor(...colors.black);
@@ -1832,7 +1828,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.blue);
   doc.rect(col1X, y, col1Width, headerHeight, 'F');
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(...colors.white);
   doc.text("Gross Wages", col1X + col1Width/2, y + 8, { align: 'center' });
   
@@ -1876,15 +1872,15 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     ["Overtime", overtime > 0 ? overtime.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate * 1.5) : "0.00", fmtCurrency(overtimePay), fmtCurrency(ytdOvertimePay)],
     ["Cash Tip", "0.000", "0.00", "0.00", "0.00"],
     ["Bonus", "0.000", "0.00", "0.00", "0.00"],
-    ["Sick Tim", "0.000", "0.00", "0.00", "0.00"],
-    ["Commissi", "0.000", "0.00", commission > 0 ? fmtCurrency(commission) : "0.00", commission > 0 ? fmtCurrency(ytdCommission) : "0.00"],
+    ["Sick Time", "0.000", "0.00", "0.00", "0.00"],
+    ["Commission", "0.000", "0.00", commission > 0 ? fmtCurrency(commission) : "0.00", commission > 0 ? fmtCurrency(ytdCommission) : "0.00"],
     ["Mileage", "0.000", "0.00", "0.00", "0.00"],
     ["Regular", "0.000", "0.00", "0.00", "0.00"],
     ["Overtime", "0.000", "0.00", "0.00", "0.00"],
     ["Cash Tip", "0.000", "0.00", "0.00", "0.00"],
     ["Bonus", "0.000", "0.00", "0.00", "0.00"],
-    ["Sick Tim", "0.000", "0.00", "0.00", "0.00"],
-    ["Commissi", "0.000", "0.00", "0.00", "0.00"],
+    ["Sick Time", "0.000", "0.00", "0.00", "0.00"],
+    ["Commission", "0.000", "0.00", "0.00", "0.00"],
     ["Mileage", "0.000", "0.00", "0.00", "0.00"],
   ];
   
@@ -1916,7 +1912,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.blue);
   doc.rect(col2X, y, col2Width, headerHeight, 'F');
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(...colors.white);
   doc.text("Withholding Taxes", col2X + col2Width/2, y + 8, { align: 'center' });
   
@@ -1928,7 +1924,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("times roman");
   
   // Column widths for Withholding: Desc, Amt, YTD
   const wt = {
@@ -1989,7 +1985,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.blue);
   doc.rect(col3X, y, col3Width, headerHeight, 'F');
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(...colors.white);
   doc.text("Deductions/Benefits", col3X + col3Width/2, y + 8, { align: 'center' });
   
@@ -2095,7 +2091,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const footerColWidth = (pageWidth - 2 * m) / 4;
   
   // Dark blue footer background
-  doc.setFillColor(...colors.darkBlue);
+  doc.setFillColor(...colors.white);
   doc.rect(m, footerY, pageWidth - 2 * m, footerHeight, 'F');
   
   // Footer column headers (blue bars)
@@ -2115,7 +2111,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const contentY = footerY + 15;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6);
-  doc.setTextColor(...colors.white);
+  doc.setTextColor(...colors.black);
   
   // Accruals column
   const accrualsX = m + 3;
@@ -2125,23 +2121,21 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   // ACH column - empty or with bank info
   const achX = m + footerColWidth + 3;
   const bankLast4 = formData.bank || "0000";
-  doc.text(`****${bankLast4}`, achX, contentY + 5);
+  doc.text(`Direct Deposit****${bankLast4}`, achX, contentY + 5);
   doc.text(`$${fmtCurrency(netPay)}`, achX, contentY + 13);
   
   // Net Pay column
   const netPayX = m + 2 * footerColWidth + 3;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.text("Net:", netPayX, contentY + 5);
-  doc.setFontSize(10);
-  doc.text(`$${fmtCurrency(netPay)}`, netPayX, contentY + 15);
+  doc.setFont("helvetica",);
+  doc.setFontSize(6);
+  doc.text(`Net: $${fmtCurrency(netPay)}`, netPayX, contentY + 5);
   doc.setFontSize(6);
   doc.setFont("helvetica", "normal");
-  doc.text(`Direct Deposit: $${fmtCurrency(netPay)}`, netPayX, contentY + 25);
+  doc.text(`Direct Deposit: $${fmtCurrency(netPay)}`, netPayX, contentY + 13);
   
   // Company column
   const companyX = m + 3 * footerColWidth + 3;
-  doc.setFont("helvetica", "bold");
+  doc.setFont("helvetica");
   doc.setFontSize(6);
   doc.text(formData.company || "Company Name", companyX, contentY + 5);
   doc.setFont("helvetica", "normal");

@@ -2145,10 +2145,12 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.white);
   doc.rect(col1X, totalsY, col1Width, rowHeight + 2, 'F');
   doc.setDrawColor(...colors.borderGray);
-  doc.rect(col1X, totalsY, col1Width, rowHeight + 2);
-  // Black bottom border
+  doc.line(col1X, totalsY, col1X + col1Width, totalsY); // Gray top border
+  // Black side and bottom borders
   doc.setDrawColor(...colors.black);
-  doc.line(col1X, totalsY + rowHeight + 2, col1X + col1Width, totalsY + rowHeight + 2);
+  doc.line(col1X, totalsY, col1X, totalsY + rowHeight + 2); // Left border
+  doc.line(col1X + col1Width, totalsY, col1X + col1Width, totalsY + rowHeight + 2); // Right border
+  doc.line(col1X, totalsY + rowHeight + 2, col1X + col1Width, totalsY + rowHeight + 2); // Bottom border
   doc.setFont("courier", "bold");
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
@@ -2160,10 +2162,12 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.white);
   doc.rect(col2X, totalsY, col2Width, rowHeight + 2, 'F');
   doc.setDrawColor(...colors.borderGray);
-  doc.rect(col2X, totalsY, col2Width, rowHeight + 2);
-  // Black bottom border
+  doc.line(col2X, totalsY, col2X + col2Width, totalsY); // Gray top border
+  // Black side and bottom borders
   doc.setDrawColor(...colors.black);
-  doc.line(col2X, totalsY + rowHeight + 2, col2X + col2Width, totalsY + rowHeight + 2);
+  doc.line(col2X, totalsY, col2X, totalsY + rowHeight + 2); // Left border
+  doc.line(col2X + col2Width, totalsY, col2X + col2Width, totalsY + rowHeight + 2); // Right border
+  doc.line(col2X, totalsY + rowHeight + 2, col2X + col2Width, totalsY + rowHeight + 2); // Bottom border
   doc.text("Total:", col2X + 3, totalsY + 6);
   doc.text(fmtCurrency(totalTax), col2X + wt.desc + wt.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax), col2X + col2Width - 5, totalsY + 6, { align: 'right' });
@@ -2172,10 +2176,12 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.white);
   doc.rect(col3X, totalsY, col3Width, rowHeight + 2, 'F');
   doc.setDrawColor(...colors.borderGray);
-  doc.rect(col3X, totalsY, col3Width, rowHeight + 2);
-  // Black bottom border
+  doc.line(col3X, totalsY, col3X + col3Width, totalsY); // Gray top border
+  // Black side and bottom borders
   doc.setDrawColor(...colors.black);
-  doc.line(col3X, totalsY + rowHeight + 2, col3X + col3Width, totalsY + rowHeight + 2);
+  doc.line(col3X, totalsY, col3X, totalsY + rowHeight + 2); // Left border
+  doc.line(col3X + col3Width, totalsY, col3X + col3Width, totalsY + rowHeight + 2); // Right border
+  doc.line(col3X, totalsY + rowHeight + 2, col3X + col3Width, totalsY + rowHeight + 2); // Bottom border
   doc.text("Total:", col3X + 3, totalsY + 6);
   doc.text(fmtCurrency(totalDeductions + totalContributions), col3X + db.desc + db.ben + db.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdDeductions + ytdContributions), col3X + col3Width - 5, totalsY + 6, { align: 'right' });

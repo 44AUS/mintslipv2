@@ -1817,7 +1817,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(7);
   doc.text("MEMO:", pageWidth - m - 95, y + 9);
   doc.setFont("helvetica", "normal");
-  doc.text("Thank you for your hard work.", pageWidth - m - 70, y + 9);
+  const memoText = formData.memo || "Thank you for your hard work.";
+  doc.text(memoText, pageWidth - m - 70, y + 9);
   
   doc.setFont("helvetica", "bold");
   doc.text("EMP#:", pageWidth - m - 95, y + 20);

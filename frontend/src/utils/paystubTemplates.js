@@ -1778,42 +1778,45 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...colors.black);
-  doc.text(formData.name || "Employee Name", m + 5, y + 10);
+  doc.text(formData.name || "Employee Name", m + 5, y + 8);
   
-  // Info row with labels and values side by side
-  doc.setFontSize(6);
+  // Info section with two rows
+  doc.setFontSize(7);
   const checkNum = formData.checkNumber || String(Math.floor(1 + Math.random() * 999));
   const empNum = formData.employeeId || String(Math.floor(1000000 + Math.random() * 9000000));
   
-  // Check # and value
+  // Row 1: Check # and Check Date
   doc.setFont("helvetica", "bold");
-  doc.text("Check #:", m + 5, y + 20);
+  doc.text("Check #:", m + 5, y + 17);
   doc.setFont("helvetica", "normal");
-  doc.text(checkNum, m + 23, y + 20);
+  doc.text(checkNum, m + 28, y + 17);
   
-  // Check Date and value
   doc.setFont("helvetica", "bold");
-  doc.text("Check Date:", m + 45, y + 20);
+  doc.text("Check Date:", m + 55, y + 17);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(payDate), m + 72, y + 20);
+  doc.text(formatDate(payDate), m + 85, y + 17);
   
-  // Period Start and value
+  // Row 2: Period Start and Period Ending
   doc.setFont("helvetica", "bold");
-  doc.text("Period Start:", m + 105, y + 20);
+  doc.text("Period Start:", m + 5, y + 25);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(startDate), m + 135, y + 20);
+  doc.text(formatDate(startDate), m + 35, y + 25);
   
-  // Period Ending and value
   doc.setFont("helvetica", "bold");
-  doc.text("Period Ending:", m + 168, y + 20);
+  doc.text("Period Ending:", m + 75, y + 25);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 202, y + 20);
+  doc.text(formatDate(endDate), m + 110, y + 25);
   
-  // EMP# and value on far right
+  // Right side: MEMO and EMP#
   doc.setFont("helvetica", "bold");
-  doc.text("EMP#:", pageWidth - m - 50, y + 20);
+  doc.text("MEMO:", m + 160, y + 17);
   doc.setFont("helvetica", "normal");
-  doc.text(empNum, pageWidth - m - 35, y + 20);
+  doc.text("Thank you for your hard work.", m + 180, y + 17);
+  
+  doc.setFont("helvetica", "bold");
+  doc.text("EMP#:", pageWidth - m - 50, y + 17);
+  doc.setFont("helvetica", "normal");
+  doc.text(empNum, pageWidth - m - 32, y + 17);
   
   y += 32;
 

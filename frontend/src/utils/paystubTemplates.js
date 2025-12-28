@@ -1745,8 +1745,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   y += 16;
 
   // ==================== EMPLOYEE ADDRESS SECTION ====================
+  doc.setFillColor(...colors.white);
   doc.rect(m, y, pageWidth - 2 * m, 35, 'F');
-  doc.rect(m, y, pageWidth - 2 * m, 35);
   
   // Employee address on left
   doc.setFont("helvetica", "normal");
@@ -1773,9 +1773,6 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   // ==================== PAYSTUB INFO BAR ====================
   doc.setFillColor(...colors.white);
   doc.rect(m, y, pageWidth - 2 * m, 28, 'F');
-  doc.setDrawColor(...colors.borderGray);
-  doc.setLineWidth(0.5);
-  doc.rect(m, y, pageWidth - 2 * m, 28);
   
   // Employee name in info bar
   doc.setFont("helvetica", "bold");

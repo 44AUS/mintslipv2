@@ -48,6 +48,7 @@ const isLocalhost = typeof window !== 'undefined' && (
 const PAYROLL_COMPANIES = [
   { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
+  { id: 'onpay', name: 'OnPay', template: 'template-h', logo: null },
   // ADP and Colorful templates only visible on localhost
   ...(isLocalhost ? [
     { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },

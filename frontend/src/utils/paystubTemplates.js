@@ -1944,10 +1944,11 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.line(col1X + gw.desc + gw.hours + gw.rate, grossWagesStartY, col1X + gw.desc + gw.hours + gw.rate, gwEndY);
   // Vertical line after Amt column
   doc.line(col1X + gw.desc + gw.hours + gw.rate + gw.amt, grossWagesStartY, col1X + gw.desc + gw.hours + gw.rate + gw.amt, gwEndY);
-  // Outer borders (left, right, bottom) - BLACK
+  // Outer borders (left, right, bottom) - BLACK, starting from sub header
   doc.setDrawColor(...colors.black);
-  doc.line(col1X, grossWagesStartY, col1X, gwEndY); // Left border
-  doc.line(col1X + col1Width, grossWagesStartY, col1X + col1Width, gwEndY); // Right border
+  const subHeaderY = y + headerHeight;
+  doc.line(col1X, subHeaderY, col1X, gwEndY); // Left border from sub header
+  doc.line(col1X + col1Width, subHeaderY, col1X + col1Width, gwEndY); // Right border from sub header
   doc.line(col1X, gwEndY, col1X + col1Width, gwEndY); // Bottom border
 
   // ==================== WITHHOLDING TAXES TABLE ====================

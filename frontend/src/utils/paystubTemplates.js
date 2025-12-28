@@ -1812,16 +1812,17 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "normal");
   doc.text(formatDate(endDate), m + 118, y + 30);
   
-  // Right side: MEMO stacked above EMP#
+  // Right side: MEMO stacked above EMP# - starting at same height as name
   doc.setFont("helvetica", "bold");
-  doc.text("MEMO:", pageWidth - m - 95, y + 18);
+  doc.setFontSize(7);
+  doc.text("MEMO:", pageWidth - m - 95, y + 9);
   doc.setFont("helvetica", "normal");
-  doc.text("Thank you for your hard work.", pageWidth - m - 70, y + 18);
+  doc.text("Thank you for your hard work.", pageWidth - m - 70, y + 9);
   
   doc.setFont("helvetica", "bold");
-  doc.text("EMP#:", pageWidth - m - 95, y + 30);
+  doc.text("EMP#:", pageWidth - m - 95, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(empNum, pageWidth - m - 70, y + 30);
+  doc.text(empNum, pageWidth - m - 70, y + 20);
   
   y += 40;
 

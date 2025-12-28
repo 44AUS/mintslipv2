@@ -1801,16 +1801,16 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "normal");
   doc.text(formatDate(payDate), m + 110, y + 18);
   
-  // Row 2: Period Start and Period Ending (left side)
+  // Row 2: Period Start and Period Ending (left side) - aligned with Row 1
   doc.setFont("helvetica", "bold");
   doc.text("Period Start:", m + 5, y + 30);
   doc.setFont("helvetica", "normal");
   doc.text(formatDate(startDate), m + 50, y + 30);
   
   doc.setFont("helvetica", "bold");
-  doc.text("Period Ending:", m + 100, y + 30);
+  doc.text("Period Ending:", m + 70, y + 30);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 148, y + 30);
+  doc.text(formatDate(endDate), m + 118, y + 30);
   
   // Right side: MEMO stacked above EMP#
   doc.setFont("helvetica", "bold");

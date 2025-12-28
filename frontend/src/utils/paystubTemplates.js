@@ -1774,13 +1774,13 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.white);
   doc.rect(m, y, pageWidth - 2 * m, 36, 'F');
   
-  // Employee name with blue background box
+  // Employee name with blue background box - extends to end of Check Date area
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   const employeeName = formData.name || "Employee Name";
-  const nameWidth = doc.getTextWidth(employeeName) + 8; // Add padding
+  const blueBoxWidth = 155; // Extends to cover through Check Date area
   doc.setFillColor(...colors.blue);
-  doc.rect(m + 2, y + 1, nameWidth, 12, 'F');
+  doc.rect(m + 2, y + 1, blueBoxWidth, 12, 'F');
   doc.setTextColor(...colors.white);
   doc.text(employeeName, m + 6, y + 9);
   doc.setTextColor(...colors.black);

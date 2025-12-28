@@ -1781,39 +1781,39 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.text(formData.name || "Employee Name", m + 5, y + 10);
   
   // Info row with labels and values side by side
-  doc.setFontSize(7);
+  doc.setFontSize(6);
   const checkNum = formData.checkNumber || String(Math.floor(1 + Math.random() * 999));
   const empNum = formData.employeeId || String(Math.floor(1000000 + Math.random() * 9000000));
   
   // Check # and value
   doc.setFont("helvetica", "bold");
-  doc.text("Check #", m + 5, y + 20);
+  doc.text("Check #:", m + 5, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(checkNum, m + 28, y + 20);
+  doc.text(checkNum, m + 22, y + 20);
   
   // Check Date and value
   doc.setFont("helvetica", "bold");
-  doc.text("Check Date", m + 55, y + 20);
+  doc.text("Check Date:", m + 40, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(payDate), m + 88, y + 20);
+  doc.text(formatDate(payDate), m + 65, y + 20);
   
   // Period Start and value
   doc.setFont("helvetica", "bold");
-  doc.text("Period Start", m + 120, y + 20);
+  doc.text("Period Start:", m + 95, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(startDate), m + 155, y + 20);
+  doc.text(formatDate(startDate), m + 122, y + 20);
   
   // Period Ending and value
   doc.setFont("helvetica", "bold");
-  doc.text("Period Ending", m + 185, y + 20);
+  doc.text("Period Ending:", m + 152, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 225, y + 20);
+  doc.text(formatDate(endDate), m + 183, y + 20);
   
   // EMP# and value on far right
   doc.setFont("helvetica", "bold");
-  doc.text("EMP#", pageWidth - m - 55, y + 20);
+  doc.text("EMP#:", pageWidth - m - 50, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(empNum, pageWidth - m - 38, y + 20);
+  doc.text(empNum, pageWidth - m - 35, y + 20);
   
   y += 32;
 

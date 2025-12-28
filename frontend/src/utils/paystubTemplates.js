@@ -1884,7 +1884,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   tableY += subHeaderHeight;
   
-  // Gross Wages data - 14 rows
+  // Gross Wages data - 25 rows
   const earningsRows = [
     ["Regular", hours > 0 ? hours.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate) : "0.00", fmtCurrency(regularPay), fmtCurrency(ytdRegularPay)],
     ["Overtime", overtime > 0 ? overtime.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate * 1.5) : "0.00", fmtCurrency(overtimePay), fmtCurrency(ytdOvertimePay)],
@@ -1893,13 +1893,24 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     ["Sick Time", "0.000", "0.00", "0.00", "0.00"],
     ["Commission", "0.000", "0.00", commission > 0 ? fmtCurrency(commission) : "0.00", commission > 0 ? fmtCurrency(ytdCommission) : "0.00"],
     ["Mileage", "0.000", "0.00", "0.00", "0.00"],
-    ["Regular", "0.000", "0.00", "0.00", "0.00"],
-    ["Overtime", "0.000", "0.00", "0.00", "0.00"],
-    ["Cash Tip", "0.000", "0.00", "0.00", "0.00"],
-    ["Bonus", "0.000", "0.00", "0.00", "0.00"],
-    ["Sick Time", "0.000", "0.00", "0.00", "0.00"],
-    ["Commission", "0.000", "0.00", "0.00", "0.00"],
-    ["Mileage", "0.000", "0.00", "0.00", "0.00"],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
   ];
   
   doc.setFont("courier", "normal");

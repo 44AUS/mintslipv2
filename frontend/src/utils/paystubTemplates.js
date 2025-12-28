@@ -1856,13 +1856,13 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   let xPos = col1X + 2;
   doc.text("Desc", xPos, tableY + 7);
   xPos += gw.desc;
-  doc.text("Hours", xPos, tableY + 7);
+  doc.text("Hours", xPos + gw.hours / 2, tableY + 7, { align: 'center' });
   xPos += gw.hours;
-  doc.text("Rate", xPos, tableY + 7);
+  doc.text("Rate", xPos + gw.rate / 2, tableY + 7, { align: 'center' });
   xPos += gw.rate;
-  doc.text("Amt", xPos, tableY + 7);
+  doc.text("Amt", xPos + gw.amt / 2, tableY + 7, { align: 'center' });
   xPos += gw.amt;
-  doc.text("YTD", xPos, tableY + 7);
+  doc.text("YTD", xPos + gw.ytd / 2, tableY + 7, { align: 'center' });
   
   tableY += subHeaderHeight;
   

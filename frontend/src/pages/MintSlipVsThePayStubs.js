@@ -463,7 +463,7 @@ export default function MintSlipVsThePayStubs() {
                     onClick={() => navigate('/paystub-generator')}
                     className="bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
                   >
-                    Try MintSlip Free
+                    Try MintSlip Today
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                   <Button 
@@ -552,7 +552,7 @@ export default function MintSlipVsThePayStubs() {
                 </div>
 
                 <p className="text-slate-500 text-sm">
-                  * Prices as of January 2025. MintSlip pricing includes unlimited revisions and instant download.
+                  * Prices as of January 2025. MintSlip pricing includes instant download.
                 </p>
               </div>
             </div>
@@ -644,20 +644,20 @@ export default function MintSlipVsThePayStubs() {
                 </thead>
                 <tbody>
                   <ComparisonRow feature="Price per Paystub" mintslip="$7.99" competitor="$19.99" mintslipBetter={true} />
-                  <ComparisonRow feature="Professional Templates" mintslip="4+ Styles" competitor="2 Styles" mintslipBetter={true} />
+                  <ComparisonRow feature="Professional Templates" mintslip="4+ Professional Styles" competitor="Multiple Generic Styles" mintslipBetter={true} />
                   <ComparisonRow feature="Instant Download" mintslip={true} competitor={true} />
-                  <ComparisonRow feature="Live Preview" mintslip={true} competitor={false} />
+                  <ComparisonRow feature="Blazing Fast Live Preview" mintslip={true} competitor={false} />
                   <ComparisonRow feature="All 50 State Tax Calculations" mintslip={true} competitor={true} />
                   <ComparisonRow feature="W-2 Employee Support" mintslip={true} competitor={true} />
-                  <ComparisonRow feature="1099 Contractor Support" mintslip={true} competitor={false} />
+                  <ComparisonRow feature="1099 Contractor Support" mintslip={true} competitor={true} />
                   <ComparisonRow feature="YTD Calculations" mintslip={true} competitor={true} />
                   <ComparisonRow feature="Overtime Calculations" mintslip={true} competitor={true} />
-                  <ComparisonRow feature="Custom Deductions" mintslip={true} competitor={false} />
+                  <ComparisonRow feature="Custom Deductions" mintslip={true} competitor={true} />
                   <ComparisonRow feature="Employer Contributions" mintslip={true} competitor={false} />
-                  <ComparisonRow feature="Mobile Friendly" mintslip={true} competitor={false} />
-                  <ComparisonRow feature="No Account Required" mintslip={true} competitor={false} />
+                  <ComparisonRow feature="Mobile Friendly" mintslip={true} competitor={true} />
+                  <ComparisonRow feature="No Account Required" mintslip={true} competitor={true} />
                   <ComparisonRow feature="Canadian Paystubs" mintslip={true} competitor={false} />
-                  <ComparisonRow feature="Multiple Pay Frequencies" mintslip="Weekly/Bi-weekly/Monthly" competitor="Bi-weekly only" mintslipBetter={true} />
+                  <ComparisonRow feature="Mobile App" mintslip={true} competitor={false} mintslipBetter={true} />
                 </tbody>
               </table>
             </div>
@@ -738,7 +738,7 @@ export default function MintSlipVsThePayStubs() {
                   },
                   {
                     q: "Can I create paystubs for contractors on MintSlip?",
-                    a: "Yes! Unlike ThePayStubs which only supports W-2 employees, MintSlip supports both W-2 employees and 1099 contractors."
+                    a: "Yes, MintSlip supports both W-2 employees and 1099 contractors."
                   },
                   {
                     q: "How fast can I get my paystub?",
@@ -746,7 +746,7 @@ export default function MintSlipVsThePayStubs() {
                   },
                   {
                     q: "Do I need to create an account?",
-                    a: "No account required. MintSlip lets you create and download paystubs without signing up, unlike ThePayStubs which requires registration."
+                    a: "No account required. MintSlip lets you create and download paystubs without signing up."
                   }
                 ].map((faq, index) => (
                   <div key={index} className="bg-white rounded-xl p-6 shadow-md">

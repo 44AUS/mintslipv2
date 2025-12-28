@@ -1774,11 +1774,16 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFillColor(...colors.white);
   doc.rect(m, y, pageWidth - 2 * m, 36, 'F');
   
-  // Employee name in info bar
+  // Employee name with blue background box
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
+  const employeeName = formData.name || "Employee Name";
+  const nameWidth = doc.getTextWidth(employeeName) + 8; // Add padding
+  doc.setFillColor(...colors.blue);
+  doc.rect(m + 2, y + 1, nameWidth, 12, 'F');
+  doc.setTextColor(...colors.white);
+  doc.text(employeeName, m + 6, y + 9);
   doc.setTextColor(...colors.black);
-  doc.text(formData.name || "Employee Name", m + 5, y + 8);
   
   // Info section with two rows
   doc.setFontSize(7);

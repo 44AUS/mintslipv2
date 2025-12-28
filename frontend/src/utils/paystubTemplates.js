@@ -2066,10 +2066,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6);
   
+  const deductionsStartY = tableY;
   dedRows.slice(0, 14).forEach((row) => {
-    doc.setDrawColor(...colors.borderGray);
-    doc.rect(col3X, tableY, col3Width, rowHeight);
-    
     xPos = col3X + 2;
     doc.text(row[0], xPos, tableY + 6);
     xPos += db.desc;
@@ -2081,6 +2079,21 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     
     tableY += rowHeight;
   });
+  
+  // Draw vertical column dividers for Deductions/Benefits (after Desc row, between columns)
+  doc.setDrawColor(...colors.borderGray);
+  doc.setLineWidth(0.5);
+  const dbEndY = tableY;
+  // Vertical line after Desc column
+  doc.line(col3X + db.desc, deductionsStartY, col3X + db.desc, dbEndY);
+  // Vertical line after Ben column
+  doc.line(col3X + db.desc + db.ben, deductionsStartY, col3X + db.desc + db.ben, dbEndY);
+  // Vertical line after Amt column
+  doc.line(col3X + db.desc + db.ben + db.amt, deductionsStartY, col3X + db.desc + db.ben + db.amt, dbEndY);
+  // Outer borders (left, right, bottom)
+  doc.line(col3X, deductionsStartY, col3X, dbEndY); // Left border
+  doc.line(col3X + col3Width, deductionsStartY, col3X + col3Width, dbEndY); // Right border
+  doc.line(col3X, dbEndY, col3X + col3Width, dbEndY); // Bottom border
 
   // ==================== TOTALS ROW ====================
   const totalsY = y + headerHeight + subHeaderHeight + (numRows * rowHeight);

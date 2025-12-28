@@ -623,6 +623,9 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       case 'template-c':
         await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
         break;
+      case 'template-h':
+        generateTemplateH(doc, templateData, pageWidth, pageHeight, margin);
+        break;
       case 'template-a':
       default:
         await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);

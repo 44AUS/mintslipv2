@@ -33,6 +33,7 @@ const TAX_FORMS = [
 // Other Forms dropdown items
 const OTHER_FORMS = [
   { name: "Canadian Paystub Generator", path: "/canadian-paystub-generator", icon: FileSpreadsheet },
+  { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
   // { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
   { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
   { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
@@ -106,15 +107,6 @@ function DesktopNavLinks({ location, onNavigate }) {
       >
         <FileBarChart className="w-4 h-4" />
         <span className="text-sm">Accounting Mockups</span>
-      </button>
-
-        <button
-        onClick={() => onNavigate("/service-expense-generator")}
-        className={getButtonClasses("/service-expense-generator")}
-        data-testid="nav-bankstatement-link"
-      >
-        <FileBarChart className="w-4 h-4" />
-        <span className="text-sm">Service Expense</span>
       </button>
 
       {/* Tax Forms Dropdown */}
@@ -271,15 +263,6 @@ function MobileNavLinks({ location, onNavigate }) {
       >
         <FileBarChart className="w-5 h-5" />
         <span className="text-base">Accounting Mockups</span>
-      </button>
-
-      <button
-        onClick={() => onNavigate("/service-expense-generator")}
-        className={getButtonClasses("/service-expense-generator")}
-        data-testid="nav-utilitybill-link-mobile"
-      >
-        <FileBarChart className="w-5 h-5" />
-        <span className="text-base">Service Expense</span>
       </button>
 
       {/* Tax Forms Collapsible for Mobile */}

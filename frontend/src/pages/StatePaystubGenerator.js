@@ -548,7 +548,7 @@ export default function StatePaystubGenerator() {
   return (
     <>
       <Helmet>
-        <title>{stateInfo.name} Paystub Generator | Create {stateInfo.abbr} Pay Stubs Online | MintSlip</title>
+        <title>{stateInfo.name} Paystub Generator | Create {stateInfo.name} Pay Stubs Online | MintSlip</title>
         <meta name="description" content={`Generate professional pay stubs for ${stateInfo.name} (${stateInfo.abbr}). ${stateInfo.hasStateTax ? `Accurate ${stateInfo.taxRate} tax calculations.` : 'No state income tax calculations needed.'} Used by renters & contractors in ${stateInfo.name}. Instant PDF download.`} />
         <meta name="keywords" content={`${stateInfo.name} paystub generator, ${stateInfo.abbr} pay stub maker, ${stateInfo.name} paycheck generator, ${stateInfo.majorCities.join(' paystub, ')} paystub, ${stateInfo.name} contractor pay stub, ${stateInfo.name} self employed paystub`} />
         <link rel="canonical" href={`https://mintslip.com/paystub-generator/${state}`} />
@@ -587,9 +587,8 @@ export default function StatePaystubGenerator() {
         </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-        <Header />
-        
+      <Header />
+
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-green-900 to-green-800 text-white py-16">
           <div className="container mx-auto px-4">
@@ -617,12 +616,7 @@ export default function StatePaystubGenerator() {
             </div>
           </div>
         </section>
-
-        {/* Main Form Section */}
-        <section className="py-8">
-          <PaystubForm />
-        </section>
-
+     
         {/* SEO Content Section */}
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
@@ -883,7 +877,7 @@ export default function StatePaystubGenerator() {
         </section>
 
         <Footer />
-      </div>
+      
     </>
   );
 }

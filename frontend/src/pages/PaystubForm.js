@@ -1247,12 +1247,12 @@ export default function PaystubForm() {
                 )}
               </div>
 
-              {/* Worker Type Selection - Only show contractor option for Template A (Gusto) */}
+              {/* Worker Type Selection - Only show contractor option for Template A (Gusto) and Template H (OnPay) */}
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Worker Type
                 </h2>
-                {selectedTemplate === 'template-a' ? (
+                {(selectedTemplate === 'template-a' || selectedTemplate === 'template-h') ? (
                   <RadioGroup value={formData.workerType} onValueChange={handleWorkerTypeChange}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>

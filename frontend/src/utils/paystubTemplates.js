@@ -1772,7 +1772,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
 
   // ==================== PAYSTUB INFO BAR ====================
   doc.setFillColor(...colors.white);
-  doc.rect(m, y, pageWidth - 2 * m, 32, 'F');
+  doc.rect(m, y, pageWidth - 2 * m, 36, 'F');
   
   // Employee name in info bar
   doc.setFont("helvetica", "bold");
@@ -1789,36 +1789,36 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "bold");
   doc.text("Check #:", m + 5, y + 18);
   doc.setFont("helvetica", "normal");
-  doc.text(checkNum, m + 30, y + 18);
+  doc.text(checkNum, m + 35, y + 18);
   
   doc.setFont("helvetica", "bold");
-  doc.text("Check Date:", m + 60, y + 18);
+  doc.text("Check Date:", m + 70, y + 18);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(payDate), m + 95, y + 18);
+  doc.text(formatDate(payDate), m + 110, y + 18);
   
   // Row 2: Period Start and Period Ending (left side)
   doc.setFont("helvetica", "bold");
-  doc.text("Period Start:", m + 5, y + 28);
+  doc.text("Period Start:", m + 5, y + 30);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(startDate), m + 42, y + 28);
+  doc.text(formatDate(startDate), m + 50, y + 30);
   
   doc.setFont("helvetica", "bold");
-  doc.text("Period Ending:", m + 85, y + 28);
+  doc.text("Period Ending:", m + 100, y + 30);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 125, y + 28);
+  doc.text(formatDate(endDate), m + 148, y + 30);
   
-  // Right side: MEMO and EMP#
+  // Right side: MEMO stacked above EMP#
   doc.setFont("helvetica", "bold");
-  doc.text("MEMO:", m + 150, y + 18);
+  doc.text("MEMO:", pageWidth - m - 95, y + 18);
   doc.setFont("helvetica", "normal");
-  doc.text("Thank you for your hard work.", m + 172, y + 18);
+  doc.text("Thank you for your hard work.", pageWidth - m - 70, y + 18);
   
   doc.setFont("helvetica", "bold");
-  doc.text("EMP#:", pageWidth - m - 55, y + 18);
+  doc.text("EMP#:", pageWidth - m - 95, y + 30);
   doc.setFont("helvetica", "normal");
-  doc.text(empNum, pageWidth - m - 35, y + 18);
+  doc.text(empNum, pageWidth - m - 70, y + 30);
   
-  y += 36;
+  y += 40;
 
   // ==================== MAIN DATA TABLES ====================
   const tableWidth = pageWidth - 2 * m;

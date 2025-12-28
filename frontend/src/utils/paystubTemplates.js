@@ -2098,8 +2098,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
       dedRows.push([name, "", fmtCurrency(c.currentAmount || 0), fmtCurrency((c.currentAmount || 0) * ytdPayPeriods)]);
     });
   }
-  // Fill to 14 rows
-  while (dedRows.length < 14) {
+  // Fill to 25 rows
+  while (dedRows.length < 25) {
     dedRows.push(["", "", "", ""]);
   }
   
@@ -2107,7 +2107,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(6);
   
   const deductionsStartY = tableY;
-  dedRows.slice(0, 14).forEach((row) => {
+  dedRows.slice(0, 25).forEach((row) => {
     xPos = col3X + 2;
     doc.text(row[0], xPos, tableY + 6);
     xPos += db.desc;

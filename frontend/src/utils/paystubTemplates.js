@@ -2138,8 +2138,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   // ==================== TOTALS ROW ====================
   const totalsY = y + headerHeight + subHeaderHeight + (numRows * rowHeight);
   
-  // Gross Wages Total
-  doc.setFillColor(240, 240, 240);
+  // Gross Wages Total - white background
+  doc.setFillColor(...colors.white);
   doc.rect(col1X, totalsY, col1Width, rowHeight + 2, 'F');
   doc.setDrawColor(...colors.borderGray);
   doc.rect(col1X, totalsY, col1Width, rowHeight + 2);
@@ -2150,14 +2150,16 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.text(fmtCurrency(grossPay), col1X + gw.desc + gw.hours + gw.rate + gw.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdGrossPay), col1X + col1Width - 5, totalsY + 6, { align: 'right' });
   
-  // Withholding Total
+  // Withholding Total - white background
+  doc.setFillColor(...colors.white);
   doc.rect(col2X, totalsY, col2Width, rowHeight + 2, 'F');
   doc.rect(col2X, totalsY, col2Width, rowHeight + 2);
   doc.text("Total:", col2X + 3, totalsY + 6);
   doc.text(fmtCurrency(totalTax), col2X + wt.desc + wt.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax), col2X + col2Width - 5, totalsY + 6, { align: 'right' });
   
-  // Deductions Total
+  // Deductions Total - white background
+  doc.setFillColor(...colors.white);
   doc.rect(col3X, totalsY, col3Width, rowHeight + 2, 'F');
   doc.rect(col3X, totalsY, col3Width, rowHeight + 2);
   doc.text("Total:", col3X + 3, totalsY + 6);

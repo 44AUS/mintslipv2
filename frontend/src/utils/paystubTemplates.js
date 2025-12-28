@@ -1939,7 +1939,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.setFont("times roman");
+  doc.setFont("helvetica", "normal");
   
   // Column widths for Withholding: Desc, Amt, YTD
   const wt = {

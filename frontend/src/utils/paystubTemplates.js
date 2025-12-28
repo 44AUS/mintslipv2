@@ -1780,28 +1780,40 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setTextColor(...colors.black);
   doc.text(formData.name || "Employee Name", m + 5, y + 10);
   
-  // Info row with labels and values
+  // Info row with labels and values side by side
   doc.setFontSize(7);
   const checkNum = formData.checkNumber || String(Math.floor(1 + Math.random() * 999));
   const empNum = formData.employeeId || String(Math.floor(1000000 + Math.random() * 9000000));
   
-  // Labels row
+  // Check # and value
   doc.setFont("helvetica", "bold");
-  doc.text("Check #", m + 5, y + 18);
-  doc.text("Check Date", m + 45, y + 18);
-  doc.text("Period Start", m + 95, y + 18);
-  doc.text("Period Ending", m + 145, y + 18);
-  doc.text("MEMO", m + 200, y + 18);
-  doc.text("EMP#", pageWidth - m - 45, y + 18);
-  
-  // Values row
+  doc.text("Check #", m + 5, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(checkNum, m + 5, y + 25);
-  doc.text(formatDate(payDate), m + 45, y + 25);
-  doc.text(formatDate(startDate), m + 95, y + 25);
-  doc.text(formatDate(endDate), m + 145, y + 25);
-  doc.text("", m + 200, y + 25);
-  doc.text(empNum, pageWidth - m - 45, y + 25);
+  doc.text(checkNum, m + 28, y + 20);
+  
+  // Check Date and value
+  doc.setFont("helvetica", "bold");
+  doc.text("Check Date", m + 55, y + 20);
+  doc.setFont("helvetica", "normal");
+  doc.text(formatDate(payDate), m + 88, y + 20);
+  
+  // Period Start and value
+  doc.setFont("helvetica", "bold");
+  doc.text("Period Start", m + 120, y + 20);
+  doc.setFont("helvetica", "normal");
+  doc.text(formatDate(startDate), m + 155, y + 20);
+  
+  // Period Ending and value
+  doc.setFont("helvetica", "bold");
+  doc.text("Period Ending", m + 185, y + 20);
+  doc.setFont("helvetica", "normal");
+  doc.text(formatDate(endDate), m + 225, y + 20);
+  
+  // EMP# and value on far right
+  doc.setFont("helvetica", "bold");
+  doc.text("EMP#", pageWidth - m - 55, y + 20);
+  doc.setFont("helvetica", "normal");
+  doc.text(empNum, pageWidth - m - 38, y + 20);
   
   y += 32;
 

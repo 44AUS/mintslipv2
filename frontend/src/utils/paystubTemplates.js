@@ -1887,10 +1887,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6);
   
+  const grossWagesStartY = tableY;
   earningsRows.forEach((row) => {
-    doc.setDrawColor(...colors.borderGray);
-    doc.rect(col1X, tableY, col1Width, rowHeight);
-    
     xPos = col1X + 2;
     doc.text(row[0], xPos, tableY + 6);
     xPos += gw.desc;
@@ -1904,6 +1902,23 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     
     tableY += rowHeight;
   });
+  
+  // Draw vertical column dividers for Gross Wages (after Desc row, between columns)
+  doc.setDrawColor(...colors.borderGray);
+  doc.setLineWidth(0.5);
+  const gwEndY = tableY;
+  // Vertical line after Desc column
+  doc.line(col1X + gw.desc, grossWagesStartY, col1X + gw.desc, gwEndY);
+  // Vertical line after Hours column
+  doc.line(col1X + gw.desc + gw.hours, grossWagesStartY, col1X + gw.desc + gw.hours, gwEndY);
+  // Vertical line after Rate column
+  doc.line(col1X + gw.desc + gw.hours + gw.rate, grossWagesStartY, col1X + gw.desc + gw.hours + gw.rate, gwEndY);
+  // Vertical line after Amt column
+  doc.line(col1X + gw.desc + gw.hours + gw.rate + gw.amt, grossWagesStartY, col1X + gw.desc + gw.hours + gw.rate + gw.amt, gwEndY);
+  // Outer borders (left, right, bottom)
+  doc.line(col1X, grossWagesStartY, col1X, gwEndY); // Left border
+  doc.line(col1X + col1Width, grossWagesStartY, col1X + col1Width, gwEndY); // Right border
+  doc.line(col1X, gwEndY, col1X + col1Width, gwEndY); // Bottom border
 
   // ==================== WITHHOLDING TAXES TABLE ====================
   tableY = y + headerHeight;

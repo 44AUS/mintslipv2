@@ -1979,10 +1979,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6);
   
+  const withholdingStartY = tableY;
   taxRows.forEach((row) => {
-    doc.setDrawColor(...colors.borderGray);
-    doc.rect(col2X, tableY, col2Width, rowHeight);
-    
     xPos = col2X + 2;
     doc.text(row[0], xPos, tableY + 6);
     xPos += wt.desc;
@@ -1992,6 +1990,19 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     
     tableY += rowHeight;
   });
+  
+  // Draw vertical column dividers for Withholding Taxes (after Desc row, between columns)
+  doc.setDrawColor(...colors.borderGray);
+  doc.setLineWidth(0.5);
+  const wtEndY = tableY;
+  // Vertical line after Desc column
+  doc.line(col2X + wt.desc, withholdingStartY, col2X + wt.desc, wtEndY);
+  // Vertical line after Amt column
+  doc.line(col2X + wt.desc + wt.amt, withholdingStartY, col2X + wt.desc + wt.amt, wtEndY);
+  // Outer borders (left, right, bottom)
+  doc.line(col2X, withholdingStartY, col2X, wtEndY); // Left border
+  doc.line(col2X + col2Width, withholdingStartY, col2X + col2Width, wtEndY); // Right border
+  doc.line(col2X, wtEndY, col2X + col2Width, wtEndY); // Bottom border
 
   // ==================== DEDUCTIONS/BENEFITS TABLE ====================
   tableY = y + headerHeight;

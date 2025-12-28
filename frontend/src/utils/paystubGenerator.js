@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { generateTemplateA, generateTemplateB, generateTemplateC } from "./paystubTemplates";
+import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "./paystubTemplates";
 import { getLocalTaxRate, getSUTARate } from "./taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 

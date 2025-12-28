@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { generateTemplateA, generateTemplateB, generateTemplateC } from "./paystubTemplates";
+import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "./paystubTemplates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 import { getLocalTaxRate } from "./taxRates";
 import * as pdfjsLib from 'pdfjs-dist';

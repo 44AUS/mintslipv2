@@ -1839,7 +1839,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const headerHeight = 12;
   const subHeaderHeight = 10;
   const rowHeight = 8;
-  const numRows = 14;
+  const numRows = 25;
 
   // ==================== GROSS WAGES TABLE ====================
   // Main header

@@ -2040,7 +2040,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.line(col2X + wt.desc, withholdingStartY, col2X + wt.desc, wtEndY);
   // Vertical line after Amt column
   doc.line(col2X + wt.desc + wt.amt, withholdingStartY, col2X + wt.desc + wt.amt, wtEndY);
-  // Outer borders (left, right, bottom)
+  // Outer borders (left, right, bottom) - BLACK
+  doc.setDrawColor(...colors.black);
   doc.line(col2X, withholdingStartY, col2X, wtEndY); // Left border
   doc.line(col2X + col2Width, withholdingStartY, col2X + col2Width, wtEndY); // Right border
   doc.line(col2X, wtEndY, col2X + col2Width, wtEndY); // Bottom border

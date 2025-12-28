@@ -1986,7 +1986,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   tableY += subHeaderHeight;
   
-  // Withholding data - 14 rows
+  // Withholding data - 25 rows
   const stateCode = formData.state || "ST";
   const taxRows = [
     ["SS", fmtCurrency(ssTax), fmtCurrency(ytdSsTax)],
@@ -1998,6 +1998,17 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     [`SDI WTH-${stateCode}`, "0.00", "0.00"],
     [`SIT-${stateCode}`, fmtCurrency(stateTax), fmtCurrency(ytdStateTax)],
     [`SIT-${stateCode}`, "0.00", "0.00"],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
     ["", "", ""],
     ["", "", ""],
     ["", "", ""],

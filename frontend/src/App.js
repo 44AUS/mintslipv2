@@ -4,6 +4,7 @@ import Home from "@/pages/Home";
 import PaystubForm from "@/pages/PaystubForm";
 import PaystubSamples from "@/pages/PaystubSamples";
 import CanadianPaystubForm from "@/pages/CanadianPaystubForm";
+import StatePaystubGenerator from "@/pages/StatePaystubGenerator";
 import BankStatementForm from "@/pages/BankStatementForm";
 import W2Form from "@/pages/W2Form";
 import W9Form from "@/pages/W9Form";

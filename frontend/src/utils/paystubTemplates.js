@@ -1842,7 +1842,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
   
   // Column widths for Gross Wages: Desc, Hours, Rate, Amt, YTD
   const gw = {
@@ -1884,7 +1884,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     ["Mileage", "0.000", "0.00", "0.00", "0.00"],
   ];
   
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
   doc.setFontSize(6);
   
   const grossWagesStartY = tableY;
@@ -1939,7 +1939,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
   
   // Column widths for Withholding: Desc, Amt, YTD
   const wt = {
@@ -1976,7 +1976,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     ["", "", ""],
   ];
   
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
   doc.setFontSize(6);
   
   const withholdingStartY = tableY;
@@ -2023,7 +2023,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
   
   // Column widths for Deductions: Desc, Ben, Amt, YTD
   const db = {
@@ -2063,7 +2063,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     dedRows.push(["", "", "", ""]);
   }
   
-  doc.setFont("helvetica", "normal");
+  doc.setFont("times", "normal");
   doc.setFontSize(6);
   
   const deductionsStartY = tableY;

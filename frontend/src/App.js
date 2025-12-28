@@ -70,15 +70,8 @@ function App() {
             <Route path="/paystub-generator" element={<PaystubForm />} />
             <Route path="/paystub-samples" element={<PaystubSamples />} />
             <Route path="/instant-paystub-generator" element={<PaystubForm />} />
-            <Route path="/paystub-generator/california" element={<PaystubForm />} />
-            <Route path="/paystub-generator/ohio" element={<PaystubForm />} />
-            <Route path="/paystub-generator/indiana" element={<PaystubForm />} />
-            <Route path="/paystub-generator/kentucky" element={<PaystubForm />} />
-            <Route path="/paystub-generator/georgia" element={<PaystubForm />} />
-            <Route path="/paystub-generator/texas" element={<PaystubForm />} />
-            <Route path="/paystub-generator/florida" element={<PaystubForm />} />
-            <Route path="/paystub-generator/new-york" element={<PaystubForm />} />
-            <Route path="/paystub-generator/illinois" element={<PaystubForm />} />
+            {/* State-specific paystub generator pages with SEO content */}
+            <Route path="/paystub-generator/:state" element={<StatePaystubGenerator />} />
             <Route path="/paystub-for-apartment" element={<PaystubForm />} />
             <Route path="/paystub-for-mortgage" element={<PaystubForm />} />
             <Route path="/paystub-template-download" element={<PaystubForm />} />

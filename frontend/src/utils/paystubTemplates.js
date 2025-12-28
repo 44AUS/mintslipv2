@@ -1789,25 +1789,25 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "bold");
   doc.text("Check #:", m + 5, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(checkNum, m + 22, y + 20);
+  doc.text(checkNum, m + 23, y + 20);
   
   // Check Date and value
   doc.setFont("helvetica", "bold");
-  doc.text("Check Date:", m + 40, y + 20);
+  doc.text("Check Date:", m + 45, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(payDate), m + 65, y + 20);
+  doc.text(formatDate(payDate), m + 72, y + 20);
   
   // Period Start and value
   doc.setFont("helvetica", "bold");
-  doc.text("Period Start:", m + 95, y + 20);
+  doc.text("Period Start:", m + 105, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(startDate), m + 122, y + 20);
+  doc.text(formatDate(startDate), m + 135, y + 20);
   
   // Period Ending and value
   doc.setFont("helvetica", "bold");
-  doc.text("Period Ending:", m + 152, y + 20);
+  doc.text("Period Ending:", m + 168, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 183, y + 20);
+  doc.text(formatDate(endDate), m + 202, y + 20);
   
   // EMP# and value on far right
   doc.setFont("helvetica", "bold");

@@ -111,7 +111,7 @@ const VsComparisonAnimation = ({ isVisible }) => (
         <rect x="185" y="115" width="70" height="20" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1s forwards' : 'none' }}/>
         <text x="220" y="129" textAnchor="middle" fill="#166534" fontSize="10" fontWeight="bold"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$7.99</text>
+          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$9.99</text>
         {/* MINTSLIP label */}
         <rect x="185" y="165" width="70" height="18" rx="4" fill="#1a4731"
           style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}/>
@@ -225,7 +225,7 @@ const PriceComparisonAnimation = ({ isVisible }) => (
         animation: isVisible ? 'bounceIn 0.6s ease-out 1s forwards' : 'none'
       }}>
         <rect x="45" y="100" width="110" height="50" rx="8" fill="#1a4731"/>
-        <text x="100" y="128" textAnchor="middle" fill="#ffffff" fontSize="24" fontWeight="bold">$7.99</text>
+        <text x="100" y="128" textAnchor="middle" fill="#ffffff" fontSize="24" fontWeight="bold">$9.99</text>
         <text x="100" y="142" textAnchor="middle" fill="#86efac" fontSize="10">MintSlip</text>
       </g>
 
@@ -379,7 +379,7 @@ export default function MintSlipVsThePayStubs() {
     <>
       <Helmet>
         <title>MintSlip vs ThePayStubs (2025) | Honest Comparison & Review</title>
-        <meta name="description" content="Comparing MintSlip vs ThePayStubs for paystub generation. See why MintSlip offers better value at $7.99 vs $19.99, more templates, accurate tax calculations, and instant downloads." />
+        <meta name="description" content="Comparing MintSlip vs ThePayStubs for paystub generation. See why MintSlip offers better value at $9.99 vs $19.99, more templates, accurate tax calculations, and instant downloads." />
         <meta name="keywords" content="MintSlip vs ThePayStubs, paystub generator comparison, best paystub maker, ThePayStubs alternative, cheap paystub generator, paystub generator review" />
         <link rel="canonical" href="https://mintslip.com/mintslip-vs-thepaystubs" />
         
@@ -446,7 +446,7 @@ export default function MintSlipVsThePayStubs() {
                 <div className="flex flex-wrap gap-4 mb-8">
                   <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
                     <DollarSign className="w-5 h-5 text-green-600" />
-                    <span className="text-slate-700 font-medium">$7.99 vs $19.99</span>
+                    <span className="text-slate-700 font-medium">$9.99 vs $19.99</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
                     <Zap className="w-5 h-5 text-yellow-500" />
@@ -530,7 +530,7 @@ export default function MintSlipVsThePayStubs() {
                 
                 <p className="text-lg text-slate-600 mb-6">
                   ThePayStubs charges <strong className="text-red-500">$19.99</strong> per paystub while MintSlip offers 
-                  the same professional quality at just <strong className="text-green-600">$7.99</strong>. 
+                  the same professional quality at just <strong className="text-green-600">$9.99</strong>. 
                   That's over 60% savings on every document you create.
                 </p>
 
@@ -541,7 +541,7 @@ export default function MintSlipVsThePayStubs() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-900 font-medium">MintSlip</span>
-                    <span className="text-2xl font-bold text-green-600">$7.99</span>
+                    <span className="text-2xl font-bold text-green-600">$9.99</span>
                   </div>
                   <div className="border-t border-slate-200 mt-4 pt-4">
                     <div className="flex justify-between items-center">
@@ -643,7 +643,7 @@ export default function MintSlipVsThePayStubs() {
                   </tr>
                 </thead>
                 <tbody>
-                  <ComparisonRow feature="Price per Paystub" mintslip="$7.99" competitor="$19.99" mintslipBetter={true} />
+                  <ComparisonRow feature="Price per Paystub" mintslip="$9.99" competitor="$19.99" mintslipBetter={true} />
                   <ComparisonRow feature="Professional Templates" mintslip="4+ Professional Styles" competitor="Multiple Generic Styles" mintslipBetter={true} />
                   <ComparisonRow feature="Instant Download" mintslip={true} competitor={true} />
                   <ComparisonRow feature="Blazing Fast Live Preview" mintslip={true} competitor={false} />
@@ -726,7 +726,7 @@ export default function MintSlipVsThePayStubs() {
                 {[
                   {
                     q: "Is MintSlip really cheaper than ThePayStubs?",
-                    a: "Yes! MintSlip charges $7.99 per paystub while ThePayStubs charges $19.99. That's a savings of over 60% on every document you create."
+                    a: "Yes! MintSlip charges $9.99 per paystub while ThePayStubs charges $19.99. That's a savings of over 60% on every document you create."
                   },
                   {
                     q: "Are MintSlip paystubs as professional as ThePayStubs?",

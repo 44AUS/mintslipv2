@@ -1723,9 +1723,9 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setTextColor(...colors.black);
   doc.text(formData.name || "Employee Name", m, y + 5);
   
-  // ***DD*** badge on right
+  // ***DD*** badge on right (regular rectangle)
   doc.setFillColor(...colors.blue);
-  doc.roundedRect(pageWidth - m - 35, y - 2, 40, 12, 2, 2, 'F');
+  doc.rect(pageWidth - m - 35, y - 2, 40, 12, 'F');
   doc.setTextColor(...colors.white);
   doc.setFontSize(8);
   doc.text("***DD***", pageWidth - m - 33, y + 6);

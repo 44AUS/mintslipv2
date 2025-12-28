@@ -2132,7 +2132,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.line(col3X + db.desc + db.ben, deductionsStartY, col3X + db.desc + db.ben, dbEndY);
   // Vertical line after Amt column
   doc.line(col3X + db.desc + db.ben + db.amt, deductionsStartY, col3X + db.desc + db.ben + db.amt, dbEndY);
-  // Outer borders (left, right, bottom)
+  // Outer borders (left, right, bottom) - BLACK
+  doc.setDrawColor(...colors.black);
   doc.line(col3X, deductionsStartY, col3X, dbEndY); // Left border
   doc.line(col3X + col3Width, deductionsStartY, col3X + col3Width, dbEndY); // Right border
   doc.line(col3X, dbEndY, col3X + col3Width, dbEndY); // Bottom border

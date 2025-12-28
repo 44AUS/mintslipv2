@@ -2158,7 +2158,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.text(fmtCurrency(totalTax), col2X + wt.desc + wt.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax), col2X + col2Width - 5, totalsY + 6, { align: 'right' });
   
-  // Deductions Total - white background
+  // Deductions Total - white background, black border
   doc.setFillColor(...colors.white);
   doc.rect(col3X, totalsY, col3Width, rowHeight + 2, 'F');
   doc.rect(col3X, totalsY, col3Width, rowHeight + 2);

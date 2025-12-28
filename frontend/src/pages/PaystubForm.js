@@ -1603,6 +1603,48 @@ export default function PaystubForm() {
                       </div>
                     </>
                   )}
+                  
+                  {/* OnPay Template H Specific Fields */}
+                  {selectedTemplate === 'template-h' && (
+                    <>
+                      <div className="md:col-span-2 pt-2 border-t">
+                        <p className="text-sm text-slate-600 font-medium mb-3">OnPay Document Info (Optional)</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="checkNumber">Check Number</Label>
+                        <Input 
+                          id="checkNumber" 
+                          name="checkNumber" 
+                          value={formData.checkNumber} 
+                          onChange={handleChange} 
+                          placeholder="Auto-generated if empty"
+                          maxLength={10}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="employeeId">Employee ID (EMP#)</Label>
+                        <Input 
+                          id="employeeId" 
+                          name="employeeId" 
+                          value={formData.employeeId} 
+                          onChange={handleChange} 
+                          placeholder="Auto-generated if empty"
+                          maxLength={10}
+                        />
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <Label htmlFor="memo">Memo</Label>
+                        <Input 
+                          id="memo" 
+                          name="memo" 
+                          value={formData.memo} 
+                          onChange={handleChange} 
+                          placeholder="e.g., Thank you for your hard work."
+                          maxLength={50}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

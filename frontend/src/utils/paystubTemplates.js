@@ -1842,7 +1842,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("helvetica", "normal");
   
   // Column widths for Gross Wages: Desc, Hours, Rate, Amt, YTD
   const gw = {

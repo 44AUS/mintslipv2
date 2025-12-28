@@ -51,7 +51,7 @@ const PAYROLL_COMPANIES = [
   // ADP and Colorful templates only visible on localhost
   ...(isLocalhost ? [
     { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
-    { id: 'colorful', name: 'Colorful', template: 'template-h', logo: null },
+    { id: 'onpay', name: 'OnPay', template: 'template-h', logo: null },
   ] : []),
 ];
 
@@ -1119,7 +1119,7 @@ export default function PaystubForm() {
                             <div>
                               <span className="font-medium text-slate-700 block">{company.name}</span>
                               <span className="text-xs text-slate-500">
-                                {company.template === 'template-a' ? 'Style A' : company.template === 'template-b' ? 'Style B' : 'Style C'}
+                                {company.template === 'template-a' ? 'Gusto Style Inspired Template' : company.template === 'template-b' ? 'ADP Style Inspired Template' : 'Workday Style Inspired Template'}
                               </span>
                             </div>
                           </div>
@@ -1152,7 +1152,7 @@ export default function PaystubForm() {
                         <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
-                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Style A (Gusto)' : selectedPayrollCompany.template === 'template-b' ? 'Style B (ADP)' : 'Style C (Workday)'}</span>
+                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Gusto Style Inspired Template' : selectedPayrollCompany.template === 'template-b' ? 'ADP Style Inspired Template' : 'Workday Style Inspired Template'}</span>
                         </p>
                       </div>
                     </div>
@@ -2033,7 +2033,7 @@ export default function PaystubForm() {
                           Employee Deductions
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
-                          Pre-tax deductions like 401(k), health insurance, etc.
+                          Pre-tax deductions like garnishment, health insurance, etc.
                         </p>
                       </div>
                       <Button
@@ -2147,7 +2147,7 @@ export default function PaystubForm() {
                           Employee Contributions
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
-                          Voluntary contributions like HSA, FSA, Roth 401(k), etc.
+                          Voluntary contributions like HSA, FSA, 401(k), Roth 401(k), etc.
                         </p>
                       </div>
                       <Button

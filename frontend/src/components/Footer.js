@@ -30,6 +30,7 @@ const FOOTER_LINKS = {
       { name: "How to Make a Paystub", path: "/how-to-make-a-paystub" },
       { name: "Paystub for Apartment", path: "/paystub-for-apartment" },
       { name: "MintSlip vs Others", path: "/mintslip-vs-other-paystub-generators" },
+      { name: "MintSlip vs ThePayStubs", path: "/mintslip-vs-thepaystubs" },
       { name: "All Generators", path: "/generators" },
     ]
   },

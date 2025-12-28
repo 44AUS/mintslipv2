@@ -136,6 +136,8 @@ export default function PaystubForm() {
     companyCode: "", // Company Code for ADP template
     locDept: "", // Loc/Dept for ADP template
     checkNumber: "", // Check Number for ADP template
+    // OnPay Template H specific fields
+    memo: "", // Memo for OnPay template
   });
 
   // Validation errors state

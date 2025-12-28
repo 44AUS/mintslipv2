@@ -1797,9 +1797,9 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.text(checkNum, m + 35, y + 18);
   
   doc.setFont("helvetica", "bold");
-  doc.text("Check Date:", m + 70, y + 18);
+  doc.text("Check Date:", m + 90, y + 18);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(payDate), m + 110, y + 18);
+  doc.text(formatDate(payDate), m + 130, y + 18);
   
   // Row 2: Period Start and Period Ending (left side) - aligned with Row 1
   doc.setFont("helvetica", "bold");
@@ -1808,9 +1808,9 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.text(formatDate(startDate), m + 50, y + 30);
   
   doc.setFont("helvetica", "bold");
-  doc.text("Period Ending:", m + 70, y + 30);
+  doc.text("Period Ending:", m + 90, y + 30);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 118, y + 30);
+  doc.text(formatDate(endDate), m + 138, y + 30);
   
   // Right side: MEMO stacked above EMP# - starting at same height as name
   doc.setFont("helvetica", "bold");

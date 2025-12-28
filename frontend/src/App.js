@@ -100,6 +100,7 @@ function App() {
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/mintslip-vs-other-paystub-generators" element={<ComparisonPage />} />
+            <Route path="/mintslip-vs-thepaystubs" element={<MintSlipVsThePayStubs />} />
             <Route path="/generators" element={<DocumentDirectory />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

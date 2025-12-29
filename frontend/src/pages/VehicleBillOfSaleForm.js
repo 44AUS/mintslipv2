@@ -819,12 +819,10 @@ export default function VehicleBillOfSaleForm() {
                     <span className="text-slate-700">Notary:</span>
                     <span className="font-medium">{formData.includeNotary ? 'Included' : 'Not included'}</span>
                   </div>
-                  <div className="border-t border-green-300 pt-2 mt-2">
                     <div className="flex justify-between text-green-700 text-lg">
                       <span className="font-bold">Sale Price:</span>
                       <span className="font-bold">{formData.salePrice ? formatSalePrice() : '$0.00'}</span>
                     </div>
-                  </div>
                 </div>
               </div>
 

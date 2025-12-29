@@ -137,8 +137,8 @@ export const generateW2PDF = async (formData, taxYear) => {
     const page = pages[0];
     
     // Get fonts
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const font = await pdfDoc.embedFont(StandardFonts.Courier);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.CourierBold);
     
     // Helper function to draw text
     const drawText = (text, position, useBold = false) => {

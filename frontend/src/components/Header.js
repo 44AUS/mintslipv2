@@ -33,10 +33,10 @@ const TAX_FORMS = [
 // Other Forms dropdown items
 const OTHER_FORMS = [
   { name: "Canadian Paystub Generator", path: "/canadian-paystub-generator", icon: FileSpreadsheet },
-  { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
+  // { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
   // { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
   { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
-  { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
+  // { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
   { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
   // Add more forms here as needed
 ];

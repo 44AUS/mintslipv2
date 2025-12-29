@@ -24,11 +24,19 @@ const US_STATES = [
   "VT", "VA", "WA", "WV", "WI", "WY"
 ];
 
+// Check if running on localhost
+const isLocalhost = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1'
+);
+
 // Service Expense provider templates
 const UTILITY_PROVIDERS = [
   { id: 'xfinity', name: 'Xfinity Style', template: 'template-a', description: 'Modern telecom with purple accents' },
   { id: 'traditional', name: 'Traditional (H20 Expense)', template: 'template-b', description: 'Classic H20 with YTD consumption chart' },
+  ...(isLocalhost ? [
   { id: 'modern', name: 'Modern Minimal', template: 'template-c', description: 'Clean minimal design with green accents' },
+  ] : []),
 ];
 
 // Service types

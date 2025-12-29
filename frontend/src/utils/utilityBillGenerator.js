@@ -113,7 +113,7 @@ const generateTemplateA = async (doc, formData, fonts, isPreview = false) => {
   const { bold, regular } = fonts;
   
   // Colors
-  const purple = rgb(0.4, 0.2, 0.6);
+  const purple = rgb(0.322, 0.31, 0.635);
   const darkGray = rgb(0.2, 0.2, 0.2);
   const lightGray = rgb(0.6, 0.6, 0.6);
   const black = rgb(0, 0, 0);
@@ -158,29 +158,28 @@ const generateTemplateA = async (doc, formData, fonts, isPreview = false) => {
   y -= 80;
   
   // Greeting
-  page.drawText(`Hello ${formData.customerName || 'Customer'},`, { x: 50, y, size: 16, font: bold, color: darkGray });
+  page.drawText(`Hello ${formData.customerName || 'Customer'},`, { x: 50, y, size: 16, font: bold, color: rgb(0.322, 0.31, 0.635) });
   y -= 18;
-  page.drawText(`Thank you for choosing ${formData.companyName || 'us'}.`, { x: 50, y, size: 10, font: regular, color: lightGray });
+  page.drawText(`Thank you for choosing ${formData.companyName || 'us'}.`, { x: 50, y, size: 10, font: regular, color: rgb(0, 0, 0) });
   
-  y -= 40;
-  
-  // Bill at a glance section
-  page.drawText('Your bill at a glance', { x: 50, y, size: 14, font: bold, color: darkGray });
-  y -= 18;
-  page.drawText(`For ${formData.serviceAddress || ''}, ${formData.serviceCity || ''}, ${formData.serviceState || ''} ${formData.serviceZip || ''}`, { x: 50, y, size: 9, font: regular, color: lightGray });
-  
-  y -= 30;
+  y -= 60;
   
   // Billing summary box
   const boxY = y;
-  page.drawRectangle({ x: 50, y: y - 150, width: 250, height: 150, borderColor: rgb(0.85, 0.85, 0.85), borderWidth: 1 });
+  page.drawRectangle({ x: 50, y: y - 150, width: 250, height: 180, borderColor: rgb(0.322, 0.31, 0.635), borderWidth: 1 });
+
+  // Bill at a glance section
+  y+=10
+  page.drawText('Your bill at a glance', { x: 60, y, size: 14, font: bold, color: rgb(0.322, 0.31, 0.635) });
+  y+=-15
+  page.drawText(`For ${formData.serviceAddress || ''}, ${formData.serviceCity || ''}, ${formData.serviceState || ''} ${formData.serviceZip || ''}`, { x: 60, y, size: 9, font: regular, color: rgb(0, 0, 0) });
   
   // Summary items
   const summaryItems = [
     { label: 'Previous balance', value: formatCurrency(totals.previous) },
     { label: `Payment received${formData.paymentDate ? ` - ${formatDate(formData.paymentDate)}` : ''}`, value: totals.payment > 0 ? `-${formatCurrency(totals.payment)}` : formatCurrency(0) },
-    { label: 'Balance forward', value: formatCurrency(totals.balanceForward) },
-    { label: `${formData.serviceType} charges`, value: formatCurrency(totals.base + totals.usage) },
+    { label: 'Balance forward', value: formatCurrency(totals.balanceForward), bold: true },
+    { label: `Regular monthly charges`, value: formatCurrency(totals.base + totals.usage) },
     { label: 'Taxes, fees and other charges', value: formatCurrency(totals.taxes + totals.fees) },
   ];
   
@@ -190,7 +189,7 @@ const generateTemplateA = async (doc, formData, fonts, isPreview = false) => {
   
   summaryItems.push({ label: 'New charges', value: formatCurrency(totals.currentCharges - totals.discount), bold: true });
   
-  let itemY = boxY - 15;
+  let itemY = boxY - 35;
   summaryItems.forEach((item, idx) => {
     page.drawText(item.label, { x: 60, y: itemY, size: 9, font: item.bold ? bold : regular, color: darkGray });
     page.drawText(item.value, { x: 250, y: itemY, size: 9, font: item.bold ? bold : regular, color: item.value.startsWith('-') ? rgb(0, 0.5, 0) : darkGray });
@@ -199,21 +198,22 @@ const generateTemplateA = async (doc, formData, fonts, isPreview = false) => {
   
   // Amount due box (purple background)
   const amountBoxY = y - 180;
-  page.drawRectangle({ x: 50, y: amountBoxY, width: 250, height: 45, color: rgb(0.93, 0.9, 0.97) });
-  page.drawText('Amount due', { x: 60, y: amountBoxY + 28, size: 11, font: bold, color: purple });
-  page.drawText(formatCurrency(totals.totalDue), { x: 60, y: amountBoxY + 8, size: 18, font: bold, color: purple });
-  page.drawText(`Due by ${formatDate(formData.dueDate)}`, { x: 180, y: amountBoxY + 15, size: 9, font: regular, color: purple });
+  page.drawRectangle({ x: 50, y: amountBoxY, width: 250, height: 35, color: rgb(0.322, 0.31, 0.635), borderColor: rgb(0.322, 0.31, 0.635), borderWidth: 1 });
+  page.drawText('Amount due', { x: 60, y: amountBoxY + 15, size: 11, font: bold, color: rgb(1, 1, 1) });
+  page.drawText(formatCurrency(totals.totalDue), { x: 250, y: amountBoxY + 15, size: 11, font: bold, color: rgb(1, 1, 1) });
   
   // Right column - Bill explained
-  const rightX = 330;
-  let rightY = boxY + 20;
+  page.drawRectangle({ x: 330, y: y - 145, width: 250, height: 180, color: rgb(0.863, 0.867, 0.871) });
+  const rightX = 340;
+  let rightY = boxY + 10;
   page.drawText('Your bill explained', { x: rightX, y: rightY, size: 14, font: bold, color: darkGray });
   rightY -= 25;
   
   // Service period info
-  page.drawText('Service Period:', { x: rightX, y: rightY, size: 9, font: bold, color: darkGray });
+  // A detailed breakdown of your charges begins on page 3
+  page.drawText('This page gives you a quick summary of your monthly', { x: rightX, y: rightY, size: 7, color: darkGray });
   rightY -= 14;
-  page.drawText(`${formatDate(formData.servicePeriodStart)} to ${formatDate(formData.servicePeriodEnd)}`, { x: rightX, y: rightY, size: 9, font: regular, color: lightGray });
+  page.drawText(`bill. A detailed breakdown of your charges begins on page 3`, { x: rightX, y: rightY, size: 7, font: regular, color: darkGray });
   rightY -= 25;
   
   // Usage info
@@ -742,6 +742,7 @@ const generateTemplateC = async (doc, formData, fonts, isPreview = false) => {
   const green = rgb(0.1, 0.5, 0.3);
   const darkGray = rgb(0.15, 0.15, 0.15);
   const lightGray = rgb(0.6, 0.6, 0.6);
+  const xfinityPurple = rgb(82, 79, 162);
   
   const totals = calculateTotals(formData);
   let y = height - 50;

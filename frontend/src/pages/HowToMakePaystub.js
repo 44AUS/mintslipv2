@@ -104,14 +104,14 @@ const TEMPLATES = [
     generator: generateTemplateA,
     color: "#F4A460",
   },
-  {
-    id: "template-b",
-    name: "ADP Style",
-    description: "Professional enterprise-style paystub matching ADP's Earnings Statement format with detailed tax sections.",
-    features: ["Enterprise professional format", "Detailed tax breakdown", "Marital status & exemptions", "Check stub with bank info"],
-    generator: generateTemplateB,
-    color: "#d0271d",
-  },
+  // {
+  //   id: "template-b",
+  //   name: "ADP Style",
+  //   description: "Professional enterprise-style paystub matching ADP's Earnings Statement format with detailed tax sections.",
+  //   features: ["Enterprise professional format", "Detailed tax breakdown", "Marital status & exemptions", "Check stub with bank info"],
+  //   generator: generateTemplateB,
+  //   color: "#d0271d",
+  // },
   {
     id: "template-c",
     name: "Workday Style",

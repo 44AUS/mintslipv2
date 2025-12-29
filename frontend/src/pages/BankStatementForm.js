@@ -493,7 +493,7 @@ const createOrder = (data, actions) => {
                             <div>
                               <span className="font-medium text-slate-700 block">{bank.name}</span>
                               <span className="text-xs text-slate-500">
-                                {bank.template === 'template-a' ? 'Style A' : bank.template === 'template-b' ? 'Style B' : 'Style C'}
+                                {bank.template === 'template-a' ? 'Chime Inspired Summary Template' : bank.template === 'template-b' ? 'Style B' : 'Style C'}
                               </span>
                             </div>
                           </div>
@@ -527,7 +527,7 @@ const createOrder = (data, actions) => {
                         <p className="text-sm font-medium text-green-800 mb-1">✓ Category Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedBank.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
-                          Template: <span className="font-semibold">{selectedBank.template === 'template-a' ? 'Style A (Chime)' : selectedBank.template === 'template-b' ? 'Style B (Bank of America)' : 'Style C (Chase)'}</span>
+                          Template: <span className="font-semibold">{selectedBank.template === 'template-a' ? 'Chime Inspired Summary Template' : selectedBank.template === 'template-b' ? 'Style B (Bank of America)' : 'Style C (Chase)'}</span>
                         </p>
                         <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded">
                           <p className="text-xs text-amber-700">

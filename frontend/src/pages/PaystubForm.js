@@ -28,6 +28,7 @@ import {
 import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
+import OnPayLogo from '../assests/onpayLogo.webp';
 
 // Canadian Flag SVG component
 const CanadianFlagIcon = () => (
@@ -50,7 +51,7 @@ const PAYROLL_COMPANIES = [
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
   // ADP template only visible on localhost
   ...(isLocalhost ? [
-    { id: 'onpay', name: 'OnPay', template: 'template-h', logo: null },
+    { id: 'onpay', name: 'OnPay', template: 'template-h', logo: OnPayLogo },
     { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
   ] : []),
 ];
@@ -1121,7 +1122,7 @@ export default function PaystubForm() {
                             <div>
                               <span className="font-medium text-slate-700 block">{company.name}</span>
                               <span className="text-xs text-slate-500">
-                                {company.template === 'template-a' ? 'Gusto Style Inspired Template' : company.template === 'template-b' ? 'ADP Style Inspired Template' : 'Workday Style Inspired Template'}
+                                {company.template === 'template-a' ? 'Gusto Style Inspired Template' : company.template === 'template-b' ? 'ADP Style Inspired Template' : company.template === 'template-h' ? 'OnPay Style Inspired Template' : 'Workday Style Inspired Template'}
                               </span>
                             </div>
                           </div>
@@ -1154,7 +1155,7 @@ export default function PaystubForm() {
                         <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
-                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Gusto Style Inspired Template' : selectedPayrollCompany.template === 'template-b' ? 'ADP Style Inspired Template' : 'Workday Style Inspired Template'}</span>
+                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Gusto Style Inspired Template' : selectedPayrollCompany.template === 'template-b' ? 'ADP Style Inspired Template' : company.template === 'template-h' ? 'OnPay Style Inspired Template' : 'Workday Style Inspired Template'}</span>
                         </p>
                       </div>
                     </div>

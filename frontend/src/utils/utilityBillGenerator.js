@@ -325,7 +325,7 @@ const generateTemplateB = async (doc, formData, fonts, isPreview = false) => {
   // Drive-Through Hours box
   page.drawRectangle({ x: boxStartX + boxWidth, y: headerY - boxHeight, width: boxWidth, height: boxHeight, borderColor: borderGray, borderWidth: 1 });
   page.drawRectangle({ x: boxStartX + boxWidth, y: headerY - 13, width: boxWidth, height: 13, color: blue });
-  page.drawText('Drive - Through Hours', { x: boxStartX + boxWidth + 5, y: headerY - 11, size: 5.5, font: bold, color: white });
+  page.drawText('Drive - Through Hours', { x: boxStartX + boxWidth + 5, y: headerY - 11, size: 5.5, font: bold, color: white, align: 'center' });
   page.drawText('Monday - Friday', { x: boxStartX + boxWidth + 10, y: headerY - 26, size: 6, font: regular, color: black });
   page.drawText('7:30 am - 5 pm', { x: boxStartX + boxWidth + 12, y: headerY - 33, size: 6, font: regular, color: black });
   

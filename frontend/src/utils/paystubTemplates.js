@@ -1718,17 +1718,18 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   let y = 12;
 
   // ==================== TOP SECTION - EMPLOYEE NAME ====================
-  doc.setFont("times roman", "bold");
-  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
   doc.setTextColor(...colors.black);
-  doc.text(formData.name || "Employee Name", m, y + 5);
+  doc.text(formData.name || "Employee Name", m + 50, y + 5);
   
   // ***DD*** badge on right (regular rectangle)
   doc.setFillColor(...colors.blue);
   doc.rect(pageWidth - m - 35, y - 2, 40, 12, 'F');
   doc.setTextColor(...colors.white);
   doc.setFontSize(8);
-  doc.text("***DD***", pageWidth - m - 33, y + 6);
+  doc.setFont("helvetica", "bold");
+  doc.text("***DD***", pageWidth - m - 30, y + 6);
   
   y += 15;
 
@@ -1738,13 +1739,14 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   doc.setTextColor(...colors.white);
   doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("helvetica", "normal");
   const ddText = "DIRECT DEPOSIT *** DIRECT DEPOSIT **************************************************************************";
-  doc.text(ddText, m + 10, y + 12);
+  doc.text(ddText, m + 10, y + 14);
   
   y += 16;
 
   // ==================== EMPLOYEE ADDRESS SECTION ====================
+  y+=20;
   doc.setFillColor(...colors.white);
   doc.rect(m, y, pageWidth - 2 * m, 35, 'F');
   
@@ -1753,19 +1755,23 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(9);
   doc.setTextColor(...colors.black);
   doc.text(formData.name || "Employee Name", m + 5, y + 10);
-  doc.text(formData.address || "123 Employee Street", m + 5, y + 18);
-  doc.text(`${formData.city || "City"}, ${formData.state || "ST"} ${formData.zip || "00000"}`, m + 5, y + 26);
+  doc.text(formData.address || "123 Employee Street", m + 5, y + 20);
+  doc.text(`${formData.city || "City"}, ${formData.state || "ST"} ${formData.zip || "00000"}`, m + 5, y + 30);
+
+  y+=10;
   
   // "Thank you for your hard work" message
-  doc.setFont("helvetica", "italic");
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text("Thank you for your hard work.", m + 5, y + 33);
+  doc.text("Thank you for your hard work.", m + 5, y + 40);
+
+  y+=20;
   
   // *** VOID *** watermark on right
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...colors.black);
-  doc.text("*** VOID ***", pageWidth - m - 70, y + 22);
+  doc.text("*** VOID ***", pageWidth - m - 130, y + 40);
   
   doc.setTextColor(...colors.black);
   y += 40;
@@ -1776,14 +1782,16 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   // Employee name with blue background box - extends to end of Check Date area
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   const employeeName = formData.name || "Employee Name";
   const blueBoxWidth = 155; // Extends to cover through Check Date area
   doc.setFillColor(...colors.blue);
   doc.rect(m + 2, y + 1, blueBoxWidth, 12, 'F');
   doc.setTextColor(...colors.white);
-  doc.text(employeeName, m + 6, y + 9);
+  doc.text(employeeName, m + 6, y + 10);
   doc.setTextColor(...colors.black);
+
+  y+=5;
   
   // Info section with two rows
   doc.setFontSize(7);
@@ -1799,7 +1807,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "bold");
   doc.text("Check Date:", m + 90, y + 18);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(payDate), m + 130, y + 18);
+  doc.text(formatDate(payDate), m + 145, y + 18);
   
   // Row 2: Period Start and Period Ending (left side) - aligned with Row 1
   doc.setFont("helvetica", "bold");
@@ -1810,20 +1818,20 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFont("helvetica", "bold");
   doc.text("Period Ending:", m + 90, y + 30);
   doc.setFont("helvetica", "normal");
-  doc.text(formatDate(endDate), m + 138, y + 30);
+  doc.text(formatDate(endDate), m + 145, y + 30);
   
   // Right side: MEMO stacked above EMP# - starting at same height as name
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
-  doc.text("MEMO:", pageWidth - m - 95, y + 9);
+  doc.text("MEMO:", pageWidth - m - 325, y + 9);
   doc.setFont("helvetica", "normal");
   const memoText = formData.memo || "Thank you for your hard work.";
-  doc.text(memoText, pageWidth - m - 70, y + 9);
+  doc.text(memoText, pageWidth - m - 295, y + 9);
   
   doc.setFont("helvetica", "bold");
-  doc.text("EMP#:", pageWidth - m - 95, y + 20);
+  doc.text("EMP#:", pageWidth - m - 325, y + 20);
   doc.setFont("helvetica", "normal");
-  doc.text(empNum, pageWidth - m - 70, y + 20);
+  doc.text(empNum, pageWidth - m - 295, y + 20);
   
   y += 40;
 
@@ -1889,11 +1897,11 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const earningsRows = [
     ["Regular", hours > 0 ? hours.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate) : "0.00", fmtCurrency(regularPay), fmtCurrency(ytdRegularPay)],
     ["Overtime", overtime > 0 ? overtime.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate * 1.5) : "0.00", fmtCurrency(overtimePay), fmtCurrency(ytdOvertimePay)],
-    ["Cash Tip", "0.000", "0.00", "0.00", "0.00"],
-    ["Bonus", "0.000", "0.00", "0.00", "0.00"],
-    ["Sick Time", "0.000", "0.00", "0.00", "0.00"],
     ["Commission", "0.000", "0.00", commission > 0 ? fmtCurrency(commission) : "0.00", commission > 0 ? fmtCurrency(ytdCommission) : "0.00"],
-    ["Mileage", "0.000", "0.00", "0.00", "0.00"],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
     ["", "", "", "", ""],
     ["", "", "", "", ""],
     ["", "", "", "", ""],
@@ -1993,13 +2001,13 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const taxRows = [
     ["SS", fmtCurrency(ssTax), fmtCurrency(ytdSsTax)],
     ["FIT", fmtCurrency(federalTax), fmtCurrency(ytdFederalTax)],
-    ["FIT", "0.00", "0.00"],
     ["MEDI", fmtCurrency(medTax), fmtCurrency(ytdMedTax)],
-    ["Add MEDI", "0.00", "0.00"],
-    [`SDI WTH-${stateCode}`, "0.00", "0.00"],
-    [`SDI WTH-${stateCode}`, "0.00", "0.00"],
     [`SIT-${stateCode}`, fmtCurrency(stateTax), fmtCurrency(ytdStateTax)],
-    [`SIT-${stateCode}`, "0.00", "0.00"],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""],
     ["", "", ""],
     ["", "", ""],
     ["", "", ""],
@@ -2152,10 +2160,10 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.line(col1X, totalsY, col1X, totalsY + rowHeight + 2); // Left border
   doc.line(col1X + col1Width, totalsY, col1X + col1Width, totalsY + rowHeight + 2); // Right border
   doc.line(col1X, totalsY + rowHeight + 2, col1X + col1Width, totalsY + rowHeight + 2); // Bottom border
-  doc.setFont("courier", "bold");
+  doc.setFont("courier");
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
-  doc.text("Total:", col1X + 3, totalsY + 6);
+  doc.text("", col1X + 3, totalsY + 6);
   doc.text(fmtCurrency(grossPay), col1X + gw.desc + gw.hours + gw.rate + gw.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdGrossPay), col1X + col1Width - 5, totalsY + 6, { align: 'right' });
   
@@ -2169,7 +2177,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.line(col2X, totalsY, col2X, totalsY + rowHeight + 2); // Left border
   doc.line(col2X + col2Width, totalsY, col2X + col2Width, totalsY + rowHeight + 2); // Right border
   doc.line(col2X, totalsY + rowHeight + 2, col2X + col2Width, totalsY + rowHeight + 2); // Bottom border
-  doc.text("Total:", col2X + 3, totalsY + 6);
+  doc.text("", col2X + 3, totalsY + 6);
   doc.text(fmtCurrency(totalTax), col2X + wt.desc + wt.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax), col2X + col2Width - 5, totalsY + 6, { align: 'right' });
   
@@ -2183,7 +2191,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.line(col3X, totalsY, col3X, totalsY + rowHeight + 2); // Left border
   doc.line(col3X + col3Width, totalsY, col3X + col3Width, totalsY + rowHeight + 2); // Right border
   doc.line(col3X, totalsY + rowHeight + 2, col3X + col3Width, totalsY + rowHeight + 2); // Bottom border
-  doc.text("Total:", col3X + 3, totalsY + 6);
+  doc.text("", col3X + 3, totalsY + 6);
   doc.text(fmtCurrency(totalDeductions + totalContributions), col3X + db.desc + db.ben + db.amt - 3, totalsY + 6, { align: 'right' });
   doc.text(fmtCurrency(ytdDeductions + ytdContributions), col3X + col3Width - 5, totalsY + 6, { align: 'right' });
 

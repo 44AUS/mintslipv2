@@ -129,7 +129,7 @@ const VsComparisonAnimation = ({ isVisible }) => (
         {/* Price badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.5s' : 'none' }}>
           <rect x="170" y="5" width="55" height="20" rx="10" fill="#22c55e"/>
-          <text x="197" y="18" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">💰 SAVE 60%</text>
+          <text x="197" y="18" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">💰 SAVE 50%</text>
         </g>
         {/* Quality badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
@@ -232,7 +232,7 @@ const PriceComparisonAnimation = ({ isVisible }) => (
       {/* Savings badge */}
       <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.5s ease-out 1.4s forwards' : 'none' }}>
         <rect x="55" y="160" width="90" height="24" rx="12" fill="#22c55e"/>
-        <text x="100" y="176" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">SAVE 60%</text>
+        <text x="100" y="176" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">SAVE 50%</text>
       </g>
 
       {/* Dollar signs floating */}
@@ -440,7 +440,7 @@ export default function MintSlipVsThePayStubs() {
                 
                 <p className="text-xl text-slate-600 mb-8 leading-relaxed">
                   Looking for the best paystub generator? We compare MintSlip and ThePayStubs head-to-head 
-                  on price, features, quality, and user experience. <strong>Save 60% with MintSlip.</strong>
+                  on price, features, quality, and user experience. <strong>Save 50% with MintSlip.</strong>
                 </p>
                 
                 <div className="flex flex-wrap gap-4 mb-8">
@@ -489,7 +489,7 @@ export default function MintSlipVsThePayStubs() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2">60%</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">50%</div>
                 <div className="text-green-200">Cheaper</div>
               </div>
               <div>
@@ -525,13 +525,13 @@ export default function MintSlipVsThePayStubs() {
                 </div>
                 
                 <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                  Save 60% With MintSlip
+                  Save 50% With MintSlip
                 </h2>
                 
                 <p className="text-lg text-slate-600 mb-6">
                   ThePayStubs charges <strong className="text-red-500">$19.99</strong> per paystub while MintSlip offers 
                   the same professional quality at just <strong className="text-green-600">$9.99</strong>. 
-                  That's over 60% savings on every document you create.
+                  That's over 50% savings on every document you create.
                 </p>
 
                 <div className="bg-slate-50 rounded-xl p-6 mb-6">
@@ -546,7 +546,7 @@ export default function MintSlipVsThePayStubs() {
                   <div className="border-t border-slate-200 mt-4 pt-4">
                     <div className="flex justify-between items-center">
                       <span className="text-green-700 font-medium">Your Savings</span>
-                      <span className="text-xl font-bold text-green-600">$12.00 (60%)</span>
+                      <span className="text-xl font-bold text-green-600">$10.00 (50%)</span>
                     </div>
                   </div>
                 </div>
@@ -681,7 +681,7 @@ export default function MintSlipVsThePayStubs() {
                 {
                   icon: DollarSign,
                   title: "Better Value",
-                  description: "Save over 60% on every paystub without sacrificing quality. More money in your pocket.",
+                  description: "Save over 50% on every paystub without sacrificing quality. More money in your pocket.",
                   color: "green"
                 },
                 {
@@ -726,7 +726,7 @@ export default function MintSlipVsThePayStubs() {
                 {[
                   {
                     q: "Is MintSlip really cheaper than ThePayStubs?",
-                    a: "Yes! MintSlip charges $9.99 per paystub while ThePayStubs charges $19.99. That's a savings of over 60% on every document you create."
+                    a: "Yes! MintSlip charges $9.99 per paystub while ThePayStubs charges $19.99. That's a savings of over 50% on every document you create."
                   },
                   {
                     q: "Are MintSlip paystubs as professional as ThePayStubs?",
@@ -763,7 +763,7 @@ export default function MintSlipVsThePayStubs() {
         <section className="py-16 md:py-24 bg-gradient-to-r from-green-800 to-green-700">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Ready to Save 60% on Your Next Paystub?
+              Ready to Save 50% on Your Next Paystub?
             </h2>
             <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
               Join thousands who've switched from ThePayStubs to MintSlip. Better quality, more features, lower price.

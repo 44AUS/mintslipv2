@@ -2464,8 +2464,8 @@ export default function PaystubForm() {
                   </div>
                 )}
 
-                {/* Absence Plans Section - Only for Template C (Workday) */}
-                {selectedTemplate === 'template-c' && formData.workerType === 'employee' && (
+                {/* Absence Plans Section - For Template C (Workday) and Template H (OnPay) */}
+                {(selectedTemplate === 'template-c' || selectedTemplate === 'template-h') && formData.workerType === 'employee' && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -2473,7 +2473,7 @@ export default function PaystubForm() {
                           Absence Plans
                         </h2>
                         <p className="text-xs text-slate-500 mt-1">
-                          Track PTO, vacation, sick leave and other absence balances (Workday template only)
+                          Track PTO, vacation, sick leave and other absence balances
                         </p>
                       </div>
                       <Button

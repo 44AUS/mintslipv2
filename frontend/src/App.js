@@ -66,8 +66,7 @@ function App() {
       "client-id": PAYPAL_CLIENT_ID, 
       currency: "USD", 
       intent: "capture",
-      "enable-funding": "applepay,venmo,paylater",
-      "buyer-country": "US"
+      "enable-funding": "venmo,paylater"
     }}>
       <div className="App">
         <Toaster position="top-center" richColors />

@@ -1427,25 +1427,41 @@ export default function AIResumeBuilder() {
                   variant="outline"
                   size="sm"
                   onClick={() => regenerateSection("summary")}
-                  disabled={isGenerating || lockedSections.summary}
-                  className="group relative overflow-hidden hover:border-purple-400 transition-colors"
+                  disabled={regeneratingSection !== null || lockedSections.summary}
+                  className="group relative overflow-hidden hover:border-purple-400 transition-all duration-300"
                 >
-                  {isGenerating ? (
+                  {regeneratingSection === "summary" ? (
                     <>
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 animate-pulse"></div>
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin text-purple-500" />
-                      <span className="text-purple-600">Regenerating...</span>
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shimmer_1s_infinite]" style={{ animation: 'shimmer 1s infinite' }}></div>
+                      </div>
+                      <Sparkles className="w-4 h-4 mr-1 animate-pulse text-purple-500" />
+                      <span className="text-purple-600 font-medium">AI Regenerating...</span>
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="w-4 h-4 mr-1 group-hover:text-purple-500 transition-colors" />
+                      <RefreshCw className="w-4 h-4 mr-1 group-hover:text-purple-500 group-hover:rotate-180 transition-all duration-300" />
                       <span className="group-hover:text-purple-600 transition-colors">Regenerate</span>
                     </>
                   )}
                 </Button>
               </div>
             </div>
-            <p className="text-slate-600">{generatedResume.professionalSummary}</p>
+            {regeneratingSection === "summary" ? (
+              <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-slate-100 to-purple-50 p-4">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-200/30 to-transparent animate-pulse"></div>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-purple-400 rounded-full blur-md opacity-30 animate-ping"></div>
+                    <Sparkles className="w-5 h-5 text-purple-500 relative z-10 animate-pulse" />
+                  </div>
+                  <span className="text-purple-600 font-medium">AI is crafting a new summary...</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-slate-600">{generatedResume.professionalSummary}</p>
+            )}
           </div>
 
           {/* Keywords Used */}

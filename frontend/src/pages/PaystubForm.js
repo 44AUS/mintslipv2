@@ -1922,6 +1922,33 @@ export default function PaystubForm() {
                                   </div>
                                 </div>
                               )}
+                              {/* OnPay Template: Check Number and Memo per pay period */}
+                              {selectedTemplate === 'template-h' && (
+                                <div className="grid grid-cols-2 gap-3 sm:ml-32 mt-2 pt-2 border-t border-slate-200">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Check Number</Label>
+                                    <Input
+                                      type="text"
+                                      value={hoursPerPeriod[index]?.checkNumber ?? ''}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'checkNumber', e.target.value)}
+                                      className="h-9"
+                                      placeholder="Auto-generated if empty"
+                                      maxLength={10}
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Memo</Label>
+                                    <Input
+                                      type="text"
+                                      value={hoursPerPeriod[index]?.memo ?? ''}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'memo', e.target.value)}
+                                      className="h-9"
+                                      placeholder="Thank you for your hard work"
+                                      maxLength={50}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           );
                           })}

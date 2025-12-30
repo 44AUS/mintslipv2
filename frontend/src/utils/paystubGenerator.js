@@ -168,7 +168,8 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       const stubData = await generateSingleStub(
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, stateRate,
-        payDay, pageWidth, pageHeight, 1, payFrequency
+        payDay, pageWidth, pageHeight, 1, payFrequency,
+        checkNumberArray, memoArray
       );
       
       // Template-specific filename with pay date

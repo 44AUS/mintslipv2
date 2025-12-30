@@ -8,6 +8,8 @@ import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import uuid
+from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorClient
 
 load_dotenv()
 
@@ -15,6 +17,14 @@ load_dotenv()
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 app = FastAPI()
+
+# MongoDB Connection
+MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+DB_NAME = os.environ.get("DB_NAME", "mintslip_db")
+
+client = AsyncIOMotorClient(MONGO_URL)
+db = client[DB_NAME]
+discounts_collection = db["discount_codes"]
 
 # CORS
 app.add_middleware(

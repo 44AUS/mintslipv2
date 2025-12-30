@@ -18,6 +18,7 @@ import { generatePreviewPDF, generateAllPreviewPDFs } from "@/utils/paystubPrevi
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import CouponInput from "@/components/CouponInput";
 import { Upload, X, Search, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,

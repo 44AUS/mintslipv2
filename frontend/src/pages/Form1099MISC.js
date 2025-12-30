@@ -167,12 +167,14 @@ export default function Form1099MISC() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
+    const basePrice = 9.99;
+    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       purchase_units: [
         {
-          description: `1099-MISC Form - Tax Year ${selectedTaxYear}`,
+          description: `1099-MISC Form - Tax Year ${selectedTaxYear}${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`,
           amount: {
-            value: "9.99",
+            value: finalPrice.toFixed(2),
           },
         },
       ],

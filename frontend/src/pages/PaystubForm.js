@@ -68,6 +68,7 @@ export default function PaystubForm() {
   const [userCountry, setUserCountry] = useState(null);
   const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(
     templateFromUrl && ['template-a', 'template-b', 'template-c', 'template-h'].includes(templateFromUrl) 
       ? templateFromUrl 

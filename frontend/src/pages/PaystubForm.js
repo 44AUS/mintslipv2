@@ -1161,7 +1161,7 @@ export default function PaystubForm() {
                         <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
-                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Gusto Style Inspired Template' : selectedPayrollCompany.template === 'template-b' ? 'ADP Style Inspired Template' : company.template === 'template-h' ? 'OnPay Style Inspired Template' : 'Workday Style Inspired Template'}</span>
+                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Gusto Style Inspired Template' : selectedPayrollCompany.template === 'template-b' ? 'ADP Style Inspired Template' : selectedPayrollCompany.template === 'template-h' ? 'OnPay Style Inspired Template' : 'Workday Style Inspired Template'}</span>
                         </p>
                       </div>
                     </div>

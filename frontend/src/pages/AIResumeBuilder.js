@@ -611,6 +611,61 @@ export default function AIResumeBuilder() {
         <p className="text-slate-600">Enter your contact details for the resume header</p>
       </div>
 
+      {/* Resume Upload Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl p-6">
+        <div className="text-center">
+          <Upload className="w-10 h-10 text-blue-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-slate-800 mb-2">
+            Have an existing resume?
+          </h3>
+          <p className="text-slate-600 text-sm mb-4">
+            Upload your resume (PDF or DOCX) and we'll auto-fill the form for you
+          </p>
+          
+          {isParsingResume ? (
+            <div className="flex items-center justify-center gap-2 text-blue-600">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Parsing your resume...</span>
+            </div>
+          ) : uploadedResumeName ? (
+            <div className="flex items-center justify-center gap-2 bg-green-100 text-green-700 py-2 px-4 rounded-lg">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">{uploadedResumeName}</span>
+              <button 
+                onClick={clearUploadedResume}
+                className="ml-2 hover:bg-green-200 rounded-full p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors">
+              <Upload className="w-4 h-4" />
+              Upload Resume
+              <input
+                type="file"
+                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleResumeUpload}
+                className="hidden"
+              />
+            </label>
+          )}
+          
+          <p className="text-xs text-slate-500 mt-3">
+            Supported formats: PDF, DOCX (max 10MB)
+          </p>
+        </div>
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-200"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white text-slate-500">or fill in manually</span>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="fullName">Full Name *</Label>

@@ -422,8 +422,8 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
 // Helper functions
 function sectionHeader(doc, text, x, y, width) {
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);  // One size bigger than subheaders (9)
+  doc.setTextColor(106, 106, 106);  // #6a6a6a
   doc.text(text, x, y);
   doc.setFillColor(0, 168, 161);
   doc.rect(x - 0.5, y + 3, width + 1, 1, "F");

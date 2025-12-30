@@ -1637,14 +1637,14 @@ export default function AIResumeBuilder() {
                         console.error("PayPal error:", err);
                         if (err.message && err.message.includes("Window closed")) {
                           toast.warning(
-                            "Payment window closed unexpectedly. Please check your PayPal account or try again.",
+                            "Payment window closed unexpectedly. Please try again.",
                             { duration: 6000 }
                           );
                         } else {
                           toast.error("Payment failed. Please try again.");
                         }
                       }}
-                      forceReRender={[appliedDiscount]}
+                      forceReRender={[appliedDiscount ? appliedDiscount.discountedPrice : 9.99]}
                     />
                   )}
                 </div>

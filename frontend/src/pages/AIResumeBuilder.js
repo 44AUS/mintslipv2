@@ -1053,7 +1053,7 @@ export default function AIResumeBuilder() {
           </div>
 
           {/* Payment & Download */}
-          <div className="border rounded-lg p-6 bg-gradient-to-r from-green-50 to-emerald-50">
+          <div className="border rounded-lg p-6 bg-white">
             {isPaid ? (
               <div className="text-center space-y-4">
                 <div className="flex items-center justify-center gap-2 text-green-600">

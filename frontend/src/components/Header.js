@@ -109,6 +109,15 @@ function DesktopNavLinks({ location, onNavigate }) {
         <span className="text-sm">Accounting Mockups</span>
       </button>
 
+      <button
+        onClick={() => onNavigate("/ai-resume-builder")}
+        className={getButtonClasses("/ai-resume-builder")}
+        data-testid="nav-resume-builder-link"
+      >
+        <Sparkles className="w-4 h-4" />
+        <span className="text-sm">AI Resume Builder</span>
+      </button>
+
       {/* Tax Forms Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

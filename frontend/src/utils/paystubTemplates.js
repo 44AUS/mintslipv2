@@ -1677,7 +1677,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
-    logoDataUrl
+    logoDataUrl,
+    periodCheckNumber = "", periodMemo = ""
   } = data;
   
   // Color scheme - Blue themed, no orange

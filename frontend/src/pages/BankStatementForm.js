@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";

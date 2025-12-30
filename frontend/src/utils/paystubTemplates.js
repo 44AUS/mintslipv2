@@ -1796,7 +1796,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   // Info section with two rows
   doc.setFontSize(7);
-  const checkNum = formData.checkNumber || String(Math.floor(1 + Math.random() * 999));
+  // Use per-period check number if provided, otherwise auto-generate
+  const checkNum = periodCheckNumber || String(Math.floor(1 + Math.random() * 999));
   const empNum = formData.employeeId || String(Math.floor(1000000 + Math.random() * 9000000));
   
   // Row 1: Check # and Check Date (left side)

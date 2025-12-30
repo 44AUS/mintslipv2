@@ -777,12 +777,13 @@ export default function CanadianPaystubForm() {
     }
   }, [hoursPerPeriod]);
 
-  // Handler for updating individual period data (hours, overtime, commission, dates)
+  // Handler for updating individual period data (hours, overtime, commission, dates, checkNumber, memo)
   const handlePeriodHoursChange = (index, field, value) => {
     setHoursPerPeriod(prev => {
       const updated = [...prev];
-      // For date fields, keep the string value; for numeric fields, parse as float
-      const processedValue = (field === 'startDate' || field === 'endDate' || field === 'payDate') ? value : (parseFloat(value) || 0);
+      // For date and string fields, keep the string value; for numeric fields, parse as float
+      const isStringField = field === 'startDate' || field === 'endDate' || field === 'payDate' || field === 'checkNumber' || field === 'memo';
+      const processedValue = isStringField ? value : (parseFloat(value) || 0);
       updated[index] = {
         ...updated[index],
         [field]: processedValue

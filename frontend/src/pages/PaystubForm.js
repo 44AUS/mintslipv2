@@ -378,7 +378,7 @@ export default function PaystubForm() {
             ...formData,
             deductions: deductions,
             contributions: contributions,
-            absencePlans: absencePlans, // Pass absence plans for Template C
+            absencePlans: absencePlans, // Pass absence plans for Template C and H
             employerBenefits: employerBenefits, // Pass employer benefits for Template C
             logoDataUrl: logoPreview, // Pass logo for Workday template
           };

@@ -66,6 +66,10 @@ export default function AIResumeBuilder() {
   const [isPaid, setIsPaid] = useState(false);
   const [lockedSections, setLockedSections] = useState({});
   const [appliedDiscount, setAppliedDiscount] = useState(null);
+  
+  // Resume upload state
+  const [isParsingResume, setIsParsingResume] = useState(false);
+  const [uploadedResumeName, setUploadedResumeName] = useState(null);
 
   // Form data
   const [formData, setFormData] = useState({

@@ -28,14 +28,21 @@ const TEMPLATE_COLORS = {
   }
 };
 
-// Format date
+// Format date - handle timezone issues
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   if (dateStr === "Present") return "Present";
   
   try {
-    const date = new Date(dateStr + "-01");
-    return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    // Parse the date parts directly to avoid timezone issues
+    const parts = dateStr.split("-");
+    if (parts.length >= 2) {
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1; // JS months are 0-indexed
+      const date = new Date(year, month, 15); // Use 15th to avoid any timezone edge cases
+      return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    }
+    return dateStr;
   } catch {
     return dateStr;
   }

@@ -153,20 +153,21 @@ async def generate_resume(data: ResumeInput):
         prompt = f"""Your task is to create an optimized resume tailored to a specific job posting.
 
 IMPORTANT RULES:
-1. ONLY use information provided by the user - DO NOT fabricate any employers, dates, degrees, or certifications
-2. Rewrite and enhance existing responsibilities using action verbs and quantifiable achievements where possible
-3. Align the resume content to match the job requirements and keywords
-4. Ensure ATS-friendly formatting with relevant keywords from the job description
-5. Match the tone and seniority level of the target position
+1. ONLY use information provided by the user - DO NOT fabricate any employers, dates, degrees, locations, or certifications
+2. For each work experience, use the EXACT location provided by the user (not the user's personal location)
+3. Rewrite and enhance existing responsibilities using action verbs and quantifiable achievements where possible
+4. Align the resume content to match the job requirements and keywords
+5. Ensure ATS-friendly formatting with relevant keywords from the job description
+6. Match the tone and seniority level of the target position
 
-USER'S BACKGROUND:
+USER'S PERSONAL INFO:
 Name: {data.personalInfo.get('fullName', 'Candidate')}
 Email: {data.personalInfo.get('email', '')}
 Phone: {data.personalInfo.get('phone', '')}
-Location: {data.personalInfo.get('location', '')}
+Personal Location: {data.personalInfo.get('location', '')}
 LinkedIn: {data.personalInfo.get('linkedin', '')}
 
-WORK EXPERIENCE:
+WORK EXPERIENCE (use these exact company locations, NOT the personal location above):
 {work_history}
 
 EDUCATION:

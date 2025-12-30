@@ -296,6 +296,8 @@ export async function generateCanadianPreviewPDF(formData, template) {
       await generateCanadianTemplateB(doc, templateData, pageWidth, pageHeight, margin);
     } else if (template === "template-c") {
       await generateCanadianTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+    } else if (template === "template-h") {
+      await generateCanadianTemplateH(doc, templateData, pageWidth, pageHeight, margin);
     } else {
       await generateCanadianTemplateA(doc, templateData, pageWidth, pageHeight, margin);
     }

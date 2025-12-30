@@ -267,12 +267,14 @@ export default function OfferLetterForm() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
+    const basePrice = 9.99;
+    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       purchase_units: [
         {
-          description: `Offer Letter - ${formData.candidateName || 'Document'}`,
+          description: `Offer Letter - ${formData.candidateName || 'Document'}${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`,
           amount: {
-            value: "9.99",
+            value: finalPrice.toFixed(2),
             currency_code: "USD"
           },
         },

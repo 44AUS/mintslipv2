@@ -2288,4 +2288,14 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     const divX = m + i * footerColWidth;
     doc.line(divX, footerY + 12, divX, footerY + footerHeight);
   }
+  
+  // Draw gray border around footer content area (below blue headers)
+  doc.setDrawColor(100, 100, 100);
+  doc.setLineWidth(0.3);
+  // Left border
+  doc.line(m, footerY + 12, m, footerY + footerHeight);
+  // Right border
+  doc.line(pageWidth - m, footerY + 12, pageWidth - m, footerY + footerHeight);
+  // Bottom border
+  doc.line(m, footerY + footerHeight, pageWidth - m, footerY + footerHeight);
 }

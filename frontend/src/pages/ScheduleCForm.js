@@ -14,6 +14,7 @@ import { HelpCircle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadScheduleC } from "@/utils/scheduleCGenerator";
 import { generateScheduleCPreview } from "@/utils/scheduleCPreviewGenerator";
 import { 

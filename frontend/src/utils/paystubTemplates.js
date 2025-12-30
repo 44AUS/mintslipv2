@@ -2216,8 +2216,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const footerHeight = 50;
   const footerColWidth = (pageWidth - 2 * m) / 4;
   
-  // Dark blue footer background
-  doc.setFillColor(...colors.white);
+  // Light gray footer background (#f0f0f0)
+  doc.setFillColor(...colors.lightGray);
   doc.rect(m, footerY, pageWidth - 2 * m, footerHeight, 'F');
   
   // Footer column headers (blue bars)
@@ -2239,10 +2239,22 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
   
-  // Accruals column
+  // Accruals column - Use absence plans data if available
   const accrualsX = m + 3;
-  doc.text("Sick: 0.00 used | 0.00 accr | 0.00 remn", accrualsX, contentY + 5);
-  doc.text("PTO: 0.00 used | 0.00 accr | 0.00 remn", accrualsX, contentY + 13);
+  if (absencePlansData && absencePlansData.length > 0) {
+    let accLineY = contentY + 5;
+    absencePlansData.slice(0, 4).forEach(plan => {
+      const desc = (plan.description || "PTO").substring(0, 6);
+      const accrued = parseFloat(plan.accrued) || 0;
+      const reduced = parseFloat(plan.reduced) || 0;
+      const available = accrued - reduced;
+      doc.text(`${desc}: ${reduced.toFixed(2)} used | ${accrued.toFixed(2)} accr | ${available.toFixed(2)} remn`, accrualsX, accLineY);
+      accLineY += 8;
+    });
+  } else {
+    doc.text("Sick: 0.00 used | 0.00 accr | 0.00 remn", accrualsX, contentY + 5);
+    doc.text("PTO: 0.00 used | 0.00 accr | 0.00 remn", accrualsX, contentY + 13);
+  }
   
   // ACH column - empty or with bank info
   const achX = m + footerColWidth + 3;
@@ -2252,7 +2264,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   // Net Pay column
   const netPayX = m + 2 * footerColWidth + 3;
-  doc.setFont("helvetica",);
+  doc.setFont("helvetica");
   doc.setFontSize(6);
   doc.text(`Net: $${fmtCurrency(netPay)}`, netPayX, contentY + 5);
   doc.setFontSize(6);

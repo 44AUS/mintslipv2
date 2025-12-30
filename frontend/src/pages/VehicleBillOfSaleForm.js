@@ -922,8 +922,15 @@ export default function VehicleBillOfSaleForm() {
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Complete Payment
                 </h3>
+                <CouponInput
+                  generatorType="vehicle-bill-of-sale"
+                  originalPrice={9.99}
+                  onDiscountApplied={setAppliedDiscount}
+                />
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$9.99</strong> for vehicle bill of sale generation
+                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
+                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                  {!appliedDiscount && ' for vehicle bill of sale generation'}
                 </p>
                 
                 {isProcessing ? (

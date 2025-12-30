@@ -573,8 +573,19 @@ export default function AIResumeBuilder() {
       await generatePreview();
     } catch (error) {
       console.error("Payment capture error:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-      toast.error("Payment failed. Please try again.");
+      
+      // Check if it's the "window closed" error
+      if (error.message && error.message.includes("Window closed")) {
+        // The payment might have actually gone through
+        toast.warning(
+          "Payment window was closed. If you completed the payment, please check your PayPal account. If the payment went through, refresh the page.",
+          { duration: 8000 }
+        );
+        // Optionally set as paid if we want to be lenient
+        // setIsPaid(true);
+      } else {
+        toast.error("Payment failed. Please try again.");
+      }
     } finally {
       setIsProcessingPayment(false);
     }

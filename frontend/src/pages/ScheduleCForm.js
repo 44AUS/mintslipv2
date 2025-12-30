@@ -215,12 +215,14 @@ export default function ScheduleCForm() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
+    const basePrice = 14.99;
+    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       purchase_units: [
         {
-          description: `Schedule C (Form 1040) - Tax Year ${selectedTaxYear}`,
+          description: `Schedule C (Form 1040) - Tax Year ${selectedTaxYear}${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`,
           amount: {
-            value: "14.99",
+            value: finalPrice.toFixed(2),
           },
         },
       ],

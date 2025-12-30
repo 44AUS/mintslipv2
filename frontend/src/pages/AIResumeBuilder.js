@@ -542,10 +542,8 @@ export default function AIResumeBuilder() {
   const createOrder = (data, actions) => {
     const basePrice = 9.99;
     const finalPrice = appliedDiscount && appliedDiscount.discountedPrice 
-      ? Number(appliedDiscount.discountedPrice) 
+      ? appliedDiscount.discountedPrice 
       : basePrice;
-    
-    console.log("Creating PayPal order with price:", finalPrice);
     
     return actions.order.create({
       application_context: {
@@ -557,7 +555,7 @@ export default function AIResumeBuilder() {
             value: finalPrice.toFixed(2),
             currency_code: "USD"
           },
-          description: `AI Resume Builder - Professional Resume${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`
+          description: "AI Resume Builder - Professional Resume"
         }
       ]
     });
@@ -566,31 +564,18 @@ export default function AIResumeBuilder() {
   const onApprove = async (data, actions) => {
     setIsProcessingPayment(true);
     try {
-      // Capture the payment first
       const order = await actions.order.capture();
-      console.log("Payment captured successfully:", order);
+      console.log("Payment captured:", order);
       
-      // Mark as paid immediately after successful capture
-      setIsPaid(true);
       toast.success("Payment successful! You can now download your resume.");
+      setIsPaid(true);
       
-      // Generate preview after payment is confirmed (don't await to avoid blocking)
-      generatePreview().catch(err => {
-        console.error("Preview generation error:", err);
-      });
+      // Generate preview after confirming payment
+      generatePreview();
       
     } catch (error) {
-      console.error("Payment capture error:", error);
-      
-      // Check if it's the "window closed" error
-      if (error.message && error.message.includes("Window closed")) {
-        toast.warning(
-          "Payment window closed unexpectedly. If you completed the payment in PayPal, please check your account and contact support.",
-          { duration: 8000 }
-        );
-      } else {
-        toast.error("Payment failed. Please try again.");
-      }
+      console.error("Payment error:", error);
+      toast.error("Payment failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
     }

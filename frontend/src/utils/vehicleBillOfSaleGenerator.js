@@ -150,19 +150,21 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
       drawLine(margin, y, width - margin, y, 2);
       y -= 25;
     } else {
-      // Classic template with border
+      // Classic and Custom templates with border
+      // Title centered above the border box
+      const titleWidth = boldFont.widthOfTextAtSize('VEHICLE BILL OF SALE', 20);
+      drawText('VEHICLE BILL OF SALE', (width - titleWidth) / 2, height - 35, { size: 20, fontType: 'bold', color: colors.primary });
+      
+      // Border box starts below the title
       page.drawRectangle({
         x: margin - 10,
         y: margin - 10,
         width: width - (margin * 2) + 20,
-        height: height - (margin * 2) + 20,
+        height: height - (margin * 2) - 30,
         borderColor: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
         borderWidth: 2,
       });
-      drawText('VEHICLE BILL OF SALE', width / 2 - 90, y, { size: 20, fontType: 'bold', color: colors.primary });
-      y -= 8;
-      drawLine(margin + 100, y, width - margin - 100, y, 1);
-      y -= 20;
+      y = height - 80;
     }
     
     // State info

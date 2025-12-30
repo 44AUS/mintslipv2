@@ -302,14 +302,15 @@ export default function BankStatementForm() {
 const getStatementPrice = () => {
   // BOA (template-b) and Chase (template-c) are $70
   if (selectedTemplate === 'template-b' || selectedTemplate === 'template-c') {
-    return "69.99";
+    return 69.99;
   }
   // Chime (template-a) and others are $50
-  return "49.99";
+  return 49.99;
 };
 
 const createOrder = (data, actions) => {
-  const price = getStatementPrice();
+  const basePrice = getStatementPrice();
+  const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
   return actions.order.create({
     application_context: {
       shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
@@ -317,10 +318,10 @@ const createOrder = (data, actions) => {
     purchase_units: [
       {
         amount: {
-          value: price,
+          value: finalPrice.toFixed(2),
           currency_code: "USD",
         },
-        description: "Accounting Mockup Generation",
+        description: `Accounting Mockup Generation${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`,
       },
     ],
   });

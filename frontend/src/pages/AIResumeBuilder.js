@@ -611,51 +611,140 @@ export default function AIResumeBuilder() {
         <p className="text-slate-600">Enter your contact details for the resume header</p>
       </div>
 
-      {/* Resume Upload Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl p-6">
-        <div className="text-center">
-          <Upload className="w-10 h-10 text-blue-500 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-slate-800 mb-2">
-            Have an existing resume?
-          </h3>
-          <p className="text-slate-600 text-sm mb-4">
-            Upload your resume (PDF or DOCX) and we'll auto-fill the form for you
-          </p>
+      {/* AI Resume Upload Section */}
+      {isParsingResume ? (
+        /* AI Processing Animation */
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl p-8">
+          {/* Animated background grid */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.3) 1px, transparent 1px)`,
+              backgroundSize: '50px 50px',
+              animation: 'pulse 2s ease-in-out infinite'
+            }}></div>
+          </div>
           
-          {isParsingResume ? (
-            <div className="flex items-center justify-center gap-2 text-blue-600">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Parsing your resume...</span>
+          {/* Glowing orbs */}
+          <div className="absolute top-10 left-10 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-30 animate-pulse"></div>
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-500 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-cyan-500 rounded-full filter blur-3xl opacity-10 animate-ping" style={{ animationDuration: '3s' }}></div>
+          
+          <div className="relative z-10 text-center">
+            {/* AI Brain Icon with pulse */}
+            <div className="relative inline-block mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+              <div className="relative bg-gradient-to-br from-purple-600 to-cyan-600 p-4 rounded-2xl">
+                <Sparkles className="w-12 h-12 text-white animate-pulse" />
+              </div>
+              {/* Orbiting dots */}
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s' }}>
+                <div className="absolute -top-2 left-1/2 w-2 h-2 bg-cyan-400 rounded-full shadow-lg shadow-cyan-400/50"></div>
+              </div>
+              <div className="absolute inset-0 animate-spin" style={{ animationDuration: '4s', animationDirection: 'reverse' }}>
+                <div className="absolute -bottom-2 left-1/2 w-2 h-2 bg-purple-400 rounded-full shadow-lg shadow-purple-400/50"></div>
+              </div>
             </div>
-          ) : uploadedResumeName ? (
-            <div className="flex items-center justify-center gap-2 bg-green-100 text-green-700 py-2 px-4 rounded-lg">
-              <CheckCircle className="w-5 h-5" />
-              <span className="font-medium">{uploadedResumeName}</span>
+            
+            <h3 className="text-2xl font-bold text-white mb-2">
+              AI is Analyzing Your Resume
+            </h3>
+            
+            {/* Typing animation text */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <span className="text-purple-300 font-mono text-sm">
+                Extracting information
+              </span>
+              <span className="flex gap-1">
+                <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              </span>
+            </div>
+            
+            {/* Progress steps */}
+            <div className="space-y-3 max-w-sm mx-auto">
+              {['Scanning document', 'Identifying sections', 'Extracting details', 'Organizing data'].map((step, index) => (
+                <div key={step} className="flex items-center gap-3 text-left animate-pulse" style={{ animationDelay: `${index * 0.5}s` }}>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  <span className="text-slate-300 text-sm">{step}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* File name */}
+            <div className="mt-6 inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
+              <FileText className="w-4 h-4 text-purple-300" />
+              <span className="text-white/80 text-sm font-medium">{uploadedResumeName}</span>
+            </div>
+          </div>
+        </div>
+      ) : uploadedResumeName ? (
+        /* Success State */
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-6">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl mb-4 shadow-lg shadow-emerald-500/30">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-emerald-800 mb-2">
+              Resume Parsed Successfully!
+            </h3>
+            <p className="text-emerald-600 text-sm mb-4">
+              Your information has been extracted and filled in below
+            </p>
+            <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
+              <FileText className="w-4 h-4 text-emerald-600" />
+              <span className="text-slate-700 font-medium">{uploadedResumeName}</span>
               <button 
                 onClick={clearUploadedResume}
-                className="ml-2 hover:bg-green-200 rounded-full p-1"
+                className="ml-2 hover:bg-slate-100 rounded-full p-1 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-slate-400 hover:text-red-500" />
               </button>
             </div>
-          ) : (
-            <label className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-colors">
-              <Upload className="w-4 h-4" />
-              Upload Resume
-              <input
-                type="file"
-                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={handleResumeUpload}
-                className="hidden"
-              />
-            </label>
-          )}
-          
-          <p className="text-xs text-slate-500 mt-3">
-            Supported formats: PDF, DOCX (max 10MB)
-          </p>
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Upload State */
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-cyan-500 to-purple-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+          <div className="relative bg-gradient-to-br from-slate-50 to-white border-2 border-dashed border-purple-200 hover:border-purple-400 rounded-2xl p-8 transition-all duration-300">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-100 to-cyan-100 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Sparkles className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">
+                Have an existing resume?
+              </h3>
+              <p className="text-slate-600 text-sm mb-6 max-w-md mx-auto">
+                Let our AI instantly extract and fill in your information. Just upload your resume and watch the magic happen!
+              </p>
+              
+              <label className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-xl cursor-pointer transition-all duration-300 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-105">
+                <Upload className="w-5 h-5" />
+                Upload Resume
+                <input
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={handleResumeUpload}
+                  className="hidden"
+                />
+              </label>
+              
+              <div className="flex items-center justify-center gap-4 mt-4 text-xs text-slate-500">
+                <span className="flex items-center gap-1">
+                  <FileText className="w-3 h-3" /> PDF
+                </span>
+                <span className="flex items-center gap-1">
+                  <FileText className="w-3 h-3" /> DOCX
+                </span>
+                <span>Max 10MB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">

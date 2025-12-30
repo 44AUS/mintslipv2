@@ -361,6 +361,157 @@ Return a JSON object: {{"technical": [...], "soft": [...], "other": [...]}}"""
         print(f"Error regenerating section: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error regenerating section: {str(e)}")
 
+# ============================================
+# DISCOUNT CODE ENDPOINTS
+# ============================================
+
+ADMIN_PASSWORD = "MintSlip2025!"
+
+def verify_admin_password(password: str):
+    if password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+@app.post("/api/admin/discounts")
+async def create_discount_code(data: DiscountCodeCreate, password: str):
+    """Create a new discount code"""
+    verify_admin_password(password)
+    
+    # Check if code already exists
+    existing = await discounts_collection.find_one({"code": data.code.upper()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Discount code already exists")
+    
+    discount_doc = {
+        "id": str(uuid.uuid4()),
+        "code": data.code.upper(),
+        "discountPercent": data.discountPercent,
+        "startDate": data.startDate,
+        "expiryDate": data.expiryDate,
+        "usageType": data.usageType,
+        "usageLimit": data.usageLimit if data.usageType == "limited" else None,
+        "usageCount": 0,
+        "usedByCustomers": [],
+        "applicableTo": data.applicableTo,
+        "specificGenerators": data.specificGenerators if data.applicableTo == "specific" else None,
+        "isActive": data.isActive,
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    
+    await discounts_collection.insert_one(discount_doc)
+    discount_doc.pop("_id", None)
+    return discount_doc
+
+@app.get("/api/admin/discounts")
+async def list_discount_codes(password: str):
+    """List all discount codes"""
+    verify_admin_password(password)
+    
+    codes = await discounts_collection.find().to_list(length=100)
+    for code in codes:
+        code.pop("_id", None)
+    return codes
+
+@app.put("/api/admin/discounts/{discount_id}")
+async def update_discount_code(discount_id: str, data: DiscountCodeUpdate, password: str):
+    """Update a discount code"""
+    verify_admin_password(password)
+    
+    existing = await discounts_collection.find_one({"id": discount_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Discount code not found")
+    
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    if "code" in update_data:
+        update_data["code"] = update_data["code"].upper()
+    
+    await discounts_collection.update_one(
+        {"id": discount_id},
+        {"$set": update_data}
+    )
+    
+    updated = await discounts_collection.find_one({"id": discount_id})
+    updated.pop("_id", None)
+    return updated
+
+@app.delete("/api/admin/discounts/{discount_id}")
+async def delete_discount_code(discount_id: str, password: str):
+    """Delete a discount code"""
+    verify_admin_password(password)
+    
+    result = await discounts_collection.delete_one({"id": discount_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Discount code not found")
+    
+    return {"message": "Discount code deleted successfully"}
+
+@app.post("/api/validate-coupon")
+async def validate_coupon(data: CouponValidateRequest):
+    """Validate a coupon code and return discount details"""
+    code = data.code.upper().strip()
+    
+    discount = await discounts_collection.find_one({"code": code})
+    
+    if not discount:
+        raise HTTPException(status_code=404, detail="Invalid coupon code")
+    
+    # Check if active
+    if not discount.get("isActive", True):
+        raise HTTPException(status_code=400, detail="This coupon code is no longer active")
+    
+    # Check date validity
+    now = datetime.utcnow()
+    start_date = datetime.fromisoformat(discount["startDate"].replace("Z", ""))
+    expiry_date = datetime.fromisoformat(discount["expiryDate"].replace("Z", ""))
+    
+    if now < start_date:
+        raise HTTPException(status_code=400, detail="This coupon code is not yet active")
+    
+    if now > expiry_date:
+        raise HTTPException(status_code=400, detail="This coupon code has expired")
+    
+    # Check usage limits
+    usage_type = discount.get("usageType", "unlimited")
+    
+    if usage_type == "limited":
+        if discount.get("usageCount", 0) >= discount.get("usageLimit", 0):
+            raise HTTPException(status_code=400, detail="This coupon code has reached its usage limit")
+    
+    if usage_type == "one_per_customer" and data.customerIdentifier:
+        used_by = discount.get("usedByCustomers", [])
+        if data.customerIdentifier in used_by:
+            raise HTTPException(status_code=400, detail="You have already used this coupon code")
+    
+    # Check generator applicability
+    if discount.get("applicableTo") == "specific":
+        allowed_generators = discount.get("specificGenerators", [])
+        if data.generatorType not in allowed_generators:
+            raise HTTPException(status_code=400, detail=f"This coupon code is not valid for {data.generatorType}")
+    
+    return {
+        "valid": True,
+        "code": discount["code"],
+        "discountPercent": discount["discountPercent"],
+        "message": f"{int(discount['discountPercent'])}% discount applied!"
+    }
+
+@app.post("/api/use-coupon")
+async def use_coupon(data: CouponValidateRequest):
+    """Mark a coupon as used after successful payment"""
+    code = data.code.upper().strip()
+    
+    discount = await discounts_collection.find_one({"code": code})
+    if not discount:
+        return {"success": False, "message": "Coupon not found"}
+    
+    update_ops = {"$inc": {"usageCount": 1}}
+    
+    if data.customerIdentifier and discount.get("usageType") == "one_per_customer":
+        update_ops["$push"] = {"usedByCustomers": data.customerIdentifier}
+    
+    await discounts_collection.update_one({"code": code}, update_ops)
+    
+    return {"success": True, "message": "Coupon usage recorded"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

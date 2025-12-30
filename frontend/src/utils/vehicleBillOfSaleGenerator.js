@@ -155,12 +155,12 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
       const titleWidth = boldFont.widthOfTextAtSize('VEHICLE BILL OF SALE', 20);
       drawText('VEHICLE BILL OF SALE', (width - titleWidth) / 2, height - 35, { size: 20, fontType: 'bold', color: colors.primary });
       
-      // Border box starts below the title
+      // Border box starts below the title - adjusted to contain all content
       page.drawRectangle({
         x: margin - 10,
-        y: margin - 10,
+        y: margin - 20,
         width: width - (margin * 2) + 20,
-        height: height - (margin * 2) - 30,
+        height: height - (margin * 2) - 15,
         borderColor: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
         borderWidth: 2,
       });

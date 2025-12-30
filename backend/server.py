@@ -135,7 +135,7 @@ async def scrape_job(request: JobScrapeRequest):
 async def generate_resume(data: ResumeInput):
     """Generate AI-optimized resume content"""
     try:
-        llm = get_llm()
+        chat = get_llm_chat()
         
         # Build context from user data
         work_history = "\n".join([
@@ -150,7 +150,7 @@ async def generate_resume(data: ResumeInput):
         
         skills_list = ", ".join(data.skills) if data.skills else "Not specified"
         
-        prompt = f"""You are an expert resume writer and ATS optimization specialist. Your task is to create an optimized resume tailored to a specific job posting.
+        prompt = f"""Your task is to create an optimized resume tailored to a specific job posting.
 
 IMPORTANT RULES:
 1. ONLY use information provided by the user - DO NOT fabricate any employers, dates, degrees, or certifications
@@ -180,7 +180,7 @@ TARGET JOB TITLE: {data.targetJobTitle}
 JOB DESCRIPTION:
 {data.jobDescription[:4000]}
 
-Please generate the following in JSON format:
+Please generate the following in JSON format. ONLY output valid JSON, no markdown code blocks:
 {{
     "professionalSummary": "A compelling 3-4 sentence professional summary tailored to this role",
     "optimizedExperience": [
@@ -206,11 +206,11 @@ Please generate the following in JSON format:
 Ensure each work experience entry has 3-5 impactful bullet points using the STAR method where applicable. Use action verbs and include metrics/numbers when the original data supports it.
 """
 
-        messages = [Message(role="user", content=prompt)]
-        response = await llm.chat(messages)
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
         
         # Parse the JSON response
-        response_text = response.content
+        response_text = response
         
         # Try to extract JSON from the response
         try:

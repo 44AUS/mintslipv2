@@ -923,7 +923,7 @@ export default function CanadianPaystubForm() {
         ...formData,
         deductions: deductions,
         contributions: contributions,
-        absencePlans: absencePlans, // Include absence plans for Template C
+        absencePlans: absencePlans, // Include absence plans for Template C and H
         employerBenefits: employerBenefits, // Include employer benefits for Template C
         companyLogo: companyLogo, // Include uploaded logo for PDF
         logoDataUrl: logoPreview, // Pass logo data URL for Workday template

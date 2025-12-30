@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -10,11 +10,26 @@ from dotenv import load_dotenv
 import uuid
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
+import io
+import re
 
 load_dotenv()
 
 # Import Emergent Integrations for Gemini
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+# PDF and DOCX parsing
+try:
+    import pdfplumber
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+
+try:
+    from docx import Document
+    DOCX_SUPPORT = True
+except ImportError:
+    DOCX_SUPPORT = False
 
 app = FastAPI()
 

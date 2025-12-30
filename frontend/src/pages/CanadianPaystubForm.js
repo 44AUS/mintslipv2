@@ -41,11 +41,19 @@ const USFlagIcon = () => (
 );
 
 // Payroll company templates with logos
+// Check if running on localhost
+const isLocalhost = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1'
+);
+
 const PAYROLL_COMPANIES = [
   { id: 'gusto', name: 'Gusto', template: 'template-a', logo: GustoLogo },
   { id: 'workday', name: 'Workday', template: 'template-c', logo: WorkdayLogo },
-  { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
   { id: 'onpay', name: 'OnPay', template: 'template-h', logo: OnPayLogo },
+    ...(isLocalhost ? [
+    { id: 'adp', name: 'ADP', template: 'template-b', logo: ADPLogo },
+  ] : []),
 ];
 
 export default function CanadianPaystubForm() {

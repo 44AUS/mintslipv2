@@ -125,6 +125,142 @@ def get_llm_chat():
 async def health_check():
     return {"status": "healthy"}
 
+@app.post("/api/parse-resume")
+async def parse_resume(file: UploadFile = File(...)):
+    """Parse an uploaded resume (PDF or DOCX) and extract structured data"""
+    try:
+        # Check file type
+        filename = file.filename.lower()
+        if not (filename.endswith('.pdf') or filename.endswith('.docx')):
+            raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported")
+        
+        # Read file content
+        content = await file.read()
+        
+        # Extract text based on file type
+        extracted_text = ""
+        
+        if filename.endswith('.pdf'):
+            if not PDF_SUPPORT:
+                raise HTTPException(status_code=500, detail="PDF parsing not available. Please upload a DOCX file.")
+            
+            with pdfplumber.open(io.BytesIO(content)) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        extracted_text += page_text + "\n"
+        
+        elif filename.endswith('.docx'):
+            if not DOCX_SUPPORT:
+                raise HTTPException(status_code=500, detail="DOCX parsing not available. Please upload a PDF file.")
+            
+            doc = Document(io.BytesIO(content))
+            for para in doc.paragraphs:
+                extracted_text += para.text + "\n"
+            # Also extract from tables
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        extracted_text += cell.text + " "
+                    extracted_text += "\n"
+        
+        if not extracted_text.strip():
+            raise HTTPException(status_code=400, detail="Could not extract text from the resume. Please ensure the file is not empty or corrupted.")
+        
+        # Use AI to parse the extracted text into structured format
+        chat = get_llm_chat()
+        
+        prompt = f"""Parse the following resume text and extract structured information. Return ONLY valid JSON, no markdown code blocks.
+
+RESUME TEXT:
+{extracted_text[:8000]}
+
+Extract and return this exact JSON structure (use empty strings or empty arrays if information is not found):
+{{
+    "personalInfo": {{
+        "fullName": "Full name of the person",
+        "email": "email@example.com",
+        "phone": "phone number",
+        "location": "City, State",
+        "linkedin": "LinkedIn URL if present",
+        "website": "Personal website if present"
+    }},
+    "workExperience": [
+        {{
+            "company": "Company Name",
+            "position": "Job Title",
+            "location": "City, State",
+            "startDate": "MM/YYYY or Month YYYY",
+            "endDate": "MM/YYYY or Month YYYY or Present",
+            "current": false,
+            "responsibilities": ["Responsibility 1", "Responsibility 2", "Responsibility 3"]
+        }}
+    ],
+    "education": [
+        {{
+            "institution": "University/School Name",
+            "degree": "Degree Type (e.g., Bachelor of Science)",
+            "field": "Field of Study",
+            "graduationDate": "YYYY or Month YYYY",
+            "gpa": "GPA if mentioned"
+        }}
+    ],
+    "skills": ["Skill 1", "Skill 2", "Skill 3"]
+}}
+
+Important:
+- Extract ALL work experiences found, ordered from most recent to oldest
+- Extract ALL education entries found
+- For responsibilities, extract 3-5 bullet points per job
+- If a field is not found in the resume, use an empty string "" or empty array []
+- Set "current" to true if the job says "Present" or "Current"
+- Return ONLY the JSON object, nothing else"""
+
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse the JSON response
+        response_text = response.strip()
+        
+        try:
+            # Find JSON in the response
+            start_idx = response_text.find('{')
+            end_idx = response_text.rfind('}') + 1
+            if start_idx != -1 and end_idx > start_idx:
+                json_str = response_text[start_idx:end_idx]
+                parsed_data = json.loads(json_str)
+            else:
+                raise ValueError("No JSON found in response")
+        except json.JSONDecodeError as e:
+            print(f"JSON parse error: {e}")
+            print(f"Response was: {response_text[:500]}")
+            # Return a basic structure if parsing fails
+            parsed_data = {
+                "personalInfo": {
+                    "fullName": "",
+                    "email": "",
+                    "phone": "",
+                    "location": "",
+                    "linkedin": "",
+                    "website": ""
+                },
+                "workExperience": [],
+                "education": [],
+                "skills": []
+            }
+        
+        return {
+            "success": True,
+            "data": parsed_data,
+            "rawTextLength": len(extracted_text)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error parsing resume: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error parsing resume: {str(e)}")
+
 @app.post("/api/scrape-job")
 async def scrape_job(request: JobScrapeRequest):
     """Scrape job description from URL"""

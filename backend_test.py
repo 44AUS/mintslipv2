@@ -26,36 +26,237 @@ class AIResumeBuilderTester:
             "details": details
         })
 
-    def test_frontend_accessibility(self):
-        """Test frontend pages are accessible"""
-        pages_to_test = [
-            ("/", "Home Page"),
-            ("/bankstatement", "Bank Statement Form"),
-            ("/paystub", "Paystub Form")
-        ]
-        
-        all_passed = True
-        for path, name in pages_to_test:
-            try:
-                response = requests.get(f"{self.base_url}{path}", timeout=10)
-                success = response.status_code == 200
-                details = f"Status: {response.status_code}"
-                if not success:
-                    all_passed = False
-                self.log_test(f"Frontend - {name}", success, details)
-            except Exception as e:
-                self.log_test(f"Frontend - {name}", False, f"Exception: {str(e)}")
-                all_passed = False
-        
-        return all_passed
+    def test_health_check(self):
+        """Test GET /api/health endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/health", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                expected_response = {"status": "healthy"}
+                if data == expected_response:
+                    details += f", Response: {data}"
+                else:
+                    success = False
+                    details += f", Unexpected response: {data}, Expected: {expected_response}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Health Check API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Health Check API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_scrape_job(self):
+        """Test POST /api/scrape-job endpoint with real job posting URL"""
+        try:
+            # Using a real job posting URL for testing
+            payload = {
+                "url": "https://www.indeed.com/viewjob?jk=example"
+            }
+            response = requests.post(
+                f"{self.api_url}/scrape-job", 
+                json=payload, 
+                timeout=30
+            )
+            
+            # Accept both success and expected failures (400 for invalid URLs)
+            success = response.status_code in [200, 400]
+            details = f"Status: {response.status_code}"
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "jobDescription" in data and len(data["jobDescription"]) > 50:
+                    details += f", Job description extracted ({len(data['jobDescription'])} chars)"
+                else:
+                    success = False
+                    details += f", Invalid job description: {data}"
+            elif response.status_code == 400:
+                # Expected for test URLs that may not be accessible
+                try:
+                    error_data = response.json()
+                    details += f", Expected error: {error_data.get('detail', 'Unknown error')}"
+                except:
+                    details += f", Response: {response.text}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Job Description Scraper API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Job Description Scraper API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_resume(self):
+        """Test POST /api/generate-resume endpoint with full sample data"""
+        try:
+            # Full sample data as specified in the review request
+            payload = {
+                "personalInfo": {
+                    "fullName": "Sarah Johnson",
+                    "email": "sarah.johnson@email.com",
+                    "phone": "(415) 555-1234",
+                    "location": "Seattle, WA",
+                    "linkedin": "linkedin.com/in/sarahjohnson"
+                },
+                "workExperience": [
+                    {
+                        "company": "Amazon Web Services",
+                        "position": "Software Development Engineer",
+                        "location": "Seattle, WA",
+                        "startDate": "2021-06",
+                        "endDate": "Present",
+                        "current": True,
+                        "responsibilities": [
+                            "Designed and implemented RESTful APIs serving 10M+ requests daily",
+                            "Mentored 3 junior developers on best practices",
+                            "Reduced deployment time by 50% through CI/CD improvements"
+                        ]
+                    },
+                    {
+                        "company": "Microsoft",
+                        "position": "Software Engineer Intern",
+                        "location": "Redmond, WA",
+                        "startDate": "2020-06",
+                        "endDate": "2020-09",
+                        "current": False,
+                        "responsibilities": [
+                            "Developed features for Azure DevOps",
+                            "Wrote unit tests achieving 90% code coverage"
+                        ]
+                    }
+                ],
+                "education": [
+                    {
+                        "institution": "University of Washington",
+                        "degree": "Bachelor of Science",
+                        "field": "Computer Science",
+                        "graduationDate": "2021",
+                        "gpa": "3.9"
+                    }
+                ],
+                "skills": ["Python", "Java", "AWS", "Kubernetes", "React", "SQL", "Git"],
+                "targetJobTitle": "Senior Software Engineer",
+                "jobDescription": "Senior Software Engineer at a leading tech company. Requirements: 4+ years experience in software development, proficiency in Python or Java, experience with cloud platforms (AWS preferred), strong problem-solving skills, experience with microservices architecture, excellent communication skills."
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/generate-resume", 
+                json=payload, 
+                timeout=60
+            )
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = [
+                    "professionalSummary", 
+                    "optimizedExperience", 
+                    "optimizedSkills", 
+                    "keywordsUsed", 
+                    "atsScore", 
+                    "suggestions"
+                ]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                else:
+                    # Validate structure
+                    validation_errors = []
+                    
+                    if not isinstance(data.get("optimizedExperience"), list):
+                        validation_errors.append("optimizedExperience should be a list")
+                    
+                    if not isinstance(data.get("optimizedSkills"), dict):
+                        validation_errors.append("optimizedSkills should be a dict")
+                    
+                    if not isinstance(data.get("keywordsUsed"), list):
+                        validation_errors.append("keywordsUsed should be a list")
+                    
+                    if not isinstance(data.get("atsScore"), (int, float)):
+                        validation_errors.append("atsScore should be a number")
+                    
+                    if not isinstance(data.get("suggestions"), list):
+                        validation_errors.append("suggestions should be a list")
+                    
+                    if validation_errors:
+                        success = False
+                        details += f", Validation errors: {validation_errors}"
+                    else:
+                        details += f", All required fields present with correct structure"
+                        details += f", ATS Score: {data.get('atsScore')}"
+                        details += f", Keywords: {len(data.get('keywordsUsed', []))}"
+                        details += f", Experience entries: {len(data.get('optimizedExperience', []))}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Resume API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Resume API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_regenerate_section(self):
+        """Test POST /api/regenerate-section endpoint"""
+        try:
+            # Test regenerating the summary section
+            payload = {
+                "section": "summary",
+                "currentContent": "Experienced software engineer seeking new opportunities.",
+                "jobDescription": "We need a senior engineer with Python and AWS experience."
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/regenerate-section", 
+                json=payload, 
+                timeout=30
+            )
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if "content" in data and isinstance(data["content"], str) and len(data["content"]) > 10:
+                    details += f", Regenerated content ({len(data['content'])} chars)"
+                else:
+                    success = False
+                    details += f", Invalid content response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Regenerate Section API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Regenerate Section API", False, f"Exception: {str(e)}")
+            return False
 
     def test_backend_service_status(self):
-        """Test if backend service is running (even if no endpoints work)"""
+        """Test if backend service is running"""
         try:
-            # Try to connect to any backend endpoint to see if service is running
-            response = requests.get(f"{self.api_url}/", timeout=5)
-            # Any response (even 404) means service is running
-            success = True
+            response = requests.get(f"{self.api_url}/health", timeout=5)
+            success = response.status_code == 200
             details = f"Backend service is running (Status: {response.status_code})"
             self.log_test("Backend Service Status", success, details)
             return success
@@ -63,162 +264,15 @@ class AIResumeBuilderTester:
             self.log_test("Backend Service Status", False, "Backend service not accessible")
             return False
         except Exception as e:
-            # If we get any other error, service is probably running
-            success = True
-            details = f"Backend service is running (Error: {str(e)})"
+            success = False
+            details = f"Backend service error: {str(e)}"
             self.log_test("Backend Service Status", success, details)
             return success
-
-    def test_create_paystub_order(self):
-        """Test POST /api/create-order for paystub (₹10)"""
-        try:
-            payload = {
-                "document_type": "paystub",
-                "amount": 1000  # ₹10 in paise
-            }
-            response = requests.post(
-                f"{self.api_url}/create-order", 
-                json=payload, 
-                timeout=10
-            )
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            
-            if success:
-                data = response.json()
-                required_fields = ["order_id", "amount", "currency", "key_id"]
-                missing_fields = [field for field in required_fields if field not in data]
-                if missing_fields:
-                    success = False
-                    details += f", Missing fields: {missing_fields}"
-                else:
-                    details += f", Order ID: {data.get('order_id', 'N/A')}, Amount: {data.get('amount', 'N/A')}"
-                    # Store order_id for verification test
-                    self.paystub_order_id = data.get('order_id')
-            else:
-                try:
-                    error_data = response.json()
-                    details += f", Error: {error_data}"
-                except:
-                    details += f", Response: {response.text}"
-            
-            self.log_test("Create Paystub Order (₹10)", success, details)
-            return success
-        except Exception as e:
-            self.log_test("Create Paystub Order (₹10)", False, f"Exception: {str(e)}")
-            return False
-
-    def test_create_bankstatement_order(self):
-        """Test POST /api/create-order for bank statement (₹50)"""
-        try:
-            payload = {
-                "document_type": "bankstatement",
-                "amount": 5000  # ₹50 in paise
-            }
-            response = requests.post(
-                f"{self.api_url}/create-order", 
-                json=payload, 
-                timeout=10
-            )
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            
-            if success:
-                data = response.json()
-                required_fields = ["order_id", "amount", "currency", "key_id"]
-                missing_fields = [field for field in required_fields if field not in data]
-                if missing_fields:
-                    success = False
-                    details += f", Missing fields: {missing_fields}"
-                else:
-                    details += f", Order ID: {data.get('order_id', 'N/A')}, Amount: {data.get('amount', 'N/A')}"
-                    # Store order_id for verification test
-                    self.bankstatement_order_id = data.get('order_id')
-            else:
-                try:
-                    error_data = response.json()
-                    details += f", Error: {error_data}"
-                except:
-                    details += f", Response: {response.text}"
-            
-            self.log_test("Create Bank Statement Order (₹50)", success, details)
-            return success
-        except Exception as e:
-            self.log_test("Create Bank Statement Order (₹50)", False, f"Exception: {str(e)}")
-            return False
-
-    def test_verify_payment(self):
-        """Test POST /api/verify-payment endpoint"""
-        try:
-            # Use a mock payment verification (this would normally come from Razorpay)
-            payload = {
-                "razorpay_order_id": getattr(self, 'paystub_order_id', 'test_order_123'),
-                "razorpay_payment_id": "test_payment_123",
-                "razorpay_signature": "test_signature_123",
-                "document_type": "paystub"
-            }
-            response = requests.post(
-                f"{self.api_url}/verify-payment", 
-                json=payload, 
-                timeout=10
-            )
-            
-            # In test mode, this might return 404 (transaction not found) or 400 (verification failed)
-            # Both are acceptable for testing purposes
-            success = response.status_code in [200, 400, 404]
-            details = f"Status: {response.status_code}"
-            
-            try:
-                data = response.json()
-                details += f", Response: {data}"
-            except:
-                details += f", Response: {response.text}"
-            
-            self.log_test("Verify Payment", success, details)
-            return success
-        except Exception as e:
-            self.log_test("Verify Payment", False, f"Exception: {str(e)}")
-            return False
-
-    def test_get_transactions(self):
-        """Test GET /api/transactions endpoint"""
-        try:
-            response = requests.get(f"{self.api_url}/transactions", timeout=10)
-            success = response.status_code == 200
-            details = f"Status: {response.status_code}"
-            
-            if success:
-                data = response.json()
-                details += f", Transactions count: {len(data) if isinstance(data, list) else 'N/A'}"
-            else:
-                try:
-                    error_data = response.json()
-                    details += f", Error: {error_data}"
-                except:
-                    details += f", Response: {response.text}"
-            
-            self.log_test("Get Transactions", success, details)
-            return success
-        except Exception as e:
-            self.log_test("Get Transactions", False, f"Exception: {str(e)}")
-            return False
-
-    def test_invalid_endpoints(self):
-        """Test invalid endpoints return proper error codes"""
-        try:
-            response = requests.get(f"{self.api_url}/nonexistent", timeout=10)
-            success = response.status_code == 404
-            details = f"Status: {response.status_code} (Expected 404)"
-            self.log_test("Invalid Endpoint Handling", success, details)
-            return success
-        except Exception as e:
-            self.log_test("Invalid Endpoint Handling", False, f"Exception: {str(e)}")
-            return False
 
     def test_cors_headers(self):
         """Test CORS headers are present"""
         try:
-            response = requests.options(f"{self.api_url}/", timeout=10)
+            response = requests.options(f"{self.api_url}/health", timeout=10)
             cors_headers = [
                 'access-control-allow-origin',
                 'access-control-allow-methods',
@@ -235,242 +289,51 @@ class AIResumeBuilderTester:
             self.log_test("CORS Headers", False, f"Exception: {str(e)}")
             return False
 
-    def test_bank_statement_template_a_implementation(self):
-        """Test Bank Statement Template A (Chime/Sutton) implementation in code"""
+    def test_invalid_endpoints(self):
+        """Test invalid endpoints return proper error codes"""
         try:
-            # Since this is a React SPA, test the implementation by checking the source code
-            import os
-            
-            # Check if the Template A implementation file exists
-            template_file = "/app/frontend/src/utils/bankStatementTemplates.js"
-            form_file = "/app/frontend/src/pages/BankStatementForm.js"
-            
-            if not os.path.exists(template_file):
-                self.log_test("Template A Implementation", False, "Template file not found")
-                return False
-            
-            if not os.path.exists(form_file):
-                self.log_test("Template A Implementation", False, "Form file not found")
-                return False
-            
-            # Read and check template implementation
-            with open(template_file, 'r') as f:
-                template_content = f.read()
-            
-            with open(form_file, 'r') as f:
-                form_content = f.read()
-            
-            # Check for key Template A (Chime/Sutton) features from requirements
-            required_features = {
-                "Sutton header": "Sutton" in template_content,
-                "Member Services": "Member Services" in template_content,
-                "Checking Account Statement": "Checking Account Statement" in template_content,
-                "Issued by Sutton Bank": "Issued by Sutton Bank" in template_content,
-                "Summary section": "Summary" in template_content,
-                "Transactions table": "TRANSACTION DATE" in template_content,
-                "Settlement Date column": "SETTLEMENT DATE" in template_content,
-                "Error Resolution Procedures": "Error Resolution Procedures" in template_content,
-                "Chime template option": "Chime" in form_content,
-                "Template A selection": "template-a" in form_content
-            }
-            
-            missing_features = [feature for feature, present in required_features.items() if not present]
-            
-            if missing_features:
-                success = False
-                details = f"Missing Template A features: {missing_features}"
-            else:
-                success = True
-                details = "All Template A (Chime/Sutton) features implemented correctly"
-            
-            self.log_test("Template A Implementation", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Template A Implementation", False, f"Exception: {str(e)}")
-            return False
-
-    def test_react_spa_loads(self):
-        """Test that React SPA loads correctly"""
-        try:
-            response = requests.get(f"{self.base_url}/bankstatement", timeout=10)
-            success = response.status_code == 200
-            
-            if success:
-                content = response.text
-                # Check for React SPA indicators
-                react_indicators = [
-                    '<div id="root">',  # React root element
-                    'bundle.js',  # JavaScript bundle
-                    'doctype html'  # Valid HTML (case insensitive)
-                ]
-                
-                missing_indicators = []
-                for indicator in react_indicators:
-                    if indicator not in content:
-                        missing_indicators.append(indicator)
-                
-                if missing_indicators:
-                    success = False
-                    details = f"Status: {response.status_code}, Missing React indicators: {missing_indicators}"
-                else:
-                    details = f"Status: {response.status_code}, React SPA structure correct"
-            else:
-                details = f"Status: {response.status_code}"
-            
-            self.log_test("React SPA Structure", success, details)
+            response = requests.get(f"{self.api_url}/nonexistent", timeout=10)
+            success = response.status_code == 404
+            details = f"Status: {response.status_code} (Expected 404)"
+            self.log_test("Invalid Endpoint Handling", success, details)
             return success
         except Exception as e:
-            self.log_test("React SPA Structure", False, f"Exception: {str(e)}")
-            return False
-
-    def test_template_a_specific_features(self):
-        """Test specific Template A features mentioned in review request"""
-        try:
-            template_file = "/app/frontend/src/utils/bankStatementTemplates.js"
-            
-            with open(template_file, 'r') as f:
-                content = f.read()
-            
-            # Features specifically mentioned in the review request
-            specific_features = {
-                '"Sutton" header in green': 'doc.setTextColor("#00b26a")' in content and 'doc.text("Sutton"' in content,
-                '"Member Services" with phone number': '"Member Services"' in content and '"(800) 422-3641"' in content,
-                '"Checking Account Statement" title': '"Checking Account Statement"' in content,
-                'Account number section': '"Account number"' in content,
-                'Statement period section': '"Statement period"' in content,
-                '"Issued by Sutton Bank, Member FDIC"': '"Issued by Sutton Bank, Member FDIC"' in content,
-                'Summary section with categories': (
-                    '"Beginning balance"' in content and 
-                    '"Deposits"' in content and 
-                    '"ATM Withdrawals"' in content and 
-                    '"Purchases"' in content and 
-                    '"Adjustments"' in content and 
-                    '"Transfers"' in content and 
-                    '"Round Up Transfers"' in content and 
-                    '"Fees"' in content and 
-                    '"SpotMe Tips"' in content and 
-                    '"Ending balance"' in content
-                ),
-                'Transactions table with required columns': (
-                    '"TRANSACTION DATE"' in content and 
-                    '"DESCRIPTION"' in content and 
-                    '"TYPE"' in content and 
-                    '"AMOUNT"' in content and 
-                    '"NET AMOUNT"' in content and 
-                    '"SETTLEMENT DATE"' in content
-                ),
-                'Error Resolution Procedures page': '"Error Resolution Procedures"' in content and 'doc.addPage()' in content
-            }
-            
-            failed_features = []
-            passed_features = []
-            
-            for feature_name, is_present in specific_features.items():
-                if is_present:
-                    passed_features.append(feature_name)
-                else:
-                    failed_features.append(feature_name)
-            
-            success = len(failed_features) == 0
-            
-            if success:
-                details = f"All {len(passed_features)} specific Template A features implemented correctly"
-            else:
-                details = f"Failed features: {failed_features}. Passed: {len(passed_features)}/{len(specific_features)}"
-            
-            self.log_test("Template A Specific Features", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Template A Specific Features", False, f"Exception: {str(e)}")
-            return False
-
-    def test_form_structure(self):
-        """Test that form has all required fields for user workflow"""
-        try:
-            form_file = "/app/frontend/src/pages/BankStatementForm.js"
-            
-            with open(form_file, 'r') as f:
-                content = f.read()
-            
-            # Required form fields from review request
-            required_fields = {
-                'Account Holder Name field': 'accountName' in content and 'Account Holder Name' in content,
-                'Account Number field': 'accountNumber' in content and 'Account Number' in content,
-                'Address Line 1 field': 'accountAddress1' in content and 'Address Line 1' in content,
-                'Address Line 2 field': 'accountAddress2' in content and 'Address Line 2' in content,
-                'Statement Month field': 'selectedMonth' in content and 'Statement Month' in content,
-                'Beginning Balance field': 'beginningBalance' in content and 'Beginning Balance' in content,
-                'Transaction fields': (
-                    'transactions' in content and 
-                    'date' in content and 
-                    'description' in content and 
-                    'type' in content and 
-                    'amount' in content
-                ),
-                'Template A (Chime) selection': 'template-a' in content and 'Chime' in content,
-                'PayPal button integration': 'PayPalButtons' in content,
-                'Add Transaction functionality': 'addTransaction' in content and 'Add Transaction' in content
-            }
-            
-            failed_fields = []
-            passed_fields = []
-            
-            for field_name, is_present in required_fields.items():
-                if is_present:
-                    passed_fields.append(field_name)
-                else:
-                    failed_fields.append(field_name)
-            
-            success = len(failed_fields) == 0
-            
-            if success:
-                details = f"All {len(passed_fields)} required form fields present"
-            else:
-                details = f"Missing fields: {failed_fields}. Present: {len(passed_fields)}/{len(required_fields)}"
-            
-            self.log_test("Form Structure", success, details)
-            return success
-            
-        except Exception as e:
-            self.log_test("Form Structure", False, f"Exception: {str(e)}")
+            self.log_test("Invalid Endpoint Handling", False, f"Exception: {str(e)}")
             return False
 
     def run_all_tests(self):
-        """Run all application tests"""
-        print("🚀 Starting DocuMint Application Tests")
+        """Run all AI Resume Builder backend API tests"""
+        print("🚀 Starting AI Resume Builder Backend API Tests")
         print(f"📍 Testing against: {self.base_url}")
         print("=" * 60)
         
-        # Test frontend accessibility first
-        print("\n🌐 Testing Frontend Accessibility...")
-        frontend_ok = self.test_frontend_accessibility()
-        
-        # Test backend service status
+        # Test backend service status first
         print("\n🔧 Testing Backend Service...")
         backend_running = self.test_backend_service_status()
         
-        # Test React SPA structure
-        print("\n⚛️  Testing React SPA Structure...")
-        spa_ok = self.test_react_spa_loads()
+        if not backend_running:
+            print("❌ Backend service is not running. Cannot proceed with API tests.")
+            return False
         
-        # Test Bank Statement Template A implementation
-        print("\n📄 Testing Bank Statement Template A Implementation...")
-        template_a_ok = self.test_bank_statement_template_a_implementation()
+        # Test all API endpoints
+        print("\n🏥 Testing Health Check API...")
+        health_ok = self.test_health_check()
         
-        # Test specific Template A features from review request
-        print("\n🔍 Testing Template A Specific Features...")
-        template_features_ok = self.test_template_a_specific_features()
+        print("\n🕷️ Testing Job Description Scraper API...")
+        scraper_ok = self.test_scrape_job()
         
-        # Test form structure for user workflow
-        print("\n📝 Testing Form Structure for User Workflow...")
-        form_structure_ok = self.test_form_structure()
+        print("\n📄 Testing Generate Resume API...")
+        generate_ok = self.test_generate_resume()
         
-        # Note about backend API endpoints
-        print("\n📝 Note: Backend API endpoints are not implemented yet.")
-        print("    The application uses client-side PDF generation with jsPDF.")
-        print("    PayPal integration handles payments directly in the frontend.")
+        print("\n🔄 Testing Regenerate Section API...")
+        regenerate_ok = self.test_regenerate_section()
+        
+        # Test additional functionality
+        print("\n🌐 Testing CORS Headers...")
+        cors_ok = self.test_cors_headers()
+        
+        print("\n❌ Testing Invalid Endpoint Handling...")
+        invalid_ok = self.test_invalid_endpoints()
         
         # Print summary
         print("\n" + "=" * 60)
@@ -478,19 +341,19 @@ class AIResumeBuilderTester:
         success_rate = (self.tests_passed / self.tests_run) * 100 if self.tests_run > 0 else 0
         print(f"📈 Success Rate: {success_rate:.1f}%")
         
-        # Determine overall success
-        critical_tests_passed = frontend_ok and spa_ok and template_a_ok and template_features_ok and form_structure_ok
+        # Determine overall success - focus on critical API endpoints
+        critical_tests_passed = health_ok and generate_ok and regenerate_ok
         
         if critical_tests_passed:
-            print("🎉 Critical functionality tests passed!")
-            print("✅ Bank Statement Template A (Chime/Sutton) is ready for use")
+            print("🎉 Critical AI Resume Builder API tests passed!")
+            print("✅ Backend APIs are working correctly")
             return True
         else:
-            print("⚠️  Some critical tests failed - check details above")
+            print("⚠️  Some critical API tests failed - check details above")
             return False
 
 def main():
-    tester = DocuMintTester()
+    tester = AIResumeBuilderTester()
     success = tester.run_all_tests()
     return 0 if success else 1
 

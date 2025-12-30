@@ -896,8 +896,15 @@ export default function ScheduleCForm() {
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Complete Payment
                 </h3>
+                <CouponInput
+                  generatorType="schedule-c"
+                  originalPrice={14.99}
+                  onDiscountApplied={setAppliedDiscount}
+                />
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$14.99</strong> for Schedule C generation
+                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '14.99'}</strong>
+                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                  {!appliedDiscount && ' for Schedule C generation'}
                 </p>
                 <div>
                   <PayPalButtons

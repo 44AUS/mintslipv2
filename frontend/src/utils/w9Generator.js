@@ -91,12 +91,30 @@ const FIELD_POSITIONS_2024 = {
   // Account numbers (Line 7) - y_top ~325, data entry ~338
   accountNumbers: { x: 65, y: 452, fontSize: 9 },
   
-  // Part I - TIN (SSN - y_top ~360, EIN - y_top ~408)
-  ssn1: { x: 440, y: 420, fontSize: 12 },
-  ssn2: { x: 490, y: 420, fontSize: 12 },
-  ssn3: { x: 550, y: 420, fontSize: 12 },
-  ein1: { x: 440, y: 372, fontSize: 12 },
-  ein2: { x: 520, y: 372, fontSize: 12 },
+  // Part I - TIN - SSN individual digit positions (9 digits: XXX-XX-XXXX)
+  ssn: [
+    { x: 441, y: 420, fontSize: 12 },
+    { x: 456, y: 420, fontSize: 12 },
+    { x: 471, y: 420, fontSize: 12 },
+    { x: 493, y: 420, fontSize: 12 },
+    { x: 508, y: 420, fontSize: 12 },
+    { x: 530, y: 420, fontSize: 12 },
+    { x: 545, y: 420, fontSize: 12 },
+    { x: 560, y: 420, fontSize: 12 },
+    { x: 575, y: 420, fontSize: 12 },
+  ],
+  // EIN individual digit positions (9 digits: XX-XXXXXXX)
+  ein: [
+    { x: 441, y: 372, fontSize: 12 },
+    { x: 456, y: 372, fontSize: 12 },
+    { x: 478, y: 372, fontSize: 12 },
+    { x: 493, y: 372, fontSize: 12 },
+    { x: 508, y: 372, fontSize: 12 },
+    { x: 523, y: 372, fontSize: 12 },
+    { x: 538, y: 372, fontSize: 12 },
+    { x: 553, y: 372, fontSize: 12 },
+    { x: 568, y: 372, fontSize: 12 },
+  ],
   
   // Part II - Signature Date (y_top ~589)
   signatureDate: { x: 400, y: 200, fontSize: 10 }

@@ -18,7 +18,7 @@ import {
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { generateAndDownloadResume } from "@/utils/resumeGenerator";
 
-const BACKEND_URL = import.meta.env.REACT_APP_BACKEND_URL || "";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Template options
 const TEMPLATES = [

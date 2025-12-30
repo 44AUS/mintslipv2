@@ -566,23 +566,28 @@ export default function AIResumeBuilder() {
   const onApprove = async (data, actions) => {
     setIsProcessingPayment(true);
     try {
-      const captureResult = await actions.order.capture();
-      console.log("Payment captured:", captureResult);
+      // Capture the payment first
+      const order = await actions.order.capture();
+      console.log("Payment captured successfully:", order);
+      
+      // Mark as paid immediately after successful capture
       setIsPaid(true);
       toast.success("Payment successful! You can now download your resume.");
-      await generatePreview();
+      
+      // Generate preview after payment is confirmed (don't await to avoid blocking)
+      generatePreview().catch(err => {
+        console.error("Preview generation error:", err);
+      });
+      
     } catch (error) {
       console.error("Payment capture error:", error);
       
       // Check if it's the "window closed" error
       if (error.message && error.message.includes("Window closed")) {
-        // The payment might have actually gone through
         toast.warning(
-          "Payment window was closed. If you completed the payment, please check your PayPal account. If the payment went through, refresh the page.",
+          "Payment window closed unexpectedly. If you completed the payment in PayPal, please check your account and contact support.",
           { duration: 8000 }
         );
-        // Optionally set as paid if we want to be lenient
-        // setIsPaid(true);
       } else {
         toast.error("Payment failed. Please try again.");
       }

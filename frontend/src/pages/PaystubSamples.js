@@ -109,14 +109,14 @@ const TEMPLATES = [
     generator: generateTemplateC,
     color: "#0066cc", // Workday blue
   },
-  // {
-  //   id: "template-h",
-  //   name: "OnPay Style",
-  //   description: "Clean, modern paystub design inspired by OnPay payroll. Features a compact layout with clear earnings breakdown, tax withholdings, and YTD totals. Perfect for small to medium businesses.",
-  //   features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
-  //   generator: generateTemplateH,
-  //   color: "#2580d8", // Orange accent
-  // },
+  {
+    id: "template-h",
+    name: "OnPay Style",
+    description: "Clean, modern paystub design inspired by OnPay payroll. Features a compact layout with clear earnings breakdown, tax withholdings, and YTD totals. Perfect for small to medium businesses.",
+    features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
+    generator: generateTemplateH,
+    color: "#000", // Orange accent
+  },
 ];
 
 // Convert PDF to image

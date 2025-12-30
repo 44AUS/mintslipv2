@@ -72,6 +72,16 @@ const generators = [
     category: "Income Documents",
     tags: ["canadian", "canada", "paystub", "cpp", "ei", "provincial tax", "quebec"]
   },
+    {
+    id: "ai-resume",
+    name: "AI Resume Builder",
+    description: "Create an ATS-optimized resume tailored to your target job in minutes",
+    path: "/ai-resume-builder",
+    icon: Sparkles,
+    price: "$9.99",
+    category: "Employment Documents",
+    tags: ["ai", "resume", "resume builder", "ats", "employment"]
+  },
   {
     id: "accounting-mockup",
     name: "Accounting Mockups Generator",

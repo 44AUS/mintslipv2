@@ -32,11 +32,10 @@ const TAX_FORMS = [
 
 // Other Forms dropdown items
 const OTHER_FORMS = [
-  { name: "Canadian Paystub Generator", path: "/canadian-paystub-generator", icon: FileSpreadsheet },
-  // { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
-  // { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
+  { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
+  { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
   { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
-  // { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
+  { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
   { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
   // Add more forms here as needed
 ];
@@ -89,6 +88,15 @@ function DesktopNavLinks({ location, onNavigate }) {
             <span>Create Paystub</span>
           </DropdownMenuItem>
           <DropdownMenuItem
+            onClick={() => onNavigate("/canadian-paystub-generator")}
+            className={`flex items-center gap-2 cursor-pointer ${
+              isActive("/canadian-paystub-generator") ? 'bg-green-50 text-green-800 font-semibold' : ''
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Canada Pay Stubs</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
             onClick={() => onNavigate("/paystub-samples")}
             className={`flex items-center gap-2 cursor-pointer ${
               isActive("/paystub-samples") ? 'bg-green-50 text-green-800 font-semibold' : ''
@@ -100,14 +108,14 @@ function DesktopNavLinks({ location, onNavigate }) {
         </DropdownMenuContent>
       </DropdownMenu>
       
-      <button
+      {/* <button
         onClick={() => onNavigate("/accounting-mockup-generator")}
         className={getButtonClasses("/accounting-mockup-generator")}
         data-testid="nav-bankstatement-link"
       >
         <FileBarChart className="w-4 h-4" />
         <span className="text-sm">Accounting Mockups</span>
-      </button>
+      </button> */}
 
       <button
         onClick={() => onNavigate("/ai-resume-builder")}
@@ -149,7 +157,7 @@ function DesktopNavLinks({ location, onNavigate }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Other Forms/Generators Dropdown */}
+      {/* Other Forms/Generators Dropdown
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -178,7 +186,7 @@ function DesktopNavLinks({ location, onNavigate }) {
             );
           })}
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
 
       <button
         onClick={() => onNavigate("/generators")}
@@ -252,6 +260,17 @@ function MobileNavLinks({ location, onNavigate }) {
             <span>Create Paystub</span>
           </button>
           <button
+            onClick={() => onNavigate("/canadian-paystub-generator")}
+            className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
+              isActive("/canadian-paystub-generator") 
+                ? 'bg-green-100 text-green-800 font-semibold' 
+                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Canada Pay Stubs</span>
+          </button>
+          <button
             onClick={() => onNavigate("/paystub-samples")}
             className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
               isActive("/paystub-samples") 
@@ -266,12 +285,12 @@ function MobileNavLinks({ location, onNavigate }) {
       </Collapsible>
       
       <button
-        onClick={() => onNavigate("/accounting-mockup-generator")}
-        className={getButtonClasses("/accounting-mockup-generator")}
+        onClick={() => onNavigate("/ai-resume-builder")}
+        className={getButtonClasses("/ai-resume-builder")}
         data-testid="nav-bankstatement-link-mobile"
       >
-        <FileBarChart className="w-5 h-5" />
-        <span className="text-base">Accounting Mockups</span>
+        <Sparkles className="w-5 h-5" />
+        <span className="text-base">AI Resume Builder</span>
       </button>
 
       {/* Tax Forms Collapsible for Mobile */}
@@ -313,7 +332,7 @@ function MobileNavLinks({ location, onNavigate }) {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Other Forms Collapsible for Mobile */}
+      {/* Other Forms Collapsible for Mobile
       <Collapsible open={otherFormsOpen} onOpenChange={setOtherFormsOpen}>
         <CollapsibleTrigger asChild>
           <button
@@ -350,7 +369,7 @@ function MobileNavLinks({ location, onNavigate }) {
             );
           })}
         </CollapsibleContent>
-      </Collapsible>
+      </Collapsible> */}
 
       <button
         onClick={() => onNavigate("/generators")}

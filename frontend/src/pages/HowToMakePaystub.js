@@ -35,7 +35,7 @@ import select from '../assests/select.png';
 import inputInfo from '../assests/inputInfo.png';
 import download from '../assests/download.png';
 import { jsPDF } from "jspdf";
-import { generateTemplateA, generateTemplateB, generateTemplateC } from "@/utils/paystubTemplates";
+import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "@/utils/paystubTemplates";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker
@@ -119,6 +119,14 @@ const TEMPLATES = [
     features: ["Corporate HR style", "Absence plan tracking", "Employer benefits section", "Side-by-side tables"],
     generator: generateTemplateC,
     color: "#0066cc",
+  },
+  {
+    id: "template-h",
+    name: "OnPay Style",
+    description: "Clean, modern paystub design inspired by OnPay payroll. Features a compact layout with clear earnings breakdown, tax withholdings, and YTD totals. Perfect for small to medium businesses.",
+    features: ["Colorful modern design", "Three-column layout", "Direct deposit emphasis", "Accruals & ACH sections"],
+    generator: generateTemplateH,
+    color: "#000", // Orange accent
   },
 ];
 

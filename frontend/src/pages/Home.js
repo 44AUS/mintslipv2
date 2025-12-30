@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, Star, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, Star, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -1205,7 +1205,7 @@ export default function Home() {
               <span className="block text-slate-800">Paystubs in Minutes</span>
             </h1>
             <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
-              Create accurate pay stubs, accounting mockups, W-2 forms, and more in minutes. No sign-up required.
+              Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.
             </p>
           </div>
 
@@ -1221,13 +1221,13 @@ export default function Home() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button
-              onClick={() => navigate("/accounting-mockup-generator")}
+              onClick={() => navigate("/ai-resume-builder")}
               size="lg"
               variant="outline"
               className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
             >
-              <FileBarChart className="w-5 h-5" />
-              Accounting Mockups
+              <Sparkles className="w-5 h-5" />
+              AI Resume Builder
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -1430,7 +1430,7 @@ export default function Home() {
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                 NEW
               </div>
-              <MapPin className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <TreePine className="w-12 h-12 text-red-600 mx-auto mb-4" />
               <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Canadian Pay Stub</h4>
               <div className="mb-4">
                 <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
@@ -1463,24 +1463,24 @@ export default function Home() {
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                 POPULAR
               </div>
-              <PiggyBank className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Accounting Mockups</h4>
+              <Sparkles className="w-12 h-12 text-green-700 mx-auto mb-4" />
+              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>AI Resume Builder</h4>
               <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$49.99</span>
-                <span className="text-slate-500 ml-2">/ doc</span>
+                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+                <span className="text-slate-500 ml-2">/ resume</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Full Transaction History</span>
+                  <span>ATS-optimized resume</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Multiple Templates</span>
+                  <span>Tailored To Target Jobs</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
                   <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Professional Formatting</span>
+                  <span>Professional Templates</span>
                 </li>
               </ul>
               <button
@@ -1768,7 +1768,7 @@ export default function Home() {
           >
             <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">NEW</span>
             <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-red-600 transition-colors">
-              <MapPin className="w-8 h-8 text-red-600 group-hover:text-white transition-colors" />
+              <TreePine className="w-8 h-8 text-red-600 group-hover:text-white transition-colors" />
             </div>
             
             <div className="space-y-4">
@@ -1782,6 +1782,32 @@ export default function Home() {
                 <div className="inline-flex items-center gap-2">
                   <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
                   <span className="text-slate-500">per document</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* AI Resume Card */}
+          <button
+            data-testid="airesume-card-button"
+            onClick={() => navigate("/ai-resume-builder")}
+            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
+          >
+            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
+              <Sparkles className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                AI Resume Builder
+              </h4>
+              <p className="text-slate-600 text-base leading-relaxed pr-16">
+                Create an ATS-optimized resume tailored to your target job in minutes.
+              </p>
+              <div className="pt-4">
+                <div className="inline-flex items-center gap-2">
+                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+                  <span className="text-slate-500">per statement</span>
                 </div>
               </div>
             </div>

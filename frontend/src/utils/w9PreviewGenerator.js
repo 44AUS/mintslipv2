@@ -59,11 +59,30 @@ const FIELD_POSITIONS_2018 = {
   address: { x: 65, y: 532, fontSize: 10 },
   cityStateZip: { x: 65, y: 508, fontSize: 10 },
   accountNumbers: { x: 65, y: 485, fontSize: 9 },
-  ssn1: { x: 430, y: 440, fontSize: 12 },
-  ssn2: { x: 480, y: 440, fontSize: 12 },
-  ssn3: { x: 540, y: 440, fontSize: 12 },
-  ein1: { x: 430, y: 390, fontSize: 12 },
-  ein2: { x: 510, y: 390, fontSize: 12 },
+  // SSN individual digit positions (9 digits: XXX-XX-XXXX)
+  ssn: [
+    { x: 431, y: 440, fontSize: 12 },
+    { x: 446, y: 440, fontSize: 12 },
+    { x: 461, y: 440, fontSize: 12 },
+    { x: 483, y: 440, fontSize: 12 },
+    { x: 498, y: 440, fontSize: 12 },
+    { x: 520, y: 440, fontSize: 12 },
+    { x: 535, y: 440, fontSize: 12 },
+    { x: 550, y: 440, fontSize: 12 },
+    { x: 565, y: 440, fontSize: 12 },
+  ],
+  // EIN individual digit positions (9 digits: XX-XXXXXXX)
+  ein: [
+    { x: 431, y: 390, fontSize: 12 },
+    { x: 446, y: 390, fontSize: 12 },
+    { x: 468, y: 390, fontSize: 12 },
+    { x: 483, y: 390, fontSize: 12 },
+    { x: 498, y: 390, fontSize: 12 },
+    { x: 513, y: 390, fontSize: 12 },
+    { x: 528, y: 390, fontSize: 12 },
+    { x: 543, y: 390, fontSize: 12 },
+    { x: 558, y: 390, fontSize: 12 },
+  ],
   signatureDate: { x: 415, y: 236, fontSize: 10 }
 };
 
@@ -86,11 +105,30 @@ const FIELD_POSITIONS_2024 = {
   address: { x: 65, y: 495, fontSize: 10 },
   cityStateZip: { x: 65, y: 470, fontSize: 10 },
   accountNumbers: { x: 65, y: 447, fontSize: 9 },
-  ssn1: { x: 430, y: 405, fontSize: 12 },
-  ssn2: { x: 480, y: 405, fontSize: 12 },
-  ssn3: { x: 540, y: 405, fontSize: 12 },
-  ein1: { x: 430, y: 357, fontSize: 12 },
-  ein2: { x: 510, y: 357, fontSize: 12 },
+  // SSN individual digit positions (9 digits: XXX-XX-XXXX)
+  ssn: [
+    { x: 441, y: 405, fontSize: 12 },
+    { x: 456, y: 405, fontSize: 12 },
+    { x: 471, y: 405, fontSize: 12 },
+    { x: 493, y: 405, fontSize: 12 },
+    { x: 508, y: 405, fontSize: 12 },
+    { x: 530, y: 405, fontSize: 12 },
+    { x: 545, y: 405, fontSize: 12 },
+    { x: 560, y: 405, fontSize: 12 },
+    { x: 575, y: 405, fontSize: 12 },
+  ],
+  // EIN individual digit positions (9 digits: XX-XXXXXXX)
+  ein: [
+    { x: 441, y: 357, fontSize: 12 },
+    { x: 456, y: 357, fontSize: 12 },
+    { x: 478, y: 357, fontSize: 12 },
+    { x: 493, y: 357, fontSize: 12 },
+    { x: 508, y: 357, fontSize: 12 },
+    { x: 523, y: 357, fontSize: 12 },
+    { x: 538, y: 357, fontSize: 12 },
+    { x: 553, y: 357, fontSize: 12 },
+    { x: 568, y: 357, fontSize: 12 },
+  ],
   signatureDate: { x: 410, y: 200, fontSize: 10 }
 };
 

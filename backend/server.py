@@ -64,6 +64,34 @@ class ResumeInput(BaseModel):
 class JobScrapeRequest(BaseModel):
     url: str
 
+# Discount Code Models
+class DiscountCodeCreate(BaseModel):
+    code: str
+    discountPercent: float
+    startDate: str  # ISO date string
+    expiryDate: str  # ISO date string
+    usageType: str  # "unlimited", "limited", "one_per_customer"
+    usageLimit: Optional[int] = None
+    applicableTo: str  # "all" or "specific"
+    specificGenerators: Optional[List[str]] = None
+    isActive: bool = True
+
+class DiscountCodeUpdate(BaseModel):
+    code: Optional[str] = None
+    discountPercent: Optional[float] = None
+    startDate: Optional[str] = None
+    expiryDate: Optional[str] = None
+    usageType: Optional[str] = None
+    usageLimit: Optional[int] = None
+    applicableTo: Optional[str] = None
+    specificGenerators: Optional[List[str]] = None
+    isActive: Optional[bool] = None
+
+class CouponValidateRequest(BaseModel):
+    code: str
+    generatorType: str
+    customerIdentifier: Optional[str] = None  # email or IP for one-per-customer
+
 # Initialize Gemini LLM Chat
 def get_llm_chat():
     api_key = os.environ.get("EMERGENT_LLM_KEY")

@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import CouponInput from "@/components/CouponInput";
 import { 
   FileText, Sparkles, Briefcase, GraduationCap, Target, Eye, Download, 
   Plus, Trash2, Loader2, ChevronRight, ChevronLeft, RefreshCw, Lock,

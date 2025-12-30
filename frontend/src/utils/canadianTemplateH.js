@@ -204,6 +204,10 @@ export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, marg
   doc.rect(col1X, tableY, col1Width, subHeaderHeight, 'F');
   doc.setDrawColor(...colors.borderGray);
   doc.rect(col1X, tableY, col1Width, subHeaderHeight);
+  // Add black side borders to subheader
+  doc.setDrawColor(...colors.black);
+  doc.line(col1X, tableY, col1X, tableY + subHeaderHeight); // Left border
+  doc.line(col1X + col1Width, tableY, col1X + col1Width, tableY + subHeaderHeight); // Right border
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);

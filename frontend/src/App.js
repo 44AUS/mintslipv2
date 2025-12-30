@@ -62,7 +62,13 @@ const PAYPAL_CLIENT_ID = getPayPalClientId();
 
 function App() {
   return (
-    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
+    <PayPalScriptProvider options={{ 
+      "client-id": PAYPAL_CLIENT_ID, 
+      currency: "USD", 
+      intent: "capture",
+      "enable-funding": "applepay,venmo,paylater",
+      "buyer-country": "US"
+    }}>
       <div className="App">
         <Toaster position="top-center" richColors />
         <BrowserRouter>

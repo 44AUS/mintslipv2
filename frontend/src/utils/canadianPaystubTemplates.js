@@ -1650,7 +1650,8 @@ export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, marg
     ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
-    logoDataUrl, isQuebec, cppLabel
+    logoDataUrl, isQuebec, cppLabel,
+    periodCheckNumber = "", periodMemo = ""
   } = data;
   
   // Color scheme

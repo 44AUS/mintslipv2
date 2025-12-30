@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW9 } from "@/utils/w9Generator";
 import { generateW9Preview } from "@/utils/w9PreviewGenerator";
 import { 

@@ -262,7 +262,7 @@ Ensure each work experience entry has 3-5 impactful bullet points using the STAR
 async def regenerate_section(data: dict):
     """Regenerate a specific section of the resume"""
     try:
-        llm = get_llm()
+        chat = get_llm_chat()
         
         section = data.get("section")
         current_content = data.get("currentContent")
@@ -300,10 +300,10 @@ Return a JSON object: {{"technical": [...], "soft": [...], "other": [...]}}"""
         if not prompt:
             raise HTTPException(status_code=400, detail=f"Unknown section: {section}")
         
-        messages = [Message(role="user", content=prompt)]
-        response = await llm.chat(messages)
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
         
-        response_text = response.content.strip()
+        response_text = response.strip()
         
         # Try to parse as JSON if applicable
         if section in ["experience", "skills"]:

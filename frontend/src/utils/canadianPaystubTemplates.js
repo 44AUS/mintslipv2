@@ -1,3 +1,9 @@
+// Import Canadian Template H from separate file (matches US OnPay design)
+import { generateCanadianTemplateH } from './canadianTemplateH';
+
+// Re-export for use by other files
+export { generateCanadianTemplateH };
+
 // Helper to load logo safely
 async function loadImageAsBase64(url) {
   try {

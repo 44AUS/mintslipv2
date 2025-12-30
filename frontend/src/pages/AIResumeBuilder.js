@@ -64,6 +64,7 @@ export default function AIResumeBuilder() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const [lockedSections, setLockedSections] = useState({});
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
 
   // Form data
   const [formData, setFormData] = useState({

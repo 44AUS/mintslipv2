@@ -765,7 +765,9 @@ export default function PaystubForm() {
           commission: prev[i]?.commission ?? 0,
           startDate: prev[i]?.startDate ?? period.start,
           endDate: prev[i]?.endDate ?? period.end,
-          payDate: prev[i]?.payDate ?? period.pay
+          payDate: prev[i]?.payDate ?? period.pay,
+          checkNumber: prev[i]?.checkNumber ?? '',
+          memo: prev[i]?.memo ?? ''
         }));
         return newHours;
       });

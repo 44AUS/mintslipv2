@@ -1084,7 +1084,7 @@ export default function CanadianPaystubForm() {
                             <div>
                               <span className="font-medium text-slate-700 block">{company.name}</span>
                               <span className="text-xs text-slate-500">
-                                {company.template === 'template-a' ? 'Style A' : company.template === 'template-b' ? 'Style B' : 'Style C'}
+                                {company.template === 'template-a' ? 'Style A' : company.template === 'template-b' ? 'Style B' : company.template === 'template-h' ? 'Style H' : 'Style C'}
                               </span>
                             </div>
                           </div>
@@ -1117,7 +1117,7 @@ export default function CanadianPaystubForm() {
                         <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
-                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Style A (Gusto)' : selectedPayrollCompany.template === 'template-b' ? 'Style B (ADP)' : 'Style C (Workday)'}</span>
+                          Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Style A (Gusto)' : selectedPayrollCompany.template === 'template-b' ? 'Style B (ADP)' : selectedPayrollCompany.template === 'template-h' ? 'Style H (OnPay)' : 'Style C (Workday)'}</span>
                         </p>
                       </div>
                     </div>

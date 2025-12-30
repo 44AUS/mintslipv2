@@ -1078,8 +1078,21 @@ export default function AIResumeBuilder() {
               </div>
             ) : (
               <div className="space-y-4">
+                <CouponInput
+                  generatorType="ai-resume"
+                  originalPrice={9.99}
+                  onDiscountApplied={setAppliedDiscount}
+                />
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-800">$9.99</p>
+                  {appliedDiscount ? (
+                    <>
+                      <p className="text-lg text-slate-400 line-through">${9.99.toFixed(2)}</p>
+                      <p className="text-2xl font-bold text-green-600">${appliedDiscount.discountedPrice.toFixed(2)}</p>
+                      <p className="text-green-600 text-sm">{appliedDiscount.discountPercent}% discount applied!</p>
+                    </>
+                  ) : (
+                    <p className="text-2xl font-bold text-slate-800">$9.99</p>
+                  )}
                   <p className="text-slate-600">One-time payment for your AI-optimized resume</p>
                 </div>
                 <div className="max-w-md mx-auto">

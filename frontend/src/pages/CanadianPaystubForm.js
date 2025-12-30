@@ -740,7 +740,9 @@ export default function CanadianPaystubForm() {
           commission: prev[i]?.commission ?? 0,
           startDate: prev[i]?.startDate ?? period.start,
           endDate: prev[i]?.endDate ?? period.end,
-          payDate: prev[i]?.payDate ?? period.pay
+          payDate: prev[i]?.payDate ?? period.pay,
+          checkNumber: prev[i]?.checkNumber ?? '',
+          memo: prev[i]?.memo ?? ''
         }));
         return newHours;
       });
@@ -758,6 +760,8 @@ export default function CanadianPaystubForm() {
       const startDateList = hoursPerPeriod.map(p => p.startDate || '').join(', ');
       const endDateList = hoursPerPeriod.map(p => p.endDate || '').join(', ');
       const payDateList = hoursPerPeriod.map(p => p.payDate || '').join(', ');
+      const checkNumberList = hoursPerPeriod.map(p => p.checkNumber || '').join(', ');
+      const memoList = hoursPerPeriod.map(p => p.memo || '').join('|||');
       
       setFormData(prev => ({
         ...prev,
@@ -766,7 +770,9 @@ export default function CanadianPaystubForm() {
         commissionList,
         startDateList,
         endDateList,
-        payDateList
+        payDateList,
+        checkNumberList,
+        memoList
       }));
     }
   }, [hoursPerPeriod]);

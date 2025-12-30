@@ -12,14 +12,15 @@ export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, marg
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
     logoDataUrl, isQuebec, cppLabel = 'CPP',
-    periodCheckNumber = "", periodMemo = ""
+    periodCheckNumber = "", periodMemo = "",
+    absencePlansData = []
   } = data;
   
   // Color scheme - Blue themed, matching US OnPay template
   const colors = {
     blue: [37, 128, 216],         // #2580d8 - Header blue
     lightBlue: [215, 215, 215],   // Light gray for sub-headers
-    lightGray: [245, 245, 245],   // #F5F5F5 - Light background
+    lightGray: [240, 240, 240],   // #f0f0f0 - Footer content background
     borderGray: [200, 200, 200],  // #C8C8C8 - Borders
     white: [255, 255, 255],
     black: [0, 0, 0],

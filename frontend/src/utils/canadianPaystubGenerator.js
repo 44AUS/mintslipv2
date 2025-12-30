@@ -158,7 +158,8 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
 async function generateSingleCanadianStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, province,
-  payDay, pageWidth, pageHeight, totalStubs, payFrequency
+  payDay, pageWidth, pageHeight, totalStubs, payFrequency,
+  checkNumberArray = [], memoArray = []
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";
@@ -167,6 +168,10 @@ async function generateSingleCanadianStub(
   const annualSalary = parseFloat(formData.annualSalary) || 0;
   const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
   const margin = 40;
+  
+  // Get per-period check number and memo for OnPay template
+  const periodCheckNumber = checkNumberArray[stubNum] || "";
+  const periodMemo = memoArray[stubNum] || "";
   
   // Calculate period dates
   const periodStart = new Date(startDate);

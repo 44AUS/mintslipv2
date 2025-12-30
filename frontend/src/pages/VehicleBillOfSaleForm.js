@@ -165,12 +165,14 @@ export default function VehicleBillOfSaleForm() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
+    const basePrice = 9.99;
+    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       purchase_units: [
         {
-          description: `Vehicle Bill of Sale - ${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}`,
+          description: `Vehicle Bill of Sale - ${formData.vehicleYear} ${formData.vehicleMake} ${formData.vehicleModel}${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`,
           amount: {
-            value: "9.99",
+            value: finalPrice.toFixed(2),
           },
         },
       ],

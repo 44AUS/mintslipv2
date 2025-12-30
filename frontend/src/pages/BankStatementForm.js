@@ -915,8 +915,17 @@ const createOrder = (data, actions) => {
                 <p className="text-xs text-slate-500 mb-4 text-center">
                   MintSlip does not provide "official" documents, verify employment, or guarantee acceptance by any third party.
                 </p>
+                
+                <CouponInput
+                  generatorType="bank-statement"
+                  originalPrice={getStatementPrice()}
+                  onDiscountApplied={setAppliedDiscount}
+                />
+                
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>${getStatementPrice()}</strong> for accounting mockup generation
+                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : getStatementPrice().toFixed(2)}</strong>
+                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                  {!appliedDiscount && ' for accounting mockup generation'}
                 </p>
                 
                 {!isFormValid() && (

@@ -1625,9 +1625,19 @@ export default function AIResumeBuilder() {
                       style={{ layout: "vertical", color: "gold", shape: "rect" }}
                       createOrder={createOrder}
                       onApprove={onApprove}
+                      onCancel={() => {
+                        toast.info("Payment was cancelled.");
+                      }}
                       onError={(err) => {
                         console.error("PayPal error:", err);
-                        toast.error("Payment failed. Please try again.");
+                        if (err.message && err.message.includes("Window closed")) {
+                          toast.warning(
+                            "Payment window closed unexpectedly. Please check your PayPal account or try again.",
+                            { duration: 6000 }
+                          );
+                        } else {
+                          toast.error("Payment failed. Please try again.");
+                        }
                       }}
                       forceReRender={[appliedDiscount]}
                     />

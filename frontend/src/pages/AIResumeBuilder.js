@@ -1162,24 +1162,121 @@ export default function AIResumeBuilder() {
       {/* Generate Button */}
       {!generatedResume && (
         <div className="flex justify-center">
-          <Button
-            onClick={generateResume}
-            disabled={isGenerating || !formData.jobDescription}
-            size="lg"
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Generating AI Resume...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5 mr-2" />
-                Generate AI Resume
-              </>
-            )}
-          </Button>
+          {isGenerating ? (
+            /* AI Generation Animation */
+            <div className="w-full max-w-2xl">
+              <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-2xl p-8">
+                {/* Animated background effects */}
+                <div className="absolute inset-0">
+                  <div className="absolute inset-0 opacity-30" style={{
+                    backgroundImage: `radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+                                      radial-gradient(circle at 75% 75%, rgba(6, 182, 212, 0.3) 0%, transparent 50%)`,
+                  }}></div>
+                  {/* Scanning line effect */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse" 
+                         style={{ 
+                           top: '50%',
+                           animation: 'scan 2s ease-in-out infinite',
+                         }}></div>
+                  </div>
+                </div>
+                
+                {/* Floating particles */}
+                <div className="absolute inset-0 overflow-hidden">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} 
+                         className="absolute w-1 h-1 bg-purple-400 rounded-full animate-ping"
+                         style={{
+                           left: `${20 + i * 15}%`,
+                           top: `${30 + (i % 3) * 20}%`,
+                           animationDelay: `${i * 0.3}s`,
+                           animationDuration: '2s'
+                         }}></div>
+                  ))}
+                </div>
+                
+                <div className="relative z-10 text-center">
+                  {/* AI Icon with effects */}
+                  <div className="relative inline-block mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-cyan-500 to-purple-500 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-2xl animate-spin" style={{ animationDuration: '8s' }}></div>
+                      <div className="relative bg-gradient-to-br from-purple-600 to-cyan-600 p-5 rounded-2xl m-0.5">
+                        <Sparkles className="w-10 h-10 text-white" />
+                      </div>
+                    </div>
+                    {/* Orbiting elements */}
+                    <div className="absolute inset-[-20px] animate-spin" style={{ animationDuration: '4s' }}>
+                      <div className="absolute top-0 left-1/2 w-3 h-3 -ml-1.5 bg-cyan-400 rounded-full shadow-lg shadow-cyan-400/50"></div>
+                    </div>
+                    <div className="absolute inset-[-30px] animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}>
+                      <div className="absolute bottom-0 left-1/2 w-2 h-2 -ml-1 bg-purple-400 rounded-full shadow-lg shadow-purple-400/50"></div>
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-white mb-3">
+                    AI is Crafting Your Resume
+                  </h3>
+                  
+                  <p className="text-purple-200 mb-6 max-w-md mx-auto">
+                    Analyzing job requirements and optimizing your experience for maximum impact
+                  </p>
+                  
+                  {/* Progress indicators */}
+                  <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto mb-6">
+                    {[
+                      { icon: Target, text: 'Matching keywords' },
+                      { icon: FileText, text: 'Structuring content' },
+                      { icon: Briefcase, text: 'Highlighting experience' },
+                      { icon: Sparkles, text: 'Optimizing for ATS' }
+                    ].map((item, index) => (
+                      <div key={item.text} 
+                           className="flex items-center gap-2 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-2 animate-pulse"
+                           style={{ animationDelay: `${index * 0.2}s` }}>
+                        <item.icon className="w-4 h-4 text-cyan-400" />
+                        <span className="text-sm text-slate-300">{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Animated progress bar */}
+                  <div className="max-w-xs mx-auto">
+                    <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-purple-500 via-cyan-500 to-purple-500 rounded-full animate-pulse"
+                           style={{
+                             width: '100%',
+                             backgroundSize: '200% 100%',
+                             animation: 'shimmer 1.5s ease-in-out infinite'
+                           }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* CSS for custom animations */}
+              <style>{`
+                @keyframes scan {
+                  0%, 100% { transform: translateY(-100px); opacity: 0; }
+                  50% { transform: translateY(100px); opacity: 1; }
+                }
+                @keyframes shimmer {
+                  0% { background-position: 200% 0; }
+                  100% { background-position: -200% 0; }
+                }
+              `}</style>
+            </div>
+          ) : (
+            <Button
+              onClick={generateResume}
+              disabled={!formData.jobDescription}
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105 px-8 py-6 text-lg"
+            >
+              <Sparkles className="w-6 h-6 mr-2" />
+              Generate AI Resume
+            </Button>
+          )}
         </div>
       )}
 

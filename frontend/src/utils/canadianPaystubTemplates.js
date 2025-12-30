@@ -1761,8 +1761,11 @@ export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, marg
   // Check info row
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
-  const checkNum = formData.checkNumber || String(Math.floor(1 + Math.random() * 999));
+  // Use per-period check number if provided, otherwise auto-generate
+  const checkNum = periodCheckNumber || String(Math.floor(1 + Math.random() * 999));
   const empNum = formData.employeeId || String(Math.floor(1000 + Math.random() * 9000));
+  // Use per-period memo if provided, otherwise default message
+  const memoText = periodMemo || "Thank you for your hard work.";
   
   // Labels
   doc.text("Cheque #", m + 5, y + 24);
@@ -1779,7 +1782,7 @@ export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, marg
   doc.text(formatDate(payDate), m + 55, y + 34);
   doc.text(formatDate(startDate), m + 115, y + 34);
   doc.text(formatDate(endDate), m + 175, y + 34);
-  doc.text("", m + 245, y + 34); // Empty MEMO
+  doc.text(memoText, m + 245, y + 34);
   doc.text(empNum, pageWidth - m - 50, y + 34);
   
   y += 45;

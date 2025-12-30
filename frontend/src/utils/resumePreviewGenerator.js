@@ -1,13 +1,22 @@
 import { generateResumePDF } from "./resumeGenerator";
-import * as pdfjsLib from 'pdfjs-dist';
 
-// Set worker path
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Lazy load pdf.js only when needed to avoid affecting other pages
+let pdfjsLib = null;
+
+async function initPdfJs() {
+  if (!pdfjsLib) {
+    pdfjsLib = await import('pdfjs-dist');
+    // Use a working CDN version
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  return pdfjsLib;
+}
 
 // Convert PDF to image
 async function convertPdfToImage(pdfDataUrl) {
   try {
-    const pdf = await pdfjsLib.getDocument(pdfDataUrl).promise;
+    const pdfjs = await initPdfJs();
+    const pdf = await pdfjs.getDocument(pdfDataUrl).promise;
     const page = await pdf.getPage(1);
     
     const scale = 2;

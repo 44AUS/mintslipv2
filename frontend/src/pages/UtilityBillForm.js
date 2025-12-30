@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { formatZipCode } from "@/utils/validation";

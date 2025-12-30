@@ -1611,6 +1611,7 @@ export default function AIResumeBuilder() {
                         console.error("PayPal error:", err);
                         toast.error("Payment failed. Please try again.");
                       }}
+                      forceReRender={[appliedDiscount]}
                     />
                   )}
                 </div>

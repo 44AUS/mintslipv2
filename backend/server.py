@@ -7,11 +7,12 @@ import json
 import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import uuid
 
 load_dotenv()
 
 # Import Emergent Integrations for Gemini
-from emergentintegrations.llm.chat import ChatLLM, ChatLLMConfig, LLMType, Message
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 app = FastAPI()
 
@@ -53,19 +54,19 @@ class ResumeInput(BaseModel):
 class JobScrapeRequest(BaseModel):
     url: str
 
-# Initialize Gemini LLM
-def get_llm():
+# Initialize Gemini LLM Chat
+def get_llm_chat():
     api_key = os.environ.get("EMERGENT_LLM_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")
     
-    config = ChatLLMConfig(
-        llm_type=LLMType.GEMINI,
-        model="gemini-2.0-flash",
+    chat = LlmChat(
         api_key=api_key,
-        temperature=0.7
-    )
-    return ChatLLM(config)
+        session_id=str(uuid.uuid4()),
+        system_message="You are an expert resume writer and ATS optimization specialist. You help create professional, ATS-optimized resumes tailored to specific job descriptions."
+    ).with_model("gemini", "gemini-2.5-flash")
+    
+    return chat
 
 @app.get("/api/health")
 async def health_check():

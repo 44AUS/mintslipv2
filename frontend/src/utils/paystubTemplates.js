@@ -1983,6 +1983,10 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.rect(col2X, tableY, col2Width, subHeaderHeight, 'F');
   doc.setDrawColor(...colors.borderGray);
   doc.rect(col2X, tableY, col2Width, subHeaderHeight);
+  // Add black side borders to subheader
+  doc.setDrawColor(...colors.black);
+  doc.line(col2X, tableY, col2X, tableY + subHeaderHeight); // Left border
+  doc.line(col2X + col2Width, tableY, col2X + col2Width, tableY + subHeaderHeight); // Right border
   
   doc.setFontSize(6);
   doc.setTextColor(...colors.black);
@@ -1998,9 +2002,9 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   xPos = col2X + 2;
   doc.text("Desc", xPos, tableY + 7);
   xPos += wt.desc;
-  doc.text("Amt", xPos, tableY + 7);
+  doc.text("Amt", xPos + wt.amt / 2, tableY + 7, { align: 'center' });
   xPos += wt.amt;
-  doc.text("YTD", xPos, tableY + 7);
+  doc.text("YTD", xPos + wt.ytd / 2, tableY + 7, { align: 'center' });
   
   tableY += subHeaderHeight;
   

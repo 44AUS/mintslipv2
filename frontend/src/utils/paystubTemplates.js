@@ -1827,7 +1827,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   doc.setFontSize(7);
   doc.text("MEMO:", pageWidth - m - 325, y + 9);
   doc.setFont("helvetica", "normal");
-  const memoText = formData.memo || "Thank you for your hard work.";
+  // Use per-period memo if provided, otherwise default message
+  const memoText = periodMemo || "Thank you for your hard work.";
   doc.text(memoText, pageWidth - m - 295, y + 9);
   
   doc.setFont("helvetica", "bold");

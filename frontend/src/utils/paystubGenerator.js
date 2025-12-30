@@ -95,6 +95,16 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
       .slice(0, calculatedNumStubs);
+    
+    // Parse per-period check numbers and memos for OnPay template
+    const checkNumberArray = (formData.checkNumberList || "")
+      .split(",")
+      .map((c) => c.trim())
+      .slice(0, calculatedNumStubs);
+    const memoArray = (formData.memoList || "")
+      .split("|||")
+      .map((m) => m.trim())
+      .slice(0, calculatedNumStubs);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);

@@ -66,8 +66,7 @@ function App() {
     <PayPalScriptProvider options={{ 
       "client-id": PAYPAL_CLIENT_ID, 
       currency: "USD", 
-      intent: "capture",
-      commit: true
+      intent: "capture"
     }}>
       <div className="App">
         <Toaster position="top-center" richColors />

@@ -2769,9 +2769,18 @@ export default function CanadianPaystubForm() {
                   MintSlip does not verify employment or guarantee acceptance by any third party.
                 </p>
                 {calculateNumStubs > 0 && (
-                  <p className="text-sm text-slate-600 mb-4">
-                    Total: <strong>${(calculateNumStubs * 9.99).toFixed(2)}</strong> ({calculateNumStubs} stub{calculateNumStubs > 1 ? 's' : ''} × $9.99)
-                  </p>
+                  <>
+                    <CouponInput
+                      generatorType="canadian-paystub"
+                      originalPrice={calculateNumStubs * 9.99}
+                      onDiscountApplied={setAppliedDiscount}
+                    />
+                    <p className="text-sm text-slate-600 mb-4">
+                      Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : (calculateNumStubs * 9.99).toFixed(2)}</strong> 
+                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {!appliedDiscount && ` (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''} × $9.99)`}
+                    </p>
+                  </>
                 )}
                 <div data-testid="paypal-button-container">
                   <PayPalButtons

@@ -904,7 +904,10 @@ export default function CanadianPaystubForm() {
   }, [formData, calculateNumStubs, deductions, contributions]);
 
   const createOrder = (data, actions) => {
-    const totalAmount = (calculateNumStubs * 9.99).toFixed(2);
+    const baseAmount = calculateNumStubs * 9.99;
+    const totalAmount = appliedDiscount 
+      ? appliedDiscount.discountedPrice.toFixed(2)
+      : baseAmount.toFixed(2);
     return actions.order.create({
       application_context: {
         shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
@@ -915,7 +918,7 @@ export default function CanadianPaystubForm() {
             value: totalAmount,
             currency_code: "USD"
           },
-          description: `Pay Stub Generation (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''})`
+          description: `Pay Stub Generation (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''})${appliedDiscount ? ` - ${appliedDiscount.discountPercent}% OFF` : ''}`
         },
       ],
     });

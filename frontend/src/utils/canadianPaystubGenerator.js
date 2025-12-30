@@ -53,6 +53,16 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
       .slice(0, calculatedNumStubs);
+    
+    // Parse per-period check numbers and memos for OnPay template
+    const checkNumberArray = (formData.checkNumberList || "")
+      .split(",")
+      .map((c) => c.trim())
+      .slice(0, calculatedNumStubs);
+    const memoArray = (formData.memoList || "")
+      .split("|||")
+      .map((m) => m.trim())
+      .slice(0, calculatedNumStubs);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
@@ -74,7 +84,8 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         const stubData = await generateSingleCanadianStub(
           doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
           hoursArray, overtimeArray, defaultHours, rate, province,
-          payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency
+          payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
+          checkNumberArray, memoArray
         );
         
         // Simple filename with date

@@ -14,7 +14,7 @@ import CouponInput from "@/components/CouponInput";
 import { 
   FileText, Sparkles, Briefcase, GraduationCap, Target, Eye, Download, 
   Plus, Trash2, Loader2, ChevronRight, ChevronLeft, RefreshCw, Lock,
-  CheckCircle, AlertCircle, Maximize2, Link as LinkIcon
+  CheckCircle, AlertCircle, Maximize2, Link as LinkIcon, Upload, X
 } from "lucide-react";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { generateAndDownloadResume } from "@/utils/resumeGenerator";

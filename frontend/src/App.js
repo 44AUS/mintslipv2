@@ -90,6 +90,7 @@ function App() {
             <Route path="/schedule-c-generator" element={<ScheduleCForm />} />
             <Route path="/vehicle-bill-of-sale-generator" element={<VehicleBillOfSaleForm />} />
             <Route path="/service-expense-generator" element={<UtilityBillForm />} />
+            <Route path="/ai-resume-builder" element={<AIResumeBuilder />} />
             <Route path="/how-to-make-a-paystub" element={<HowToMakePaystub />} />
             <Route path="/paystub-for-apartment" element={<PaystubForApartment />} />
             <Route path="/contact" element={<Contact />} />

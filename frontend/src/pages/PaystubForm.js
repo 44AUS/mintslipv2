@@ -785,6 +785,8 @@ export default function PaystubForm() {
       const startDateList = hoursPerPeriod.map(p => p.startDate || '').join(', ');
       const endDateList = hoursPerPeriod.map(p => p.endDate || '').join(', ');
       const payDateList = hoursPerPeriod.map(p => p.payDate || '').join(', ');
+      const checkNumberList = hoursPerPeriod.map(p => p.checkNumber || '').join(', ');
+      const memoList = hoursPerPeriod.map(p => p.memo || '').join('|||'); // Use ||| as delimiter for memos since they can contain commas
       
       setFormData(prev => ({
         ...prev,
@@ -793,7 +795,9 @@ export default function PaystubForm() {
         commissionList,
         startDateList,
         endDateList,
-        payDateList
+        payDateList,
+        checkNumberList,
+        memoList
       }));
     }
   }, [hoursPerPeriod]);

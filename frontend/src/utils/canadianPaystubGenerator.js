@@ -339,7 +339,10 @@ async function generateSingleCanadianStub(
     })),
     // Employer benefits for Template C (Workday)
     employerBenefitsData,
-    totalEmployerBenefits
+    totalEmployerBenefits,
+    // Per-period check number and memo for OnPay template
+    periodCheckNumber,
+    periodMemo
   };
   
   // Generate the selected template

@@ -24,6 +24,7 @@ import {
 import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
+import OnPayLogo from '../assests/onpayLogo.webp';
 
 // US Flag SVG component
 const USFlagIcon = () => (

@@ -14,6 +14,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW2, BOX_12_CODES } from "@/utils/w2Generator";
 import { generateW2Preview } from "@/utils/w2PreviewGenerator";
 import { 

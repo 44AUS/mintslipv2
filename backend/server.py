@@ -137,9 +137,9 @@ async def generate_resume(data: ResumeInput):
     try:
         chat = get_llm_chat()
         
-        # Build context from user data
+        # Build context from user data - include job location
         work_history = "\n".join([
-            f"- {exp.position} at {exp.company} ({exp.startDate} - {'Present' if exp.current else exp.endDate})\n  Responsibilities: {'; '.join(exp.responsibilities)}"
+            f"- {exp.position} at {exp.company}, {exp.location} ({exp.startDate} - {'Present' if exp.current else exp.endDate})\n  Responsibilities: {'; '.join(exp.responsibilities)}"
             for exp in data.workExperience
         ])
         

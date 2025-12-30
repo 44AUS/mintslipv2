@@ -63,7 +63,12 @@ const PAYPAL_CLIENT_ID = getPayPalClientId();
 
 function App() {
   return (
-    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
+    <PayPalScriptProvider options={{ 
+      "client-id": PAYPAL_CLIENT_ID, 
+      currency: "USD", 
+      intent: "capture",
+      commit: true
+    }}>
       <div className="App">
         <Toaster position="top-center" richColors />
         <BrowserRouter>

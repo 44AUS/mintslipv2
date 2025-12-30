@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC } from "./canadianPaystubTemplates";
+import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
 
 // Helper to calculate next weekday

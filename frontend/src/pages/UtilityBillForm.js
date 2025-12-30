@@ -301,12 +301,14 @@ export default function UtilityBillForm() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
+    const basePrice = 49.99;
+    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       purchase_units: [
         {
-          description: `Service Expense - ${formData.companyName || 'Statement'}`,
+          description: `Service Expense - ${formData.companyName || 'Statement'}${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`,
           amount: {
-            value: "49.99",
+            value: finalPrice.toFixed(2),
           },
         },
       ],

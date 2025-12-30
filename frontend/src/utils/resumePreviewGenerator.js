@@ -1,22 +1,18 @@
 import { generateResumePDF } from "./resumeGenerator";
+import * as pdfjsLib from 'pdfjs-dist';
 
-// Lazy load pdf.js only when needed to avoid affecting other pages
-let pdfjsLib = null;
-
-async function initPdfJs() {
-  if (!pdfjsLib) {
-    pdfjsLib = await import('pdfjs-dist');
-    // Use a working CDN version
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  }
-  return pdfjsLib;
-}
+// Set worker path - use same pattern as other preview generators
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 // Convert PDF to image
 async function convertPdfToImage(pdfDataUrl) {
   try {
-    const pdfjs = await initPdfJs();
-    const pdf = await pdfjs.getDocument(pdfDataUrl).promise;
+    // Convert data URL to array buffer
+    const response = await fetch(pdfDataUrl);
+    const pdfBytes = await response.arrayBuffer();
+    
+    const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
+    const pdf = await loadingTask.promise;
     const page = await pdf.getPage(1);
     
     const scale = 2;

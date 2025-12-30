@@ -213,13 +213,18 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
 async function generateSingleStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
-  payDay, pageWidth, pageHeight, totalStubs, payFrequency
+  payDay, pageWidth, pageHeight, totalStubs, payFrequency,
+  checkNumberArray = [], memoArray = []
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";
   const isContractor = workerType === "contractor";
   const annualSalary = parseFloat(formData.annualSalary) || 0;
   const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+  
+  // Get per-period check number and memo for OnPay template
+  const periodCheckNumber = checkNumberArray[stubNum] || "";
+  const periodMemo = memoArray[stubNum] || "";
   
   // Calculate gross pay based on pay type
   let hours = 0;

@@ -37,6 +37,7 @@ const TAX_YEARS = ["2024", "2023", "2022"];
 export default function ScheduleCForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);

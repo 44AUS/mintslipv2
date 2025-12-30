@@ -141,11 +141,14 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
         height: 80,
         color: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
       });
-      drawText('VEHICLE BILL OF SALE', width / 2 - 100, height - 50, { size: 22, fontType: 'bold', color: { r: 1, g: 1, b: 1 } });
+      // Center title in the colored bar
+      const modernTitleWidth = boldFont.widthOfTextAtSize('VEHICLE BILL OF SALE', 22);
+      drawText('VEHICLE BILL OF SALE', (width - modernTitleWidth) / 2, height - 50, { size: 22, fontType: 'bold', color: { r: 1, g: 1, b: 1 } });
       y = height - 100;
     } else if (formData.template === 'minimal') {
-      // Minimal template
-      drawText('VEHICLE BILL OF SALE', width / 2 - 80, y, { size: 18, fontType: 'bold', color: colors.primary });
+      // Minimal template - centered title
+      const minimalTitleWidth = boldFont.widthOfTextAtSize('VEHICLE BILL OF SALE', 18);
+      drawText('VEHICLE BILL OF SALE', (width - minimalTitleWidth) / 2, y, { size: 18, fontType: 'bold', color: colors.primary });
       y -= 10;
       drawLine(margin, y, width - margin, y, 2);
       y -= 25;

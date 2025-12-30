@@ -286,6 +286,99 @@ export default function AIResumeBuilder() {
     }
   };
 
+  // Parse uploaded resume
+  const handleResumeUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please upload a PDF or DOCX file");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB");
+      return;
+    }
+
+    setIsParsingResume(true);
+    setUploadedResumeName(file.name);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
+
+      const response = await fetch(`${BACKEND_URL}/api/parse-resume`, {
+        method: "POST",
+        body: formDataUpload
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Failed to parse resume");
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        const parsed = result.data;
+        
+        // Update form data with parsed information
+        setFormData(prev => ({
+          ...prev,
+          personalInfo: {
+            fullName: parsed.personalInfo?.fullName || prev.personalInfo.fullName,
+            email: parsed.personalInfo?.email || prev.personalInfo.email,
+            phone: parsed.personalInfo?.phone || prev.personalInfo.phone,
+            location: parsed.personalInfo?.location || prev.personalInfo.location,
+            linkedin: parsed.personalInfo?.linkedin || prev.personalInfo.linkedin,
+            website: parsed.personalInfo?.website || prev.personalInfo.website,
+          },
+          workExperience: parsed.workExperience?.length > 0 
+            ? parsed.workExperience.map(exp => ({
+                company: exp.company || "",
+                position: exp.position || "",
+                location: exp.location || "",
+                startDate: exp.startDate || "",
+                endDate: exp.endDate || "",
+                current: exp.current || false,
+                responsibilities: exp.responsibilities || []
+              }))
+            : prev.workExperience,
+          education: parsed.education?.length > 0
+            ? parsed.education.map(edu => ({
+                institution: edu.institution || "",
+                degree: edu.degree || "",
+                field: edu.field || "",
+                graduationDate: edu.graduationDate || "",
+                gpa: edu.gpa || ""
+              }))
+            : prev.education,
+          skills: parsed.skills?.length > 0 ? parsed.skills : prev.skills
+        }));
+
+        toast.success("Resume parsed successfully! Form has been auto-filled.");
+      } else {
+        toast.error("Could not extract information from the resume");
+      }
+    } catch (error) {
+      console.error("Error parsing resume:", error);
+      toast.error(error.message || "Failed to parse resume. Please fill in the form manually.");
+      setUploadedResumeName(null);
+    } finally {
+      setIsParsingResume(false);
+      // Reset the file input
+      event.target.value = '';
+    }
+  };
+
+  const clearUploadedResume = () => {
+    setUploadedResumeName(null);
+  };
+
   // Generate AI Resume
   const generateResume = async () => {
     if (!formData.jobDescription) {

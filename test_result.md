@@ -347,3 +347,26 @@ agent_communication:
     message: "OFFER LETTER UI POLISH TESTING COMPLETED ✅ Comprehensive testing of all requested UI polish features successfully verified: 1) Template Selection Visual Indicator: Professional template selected by default with green border, background tint, checkmark badge, and icon background. Modern and Custom templates show correct green styling when selected, previous selection loses styling correctly. Summary panel updates properly. 2) Company Logo Drag-Drop Upload: All elements present including label, upload icon, drag-drop text, Select File button, size limit text, and dashed border. 3) HR Director Signature Upload: Computer Generated selected by default with cursive preview. Upload Custom Signature shows proper upload area with all required elements. 4) Employee Signature Upload: All three options available (Generated/Custom/Blank) with same drag-drop styling as HR section. 5) Full Form Flow: All form fields functional, PDF preview updates, summary panel shows data correctly, PayPal shows $12.00. Minor: JavaScript bundle errors in console don't affect functionality. All UI polish features working perfectly and ready for production."
   - agent: "testing"
     message: "ADP PAYSTUB TEMPLATE B TESTING NOT APPLICABLE ❌ The review request asks for frontend testing of ADP Paystub Template B (navigation to /paystub, form filling, PDF preview, summary panel). However, testing agent scope is limited to backend API testing only - frontend testing is explicitly outside scope per guidelines. Additionally, no backend server.py file exists (backend service shows 'Could not import module server' error), and the review request confirms 'no backend API calls are needed - PDF is generated client-side using jsPDF.' RECOMMENDATION: Main agent should handle frontend testing directly or use appropriate frontend testing tools. Backend testing not applicable for this client-side PDF generation feature."
+  - task: "AI Resume Builder - Backend API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed emergentintegrations import to use correct LlmChat API. Backend now running with /api/health, /api/scrape-job, /api/generate-resume, and /api/regenerate-section endpoints. Generate resume endpoint tested successfully with Gemini 2.5 Flash - returns professional summary, optimized experience, categorized skills, ATS score, and suggestions."
+
+  - task: "AI Resume Builder - Frontend Form"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/AIResumeBuilder.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Multi-step form UI working. Steps: Personal Info, Work History, Education, Skills, Target Job, Review & Generate. Fixed env variable to use process.env instead of import.meta.env. Form navigation between steps working. Need to test full end-to-end flow."

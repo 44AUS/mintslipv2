@@ -167,7 +167,7 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
         borderColor: rgb(colors.primary.r, colors.primary.g, colors.primary.b),
         borderWidth: 2,
       });
-      y = height - 80;
+      y = height - 65;
     }
     
     // State info

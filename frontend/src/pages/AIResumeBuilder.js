@@ -440,6 +440,8 @@ export default function AIResumeBuilder() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
+    const basePrice = 9.99;
+    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       application_context: {
         shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
@@ -447,10 +449,10 @@ export default function AIResumeBuilder() {
       purchase_units: [
         {
           amount: {
-            value: "9.99",
+            value: finalPrice.toFixed(2),
             currency_code: "USD"
           },
-          description: "AI Resume Builder - Professional Resume"
+          description: `AI Resume Builder - Professional Resume${appliedDiscount ? ` (${appliedDiscount.discountPercent}% OFF)` : ''}`
         }
       ]
     });

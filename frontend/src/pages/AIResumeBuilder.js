@@ -1372,8 +1372,31 @@ export default function AIResumeBuilder() {
             </div>
             
             {isGeneratingPreview ? (
-              <div className="h-96 flex items-center justify-center bg-slate-50 rounded">
-                <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
+              <div className="h-96 flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 rounded-xl overflow-hidden relative">
+                {/* Background grid */}
+                <div className="absolute inset-0 opacity-20" style={{
+                  backgroundImage: `linear-gradient(rgba(139, 92, 246, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.5) 1px, transparent 1px)`,
+                  backgroundSize: '30px 30px'
+                }}></div>
+                
+                {/* Glowing effects */}
+                <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-purple-500 rounded-full filter blur-3xl opacity-20 animate-pulse"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-cyan-500 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                
+                <div className="relative z-10 text-center">
+                  <div className="relative inline-block mb-4">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl blur-lg opacity-50 animate-pulse"></div>
+                    <div className="relative bg-gradient-to-br from-purple-600 to-cyan-600 p-4 rounded-xl">
+                      <Eye className="w-8 h-8 text-white animate-pulse" />
+                    </div>
+                  </div>
+                  <p className="text-white font-medium mb-2">Generating Preview</p>
+                  <div className="flex justify-center gap-1">
+                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
+                </div>
               </div>
             ) : pdfPreview ? (
               <div className="relative">

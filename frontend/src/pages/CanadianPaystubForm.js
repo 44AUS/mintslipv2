@@ -60,6 +60,7 @@ const PAYROLL_COMPANIES = [
 export default function CanadianPaystubForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a");
   const [pdfPreviews, setPdfPreviews] = useState([]); // Array of preview images
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed

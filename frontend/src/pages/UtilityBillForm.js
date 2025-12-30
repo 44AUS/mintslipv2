@@ -1354,8 +1354,15 @@ export default function UtilityBillForm() {
                   MintSlip does not provide official records and does not guarantee acceptance for any third-party residency or identity verification.
                   Users are strictly prohibited from using these mockups for fraudulent or deceptive purposes.
                 </p>
+                <CouponInput
+                  generatorType="utility-bill"
+                  originalPrice={49.99}
+                  onDiscountApplied={setAppliedDiscount}
+                />
                 <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>$49.99</strong> for service expense generation
+                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '49.99'}</strong>
+                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                  {!appliedDiscount && ' for service expense generation'}
                 </p>
                 
                 {!isFormValid() && (

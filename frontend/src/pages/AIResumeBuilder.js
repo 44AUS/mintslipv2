@@ -455,6 +455,7 @@ export default function AIResumeBuilder() {
       return;
     }
 
+    setRegeneratingSection(section);
     setIsGenerating(true);
     try {
       const currentContent = section === "summary" 
@@ -509,6 +510,7 @@ export default function AIResumeBuilder() {
       toast.error("Failed to regenerate section");
     } finally {
       setIsGenerating(false);
+      setRegeneratingSection(null);
     }
   };
 

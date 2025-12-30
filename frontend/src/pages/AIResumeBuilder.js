@@ -541,10 +541,15 @@ export default function AIResumeBuilder() {
   // PayPal handlers
   const createOrder = (data, actions) => {
     const basePrice = 9.99;
-    const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+    const finalPrice = appliedDiscount && appliedDiscount.discountedPrice 
+      ? Number(appliedDiscount.discountedPrice) 
+      : basePrice;
+    
+    console.log("Creating PayPal order with price:", finalPrice);
+    
     return actions.order.create({
       application_context: {
-        shipping_preference: "NO_SHIPPING", // Digital product - no shipping required
+        shipping_preference: "NO_SHIPPING",
       },
       purchase_units: [
         {

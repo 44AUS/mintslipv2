@@ -235,16 +235,23 @@ export const generateW9Preview = async (formData, taxYear) => {
     // Account numbers
     drawText(formData.accountNumbers, FIELD_POSITIONS.accountNumbers);
     
-    // TIN
+    // TIN - draw each digit individually
     if (formData.tinType === "ssn" && formData.ssn) {
-      const ssnParts = formData.ssn.replace(/-/g, "").match(/.{1,3}/g) || [];
-      if (ssnParts[0]) drawText(ssnParts[0], FIELD_POSITIONS.ssn1);
-      if (ssnParts[1]) drawText(ssnParts[1], FIELD_POSITIONS.ssn2);
-      if (ssnParts[2]) drawText(ssnParts[2], FIELD_POSITIONS.ssn3);
+      // SSN format: XXX-XX-XXXX - draw each digit individually
+      const ssnDigits = formData.ssn.replace(/-/g, "").split("");
+      ssnDigits.forEach((digit, index) => {
+        if (FIELD_POSITIONS.ssn[index]) {
+          drawText(digit, FIELD_POSITIONS.ssn[index]);
+        }
+      });
     } else if (formData.tinType === "ein" && formData.ein) {
-      const einParts = formData.ein.split("-");
-      if (einParts[0]) drawText(einParts[0], FIELD_POSITIONS.ein1);
-      if (einParts[1]) drawText(einParts[1], FIELD_POSITIONS.ein2);
+      // EIN format: XX-XXXXXXX - draw each digit individually
+      const einDigits = formData.ein.replace(/-/g, "").split("");
+      einDigits.forEach((digit, index) => {
+        if (FIELD_POSITIONS.ein[index]) {
+          drawText(digit, FIELD_POSITIONS.ein[index]);
+        }
+      });
     }
     
     // Date

@@ -1290,7 +1290,7 @@ export default function PaystubForm() {
                       <span className="font-medium text-slate-800">Employee (W-2)</span>
                     </div>
                     <p className="text-xs text-slate-500 mt-2 ml-6">
-                      {selectedTemplate === 'template-b' ? 'ADP' : 'Workday'} template only supports employee pay stubs with tax withholdings.
+                      {selectedTemplate === 'template-b' ? 'ADP' : selectedTemplate === 'template-h' ? 'OnPay' : 'Workday'} template only supports employee pay stubs with tax withholdings.
                     </p>
                   </div>
                 )}

@@ -323,38 +323,6 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
         </div>
       </div>
 
-      {/* Bubble Menu for selected text */}
-      {editor && (
-        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <div className="flex gap-1 p-1 bg-slate-800 rounded shadow-lg">
-            <button
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-1.5 rounded text-white hover:bg-slate-700 ${
-                editor.isActive("bold") ? "bg-slate-700" : ""
-              }`}
-            >
-              <Bold className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-1.5 rounded text-white hover:bg-slate-700 ${
-                editor.isActive("italic") ? "bg-slate-700" : ""
-              }`}
-            >
-              <Italic className="w-4 h-4" />
-            </button>
-            <button
-              onClick={openLinkDialog}
-              className={`p-1.5 rounded text-white hover:bg-slate-700 ${
-                editor.isActive("link") ? "bg-slate-700" : ""
-              }`}
-            >
-              <LinkIcon className="w-4 h-4" />
-            </button>
-          </div>
-        </BubbleMenu>
-      )}
-
       {/* Editor Content */}
       <div className="min-h-[400px]">
         <EditorContent editor={editor} />

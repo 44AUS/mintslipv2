@@ -926,17 +926,218 @@ export default function AdminDashboard() {
               />
             </div>
 
-            {/* Purchases by Type */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-slate-800 mb-4">Revenue by Document Type</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {dashboardStats.purchasesByType.map((item) => (
-                  <div key={item._id} className="bg-slate-50 rounded-lg p-4">
-                    <p className="text-sm text-slate-600">{DOCUMENT_TYPES[item._id] || item._id}</p>
-                    <p className="text-xl font-bold text-slate-800">{formatCurrency(item.revenue)}</p>
-                    <p className="text-xs text-slate-500">{item.count} purchases</p>
-                  </div>
-                ))}
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Revenue Over Time Chart */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-800">Revenue Over Time</h2>
+                  <Select value={chartPeriod} onValueChange={setChartPeriod}>
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7days">Last 7 Days</SelectItem>
+                      <SelectItem value="30days">Last 30 Days</SelectItem>
+                      <SelectItem value="90days">Last 90 Days</SelectItem>
+                      <SelectItem value="year">Last Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="h-[300px]">
+                  {revenueChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={revenueChartData}>
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#16a34a" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          tickLine={false}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          tickLine={false}
+                          tickFormatter={(value) => `$${value}`}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                          formatter={(value, name) => [
+                            name === 'revenue' ? `$${value.toFixed(2)}` : value,
+                            name === 'revenue' ? 'Revenue' : 'Purchases'
+                          ]}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="revenue" 
+                          stroke="#16a34a" 
+                          strokeWidth={2}
+                          fillOpacity={1} 
+                          fill="url(#colorRevenue)" 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      No data available for selected period
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Purchases Over Time Chart */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-800">Purchases Over Time</h2>
+                </div>
+                <div className="h-[300px]">
+                  {revenueChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={revenueChartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          tickLine={false}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          tickLine={false}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                          formatter={(value) => [value, 'Purchases']}
+                        />
+                        <Bar 
+                          dataKey="purchases" 
+                          fill="#3b82f6" 
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      No data available for selected period
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Document Type Distribution Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-4">Revenue by Document Type</h2>
+                <div className="h-[300px]">
+                  {dashboardStats.purchasesByType && dashboardStats.purchasesByType.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={dashboardStats.purchasesByType.map((item, index) => ({
+                            name: DOCUMENT_TYPES[item._id] || item._id,
+                            value: item.revenue,
+                            fill: [
+                              '#16a34a', '#3b82f6', '#f59e0b', '#ef4444', 
+                              '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+                              '#f97316', '#6366f1', '#14b8a6', '#a855f7'
+                            ][index % 12]
+                          }))}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {dashboardStats.purchasesByType.map((_, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={[
+                                '#16a34a', '#3b82f6', '#f59e0b', '#ef4444', 
+                                '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+                                '#f97316', '#6366f1', '#14b8a6', '#a855f7'
+                              ][index % 12]} 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                          formatter={(value) => [`$${value.toFixed(2)}`, 'Revenue']}
+                        />
+                        <Legend 
+                          layout="vertical" 
+                          align="right" 
+                          verticalAlign="middle"
+                          wrapperStyle={{ fontSize: '12px' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      No data available
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Purchases Count by Type */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-4">Purchases by Document Type</h2>
+                <div className="h-[300px]">
+                  {dashboardStats.purchasesByType && dashboardStats.purchasesByType.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        data={dashboardStats.purchasesByType.map(item => ({
+                          name: DOCUMENT_TYPES[item._id]?.split(' ')[0] || item._id,
+                          count: item.count
+                        }))}
+                        layout="vertical"
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis type="number" tick={{ fontSize: 12, fill: '#64748b' }} />
+                        <YAxis 
+                          type="category" 
+                          dataKey="name" 
+                          tick={{ fontSize: 11, fill: '#64748b' }}
+                          width={80}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value) => [value, 'Purchases']}
+                        />
+                        <Bar dataKey="count" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      No data available
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

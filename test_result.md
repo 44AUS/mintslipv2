@@ -287,6 +287,18 @@ frontend:
         agent: "testing"
         comment: "Guest vs Registered customer labels working perfectly. Both Recent Purchases table (Overview tab) and All Purchases table (Purchases tab) correctly display 'Guest' badges for purchases without userId and 'Registered' badges for purchases with userId. Customer column shows email address with appropriate badge styling. Currently showing 3 Guest purchases in the system."
 
+  - task: "AI Resume Builder Duplicate Data Bug Fix"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/AIResumeBuilder.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "AI Resume Builder duplicate data bug is FIXED. ✅ Work Experience: Each position maintains unique data (Google vs Amazon tested successfully). ✅ Education: Each entry maintains unique data (MIT vs Stanford tested successfully). Both work experience and education sections properly handle multiple entries with unique IDs and separate state management. Minor: Deletion functionality had some UI interaction issues during testing but core data integrity is maintained."
+
   - task: "Blog Management Admin Page"
     implemented: true
     working: false

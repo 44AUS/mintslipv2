@@ -850,6 +850,55 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Subscription Change Modal */}
+      <Dialog open={subscriptionModalOpen} onOpenChange={setSubscriptionModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change User Subscription</DialogTitle>
+            <DialogDescription>
+              Update subscription plan for {selectedUser?.name} ({selectedUser?.email})
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="text-sm text-slate-600 mb-4">
+              Current plan: <span className="font-medium">{selectedUser?.subscription?.tier ? SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name : "None"}</span>
+            </div>
+            
+            <Select value={selectedTier} onValueChange={setSelectedTier}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a plan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No Subscription</SelectItem>
+                {Object.entries(SUBSCRIPTION_TIERS).map(([key, tier]) => (
+                  <SelectItem key={key} value={key}>
+                    {tier.name} - ${tier.price}/mo ({tier.downloads === -1 ? "Unlimited" : tier.downloads} downloads)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {selectedTier && (
+              <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                <p><strong>{SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
+                <p>${SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
+                <p>{SUBSCRIPTION_TIERS[selectedTier]?.downloads === -1 ? "Unlimited" : SUBSCRIPTION_TIERS[selectedTier]?.downloads} downloads per month</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSubscriptionModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={updateUserSubscription} className="bg-green-600 hover:bg-green-700">
+              Update Subscription
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

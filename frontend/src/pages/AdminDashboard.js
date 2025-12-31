@@ -143,6 +143,20 @@ export default function AdminDashboard() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // Add purchase modal state
+  const [addPurchaseModalOpen, setAddPurchaseModalOpen] = useState(false);
+  const [newPurchase, setNewPurchase] = useState({
+    documentType: "paystub",
+    amount: "",
+    paypalEmail: "",
+    purchaseDate: new Date().toISOString().split('T')[0],
+    template: "",
+    discountCode: "",
+    discountAmount: "",
+    notes: ""
+  });
+  const [isAddingPurchase, setIsAddingPurchase] = useState(false);
 
   // Check auth and get admin info
   useEffect(() => {

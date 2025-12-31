@@ -396,7 +396,14 @@ export default function AIResumeBuilder() {
       }
     } catch (error) {
       console.error("Error parsing resume:", error);
-      toast.error(error.message || "Failed to parse resume. Please fill in the form manually.");
+      // Provide more helpful error messages
+      let errorMessage = "Failed to parse resume. Please fill in the form manually.";
+      if (error.message === "Failed to fetch") {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
       setUploadedResumeName(null);
     } finally {
       setIsParsingResume(false);

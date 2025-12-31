@@ -111,6 +111,8 @@ export default function AdminDashboard() {
   const [periodRevenue, setPeriodRevenue] = useState(0);
   const [purchasesPeriod, setPurchasesPeriod] = useState("month");
   const [periodPurchases, setPeriodPurchases] = useState(0);
+  const [dateRangeFilter, setDateRangeFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const pageSize = 20;
   
   // Subscription change modal state

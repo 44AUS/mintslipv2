@@ -1875,8 +1875,17 @@ export default function AIResumeBuilder() {
           </div>
 
           {/* Form Content */}
-          <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8">
-            {renderStepContent()}
+          <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 overflow-hidden">
+            <div 
+              key={currentStep}
+              className={`transition-all duration-300 ease-out ${
+                isTransitioning 
+                  ? slideDirection === 'next' ? 'slide-out-left' : 'slide-out-right'
+                  : slideDirection === 'next' ? 'slide-in-right' : 'slide-in-left'
+              }`}
+            >
+              {renderStepContent()}
+            </div>
           </div>
 
           {/* Navigation Buttons */}
@@ -1884,18 +1893,20 @@ export default function AIResumeBuilder() {
             <Button
               variant="outline"
               onClick={prevStep}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isTransitioning}
+              className="group transition-all duration-200 hover:shadow-md"
             >
-              <ChevronLeft className="w-4 h-4 mr-2" />
+              <ChevronLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
               Previous
             </Button>
             {currentStep < STEPS.length && (
               <Button
                 onClick={nextStep}
-                className="bg-green-600 hover:bg-green-700"
+                disabled={isTransitioning}
+                className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
               >
                 Next
-                <ChevronRight className="w-4 h-4 ml-2" />
+                <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             )}
           </div>

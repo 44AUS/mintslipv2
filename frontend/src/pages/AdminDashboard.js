@@ -146,6 +146,7 @@ export default function AdminDashboard() {
   
   // Add purchase modal state
   const [addPurchaseModalOpen, setAddPurchaseModalOpen] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState(null);
   const [newPurchase, setNewPurchase] = useState({
     documentType: "paystub",
     amount: "",

@@ -434,7 +434,7 @@ export default function AdminDashboard() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
-                title="Total Revenue"
+                title="Yearly Revenue"
                 value={formatCurrency(dashboardStats.stats.totalRevenue)}
                 icon={DollarSign}
                 color="green"
@@ -445,16 +445,41 @@ export default function AdminDashboard() {
                 icon={ShoppingCart}
                 color="blue"
               />
+              
+              {/* Period-based Revenue Card with Dropdown */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-100 text-purple-600">
+                      <CalendarDays className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <Select value={revenuePeriod} onValueChange={setRevenuePeriod}>
+                    <SelectTrigger className="w-[110px] h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="week">This Week</SelectItem>
+                      <SelectItem value="month">This Month</SelectItem>
+                      <SelectItem value="quarter">This Quarter</SelectItem>
+                      <SelectItem value="year">This Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm text-slate-500">
+                    {revenuePeriod === "week" ? "Weekly" : 
+                     revenuePeriod === "month" ? "Monthly" : 
+                     revenuePeriod === "quarter" ? "Quarterly" : "Yearly"} Revenue
+                  </p>
+                  <p className="text-2xl font-bold text-slate-800 mt-1">{formatCurrency(periodRevenue)}</p>
+                </div>
+              </div>
+
               <StatCard
                 title="Today's Revenue"
                 value={formatCurrency(dashboardStats.stats.todayRevenue)}
                 icon={TrendingUp}
-                color="purple"
-              />
-              <StatCard
-                title="Today's Purchases"
-                value={dashboardStats.stats.todayPurchases}
-                icon={FileText}
                 color="orange"
               />
             </div>

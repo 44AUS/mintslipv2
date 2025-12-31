@@ -43,6 +43,21 @@ const TEMPLATES = [
   }
 ];
 
+// Font options
+const FONTS = [
+  { value: "Montserrat", label: "Montserrat", style: "Modern & Clean" },
+  { value: "Times New Roman", label: "Times New Roman", style: "Traditional" },
+  { value: "Calibri", label: "Calibri", style: "Professional" },
+  { value: "Arial", label: "Arial", style: "Classic" },
+  { value: "Helvetica", label: "Helvetica", style: "Clean & Minimal" }
+];
+
+// Section layout options
+const LAYOUT_OPTIONS = [
+  { value: "standard", label: "Standard", description: "Skills & Education at the bottom" },
+  { value: "compact", label: "Highlighted", description: "Skills & Education under Summary" }
+];
+
 // Form steps
 const STEPS = [
   { id: 1, title: "Personal Info", icon: FileText },
@@ -52,6 +67,7 @@ const STEPS = [
   { id: 5, title: "Target Job", icon: Sparkles },
   { id: 6, title: "Review & Generate", icon: Eye }
 ];
+
 
 export default function AIResumeBuilder() {
   const navigate = useNavigate();

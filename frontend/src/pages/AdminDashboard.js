@@ -39,7 +39,10 @@ import {
   Ban,
   UserX,
   MoreVertical,
-  CalendarDays
+  CalendarDays,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import {
   DropdownMenu,

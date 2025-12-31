@@ -292,17 +292,18 @@ export default function AdminDashboard() {
     
     const token = localStorage.getItem("adminToken");
     try {
+      const tierToSend = selectedTier === "none" ? null : selectedTier;
       const response = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}/subscription`, {
         method: "PUT",
         headers: { 
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ tier: selectedTier || null })
+        body: JSON.stringify({ tier: tierToSend })
       });
       
       if (response.ok) {
-        toast.success(selectedTier ? `User subscription updated to ${SUBSCRIPTION_TIERS[selectedTier]?.name}` : "User subscription removed");
+        toast.success(tierToSend ? `User subscription updated to ${SUBSCRIPTION_TIERS[tierToSend]?.name}` : "User subscription removed");
         setSubscriptionModalOpen(false);
         setSelectedUser(null);
         loadUsers();

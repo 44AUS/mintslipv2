@@ -952,6 +952,15 @@ class AIResumeBuilderTester:
         print("\n📋 Testing Subscription System...")
         subscription_tiers_ok = self.test_subscription_tiers()
         
+        # Test New Admin Dashboard Features
+        print("\n🆕 Testing New Admin Dashboard Features...")
+        admin_users_ok = self.test_admin_users_list()
+        admin_update_subscription_ok = self.test_admin_update_user_subscription()
+        admin_revenue_ok = self.test_admin_revenue_by_period()
+        
+        print("\n🔄 Testing Full Admin Flow...")
+        full_admin_flow_ok = self.test_full_admin_flow()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
@@ -963,13 +972,15 @@ class AIResumeBuilderTester:
         admin_tests_passed = admin_setup_ok and admin_login_ok and admin_verify_ok and admin_dashboard_ok
         purchase_tests_passed = purchase_track_ok and admin_purchases_ok
         subscription_tests_passed = subscription_tiers_ok
+        new_admin_features_passed = admin_users_ok and admin_update_subscription_ok and admin_revenue_ok and full_admin_flow_ok
         
-        if critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed:
+        if critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and new_admin_features_passed:
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")
             print("✅ Purchase tracking system working")
             print("✅ Subscription system working")
+            print("✅ New admin dashboard features working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")
@@ -982,6 +993,8 @@ class AIResumeBuilderTester:
                 failed_systems.append("Purchase Tracking")
             if not subscription_tests_passed:
                 failed_systems.append("Subscription System")
+            if not new_admin_features_passed:
+                failed_systems.append("New Admin Dashboard Features")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 

@@ -682,6 +682,52 @@ async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     
     return {"success": True, "isBanned": new_status}
 
+class UpdateUserSubscription(BaseModel):
+    tier: Optional[str] = None  # basic, pro, unlimited, or null to remove
+
+@app.put("/api/admin/users/{user_id}/subscription")
+async def update_user_subscription(user_id: str, data: UpdateUserSubscription, session: dict = Depends(get_current_admin)):
+    """Update a user's subscription plan (admin only)"""
+    user = await users_collection.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Validate tier if provided
+    if data.tier and data.tier not in SUBSCRIPTION_TIERS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    if data.tier:
+        # Set or update subscription
+        subscription = {
+            "id": str(uuid.uuid4()),
+            "tier": data.tier,
+            "status": "active",
+            "adminAssigned": True,
+            "updatedAt": datetime.now(timezone.utc).isoformat()
+        }
+        await users_collection.update_one(
+            {"id": user_id},
+            {
+                "$set": {
+                    "subscription": subscription,
+                    "downloadsUsed": 0,
+                    "downloadsReset": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        return {"success": True, "message": f"User subscription updated to {data.tier}", "subscription": subscription}
+    else:
+        # Remove subscription
+        await users_collection.update_one(
+            {"id": user_id},
+            {
+                "$set": {
+                    "subscription": None
+                }
+            }
+        )
+        return {"success": True, "message": "User subscription removed", "subscription": None}
+
 # ========== DISCOUNT CODES ENDPOINTS (Token-based Auth) ==========
 
 @app.get("/api/admin/discounts")

@@ -44,7 +44,8 @@ import {
   Eye,
   EyeOff,
   FileDown,
-  Search
+  Search,
+  Pencil
 } from "lucide-react";
 import {
   AreaChart,

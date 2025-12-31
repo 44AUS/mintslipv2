@@ -48,6 +48,18 @@ const formatDate = (dateStr) => {
   }
 };
 
+// Map font names to jsPDF font families
+const getFontFamily = (fontName) => {
+  const fontMap = {
+    'Montserrat': 'helvetica', // jsPDF doesn't have Montserrat, use helvetica
+    'Times New Roman': 'times',
+    'Calibri': 'helvetica', // jsPDF doesn't have Calibri, use helvetica
+    'Arial': 'helvetica',
+    'Helvetica': 'helvetica'
+  };
+  return fontMap[fontName] || 'helvetica';
+};
+
 // Generate PDF Resume
 export const generateResumePDF = async (data, addWatermark = false) => {
   const doc = new jsPDF({ unit: "pt", format: "letter" });

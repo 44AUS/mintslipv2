@@ -899,11 +899,18 @@ export default function AdminDashboard() {
               </SelectContent>
             </Select>
             
-            {selectedTier && (
+            {selectedTier && selectedTier !== "none" && (
               <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
                 <p><strong>{SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
                 <p>${SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
                 <p>{SUBSCRIPTION_TIERS[selectedTier]?.downloads === -1 ? "Unlimited" : SUBSCRIPTION_TIERS[selectedTier]?.downloads} downloads per month</p>
+              </div>
+            )}
+            
+            {selectedTier === "none" && (
+              <div className="p-3 bg-orange-50 rounded-lg text-sm text-orange-700">
+                <p><strong>Remove Subscription</strong></p>
+                <p>User will no longer have access to subscription features</p>
               </div>
             )}
           </div>

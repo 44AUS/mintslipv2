@@ -406,14 +406,10 @@ export default function BlogPost() {
               )}
 
               {/* Article Content */}
-              <div className="prose prose-lg max-w-none">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={MarkdownComponents}
-                >
-                  {post.content}
-                </ReactMarkdown>
-              </div>
+              <div 
+                className="prose prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-a:text-green-600 prose-a:hover:text-green-700 prose-blockquote:border-l-green-500 prose-blockquote:bg-green-50 prose-blockquote:py-2 prose-blockquote:rounded-r prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900"
+                dangerouslySetInnerHTML={{ __html: processedContent }}
+              />
 
               {/* CTA Block */}
               <div className="my-12 p-6 md:p-8 bg-gradient-to-r from-green-700 to-emerald-600 rounded-xl text-white">

@@ -76,25 +76,9 @@ const formatDate = (dateStr) => {
   }
 };
 
-// Map font names to custom jsPDF font families
-const getFontFamily = (fontName) => {
-  // Custom fonts: Montserrat, LiberationSerif (Times New Roman), LiberationSans (Calibri/Arial/Helvetica)
-  const fontMap = {
-    'Montserrat': 'Montserrat',
-    'Times New Roman': 'LiberationSerif',
-    'Calibri': 'LiberationSans',
-    'Arial': 'LiberationSans',
-    'Helvetica': 'LiberationSans'
-  };
-  return fontMap[fontName] || 'LiberationSans';
-};
-
 // Generate PDF Resume
 export const generateResumePDF = async (data, addWatermark = false) => {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
-  
-  // Register custom fonts
-  registerCustomFonts(doc);
   
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();

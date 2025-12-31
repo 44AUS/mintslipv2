@@ -730,6 +730,36 @@ async def delete_purchase(purchase_id: str, session: dict = Depends(get_current_
         raise HTTPException(status_code=404, detail="Purchase not found")
     return {"success": True, "message": "Purchase deleted"}
 
+@app.post("/api/admin/purchases")
+async def create_manual_purchase(data: ManualPurchaseCreate, session: dict = Depends(get_current_admin)):
+    """Manually add a purchase record (admin only) - for historical purchases"""
+    # Use provided date or default to now
+    if data.purchaseDate:
+        try:
+            purchase_date = data.purchaseDate
+        except:
+            purchase_date = datetime.now(timezone.utc).isoformat()
+    else:
+        purchase_date = datetime.now(timezone.utc).isoformat()
+    
+    purchase = {
+        "id": str(uuid.uuid4()),
+        "documentType": data.documentType,
+        "amount": data.amount,
+        "paypalEmail": data.paypalEmail,
+        "template": data.template,
+        "discountCode": data.discountCode,
+        "discountAmount": data.discountAmount or 0,
+        "notes": data.notes,
+        "manualEntry": True,  # Flag to indicate this was manually added
+        "addedBy": session.get("adminId"),
+        "createdAt": purchase_date
+    }
+    
+    await purchases_collection.insert_one(purchase)
+    
+    return {"success": True, "message": "Purchase added successfully", "purchase": {k: v for k, v in purchase.items() if k != "_id"}}
+
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
     """Delete a user (admin only)"""

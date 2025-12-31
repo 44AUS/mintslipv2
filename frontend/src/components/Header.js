@@ -206,6 +206,60 @@ function DesktopNavLinks({ location, onNavigate, user, onLogout }) {
         <Mail className="w-4 h-4" />
         <span className="text-sm">Contact</span>
       </button>
+
+      {/* User Account Dropdown - Only shown when logged in */}
+      {user && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="flex items-center gap-2 px-3 py-2 rounded-full bg-green-100 hover:bg-green-200 transition-all"
+              data-testid="nav-user-dropdown"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-white">
+                  {user.name?.charAt(0)?.toUpperCase() || "U"}
+                </span>
+              </div>
+              <ChevronDown className="w-3 h-3 text-green-700" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <div className="px-3 py-2 border-b border-slate-100">
+              <p className="font-medium text-slate-800">{user.name}</p>
+              <p className="text-xs text-slate-500">{user.email}</p>
+            </div>
+            <DropdownMenuItem
+              onClick={() => onNavigate("/user/dashboard")}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Dashboard</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onNavigate("/user/downloads")}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>My Downloads</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onNavigate("/user/settings")}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <Settings className="w-4 h-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onLogout}
+              className="flex items-center gap-2 cursor-pointer text-red-600 hover:text-red-700"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Log Out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </>
   );
 }

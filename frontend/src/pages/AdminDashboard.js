@@ -47,6 +47,21 @@ import {
   Search
 } from "lucide-react";
 import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,

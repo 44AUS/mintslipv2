@@ -370,17 +370,21 @@ TARGET JOB TITLE: {data.targetJobTitle}
 JOB DESCRIPTION:
 {data.jobDescription[:4000]}
 
+IMPORTANT: The user has provided {len(data.workExperience)} work experience entries. You MUST return exactly {len(data.workExperience)} entries in the optimizedExperience array, one for each job. Each entry must have UNIQUE and DIFFERENT bullet points tailored to that specific role. Do NOT duplicate or reuse bullet points across different positions.
+
 Please generate the following in JSON format. ONLY output valid JSON, no markdown code blocks:
 {{
     "professionalSummary": "A compelling 3-4 sentence professional summary tailored to this role",
     "optimizedExperience": [
+        // Return EXACTLY {len(data.workExperience)} entries here - one for EACH work experience provided above
+        // Each entry should look like:
         {{
-            "company": "Company Name",
-            "position": "Position Title",
-            "location": "City, State",
-            "startDate": "Start Date",
-            "endDate": "End Date or Present",
-            "bullets": ["Bullet point 1", "Bullet point 2", "Bullet point 3", "Bullet point 4"]
+            "company": "Exact company name from user input",
+            "position": "Exact position title from user input",
+            "location": "Exact location from user input",
+            "startDate": "Exact start date from user input",
+            "endDate": "Exact end date from user input or Present",
+            "bullets": ["Unique bullet 1 for THIS role", "Unique bullet 2 for THIS role", "Unique bullet 3 for THIS role", "Unique bullet 4 for THIS role"]
         }}
     ],
     "optimizedSkills": {{
@@ -393,7 +397,7 @@ Please generate the following in JSON format. ONLY output valid JSON, no markdow
     "suggestions": ["suggestion1", "suggestion2"]
 }}
 
-Ensure each work experience entry has 3-5 impactful bullet points using the STAR method where applicable. Use action verbs and include metrics/numbers when the original data supports it.
+CRITICAL: You MUST generate {len(data.workExperience)} SEPARATE work experience entries with DIFFERENT bullet points for each. Each position's bullets should be tailored to the specific responsibilities mentioned for that role. Do NOT copy the same bullets across different positions.
 """
 
         user_message = UserMessage(text=prompt)

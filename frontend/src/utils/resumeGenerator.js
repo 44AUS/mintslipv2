@@ -71,17 +71,17 @@ const formatDate = (dateStr) => {
   }
 };
 
-// Map font names to jsPDF font families
+// Map font names to custom jsPDF font families
 const getFontFamily = (fontName) => {
-  // jsPDF built-in fonts: helvetica, times, courier
+  // Custom fonts: Montserrat, LiberationSerif (Times New Roman), LiberationSans (Calibri/Arial/Helvetica)
   const fontMap = {
-    'Montserrat': 'helvetica',
-    'Times New Roman': 'times',
-    'Calibri': 'helvetica',
-    'Arial': 'helvetica',
-    'Helvetica': 'helvetica'
+    'Montserrat': 'Montserrat',
+    'Times New Roman': 'LiberationSerif',
+    'Calibri': 'LiberationSans',
+    'Arial': 'LiberationSans',
+    'Helvetica': 'LiberationSans'
   };
-  return fontMap[fontName] || 'helvetica';
+  return fontMap[fontName] || 'LiberationSans';
 };
 
 // Generate PDF Resume

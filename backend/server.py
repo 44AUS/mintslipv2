@@ -51,6 +51,8 @@ users_collection = db["users"]
 purchases_collection = db["purchases"]
 sessions_collection = db["sessions"]
 subscriptions_collection = db["subscriptions"]
+blog_posts_collection = db["blog_posts"]
+blog_categories_collection = db["blog_categories"]
 
 # Password hashing
 def hash_password(password: str) -> str:

@@ -470,10 +470,30 @@ export default function Header({ title }) {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Check for logged in user
+  useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      try {
+        setUser(JSON.parse(userInfo));
+      } catch (e) {
+        setUser(null);
+      }
+    }
+  }, []);
 
   const handleNavigation = (path) => {
     navigate(path);
     setMobileMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("userInfo");
+    setUser(null);
+    navigate("/");
   };
 
   return (

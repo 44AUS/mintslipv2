@@ -67,6 +67,24 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   const height = doc.internal.pageSize.getHeight();
   const margin = 50;
   const colors = TEMPLATE_COLORS[data.template] || TEMPLATE_COLORS.ats;
+  const fontFamily = getFontFamily(data.font || 'Calibri');
+  const onePage = data.onePage || false;
+  const sectionLayout = data.sectionLayout || 'standard';
+  
+  // Adjust font sizes for one-page mode
+  const fontSizes = onePage ? {
+    name: data.template === "ats" ? 18 : 20,
+    section: 11,
+    body: 9,
+    contact: 8,
+    bullets: 8
+  } : {
+    name: data.template === "ats" ? 20 : 24,
+    section: 12,
+    body: 10,
+    contact: 10,
+    bullets: 10
+  };
   
   let y = margin;
 
@@ -79,6 +97,16 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     doc.setDrawColor(color[0], color[1], color[2]);
     doc.setLineWidth(0.5);
     doc.line(margin, y, width - margin, y);
+  };
+  
+  // Check if we need a new page (but skip if onePage mode)
+  const checkNewPage = (neededSpace) => {
+    if (!onePage && y + neededSpace > height - margin) {
+      doc.addPage();
+      y = margin;
+      return true;
+    }
+    return false;
   };
 
   // Header Section
@@ -96,8 +124,8 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   }
 
   // Name
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(data.template === "ats" ? 20 : 24);
+  doc.setFont(fontFamily, "bold");
+  doc.setFontSize(fontSizes.name);
   setColor(colors.primary);
   doc.text(personalInfo.fullName || "Your Name", data.template === "modern" ? margin + 10 : margin, y + 20);
   y += 30;

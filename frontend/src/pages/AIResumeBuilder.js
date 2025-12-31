@@ -368,7 +368,8 @@ export default function AIResumeBuilder() {
             website: parsed.personalInfo?.website || prev.personalInfo.website,
           },
           workExperience: parsed.workExperience?.length > 0 
-            ? parsed.workExperience.map(exp => ({
+            ? parsed.workExperience.map((exp, index) => ({
+                id: `work_parsed_${Date.now()}_${index}`,
                 company: exp.company || "",
                 position: exp.position || "",
                 location: exp.location || "",
@@ -379,7 +380,8 @@ export default function AIResumeBuilder() {
               }))
             : prev.workExperience,
           education: parsed.education?.length > 0
-            ? parsed.education.map(edu => ({
+            ? parsed.education.map((edu, index) => ({
+                id: `edu_parsed_${Date.now()}_${index}`,
                 institution: edu.institution || "",
                 degree: edu.degree || "",
                 field: edu.field || "",

@@ -1543,6 +1543,365 @@ async def use_coupon(data: CouponValidateRequest):
     
     return {"success": True, "message": "Coupon usage recorded"}
 
+# ========== BLOG ENDPOINTS ==========
+
+# Initialize default blog categories
+@app.on_event("startup")
+async def init_blog_categories():
+    for cat in BLOG_CATEGORIES:
+        existing = await blog_categories_collection.find_one({"slug": cat["slug"]})
+        if not existing:
+            await blog_categories_collection.insert_one({
+                "id": str(uuid.uuid4()),
+                **cat,
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            })
+
+# ===== PUBLIC BLOG ENDPOINTS =====
+
+@app.get("/api/blog/posts")
+async def get_public_blog_posts(
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50),
+    category: Optional[str] = None,
+    tag: Optional[str] = None,
+    search: Optional[str] = None,
+    sort: Optional[str] = "newest"  # newest, oldest, popular
+):
+    """Get published blog posts (public)"""
+    query = {"status": "published"}
+    
+    if category:
+        query["category"] = category
+    
+    if tag:
+        query["tags"] = tag
+    
+    if search:
+        query["$or"] = [
+            {"title": {"$regex": search, "$options": "i"}},
+            {"content": {"$regex": search, "$options": "i"}},
+            {"excerpt": {"$regex": search, "$options": "i"}}
+        ]
+    
+    # Sorting
+    sort_order = -1 if sort == "newest" else 1
+    sort_field = "publishDate" if sort in ["newest", "oldest"] else "views"
+    
+    skip = (page - 1) * limit
+    total = await blog_posts_collection.count_documents(query)
+    
+    posts = await blog_posts_collection.find(
+        query, 
+        {"_id": 0, "content": 0}  # Exclude full content for list
+    ).sort(sort_field, sort_order).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "posts": posts,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit
+    }
+
+@app.get("/api/blog/posts/{slug}")
+async def get_public_blog_post(slug: str):
+    """Get a single published blog post by slug (public)"""
+    post = await blog_posts_collection.find_one(
+        {"slug": slug, "status": "published"},
+        {"_id": 0}
+    )
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Increment view count
+    await blog_posts_collection.update_one(
+        {"slug": slug},
+        {"$inc": {"views": 1}}
+    )
+    
+    # Get related posts (same category, excluding current)
+    related = []
+    if post.get("category"):
+        related = await blog_posts_collection.find(
+            {"category": post["category"], "status": "published", "slug": {"$ne": slug}},
+            {"_id": 0, "content": 0}
+        ).limit(3).to_list(3)
+    
+    return {
+        "success": True,
+        "post": post,
+        "related": related
+    }
+
+@app.get("/api/blog/categories")
+async def get_blog_categories():
+    """Get all blog categories (public)"""
+    categories = await blog_categories_collection.find({}, {"_id": 0}).to_list(100)
+    
+    # Get post counts for each category
+    for cat in categories:
+        count = await blog_posts_collection.count_documents({
+            "category": cat["slug"],
+            "status": "published"
+        })
+        cat["postCount"] = count
+    
+    return {"success": True, "categories": categories}
+
+@app.get("/api/blog/categories/{slug}")
+async def get_blog_category(slug: str):
+    """Get a single category with its posts"""
+    category = await blog_categories_collection.find_one({"slug": slug}, {"_id": 0})
+    
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"success": True, "category": category}
+
+# ===== ADMIN BLOG ENDPOINTS =====
+
+@app.get("/api/admin/blog/posts")
+async def get_admin_blog_posts(
+    session: dict = Depends(get_current_admin),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    status: Optional[str] = None
+):
+    """Get all blog posts (admin)"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    skip = (page - 1) * limit
+    total = await blog_posts_collection.count_documents(query)
+    
+    posts = await blog_posts_collection.find(
+        query,
+        {"_id": 0}
+    ).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {
+        "success": True,
+        "posts": posts,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit
+    }
+
+@app.get("/api/admin/blog/posts/{post_id}")
+async def get_admin_blog_post(post_id: str, session: dict = Depends(get_current_admin)):
+    """Get a single blog post by ID (admin)"""
+    post = await blog_posts_collection.find_one({"id": post_id}, {"_id": 0})
+    
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    return {"success": True, "post": post}
+
+@app.post("/api/admin/blog/posts")
+async def create_blog_post(data: BlogPostCreate, session: dict = Depends(get_current_admin)):
+    """Create a new blog post (admin)"""
+    # Check for duplicate slug
+    existing = await blog_posts_collection.find_one({"slug": data.slug})
+    if existing:
+        raise HTTPException(status_code=400, detail="A post with this slug already exists")
+    
+    # Calculate reading time (avg 200 words per minute)
+    word_count = len(data.content.split()) if data.content else 0
+    reading_time = max(1, round(word_count / 200))
+    
+    post = {
+        "id": str(uuid.uuid4()),
+        "title": data.title,
+        "slug": data.slug,
+        "metaTitle": data.metaTitle or data.title,
+        "metaDescription": data.metaDescription or (data.excerpt or data.content[:160] if data.content else ""),
+        "author": data.author or "MintSlip Team",
+        "featuredImage": data.featuredImage,
+        "content": data.content,
+        "excerpt": data.excerpt or (data.content[:200] + "..." if data.content and len(data.content) > 200 else data.content),
+        "category": data.category,
+        "tags": data.tags or [],
+        "faqSchema": data.faqSchema or [],
+        "status": data.status or "draft",
+        "indexFollow": data.indexFollow if data.indexFollow is not None else True,
+        "publishDate": data.publishDate or datetime.now(timezone.utc).isoformat(),
+        "readingTime": reading_time,
+        "views": 0,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "createdBy": session.get("adminId")
+    }
+    
+    await blog_posts_collection.insert_one(post)
+    
+    return {"success": True, "message": "Post created", "post": {k: v for k, v in post.items() if k != "_id"}}
+
+@app.put("/api/admin/blog/posts/{post_id}")
+async def update_blog_post(post_id: str, data: BlogPostUpdate, session: dict = Depends(get_current_admin)):
+    """Update a blog post (admin)"""
+    existing = await blog_posts_collection.find_one({"id": post_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Check for duplicate slug if changing
+    if data.slug and data.slug != existing["slug"]:
+        slug_exists = await blog_posts_collection.find_one({"slug": data.slug, "id": {"$ne": post_id}})
+        if slug_exists:
+            raise HTTPException(status_code=400, detail="A post with this slug already exists")
+    
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    
+    # Recalculate reading time if content changed
+    if data.content:
+        word_count = len(data.content.split())
+        update_data["readingTime"] = max(1, round(word_count / 200))
+    
+    update_data["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    update_data["updatedBy"] = session.get("adminId")
+    
+    await blog_posts_collection.update_one({"id": post_id}, {"$set": update_data})
+    
+    return {"success": True, "message": "Post updated"}
+
+@app.delete("/api/admin/blog/posts/{post_id}")
+async def delete_blog_post(post_id: str, session: dict = Depends(get_current_admin)):
+    """Delete a blog post (admin)"""
+    result = await blog_posts_collection.delete_one({"id": post_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    return {"success": True, "message": "Post deleted"}
+
+@app.post("/api/admin/blog/upload-image")
+async def upload_blog_image(file: UploadFile = File(...), session: dict = Depends(get_current_admin)):
+    """Upload an image for blog posts (admin)"""
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Allowed: JPEG, PNG, WebP, GIF")
+    
+    # Generate unique filename
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    
+    # Save file
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Return URL
+    image_url = f"/api/uploads/blog/{filename}"
+    
+    return {"success": True, "url": image_url, "filename": filename}
+
+@app.post("/api/admin/blog/categories")
+async def create_blog_category(data: BlogCategoryCreate, session: dict = Depends(get_current_admin)):
+    """Create a new blog category (admin)"""
+    existing = await blog_categories_collection.find_one({"slug": data.slug})
+    if existing:
+        raise HTTPException(status_code=400, detail="Category with this slug already exists")
+    
+    category = {
+        "id": str(uuid.uuid4()),
+        "name": data.name,
+        "slug": data.slug,
+        "description": data.description or "",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await blog_categories_collection.insert_one(category)
+    
+    return {"success": True, "message": "Category created", "category": {k: v for k, v in category.items() if k != "_id"}}
+
+@app.delete("/api/admin/blog/categories/{category_id}")
+async def delete_blog_category(category_id: str, session: dict = Depends(get_current_admin)):
+    """Delete a blog category (admin)"""
+    result = await blog_categories_collection.delete_one({"id": category_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"success": True, "message": "Category deleted"}
+
+# AI Blog Content Generation
+@app.post("/api/admin/blog/ai-generate")
+async def ai_generate_blog_content(
+    topic: str = Query(..., description="Blog topic or title"),
+    keywords: str = Query("", description="Target keywords, comma separated"),
+    tone: str = Query("professional", description="Writing tone: professional, casual, informative"),
+    session: dict = Depends(get_current_admin)
+):
+    """Generate blog content using AI (admin)"""
+    try:
+        chat = get_llm_chat()
+        
+        prompt = f"""Write a comprehensive, SEO-optimized blog article about: {topic}
+
+Target Keywords: {keywords if keywords else 'pay stub, proof of income, payroll'}
+Tone: {tone}
+
+Requirements:
+1. Write in Markdown format
+2. Include an engaging introduction
+3. Use H2 (##) and H3 (###) headings for sections
+4. Include practical tips and actionable advice
+5. Add a conclusion with a call-to-action mentioning MintSlip's pay stub generator
+6. Aim for 1000-1500 words
+7. Include internal link suggestions to: /paystub-generator, /how-to-make-a-pay-stub
+
+Also provide:
+- A compelling meta title (under 60 characters)
+- A meta description (under 160 characters)
+- An excerpt (2-3 sentences)
+- 3-5 FAQ questions with answers related to the topic
+
+Format your response as JSON:
+{{
+    "content": "markdown content here",
+    "metaTitle": "SEO title",
+    "metaDescription": "meta description",
+    "excerpt": "short excerpt",
+    "suggestedSlug": "url-friendly-slug",
+    "faqSchema": [
+        {{"question": "Q1", "answer": "A1"}},
+        {{"question": "Q2", "answer": "A2"}}
+    ],
+    "suggestedTags": ["tag1", "tag2"]
+}}"""
+        
+        response = chat.send_message(prompt)
+        
+        # Try to parse JSON from response
+        try:
+            # Find JSON in response
+            json_match = re.search(r'\{[\s\S]*\}', response)
+            if json_match:
+                result = json.loads(json_match.group())
+                return {"success": True, "generated": result}
+        except json.JSONDecodeError:
+            pass
+        
+        # If JSON parsing fails, return raw content
+        return {
+            "success": True,
+            "generated": {
+                "content": response,
+                "metaTitle": topic[:60],
+                "metaDescription": topic[:160],
+                "excerpt": topic,
+                "suggestedSlug": re.sub(r'[^a-z0-9]+', '-', topic.lower()).strip('-'),
+                "faqSchema": [],
+                "suggestedTags": []
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

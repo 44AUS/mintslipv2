@@ -65,6 +65,13 @@ const DOCUMENT_TYPES = {
   "canadian-paystub": "Canadian Pay Stub"
 };
 
+// Subscription tiers
+const SUBSCRIPTION_TIERS = {
+  "basic": { name: "Basic", price: 19.99, downloads: 5 },
+  "pro": { name: "Pro", price: 29.99, downloads: 10 },
+  "unlimited": { name: "Unlimited", price: 49.99, downloads: -1 }
+};
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");

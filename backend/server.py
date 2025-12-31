@@ -212,6 +212,54 @@ class SubscriptionCreate(BaseModel):
     paypalSubscriptionId: str
     paypalEmail: str
 
+# ========== BLOG MODELS ==========
+
+class BlogCategoryCreate(BaseModel):
+    name: str
+    slug: str
+    description: Optional[str] = ""
+
+class BlogPostCreate(BaseModel):
+    title: str
+    slug: str
+    metaTitle: Optional[str] = None
+    metaDescription: Optional[str] = None
+    author: Optional[str] = "MintSlip Team"
+    featuredImage: Optional[str] = None
+    content: str  # Markdown content
+    excerpt: Optional[str] = None
+    category: Optional[str] = None  # Category slug
+    tags: Optional[List[str]] = []
+    faqSchema: Optional[List[dict]] = []  # [{question, answer}]
+    status: Optional[str] = "draft"  # draft, published
+    indexFollow: Optional[bool] = True
+    publishDate: Optional[str] = None
+
+class BlogPostUpdate(BaseModel):
+    title: Optional[str] = None
+    slug: Optional[str] = None
+    metaTitle: Optional[str] = None
+    metaDescription: Optional[str] = None
+    author: Optional[str] = None
+    featuredImage: Optional[str] = None
+    content: Optional[str] = None
+    excerpt: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+    faqSchema: Optional[List[dict]] = None
+    status: Optional[str] = None
+    indexFollow: Optional[bool] = None
+    publishDate: Optional[str] = None
+
+# Blog Categories
+BLOG_CATEGORIES = [
+    {"slug": "pay-stubs", "name": "Pay Stubs", "description": "Everything about pay stubs and paycheck documentation"},
+    {"slug": "proof-of-income", "name": "Proof of Income", "description": "Guides and tips for proof of income documentation"},
+    {"slug": "payroll", "name": "Payroll", "description": "Payroll management and best practices"},
+    {"slug": "taxes", "name": "Taxes", "description": "Tax forms, filing, and financial documentation"},
+    {"slug": "employment", "name": "Employment", "description": "Employment documentation and workplace guides"},
+]
+
 # Initialize Gemini LLM Chat
 def get_llm_chat():
     api_key = os.environ.get("EMERGENT_LLM_KEY")

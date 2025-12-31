@@ -42,7 +42,9 @@ import {
   CalendarDays,
   Lock,
   Eye,
-  EyeOff
+  EyeOff,
+  FileDown,
+  Search
 } from "lucide-react";
 import {
   DropdownMenu,

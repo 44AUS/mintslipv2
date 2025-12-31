@@ -31,10 +31,10 @@ import {
   Trash2,
   ExternalLink,
   FileText,
-  X
+  X,
+  Code
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import TiptapEditor from "@/components/TiptapEditor";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 

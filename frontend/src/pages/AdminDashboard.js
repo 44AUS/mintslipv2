@@ -506,6 +506,15 @@ export default function AdminDashboard() {
               Refresh
             </Button>
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPasswordModalOpen(true)}
+              className="gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span className="hidden sm:inline">Change Password</span>
+            </Button>
+            <Button
               variant="ghost"
               size="sm"
               onClick={handleLogout}

@@ -612,6 +612,30 @@ export default function AIResumeBuilder() {
     try {
       const order = await actions.order.capture();
       console.log("AIResumeBuilder: Payment captured:", order);
+      const orderId = order?.id || `order_${Date.now()}`;
+      const payerEmail = order?.payer?.email_address || "";
+      
+      // Track purchase
+      const totalAmount = appliedDiscount && appliedDiscount.discountedPrice 
+        ? appliedDiscount.discountedPrice 
+        : 9.99;
+      
+      try {
+        await fetch(`${BACKEND_URL}/api/purchases/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentType: "resume",
+            amount: totalAmount,
+            paypalEmail: payerEmail,
+            paypalTransactionId: orderId,
+            discountCode: appliedDiscount?.code || null,
+            discountAmount: appliedDiscount ? 9.99 - appliedDiscount.discountedPrice : 0
+          })
+        });
+      } catch (trackError) {
+        console.error("Failed to track purchase:", trackError);
+      }
       
       toast.success("Payment successful! You can now download your resume.");
       setIsPaid(true);

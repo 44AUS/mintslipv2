@@ -27,6 +27,8 @@ import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminDiscounts from "@/pages/AdminDiscounts";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import UserLogin from "@/pages/UserLogin";
+import UserSignup from "@/pages/UserSignup";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";

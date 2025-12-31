@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "AI Resume Builder Landing Page (/resume-builder)"
+    - "AI Resume Builder - Preview and Download Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

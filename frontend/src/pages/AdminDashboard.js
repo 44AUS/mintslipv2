@@ -993,6 +993,79 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Change Password Modal */}
+      <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Admin Password</DialogTitle>
+            <DialogDescription>
+              Enter your current password and choose a new secure password.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Current Password</label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">New Password</label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password (min 8 characters)"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Confirm New Password</label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+            
+            {newPassword && confirmPassword && newPassword !== confirmPassword && (
+              <p className="text-sm text-red-500">Passwords don't match</p>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setPasswordModalOpen(false);
+              setCurrentPassword("");
+              setNewPassword("");
+              setConfirmPassword("");
+            }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={changePassword} 
+              disabled={isChangingPassword || !currentPassword || !newPassword || newPassword !== confirmPassword}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isChangingPassword ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Changing...
+                </>
+              ) : (
+                "Change Password"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

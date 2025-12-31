@@ -1724,345 +1724,133 @@ export default function Home() {
         );
       })()}
 
-      {/* Document Selection Grid */}
-      <section className="max-w-7xl mx-auto px-6 py-32">
-        <div className="text-center mb-16">
-          <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            Choose Your Document
-          </h3>
-          <p className="text-lg text-slate-600">Select the document type you need to generate</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Pay Stub Card */}
-          <button
-            data-testid="paystub-card-button"
-            onClick={() => navigate("/paystub-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Receipt className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Pay Stub Generator
-              </h4>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate professional pay stubs with accurate tax calculations, direct deposit information, and customizable pay periods.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
+      {/* Document Selection - Clean Informational Section */}
+      {(() => {
+        const [docRef, docInView] = useInView();
+        return (
+          <section ref={docRef} className="max-w-6xl mx-auto px-6 py-24">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left: Info Content */}
+              <div className={`space-y-6 transition-all duration-700 ${docInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
+                  <FileText className="w-4 h-4 text-green-700" />
+                  <span className="text-sm font-medium text-green-800">13+ Document Types</span>
                 </div>
-              </div>
-            </div>
-          </button>
-
-          {/* Canadian Pay Stub Card */}
-          <button
-            data-testid="canadian-paystub-card-button"
-            onClick={() => navigate("/canadian-paystub-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">NEW</span>
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-red-600 transition-colors">
-              <TreePine className="w-8 h-8 text-red-600 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Canadian Pay Stub Generator
-              </h4>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate Canadian pay stubs with accurate CPP/QPP, EI, and provincial tax calculations for all provinces and territories.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
+                
+                <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  All the Documents You Need
+                </h3>
+                
+                <p className="text-lg leading-relaxed text-slate-600">
+                  From pay stubs to tax forms, we've got you covered with a comprehensive suite of professional document generators designed for accuracy and ease of use.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4 py-4">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Pay Stubs (US & Canada)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">W-2 & W-9 Forms</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">1099-NEC & 1099-MISC</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">AI Resume Builder</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Offer Letters</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Vehicle Bill of Sale</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Schedule C Forms</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm">Service Expenses & More</span>
+                  </div>
                 </div>
+                
+                <Button
+                  onClick={() => navigate("/generators")}
+                  size="lg"
+                  className="group gap-2 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  Browse All Documents
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
               </div>
-            </div>
-          </button>
-
-          {/* AI Resume Card */}
-          <button
-            data-testid="airesume-card-button"
-            onClick={() => navigate("/ai-resume-builder")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Sparkles className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                AI Resume Builder
-              </h4>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Create an ATS-optimized resume tailored to your target job in minutes.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per statement</span>
+              
+              {/* Right: Visual Cards Preview */}
+              <div className={`relative transition-all duration-700 delay-200 ${docInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Featured Document Cards */}
+                  <button
+                    onClick={() => navigate("/paystub-generator")}
+                    className="group p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-lg transition-all duration-300 text-left"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
+                      <Receipt className="w-5 h-5 text-green-700" />
+                    </div>
+                    <h4 className="font-bold text-slate-800 mb-1">Pay Stub</h4>
+                    <p className="text-xs text-slate-500">Most Popular</p>
+                    <p className="text-lg font-bold text-green-700 mt-2">$9.99</p>
+                  </button>
+                  
+                  <button
+                    onClick={() => navigate("/ai-resume-builder")}
+                    className="group p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-lg transition-all duration-300 text-left"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
+                      <Sparkles className="w-5 h-5 text-green-700" />
+                    </div>
+                    <h4 className="font-bold text-slate-800 mb-1">AI Resume</h4>
+                    <p className="text-xs text-slate-500">AI-Powered</p>
+                    <p className="text-lg font-bold text-green-700 mt-2">$9.99</p>
+                  </button>
+                  
+                  <button
+                    onClick={() => navigate("/w2-generator")}
+                    className="group p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-lg transition-all duration-300 text-left"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
+                      <Calendar className="w-5 h-5 text-green-700" />
+                    </div>
+                    <h4 className="font-bold text-slate-800 mb-1">W-2 Form</h4>
+                    <p className="text-xs text-slate-500">Tax Documents</p>
+                    <p className="text-lg font-bold text-green-700 mt-2">$14.99</p>
+                  </button>
+                  
+                  <button
+                    onClick={() => navigate("/generators")}
+                    className="group p-5 bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 text-left"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-3 group-hover:bg-green-50 transition-colors">
+                      <ArrowRight className="w-5 h-5 text-green-700 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                    <h4 className="font-bold text-green-800 mb-1">View All</h4>
+                    <p className="text-xs text-green-600">13+ Document Types</p>
+                    <p className="text-sm font-medium text-green-700 mt-2">Browse Directory →</p>
+                  </button>
                 </div>
+                
+                {/* Background decoration */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-100 rounded-full filter blur-2xl opacity-50 -z-10" />
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-100 rounded-full filter blur-2xl opacity-40 -z-10" />
               </div>
             </div>
-          </button>
-
-          {/* accounting mockups Card */}
-          <button
-            data-testid="accountingmockup-card-button"
-            onClick={() => navigate("/accounting-mockup-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <PiggyBank className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                Accounting Mockups Generator
-              </h4>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate statement templates for personal bookkeeping and organizational purposes.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$49.99</span>
-                  <span className="text-slate-500">per statement</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-           {/* W-2 Card */}
-          <button
-            data-testid="w2-card-button"
-            onClick={() => navigate("/w2-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Calendar className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                W-2 Form Generator
-              </h4>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Create fully detailed W-2 forms with accurate wage information, tax breakdowns, employer/employee details, and clean, professional formatting.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$14.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* W-9 Card */}
-          <button
-            data-testid="w9-card-button"
-            onClick={() => navigate("/w9-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <ClipboardList className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  W-9 Form Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate W-9 Request for Taxpayer Identification Number and Certification forms with all required fields.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* 1099-NEC Card */}
-          <button
-            data-testid="1099nec-card-button"
-            onClick={() => navigate("/1099-nec-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Users className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  1099-NEC Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate 1099-NEC forms for nonemployee compensation. Perfect for contractor and freelancer payments.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* 1099-MISC Card */}
-          <button
-            data-testid="1099misc-card-button"
-            onClick={() => navigate("/1099-misc-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Landmark className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  1099-MISC Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate 1099-MISC forms for rents, royalties, prizes, awards, medical payments, and more.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* Offer Letter Card */}
-          <button
-            data-testid="offer-letter-card-button"
-            onClick={() => navigate("/offer-letter-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Mail className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Offer Letter Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Create professional employment offer letters with 3 customizable templates and signature lines.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* Schedule C Card */}
-          <button
-            data-testid="schedulec-card-button"
-            onClick={() => navigate("/schedule-c-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <FileBarChart className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Schedule C Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate Schedule C forms for sole proprietors with complete income, expenses, and profit/loss calculations.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* Vehicle Bill of Sale Card */}
-          <button
-            data-testid="vehicle-bill-of-sale-card-button"
-            onClick={() => navigate("/vehicle-bill-of-sale-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Car className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Vehicle Bill of Sale Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Create professional vehicle bill of sale documents with seller/buyer info, vehicle details, and optional notary section.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
-                  <span className="text-slate-500">per document</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-          {/* Service Expense Bill Card */}
-          <button
-            data-testid="service-expense-l-card-button"
-            onClick={() => navigate("/service-expense-generator")}
-            className="group relative p-8 md:p-12 bg-white border-2 border-slate-200 rounded-md hover:border-green-800 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-left"
-          >
-            <div className="absolute top-6 right-6 w-16 h-16 rounded-full bg-green-50 flex items-center justify-center group-hover:bg-green-800 transition-colors">
-              <Zap className="w-8 h-8 text-green-800 group-hover:text-white transition-colors" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h4 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Service Expense Generator
-                </h4>
-              </div>
-              <p className="text-slate-600 text-base leading-relaxed pr-16">
-                Generate professional service expense statements for home budgeting, and more with custom logos and 3 template styles.
-              </p>
-              <div className="pt-4">
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-3xl font-black" style={{ color: '#1a4731' }}>$49.99</span>
-                  <span className="text-slate-500">per statement</span>
-                </div>
-              </div>
-            </div>
-          </button>
-
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* Trust Section - Secure & Instant */}
       {(() => {

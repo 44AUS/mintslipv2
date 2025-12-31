@@ -918,6 +918,576 @@ class AIResumeBuilderTester:
             self.log_test("Full Admin Flow", False, f"Exception: {str(e)}")
             return False
 
+    # ========== BLOG SYSTEM TESTS ==========
+
+    def test_blog_categories(self):
+        """Test GET /api/blog/categories endpoint (public)"""
+        try:
+            response = requests.get(f"{self.api_url}/blog/categories", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "categories" in data:
+                    categories = data["categories"]
+                    if len(categories) >= 5:  # Should have 5 default categories
+                        category_names = [cat.get("name", "Unknown") for cat in categories]
+                        details += f", Found {len(categories)} categories: {', '.join(category_names[:3])}..."
+                        
+                        # Check if categories have post counts
+                        has_post_counts = all("postCount" in cat for cat in categories)
+                        if has_post_counts:
+                            details += f", Post counts included"
+                        else:
+                            details += f", Missing post counts"
+                    else:
+                        success = False
+                        details += f", Expected at least 5 categories, got {len(categories)}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Blog Categories API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Blog Categories API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_blog_posts_public(self):
+        """Test GET /api/blog/posts endpoint (public)"""
+        try:
+            response = requests.get(f"{self.api_url}/blog/posts", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "posts", "total", "page", "pages"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    posts = data["posts"]
+                    total = data["total"]
+                    page = data["page"]
+                    pages = data["pages"]
+                    details += f", Found {len(posts)} posts out of {total} total, Page {page}/{pages}"
+                    
+                    # Test pagination and filtering
+                    if len(posts) > 0:
+                        # Test with category filter
+                        first_post = posts[0]
+                        if first_post.get("category"):
+                            category_response = requests.get(
+                                f"{self.api_url}/blog/posts?category={first_post['category']}", 
+                                timeout=10
+                            )
+                            if category_response.status_code == 200:
+                                details += f", Category filtering working"
+                            else:
+                                details += f", Category filtering failed"
+                        
+                        # Test search
+                        search_response = requests.get(
+                            f"{self.api_url}/blog/posts?search=test", 
+                            timeout=10
+                        )
+                        if search_response.status_code == 200:
+                            details += f", Search working"
+                        else:
+                            details += f", Search failed"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Blog Posts Public API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Blog Posts Public API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_blog_posts(self):
+        """Test GET /api/admin/blog/posts endpoint (admin)"""
+        if not self.admin_token:
+            self.log_test("Admin Blog Posts", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/blog/posts", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "posts", "total", "page", "pages"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    posts = data["posts"]
+                    total = data["total"]
+                    details += f", Found {len(posts)} posts out of {total} total (including drafts)"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Blog Posts", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Blog Posts", False, f"Exception: {str(e)}")
+            return False
+
+    def test_create_blog_post(self):
+        """Test POST /api/admin/blog/posts endpoint (admin)"""
+        if not self.admin_token:
+            self.log_test("Create Blog Post", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Create a test blog post
+            import time
+            timestamp = int(time.time())
+            payload = {
+                "title": f"Test Blog Post {timestamp}",
+                "slug": f"test-blog-post-{timestamp}",
+                "metaTitle": f"Test Blog Post {timestamp} - Meta Title",
+                "metaDescription": "This is a test blog post created during API testing",
+                "author": "Test Author",
+                "content": "# Test Blog Post\n\nThis is a test blog post content with **markdown** formatting.\n\n## Section 1\n\nSome content here.\n\n## Section 2\n\nMore content here.",
+                "excerpt": "This is a test blog post created during API testing",
+                "category": "pay-stubs",
+                "tags": ["test", "api", "blog"],
+                "status": "published",
+                "indexFollow": True
+            }
+            
+            response = requests.post(f"{self.api_url}/admin/blog/posts", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "post" in data:
+                    created_post = data["post"]
+                    post_id = created_post.get("id")
+                    post_slug = created_post.get("slug")
+                    details += f", Post created with ID: {post_id}, Slug: {post_slug}"
+                    
+                    # Store for cleanup and further testing
+                    self.test_blog_post_id = post_id
+                    self.test_blog_post_slug = post_slug
+                    
+                    # Verify required fields are present
+                    required_fields = ["id", "title", "slug", "content", "status", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in created_post]
+                    if missing_fields:
+                        success = False
+                        details += f", Missing fields in created post: {missing_fields}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Create Blog Post", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Create Blog Post", False, f"Exception: {str(e)}")
+            return False
+
+    def test_get_blog_post_by_slug(self):
+        """Test GET /api/blog/posts/{slug} endpoint (public)"""
+        # First ensure we have a test post
+        if not hasattr(self, 'test_blog_post_slug') or not self.test_blog_post_slug:
+            self.log_test("Get Blog Post by Slug", False, "No test blog post available (create test must pass first)")
+            return False
+        
+        try:
+            response = requests.get(f"{self.api_url}/blog/posts/{self.test_blog_post_slug}", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "post" in data:
+                    post = data["post"]
+                    details += f", Post retrieved: {post.get('title', 'Unknown')}"
+                    
+                    # Check if view count incremented (test again to verify increment)
+                    initial_views = post.get("views", 0)
+                    
+                    # Make another request to test view increment
+                    response2 = requests.get(f"{self.api_url}/blog/posts/{self.test_blog_post_slug}", timeout=10)
+                    if response2.status_code == 200:
+                        data2 = response2.json()
+                        if data2.get("success") and "post" in data2:
+                            new_views = data2["post"].get("views", 0)
+                            if new_views > initial_views:
+                                details += f", View count incremented ({initial_views} -> {new_views})"
+                            else:
+                                details += f", View count not incremented ({initial_views} -> {new_views})"
+                    
+                    # Check for related posts
+                    if "related" in data:
+                        related_count = len(data["related"])
+                        details += f", {related_count} related posts"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Get Blog Post by Slug", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Blog Post by Slug", False, f"Exception: {str(e)}")
+            return False
+
+    def test_get_admin_blog_post_by_id(self):
+        """Test GET /api/admin/blog/posts/{post_id} endpoint (admin)"""
+        if not self.admin_token:
+            self.log_test("Get Admin Blog Post by ID", False, "No admin token available (login test must pass first)")
+            return False
+        
+        if not hasattr(self, 'test_blog_post_id') or not self.test_blog_post_id:
+            self.log_test("Get Admin Blog Post by ID", False, "No test blog post available (create test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/blog/posts/{self.test_blog_post_id}", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "post" in data:
+                    post = data["post"]
+                    details += f", Post retrieved: {post.get('title', 'Unknown')}, ID: {post.get('id', 'Unknown')}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Get Admin Blog Post by ID", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Admin Blog Post by ID", False, f"Exception: {str(e)}")
+            return False
+
+    def test_update_blog_post(self):
+        """Test PUT /api/admin/blog/posts/{post_id} endpoint (admin)"""
+        if not self.admin_token:
+            self.log_test("Update Blog Post", False, "No admin token available (login test must pass first)")
+            return False
+        
+        if not hasattr(self, 'test_blog_post_id') or not self.test_blog_post_id:
+            self.log_test("Update Blog Post", False, "No test blog post available (create test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Update the test blog post
+            payload = {
+                "title": "Updated Test Blog Post",
+                "content": "# Updated Test Blog Post\n\nThis content has been **updated** during API testing.\n\n## Updated Section\n\nNew content here.",
+                "excerpt": "This test blog post has been updated"
+            }
+            
+            response = requests.put(f"{self.api_url}/admin/blog/posts/{self.test_blog_post_id}", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    details += f", Post updated successfully"
+                    
+                    # Verify the update by fetching the post
+                    verify_response = requests.get(f"{self.api_url}/admin/blog/posts/{self.test_blog_post_id}", headers=headers, timeout=10)
+                    if verify_response.status_code == 200:
+                        verify_data = verify_response.json()
+                        if verify_data.get("success") and "post" in verify_data:
+                            updated_post = verify_data["post"]
+                            if updated_post.get("title") == "Updated Test Blog Post":
+                                details += f", Update verified"
+                            else:
+                                success = False
+                                details += f", Update not reflected in database"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Update Blog Post", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Update Blog Post", False, f"Exception: {str(e)}")
+            return False
+
+    def test_upload_blog_image(self):
+        """Test POST /api/admin/blog/upload-image endpoint (admin)"""
+        if not self.admin_token:
+            self.log_test("Upload Blog Image", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Create a simple test image file (1x1 pixel PNG)
+            import base64
+            # Minimal PNG data for a 1x1 transparent pixel
+            png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77mgAAAABJRU5ErkJggg==')
+            
+            files = {
+                'image': ('test.png', png_data, 'image/png')
+            }
+            
+            response = requests.post(f"{self.api_url}/admin/blog/upload-image", files=files, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "url" in data:
+                    image_url = data["url"]
+                    details += f", Image uploaded: {image_url}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Upload Blog Image", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Upload Blog Image", False, f"Exception: {str(e)}")
+            return False
+
+    def test_delete_blog_post(self):
+        """Test DELETE /api/admin/blog/posts/{post_id} endpoint (admin)"""
+        if not self.admin_token:
+            self.log_test("Delete Blog Post", False, "No admin token available (login test must pass first)")
+            return False
+        
+        if not hasattr(self, 'test_blog_post_id') or not self.test_blog_post_id:
+            self.log_test("Delete Blog Post", False, "No test blog post available (create test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.delete(f"{self.api_url}/admin/blog/posts/{self.test_blog_post_id}", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    details += f", Post deleted successfully"
+                    
+                    # Verify deletion by trying to fetch the post
+                    verify_response = requests.get(f"{self.api_url}/admin/blog/posts/{self.test_blog_post_id}", headers=headers, timeout=10)
+                    if verify_response.status_code == 404:
+                        details += f", Deletion verified (404 on fetch)"
+                    else:
+                        details += f", Deletion not verified (still accessible)"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Delete Blog Post", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Delete Blog Post", False, f"Exception: {str(e)}")
+            return False
+
+    def test_complete_blog_flow(self):
+        """Test complete blog flow: login -> get categories -> create post -> verify public access -> update -> delete"""
+        try:
+            if not self.admin_token:
+                self.log_test("Complete Blog Flow", False, "No admin token available")
+                return False
+            
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            details = "Admin login verified"
+            
+            # Step 1: Get categories
+            response = requests.get(f"{self.api_url}/blog/categories", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Complete Blog Flow", False, f"Failed to get categories: {response.status_code}")
+                return False
+            
+            categories_data = response.json()
+            if not categories_data.get("success"):
+                self.log_test("Complete Blog Flow", False, f"Invalid categories response: {categories_data}")
+                return False
+            
+            categories = categories_data.get("categories", [])
+            details += f" -> Categories retrieved ({len(categories)} found)"
+            
+            # Step 2: Create a test blog post
+            import time
+            timestamp = int(time.time())
+            payload = {
+                "title": f"Complete Flow Test Post {timestamp}",
+                "slug": f"complete-flow-test-{timestamp}",
+                "content": "# Complete Flow Test\n\nThis post tests the complete blog flow.",
+                "category": categories[0]["slug"] if categories else "pay-stubs",
+                "tags": ["test", "flow"],
+                "status": "published"
+            }
+            
+            response = requests.post(f"{self.api_url}/admin/blog/posts", json=payload, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Complete Blog Flow", False, f"Failed to create post: {response.status_code}")
+                return False
+            
+            create_data = response.json()
+            if not create_data.get("success"):
+                self.log_test("Complete Blog Flow", False, f"Invalid create response: {create_data}")
+                return False
+            
+            post_id = create_data["post"]["id"]
+            post_slug = create_data["post"]["slug"]
+            details += f" -> Post created ({post_slug})"
+            
+            # Step 3: Verify post appears in public blog posts list
+            response = requests.get(f"{self.api_url}/blog/posts", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Complete Blog Flow", False, f"Failed to get public posts: {response.status_code}")
+                return False
+            
+            public_posts_data = response.json()
+            if not public_posts_data.get("success"):
+                self.log_test("Complete Blog Flow", False, f"Invalid public posts response: {public_posts_data}")
+                return False
+            
+            # Check if our post is in the list
+            posts = public_posts_data.get("posts", [])
+            post_found = any(post.get("slug") == post_slug for post in posts)
+            if not post_found:
+                self.log_test("Complete Blog Flow", False, "Created post not found in public posts list")
+                return False
+            
+            details += f" -> Post visible in public list"
+            
+            # Step 4: Get post by slug and verify view count increments
+            response = requests.get(f"{self.api_url}/blog/posts/{post_slug}", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Complete Blog Flow", False, f"Failed to get post by slug: {response.status_code}")
+                return False
+            
+            post_data = response.json()
+            if not post_data.get("success"):
+                self.log_test("Complete Blog Flow", False, f"Invalid post response: {post_data}")
+                return False
+            
+            initial_views = post_data["post"].get("views", 0)
+            
+            # Make another request to test view increment
+            response = requests.get(f"{self.api_url}/blog/posts/{post_slug}", timeout=10)
+            if response.status_code == 200:
+                post_data2 = response.json()
+                if post_data2.get("success"):
+                    new_views = post_data2["post"].get("views", 0)
+                    if new_views > initial_views:
+                        details += f" -> View count incremented ({initial_views} -> {new_views})"
+                    else:
+                        details += f" -> View count not incremented"
+            
+            # Step 5: Update the post
+            update_payload = {
+                "title": f"Updated Complete Flow Test Post {timestamp}",
+                "content": "# Updated Complete Flow Test\n\nThis post has been updated."
+            }
+            
+            response = requests.put(f"{self.api_url}/admin/blog/posts/{post_id}", json=update_payload, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Complete Blog Flow", False, f"Failed to update post: {response.status_code}")
+                return False
+            
+            update_data = response.json()
+            if not update_data.get("success"):
+                self.log_test("Complete Blog Flow", False, f"Invalid update response: {update_data}")
+                return False
+            
+            details += f" -> Post updated successfully"
+            
+            # Step 6: Delete the test post (cleanup)
+            response = requests.delete(f"{self.api_url}/admin/blog/posts/{post_id}", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Complete Blog Flow", False, f"Failed to delete post: {response.status_code}")
+                return False
+            
+            delete_data = response.json()
+            if not delete_data.get("success"):
+                self.log_test("Complete Blog Flow", False, f"Invalid delete response: {delete_data}")
+                return False
+            
+            details += f" -> Post deleted (cleanup completed)"
+            
+            self.log_test("Complete Blog Flow", True, details)
+            return True
+            
+        except Exception as e:
+            self.log_test("Complete Blog Flow", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

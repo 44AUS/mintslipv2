@@ -231,20 +231,25 @@ export default function AdminDiscounts() {
   if (!isAuthenticated) {
     return null; // Will redirect to login
   }
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Discount Codes</h1>
-            <p className="text-gray-600">Manage coupon codes and discounts</p>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate("/admin/dashboard")}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Discount Codes</h1>
+              <p className="text-gray-600">Manage coupon codes and discounts</p>
+            </div>
           </div>
           <Button 
             onClick={() => { resetForm(); setIsDialogOpen(true); }}

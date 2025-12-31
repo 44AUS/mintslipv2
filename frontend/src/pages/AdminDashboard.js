@@ -577,33 +577,74 @@ export default function AdminDashboard() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead>Subscription</TableHead>
-                        <TableHead>Downloads Used</TableHead>
+                        <TableHead>Downloads</TableHead>
                         <TableHead>Joined</TableHead>
+                        <TableHead className="w-[80px]">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.name}</TableCell>
-                          <TableCell className="text-sm">{user.email}</TableCell>
-                          <TableCell>
-                            {user.subscription ? (
-                              <span className={`px-2 py-1 rounded-md text-sm ${
-                                user.subscription.tier === "unlimited" ? "bg-purple-100 text-purple-700" :
-                                user.subscription.tier === "pro" ? "bg-blue-100 text-blue-700" :
-                                "bg-green-100 text-green-700"
-                              }`}>
-                                {user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">None</span>
-                            )}
-                          </TableCell>
-                          <TableCell>{user.downloadsUsed || 0}</TableCell>
-                          <TableCell className="text-sm">{formatDate(user.createdAt)}</TableCell>
-                        </TableRow>
-                      ))}
+                      {users.map((user) => {
+                        const tier = user.subscription ? SUBSCRIPTION_TIERS[user.subscription.tier] : null;
+                        const downloadsLimit = tier ? (tier.downloads === -1 ? "∞" : tier.downloads) : "-";
+                        return (
+                          <TableRow key={user.id} className={user.isBanned ? "bg-red-50" : ""}>
+                            <TableCell className="font-medium">{user.name}</TableCell>
+                            <TableCell className="text-sm">{user.email}</TableCell>
+                            <TableCell>
+                              {user.isBanned ? (
+                                <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">Banned</span>
+                              ) : (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">Active</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {user.subscription ? (
+                                <span className={`px-2 py-1 rounded-md text-sm ${
+                                  user.subscription.tier === "unlimited" ? "bg-purple-100 text-purple-700" :
+                                  user.subscription.tier === "pro" ? "bg-blue-100 text-blue-700" :
+                                  "bg-green-100 text-green-700"
+                                }`}>
+                                  {user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400">None</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-medium">{user.downloadsUsed || 0}</span>
+                              <span className="text-slate-400"> / {downloadsLimit}</span>
+                            </TableCell>
+                            <TableCell className="text-sm">{formatDate(user.createdAt)}</TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem 
+                                    onClick={() => toggleBanUser(user.id, user.isBanned)}
+                                    className={user.isBanned ? "text-green-600" : "text-orange-600"}
+                                  >
+                                    <Ban className="w-4 h-4 mr-2" />
+                                    {user.isBanned ? "Unban User" : "Ban User"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => deleteUser(user.id)}
+                                    className="text-red-600"
+                                  >
+                                    <UserX className="w-4 h-4 mr-2" />
+                                    Delete User
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

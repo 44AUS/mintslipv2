@@ -771,6 +771,14 @@ export default function AdminDashboard() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem 
+                                    onClick={() => openSubscriptionModal(user)}
+                                    className="text-blue-600"
+                                  >
+                                    <CreditCard className="w-4 h-4 mr-2" />
+                                    Change Subscription
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem 
                                     onClick={() => toggleBanUser(user.id, user.isBanned)}
                                     className={user.isBanned ? "text-green-600" : "text-orange-600"}
                                   >

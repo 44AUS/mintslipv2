@@ -956,23 +956,18 @@ export default function AIResumeBuilder() {
         </div>
 
         {/* One Page Option */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border-2 border-slate-200 hover:border-purple-300 transition-colors">
-          <div className="flex-1 min-w-0">
+        <label className="flex items-center gap-3 p-4 rounded-lg border-2 border-slate-200 hover:border-purple-300 transition-colors cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.onePage}
+            onChange={(e) => setFormData(prev => ({ ...prev, onePage: e.target.checked }))}
+            className="w-5 h-5 rounded border-slate-300 text-purple-500 focus:ring-purple-500"
+          />
+          <div>
             <span className="block font-medium text-slate-800">One-Page Resume</span>
             <span className="text-sm text-slate-500">Fit all content on a single page (best for less experience)</span>
           </div>
-          <button
-            type="button"
-            onClick={() => setFormData(prev => ({ ...prev, onePage: !prev.onePage }))}
-            className={`relative w-14 h-7 rounded-full transition-colors duration-200 flex-shrink-0 ${
-              formData.onePage ? 'bg-purple-500' : 'bg-slate-300'
-            }`}
-          >
-            <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
-              formData.onePage ? 'translate-x-8' : 'translate-x-1'
-            }`}></span>
-          </button>
-        </div>
+        </label>
       </div>
     </div>
   );

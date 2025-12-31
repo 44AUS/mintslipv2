@@ -603,6 +603,20 @@ class AIResumeBuilderTester:
         print("\n❌ Testing Invalid Endpoint Handling...")
         invalid_ok = self.test_invalid_endpoints()
         
+        # Test Admin Authentication and Dashboard System
+        print("\n👤 Testing Admin Authentication System...")
+        admin_setup_ok = self.test_admin_setup()
+        admin_login_ok = self.test_admin_login()
+        admin_verify_ok = self.test_admin_verify()
+        admin_dashboard_ok = self.test_admin_dashboard()
+        
+        print("\n💰 Testing Purchase Tracking System...")
+        purchase_track_ok = self.test_purchase_tracking()
+        admin_purchases_ok = self.test_admin_purchases()
+        
+        print("\n📋 Testing Subscription System...")
+        subscription_tiers_ok = self.test_subscription_tiers()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
@@ -611,13 +625,29 @@ class AIResumeBuilderTester:
         
         # Determine overall success - focus on critical API endpoints
         critical_tests_passed = health_ok and generate_ok and regenerate_ok
+        admin_tests_passed = admin_setup_ok and admin_login_ok and admin_verify_ok and admin_dashboard_ok
+        purchase_tests_passed = purchase_track_ok and admin_purchases_ok
+        subscription_tests_passed = subscription_tiers_ok
         
-        if critical_tests_passed:
-            print("🎉 Critical AI Resume Builder API tests passed!")
+        if critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed:
+            print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
+            print("✅ Admin authentication and dashboard system working")
+            print("✅ Purchase tracking system working")
+            print("✅ Subscription system working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")
+            failed_systems = []
+            if not critical_tests_passed:
+                failed_systems.append("Core Resume APIs")
+            if not admin_tests_passed:
+                failed_systems.append("Admin Authentication")
+            if not purchase_tests_passed:
+                failed_systems.append("Purchase Tracking")
+            if not subscription_tests_passed:
+                failed_systems.append("Subscription System")
+            print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 
 def main():

@@ -87,10 +87,17 @@ export default function AIResumeBuilder() {
   // Resume upload state
   const [isParsingResume, setIsParsingResume] = useState(false);
   const [uploadedResumeName, setUploadedResumeName] = useState(null);
+  
+  // Step transition animation
+  const [slideDirection, setSlideDirection] = useState('next');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
     template: "ats",
+    font: "Calibri",
+    sectionLayout: "standard",
+    onePage: false,
     personalInfo: {
       fullName: "",
       email: "",

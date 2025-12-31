@@ -391,6 +391,55 @@ export default function AdminDashboard() {
     }
   };
 
+  const changePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords don't match");
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/change-password`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+      
+      if (response.ok) {
+        toast.success("Password changed successfully!");
+        setPasswordModalOpen(false);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        const data = await response.json();
+        toast.error(data.detail || "Failed to change password");
+      }
+    } catch (error) {
+      toast.error("Error changing password");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   const handleLogout = async () => {
     const token = localStorage.getItem("adminToken");
     

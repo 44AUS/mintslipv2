@@ -559,9 +559,9 @@ export default function AIResumeBuilder() {
         }
       ]
     });
-  };
+  }, [appliedDiscount]);
 
-  const onApprove = async (data, actions) => {
+  const onApprove = useCallback(async (data, actions) => {
     setIsProcessingPayment(true);
     try {
       const order = await actions.order.capture();
@@ -570,16 +570,13 @@ export default function AIResumeBuilder() {
       toast.success("Payment successful! You can now download your resume.");
       setIsPaid(true);
       
-      // Generate preview after confirming payment
-      generatePreview();
-      
     } catch (error) {
       console.error("Payment error:", error);
       toast.error("Payment failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
     }
-  };
+  }, []);
 
   // Navigation
   const nextStep = () => {

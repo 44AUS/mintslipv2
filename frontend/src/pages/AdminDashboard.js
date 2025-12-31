@@ -1944,21 +1944,21 @@ export default function AdminDashboard() {
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddPurchaseModalOpen(false)}>
+            <Button variant="outline" onClick={closeModal}>
               Cancel
             </Button>
             <Button 
-              onClick={addManualPurchase} 
+              onClick={editingPurchase ? updatePurchase : addManualPurchase} 
               disabled={isAddingPurchase || !newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail}
               className="bg-green-600 hover:bg-green-700"
             >
               {isAddingPurchase ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Adding...
+                  {editingPurchase ? "Updating..." : "Adding..."}
                 </>
               ) : (
-                "Add Purchase"
+                editingPurchase ? "Update Purchase" : "Add Purchase"
               )}
             </Button>
           </DialogFooter>

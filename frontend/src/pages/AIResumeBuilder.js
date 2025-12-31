@@ -538,8 +538,8 @@ export default function AIResumeBuilder() {
     }
   };
 
-  // PayPal handlers - memoized to prevent re-renders
-  const createOrder = useCallback((data, actions) => {
+  // PayPal handlers - regular functions like PaystubForm
+  const createOrder = (data, actions) => {
     const basePrice = 9.99;
     const finalPrice = appliedDiscount && appliedDiscount.discountedPrice 
       ? appliedDiscount.discountedPrice 
@@ -559,9 +559,9 @@ export default function AIResumeBuilder() {
         }
       ]
     });
-  }, [appliedDiscount]);
+  };
 
-  const onApprove = useCallback(async (data, actions) => {
+  const onApprove = async (data, actions) => {
     setIsProcessingPayment(true);
     try {
       const order = await actions.order.capture();
@@ -576,7 +576,7 @@ export default function AIResumeBuilder() {
     } finally {
       setIsProcessingPayment(false);
     }
-  }, []);
+  };
 
   // Navigation
   const nextStep = () => {

@@ -566,19 +566,18 @@ export default function AIResumeBuilder() {
 
   const onApprove = async (data, actions) => {
     console.log("AIResumeBuilder: Payment approved, capturing...");
-    setIsProcessingPayment(true);
     try {
       const order = await actions.order.capture();
       console.log("AIResumeBuilder: Payment captured:", order);
       
+      setIsProcessingPayment(false);
       toast.success("Payment successful! You can now download your resume.");
       setIsPaid(true);
       
     } catch (error) {
       console.error("AIResumeBuilder: Payment error:", error);
-      toast.error("Payment failed. Please try again.");
-    } finally {
       setIsProcessingPayment(false);
+      toast.error("Payment failed. Please try again.");
     }
   };
 

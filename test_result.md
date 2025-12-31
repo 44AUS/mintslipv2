@@ -174,23 +174,27 @@ agent_communication:
 backend:
   - task: "Admin Update User Subscription Endpoint"
     implemented: true
-    working: pending
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
-    notes: "PUT /api/admin/users/{user_id}/subscription - Updates user subscription tier (basic, pro, unlimited, or null)"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "PUT /api/admin/users/{user_id}/subscription endpoint working perfectly. Successfully tested all subscription tier updates (basic, pro, unlimited) and subscription removal (null). Verified adminAssigned flag is set correctly and downloads are reset to 0 when subscription changes. All tier transitions working as expected."
 
   - task: "Admin Revenue by Period Endpoint"
     implemented: true
-    working: pending
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
-    status_history: []
-    notes: "GET /api/admin/revenue - Returns revenue for specified date range"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/admin/revenue endpoint working correctly. Successfully tested all-time revenue retrieval (no parameters), revenue with startDate parameter, and revenue with both startDate and endDate parameters. Response includes revenue amount, purchaseCount, and period information as expected. Date filtering working properly."
 
 frontend:
   - task: "Admin Change User Subscription Modal"

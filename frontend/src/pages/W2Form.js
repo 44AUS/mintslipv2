@@ -242,7 +242,27 @@ export default function W2Form() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `W2-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your W-2...");
+      
+      // Track purchase
+      const totalAmount = appliedDiscount ? appliedDiscount.discountedPrice : 14.99;
+      try {
+        await fetch(`${BACKEND_URL}/api/purchases/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentType: "w2",
+            amount: totalAmount,
+            paypalEmail: payerEmail,
+            paypalTransactionId: orderId,
+            discountCode: appliedDiscount?.code || null,
+            discountAmount: appliedDiscount ? 14.99 - appliedDiscount.discountedPrice : 0
+          })
+        });
+      } catch (trackError) {
+        console.error("Failed to track purchase:", trackError);
+      }
       
       await generateAndDownloadW2(formData, selectedTaxYear);
       

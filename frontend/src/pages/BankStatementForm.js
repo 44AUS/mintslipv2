@@ -335,7 +335,27 @@ const createOrder = (data, actions) => {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `BS-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your document...");
+      
+      // Track purchase
+      const totalAmount = appliedDiscount ? appliedDiscount.discountedPrice : getStatementPrice();
+      try {
+        await fetch(`${BACKEND_URL}/api/purchases/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentType: "bank-statement",
+            amount: totalAmount,
+            paypalEmail: payerEmail,
+            paypalTransactionId: orderId,
+            discountCode: appliedDiscount?.code || null,
+            discountAmount: appliedDiscount ? getStatementPrice() - appliedDiscount.discountedPrice : 0
+          })
+        });
+      } catch (trackError) {
+        console.error("Failed to track purchase:", trackError);
+      }
       
       // Generate and download PDF
       const formData = {

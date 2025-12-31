@@ -433,3 +433,18 @@ agent_communication:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE AI RESUME BUILDER LANDING PAGE TESTING COMPLETED ✅ All 10 test cases successfully verified: 1) Navigation Test: Successfully accessed /resume-builder page ✅ 2) Hero Section: 'Create an ATS-Optimized Resume in Minutes' headline found, 'Build My Resume Free' and 'Upload Existing Resume' buttons visible, '4.8/5 from 2,847 reviews' stats displayed, resume mockup with John Doe profile visible on right side ✅ 3) How It Works Section: All 4 steps found (Enter Your Information, Add Your Target Job, Let AI Optimize, Download & Apply) ✅ 4) Features Grid: All 8 feature cards verified (AI-Powered Content, ATS Optimization, Resume Upload, Multiple Templates, Custom Fonts, Unlimited Regeneration, Instant Preview, Secure & Private) ✅ 5) AI Demo Section: Before/after bullet point examples found with input 'managed team of developers' and AI-generated output 'Led cross-functional team of 8 developers' ✅ 6) Templates Section: All 3 template options found (ATS Optimized, Modern Professional, Classic Executive) ✅ 7) Testimonials Section: All 3 testimonials verified (Sarah M., James K., Emily R.) ✅ 8) FAQ Accordion: FAQ section found and functional ✅ 9) Navigation Test: 'Build My Resume Free' button successfully navigates to /ai-resume-builder ✅ 10) Mobile Responsiveness: Page renders correctly on 375px mobile viewport, all elements visible and properly arranged ✅ Minor: FAQ answer expansion had minor issues but FAQ section exists and is functional. All core landing page functionality working perfectly and ready for production use."
+
+  - task: "AI Resume Builder - Work History Unique Content Bug Fix"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/AIResumeBuilder.js, backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported that positions 1 and 2 were showing the same work history data, while position 3 was correct. This was caused by the AI not generating unique content for each work experience."
+      - working: "NA"
+        agent: "main"
+        comment: "Backend API updated with explicit instructions to generate unique content for each work experience. Added validation in /api/generate-resume endpoint to ensure EXACTLY the same number of work experiences are returned as provided, with UNIQUE and DIFFERENT bullet points for each position. Prompt includes specific instructions: 'You MUST generate {len(data.workExperience)} SEPARATE work experience entries with DIFFERENT bullet points for each. Each position's bullets should be tailored to the specific responsibilities mentioned for that role. Do NOT copy the same bullets across different positions.'"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -6,12 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Lock, Plus, Trash2, Edit2, Tag, Calendar, Percent, Check, X } from "lucide-react";
+import { Lock, Plus, Trash2, Edit2, Tag, Calendar, Percent, Check, X, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const ADMIN_PASSWORD = "MintSlip2025!";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Available generators for restriction
@@ -31,10 +31,11 @@ const GENERATORS = [
 ];
 
 export default function AdminDiscounts() {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
+  const [adminToken, setAdminToken] = useState(null);
   const [discounts, setDiscounts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState(null);
   
@@ -51,6 +52,38 @@ export default function AdminDiscounts() {
     isActive: true
   });
 
+  // Check for admin session on mount
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      // Verify the token
+      verifyAdminSession(token);
+    } else {
+      // Redirect to admin login
+      navigate("/admin/login");
+    }
+  }, [navigate]);
+
+  const verifyAdminSession = async (token) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/verify`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        setAdminToken(token);
+        setIsAuthenticated(true);
+        fetchDiscounts(token);
+      } else {
+        localStorage.removeItem("adminToken");
+        navigate("/admin/login");
+      }
+    } catch (error) {
+      localStorage.removeItem("adminToken");
+      navigate("/admin/login");
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       code: "",
@@ -66,10 +99,12 @@ export default function AdminDiscounts() {
     setEditingDiscount(null);
   };
 
-  const fetchDiscounts = async () => {
+  const fetchDiscounts = async (token) => {
     setLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/discounts?password=${ADMIN_PASSWORD}`);
+      const response = await fetch(`${BACKEND_URL}/api/admin/discounts`, {
+        headers: { "Authorization": `Bearer ${token || adminToken}` }
+      });
       if (response.ok) {
         const data = await response.json();
         setDiscounts(data);
@@ -80,22 +115,6 @@ export default function AdminDiscounts() {
       toast.error("Error fetching discount codes");
     } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchDiscounts();
-    }
-  }, [isAuthenticated]);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      toast.success("Welcome to Discount Management!");
-    } else {
-      toast.error("Incorrect password");
     }
   };
 

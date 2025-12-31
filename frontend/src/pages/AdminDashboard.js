@@ -89,6 +89,8 @@ export default function AdminDashboard() {
   const [documentTypeFilter, setDocumentTypeFilter] = useState("all");
   const [purchasesPage, setPurchasesPage] = useState(0);
   const [usersPage, setUsersPage] = useState(0);
+  const [revenuePeriod, setRevenuePeriod] = useState("month");
+  const [periodRevenue, setPeriodRevenue] = useState(0);
   const pageSize = 20;
 
   // Check auth and get admin info

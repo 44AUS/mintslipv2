@@ -1605,12 +1605,13 @@ export default function AIResumeBuilder() {
                   <p className="text-slate-600">One-time payment for your AI-optimized resume</p>
                 </div>
                 <div className="max-w-md mx-auto">
-                  {isProcessingPayment ? (
+                  {isProcessingPayment && (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
                       <span className="ml-2 text-slate-600">Processing payment...</span>
                     </div>
-                  ) : (
+                  )}
+                  <div style={{ display: isProcessingPayment ? 'none' : 'block' }}>
                     <PayPalButtons
                       style={{ layout: "vertical", color: "gold", shape: "rect" }}
                       createOrder={createOrder}
@@ -1623,7 +1624,7 @@ export default function AIResumeBuilder() {
                         toast.error("Payment failed. Please try again.");
                       }}
                     />
-                  )}
+                  </div>
                 </div>
                 <p className="text-xs text-center text-slate-500">
                   Includes PDF and Word (.docx) formats in a zip file

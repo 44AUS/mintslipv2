@@ -958,7 +958,30 @@ export default function PaystubForm() {
     try {
       const order = await actions.order.capture();
       const orderId = order?.id || `order_${Date.now()}`;
+      const payerEmail = order?.payer?.email_address || "";
       toast.success("Payment successful! Generating your document...");
+      
+      // Track purchase
+      const totalAmount = appliedDiscount 
+        ? appliedDiscount.discountedPrice
+        : (calculateNumStubs * 9.99);
+      
+      try {
+        await fetch(`${BACKEND_URL}/api/purchases/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            documentType: "paystub",
+            amount: totalAmount,
+            paypalEmail: payerEmail,
+            paypalTransactionId: orderId,
+            discountCode: appliedDiscount?.code || null,
+            discountAmount: appliedDiscount ? (calculateNumStubs * 9.99) - appliedDiscount.discountedPrice : 0
+          })
+        });
+      } catch (trackError) {
+        console.error("Failed to track purchase:", trackError);
+      }
       
       // Prepare formData with deductions, contributions, absence plans, employer benefits, and company logo
       const fullFormData = {

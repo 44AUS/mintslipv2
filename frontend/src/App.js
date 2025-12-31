@@ -25,6 +25,8 @@ import Terms from "@/pages/Terms";
 import NotFound from "@/pages/NotFound";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminDiscounts from "@/pages/AdminDiscounts";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import ScrollToTop from "@/components/ScrollToTop";
 import { Toaster } from "sonner";

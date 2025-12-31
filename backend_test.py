@@ -1285,7 +1285,7 @@ class AIResumeBuilderTester:
             png_data = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77mgAAAABJRU5ErkJggg==')
             
             files = {
-                'image': ('test.png', png_data, 'image/png')
+                'file': ('test.png', png_data, 'image/png')  # Changed from 'image' to 'file'
             }
             
             response = requests.post(f"{self.api_url}/admin/blog/upload-image", files=files, headers=headers, timeout=10)

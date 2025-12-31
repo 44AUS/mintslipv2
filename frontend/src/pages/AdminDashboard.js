@@ -110,6 +110,13 @@ export default function AdminDashboard() {
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedTier, setSelectedTier] = useState("");
+  
+  // Password change modal state
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Check auth and get admin info
   useEffect(() => {

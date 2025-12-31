@@ -1731,6 +1731,133 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add Purchase Modal */}
+      <Dialog open={addPurchaseModalOpen} onOpenChange={setAddPurchaseModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add Manual Purchase</DialogTitle>
+            <DialogDescription>
+              Add a historical purchase record. This is useful for tracking purchases made before the system was implemented.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+            {/* Document Type */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Document Type *</label>
+              <Select 
+                value={newPurchase.documentType} 
+                onValueChange={(v) => setNewPurchase(prev => ({ ...prev, documentType: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Amount */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Amount ($) *</label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="9.99"
+                value={newPurchase.amount}
+                onChange={(e) => setNewPurchase(prev => ({ ...prev, amount: e.target.value }))}
+              />
+            </div>
+            
+            {/* PayPal Email */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Customer Email *</label>
+              <Input
+                type="email"
+                placeholder="customer@example.com"
+                value={newPurchase.paypalEmail}
+                onChange={(e) => setNewPurchase(prev => ({ ...prev, paypalEmail: e.target.value }))}
+              />
+            </div>
+            
+            {/* Purchase Date */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Purchase Date</label>
+              <Input
+                type="date"
+                value={newPurchase.purchaseDate}
+                onChange={(e) => setNewPurchase(prev => ({ ...prev, purchaseDate: e.target.value }))}
+              />
+            </div>
+            
+            {/* Template (Optional) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Template (Optional)</label>
+              <Input
+                placeholder="e.g., modern, classic, template-1"
+                value={newPurchase.template}
+                onChange={(e) => setNewPurchase(prev => ({ ...prev, template: e.target.value }))}
+              />
+            </div>
+            
+            {/* Discount Code (Optional) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Discount Code</label>
+                <Input
+                  placeholder="CODE123"
+                  value={newPurchase.discountCode}
+                  onChange={(e) => setNewPurchase(prev => ({ ...prev, discountCode: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Discount Amount ($)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={newPurchase.discountAmount}
+                  onChange={(e) => setNewPurchase(prev => ({ ...prev, discountAmount: e.target.value }))}
+                />
+              </div>
+            </div>
+            
+            {/* Notes (Optional) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Notes (Optional)</label>
+              <Input
+                placeholder="Any additional notes about this purchase"
+                value={newPurchase.notes}
+                onChange={(e) => setNewPurchase(prev => ({ ...prev, notes: e.target.value }))}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddPurchaseModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={addManualPurchase} 
+              disabled={isAddingPurchase || !newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isAddingPurchase ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                "Add Purchase"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

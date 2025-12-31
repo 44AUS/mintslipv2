@@ -200,6 +200,66 @@ backend:
         agent: "testing"
         comment: "GET /api/admin/revenue endpoint working correctly. Successfully tested all-time revenue retrieval (no parameters), revenue with startDate parameter, and revenue with both startDate and endDate parameters. Response includes revenue amount, purchaseCount, and period information as expected. Date filtering working properly."
 
+  - task: "Blog Categories API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/blog/categories endpoint working correctly. Returns all 5 default categories (Pay Stubs, Proof of Income, Payroll, Taxes, Employment) with post counts included. Public endpoint accessible without authentication."
+
+  - task: "Blog Posts Public API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/blog/posts endpoint working correctly. Returns published posts with pagination, filtering by category, search functionality, and proper response structure. All query parameters (page, limit, category, tag, search, sort) working as expected."
+
+  - task: "Blog Post by Slug API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/blog/posts/{slug} endpoint working correctly. Successfully retrieves published posts by slug, increments view count on each access, and returns related posts from the same category. Public endpoint working as expected."
+
+  - task: "Admin Blog Posts Management"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Admin blog endpoints working correctly: GET /api/admin/blog/posts (list all posts including drafts), GET /api/admin/blog/posts/{post_id} (get single post by ID), POST /api/admin/blog/posts (create new post), PUT /api/admin/blog/posts/{post_id} (update post), DELETE /api/admin/blog/posts/{post_id} (delete post). All require Bearer token authentication."
+
+  - task: "Blog Image Upload API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/admin/blog/upload-image endpoint working correctly. Successfully uploads images (JPEG, PNG, WebP, GIF) to /app/backend/uploads/blog/ directory and returns accessible URL. File validation and unique filename generation working properly."
+
 frontend:
   - task: "Admin Change User Subscription Modal"
     implemented: true

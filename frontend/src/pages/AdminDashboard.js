@@ -815,6 +815,89 @@ export default function AdminDashboard() {
     }
   };
 
+  const openEditPurchase = (purchase) => {
+    setEditingPurchase(purchase);
+    setNewPurchase({
+      documentType: purchase.documentType || "paystub",
+      amount: purchase.amount?.toString() || "",
+      paypalEmail: purchase.paypalEmail || "",
+      purchaseDate: purchase.createdAt ? new Date(purchase.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      template: purchase.template || "",
+      discountCode: purchase.discountCode || "",
+      discountAmount: purchase.discountAmount?.toString() || "",
+      notes: purchase.notes || ""
+    });
+    setAddPurchaseModalOpen(true);
+  };
+
+  const updatePurchase = async () => {
+    if (!editingPurchase) return;
+    if (!newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+    
+    setIsAddingPurchase(true);
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      // Fix timezone issue
+      let purchaseDate = null;
+      if (newPurchase.purchaseDate) {
+        const [year, month, day] = newPurchase.purchaseDate.split('-');
+        const date = new Date(year, month - 1, day, 12, 0, 0);
+        purchaseDate = date.toISOString();
+      }
+      
+      const response = await fetch(`${BACKEND_URL}/api/admin/purchases/${editingPurchase.id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          documentType: newPurchase.documentType,
+          amount: parseFloat(newPurchase.amount),
+          paypalEmail: newPurchase.paypalEmail,
+          purchaseDate: purchaseDate,
+          template: newPurchase.template || null,
+          discountCode: newPurchase.discountCode || null,
+          discountAmount: newPurchase.discountAmount ? parseFloat(newPurchase.discountAmount) : 0,
+          notes: newPurchase.notes || null
+        })
+      });
+      
+      if (response.ok) {
+        toast.success("Purchase updated successfully!");
+        closeModal();
+        loadPurchases();
+        loadDashboardData();
+      } else {
+        const data = await response.json();
+        toast.error(data.detail || "Failed to update purchase");
+      }
+    } catch (error) {
+      toast.error("Error updating purchase");
+    } finally {
+      setIsAddingPurchase(false);
+    }
+  };
+
+  const closeModal = () => {
+    setAddPurchaseModalOpen(false);
+    setEditingPurchase(null);
+    setNewPurchase({
+      documentType: "paystub",
+      amount: "",
+      paypalEmail: "",
+      purchaseDate: new Date().toISOString().split('T')[0],
+      template: "",
+      discountCode: "",
+      discountAmount: "",
+      notes: ""
+    });
+  };
+
   const handleLogout = async () => {
     const token = localStorage.getItem("adminToken");
     

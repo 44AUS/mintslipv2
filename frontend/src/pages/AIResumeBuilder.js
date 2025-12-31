@@ -341,8 +341,14 @@ export default function AIResumeBuilder() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "Failed to parse resume");
+        let errorMessage = "Failed to parse resume";
+        try {
+          const error = await response.json();
+          errorMessage = error.detail || errorMessage;
+        } catch {
+          errorMessage = `Server error (${response.status}). Please try again.`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

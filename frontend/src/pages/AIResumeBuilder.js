@@ -858,6 +858,79 @@ export default function AIResumeBuilder() {
           />
         </div>
       </div>
+
+      {/* Resume Formatting Options */}
+      <div className="mt-8 pt-6 border-t border-slate-200">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          Resume Formatting Options
+        </h3>
+        
+        {/* Font Selection */}
+        <div className="mb-6">
+          <Label className="text-slate-700 mb-3 block">Font Style</Label>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {FONTS.map((font) => (
+              <button
+                key={font.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, font: font.value }))}
+                className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                  formData.font === font.value
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                }`}
+              >
+                <span className="block font-medium text-slate-800" style={{ fontFamily: font.value }}>
+                  {font.label}
+                </span>
+                <span className="text-xs text-slate-500">{font.style}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section Layout */}
+        <div className="mb-6">
+          <Label className="text-slate-700 mb-3 block">Section Layout</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {LAYOUT_OPTIONS.map((layout) => (
+              <button
+                key={layout.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, sectionLayout: layout.value }))}
+                className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                  formData.sectionLayout === layout.value
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50'
+                }`}
+              >
+                <span className="block font-medium text-slate-800">{layout.label}</span>
+                <span className="text-sm text-slate-500">{layout.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* One Page Option */}
+        <div className="flex items-center justify-between p-4 rounded-lg border-2 border-slate-200 hover:border-purple-300 transition-colors">
+          <div>
+            <span className="block font-medium text-slate-800">One-Page Resume</span>
+            <span className="text-sm text-slate-500">Fit all content on a single page (best for less experience)</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, onePage: !prev.onePage }))}
+            className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${
+              formData.onePage ? 'bg-purple-500' : 'bg-slate-300'
+            }`}
+          >
+            <span className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
+              formData.onePage ? 'translate-x-8' : 'translate-x-1'
+            }`}></span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 

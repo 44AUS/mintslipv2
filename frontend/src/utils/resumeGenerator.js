@@ -16,6 +16,25 @@ const getFontFamily = (fontName) => {
   return fontMap[fontName] || 'helvetica';
 };
 
+// Format date - handle timezone issues
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  if (dateStr === "Present") return "Present";
+  
+  try {
+    const parts = dateStr.split("-");
+    if (parts.length >= 2) {
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const date = new Date(year, month, 15);
+      return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
+};
+
 // Template color schemes
 const TEMPLATE_COLORS = {
   ats: {

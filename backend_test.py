@@ -569,6 +569,341 @@ class AIResumeBuilderTester:
             self.log_test("Subscription Tiers", False, f"Exception: {str(e)}")
             return False
 
+    # ========== NEW ADMIN DASHBOARD FEATURES TESTS ==========
+
+    def test_admin_users_list(self):
+        """Test GET /api/admin/users endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Users List", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/users", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "users" in data and "total" in data:
+                    users = data["users"]
+                    total = data["total"]
+                    details += f", Found {len(users)} users out of {total} total"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Users List", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Users List", False, f"Exception: {str(e)}")
+            return False
+
+    def create_test_user(self):
+        """Create a test user for subscription testing"""
+        try:
+            payload = {
+                "email": "testuser@mintslip.com",
+                "password": "TestPassword123!",
+                "name": "Test User"
+            }
+            response = requests.post(f"{self.api_url}/user/signup", json=payload, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and data.get("user"):
+                    return data["user"]["id"]
+            return None
+        except Exception:
+            return None
+
+    def test_admin_update_user_subscription(self):
+        """Test PUT /api/admin/users/{user_id}/subscription endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Update User Subscription", False, "No admin token available (login test must pass first)")
+            return False
+        
+        # Create a test user first
+        test_user_id = self.create_test_user()
+        if not test_user_id:
+            self.log_test("Admin Update User Subscription", False, "Could not create test user")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Test 1: Update to basic tier
+            payload = {"tier": "basic"}
+            response = requests.put(
+                f"{self.api_url}/admin/users/{test_user_id}/subscription", 
+                json=payload, 
+                headers=headers, 
+                timeout=10
+            )
+            success = response.status_code == 200
+            details = f"Basic tier - Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "subscription" in data:
+                    subscription = data["subscription"]
+                    if subscription.get("tier") == "basic" and subscription.get("adminAssigned"):
+                        details += f", Basic subscription assigned successfully"
+                    else:
+                        success = False
+                        details += f", Invalid subscription data: {subscription}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            
+            # Test 2: Update to pro tier
+            if success:
+                payload = {"tier": "pro"}
+                response = requests.put(
+                    f"{self.api_url}/admin/users/{test_user_id}/subscription", 
+                    json=payload, 
+                    headers=headers, 
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("subscription", {}).get("tier") == "pro":
+                        details += f", Pro tier update successful"
+                    else:
+                        success = False
+                        details += f", Pro tier update failed: {data}"
+                else:
+                    success = False
+                    details += f", Pro tier update failed with status: {response.status_code}"
+            
+            # Test 3: Update to unlimited tier
+            if success:
+                payload = {"tier": "unlimited"}
+                response = requests.put(
+                    f"{self.api_url}/admin/users/{test_user_id}/subscription", 
+                    json=payload, 
+                    headers=headers, 
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("subscription", {}).get("tier") == "unlimited":
+                        details += f", Unlimited tier update successful"
+                    else:
+                        success = False
+                        details += f", Unlimited tier update failed: {data}"
+                else:
+                    success = False
+                    details += f", Unlimited tier update failed with status: {response.status_code}"
+            
+            # Test 4: Remove subscription (set to null)
+            if success:
+                payload = {"tier": None}
+                response = requests.put(
+                    f"{self.api_url}/admin/users/{test_user_id}/subscription", 
+                    json=payload, 
+                    headers=headers, 
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("subscription") is None:
+                        details += f", Subscription removal successful"
+                    else:
+                        success = False
+                        details += f", Subscription removal failed: {data}"
+                else:
+                    success = False
+                    details += f", Subscription removal failed with status: {response.status_code}"
+            
+            self.log_test("Admin Update User Subscription", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Admin Update User Subscription", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_revenue_by_period(self):
+        """Test GET /api/admin/revenue endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Revenue by Period", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Test 1: Get all-time revenue (no parameters)
+            response = requests.get(f"{self.api_url}/admin/revenue", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"All-time - Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "revenue", "purchaseCount", "period"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    revenue = data.get("revenue", 0)
+                    count = data.get("purchaseCount", 0)
+                    details += f", Revenue: ${revenue}, Purchases: {count}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            
+            # Test 2: Get revenue with startDate parameter
+            if success:
+                start_date = "2024-01-01T00:00:00Z"
+                params = {"startDate": start_date}
+                response = requests.get(f"{self.api_url}/admin/revenue", headers=headers, params=params, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "period" in data:
+                        period = data["period"]
+                        if period.get("startDate") == start_date:
+                            details += f", StartDate filter working"
+                        else:
+                            success = False
+                            details += f", StartDate filter failed: {period}"
+                    else:
+                        success = False
+                        details += f", StartDate test failed: {data}"
+                else:
+                    success = False
+                    details += f", StartDate test failed with status: {response.status_code}"
+            
+            # Test 3: Get revenue with both startDate and endDate
+            if success:
+                start_date = "2024-01-01T00:00:00Z"
+                end_date = "2024-12-31T23:59:59Z"
+                params = {"startDate": start_date, "endDate": end_date}
+                response = requests.get(f"{self.api_url}/admin/revenue", headers=headers, params=params, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "period" in data:
+                        period = data["period"]
+                        if period.get("startDate") == start_date and period.get("endDate") == end_date:
+                            details += f", Date range filter working"
+                        else:
+                            success = False
+                            details += f", Date range filter failed: {period}"
+                    else:
+                        success = False
+                        details += f", Date range test failed: {data}"
+                else:
+                    success = False
+                    details += f", Date range test failed with status: {response.status_code}"
+            
+            self.log_test("Admin Revenue by Period", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Admin Revenue by Period", False, f"Exception: {str(e)}")
+            return False
+
+    def test_full_admin_flow(self):
+        """Test complete admin flow: login -> get users -> update subscription -> verify -> get revenue"""
+        try:
+            # Step 1: Admin login (should already be done, but verify token exists)
+            if not self.admin_token:
+                self.log_test("Full Admin Flow", False, "No admin token available")
+                return False
+            
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            details = "Admin login verified"
+            
+            # Step 2: Get list of users
+            response = requests.get(f"{self.api_url}/admin/users", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Full Admin Flow", False, f"Failed to get users list: {response.status_code}")
+                return False
+            
+            users_data = response.json()
+            if not users_data.get("success"):
+                self.log_test("Full Admin Flow", False, f"Invalid users response: {users_data}")
+                return False
+            
+            details += f" -> Users list retrieved ({users_data.get('total', 0)} users)"
+            
+            # Step 3: Create a test user for subscription update
+            test_user_id = self.create_test_user()
+            if not test_user_id:
+                self.log_test("Full Admin Flow", False, "Could not create test user for flow")
+                return False
+            
+            details += f" -> Test user created ({test_user_id[:8]}...)"
+            
+            # Step 4: Update user's subscription to basic
+            payload = {"tier": "basic"}
+            response = requests.put(
+                f"{self.api_url}/admin/users/{test_user_id}/subscription", 
+                json=payload, 
+                headers=headers, 
+                timeout=10
+            )
+            if response.status_code != 200:
+                self.log_test("Full Admin Flow", False, f"Failed to update subscription: {response.status_code}")
+                return False
+            
+            subscription_data = response.json()
+            if not subscription_data.get("success"):
+                self.log_test("Full Admin Flow", False, f"Invalid subscription update: {subscription_data}")
+                return False
+            
+            details += f" -> Subscription updated to basic"
+            
+            # Step 5: Verify the user's subscription was updated by getting users list again
+            response = requests.get(f"{self.api_url}/admin/users", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Full Admin Flow", False, f"Failed to verify subscription update: {response.status_code}")
+                return False
+            
+            users_data = response.json()
+            updated_user = None
+            for user in users_data.get("users", []):
+                if user.get("id") == test_user_id:
+                    updated_user = user
+                    break
+            
+            if not updated_user or not updated_user.get("subscription"):
+                self.log_test("Full Admin Flow", False, "User subscription not found after update")
+                return False
+            
+            if updated_user["subscription"].get("tier") != "basic":
+                self.log_test("Full Admin Flow", False, f"Subscription tier mismatch: expected 'basic', got '{updated_user['subscription'].get('tier')}'")
+                return False
+            
+            details += f" -> Subscription verified in users list"
+            
+            # Step 6: Get revenue stats
+            response = requests.get(f"{self.api_url}/admin/revenue", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Full Admin Flow", False, f"Failed to get revenue stats: {response.status_code}")
+                return False
+            
+            revenue_data = response.json()
+            if not revenue_data.get("success"):
+                self.log_test("Full Admin Flow", False, f"Invalid revenue response: {revenue_data}")
+                return False
+            
+            details += f" -> Revenue stats retrieved (${revenue_data.get('revenue', 0)}, {revenue_data.get('purchaseCount', 0)} purchases)"
+            
+            self.log_test("Full Admin Flow", True, details)
+            return True
+            
+        except Exception as e:
+            self.log_test("Full Admin Flow", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

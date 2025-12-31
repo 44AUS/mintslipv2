@@ -552,7 +552,10 @@ export default function AIResumeBuilder() {
     try {
       await generateAndDownloadResume({
         ...generatedResume,
-        template: formData.template
+        template: formData.template,
+        font: formData.font,
+        sectionLayout: formData.sectionLayout,
+        onePage: formData.onePage
       });
       toast.success("Resume downloaded successfully!");
     } catch (error) {

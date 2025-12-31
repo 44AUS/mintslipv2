@@ -302,6 +302,273 @@ class AIResumeBuilderTester:
             self.log_test("Invalid Endpoint Handling", False, f"Exception: {str(e)}")
             return False
 
+    # ========== ADMIN AUTHENTICATION TESTS ==========
+
+    def test_admin_setup(self):
+        """Test POST /api/admin/setup endpoint"""
+        try:
+            response = requests.post(f"{self.api_url}/admin/setup", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if "message" in data:
+                    details += f", Message: {data['message']}"
+                else:
+                    success = False
+                    details += f", Unexpected response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Setup", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Setup", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_login(self):
+        """Test POST /api/admin/login endpoint"""
+        try:
+            payload = {
+                "email": "admin@mintslip.com",
+                "password": "MINTSLIP2025!"
+            }
+            response = requests.post(f"{self.api_url}/admin/login", json=payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "token", "admin"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success") and data.get("token") and data.get("admin"):
+                    # Store token for subsequent tests
+                    self.admin_token = data["token"]
+                    admin_info = data["admin"]
+                    details += f", Token received, Admin: {admin_info.get('email', 'Unknown')}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Login", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Login", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_verify(self):
+        """Test GET /api/admin/verify endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Verify", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/verify", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "admin" in data:
+                    admin_info = data["admin"]
+                    details += f", Admin verified: {admin_info.get('email', 'Unknown')}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Verify", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Verify", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_dashboard(self):
+        """Test GET /api/admin/dashboard endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Dashboard", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/dashboard", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "stats" in data:
+                    stats = data["stats"]
+                    required_stats = ["totalPurchases", "totalRevenue", "totalSubscribers", "totalUsers", "todayPurchases", "todayRevenue"]
+                    missing_stats = [stat for stat in required_stats if stat not in stats]
+                    
+                    if missing_stats:
+                        success = False
+                        details += f", Missing stats: {missing_stats}"
+                    else:
+                        details += f", Stats: Purchases={stats['totalPurchases']}, Revenue=${stats['totalRevenue']}, Users={stats['totalUsers']}"
+                        
+                        # Check for additional dashboard data
+                        if "purchasesByType" in data and "recentPurchases" in data:
+                            details += f", Additional data: {len(data['purchasesByType'])} purchase types, {len(data['recentPurchases'])} recent purchases"
+                        else:
+                            details += ", Missing purchasesByType or recentPurchases"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Dashboard", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Dashboard", False, f"Exception: {str(e)}")
+            return False
+
+    def test_purchase_tracking(self):
+        """Test POST /api/purchases/track endpoint"""
+        try:
+            payload = {
+                "documentType": "paystub",
+                "amount": 9.99,
+                "paypalEmail": "test@example.com",
+                "paypalTransactionId": "TEST123"
+            }
+            response = requests.post(f"{self.api_url}/purchases/track", json=payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "purchaseId" in data:
+                    details += f", Purchase tracked with ID: {data['purchaseId']}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Purchase Tracking", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Purchase Tracking", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_purchases(self):
+        """Test GET /api/admin/purchases endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Purchases", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/purchases", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "purchases" in data and "total" in data:
+                    purchases = data["purchases"]
+                    total = data["total"]
+                    details += f", Found {len(purchases)} purchases out of {total} total"
+                    
+                    # Check pagination fields
+                    if "skip" in data and "limit" in data:
+                        details += f", Pagination: skip={data['skip']}, limit={data['limit']}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Purchases", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Purchases", False, f"Exception: {str(e)}")
+            return False
+
+    def test_subscription_tiers(self):
+        """Test GET /api/subscription/tiers endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/subscription/tiers", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "tiers" in data:
+                    tiers = data["tiers"]
+                    expected_tiers = ["basic", "pro", "unlimited"]
+                    
+                    # Check if all expected tiers are present
+                    missing_tiers = [tier for tier in expected_tiers if tier not in tiers]
+                    if missing_tiers:
+                        success = False
+                        details += f", Missing tiers: {missing_tiers}"
+                    else:
+                        # Validate tier structure
+                        tier_details = []
+                        for tier_name, tier_info in tiers.items():
+                            required_fields = ["name", "price", "downloads"]
+                            if all(field in tier_info for field in required_fields):
+                                tier_details.append(f"{tier_info['name']}: ${tier_info['price']}/month, {tier_info['downloads']} downloads")
+                            else:
+                                success = False
+                                details += f", Invalid tier structure for {tier_name}"
+                                break
+                        
+                        if success:
+                            details += f", Tiers: {'; '.join(tier_details)}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Subscription Tiers", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Subscription Tiers", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

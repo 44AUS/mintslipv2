@@ -393,6 +393,10 @@ async def user_login(data: UserLogin):
     if not verify_password(data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Check if user is banned
+    if user.get("isBanned", False):
+        raise HTTPException(status_code=403, detail="Your account has been suspended. Please contact support.")
+    
     # Create session
     token = generate_session_token()
     session = {

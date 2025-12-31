@@ -87,6 +87,10 @@ const getFontFamily = (fontName) => {
 // Generate PDF Resume
 export const generateResumePDF = async (data, addWatermark = false) => {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
+  
+  // Register custom fonts
+  registerCustomFonts(doc);
+  
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
   const margin = 50;
@@ -96,7 +100,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   const onePage = data.onePage || false;
   const sectionLayout = data.sectionLayout || 'standard';
   
-  console.log("Resume Generator - Font:", data.font, "-> jsPDF font:", fontFamily);
+  console.log("Resume Generator - Font:", data.font, "-> Custom font:", fontFamily);
   console.log("Resume Generator - Layout:", sectionLayout, "OnePage:", onePage, "Template:", template);
   
   // Adjust font sizes based on one-page mode

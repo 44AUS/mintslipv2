@@ -1214,7 +1214,7 @@ Return a JSON object: {{"technical": [...], "soft": [...], "other": [...]}}"""
                 if start_idx != -1 and end_idx > start_idx:
                     json_str = response_text[start_idx:end_idx]
                     return {"content": json.loads(json_str)}
-            except:
+            except (json.JSONDecodeError, ValueError):
                 pass
         
         return {"content": response_text}

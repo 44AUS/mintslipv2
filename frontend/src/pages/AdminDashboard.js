@@ -1267,14 +1267,23 @@ export default function AdminDashboard() {
             <div className="flex flex-col gap-4 mb-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-800">All Purchases</h2>
-                <Button
-                  onClick={exportPurchasesToCSV}
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <FileDown className="w-4 h-4" />
-                  Export CSV
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setAddPurchaseModalOpen(true)}
+                    className="gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    Add Purchase
+                  </Button>
+                  <Button
+                    onClick={exportPurchasesToCSV}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Export CSV
+                  </Button>
+                </div>
               </div>
               
               {/* Filters Row */}

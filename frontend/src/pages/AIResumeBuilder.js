@@ -1868,18 +1868,18 @@ export default function AIResumeBuilder() {
           </div>
 
           {/* Progress Steps */}
-          <div className="mb-8 overflow-x-auto">
-            <div className="flex items-center justify-between min-w-[400px] px-2">
+          <div className="mb-8">
+            <div className="flex items-center justify-between w-full">
               {STEPS.map((step, index) => {
                 const Icon = step.icon;
                 const isCompleted = currentStep > step.id;
                 const isCurrent = currentStep === step.id;
                 
                 return (
-                  <div key={step.id} className="flex items-center">
+                  <div key={step.id} className="flex items-center flex-1 last:flex-none">
                     <button
                       onClick={() => setCurrentStep(step.id)}
-                      className={`flex flex-col items-center ${
+                      className={`flex flex-col items-center flex-shrink-0 ${
                         isCurrent
                           ? "text-green-600"
                           : isCompleted
@@ -1906,7 +1906,7 @@ export default function AIResumeBuilder() {
                     </button>
                     {index < STEPS.length - 1 && (
                       <div
-                        className={`w-6 md:w-16 h-0.5 mx-0.5 md:mx-1 flex-shrink-0 ${
+                        className={`flex-1 h-0.5 mx-1 md:mx-2 ${
                           currentStep > step.id ? "bg-green-500" : "bg-slate-200"
                         }`}
                       />

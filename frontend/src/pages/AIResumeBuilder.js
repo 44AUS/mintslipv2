@@ -230,7 +230,7 @@ export default function AIResumeBuilder() {
       education: [
         ...prev.education,
         {
-          id: Date.now(),
+          id: `edu_${Date.now()}_${prev.education.length}`,
           institution: "",
           degree: "",
           field: "",

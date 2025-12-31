@@ -538,6 +538,42 @@ async def get_all_users(
         "total": total
     }
 
+@app.get("/api/admin/revenue")
+async def get_revenue_by_period(
+    session: dict = Depends(get_current_admin),
+    startDate: Optional[str] = None,
+    endDate: Optional[str] = None
+):
+    """Get revenue for a specific period (admin only)"""
+    query = {}
+    
+    if startDate:
+        query["createdAt"] = {"$gte": startDate}
+    
+    if endDate:
+        if "createdAt" in query:
+            query["createdAt"]["$lte"] = endDate
+        else:
+            query["createdAt"] = {"$lte": endDate}
+    
+    # Calculate revenue
+    pipeline = [
+        {"$match": query} if query else {"$match": {}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}, "count": {"$sum": 1}}}
+    ]
+    
+    result = await purchases_collection.aggregate(pipeline).to_list(1)
+    
+    return {
+        "success": True,
+        "revenue": round(result[0]["total"], 2) if result else 0,
+        "purchaseCount": result[0]["count"] if result else 0,
+        "period": {
+            "startDate": startDate,
+            "endDate": endDate
+        }
+    }
+
 # ========== SUBSCRIPTION ENDPOINTS ==========
 
 @app.get("/api/subscription/tiers")

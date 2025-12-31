@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List, Optional
 import os
@@ -8,10 +9,12 @@ import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 import io
 import re
+import hashlib
+import secrets
 
 load_dotenv()
 
@@ -33,6 +36,9 @@ except ImportError:
 
 app = FastAPI()
 
+# Security
+security = HTTPBearer(auto_error=False)
+
 # MongoDB Connection
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "mintslip_db")
@@ -40,6 +46,22 @@ DB_NAME = os.environ.get("DB_NAME", "mintslip_db")
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 discounts_collection = db["discount_codes"]
+admins_collection = db["admins"]
+users_collection = db["users"]
+purchases_collection = db["purchases"]
+sessions_collection = db["sessions"]
+subscriptions_collection = db["subscriptions"]
+
+# Password hashing
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def verify_password(password: str, hashed: str) -> bool:
+    return hash_password(password) == hashed
+
+# Session token generation
+def generate_session_token() -> str:
+    return secrets.token_urlsafe(32)
 
 # CORS
 app.add_middleware(

@@ -1609,6 +1609,7 @@ export default function AIResumeBuilder() {
                     </div>
                   ) : (
                     <PayPalButtons
+                      key="ai-resume-paypal"
                       style={{ layout: "vertical", color: "gold", shape: "rect" }}
                       createOrder={createOrder}
                       onApprove={onApprove}

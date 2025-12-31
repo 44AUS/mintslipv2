@@ -252,6 +252,149 @@ export default function AdminDashboard() {
     }
   };
 
+  // Export purchases to CSV
+  const exportPurchasesToCSV = async () => {
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      // Fetch all purchases for export (no pagination)
+      const typeParam = documentTypeFilter !== "all" ? `&documentType=${documentTypeFilter}` : "";
+      const response = await fetch(
+        `${BACKEND_URL}/api/admin/purchases?skip=0&limit=10000${typeParam}`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (!response.ok) {
+        toast.error("Failed to fetch data for export");
+        return;
+      }
+      
+      const data = await response.json();
+      let purchasesToExport = data.purchases;
+      
+      // Apply date filter
+      if (dateRangeFilter !== "all") {
+        const now = new Date();
+        let startDate;
+        
+        switch (dateRangeFilter) {
+          case "today":
+            startDate = new Date(now.setHours(0, 0, 0, 0));
+            break;
+          case "week":
+            startDate = new Date(now.setDate(now.getDate() - 7));
+            break;
+          case "month":
+            startDate = new Date(now.setMonth(now.getMonth() - 1));
+            break;
+          case "quarter":
+            startDate = new Date(now.setMonth(now.getMonth() - 3));
+            break;
+          case "year":
+            startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+            break;
+          default:
+            startDate = null;
+        }
+        
+        if (startDate) {
+          purchasesToExport = purchasesToExport.filter(p => new Date(p.createdAt) >= startDate);
+        }
+      }
+      
+      // Apply search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        purchasesToExport = purchasesToExport.filter(p => 
+          p.paypalEmail?.toLowerCase().includes(query) ||
+          p.documentType?.toLowerCase().includes(query) ||
+          p.template?.toLowerCase().includes(query)
+        );
+      }
+      
+      // Generate CSV content
+      const headers = ["Date", "Document Type", "Template", "Customer Email", "Customer Type", "Amount", "Discount Code", "Discount Amount"];
+      const csvRows = [headers.join(",")];
+      
+      purchasesToExport.forEach(purchase => {
+        const row = [
+          new Date(purchase.createdAt).toLocaleDateString(),
+          DOCUMENT_TYPES[purchase.documentType] || purchase.documentType,
+          purchase.template || "-",
+          purchase.paypalEmail,
+          purchase.userId ? "Registered" : "Guest",
+          purchase.amount?.toFixed(2) || "0.00",
+          purchase.discountCode || "-",
+          purchase.discountAmount?.toFixed(2) || "0.00"
+        ];
+        csvRows.push(row.map(field => `"${field}"`).join(","));
+      });
+      
+      const csvContent = csvRows.join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `mintslip_purchases_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success(`Exported ${purchasesToExport.length} purchases to CSV`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Error exporting data");
+    }
+  };
+
+  // Filter purchases by date and search
+  const getFilteredPurchases = () => {
+    let filtered = [...purchases];
+    
+    // Apply date filter
+    if (dateRangeFilter !== "all") {
+      const now = new Date();
+      let startDate;
+      
+      switch (dateRangeFilter) {
+        case "today":
+          startDate = new Date();
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case "week":
+          startDate = new Date(now.setDate(now.getDate() - 7));
+          break;
+        case "month":
+          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          break;
+        case "quarter":
+          startDate = new Date(now.setMonth(now.getMonth() - 3));
+          break;
+        case "year":
+          startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+          break;
+        default:
+          startDate = null;
+      }
+      
+      if (startDate) {
+        filtered = filtered.filter(p => new Date(p.createdAt) >= startDate);
+      }
+    }
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.paypalEmail?.toLowerCase().includes(query) ||
+        p.documentType?.toLowerCase().includes(query) ||
+        p.template?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  };
+
   const deleteUser = async (userId) => {
     if (!window.confirm("Are you sure you want to delete this user? This will also remove their subscription and session data.")) return;
     

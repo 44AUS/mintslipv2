@@ -2,25 +2,18 @@ import { jsPDF } from "jspdf";
 import JSZip from "jszip";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { saveAs } from "file-saver";
-import { customFonts } from "./customFonts";
 
-// Register custom fonts with jsPDF
-const registerCustomFonts = (doc) => {
-  // Add fonts to virtual file system
-  doc.addFileToVFS("Montserrat-Regular.ttf", customFonts["Montserrat-Regular"]);
-  doc.addFileToVFS("Montserrat-Bold.ttf", customFonts["Montserrat-Bold"]);
-  doc.addFileToVFS("LiberationSerif-Regular.ttf", customFonts["LiberationSerif-Regular"]);
-  doc.addFileToVFS("LiberationSerif-Bold.ttf", customFonts["LiberationSerif-Bold"]);
-  doc.addFileToVFS("LiberationSans-Regular.ttf", customFonts["LiberationSans-Regular"]);
-  doc.addFileToVFS("LiberationSans-Bold.ttf", customFonts["LiberationSans-Bold"]);
-  
-  // Register fonts with jsPDF
-  doc.addFont("Montserrat-Regular.ttf", "Montserrat", "normal");
-  doc.addFont("Montserrat-Bold.ttf", "Montserrat", "bold");
-  doc.addFont("LiberationSerif-Regular.ttf", "LiberationSerif", "normal");
-  doc.addFont("LiberationSerif-Bold.ttf", "LiberationSerif", "bold");
-  doc.addFont("LiberationSans-Regular.ttf", "LiberationSans", "normal");
-  doc.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold");
+// Map font names to jsPDF built-in font families
+// jsPDF supports: helvetica, times, courier
+const getFontFamily = (fontName) => {
+  const fontMap = {
+    'Montserrat': 'helvetica',
+    'Times New Roman': 'times',
+    'Calibri': 'helvetica',
+    'Arial': 'helvetica',
+    'Helvetica': 'helvetica'
+  };
+  return fontMap[fontName] || 'helvetica';
 };
 
 // Template color schemes

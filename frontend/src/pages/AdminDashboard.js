@@ -486,6 +486,7 @@ export default function AdminDashboard() {
                     <TableHead>Transaction ID</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Discount</TableHead>
+                    <TableHead className="w-[80px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -510,6 +511,16 @@ export default function AdminDashboard() {
                         ) : (
                           <span className="text-slate-400">-</span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deletePurchase(purchase.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

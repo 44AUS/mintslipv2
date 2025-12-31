@@ -67,6 +67,9 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   const onePage = data.onePage || false;
   const sectionLayout = data.sectionLayout || 'standard';
   
+  console.log("Resume Generator - Font:", data.font, "-> jsPDF font:", fontFamily);
+  console.log("Resume Generator - Layout:", sectionLayout, "OnePage:", onePage);
+  
   // Adjust font sizes based on one-page mode
   const fontSizes = onePage ? {
     name: 16,

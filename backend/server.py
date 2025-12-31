@@ -760,6 +760,42 @@ async def create_manual_purchase(data: ManualPurchaseCreate, session: dict = Dep
     
     return {"success": True, "message": "Purchase added successfully", "purchase": {k: v for k, v in purchase.items() if k != "_id"}}
 
+@app.put("/api/admin/purchases/{purchase_id}")
+async def update_purchase(purchase_id: str, data: ManualPurchaseCreate, session: dict = Depends(get_current_admin)):
+    """Update a purchase record (admin only)"""
+    existing = await purchases_collection.find_one({"id": purchase_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    
+    # Use provided date or keep existing
+    if data.purchaseDate:
+        try:
+            purchase_date = data.purchaseDate
+        except:
+            purchase_date = existing.get("createdAt")
+    else:
+        purchase_date = existing.get("createdAt")
+    
+    update_data = {
+        "documentType": data.documentType,
+        "amount": data.amount,
+        "paypalEmail": data.paypalEmail,
+        "template": data.template,
+        "discountCode": data.discountCode,
+        "discountAmount": data.discountAmount or 0,
+        "notes": data.notes,
+        "createdAt": purchase_date,
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "updatedBy": session.get("adminId")
+    }
+    
+    await purchases_collection.update_one(
+        {"id": purchase_id},
+        {"$set": update_data}
+    )
+    
+    return {"success": True, "message": "Purchase updated successfully"}
+
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
     """Delete a user (admin only)"""

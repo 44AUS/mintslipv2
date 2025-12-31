@@ -889,7 +889,7 @@ export default function AdminDashboard() {
                 <SelectValue placeholder="Select a plan" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No Subscription</SelectItem>
+                <SelectItem value="none">No Subscription</SelectItem>
                 {Object.entries(SUBSCRIPTION_TIERS).map(([key, tier]) => (
                   <SelectItem key={key} value={key}>
                     {tier.name} - ${tier.price}/mo ({tier.downloads === -1 ? "Unlimited" : tier.downloads} downloads)

@@ -173,8 +173,33 @@ export default function BlogPost() {
     }
   };
 
+  // Determine if content is HTML or Markdown and extract headings accordingly
   const headings = useMemo(() => {
-    return post?.content ? extractHeadings(post.content) : [];
+    if (!post?.content) return [];
+    if (isHtmlContent(post.content)) {
+      return extractHeadingsFromHtml(post.content);
+    }
+    return extractHeadingsFromMarkdown(post.content);
+  }, [post?.content]);
+
+  // Process content to add IDs to headings for anchor links
+  const processedContent = useMemo(() => {
+    if (!post?.content) return '';
+    if (!isHtmlContent(post.content)) return post.content;
+    
+    // Add IDs to h2 and h3 elements for anchor links
+    let content = post.content;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, 'text/html');
+    
+    doc.querySelectorAll('h2, h3').forEach((heading) => {
+      const text = heading.textContent || '';
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      heading.id = id;
+      heading.className = 'scroll-mt-20';
+    });
+    
+    return doc.body.innerHTML;
   }, [post?.content]);
 
   const formatDate = (dateString) => {

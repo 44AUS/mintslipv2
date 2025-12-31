@@ -281,6 +281,40 @@ export default function AdminDashboard() {
     }
   };
 
+  const openSubscriptionModal = (user) => {
+    setSelectedUser(user);
+    setSelectedTier(user.subscription?.tier || "");
+    setSubscriptionModalOpen(true);
+  };
+
+  const updateUserSubscription = async () => {
+    if (!selectedUser) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}/subscription`, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ tier: selectedTier || null })
+      });
+      
+      if (response.ok) {
+        toast.success(selectedTier ? `User subscription updated to ${SUBSCRIPTION_TIERS[selectedTier]?.name}` : "User subscription removed");
+        setSubscriptionModalOpen(false);
+        setSelectedUser(null);
+        loadUsers();
+        loadDashboardData();
+      } else {
+        toast.error("Failed to update user subscription");
+      }
+    } catch (error) {
+      toast.error("Error updating subscription");
+    }
+  };
+
   useEffect(() => {
     if (!isLoading) {
       loadPurchases();

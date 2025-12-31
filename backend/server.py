@@ -290,6 +290,29 @@ async def verify_admin(session: dict = Depends(get_current_admin)):
     admin = await admins_collection.find_one({"id": session["adminId"]}, {"_id": 0, "password": 0})
     return {"success": True, "admin": admin}
 
+class ChangeAdminPassword(BaseModel):
+    currentPassword: str
+    newPassword: str
+
+@app.put("/api/admin/change-password")
+async def change_admin_password(data: ChangeAdminPassword, session: dict = Depends(get_current_admin)):
+    """Change admin password (requires current password)"""
+    admin = await admins_collection.find_one({"id": session["adminId"]})
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+    
+    # Verify current password
+    if not verify_password(data.currentPassword, admin["password"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Update password
+    await admins_collection.update_one(
+        {"id": session["adminId"]},
+        {"$set": {"password": hash_password(data.newPassword)}}
+    )
+    
+    return {"success": True, "message": "Password changed successfully"}
+
 @app.post("/api/admin/setup")
 async def setup_admin():
     """Initialize default admin account (run once) - only works if no admin exists"""

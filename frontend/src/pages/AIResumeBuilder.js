@@ -605,18 +605,29 @@ export default function AIResumeBuilder() {
     }
   };
 
-  // Navigation
+  // Navigation with animations
   const nextStep = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(prev => prev + 1);
+    if (currentStep < STEPS.length && !isTransitioning) {
+      setSlideDirection('next');
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentStep(prev => prev + 1);
+        setTimeout(() => setIsTransitioning(false), 50);
+      }, 200);
     }
   };
 
   const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
+    if (currentStep > 1 && !isTransitioning) {
+      setSlideDirection('prev');
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentStep(prev => prev - 1);
+        setTimeout(() => setIsTransitioning(false), 50);
+      }, 200);
     }
   };
+
 
   // Render step content
   const renderStepContent = () => {

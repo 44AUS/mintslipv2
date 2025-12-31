@@ -202,6 +202,412 @@ def get_llm_chat():
 async def health_check():
     return {"status": "healthy"}
 
+# ========== AUTHENTICATION HELPERS ==========
+
+async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify admin session token"""
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = credentials.credentials
+    session = await sessions_collection.find_one({"token": token, "type": "admin"}, {"_id": 0})
+    
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    
+    # Check if session is expired (24 hours)
+    created_at = datetime.fromisoformat(session["createdAt"].replace("Z", "+00:00"))
+    if (datetime.now(timezone.utc) - created_at).total_seconds() > 86400:
+        await sessions_collection.delete_one({"token": token})
+        raise HTTPException(status_code=401, detail="Session expired")
+    
+    return session
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify user session token"""
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = credentials.credentials
+    session = await sessions_collection.find_one({"token": token, "type": "user"}, {"_id": 0})
+    
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    
+    # Check if session is expired (7 days)
+    created_at = datetime.fromisoformat(session["createdAt"].replace("Z", "+00:00"))
+    if (datetime.now(timezone.utc) - created_at).total_seconds() > 604800:
+        await sessions_collection.delete_one({"token": token})
+        raise HTTPException(status_code=401, detail="Session expired")
+    
+    return session
+
+# ========== ADMIN AUTHENTICATION ENDPOINTS ==========
+
+@app.post("/api/admin/login")
+async def admin_login(data: AdminLogin):
+    """Admin login endpoint"""
+    admin = await admins_collection.find_one({"email": data.email.lower()}, {"_id": 0})
+    
+    if not admin:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not verify_password(data.password, admin["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Create session
+    token = generate_session_token()
+    session = {
+        "id": str(uuid.uuid4()),
+        "token": token,
+        "adminId": admin["id"],
+        "email": admin["email"],
+        "type": "admin",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await sessions_collection.insert_one(session)
+    
+    return {
+        "success": True,
+        "token": token,
+        "admin": {
+            "id": admin["id"],
+            "email": admin["email"],
+            "name": admin.get("name", "Admin")
+        }
+    }
+
+@app.post("/api/admin/logout")
+async def admin_logout(session: dict = Depends(get_current_admin)):
+    """Admin logout endpoint"""
+    await sessions_collection.delete_one({"token": session["token"]})
+    return {"success": True}
+
+@app.get("/api/admin/verify")
+async def verify_admin(session: dict = Depends(get_current_admin)):
+    """Verify admin session"""
+    admin = await admins_collection.find_one({"id": session["adminId"]}, {"_id": 0, "password": 0})
+    return {"success": True, "admin": admin}
+
+@app.post("/api/admin/setup")
+async def setup_admin():
+    """Initialize default admin account (run once)"""
+    existing = await admins_collection.find_one({"email": "admin@mintslip.com"})
+    if existing:
+        return {"message": "Admin already exists"}
+    
+    admin = {
+        "id": str(uuid.uuid4()),
+        "email": "admin@mintslip.com",
+        "password": hash_password("MINTSLIP2025!"),
+        "name": "Admin",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await admins_collection.insert_one(admin)
+    return {"message": "Admin account created successfully"}
+
+# ========== USER AUTHENTICATION ENDPOINTS ==========
+
+@app.post("/api/user/signup")
+async def user_signup(data: UserSignup):
+    """User signup endpoint"""
+    # Check if email already exists
+    existing = await users_collection.find_one({"email": data.email.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    user = {
+        "id": str(uuid.uuid4()),
+        "email": data.email.lower(),
+        "password": hash_password(data.password),
+        "name": data.name,
+        "subscription": None,
+        "downloadsUsed": 0,
+        "downloadsReset": None,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await users_collection.insert_one(user)
+    
+    # Create session
+    token = generate_session_token()
+    session = {
+        "id": str(uuid.uuid4()),
+        "token": token,
+        "userId": user["id"],
+        "email": user["email"],
+        "type": "user",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await sessions_collection.insert_one(session)
+    
+    return {
+        "success": True,
+        "token": token,
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"],
+            "subscription": None
+        }
+    }
+
+@app.post("/api/user/login")
+async def user_login(data: UserLogin):
+    """User login endpoint"""
+    user = await users_collection.find_one({"email": data.email.lower()}, {"_id": 0})
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not verify_password(data.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Create session
+    token = generate_session_token()
+    session = {
+        "id": str(uuid.uuid4()),
+        "token": token,
+        "userId": user["id"],
+        "email": user["email"],
+        "type": "user",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await sessions_collection.insert_one(session)
+    
+    return {
+        "success": True,
+        "token": token,
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "name": user["name"],
+            "subscription": user.get("subscription")
+        }
+    }
+
+@app.post("/api/user/logout")
+async def user_logout(session: dict = Depends(get_current_user)):
+    """User logout endpoint"""
+    await sessions_collection.delete_one({"token": session["token"]})
+    return {"success": True}
+
+@app.get("/api/user/me")
+async def get_user_profile(session: dict = Depends(get_current_user)):
+    """Get current user profile"""
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"success": True, "user": user}
+
+# ========== PURCHASE TRACKING ENDPOINTS ==========
+
+@app.post("/api/purchases/track")
+async def track_purchase(data: PurchaseCreate):
+    """Track a purchase"""
+    purchase = {
+        "id": str(uuid.uuid4()),
+        "documentType": data.documentType,
+        "amount": data.amount,
+        "paypalEmail": data.paypalEmail,
+        "paypalTransactionId": data.paypalTransactionId,
+        "discountCode": data.discountCode,
+        "discountAmount": data.discountAmount,
+        "userId": data.userId,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "downloadedAt": datetime.now(timezone.utc).isoformat()
+    }
+    await purchases_collection.insert_one(purchase)
+    
+    # If user has subscription, decrement downloads
+    if data.userId:
+        user = await users_collection.find_one({"id": data.userId})
+        if user and user.get("subscription"):
+            tier = SUBSCRIPTION_TIERS.get(user["subscription"]["tier"])
+            if tier and tier["downloads"] != -1:  # Not unlimited
+                await users_collection.update_one(
+                    {"id": data.userId},
+                    {"$inc": {"downloadsUsed": 1}}
+                )
+    
+    return {"success": True, "purchaseId": purchase["id"]}
+
+@app.get("/api/admin/purchases")
+async def get_all_purchases(
+    session: dict = Depends(get_current_admin),
+    skip: int = 0,
+    limit: int = 50,
+    documentType: Optional[str] = None,
+    startDate: Optional[str] = None,
+    endDate: Optional[str] = None
+):
+    """Get all purchases (admin only)"""
+    query = {}
+    
+    if documentType:
+        query["documentType"] = documentType
+    
+    if startDate:
+        query["createdAt"] = {"$gte": startDate}
+    
+    if endDate:
+        if "createdAt" in query:
+            query["createdAt"]["$lte"] = endDate
+        else:
+            query["createdAt"] = {"$lte": endDate}
+    
+    purchases = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    total = await purchases_collection.count_documents(query)
+    
+    return {
+        "success": True,
+        "purchases": purchases,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
+@app.get("/api/admin/dashboard")
+async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
+    """Get admin dashboard data"""
+    # Total purchases
+    total_purchases = await purchases_collection.count_documents({})
+    
+    # Total revenue
+    pipeline = [
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    revenue_result = await purchases_collection.aggregate(pipeline).to_list(1)
+    total_revenue = revenue_result[0]["total"] if revenue_result else 0
+    
+    # Purchases by document type
+    type_pipeline = [
+        {"$group": {"_id": "$documentType", "count": {"$sum": 1}, "revenue": {"$sum": "$amount"}}}
+    ]
+    purchases_by_type = await purchases_collection.aggregate(type_pipeline).to_list(100)
+    
+    # Recent purchases (last 10)
+    recent_purchases = await purchases_collection.find({}, {"_id": 0}).sort("createdAt", -1).limit(10).to_list(10)
+    
+    # Total subscribers
+    total_subscribers = await users_collection.count_documents({"subscription": {"$ne": None}})
+    
+    # Total users
+    total_users = await users_collection.count_documents({})
+    
+    # Today's purchases
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    today_purchases = await purchases_collection.count_documents({"createdAt": {"$gte": today_start}})
+    
+    # Today's revenue
+    today_revenue_pipeline = [
+        {"$match": {"createdAt": {"$gte": today_start}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    today_revenue_result = await purchases_collection.aggregate(today_revenue_pipeline).to_list(1)
+    today_revenue = today_revenue_result[0]["total"] if today_revenue_result else 0
+    
+    return {
+        "success": True,
+        "stats": {
+            "totalPurchases": total_purchases,
+            "totalRevenue": round(total_revenue, 2),
+            "totalSubscribers": total_subscribers,
+            "totalUsers": total_users,
+            "todayPurchases": today_purchases,
+            "todayRevenue": round(today_revenue, 2)
+        },
+        "purchasesByType": purchases_by_type,
+        "recentPurchases": recent_purchases
+    }
+
+@app.get("/api/admin/users")
+async def get_all_users(
+    session: dict = Depends(get_current_admin),
+    skip: int = 0,
+    limit: int = 50
+):
+    """Get all users (admin only)"""
+    users = await users_collection.find({}, {"_id": 0, "password": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    total = await users_collection.count_documents({})
+    
+    return {
+        "success": True,
+        "users": users,
+        "total": total
+    }
+
+# ========== SUBSCRIPTION ENDPOINTS ==========
+
+@app.get("/api/subscription/tiers")
+async def get_subscription_tiers():
+    """Get available subscription tiers"""
+    return {
+        "success": True,
+        "tiers": SUBSCRIPTION_TIERS
+    }
+
+@app.post("/api/subscription/create")
+async def create_subscription(data: SubscriptionCreate, session: dict = Depends(get_current_user)):
+    """Create a subscription for a user"""
+    if data.tier not in SUBSCRIPTION_TIERS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    subscription = {
+        "id": str(uuid.uuid4()),
+        "userId": data.userId,
+        "tier": data.tier,
+        "paypalSubscriptionId": data.paypalSubscriptionId,
+        "paypalEmail": data.paypalEmail,
+        "status": "active",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "currentPeriodStart": datetime.now(timezone.utc).isoformat(),
+        "currentPeriodEnd": None  # Will be updated by PayPal webhook
+    }
+    
+    await subscriptions_collection.insert_one(subscription)
+    
+    # Update user with subscription
+    await users_collection.update_one(
+        {"id": data.userId},
+        {
+            "$set": {
+                "subscription": {
+                    "id": subscription["id"],
+                    "tier": data.tier,
+                    "status": "active"
+                },
+                "downloadsUsed": 0,
+                "downloadsReset": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {"success": True, "subscriptionId": subscription["id"]}
+
+@app.get("/api/user/downloads-remaining")
+async def get_downloads_remaining(session: dict = Depends(get_current_user)):
+    """Get remaining downloads for subscribed user"""
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
+    
+    if not user or not user.get("subscription"):
+        return {"success": True, "hasSubscription": False, "downloadsRemaining": 0}
+    
+    tier = SUBSCRIPTION_TIERS.get(user["subscription"]["tier"])
+    if not tier:
+        return {"success": True, "hasSubscription": False, "downloadsRemaining": 0}
+    
+    if tier["downloads"] == -1:
+        return {"success": True, "hasSubscription": True, "downloadsRemaining": -1, "unlimited": True}
+    
+    remaining = tier["downloads"] - user.get("downloadsUsed", 0)
+    return {
+        "success": True,
+        "hasSubscription": True,
+        "downloadsRemaining": max(0, remaining),
+        "downloadsUsed": user.get("downloadsUsed", 0),
+        "totalDownloads": tier["downloads"]
+    }
+
 @app.post("/api/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     """Parse an uploaded resume (PDF or DOCX) and extract structured data"""

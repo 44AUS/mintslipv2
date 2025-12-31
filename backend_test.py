@@ -1545,6 +1545,21 @@ class AIResumeBuilderTester:
         print("\n🔄 Testing Full Admin Flow...")
         full_admin_flow_ok = self.test_full_admin_flow()
         
+        # Test Blog System APIs
+        print("\n📝 Testing Blog System APIs...")
+        blog_categories_ok = self.test_blog_categories()
+        blog_posts_public_ok = self.test_blog_posts_public()
+        admin_blog_posts_ok = self.test_admin_blog_posts()
+        create_blog_post_ok = self.test_create_blog_post()
+        get_blog_post_by_slug_ok = self.test_get_blog_post_by_slug()
+        get_admin_blog_post_by_id_ok = self.test_get_admin_blog_post_by_id()
+        update_blog_post_ok = self.test_update_blog_post()
+        upload_blog_image_ok = self.test_upload_blog_image()
+        delete_blog_post_ok = self.test_delete_blog_post()
+        
+        print("\n🔄 Testing Complete Blog Flow...")
+        complete_blog_flow_ok = self.test_complete_blog_flow()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
@@ -1557,14 +1572,18 @@ class AIResumeBuilderTester:
         purchase_tests_passed = purchase_track_ok and admin_purchases_ok
         subscription_tests_passed = subscription_tiers_ok
         new_admin_features_passed = admin_users_ok and admin_update_subscription_ok and admin_revenue_ok and full_admin_flow_ok
+        blog_tests_passed = (blog_categories_ok and blog_posts_public_ok and admin_blog_posts_ok and 
+                           create_blog_post_ok and get_blog_post_by_slug_ok and get_admin_blog_post_by_id_ok and 
+                           update_blog_post_ok and delete_blog_post_ok and complete_blog_flow_ok)
         
-        if critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and new_admin_features_passed:
+        if critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and new_admin_features_passed and blog_tests_passed:
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")
             print("✅ Purchase tracking system working")
             print("✅ Subscription system working")
             print("✅ New admin dashboard features working")
+            print("✅ Blog system APIs working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")
@@ -1579,6 +1598,8 @@ class AIResumeBuilderTester:
                 failed_systems.append("Subscription System")
             if not new_admin_features_passed:
                 failed_systems.append("New Admin Dashboard Features")
+            if not blog_tests_passed:
+                failed_systems.append("Blog System APIs")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 

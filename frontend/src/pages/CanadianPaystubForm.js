@@ -998,18 +998,18 @@ export default function CanadianPaystubForm() {
       
       <Header title="Generate Pay Stub" />
 
-      {/* US Location Alert Banner */}
+      {/* US Location Alert Banner - Sticky below header */}
       {showLocationAlert && userCountry === 'US' && (
-        <div className="bg-gradient-to-r from-blue-50 via-white to-red-50 border-b border-blue-100">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-sm border border-blue-100 p-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-red-600 flex items-center justify-center shadow-lg">
+        <div className="sticky top-[64px] z-40 bg-gradient-to-r from-blue-50 via-white to-red-50 border-b border-blue-100 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-white rounded-xl shadow-sm border border-blue-100 p-3 md:p-4">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-blue-600 to-red-600 flex items-center justify-center shadow-lg">
                     <USFlagIcon />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <svg className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -1018,26 +1018,28 @@ export default function CanadianPaystubForm() {
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Location Detected</span>
                   </div>
-                  <p className="font-semibold text-slate-800 mt-1">You're visiting from the United States 🇺🇸</p>
-                  <p className="text-slate-500 text-sm">Switch to our US pay stub generator for accurate federal & state tax calculations</p>
+                  <p className="font-semibold text-slate-800 mt-0.5 text-sm md:text-base">You&apos;re visiting from the United States 🇺🇸</p>
+                  <p className="text-slate-500 text-xs md:text-sm hidden sm:block">Switch to our US pay stub generator for accurate federal &amp; state tax calculations</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => setShowLocationAlert(false)}
-                  className="text-slate-600 hover:text-slate-800 hover:bg-slate-100"
+                  className="text-slate-600 hover:text-slate-800 hover:bg-slate-100 flex-1 md:flex-none"
                 >
                   Stay on Canadian Version
                 </Button>
                 <Button
+                  size="sm"
                   onClick={() => navigate('/paystub-generator')}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all duration-200 gap-2"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all duration-200 gap-1.5 flex-1 md:flex-none"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
-                  Switch to US Version
+                  <span className="hidden sm:inline">Switch to</span> US Version
                 </Button>
               </div>
             </div>

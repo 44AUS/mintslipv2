@@ -608,8 +608,11 @@ class AIResumeBuilderTester:
     def create_test_user(self):
         """Create a test user for subscription testing"""
         try:
+            # Use timestamp to create unique email
+            import time
+            timestamp = int(time.time())
             payload = {
-                "email": "testuser@mintslip.com",
+                "email": f"testuser{timestamp}@mintslip.com",
                 "password": "TestPassword123!",
                 "name": "Test User"
             }
@@ -618,6 +621,17 @@ class AIResumeBuilderTester:
                 data = response.json()
                 if data.get("success") and data.get("user"):
                     return data["user"]["id"]
+            elif response.status_code == 400:
+                # User might already exist, try to get existing users and find one
+                if self.admin_token:
+                    headers = {"Authorization": f"Bearer {self.admin_token}"}
+                    users_response = requests.get(f"{self.api_url}/admin/users", headers=headers, timeout=10)
+                    if users_response.status_code == 200:
+                        users_data = users_response.json()
+                        users = users_data.get("users", [])
+                        if users:
+                            # Return the first user's ID
+                            return users[0].get("id")
             return None
         except Exception:
             return None

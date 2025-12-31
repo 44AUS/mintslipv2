@@ -122,6 +122,7 @@ function App() {
             {/* User Auth Routes (hidden - accessible via direct URL only) */}
             <Route path="/login" element={<UserLogin />} />
             <Route path="/signup" element={<UserSignup />} />
+            <Route path="/subscription/choose" element={<SubscriptionChoose />} />
             <Route path="/mintslip-vs-other-paystub-generators" element={<ComparisonPage />} />
             <Route path="/mintslip-vs-thepaystubs" element={<MintSlipVsThePayStubs />} />
             <Route path="/generators" element={<DocumentDirectory />} />

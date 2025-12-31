@@ -19,13 +19,45 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Generate table of contents from markdown
-const extractHeadings = (markdown) => {
+// Check if content is HTML (from WYSIWYG editor) or Markdown
+const isHtmlContent = (content) => {
+  if (!content) return false;
+  // Check for common HTML tags
+  return /<[a-z][\s\S]*>/i.test(content) && 
+         (content.includes('<p>') || content.includes('<h1>') || content.includes('<h2>') || content.includes('<div>'));
+};
+
+// Generate table of contents from HTML content
+const extractHeadingsFromHtml = (html) => {
+  const headings = [];
+  if (!html) return headings;
+  
+  // Parse HTML to extract h2 and h3 headings
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  
+  const h2s = doc.querySelectorAll('h2');
+  const h3s = doc.querySelectorAll('h3');
+  const allHeadings = [...doc.querySelectorAll('h2, h3')];
+  
+  allHeadings.forEach((heading) => {
+    const text = heading.textContent || '';
+    const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    headings.push({
+      level: heading.tagName === 'H2' ? 2 : 3,
+      text,
+      id
+    });
+  });
+  
+  return headings;
+};
+
+// Generate table of contents from markdown (legacy support)
+const extractHeadingsFromMarkdown = (markdown) => {
   const headings = [];
   const lines = markdown.split('\n');
   

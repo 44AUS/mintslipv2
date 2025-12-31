@@ -1868,8 +1868,8 @@ export default function AIResumeBuilder() {
           </div>
 
           {/* Progress Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+          <div className="mb-8 overflow-x-auto">
+            <div className="flex items-center justify-between min-w-[400px] px-2">
               {STEPS.map((step, index) => {
                 const Icon = step.icon;
                 const isCompleted = currentStep > step.id;
@@ -1888,7 +1888,7 @@ export default function AIResumeBuilder() {
                       }`}
                     >
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${
+                        className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mb-1 ${
                           isCurrent
                             ? "bg-green-600 text-white"
                             : isCompleted
@@ -1897,16 +1897,16 @@ export default function AIResumeBuilder() {
                         }`}
                       >
                         {isCompleted ? (
-                          <CheckCircle className="w-5 h-5" />
+                          <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
                         ) : (
-                          <Icon className="w-5 h-5" />
+                          <Icon className="w-4 h-4 md:w-5 md:h-5" />
                         )}
                       </div>
                       <span className="text-xs hidden md:block">{step.title}</span>
                     </button>
                     {index < STEPS.length - 1 && (
                       <div
-                        className={`w-8 md:w-16 h-0.5 mx-1 ${
+                        className={`w-6 md:w-16 h-0.5 mx-0.5 md:mx-1 flex-shrink-0 ${
                           currentStep > step.id ? "bg-green-500" : "bg-slate-200"
                         }`}
                       />

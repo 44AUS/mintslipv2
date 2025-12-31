@@ -86,17 +86,23 @@ export default function SubscriptionChoose() {
     const userInfo = localStorage.getItem("userInfo");
     
     if (!token || !userInfo) {
-      navigate("/signup");
+      // For preview, show page with demo user
+      setUser({ name: "Guest User", email: "guest@example.com" });
+      setIsLoading(false);
       return;
     }
 
-    const parsedUser = JSON.parse(userInfo);
-    setUser(parsedUser);
+    try {
+      const parsedUser = JSON.parse(userInfo);
+      setUser(parsedUser);
 
-    // If user already has subscription, redirect to dashboard
-    if (parsedUser.subscription) {
-      navigate("/user/dashboard");
-      return;
+      // If user already has subscription, redirect to dashboard
+      if (parsedUser.subscription) {
+        navigate("/user/dashboard");
+        return;
+      }
+    } catch (e) {
+      setUser({ name: "Guest User", email: "guest@example.com" });
     }
 
     setIsLoading(false);

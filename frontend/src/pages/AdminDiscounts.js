@@ -216,38 +216,21 @@ export default function AdminDiscounts() {
   const isExpired = (expiryDate) => new Date(expiryDate) < new Date();
   const isNotStarted = (startDate) => new Date(startDate) > new Date();
 
-  // Login Form
-  if (!isAuthenticated) {
+  // Loading state
+  if (loading && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Lock className="w-6 h-6 text-green-600" />
-              </div>
-              <CardTitle>Admin Access Required</CardTitle>
-              <CardDescription>Enter password to manage discount codes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter admin password"
-                  />
-                </div>
-                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
-                  Access Discount Management
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-slate-600">Verifying session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect to login
+  }
         </div>
         <Footer />
       </div>

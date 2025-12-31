@@ -292,10 +292,11 @@ async def verify_admin(session: dict = Depends(get_current_admin)):
 
 @app.post("/api/admin/setup")
 async def setup_admin():
-    """Initialize default admin account (run once)"""
-    existing = await admins_collection.find_one({"email": "admin@mintslip.com"})
-    if existing:
-        return {"message": "Admin already exists"}
+    """Initialize default admin account (run once) - only works if no admin exists"""
+    # Check if any admin already exists
+    admin_count = await admins_collection.count_documents({})
+    if admin_count > 0:
+        raise HTTPException(status_code=403, detail="Admin setup already completed")
     
     admin = {
         "id": str(uuid.uuid4()),

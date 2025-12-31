@@ -459,6 +459,9 @@ export default function AIResumeBuilder() {
       const previewData = {
         ...resumeData,
         template: formData.template,
+        font: formData.font,
+        sectionLayout: formData.sectionLayout,
+        onePage: formData.onePage,
         isPaid: isPaid
       };
       const preview = await generateResumePreview(previewData);

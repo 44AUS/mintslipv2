@@ -414,6 +414,7 @@ async def track_purchase(data: PurchaseCreate):
         "discountCode": data.discountCode,
         "discountAmount": data.discountAmount,
         "userId": data.userId,
+        "template": data.template,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "downloadedAt": datetime.now(timezone.utc).isoformat()
     }

@@ -608,17 +608,41 @@ export default function AdminDashboard() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
-                title="Yearly Revenue"
+                title="All Time Revenue"
                 value={formatCurrency(dashboardStats.stats.totalRevenue)}
                 icon={DollarSign}
                 color="green"
               />
-              <StatCard
-                title="Total Purchases"
-                value={dashboardStats.stats.totalPurchases}
-                icon={ShoppingCart}
-                color="blue"
-              />
+              
+              {/* Period-based Purchases Card with Dropdown */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-100 text-blue-600">
+                      <ShoppingCart className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <Select value={purchasesPeriod} onValueChange={setPurchasesPeriod}>
+                    <SelectTrigger className="w-[110px] h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="week">This Week</SelectItem>
+                      <SelectItem value="month">This Month</SelectItem>
+                      <SelectItem value="quarter">This Quarter</SelectItem>
+                      <SelectItem value="year">This Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm text-slate-500">
+                    {purchasesPeriod === "week" ? "Weekly" : 
+                     purchasesPeriod === "month" ? "Monthly" : 
+                     purchasesPeriod === "quarter" ? "Quarterly" : "Yearly"} Purchases
+                  </p>
+                  <p className="text-2xl font-bold text-slate-800 mt-1">{periodPurchases}</p>
+                </div>
+              </div>
               
               {/* Period-based Revenue Card with Dropdown */}
               <div className="bg-white rounded-xl shadow-sm p-6">

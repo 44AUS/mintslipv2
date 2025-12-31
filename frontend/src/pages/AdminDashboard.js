@@ -105,6 +105,11 @@ export default function AdminDashboard() {
   const [revenuePeriod, setRevenuePeriod] = useState("month");
   const [periodRevenue, setPeriodRevenue] = useState(0);
   const pageSize = 20;
+  
+  // Subscription change modal state
+  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedTier, setSelectedTier] = useState("");
 
   // Check auth and get admin info
   useEffect(() => {

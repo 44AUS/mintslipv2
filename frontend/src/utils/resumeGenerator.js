@@ -4,30 +4,23 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Bord
 import { saveAs } from "file-saver";
 import { customFonts } from "./customFonts";
 
-// Flag to track if custom fonts are already registered
-let fontsRegistered = false;
-
 // Register custom fonts with jsPDF
 const registerCustomFonts = (doc) => {
-  if (!fontsRegistered) {
-    // Add fonts to virtual file system
-    doc.addFileToVFS("Montserrat-Regular.ttf", customFonts["Montserrat-Regular"]);
-    doc.addFileToVFS("Montserrat-Bold.ttf", customFonts["Montserrat-Bold"]);
-    doc.addFileToVFS("LiberationSerif-Regular.ttf", customFonts["LiberationSerif-Regular"]);
-    doc.addFileToVFS("LiberationSerif-Bold.ttf", customFonts["LiberationSerif-Bold"]);
-    doc.addFileToVFS("LiberationSans-Regular.ttf", customFonts["LiberationSans-Regular"]);
-    doc.addFileToVFS("LiberationSans-Bold.ttf", customFonts["LiberationSans-Bold"]);
-    
-    // Register fonts
-    doc.addFont("Montserrat-Regular.ttf", "Montserrat", "normal");
-    doc.addFont("Montserrat-Bold.ttf", "Montserrat", "bold");
-    doc.addFont("LiberationSerif-Regular.ttf", "LiberationSerif", "normal");
-    doc.addFont("LiberationSerif-Bold.ttf", "LiberationSerif", "bold");
-    doc.addFont("LiberationSans-Regular.ttf", "LiberationSans", "normal");
-    doc.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold");
-    
-    fontsRegistered = true;
-  }
+  // Add fonts to virtual file system
+  doc.addFileToVFS("Montserrat-Regular.ttf", customFonts["Montserrat-Regular"]);
+  doc.addFileToVFS("Montserrat-Bold.ttf", customFonts["Montserrat-Bold"]);
+  doc.addFileToVFS("LiberationSerif-Regular.ttf", customFonts["LiberationSerif-Regular"]);
+  doc.addFileToVFS("LiberationSerif-Bold.ttf", customFonts["LiberationSerif-Bold"]);
+  doc.addFileToVFS("LiberationSans-Regular.ttf", customFonts["LiberationSans-Regular"]);
+  doc.addFileToVFS("LiberationSans-Bold.ttf", customFonts["LiberationSans-Bold"]);
+  
+  // Register fonts with jsPDF
+  doc.addFont("Montserrat-Regular.ttf", "Montserrat", "normal");
+  doc.addFont("Montserrat-Bold.ttf", "Montserrat", "bold");
+  doc.addFont("LiberationSerif-Regular.ttf", "LiberationSerif", "normal");
+  doc.addFont("LiberationSerif-Bold.ttf", "LiberationSerif", "bold");
+  doc.addFont("LiberationSans-Regular.ttf", "LiberationSans", "normal");
+  doc.addFont("LiberationSans-Bold.ttf", "LiberationSans", "bold");
 };
 
 // Template color schemes

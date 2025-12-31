@@ -1045,19 +1045,43 @@ export default function AIResumeBuilder() {
                 <Plus className="w-3 h-3 mr-1" /> Add
               </Button>
             </div>
+            
+            {/* AI Hint Banner */}
+            <div className="bg-gradient-to-r from-purple-50 via-cyan-50 to-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Pro Tip: Be specific!</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Include metrics, achievements, and action verbs. Our AI will transform these into powerful, 
+                    ATS-optimized bullet points tailored to your target job.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             {exp.responsibilities.map((resp, respIndex) => (
-              <div key={respIndex} className="flex gap-2">
-                <Input
-                  value={resp}
-                  onChange={(e) => updateResponsibility(exp.id, respIndex, e.target.value)}
-                  placeholder="Describe your responsibility or achievement..."
-                />
+              <div key={respIndex} className="flex gap-2 items-start group">
+                <div className="flex-shrink-0 w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center mt-2 text-xs font-medium text-slate-500">
+                  {respIndex + 1}
+                </div>
+                <div className="flex-1">
+                  <Textarea
+                    value={resp}
+                    onChange={(e) => updateResponsibility(exp.id, respIndex, e.target.value)}
+                    placeholder="E.g., Led a team of 5 engineers to deliver a $2M project 3 weeks ahead of schedule..."
+                    className="min-h-[60px] resize-none"
+                    rows={2}
+                  />
+                </div>
                 {exp.responsibilities.length > 1 && (
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => removeResponsibility(exp.id, respIndex)}
-                    className="text-red-500"
+                    className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity mt-2"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

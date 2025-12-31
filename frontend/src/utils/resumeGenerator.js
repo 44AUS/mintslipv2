@@ -170,14 +170,14 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     doc.setFont(fontFamily, "bold");
     doc.setFontSize(fontSizes.section);
     setColor(colors.primary);
-    doc.text(data.template === "ats" ? "PROFESSIONAL SUMMARY" : "Professional Summary", leftMargin, y);
+    doc.text(template === "ats" ? "PROFESSIONAL SUMMARY" : "Professional Summary", leftMargin, y);
     y += lineHeights.section;
     
     doc.setFont(fontFamily, "normal");
     doc.setFontSize(fontSizes.body);
     setColor(colors.text);
     
-    const summaryLines = doc.splitTextToSize(data.professionalSummary, width - margin * 2 - (data.template === "modern" ? 10 : 0));
+    const summaryLines = doc.splitTextToSize(data.professionalSummary, width - margin * 2 - (template === "modern" ? 10 : 0));
     summaryLines.forEach(line => {
       doc.text(line, leftMargin, y);
       y += lineHeights.body;
@@ -197,7 +197,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     doc.setFont(fontFamily, "bold");
     doc.setFontSize(fontSizes.section);
     setColor(colors.primary);
-    doc.text(data.template === "ats" ? "SKILLS" : "Skills", leftMargin, y);
+    doc.text(template === "ats" ? "SKILLS" : "Skills", leftMargin, y);
     y += lineHeights.section + 3;
 
     doc.setFont(fontFamily, "normal");
@@ -212,7 +212,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
 
     if (allSkills.length > 0) {
       const skillsText = allSkills.join("  •  ");
-      const skillLines = doc.splitTextToSize(skillsText, width - margin * 2 - (data.template === "modern" ? 10 : 0));
+      const skillLines = doc.splitTextToSize(skillsText, width - margin * 2 - (template === "modern" ? 10 : 0));
       skillLines.forEach(line => {
         doc.text(line, leftMargin, y);
         y += lineHeights.body;
@@ -233,7 +233,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     doc.setFont(fontFamily, "bold");
     doc.setFontSize(fontSizes.section);
     setColor(colors.primary);
-    doc.text(data.template === "ats" ? "EDUCATION" : "Education", leftMargin, y);
+    doc.text(template === "ats" ? "EDUCATION" : "Education", leftMargin, y);
     y += lineHeights.section + 5;
 
     data.education.forEach(edu => {
@@ -268,7 +268,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     doc.setFont(fontFamily, "bold");
     doc.setFontSize(fontSizes.section);
     setColor(colors.primary);
-    doc.text(data.template === "ats" ? "PROFESSIONAL EXPERIENCE" : "Professional Experience", leftMargin, y);
+    doc.text(template === "ats" ? "PROFESSIONAL EXPERIENCE" : "Professional Experience", leftMargin, y);
     y += lineHeights.section + 5;
 
     data.optimizedExperience.forEach((exp, index) => {

@@ -610,6 +610,36 @@ async def get_downloads_remaining(session: dict = Depends(get_current_user)):
         "totalDownloads": tier["downloads"]
     }
 
+@app.get("/api/user/downloads")
+async def get_user_downloads(
+    session: dict = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 20
+):
+    """Get user's download history"""
+    # For now, get purchases associated with the user's email or userId
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
+    
+    if not user:
+        return {"success": True, "downloads": [], "total": 0}
+    
+    # Query purchases by userId or paypal email
+    query = {
+        "$or": [
+            {"userId": user["id"]},
+            {"paypalEmail": user["email"]}
+        ]
+    }
+    
+    downloads = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    total = await purchases_collection.count_documents(query)
+    
+    return {
+        "success": True,
+        "downloads": downloads,
+        "total": total
+    }
+
 # ========== DELETE ENDPOINTS ==========
 
 @app.delete("/api/admin/purchases/{purchase_id}")

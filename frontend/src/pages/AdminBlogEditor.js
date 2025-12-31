@@ -179,11 +179,8 @@ export default function AdminBlogEditor() {
     }
   };
 
-  const insertImageToContent = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setIsUploading(true);
+  // Handler for WYSIWYG editor image uploads - returns the URL
+  const handleEditorImageUpload = async (file) => {
     const token = localStorage.getItem("adminToken");
     const formData = new FormData();
     formData.append("file", file);
@@ -197,16 +194,17 @@ export default function AdminBlogEditor() {
       
       const data = await response.json();
       if (data.success) {
-        const imageMarkdown = `\n![${file.name}](${data.url})\n`;
-        setPost(prev => ({ ...prev, content: prev.content + imageMarkdown }));
+        // Return full URL for the editor
+        const imageUrl = data.url.startsWith('/') ? `${BACKEND_URL}${data.url}` : data.url;
         toast.success("Image inserted");
+        return imageUrl;
       } else {
         toast.error("Failed to upload image");
+        return null;
       }
     } catch (error) {
       toast.error("Error uploading image");
-    } finally {
-      setIsUploading(false);
+      return null;
     }
   };
 

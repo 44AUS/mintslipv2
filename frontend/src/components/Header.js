@@ -512,7 +512,7 @@ export default function Header({ title }) {
           
           {/* Desktop Navigation Links - Hidden on mobile/tablet */}
           <nav className="hidden md:flex items-center gap-2">
-            <DesktopNavLinks location={location} onNavigate={handleNavigation} />
+            <DesktopNavLinks location={location} onNavigate={handleNavigation} user={user} onLogout={handleLogout} />
           </nav>
 
           {/* Mobile/Tablet Hamburger Menu - Visible only on mobile/tablet */}

@@ -350,7 +350,8 @@ const createOrder = (data, actions) => {
             paypalEmail: payerEmail,
             paypalTransactionId: orderId,
             discountCode: appliedDiscount?.code || null,
-            discountAmount: appliedDiscount ? getStatementPrice() - appliedDiscount.discountedPrice : 0
+            discountAmount: appliedDiscount ? getStatementPrice() - appliedDiscount.discountedPrice : 0,
+            template: selectedTemplate
           })
         });
       } catch (trackError) {

@@ -976,7 +976,8 @@ export default function PaystubForm() {
             paypalEmail: payerEmail,
             paypalTransactionId: orderId,
             discountCode: appliedDiscount?.code || null,
-            discountAmount: appliedDiscount ? (calculateNumStubs * 9.99) - appliedDiscount.discountedPrice : 0
+            discountAmount: appliedDiscount ? (calculateNumStubs * 9.99) - appliedDiscount.discountedPrice : 0,
+            template: selectedTemplate
           })
         });
       } catch (trackError) {

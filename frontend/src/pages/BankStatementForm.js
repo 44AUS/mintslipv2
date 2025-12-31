@@ -20,6 +20,8 @@ import ChimeLogo from '../assests/chime.png';
 import BoA from '../assests/boa2.png';
 import ChaseLogo from '../assests/chase-logo-black-transparent.png';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
 // Check if running on localhost for development features
 const isLocalhost = typeof window !== 'undefined' && 
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');

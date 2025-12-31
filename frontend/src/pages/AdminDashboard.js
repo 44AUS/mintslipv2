@@ -187,6 +187,73 @@ export default function AdminDashboard() {
     }
   };
 
+  const deletePurchase = async (purchaseId) => {
+    if (!window.confirm("Are you sure you want to delete this purchase record?")) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/purchases/${purchaseId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast.success("Purchase deleted");
+        loadPurchases();
+        loadDashboardData();
+      } else {
+        toast.error("Failed to delete purchase");
+      }
+    } catch (error) {
+      toast.error("Error deleting purchase");
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user? This will also remove their subscription and session data.")) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast.success("User deleted");
+        loadUsers();
+        loadDashboardData();
+      } else {
+        toast.error("Failed to delete user");
+      }
+    } catch (error) {
+      toast.error("Error deleting user");
+    }
+  };
+
+  const toggleBanUser = async (userId, currentlyBanned) => {
+    const action = currentlyBanned ? "unban" : "ban";
+    if (!window.confirm(`Are you sure you want to ${action} this user?`)) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/ban`, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.isBanned ? "User banned" : "User unbanned");
+        loadUsers();
+      } else {
+        toast.error(`Failed to ${action} user`);
+      }
+    } catch (error) {
+      toast.error(`Error ${action}ning user`);
+    }
+  };
+
   useEffect(() => {
     if (!isLoading) {
       loadPurchases();

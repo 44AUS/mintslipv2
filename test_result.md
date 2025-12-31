@@ -366,6 +366,18 @@ agent_communication:
         agent: "testing"
         comment: "COMPREHENSIVE AI RESUME BUILDER BACKEND TESTING COMPLETED ✅ All critical APIs verified and working correctly: 1) Health Check API (/api/health): Returns correct {\"status\": \"healthy\"} response ✅ 2) Job Description Scraper API (/api/scrape-job): Properly handles URLs and returns appropriate errors for invalid/unauthorized URLs (401 Unauthorized for test URL - expected behavior) ✅ 3) Generate Resume API (/api/generate-resume): Successfully processes full sample data and returns all required fields (professionalSummary, optimizedExperience, optimizedSkills, keywordsUsed, atsScore: 92, suggestions) with correct data structure. AI-generated content is high quality and properly tailored to job description ✅ 4) Regenerate Section API (/api/regenerate-section): Successfully regenerates content sections (tested summary regeneration) with improved, job-tailored content ✅ 5) Backend Service: Running correctly on localhost:8001 with proper CORS middleware ✅ 6) Error Handling: Proper 404 responses for invalid endpoints ✅ Test Results: 6/7 tests passed (85.7% success rate). Only minor CORS OPTIONS test failed (405 Method Not Allowed - not critical for functionality). All core AI Resume Builder functionality working perfectly. Backend ready for production use."
 
+  - task: "AI Resume Builder - Custom Font Embedding"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/utils/resumeGenerator.js, frontend/src/utils/customFonts.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented custom font embedding for PDF generation. Downloaded and converted fonts (Montserrat, Liberation Serif for Times New Roman, Liberation Sans for Calibri/Arial/Helvetica) to base64. Created customFonts.js utility with font data. Updated resumeGenerator.js to register and use custom fonts with jsPDF. The fonts are now embedded directly in the PDF to ensure consistent rendering across all platforms."
+
   - task: "AI Resume Builder - Frontend Form"
     implemented: true
     working: true

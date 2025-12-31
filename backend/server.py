@@ -162,6 +162,16 @@ class PurchaseCreate(BaseModel):
     userId: Optional[str] = None  # For subscribed users
     template: Optional[str] = None  # Template name/ID used (for paystubs, bank statements)
 
+class ManualPurchaseCreate(BaseModel):
+    documentType: str
+    amount: float
+    paypalEmail: str
+    purchaseDate: Optional[str] = None  # ISO date string, defaults to now
+    template: Optional[str] = None
+    discountCode: Optional[str] = None
+    discountAmount: Optional[float] = 0
+    notes: Optional[str] = None  # Admin notes
+
 # ========== SUBSCRIPTION MODELS ==========
 
 SUBSCRIPTION_TIERS = {

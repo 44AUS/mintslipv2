@@ -1020,9 +1020,23 @@ export default function AIResumeBuilder() {
             <Label htmlFor={`current-${exp.id}`} className="text-sm">I currently work here</Label>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label>Responsibilities & Achievements</Label>
+          {/* Enhanced Responsibilities Section */}
+          <div className="space-y-3">
+            <div className="flex items-start justify-between">
+              <div>
+                <Label className="flex items-center gap-2">
+                  Responsibilities & Achievements
+                  <span className="relative group">
+                    <span className="flex items-center gap-1 text-xs font-normal bg-gradient-to-r from-purple-100 to-cyan-100 text-purple-700 px-2 py-1 rounded-full cursor-help">
+                      <Sparkles className="w-3 h-3" />
+                      AI Enhanced
+                    </span>
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 pointer-events-none">
+                      AI uses these to generate optimized bullet points
+                    </span>
+                  </span>
+                </Label>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"

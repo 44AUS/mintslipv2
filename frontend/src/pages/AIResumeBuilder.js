@@ -153,7 +153,7 @@ export default function AIResumeBuilder() {
       workExperience: [
         ...prev.workExperience,
         {
-          id: Date.now(),
+          id: `work_${Date.now()}_${prev.workExperience.length}`,
           company: "",
           position: "",
           location: "",

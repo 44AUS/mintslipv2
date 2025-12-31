@@ -65,8 +65,8 @@ export default function PaystubForm() {
   const templateFromUrl = searchParams.get('template');
   
   // Location detection state
-  const [userCountry, setUserCountry] = useState('CA'); // Temporarily show for testing
-  const [showLocationAlert, setShowLocationAlert] = useState(true); // Temporarily show for testing
+  const [userCountry, setUserCountry] = useState(null);
+  const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(

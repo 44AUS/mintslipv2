@@ -558,7 +558,7 @@ export default function AdminDashboard() {
                     <TableRow>
                       <TableHead>Date</TableHead>
                       <TableHead>Document Type</TableHead>
-                      <TableHead>PayPal Email</TableHead>
+                      <TableHead>Customer</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Discount</TableHead>
                     </TableRow>
@@ -572,7 +572,16 @@ export default function AdminDashboard() {
                             {DOCUMENT_TYPES[purchase.documentType] || purchase.documentType}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm">{purchase.paypalEmail}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="text-sm">{purchase.paypalEmail}</span>
+                            {purchase.userId ? (
+                              <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded w-fit">Registered</span>
+                            ) : (
+                              <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded w-fit">Guest</span>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="font-medium">{formatCurrency(purchase.amount)}</TableCell>
                         <TableCell>
                           {purchase.discountCode ? (

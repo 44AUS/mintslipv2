@@ -415,7 +415,7 @@ export default function BlogPost() {
               <div className="my-12 p-6 md:p-8 bg-gradient-to-r from-green-700 to-emerald-600 rounded-xl text-white">
                 <h3 className="text-xl md:text-2xl font-bold mb-3">Create Professional Pay Stubs Instantly</h3>
                 <p className="text-green-100 mb-4">
-                  Generate accurate, professional pay stubs in minutes with MintSlip's easy-to-use generator.
+                  Generate accurate, professional pay stubs in minutes with MintSlip&apos;s easy-to-use generator.
                 </p>
                 <Button
                   onClick={() => navigate("/paystub-generator")}

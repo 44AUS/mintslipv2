@@ -1835,13 +1835,16 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Purchase Modal */}
-      <Dialog open={addPurchaseModalOpen} onOpenChange={setAddPurchaseModalOpen}>
+      {/* Add/Edit Purchase Modal */}
+      <Dialog open={addPurchaseModalOpen} onOpenChange={closeModal}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add Manual Purchase</DialogTitle>
+            <DialogTitle>{editingPurchase ? "Edit Purchase" : "Add Manual Purchase"}</DialogTitle>
             <DialogDescription>
-              Add a historical purchase record. This is useful for tracking purchases made before the system was implemented.
+              {editingPurchase 
+                ? "Update the purchase record details below."
+                : "Add a historical purchase record. This is useful for tracking purchases made before the system was implemented."
+              }
             </DialogDescription>
           </DialogHeader>
           

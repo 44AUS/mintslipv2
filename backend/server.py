@@ -154,6 +154,7 @@ class PurchaseCreate(BaseModel):
     discountCode: Optional[str] = None
     discountAmount: Optional[float] = 0
     userId: Optional[str] = None  # For subscribed users
+    template: Optional[str] = None  # Template name/ID used (for paystubs, bank statements)
 
 # ========== SUBSCRIPTION MODELS ==========
 

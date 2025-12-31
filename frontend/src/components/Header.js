@@ -42,7 +42,7 @@ const OTHER_FORMS = [
 ];
 
 // Navigation links component for desktop
-function DesktopNavLinks({ location, onNavigate }) {
+function DesktopNavLinks({ location, onNavigate, user, onLogout }) {
   const isActive = (path) => location.pathname === path;
   const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
   const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);

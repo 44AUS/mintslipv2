@@ -540,10 +540,13 @@ export default function AIResumeBuilder() {
 
   // PayPal handlers - regular functions like PaystubForm
   const createOrder = (data, actions) => {
+    console.log("AIResumeBuilder: Creating PayPal order...");
     const basePrice = 9.99;
     const finalPrice = appliedDiscount && appliedDiscount.discountedPrice 
       ? appliedDiscount.discountedPrice 
       : basePrice;
+    
+    console.log("AIResumeBuilder: Price =", finalPrice);
     
     return actions.order.create({
       application_context: {
@@ -562,16 +565,17 @@ export default function AIResumeBuilder() {
   };
 
   const onApprove = async (data, actions) => {
+    console.log("AIResumeBuilder: Payment approved, capturing...");
     setIsProcessingPayment(true);
     try {
       const order = await actions.order.capture();
-      console.log("Payment captured:", order);
+      console.log("AIResumeBuilder: Payment captured:", order);
       
       toast.success("Payment successful! You can now download your resume.");
       setIsPaid(true);
       
     } catch (error) {
-      console.error("Payment error:", error);
+      console.error("AIResumeBuilder: Payment error:", error);
       toast.error("Payment failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);

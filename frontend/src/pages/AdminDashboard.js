@@ -192,6 +192,9 @@ export default function AdminDashboard() {
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setDashboardStats(statsData);
+        
+        // Process data for charts
+        processChartData(statsData.recentPurchases);
       }
       
       // Load purchases
@@ -207,6 +210,83 @@ export default function AdminDashboard() {
       setIsLoading(false);
     }
   }, []);
+
+  // Process purchases data for charts
+  const processChartData = (purchases, period = chartPeriod) => {
+    if (!purchases || purchases.length === 0) {
+      setRevenueChartData([]);
+      return;
+    }
+    
+    const now = new Date();
+    let startDate;
+    let groupBy;
+    
+    switch (period) {
+      case "7days":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        groupBy = "day";
+        break;
+      case "30days":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        groupBy = "day";
+        break;
+      case "90days":
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        groupBy = "week";
+        break;
+      case "year":
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        groupBy = "month";
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        groupBy = "day";
+    }
+    
+    // Filter purchases within the period
+    const filteredPurchases = purchases.filter(p => new Date(p.createdAt) >= startDate);
+    
+    // Group by time period
+    const grouped = {};
+    
+    filteredPurchases.forEach(purchase => {
+      const date = new Date(purchase.createdAt);
+      let key;
+      
+      if (groupBy === "day") {
+        key = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      } else if (groupBy === "week") {
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        key = weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      } else {
+        key = date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+      }
+      
+      if (!grouped[key]) {
+        grouped[key] = { name: key, revenue: 0, purchases: 0 };
+      }
+      grouped[key].revenue += purchase.amount || 0;
+      grouped[key].purchases += 1;
+    });
+    
+    // Convert to array and sort by date
+    const chartData = Object.values(grouped).sort((a, b) => {
+      const dateA = new Date(a.name + ", 2024");
+      const dateB = new Date(b.name + ", 2024");
+      return dateA - dateB;
+    });
+    
+    setRevenueChartData(chartData);
+  };
+  
+  // Update chart when period changes
+  useEffect(() => {
+    if (dashboardStats?.recentPurchases) {
+      processChartData(dashboardStats.recentPurchases, chartPeriod);
+    }
+  }, [chartPeriod, dashboardStats]);
 
   const loadPurchases = async () => {
     const token = localStorage.getItem("adminToken");

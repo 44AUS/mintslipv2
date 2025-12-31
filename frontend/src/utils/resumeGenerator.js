@@ -131,7 +131,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   y += 30;
 
   // Contact info
-  doc.setFont("helvetica", "normal");
+  doc.setFont(fontFamily, "normal");
   doc.setFontSize(10);
   setColor(colors.light);
   
@@ -155,14 +155,14 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     drawLine(y, colors.light);
     y += 15;
     
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontFamily, "bold");
     doc.setFontSize(12);
     setColor(colors.primary);
     doc.text(data.template === "ats" ? "PROFESSIONAL SUMMARY" : "Professional Summary", 
              data.template === "modern" ? margin + 10 : margin, y);
     y += 15;
     
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontFamily, "normal");
     doc.setFontSize(10);
     setColor(colors.text);
     
@@ -179,7 +179,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     drawLine(y, colors.light);
     y += 15;
     
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontFamily, "bold");
     doc.setFontSize(12);
     setColor(colors.primary);
     doc.text(data.template === "ats" ? "PROFESSIONAL EXPERIENCE" : "Professional Experience", 
@@ -194,13 +194,13 @@ export const generateResumePDF = async (data, addWatermark = false) => {
       }
 
       // Position & Company
-      doc.setFont("helvetica", "bold");
+      doc.setFont(fontFamily, "bold");
       doc.setFontSize(11);
       setColor(colors.secondary);
       doc.text(exp.position || "Position", data.template === "modern" ? margin + 10 : margin, y);
       
       // Date on right
-      doc.setFont("helvetica", "normal");
+      doc.setFont(fontFamily, "normal");
       doc.setFontSize(10);
       setColor(colors.light);
       const dateText = `${formatDate(exp.startDate)} - ${exp.endDate === "Present" ? "Present" : formatDate(exp.endDate)}`;
@@ -208,7 +208,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
       y += 14;
 
       // Company & Location
-      doc.setFont("helvetica", "normal");
+      doc.setFont(fontFamily, "normal");
       doc.setFontSize(10);
       setColor(colors.text);
       const companyLocation = [exp.company, exp.location].filter(Boolean).join(" | ");
@@ -254,7 +254,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     drawLine(y, colors.light);
     y += 15;
     
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontFamily, "bold");
     doc.setFontSize(12);
     setColor(colors.primary);
     doc.text(data.template === "ats" ? "EDUCATION" : "Education", 
@@ -262,20 +262,20 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     y += 20;
 
     data.education.forEach(edu => {
-      doc.setFont("helvetica", "bold");
+      doc.setFont(fontFamily, "bold");
       doc.setFontSize(11);
       setColor(colors.secondary);
       const degreeText = [edu.degree, edu.field].filter(Boolean).join(" in ");
       doc.text(degreeText || "Degree", data.template === "modern" ? margin + 10 : margin, y);
       
       // Date on right
-      doc.setFont("helvetica", "normal");
+      doc.setFont(fontFamily, "normal");
       doc.setFontSize(10);
       setColor(colors.light);
       doc.text(formatDate(edu.graduationDate), width - margin, y, { align: "right" });
       y += 14;
 
-      doc.setFont("helvetica", "normal");
+      doc.setFont(fontFamily, "normal");
       setColor(colors.text);
       const institutionText = edu.gpa ? `${edu.institution} | GPA: ${edu.gpa}` : edu.institution;
       doc.text(institutionText || "", data.template === "modern" ? margin + 10 : margin, y);
@@ -294,14 +294,14 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     drawLine(y, colors.light);
     y += 15;
     
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontFamily, "bold");
     doc.setFontSize(12);
     setColor(colors.primary);
     doc.text(data.template === "ats" ? "SKILLS" : "Skills", 
              data.template === "modern" ? margin + 10 : margin, y);
     y += 18;
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontFamily, "normal");
     doc.setFontSize(10);
     setColor(colors.text);
 
@@ -326,7 +326,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(fontFamily, "bold");
       doc.setFontSize(60);
       doc.setTextColor(200, 200, 200);
       doc.text("PREVIEW", width / 2, height / 2, {

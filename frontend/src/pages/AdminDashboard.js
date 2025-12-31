@@ -752,6 +752,60 @@ export default function AdminDashboard() {
     }
   };
 
+  const addManualPurchase = async () => {
+    if (!newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail) {
+      toast.error("Please fill in required fields (Document Type, Amount, Email)");
+      return;
+    }
+    
+    setIsAddingPurchase(true);
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/purchases`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          documentType: newPurchase.documentType,
+          amount: parseFloat(newPurchase.amount),
+          paypalEmail: newPurchase.paypalEmail,
+          purchaseDate: newPurchase.purchaseDate ? new Date(newPurchase.purchaseDate).toISOString() : null,
+          template: newPurchase.template || null,
+          discountCode: newPurchase.discountCode || null,
+          discountAmount: newPurchase.discountAmount ? parseFloat(newPurchase.discountAmount) : 0,
+          notes: newPurchase.notes || null
+        })
+      });
+      
+      if (response.ok) {
+        toast.success("Purchase added successfully!");
+        setAddPurchaseModalOpen(false);
+        setNewPurchase({
+          documentType: "paystub",
+          amount: "",
+          paypalEmail: "",
+          purchaseDate: new Date().toISOString().split('T')[0],
+          template: "",
+          discountCode: "",
+          discountAmount: "",
+          notes: ""
+        });
+        loadPurchases();
+        loadDashboardData();
+      } else {
+        const data = await response.json();
+        toast.error(data.detail || "Failed to add purchase");
+      }
+    } catch (error) {
+      toast.error("Error adding purchase");
+    } finally {
+      setIsAddingPurchase(false);
+    }
+  };
+
   const handleLogout = async () => {
     const token = localStorage.getItem("adminToken");
     

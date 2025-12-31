@@ -38,6 +38,13 @@ except ImportError:
 
 app = FastAPI()
 
+# Create uploads directory if not exists
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads", "blog")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Mount static files for blog uploads
+app.mount("/api/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "uploads")), name="uploads")
+
 # Security
 security = HTTPBearer(auto_error=False)
 

@@ -77,27 +77,28 @@ const PAYPAL_CLIENT_ID = getPayPalClientId();
 
 function App() {
   return (
-    <PayPalScriptProvider options={{ 
-      "client-id": PAYPAL_CLIENT_ID, 
-      currency: "USD", 
-      intent: "capture"
-    }}>
-      <div className="App">
-        <Toaster position="top-center" richColors />
-        <BrowserRouter>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/paystub-generator" element={<PaystubForm />} />
-            <Route path="/paystub-samples" element={<PaystubSamples />} />
-            <Route path="/instant-paystub-generator" element={<PaystubForm />} />
-            {/* State-specific paystub generator pages with SEO content */}
-            <Route path="/paystub-generator/:state" element={<StatePaystubGenerator />} />
-            <Route path="/paystub-for-apartment" element={<PaystubForm />} />
-            <Route path="/paystub-for-mortgage" element={<PaystubForm />} />
-            <Route path="/paystub-template-download" element={<PaystubForm />} />
-            <Route path="/create-a-paystub" element={<PaystubForm />} />
-            <Route path="/self-employed-paystub-generator" element={<PaystubForm />} />
+    <HelmetProvider>
+      <PayPalScriptProvider options={{ 
+        "client-id": PAYPAL_CLIENT_ID, 
+        currency: "USD", 
+        intent: "capture"
+      }}>
+        <div className="App">
+          <Toaster position="top-center" richColors />
+          <BrowserRouter>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/paystub-generator" element={<PaystubForm />} />
+              <Route path="/paystub-samples" element={<PaystubSamples />} />
+              <Route path="/instant-paystub-generator" element={<PaystubForm />} />
+              {/* State-specific paystub generator pages with SEO content */}
+              <Route path="/paystub-generator/:state" element={<StatePaystubGenerator />} />
+              <Route path="/paystub-for-apartment" element={<PaystubForm />} />
+              <Route path="/paystub-for-mortgage" element={<PaystubForm />} />
+              <Route path="/paystub-template-download" element={<PaystubForm />} />
+              <Route path="/create-a-paystub" element={<PaystubForm />} />
+              <Route path="/self-employed-paystub-generator" element={<PaystubForm />} />
             <Route path="/contractor-paystub-generator" element={<PaystubForm />} />
             <Route path="/canadian-paystub-generator" element={<CanadianPaystubForm />} />
             <Route path="/accounting-mockup-generator" element={<BankStatementForm />} />

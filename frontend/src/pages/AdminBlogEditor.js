@@ -426,11 +426,10 @@ export default function AdminBlogEditor() {
               /* Preview Mode */
               <div className="bg-white rounded-xl shadow-sm border p-8">
                 <h1 className="text-3xl font-bold text-slate-800 mb-4">{post.title || "Untitled"}</h1>
-                <div className="prose prose-lg max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {post.content || "*No content yet*"}
-                  </ReactMarkdown>
-                </div>
+                <div 
+                  className="prose prose-lg max-w-none"
+                  dangerouslySetInnerHTML={{ __html: post.content || "<p><em>No content yet</em></p>" }}
+                />
               </div>
             ) : (
               /* Edit Mode */
@@ -460,35 +459,16 @@ export default function AdminBlogEditor() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content - WYSIWYG Editor */}
                 <div className="bg-white rounded-xl shadow-sm border p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="text-sm font-medium text-slate-700">Content (Markdown) *</label>
-                    <div className="flex items-center gap-2">
-                      <label className="cursor-pointer">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={insertImageToContent}
-                          className="hidden"
-                        />
-                        <Button variant="outline" size="sm" className="gap-2" asChild>
-                          <span>
-                            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-                            Insert Image
-                          </span>
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
-                  <Textarea
-                    value={post.content}
-                    onChange={(e) => setPost(prev => ({ ...prev, content: e.target.value }))}
-                    placeholder="Write your post content in Markdown..."
-                    className="min-h-[400px] font-mono text-sm"
+                  <label className="block text-sm font-medium text-slate-700 mb-4">Content *</label>
+                  <TiptapEditor
+                    content={post.content}
+                    onChange={(html) => setPost(prev => ({ ...prev, content: html }))}
+                    onImageUpload={handleEditorImageUpload}
                   />
                   <p className="text-xs text-slate-500 mt-2">
-                    Supports Markdown: **bold**, *italic*, ## headings, [links](url), etc.
+                    Use the toolbar above to format text, add headings, lists, images, and links.
                   </p>
                 </div>
 

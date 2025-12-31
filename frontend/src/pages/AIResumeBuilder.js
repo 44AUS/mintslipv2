@@ -538,8 +538,8 @@ export default function AIResumeBuilder() {
     }
   };
 
-  // PayPal handlers
-  const createOrder = (data, actions) => {
+  // PayPal handlers - memoized to prevent re-renders
+  const createOrder = useCallback((data, actions) => {
     const basePrice = 9.99;
     const finalPrice = appliedDiscount && appliedDiscount.discountedPrice 
       ? appliedDiscount.discountedPrice 

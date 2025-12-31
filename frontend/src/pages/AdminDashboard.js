@@ -393,6 +393,58 @@ export default function AdminDashboard() {
     }
   };
 
+  // Calculate period-based purchases count
+  useEffect(() => {
+    if (dashboardStats?.recentPurchases) {
+      calculatePeriodPurchases();
+    }
+  }, [purchasesPeriod, dashboardStats]);
+
+  const calculatePeriodPurchases = async () => {
+    const token = localStorage.getItem("adminToken");
+    const now = new Date();
+    let startDate;
+    
+    switch (purchasesPeriod) {
+      case "week":
+        startDate = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case "month":
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case "quarter":
+        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        break;
+      case "year":
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      default:
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+    }
+
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/admin/revenue?startDate=${startDate.toISOString()}`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPeriodPurchases(data.purchaseCount || 0);
+      }
+    } catch (error) {
+      console.error("Error calculating period purchases:", error);
+      // Fallback: calculate from recent purchases if API fails
+      if (dashboardStats?.recentPurchases) {
+        const filtered = dashboardStats.recentPurchases.filter(p => {
+          const purchaseDate = new Date(p.createdAt);
+          return purchaseDate >= startDate;
+        });
+        setPeriodPurchases(filtered.length);
+      }
+    }
+  };
+
   const changePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error("Please fill in all fields");

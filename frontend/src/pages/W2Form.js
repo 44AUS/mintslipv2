@@ -23,6 +23,8 @@ import {
   formatFullSSN, validateFullSSN
 } from "@/utils/validation";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
 // US States list
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN",

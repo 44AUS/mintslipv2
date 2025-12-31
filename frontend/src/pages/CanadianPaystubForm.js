@@ -27,6 +27,8 @@ import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
 import OnPayLogo from '../assests/onpayLogo.webp';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
 // US Flag SVG component
 const USFlagIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-8 h-8 rounded-full">

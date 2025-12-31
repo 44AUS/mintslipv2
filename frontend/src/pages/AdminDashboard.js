@@ -762,6 +762,14 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("adminToken");
     
     try {
+      // Fix timezone issue: parse date and set to noon local time to avoid day shift
+      let purchaseDate = null;
+      if (newPurchase.purchaseDate) {
+        const [year, month, day] = newPurchase.purchaseDate.split('-');
+        const date = new Date(year, month - 1, day, 12, 0, 0);
+        purchaseDate = date.toISOString();
+      }
+      
       const response = await fetch(`${BACKEND_URL}/api/admin/purchases`, {
         method: "POST",
         headers: {
@@ -772,7 +780,7 @@ export default function AdminDashboard() {
           documentType: newPurchase.documentType,
           amount: parseFloat(newPurchase.amount),
           paypalEmail: newPurchase.paypalEmail,
-          purchaseDate: newPurchase.purchaseDate ? new Date(newPurchase.purchaseDate).toISOString() : null,
+          purchaseDate: purchaseDate,
           template: newPurchase.template || null,
           discountCode: newPurchase.discountCode || null,
           discountAmount: newPurchase.discountAmount ? parseFloat(newPurchase.discountAmount) : 0,

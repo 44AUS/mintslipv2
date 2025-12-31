@@ -166,3 +166,56 @@ agent_communication:
     message: "Comprehensive testing completed for Admin Authentication and Dashboard system. All 7 backend endpoints tested and working correctly. Complete flow tested: admin setup → login → session verification → dashboard access → purchase tracking → admin purchases list → subscription tiers. Dashboard stats update in real-time when purchases are tracked. Authentication using Bearer tokens working properly. All requested functionality is operational."
   - agent: "testing"
     message: "FRONTEND TESTING COMPLETE: Admin Login and Dashboard UI flow tested successfully. All components working perfectly - login form with professional dark theme, dashboard with stats cards, navigation tabs (Overview/Purchases/Users/Discount Codes), and logout functionality. Login authenticates correctly with admin@mintslip.com credentials. Dashboard displays real data: $19.98 total revenue, 2 purchases. Tab navigation smooth. Logout properly clears session. UI is fully functional and ready for production use."
+
+# ==========================================================================
+# Additional Test Cases for New Admin Features
+# ==========================================================================
+
+backend:
+  - task: "Admin Update User Subscription Endpoint"
+    implemented: true
+    working: pending
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history: []
+    notes: "PUT /api/admin/users/{user_id}/subscription - Updates user subscription tier (basic, pro, unlimited, or null)"
+
+  - task: "Admin Revenue by Period Endpoint"
+    implemented: true
+    working: pending
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history: []
+    notes: "GET /api/admin/revenue - Returns revenue for specified date range"
+
+frontend:
+  - task: "Admin Change User Subscription Modal"
+    implemented: true
+    working: pending
+    file: "frontend/src/pages/AdminDashboard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history: []
+    notes: "Modal to change user subscription from Users tab"
+
+  - task: "Guest vs Registered Customer Labels"
+    implemented: true
+    working: pending
+    file: "frontend/src/pages/AdminDashboard.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history: []
+    notes: "Purchases show 'Guest' or 'Registered' badge based on userId"
+
+# ==========================================================================
+# Incorporate User Feedback:
+# ==========================================================================
+# - Admin can now change a user's subscription plan via UI modal
+# - All purchases (guest and registered) populate in dashboard with labels
+# ==========================================================================

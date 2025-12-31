@@ -608,6 +608,116 @@ async def get_downloads_remaining(session: dict = Depends(get_current_user)):
         "totalDownloads": tier["downloads"]
     }
 
+# ========== DELETE ENDPOINTS ==========
+
+@app.delete("/api/admin/purchases/{purchase_id}")
+async def delete_purchase(purchase_id: str, session: dict = Depends(get_current_admin)):
+    """Delete a purchase record (admin only)"""
+    result = await purchases_collection.delete_one({"id": purchase_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    return {"success": True, "message": "Purchase deleted"}
+
+@app.delete("/api/admin/users/{user_id}")
+async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
+    """Delete a user (admin only)"""
+    # Delete user's sessions
+    await sessions_collection.delete_many({"userId": user_id})
+    # Delete user's subscriptions
+    await subscriptions_collection.delete_many({"userId": user_id})
+    # Delete the user
+    result = await users_collection.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"success": True, "message": "User deleted"}
+
+@app.put("/api/admin/users/{user_id}/ban")
+async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
+    """Ban/unban a user (admin only)"""
+    user = await users_collection.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_status = not user.get("isBanned", False)
+    await users_collection.update_one(
+        {"id": user_id},
+        {"$set": {"isBanned": new_status}}
+    )
+    
+    # If banning, also invalidate their sessions
+    if new_status:
+        await sessions_collection.delete_many({"userId": user_id})
+    
+    return {"success": True, "isBanned": new_status}
+
+# ========== DISCOUNT CODES ENDPOINTS (Token-based Auth) ==========
+
+@app.get("/api/admin/discounts")
+async def get_discounts(session: dict = Depends(get_current_admin)):
+    """Get all discount codes (admin only - token auth)"""
+    discounts = await discounts_collection.find({}, {"_id": 0}).to_list(1000)
+    return discounts
+
+@app.post("/api/admin/discounts")
+async def create_discount(request: dict, session: dict = Depends(get_current_admin)):
+    """Create a new discount code (admin only - token auth)"""
+    discount = {
+        "id": str(uuid.uuid4()),
+        "code": request.get("code", "").upper(),
+        "discountPercent": request.get("discountPercent", 10),
+        "startDate": request.get("startDate"),
+        "expiryDate": request.get("expiryDate"),
+        "usageType": request.get("usageType", "unlimited"),
+        "usageLimit": request.get("usageLimit", 100),
+        "usageCount": 0,
+        "applicableTo": request.get("applicableTo", "all"),
+        "specificGenerators": request.get("specificGenerators", []),
+        "isActive": request.get("isActive", True),
+        "usedByCustomers": [],
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Check if code already exists
+    existing = await discounts_collection.find_one({"code": discount["code"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Discount code already exists")
+    
+    await discounts_collection.insert_one(discount)
+    return {"success": True, "id": discount["id"]}
+
+@app.put("/api/admin/discounts/{discount_id}")
+async def update_discount(discount_id: str, request: dict, session: dict = Depends(get_current_admin)):
+    """Update a discount code (admin only - token auth)"""
+    update_data = {
+        "code": request.get("code", "").upper(),
+        "discountPercent": request.get("discountPercent"),
+        "startDate": request.get("startDate"),
+        "expiryDate": request.get("expiryDate"),
+        "usageType": request.get("usageType"),
+        "usageLimit": request.get("usageLimit"),
+        "applicableTo": request.get("applicableTo"),
+        "specificGenerators": request.get("specificGenerators", []),
+        "isActive": request.get("isActive")
+    }
+    
+    result = await discounts_collection.update_one(
+        {"id": discount_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Discount not found")
+    
+    return {"success": True}
+
+@app.delete("/api/admin/discounts/{discount_id}")
+async def delete_discount(discount_id: str, session: dict = Depends(get_current_admin)):
+    """Delete a discount code (admin only - token auth)"""
+    result = await discounts_collection.delete_one({"id": discount_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Discount not found")
+    return {"success": True}
+
 @app.post("/api/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     """Parse an uploaded resume (PDF or DOCX) and extract structured data"""

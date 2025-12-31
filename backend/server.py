@@ -129,6 +129,61 @@ class CouponValidateRequest(BaseModel):
     generatorType: str
     customerIdentifier: Optional[str] = None  # email or IP for one-per-customer
 
+# ========== ADMIN & USER AUTHENTICATION MODELS ==========
+
+class AdminLogin(BaseModel):
+    email: str
+    password: str
+
+class UserSignup(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+# ========== PURCHASE TRACKING MODELS ==========
+
+class PurchaseCreate(BaseModel):
+    documentType: str  # paystub, resume, w2, w9, 1099-nec, 1099-misc, bank-statement, offer-letter, vehicle-bill-of-sale, schedule-c, utility-bill
+    amount: float
+    paypalEmail: str
+    paypalTransactionId: Optional[str] = None
+    discountCode: Optional[str] = None
+    discountAmount: Optional[float] = 0
+    userId: Optional[str] = None  # For subscribed users
+
+# ========== SUBSCRIPTION MODELS ==========
+
+SUBSCRIPTION_TIERS = {
+    "basic": {
+        "name": "Basic",
+        "price": 19.99,
+        "downloads": 5,
+        "paypalPlanId": ""  # To be filled with PayPal plan ID
+    },
+    "pro": {
+        "name": "Pro", 
+        "price": 29.99,
+        "downloads": 10,
+        "paypalPlanId": ""
+    },
+    "unlimited": {
+        "name": "Unlimited",
+        "price": 49.99,
+        "downloads": -1,  # -1 means unlimited
+        "paypalPlanId": ""
+    }
+}
+
+class SubscriptionCreate(BaseModel):
+    userId: str
+    tier: str  # basic, pro, unlimited
+    paypalSubscriptionId: str
+    paypalEmail: str
+
 # Initialize Gemini LLM Chat
 def get_llm_chat():
     api_key = os.environ.get("EMERGENT_LLM_KEY")

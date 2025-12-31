@@ -1,16 +1,47 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Lock, Plus, Trash2, Edit2, Tag, Calendar, Percent, Check, X, ArrowLeft } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  LayoutDashboard,
+  Plus,
+  Trash2,
+  Edit2,
+  Tag,
+  LogOut,
+  RefreshCw,
+  Loader2,
+  ArrowLeft,
+  Percent,
+  Calendar,
+  Check,
+  X
+} from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -34,6 +65,7 @@ export default function AdminDiscounts() {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminToken, setAdminToken] = useState(null);
+  const [adminInfo, setAdminInfo] = useState(null);
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -55,11 +87,11 @@ export default function AdminDiscounts() {
   // Check for admin session on mount
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
+    const info = localStorage.getItem("adminInfo");
     if (token) {
-      // Verify the token
+      if (info) setAdminInfo(JSON.parse(info));
       verifyAdminSession(token);
     } else {
-      // Redirect to admin login
       navigate("/admin/login");
     }
   }, [navigate]);
@@ -193,13 +225,13 @@ export default function AdminDiscounts() {
     setFormData({
       code: discount.code,
       discountPercent: discount.discountPercent,
-      startDate: discount.startDate.split("T")[0],
-      expiryDate: discount.expiryDate.split("T")[0],
-      usageType: discount.usageType,
+      startDate: discount.startDate?.split("T")[0] || "",
+      expiryDate: discount.expiryDate?.split("T")[0] || "",
+      usageType: discount.usageType || "unlimited",
       usageLimit: discount.usageLimit || 100,
-      applicableTo: discount.applicableTo,
+      applicableTo: discount.applicableTo || "all",
       specificGenerators: discount.specificGenerators || [],
-      isActive: discount.isActive
+      isActive: discount.isActive !== false
     });
     setIsDialogOpen(true);
   };
@@ -216,125 +248,245 @@ export default function AdminDiscounts() {
   const isExpired = (expiryDate) => new Date(expiryDate) < new Date();
   const isNotStarted = (startDate) => new Date(startDate) > new Date();
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${BACKEND_URL}/api/admin/logout`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${adminToken}` }
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminInfo");
+    navigate("/admin/login");
+  };
+
   // Loading state
   if (loading && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-slate-600">Verifying session...</p>
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <span className="text-lg text-slate-600">Loading...</span>
         </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return null; // Will redirect to login
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
+    <div className="min-h-screen bg-slate-100">
+      {/* Header - Same as Dashboard */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+              <Tag className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-800">Discount Codes</h1>
+              <p className="text-sm text-slate-500">{adminInfo?.email}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate("/admin/dashboard")}
               className="gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Dashboard
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Discount Codes</h1>
-              <p className="text-gray-600">Manage coupon codes and discounts</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchDiscounts()}
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Total Codes</p>
+                <p className="text-2xl font-bold text-slate-800">{discounts.length}</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-100 text-blue-600">
+                <Tag className="w-6 h-6" />
+              </div>
             </div>
           </div>
-          <Button 
-            onClick={() => { resetForm(); setIsDialogOpen(true); }}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Discount Code
-          </Button>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Active Codes</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {discounts.filter(d => d.isActive && !isExpired(d.expiryDate)).length}
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 text-green-600">
+                <Check className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Total Usage</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {discounts.reduce((sum, d) => sum + (d.usageCount || 0), 0)}
+                </p>
+              </div>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-100 text-purple-600">
+                <Percent className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Discount Codes List */}
-        <div className="grid gap-4">
+        {/* Main Content */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-slate-800">All Discount Codes</h2>
+            <Button 
+              onClick={() => { resetForm(); setIsDialogOpen(true); }}
+              className="bg-green-600 hover:bg-green-700 gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Add Discount Code
+            </Button>
+          </div>
+
           {loading ? (
-            <Card className="p-8 text-center text-gray-500">Loading...</Card>
+            <div className="text-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+              <p className="text-slate-500">Loading discount codes...</p>
+            </div>
           ) : discounts.length === 0 ? (
-            <Card className="p-8 text-center text-gray-500">
-              No discount codes yet. Create your first one!
-            </Card>
+            <div className="text-center py-12">
+              <Tag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-500">No discount codes yet</p>
+              <p className="text-sm text-slate-400">Create your first discount code to get started</p>
+            </div>
           ) : (
-            discounts.map((discount) => (
-              <Card key={discount.id} className={`${!discount.isActive || isExpired(discount.expiryDate) ? 'opacity-60' : ''}`}>
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-xl font-bold font-mono bg-gray-100 px-3 py-1 rounded">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Discount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Valid Period</TableHead>
+                    <TableHead>Usage</TableHead>
+                    <TableHead>Applies To</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {discounts.map((discount) => (
+                    <TableRow key={discount.id} className={!discount.isActive || isExpired(discount.expiryDate) ? "opacity-60" : ""}>
+                      <TableCell>
+                        <span className="font-mono font-bold bg-slate-100 px-3 py-1 rounded">
                           {discount.code}
                         </span>
-                        <span className="text-green-600 font-semibold flex items-center">
-                          <Percent className="w-4 h-4 mr-1" />
-                          {discount.discountPercent}% OFF
-                        </span>
-                        {!discount.isActive && (
-                          <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded">Inactive</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-green-600 font-semibold">{discount.discountPercent}% OFF</span>
+                      </TableCell>
+                      <TableCell>
+                        {!discount.isActive ? (
+                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">Inactive</span>
+                        ) : isExpired(discount.expiryDate) ? (
+                          <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-md text-sm">Expired</span>
+                        ) : isNotStarted(discount.startDate) ? (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm">Scheduled</span>
+                        ) : (
+                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">Active</span>
                         )}
-                        {discount.isActive && isExpired(discount.expiryDate) && (
-                          <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded">Expired</span>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {formatDate(discount.startDate)} - {formatDate(discount.expiryDate)}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium">{discount.usageCount || 0}</span>
+                        {discount.usageType === "limited" && <span className="text-slate-400"> / {discount.usageLimit}</span>}
+                        {discount.usageType === "unlimited" && <span className="text-slate-400"> (∞)</span>}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {discount.applicableTo === "all" ? (
+                          <span className="text-slate-500">All Generators</span>
+                        ) : (
+                          <span className="text-slate-500">{discount.specificGenerators?.length || 0} generators</span>
                         )}
-                        {discount.isActive && isNotStarted(discount.startDate) && (
-                          <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">Scheduled</span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
-                          {new Date(discount.startDate).toLocaleDateString()} - {new Date(discount.expiryDate).toLocaleDateString()}
-                        </span>
-                        <span>
-                          Usage: {discount.usageCount || 0}
-                          {discount.usageType === "limited" && ` / ${discount.usageLimit}`}
-                          {discount.usageType === "unlimited" && " (unlimited)"}
-                          {discount.usageType === "one_per_customer" && " (1 per customer)"}
-                        </span>
-                        <span>
-                          Applies to: {discount.applicableTo === "all" ? "All Generators" : discount.specificGenerators?.join(", ")}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(discount)}>
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(discount.id)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(discount)}
+                            className="text-slate-600 hover:text-slate-800"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(discount.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </div>
+      </div>
 
-        {/* Create/Edit Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Tag className="w-5 h-5" />
-                {editingDiscount ? "Edit Discount Code" : "Create Discount Code"}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Add/Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingDiscount ? "Edit Discount Code" : "Create Discount Code"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="code">Coupon Code *</Label>
+                <Label htmlFor="code">Code *</Label>
                 <Input
                   id="code"
                   value={formData.code}
@@ -343,122 +495,118 @@ export default function AdminDiscounts() {
                   className="font-mono"
                 />
               </div>
-
               <div>
-                <Label htmlFor="discountPercent">Discount Percentage *</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="discountPercent"
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={formData.discountPercent}
-                    onChange={(e) => setFormData({ ...formData, discountPercent: parseFloat(e.target.value) })}
-                  />
-                  <span className="text-gray-500">%</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="startDate">Start Date *</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="expiryDate">Expiry Date *</Label>
-                  <Input
-                    id="expiryDate"
-                    type="date"
-                    value={formData.expiryDate}
-                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Usage Limit</Label>
-                <Select value={formData.usageType} onValueChange={(v) => setFormData({ ...formData, usageType: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unlimited">Unlimited Uses</SelectItem>
-                    <SelectItem value="limited">Limited Number of Uses</SelectItem>
-                    <SelectItem value="one_per_customer">One Use Per Customer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.usageType === "limited" && (
-                <div>
-                  <Label htmlFor="usageLimit">Maximum Uses</Label>
-                  <Input
-                    id="usageLimit"
-                    type="number"
-                    min="1"
-                    value={formData.usageLimit}
-                    onChange={(e) => setFormData({ ...formData, usageLimit: parseInt(e.target.value) })}
-                  />
-                </div>
-              )}
-
-              <div>
-                <Label>Applicable To</Label>
-                <Select value={formData.applicableTo} onValueChange={(v) => setFormData({ ...formData, applicableTo: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Generators</SelectItem>
-                    <SelectItem value="specific">Specific Generators Only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.applicableTo === "specific" && (
-                <div>
-                  <Label className="mb-2 block">Select Generators</Label>
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border rounded p-3">
-                    {GENERATORS.map((gen) => (
-                      <label key={gen.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-1 rounded">
-                        <Checkbox
-                          checked={formData.specificGenerators.includes(gen.id)}
-                          onCheckedChange={() => toggleGenerator(gen.id)}
-                        />
-                        {gen.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                <Label htmlFor="discountPercent">Discount %</Label>
+                <Input
+                  id="discountPercent"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.discountPercent}
+                  onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
                 />
-                <Label htmlFor="isActive" className="cursor-pointer">Active (code can be used)</Label>
               </div>
+            </div>
 
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                  {editingDiscount ? "Update" : "Create"} Code
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </main>
-      <Footer />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="expiryDate">Expiry Date *</Label>
+                <Input
+                  id="expiryDate"
+                  type="date"
+                  value={formData.expiryDate}
+                  onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Usage Type</Label>
+              <Select value={formData.usageType} onValueChange={(v) => setFormData({ ...formData, usageType: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unlimited">Unlimited</SelectItem>
+                  <SelectItem value="limited">Limited Uses</SelectItem>
+                  <SelectItem value="one_per_customer">One Per Customer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.usageType === "limited" && (
+              <div>
+                <Label htmlFor="usageLimit">Usage Limit</Label>
+                <Input
+                  id="usageLimit"
+                  type="number"
+                  min="1"
+                  value={formData.usageLimit}
+                  onChange={(e) => setFormData({ ...formData, usageLimit: parseInt(e.target.value) })}
+                />
+              </div>
+            )}
+
+            <div>
+              <Label>Applies To</Label>
+              <Select value={formData.applicableTo} onValueChange={(v) => setFormData({ ...formData, applicableTo: v })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Generators</SelectItem>
+                  <SelectItem value="specific">Specific Generators</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.applicableTo === "specific" && (
+              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto">
+                <Label className="mb-2 block">Select Generators</Label>
+                <div className="space-y-2">
+                  {GENERATORS.map((gen) => (
+                    <div key={gen.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={gen.id}
+                        checked={formData.specificGenerators.includes(gen.id)}
+                        onCheckedChange={() => toggleGenerator(gen.id)}
+                      />
+                      <label htmlFor={gen.id} className="text-sm cursor-pointer">{gen.name}</label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="isActive"
+                checked={formData.isActive}
+                onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+              />
+              <label htmlFor="isActive" className="text-sm cursor-pointer">Active</label>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                {editingDiscount ? "Update" : "Create"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

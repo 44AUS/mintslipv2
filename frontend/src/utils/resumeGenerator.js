@@ -46,6 +46,7 @@ const formatDate = (dateStr) => {
 
 // Map font names to jsPDF font families
 const getFontFamily = (fontName) => {
+  // jsPDF built-in fonts: helvetica, times, courier
   const fontMap = {
     'Montserrat': 'helvetica',
     'Times New Roman': 'times',
@@ -62,13 +63,14 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
   const margin = 50;
-  const colors = TEMPLATE_COLORS[data.template] || TEMPLATE_COLORS.ats;
+  const template = data.template || 'ats';
+  const colors = TEMPLATE_COLORS[template] || TEMPLATE_COLORS.ats;
   const fontFamily = getFontFamily(data.font || 'Calibri');
   const onePage = data.onePage || false;
   const sectionLayout = data.sectionLayout || 'standard';
   
   console.log("Resume Generator - Font:", data.font, "-> jsPDF font:", fontFamily);
-  console.log("Resume Generator - Layout:", sectionLayout, "OnePage:", onePage);
+  console.log("Resume Generator - Layout:", sectionLayout, "OnePage:", onePage, "Template:", template);
   
   // Adjust font sizes based on one-page mode
   const fontSizes = onePage ? {
@@ -97,17 +99,20 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   };
   
   let y = margin;
-  const leftMargin = data.template === "modern" ? margin + 10 : margin;
+  const leftMargin = template === "modern" ? margin + 10 : margin;
 
   // Helper functions
   const setColor = (colorArray) => {
     doc.setTextColor(colorArray[0], colorArray[1], colorArray[2]);
   };
 
+  // Only draw lines for non-ATS templates
   const drawLine = (yPos, color = colors.light) => {
-    doc.setDrawColor(color[0], color[1], color[2]);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPos, width - margin, yPos);
+    if (template !== "ats") {
+      doc.setDrawColor(color[0], color[1], color[2]);
+      doc.setLineWidth(0.5);
+      doc.line(margin, yPos, width - margin, yPos);
+    }
   };
   
   const checkNewPage = (neededSpace) => {
@@ -122,10 +127,10 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   // ===== HEADER SECTION =====
   const personalInfo = data.personalInfo || {};
   
-  if (data.template === "modern") {
+  if (template === "modern") {
     doc.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
     doc.rect(0, 0, 8, height, "F");
-  } else if (data.template === "classic") {
+  } else if (template === "classic") {
     doc.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
     doc.rect(margin, margin - 10, width - margin * 2, 3, "F");
     y += 5;
@@ -151,7 +156,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
     personalInfo.website
   ].filter(Boolean);
   
-  const separator = data.template === "ats" ? "  |  " : "  •  ";
+  const separator = template === "ats" ? "  |  " : "  •  ";
   doc.text(contactItems.join(separator), leftMargin, y + 5);
   y += onePage ? 18 : 25;
 

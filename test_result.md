@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Deduction/Contribution Type Dropdown Fix"
+    - "AI Resume Builder Landing Page (/resume-builder)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

@@ -1000,29 +1000,44 @@ export default function CanadianPaystubForm() {
 
       {/* US Location Alert Banner */}
       {showLocationAlert && userCountry === 'US' && (
-        <div className="bg-slate-100 border-b border-slate-200">
+        <div className="bg-gradient-to-r from-blue-50 via-white to-red-50 border-b border-blue-100">
           <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-sm border border-blue-100 p-4">
               <div className="flex items-center gap-4">
-                <USFlagIcon />
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-red-600 flex items-center justify-center shadow-lg">
+                    <USFlagIcon />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
                 <div>
-                  <p className="font-semibold text-slate-800">We detected that you're currently in the US</p>
-                  <p className="text-slate-600 text-sm">Do you want to switch to our US pay stub form?</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">Location Detected</span>
+                  </div>
+                  <p className="font-semibold text-slate-800 mt-1">You're visiting from the United States 🇺🇸</p>
+                  <p className="text-slate-500 text-sm">Switch to our US pay stub generator for accurate federal & state tax calculations</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setShowLocationAlert(false)}
-                  className="border-green-800 text-green-800 hover:bg-green-50"
+                  className="text-slate-600 hover:text-slate-800 hover:bg-slate-100"
                 >
-                  No, I Need A Canadian Pay Stub
+                  Stay on Canadian Version
                 </Button>
                 <Button
                   onClick={() => navigate('/paystub-generator')}
-                  className="bg-green-800 hover:bg-green-900 text-white"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all duration-200 gap-2"
                 >
-                  Yes, Take Me To US Pay Stub
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  Switch to US Version
                 </Button>
               </div>
             </div>

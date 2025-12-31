@@ -135,15 +135,21 @@ export default function AdminDiscounts() {
 
       let response;
       if (editingDiscount) {
-        response = await fetch(`${BACKEND_URL}/api/admin/discounts/${editingDiscount.id}?password=${ADMIN_PASSWORD}`, {
+        response = await fetch(`${BACKEND_URL}/api/admin/discounts/${editingDiscount.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${adminToken}`
+          },
           body: JSON.stringify(payload)
         });
       } else {
-        response = await fetch(`${BACKEND_URL}/api/admin/discounts?password=${ADMIN_PASSWORD}`, {
+        response = await fetch(`${BACKEND_URL}/api/admin/discounts`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${adminToken}`
+          },
           body: JSON.stringify(payload)
         });
       }
@@ -166,8 +172,9 @@ export default function AdminDiscounts() {
     if (!window.confirm("Are you sure you want to delete this discount code?")) return;
     
     try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/discounts/${id}?password=${ADMIN_PASSWORD}`, {
-        method: "DELETE"
+      const response = await fetch(`${BACKEND_URL}/api/admin/discounts/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${adminToken}` }
       });
       
       if (response.ok) {

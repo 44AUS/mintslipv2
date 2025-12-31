@@ -108,7 +108,7 @@ export default function AIResumeBuilder() {
     },
     workExperience: [
       {
-        id: Date.now(),
+        id: `work_${Date.now()}_0`,
         company: "",
         position: "",
         location: "",
@@ -120,7 +120,7 @@ export default function AIResumeBuilder() {
     ],
     education: [
       {
-        id: Date.now(),
+        id: `edu_${Date.now()}_0`,
         institution: "",
         degree: "",
         field: "",

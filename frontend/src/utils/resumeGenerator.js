@@ -37,6 +37,26 @@ const formatDate = (dateStr) => {
 
 // Template color schemes
 const TEMPLATE_COLORS = {
+  ats: {
+    primary: [0, 0, 0],
+    secondary: [51, 51, 51],
+    text: [68, 68, 68],
+    light: [128, 128, 128]
+  },
+  modern: {
+    primary: [5, 150, 105],
+    secondary: [4, 120, 87],
+    text: [51, 65, 85],
+    light: [100, 116, 139]
+  },
+  classic: {
+    primary: [30, 41, 59],
+    secondary: [51, 65, 85],
+    text: [71, 85, 105],
+    light: [100, 116, 139]
+  }
+};
+
 export const generateResumePDF = async (data, addWatermark = false) => {
   const doc = new jsPDF({ unit: "pt", format: "letter" });
   

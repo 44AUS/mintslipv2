@@ -123,6 +123,13 @@ export default function Blog() {
         <meta property="og:title" content="MintSlip Blog - Pay Stub & Payroll Guides" />
         <meta property="og:description" content="Expert guides on pay stubs, proof of income, and financial documentation." />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://mintslip.com/blog" />
+        <meta property="og:image" content="https://mintslip.com/favicon.ico" />
+        <meta property="og:site_name" content="MintSlip" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="MintSlip Blog - Pay Stub & Payroll Guides" />
+        <meta name="twitter:description" content="Expert guides on pay stubs, proof of income, and financial documentation." />
+        <meta name="twitter:image" content="https://mintslip.com/favicon.ico" />
         <link rel="canonical" href="https://mintslip.com/blog" />
       </Helmet>
 

@@ -486,8 +486,15 @@ async def user_signup(data: UserSignup):
     }
 
 @app.post("/api/user/login")
-async def user_login(data: UserLogin):
-    """User login endpoint"""
+async def user_login(data: UserLogin, request: Request):
+    """User login endpoint with rate limiting"""
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limit: 5 login attempts per minute per IP
+    if not check_rate_limit(f"user_login_{client_ip}", max_requests=5, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
+    
     user = await users_collection.find_one({"email": data.email.lower()}, {"_id": 0})
     
     if not user:

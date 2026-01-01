@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
@@ -10,18 +10,23 @@ import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import io
 import re
 import hashlib
 import secrets
 import shutil
+from collections import defaultdict
+import time
 
 load_dotenv()
 
 # Import Emergent Integrations for Gemini
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+# Rate limiting storage (in production, use Redis)
+rate_limit_storage = defaultdict(list)
 
 # PDF and DOCX parsing
 try:

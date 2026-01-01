@@ -539,6 +539,8 @@ export default function BlogPost() {
           </Button>
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

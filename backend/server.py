@@ -1392,6 +1392,65 @@ Return a JSON object: {{"technical": [...], "soft": [...], "other": [...]}}"""
         print(f"Error regenerating section: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error regenerating section: {str(e)}")
 
+
+# AI Generate Responsibilities for Work Experience
+class GenerateResponsibilitiesRequest(BaseModel):
+    position: str
+    company: str
+    industry: Optional[str] = ""
+    jobDescription: Optional[str] = ""
+
+@app.post("/api/generate-responsibilities")
+async def generate_responsibilities(data: GenerateResponsibilitiesRequest):
+    """Generate AI-powered responsibilities/achievements for a work position"""
+    try:
+        chat = get_llm_chat()
+        
+        context = f"""Position: {data.position}
+Company: {data.company}
+{"Industry: " + data.industry if data.industry else ""}
+{"Target Job Description: " + data.jobDescription[:500] if data.jobDescription else ""}"""
+        
+        prompt = f"""Generate 4-5 professional, impactful job responsibilities and achievements for the following role:
+
+{context}
+
+Requirements:
+1. Start each bullet point with a strong action verb (Led, Developed, Managed, Implemented, etc.)
+2. Include quantifiable metrics where appropriate (%, $, numbers)
+3. Focus on achievements and impact, not just duties
+4. Make them ATS-friendly with relevant keywords
+5. Each bullet should be 1-2 sentences, specific and measurable
+
+Return ONLY a JSON array of strings, no explanation:
+["First responsibility with metrics and impact", "Second responsibility...", "Third...", "Fourth...", "Fifth..."]"""
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
+        
+        # Try to parse JSON array from response
+        try:
+            # Find JSON array in response
+            json_match = re.search(r'\[[\s\S]*?\]', response)
+            if json_match:
+                responsibilities = json.loads(json_match.group())
+                if isinstance(responsibilities, list) and all(isinstance(r, str) for r in responsibilities):
+                    return {"success": True, "responsibilities": responsibilities}
+        except json.JSONDecodeError:
+            pass
+        
+        # Fallback: split by newlines if JSON parsing fails
+        lines = [line.strip().lstrip('•-*').strip() for line in response.split('\n') if line.strip() and len(line.strip()) > 20]
+        if lines:
+            return {"success": True, "responsibilities": lines[:5]}
+        
+        raise HTTPException(status_code=500, detail="Failed to generate responsibilities")
+        
+    except Exception as e:
+        print(f"Error generating responsibilities: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating responsibilities: {str(e)}")
+
+
 # ============================================
 # DISCOUNT CODE ENDPOINTS
 # ============================================

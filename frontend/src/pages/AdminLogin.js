@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,32 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check if already logged in on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("adminToken");
+      if (token) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/admin/verify`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (response.ok) {
+            // Already logged in, redirect to dashboard
+            navigate("/admin/dashboard", { replace: true });
+            return;
+          }
+        } catch (error) {
+          // Token invalid, clear it
+          localStorage.removeItem("adminToken");
+          localStorage.removeItem("adminInfo");
+        }
+      }
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -49,6 +75,15 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-green-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">

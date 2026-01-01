@@ -348,8 +348,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 # ========== ADMIN AUTHENTICATION ENDPOINTS ==========
 
 @app.post("/api/admin/login")
-async def admin_login(data: AdminLogin):
-    """Admin login endpoint"""
+async def admin_login(data: AdminLogin, request: Request):
+    """Admin login endpoint with rate limiting"""
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limit: 5 login attempts per minute per IP
+    if not check_rate_limit(f"admin_login_{client_ip}", max_requests=5, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
+    
     admin = await admins_collection.find_one({"email": data.email.lower()}, {"_id": 0})
     
     if not admin:

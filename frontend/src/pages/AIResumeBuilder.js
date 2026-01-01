@@ -83,6 +83,7 @@ export default function AIResumeBuilder() {
   const [lockedSections, setLockedSections] = useState({});
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [regeneratingSection, setRegeneratingSection] = useState(null);
+  const [generatingResponsibilities, setGeneratingResponsibilities] = useState(null); // Track which exp is generating
   
   // Resume upload state
   const [isParsingResume, setIsParsingResume] = useState(false);

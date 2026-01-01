@@ -1124,13 +1124,34 @@ export default function AIResumeBuilder() {
                   </span>
                 </Label>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => addResponsibility(exp.id)}
-              >
-                <Plus className="w-3 h-3 mr-1" /> Add
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateAIResponsibilities(exp.id)}
+                  disabled={generatingResponsibilities === exp.id || !exp.position || !exp.company}
+                  className="gap-1 bg-gradient-to-r from-purple-50 to-cyan-50 border-purple-200 hover:from-purple-100 hover:to-cyan-100 text-purple-700"
+                >
+                  {generatingResponsibilities === exp.id ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3 h-3" />
+                      AI Generate
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => addResponsibility(exp.id)}
+                >
+                  <Plus className="w-3 h-3 mr-1" /> Add
+                </Button>
+              </div>
             </div>
             
             {/* AI Hint Banner */}
@@ -1140,10 +1161,10 @@ export default function AIResumeBuilder() {
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-700">Pro Tip: Be specific!</p>
+                  <p className="text-sm font-medium text-slate-700">Pro Tip: Enter your job title first!</p>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Include metrics, achievements, and action verbs. Our AI will transform these into powerful, 
-                    ATS-optimized bullet points tailored to your target job.
+                    Click "AI Generate" to auto-fill responsibilities, or write your own. 
+                    Include metrics and achievements for best results.
                   </p>
                 </div>
               </div>

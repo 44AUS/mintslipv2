@@ -81,6 +81,26 @@ def verify_password(password: str, hashed: str) -> bool:
 def generate_session_token() -> str:
     return secrets.token_urlsafe(32)
 
+# Rate limiting function
+def check_rate_limit(identifier: str, max_requests: int = 10, window_seconds: int = 60) -> bool:
+    """
+    Simple rate limiting. Returns True if request is allowed, False if rate limited.
+    In production, use Redis for distributed rate limiting.
+    """
+    current_time = time.time()
+    window_start = current_time - window_seconds
+    
+    # Clean old entries
+    rate_limit_storage[identifier] = [t for t in rate_limit_storage[identifier] if t > window_start]
+    
+    # Check if rate limited
+    if len(rate_limit_storage[identifier]) >= max_requests:
+        return False
+    
+    # Add current request
+    rate_limit_storage[identifier].append(current_time)
+    return True
+
 # CORS
 app.add_middleware(
     CORSMiddleware,

@@ -2112,6 +2112,146 @@ async def get_social_preview_html(path: str, request: Request):
     return HTMLResponse(content=html)
 
 
+# ============================================
+# Dynamic Sitemap Generation
+# ============================================
+
+from fastapi.responses import Response
+
+# Static pages for the sitemap
+STATIC_SITEMAP_PAGES = [
+    {"loc": "https://mintslip.com/", "priority": "1.0", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/paystub-generator", "priority": "0.9", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/paystub-for-apartment", "priority": "0.9", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/mintslip-vs-thepaystubs", "priority": "0.9", "changefreq": "monthly"},
+    {"loc": "https://mintslip.com/paystub-for-mortgage", "priority": "0.9", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/paystub-template-download", "priority": "0.9", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/create-a-paystub", "priority": "0.9", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/paystub-samples", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/instant-paystub-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/self-employed-paystub-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/contractor-paystub-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/canadian-paystub-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/w2-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/w9-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/1099-nec-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/1099-misc-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/schedule-c-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/accounting-mockup-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/offer-letter-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/vehicle-bill-of-sale-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/service-expense-generator", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/ai-resume-builder", "priority": "0.8", "changefreq": "weekly"},
+    {"loc": "https://mintslip.com/how-to-make-a-paystub", "priority": "0.9", "changefreq": "monthly"},
+    {"loc": "https://mintslip.com/about", "priority": "0.7", "changefreq": "monthly"},
+    {"loc": "https://mintslip.com/contact", "priority": "0.7", "changefreq": "monthly"},
+    {"loc": "https://mintslip.com/faq", "priority": "0.7", "changefreq": "monthly"},
+    {"loc": "https://mintslip.com/reviews", "priority": "0.7", "changefreq": "monthly"},
+    {"loc": "https://mintslip.com/privacy", "priority": "0.5", "changefreq": "yearly"},
+    {"loc": "https://mintslip.com/terms", "priority": "0.5", "changefreq": "yearly"},
+    {"loc": "https://mintslip.com/blog", "priority": "0.8", "changefreq": "daily"},
+]
+
+# State-specific paystub generator pages
+US_STATES = [
+    "alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut",
+    "delaware", "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa",
+    "kansas", "kentucky", "louisiana", "maine", "maryland", "massachusetts", "michigan",
+    "minnesota", "mississippi", "missouri", "montana", "nebraska", "nevada", "new-hampshire",
+    "new-jersey", "new-mexico", "new-york", "north-carolina", "north-dakota", "ohio",
+    "oklahoma", "oregon", "pennsylvania", "rhode-island", "south-carolina", "south-dakota",
+    "tennessee", "texas", "utah", "vermont", "virginia", "washington", "west-virginia",
+    "wisconsin", "wyoming", "canada"
+]
+
+# High priority states
+HIGH_PRIORITY_STATES = ["california", "florida", "new-york", "texas"]
+
+@app.get("/api/sitemap.xml")
+async def generate_sitemap():
+    """Generate dynamic sitemap.xml including all blog posts"""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Start XML
+    xml_parts = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    ]
+    
+    # Add static pages
+    for page in STATIC_SITEMAP_PAGES:
+        xml_parts.append(f'''  <url>
+    <loc>{page["loc"]}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{page["changefreq"]}</changefreq>
+    <priority>{page["priority"]}</priority>
+  </url>''')
+    
+    # Add state-specific paystub generator pages
+    for state in US_STATES:
+        priority = "0.9" if state in HIGH_PRIORITY_STATES else "0.8"
+        xml_parts.append(f'''  <url>
+    <loc>https://mintslip.com/paystub-generator/{state}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>{priority}</priority>
+  </url>''')
+    
+    # Add blog posts from database
+    try:
+        blog_posts = await db["blog_posts"].find(
+            {"status": "published"},
+            {"slug": 1, "publishDate": 1, "updatedAt": 1}
+        ).to_list(length=1000)
+        
+        for post in blog_posts:
+            # Use updatedAt if available, otherwise publishDate
+            lastmod = post.get("updatedAt") or post.get("publishDate") or today
+            if isinstance(lastmod, datetime):
+                lastmod = lastmod.strftime("%Y-%m-%d")
+            elif isinstance(lastmod, str) and "T" in lastmod:
+                lastmod = lastmod.split("T")[0]
+            
+            xml_parts.append(f'''  <url>
+    <loc>https://mintslip.com/blog/{post["slug"]}</loc>
+    <lastmod>{lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>''')
+    except Exception as e:
+        print(f"Error fetching blog posts for sitemap: {e}")
+    
+    # Close XML
+    xml_parts.append('</urlset>')
+    
+    xml_content = '\n'.join(xml_parts)
+    
+    return Response(
+        content=xml_content,
+        media_type="application/xml",
+        headers={"Content-Type": "application/xml; charset=utf-8"}
+    )
+
+
+@app.get("/api/sitemap/refresh")
+async def refresh_sitemap_info():
+    """Get information about sitemap contents (for debugging)"""
+    try:
+        blog_count = await db["blog_posts"].count_documents({"status": "published"})
+        static_count = len(STATIC_SITEMAP_PAGES) + len(US_STATES)
+        
+        return {
+            "success": True,
+            "sitemap_url": "/api/sitemap.xml",
+            "static_pages": static_count,
+            "blog_posts": blog_count,
+            "total_urls": static_count + blog_count,
+            "message": "Sitemap is generated dynamically. Access /api/sitemap.xml for the full sitemap."
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

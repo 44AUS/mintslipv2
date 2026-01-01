@@ -266,14 +266,16 @@ export default function BlogPost() {
         <meta property="og:description" content={post.metaDescription || post.excerpt} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://mintslip.com/blog/${post.slug}`} />
-        {post.featuredImage && <meta property="og:image" content={post.featuredImage.startsWith('/') ? `https://mintslip.com${post.featuredImage}` : post.featuredImage} />}
+        <meta property="og:image" content={post.featuredImage ? (post.featuredImage.startsWith('/') ? `https://mintslip.com${post.featuredImage}` : post.featuredImage) : 'https://mintslip.com/favicon.ico'} />
+        <meta property="og:site_name" content="MintSlip" />
         <meta property="article:published_time" content={post.publishDate} />
         <meta property="article:author" content={post.author} />
         
         {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:card" content={post.featuredImage ? "summary_large_image" : "summary"} />
         <meta name="twitter:title" content={post.metaTitle || post.title} />
         <meta name="twitter:description" content={post.metaDescription || post.excerpt} />
+        <meta name="twitter:image" content={post.featuredImage ? (post.featuredImage.startsWith('/') ? `https://mintslip.com${post.featuredImage}` : post.featuredImage) : 'https://mintslip.com/favicon.ico'} />
         
         {/* Schema */}
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>

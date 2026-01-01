@@ -288,7 +288,7 @@ export default function BlogPost() {
       <div className="min-h-screen bg-white">
         {/* Breadcrumbs */}
         <div className="bg-slate-50 border-b">
-          <div className="max-w-4xl mx-auto px-6 py-3">
+          <div className="max-w-7xl mx-auto px-6 py-3">
             <nav className="flex items-center gap-2 text-sm text-slate-500">
               <Link to="/" className="hover:text-green-600">Home</Link>
               <ChevronRight className="w-4 h-4" />

@@ -1317,7 +1317,75 @@ export default function AIResumeBuilder() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Review & Generate</h2>
-        <p className="text-slate-600">Choose your template and generate your AI-optimized resume</p>
+        <p className="text-slate-600">Choose your formatting options and template, then generate your AI-optimized resume</p>
+      </div>
+
+      {/* Resume Formatting Options */}
+      <div className="space-y-6 p-6 bg-gradient-to-r from-purple-50 via-white to-cyan-50 rounded-xl border border-purple-100">
+        <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          Resume Formatting Options
+        </h3>
+        
+        {/* Font Selection */}
+        <div>
+          <Label className="text-slate-700 mb-3 block">Font Style</Label>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {FONTS.map((font) => (
+              <button
+                key={font.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, font: font.value }))}
+                className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                  formData.font === font.value
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50'
+                }`}
+              >
+                <span className="block font-medium text-slate-800" style={{ fontFamily: font.value }}>
+                  {font.label}
+                </span>
+                <span className="text-xs text-slate-500">{font.style}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section Layout */}
+        <div>
+          <Label className="text-slate-700 mb-3 block">Section Layout</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {LAYOUT_OPTIONS.map((layout) => (
+              <button
+                key={layout.value}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, sectionLayout: layout.value }))}
+                className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                  formData.sectionLayout === layout.value
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50'
+                }`}
+              >
+                <span className="block font-medium text-slate-800">{layout.label}</span>
+                <span className="text-sm text-slate-500">{layout.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* One Page Option */}
+        <label className="flex items-center gap-3 p-4 rounded-lg border-2 border-slate-200 bg-white hover:border-purple-300 transition-colors cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.onePage}
+            onChange={(e) => setFormData(prev => ({ ...prev, onePage: e.target.checked }))}
+            className="w-5 h-5 rounded border-slate-300 text-purple-500 focus:ring-purple-500"
+          />
+          <div>
+            <span className="block font-medium text-slate-800">One-Page Resume</span>
+            <span className="text-sm text-slate-500">Fit all content on a single page (best for less experience)</span>
+          </div>
+        </label>
       </div>
 
       {/* Template Selection */}

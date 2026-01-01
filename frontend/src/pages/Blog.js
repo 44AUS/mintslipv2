@@ -159,14 +159,19 @@ export default function Blog() {
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <form onSubmit={handleSearch} className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <Input
-                    placeholder="Search articles..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="relative flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Input
+                      placeholder="Search articles..."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                    Search
+                  </Button>
                 </div>
               </form>
               

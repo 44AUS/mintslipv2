@@ -504,7 +504,8 @@ export default function Header({ title }) {
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4">
+          {/* Left: Logo */}
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
             <h1 
               className="text-xl sm:text-2xl font-black tracking-tight cursor-pointer" 
               style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
@@ -514,50 +515,89 @@ export default function Header({ title }) {
             </h1>
           </div>
           
-          {/* Desktop Navigation Links - Hidden on mobile/tablet */}
-          <nav className="hidden md:flex items-center gap-2">
-            <DesktopNavLinks location={location} onNavigate={handleNavigation} user={user} onLogout={handleLogout} />
+          {/* Center: Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
+            <DesktopNavLinks location={location} onNavigate={handleNavigation} />
           </nav>
 
-          {/* Mobile/Tablet Hamburger Menu - Visible only on mobile/tablet */}
-          <div className="md:hidden">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <button
-                  className="p-2 rounded-md hover:bg-green-50 transition-colors"
-                  data-testid="mobile-menu-button"
-                  aria-label="Open navigation menu"
-                >
-                  <Menu className="w-6 h-6" style={{ color: '#1a4731' }} />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] sm:w-[320px]">
-                <SheetHeader>
-                  <SheetTitle 
-                    className="text-xl font-black tracking-tight text-left"
-                    style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
-                  >
-                    MintSlip
-                  </SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col gap-2 mt-6">
-                  <MobileNavLinks location={location} onNavigate={handleNavigation} />
-                </nav>
-                
-                {/* Home link in mobile menu */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
+          {/* Right: User Account (Desktop) + Mobile Menu */}
+          <div className="flex items-center gap-3">
+            {/* User Account - Desktop Only */}
+            <div className="hidden lg:block">
+              <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} />
+            </div>
+
+            {/* Mobile/Tablet Hamburger Menu */}
+            <div className="lg:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
                   <button
-                    onClick={() => handleNavigation("/")}
-                    className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md hover:bg-green-50 transition-colors"
-                    data-testid="nav-home-link-mobile"
-                    style={{ color: location.pathname === '/' ? '#1a4731' : '#64748b' }}
+                    className="p-2 rounded-md hover:bg-green-50 transition-colors"
+                    data-testid="mobile-menu-button"
+                    aria-label="Open navigation menu"
                   >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span className="font-medium text-base">Back to Home</span>
+                    <Menu className="w-6 h-6" style={{ color: '#1a4731' }} />
                   </button>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+                  <SheetHeader>
+                    <SheetTitle 
+                      className="text-xl font-black tracking-tight text-left"
+                      style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
+                    >
+                      MintSlip
+                    </SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-2 mt-6">
+                    <MobileNavLinks location={location} onNavigate={handleNavigation} />
+                  </nav>
+                  
+                  {/* User info in mobile menu */}
+                  {user && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="px-4 py-2 mb-2">
+                        <p className="font-medium text-slate-800">{user.name}</p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={() => handleNavigation("/user/dashboard")}
+                        className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-green-50 transition-colors text-slate-600"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span>Dashboard</span>
+                      </button>
+                      <button
+                        onClick={() => handleNavigation("/user/downloads")}
+                        className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-green-50 transition-colors text-slate-600"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>My Downloads</span>
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-red-50 transition-colors text-red-600"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Log Out</span>
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Home link in mobile menu */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <button
+                      onClick={() => handleNavigation("/")}
+                      className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md hover:bg-green-50 transition-colors"
+                      data-testid="nav-home-link-mobile"
+                      style={{ color: location.pathname === '/' ? '#1a4731' : '#64748b' }}
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                      <span className="font-medium text-base">Back to Home</span>
+                    </button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </div>

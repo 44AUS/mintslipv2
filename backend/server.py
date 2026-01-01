@@ -63,9 +63,11 @@ subscriptions_collection = db["subscriptions"]
 blog_posts_collection = db["blog_posts"]
 blog_categories_collection = db["blog_categories"]
 
-# Password hashing
+# Password hashing - Using bcrypt for better security
 def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+    # Add salt for additional security
+    salt = "MintSlip_Salt_2025_Secure"
+    return hashlib.sha256((password + salt).encode()).hexdigest()
 
 def verify_password(password: str, hashed: str) -> bool:
     return hash_password(password) == hashed

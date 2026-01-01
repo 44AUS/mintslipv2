@@ -1224,15 +1224,11 @@ export default function Home() {
               onClick={() => navigate("/ai-resume-builder")}
               size="lg"
               variant="outline"
-              className="group gap-2 text-lg px-8 py-6 border-2 border-purple-400 bg-gradient-to-r from-purple-50 to-cyan-50 hover:from-purple-100 hover:to-cyan-100 text-purple-700 hover:text-purple-800 transition-all duration-300 shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] animate-pulse-glow relative overflow-hidden"
-              style={{
-                animation: 'glowPulse 2s ease-in-out infinite'
-              }}
+              className="ai-glow-button group gap-2 text-lg px-8 py-6 rounded-lg bg-gradient-to-r from-purple-50 to-cyan-50 hover:from-purple-100 hover:to-cyan-100 text-purple-700 hover:text-purple-800 font-semibold transition-all duration-300"
             >
-              <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-500 via-cyan-500 to-purple-500 opacity-20 blur-sm animate-gradient-x"></span>
-              <Sparkles className="w-5 h-5 relative z-10" />
-              <span className="relative z-10">AI Resume Builder</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative z-10" />
+              <Sparkles className="w-5 h-5" />
+              AI Resume Builder
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
 

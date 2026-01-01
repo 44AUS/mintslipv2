@@ -1845,13 +1845,13 @@ Target Keywords: {keywords if keywords else 'pay stub, proof of income, payroll'
 Tone: {tone}
 
 Requirements:
-1. Write in Markdown format
+1. Write in HTML format suitable for a WYSIWYG editor (use <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em> tags)
 2. Include an engaging introduction
-3. Use H2 (##) and H3 (###) headings for sections
+3. Use <h2> and <h3> tags for headings
 4. Include practical tips and actionable advice
 5. Add a conclusion with a call-to-action mentioning MintSlip's pay stub generator
 6. Aim for 1000-1500 words
-7. Include internal link suggestions to: /paystub-generator, /how-to-make-a-pay-stub
+7. Include internal link suggestions using <a href="/paystub-generator"> and <a href="/how-to-make-a-paystub">
 
 Also provide:
 - A compelling meta title (under 60 characters)
@@ -1861,7 +1861,7 @@ Also provide:
 
 Format your response as JSON:
 {{
-    "content": "markdown content here",
+    "content": "HTML content here with proper tags",
     "metaTitle": "SEO title",
     "metaDescription": "meta description",
     "excerpt": "short excerpt",
@@ -1873,7 +1873,8 @@ Format your response as JSON:
     "suggestedTags": ["tag1", "tag2"]
 }}"""
         
-        response = chat.send_message(prompt)
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
         
         # Try to parse JSON from response
         try:

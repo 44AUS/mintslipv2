@@ -1581,7 +1581,8 @@ async def get_public_blog_posts(
         query["$or"] = [
             {"title": {"$regex": search, "$options": "i"}},
             {"content": {"$regex": search, "$options": "i"}},
-            {"excerpt": {"$regex": search, "$options": "i"}}
+            {"excerpt": {"$regex": search, "$options": "i"}},
+            {"tags": {"$regex": search, "$options": "i"}}
         ]
     
     # Sorting

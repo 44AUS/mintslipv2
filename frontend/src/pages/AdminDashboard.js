@@ -993,12 +993,13 @@ export default function AdminDashboard() {
             { id: "overview", label: "Overview", icon: LayoutDashboard },
             { id: "purchases", label: "Purchases", icon: ShoppingCart },
             { id: "users", label: "Users", icon: Users },
-            { id: "discounts", label: "Discount Codes", icon: Tag }
+            { id: "discounts", label: "Discount Codes", icon: Tag },
+            { id: "blog", label: "Blog", icon: FileText }
           ].map((tab) => (
             <Button
               key={tab.id}
               variant={activeTab === tab.id ? "default" : "ghost"}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => tab.id === "blog" ? navigate("/admin/blog") : setActiveTab(tab.id)}
               className={`gap-2 ${activeTab === tab.id ? "bg-green-600 hover:bg-green-700" : ""}`}
             >
               <tab.icon className="w-4 h-4" />

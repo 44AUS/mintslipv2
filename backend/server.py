@@ -2048,6 +2048,70 @@ async def get_oembed(url: str, request: Request):
     }
 
 
+@app.get("/api/social-preview/{path:path}")
+async def get_social_preview_html(path: str, request: Request):
+    """
+    Serve HTML with proper meta tags for social media crawlers.
+    This endpoint can be used by a reverse proxy to serve to social bots.
+    """
+    full_path = f"/{path}" if path else "/"
+    
+    # Get meta tags
+    meta_response = await get_meta_tags(path)
+    meta = meta_response.get("meta", {})
+    
+    # For blog posts with featured images, use summary_large_image card
+    twitter_card = "summary_large_image" if "blog/" in full_path else "summary"
+    
+    html = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>{meta.get("title", "MintSlip")}</title>
+    <meta name="description" content="{meta.get("description", "")}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{meta.get("type", "website")}">
+    <meta property="og:url" content="{meta.get("url", "https://www.mintslip.com")}">
+    <meta property="og:title" content="{meta.get("title", "MintSlip")}">
+    <meta property="og:description" content="{meta.get("description", "")}">
+    <meta property="og:image" content="{meta.get("image", "https://www.mintslip.com/favicon.ico")}">
+    <meta property="og:site_name" content="MintSlip">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="{twitter_card}">
+    <meta name="twitter:url" content="{meta.get("url", "https://www.mintslip.com")}">
+    <meta name="twitter:title" content="{meta.get("title", "MintSlip")}">
+    <meta name="twitter:description" content="{meta.get("description", "")}">
+    <meta name="twitter:image" content="{meta.get("image", "https://www.mintslip.com/favicon.ico")}">
+    
+    <!-- Article specific (for blog posts) -->
+    {"<meta property='article:published_time' content='" + meta.get("publishedTime", "") + "'>" if meta.get("publishedTime") else ""}
+    {"<meta property='article:author' content='" + meta.get("author", "") + "'>" if meta.get("author") else ""}
+    
+    <link rel="canonical" href="{meta.get("url", "https://www.mintslip.com")}">
+    <link rel="icon" href="https://www.mintslip.com/favicon.ico">
+    
+    <!-- Redirect regular browsers to the actual page -->
+    <script>
+        window.location.href = "{meta.get("url", "https://www.mintslip.com")}";
+    </script>
+    <noscript>
+        <meta http-equiv="refresh" content="0;url={meta.get("url", "https://www.mintslip.com")}">
+    </noscript>
+</head>
+<body>
+    <h1>{meta.get("title", "MintSlip")}</h1>
+    <p>{meta.get("description", "")}</p>
+    <a href="{meta.get("url", "https://www.mintslip.com")}">Visit MintSlip</a>
+</body>
+</html>'''
+    
+    return HTMLResponse(content=html)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

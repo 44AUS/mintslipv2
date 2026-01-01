@@ -126,6 +126,8 @@ export default function Blog() {
         <link rel="canonical" href="https://mintslip.com/blog" />
       </Helmet>
 
+      <Header title="MintSlip" />
+
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-green-800 to-emerald-700 text-white py-16">

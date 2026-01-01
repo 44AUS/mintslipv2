@@ -281,6 +281,8 @@ export default function BlogPost() {
         {faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
       </Helmet>
 
+      <Header title="MintSlip" />
+
       <div className="min-h-screen bg-white">
         {/* Breadcrumbs */}
         <div className="bg-slate-50 border-b">

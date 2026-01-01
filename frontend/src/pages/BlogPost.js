@@ -459,7 +459,7 @@ export default function BlogPost() {
                     {post.tags.map((tag, index) => (
                       <Link
                         key={index}
-                        to={`/blog?search=${tag}`}
+                        to={`/blog?tag=${encodeURIComponent(tag)}`}
                         className="px-3 py-1 bg-slate-100 text-slate-600 text-sm rounded-full hover:bg-green-50 hover:text-green-700"
                       >
                         {tag}

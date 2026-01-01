@@ -224,6 +224,52 @@ export default function AIResumeBuilder() {
     }));
   };
 
+  // AI Generate Responsibilities
+  const generateAIResponsibilities = async (expId) => {
+    const exp = formData.workExperience.find(e => e.id === expId);
+    if (!exp) return;
+    
+    if (!exp.position || !exp.company) {
+      toast.error("Please enter a job title and company name first");
+      return;
+    }
+    
+    setGeneratingResponsibilities(expId);
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/generate-responsibilities`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          position: exp.position,
+          company: exp.company,
+          jobDescription: formData.jobDescription || ""
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.responsibilities) {
+        setFormData(prev => ({
+          ...prev,
+          workExperience: prev.workExperience.map(e =>
+            e.id === expId
+              ? { ...e, responsibilities: data.responsibilities }
+              : e
+          )
+        }));
+        toast.success("AI generated responsibilities! Review and edit as needed.");
+      } else {
+        throw new Error(data.detail || "Failed to generate responsibilities");
+      }
+    } catch (error) {
+      console.error("Error generating responsibilities:", error);
+      toast.error(error.message || "Failed to generate responsibilities");
+    } finally {
+      setGeneratingResponsibilities(null);
+    }
+  };
+
   // Education handlers
   const addEducation = () => {
     setFormData(prev => ({

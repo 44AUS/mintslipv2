@@ -1902,6 +1902,152 @@ Format your response as JSON:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
 
+
+# ============================================
+# Social Media Meta Tags API
+# ============================================
+
+# Page-specific meta configurations
+PAGE_META_CONFIG = {
+    "/": {
+        "title": "Paystub Generator | No.1 Paystub Generator - MintSlip",
+        "description": "Our paystub generator instantly creates pay stubs online. This easy checkstub maker online handles calculations automatically with no software needed.",
+        "image": "https://www.mintslip.com/favicon.ico"
+    },
+    "/paystub-generator": {
+        "title": "Free Paystub Generator Online | Create Pay Stubs Instantly - MintSlip",
+        "description": "Generate professional pay stubs in minutes. Our free paystub generator creates accurate, printable check stubs with automatic calculations.",
+        "image": "https://www.mintslip.com/favicon.ico"
+    },
+    "/w2-generator": {
+        "title": "W-2 Form Generator | Create W-2 Tax Forms Online - MintSlip",
+        "description": "Generate accurate W-2 tax forms online. Create professional W-2 wage and tax statements for employees with our easy-to-use generator.",
+        "image": "https://www.mintslip.com/favicon.ico"
+    },
+    "/1099-generator": {
+        "title": "1099 Form Generator | Create 1099 Tax Forms Online - MintSlip",
+        "description": "Generate 1099-NEC and 1099-MISC forms online. Create professional tax documents for contractors and freelancers instantly.",
+        "image": "https://www.mintslip.com/favicon.ico"
+    },
+    "/ai-resume-builder": {
+        "title": "AI Resume Builder | Create ATS-Optimized Resumes - MintSlip",
+        "description": "Build professional, ATS-optimized resumes with AI. Our smart resume builder tailors your resume to job descriptions for maximum impact.",
+        "image": "https://www.mintslip.com/favicon.ico"
+    },
+    "/blog": {
+        "title": "Blog - Pay Stub Tips, Payroll Guides & Financial Documentation | MintSlip",
+        "description": "Expert guides on pay stubs, proof of income, payroll management, and financial documentation. Learn how to create professional pay stubs.",
+        "image": "https://www.mintslip.com/favicon.ico"
+    }
+}
+
+@app.get("/api/meta-tags/{path:path}")
+async def get_meta_tags(path: str):
+    """Get meta tags for a specific page - used for social media sharing"""
+    full_path = f"/{path}" if path else "/"
+    
+    # Check if it's a blog post
+    if full_path.startswith("/blog/") and len(full_path) > 6:
+        slug = full_path[6:]  # Remove "/blog/"
+        post = await db["blog_posts"].find_one({"slug": slug, "status": "published"})
+        
+        if post:
+            # Use the blog post's featured image for social sharing
+            image_url = post.get("featuredImage", "https://www.mintslip.com/favicon.ico")
+            if image_url and image_url.startswith("/"):
+                image_url = f"https://www.mintslip.com{image_url}"
+            
+            return {
+                "success": True,
+                "meta": {
+                    "title": post.get("metaTitle") or post.get("title", "MintSlip Blog"),
+                    "description": post.get("metaDescription") or post.get("excerpt", ""),
+                    "image": image_url,
+                    "type": "article",
+                    "url": f"https://www.mintslip.com/blog/{slug}",
+                    "author": post.get("author", "MintSlip Team"),
+                    "publishedTime": post.get("publishDate", ""),
+                }
+            }
+    
+    # Check predefined pages
+    if full_path in PAGE_META_CONFIG:
+        config = PAGE_META_CONFIG[full_path]
+        return {
+            "success": True,
+            "meta": {
+                "title": config["title"],
+                "description": config["description"],
+                "image": config["image"],
+                "type": "website",
+                "url": f"https://www.mintslip.com{full_path}"
+            }
+        }
+    
+    # Default fallback
+    return {
+        "success": True,
+        "meta": {
+            "title": "MintSlip - Professional Document Generator",
+            "description": "Create professional pay stubs, W-2 forms, 1099 forms, and more. MintSlip makes document generation easy and accurate.",
+            "image": "https://www.mintslip.com/favicon.ico",
+            "type": "website",
+            "url": f"https://www.mintslip.com{full_path}"
+        }
+    }
+
+
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+
+# List of social media bot user agents
+SOCIAL_BOTS = [
+    'facebookexternalhit',
+    'Facebot',
+    'Twitterbot',
+    'LinkedInBot',
+    'Pinterest',
+    'Slackbot',
+    'TelegramBot',
+    'WhatsApp',
+    'Discordbot',
+    'Googlebot',
+    'bingbot',
+    'Applebot'
+]
+
+def is_social_bot(user_agent: str) -> bool:
+    """Check if the request is from a social media bot"""
+    if not user_agent:
+        return False
+    user_agent_lower = user_agent.lower()
+    return any(bot.lower() in user_agent_lower for bot in SOCIAL_BOTS)
+
+@app.get("/api/oembed")
+async def get_oembed(url: str, request: Request):
+    """oEmbed endpoint for rich link previews"""
+    # Parse the URL to get the path
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    path = parsed.path
+    
+    # Get meta tags for this path
+    meta_response = await get_meta_tags(path.lstrip('/'))
+    meta = meta_response.get("meta", {})
+    
+    return {
+        "version": "1.0",
+        "type": "link",
+        "title": meta.get("title", "MintSlip"),
+        "author_name": meta.get("author", "MintSlip"),
+        "provider_name": "MintSlip",
+        "provider_url": "https://www.mintslip.com",
+        "thumbnail_url": meta.get("image", "https://www.mintslip.com/favicon.ico"),
+        "thumbnail_width": 200,
+        "thumbnail_height": 200
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

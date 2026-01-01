@@ -39,6 +39,7 @@ export default function Blog() {
   const currentPage = parseInt(searchParams.get("page") || "1");
   const currentCategory = searchParams.get("category") || "";
   const currentSearch = searchParams.get("search") || "";
+  const currentTag = searchParams.get("tag") || "";
   const currentSort = searchParams.get("sort") || "newest";
   
   const [searchInput, setSearchInput] = useState(currentSearch);
@@ -51,7 +52,7 @@ export default function Blog() {
   useEffect(() => {
     loadPosts();
     loadCategories();
-  }, [currentPage, currentCategory, currentSearch, currentSort]);
+  }, [currentPage, currentCategory, currentSearch, currentTag, currentSort]);
 
   const loadPosts = async () => {
     setIsLoading(true);
@@ -64,6 +65,7 @@ export default function Blog() {
       
       if (currentCategory) params.append("category", currentCategory);
       if (currentSearch) params.append("search", currentSearch);
+      if (currentTag) params.append("tag", currentTag);
       
       const response = await fetch(`${BACKEND_URL}/api/blog/posts?${params}`);
       const data = await response.json();

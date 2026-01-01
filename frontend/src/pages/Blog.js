@@ -43,6 +43,11 @@ export default function Blog() {
   
   const [searchInput, setSearchInput] = useState(currentSearch);
 
+  // Sync searchInput with URL search param when it changes
+  useEffect(() => {
+    setSearchInput(currentSearch);
+  }, [currentSearch]);
+
   useEffect(() => {
     loadPosts();
     loadCategories();

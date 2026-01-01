@@ -1224,7 +1224,7 @@ export default function Home() {
               onClick={() => navigate("/ai-resume-builder")}
               size="lg"
               variant="outline"
-              className="ai-glow-button group gap-2 text-lg px-8 py-6 rounded-lg bg-gradient-to-r from-purple-50 to-cyan-50 hover:from-purple-100 hover:to-cyan-100 text-purple-700 hover:text-purple-800 font-semibold transition-all duration-300"
+              className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
             >
               <Sparkles className="w-5 h-5" />
               AI Resume Builder

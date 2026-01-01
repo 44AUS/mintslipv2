@@ -1852,6 +1852,151 @@ export default function Home() {
         );
       })()}
 
+      {/* Latest Blog Posts Section */}
+      {(() => {
+        const [blogRef, blogInView] = useInView();
+        const [latestPosts, setLatestPosts] = useState([]);
+        const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+        const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+        
+        useEffect(() => {
+          const fetchLatestPosts = async () => {
+            try {
+              const response = await fetch(`${BACKEND_URL}/api/blog/posts?limit=3&sort=newest`);
+              const data = await response.json();
+              if (data.success) {
+                setLatestPosts(data.posts);
+              }
+            } catch (error) {
+              console.error("Error fetching blog posts:", error);
+            } finally {
+              setIsLoadingPosts(false);
+            }
+          };
+          fetchLatestPosts();
+        }, [BACKEND_URL]);
+
+        const formatDate = (dateString) => {
+          return new Date(dateString).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+          });
+        };
+
+        // Only render if there are posts
+        if (!isLoadingPosts && latestPosts.length === 0) return null;
+
+        return (
+          <section ref={blogRef} className="py-20 bg-white">
+            <div className="max-w-6xl mx-auto px-6">
+              {/* Section Header */}
+              <div className={`text-center mb-12 transition-all duration-700 ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200 mb-4">
+                  <FileText className="w-4 h-4 text-green-700" />
+                  <span className="text-sm font-medium text-green-800">From Our Blog</span>
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  Latest Articles & Guides
+                </h3>
+                <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                  Expert tips on pay stubs, tax forms, and financial documentation to help you succeed.
+                </p>
+              </div>
+
+              {/* Blog Posts Grid */}
+              {isLoadingPosts ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-slate-100 rounded-xl h-80 animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {latestPosts.map((post, index) => (
+                    <article
+                      key={post.id}
+                      className={`group bg-white border-2 border-slate-200 rounded-xl overflow-hidden hover:border-green-500 hover:shadow-xl transition-all duration-500 cursor-pointer ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                      style={{ transitionDelay: `${index * 100}ms` }}
+                      onClick={() => navigate(`/blog/${post.slug}`)}
+                    >
+                      {/* Featured Image */}
+                      <div className="relative h-48 bg-gradient-to-br from-green-100 to-emerald-50 overflow-hidden">
+                        {post.featuredImage ? (
+                          <img
+                            src={post.featuredImage}
+                            alt={post.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <FileText className="w-16 h-16 text-green-300" />
+                          </div>
+                        )}
+                        {/* Category Badge */}
+                        {post.category && (
+                          <div className="absolute top-3 left-3">
+                            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold rounded-full">
+                              {post.category}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        {/* Date & Read Time */}
+                        <div className="flex items-center gap-3 text-xs text-slate-500 mb-3">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(post.publishDate)}
+                          </span>
+                          {post.readTime && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {post.readTime} min read
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Title */}
+                        <h4 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
+                          {post.title}
+                        </h4>
+
+                        {/* Excerpt */}
+                        <p className="text-sm text-slate-600 line-clamp-2 mb-4">
+                          {post.excerpt}
+                        </p>
+
+                        {/* Read More Link */}
+                        <div className="flex items-center gap-1 text-green-600 font-medium text-sm group-hover:gap-2 transition-all">
+                          Read Article
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              {/* View All Button */}
+              <div className={`text-center mt-10 transition-all duration-700 delay-300 ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <Button
+                  onClick={() => navigate("/blog")}
+                  size="lg"
+                  variant="outline"
+                  className="group gap-2 border-2 border-green-600 text-green-700 hover:bg-green-50"
+                >
+                  View All Articles
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
       {/* Trust Section - Secure & Instant */}
       {(() => {
         const [trustRef, trustInView] = useInView();

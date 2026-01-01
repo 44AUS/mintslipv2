@@ -202,7 +202,7 @@ export default function Blog() {
             </div>
             
             {/* Active Filters */}
-            {(currentCategory || currentSearch) && (
+            {(currentCategory || currentSearch || currentTag) && (
               <div className="flex items-center gap-2 mt-4 pt-4 border-t">
                 <span className="text-sm text-slate-500">Filters:</span>
                 {currentCategory && (
@@ -224,6 +224,18 @@ export default function Blog() {
                     className="gap-1"
                   >
                     Search: {currentSearch}
+                    <span className="ml-1">×</span>
+                  </Button>
+                )}
+                {currentTag && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => updateFilters({ tag: "" })}
+                    className="gap-1 bg-green-50 border-green-200 text-green-700"
+                  >
+                    <Tag className="w-3 h-3" />
+                    {currentTag}
                     <span className="ml-1">×</span>
                   </Button>
                 )}

@@ -717,12 +717,19 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
     if not user.get("preferences", {}).get("saveDocuments", False):
         raise HTTPException(status_code=400, detail="Document saving is not enabled. Enable it in your settings.")
     
-    # Check document count limit
+    # Get user's subscription tier to determine max documents
+    subscription_tier = user.get("subscription", {}).get("tier", "starter") if user.get("subscription") else None
+    if not subscription_tier:
+        raise HTTPException(status_code=400, detail="Active subscription required to save documents.")
+    
+    max_documents = SAVED_DOCS_LIMITS.get(subscription_tier, 10)
+    
+    # Check document count limit (skip if unlimited)
     doc_count = await saved_documents_collection.count_documents({"userId": user_id})
-    if doc_count >= MAX_SAVED_DOCUMENTS_PER_USER:
+    if max_documents != -1 and doc_count >= max_documents:
         raise HTTPException(
             status_code=400, 
-            detail=f"Maximum saved documents limit ({MAX_SAVED_DOCUMENTS_PER_USER}) reached. Delete some documents to save new ones."
+            detail=f"Maximum saved documents limit ({max_documents}) reached for your {subscription_tier.capitalize()} plan. Delete some documents to save new ones."
         )
     
     # Decode base64 file data

@@ -2214,6 +2214,8 @@ class AIResumeBuilderTester:
             print("✅ Subscription system working")
             print("✅ New admin dashboard features working")
             print("✅ Blog system APIs working")
+            print("✅ Subscription download system working")
+            print("✅ Subscription upgrade system working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")
@@ -2230,6 +2232,10 @@ class AIResumeBuilderTester:
                 failed_systems.append("New Admin Dashboard Features")
             if not blog_tests_passed:
                 failed_systems.append("Blog System APIs")
+            if not subscription_download_tests_passed:
+                failed_systems.append("Subscription Download System")
+            if not subscription_upgrade_tests_passed:
+                failed_systems.append("Subscription Upgrade System")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 

@@ -115,49 +115,21 @@ export default function UserDownloads() {
 
   if (isLoading && !user) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-      </div>
+      <>
+        <Header title="MintSlip" />
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        </div>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-slate-800">MintSlip</span>
-            </Link>
-          </div>
-          
-          <nav className="flex items-center gap-6">
-            <Link to="/user/dashboard" className="text-slate-600 hover:text-slate-800 text-sm font-medium">
-              Dashboard
-            </Link>
-            <Link to="/user/downloads" className="text-green-600 font-medium text-sm">
-              Downloads
-            </Link>
-            <Link to="/user/settings" className="text-slate-600 hover:text-slate-800 text-sm font-medium">
-              Settings
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-2 text-slate-600 hover:text-slate-800"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <Header title="MintSlip" />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Download History</h1>

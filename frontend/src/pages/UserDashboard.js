@@ -102,6 +102,23 @@ export default function UserDashboard() {
     }
   };
 
+  const fetchSavedDocuments = async (token) => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/user/saved-documents?limit=3`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSavedDocuments(data.documents || []);
+        setSavedDocsCount({ count: data.total || 0, maxDocuments: data.maxDocuments || 15 });
+      }
+    } catch (error) {
+      console.error("Error fetching saved documents:", error);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     localStorage.removeItem("userInfo");

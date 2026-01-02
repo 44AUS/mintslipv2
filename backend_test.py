@@ -2179,6 +2179,12 @@ class AIResumeBuilderTester:
         downloads_decrement_ok = self.test_downloads_decrement_properly()
         subscription_download_zero_ok = self.test_subscription_download_zero_remaining()
         
+        # Test Subscription Upgrade System
+        print("\n⬆️ Testing Subscription Upgrade System...")
+        upgrade_calculate_ok = self.test_subscription_upgrade_calculate()
+        upgrade_create_order_ok = self.test_subscription_upgrade_create_order()
+        upgrade_validation_ok = self.test_subscription_upgrade_validation_errors()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

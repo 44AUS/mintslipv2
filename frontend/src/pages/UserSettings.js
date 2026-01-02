@@ -370,7 +370,7 @@ export default function UserSettings() {
               <div className="flex-1 mr-4">
                 <h4 className="font-medium text-slate-800">Save Documents for Later</h4>
                 <p className="text-sm text-slate-500">
-                  Keep copies of your generated PDFs/ZIPs for up to 60 days. Maximum 15 documents stored.
+                  Keep copies of your generated PDFs/ZIPs for up to 30 days. Storage limits vary by plan.
                 </p>
               </div>
               <Switch

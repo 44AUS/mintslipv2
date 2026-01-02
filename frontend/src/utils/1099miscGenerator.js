@@ -164,7 +164,7 @@ export const generate1099MISCPDF = async (formData, taxYear) => {
 };
 
 // Generate and download 1099-MISC
-export const generateAndDownload1099MISC = async (formData, taxYear) => {
+export const generateAndDownload1099MISC = async (formData, taxYear, returnBlob = false) => {
   try {
     const pdfBytes = await generate1099MISCPDF(formData, taxYear);
     
@@ -185,6 +185,9 @@ export const generateAndDownload1099MISC = async (formData, taxYear) => {
     document.body.removeChild(link);
     
     // Don't revoke URL immediately - needed for re-download on success page
+    if (returnBlob) {
+      return blob;
+    }
     return true;
   } catch (error) {
     console.error("Error downloading 1099-MISC:", error);

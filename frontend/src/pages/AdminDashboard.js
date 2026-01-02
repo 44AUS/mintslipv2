@@ -597,8 +597,7 @@ export default function AdminDashboard() {
 
   const openDownloadsModal = (user) => {
     setSelectedUser(user);
-    const currentDownloads = user.subscription?.downloads_remaining;
-    setEditDownloadsCount(currentDownloads === -1 ? "unlimited" : String(currentDownloads || 0));
+    setEditDownloadsCount("");  // Start empty for adding bonus
     setDownloadsModalOpen(true);
   };
 
@@ -607,10 +606,10 @@ export default function AdminDashboard() {
     
     const token = localStorage.getItem("adminToken");
     try {
-      const downloadsValue = editDownloadsCount === "unlimited" ? -1 : parseInt(editDownloadsCount, 10);
+      const downloadsToAdd = parseInt(editDownloadsCount, 10);
       
-      if (isNaN(downloadsValue) || (downloadsValue < 0 && downloadsValue !== -1)) {
-        toast.error("Please enter a valid number or 'unlimited'");
+      if (isNaN(downloadsToAdd) || downloadsToAdd < 1) {
+        toast.error("Please enter a valid positive number");
         return;
       }
       
@@ -620,21 +619,22 @@ export default function AdminDashboard() {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ downloads_remaining: downloadsValue })
+        body: JSON.stringify({ downloads_to_add: downloadsToAdd })
       });
       
+      const data = await response.json();
+      
       if (response.ok) {
-        const displayValue = downloadsValue === -1 ? "Unlimited" : downloadsValue;
-        toast.success(`User downloads updated to ${displayValue}`);
+        toast.success(data.message || `Added ${downloadsToAdd} bonus downloads`);
         setDownloadsModalOpen(false);
         setSelectedUser(null);
+        setEditDownloadsCount("");
         loadUsers();
       } else {
-        const error = await response.json();
-        toast.error(error.detail || "Failed to update downloads");
+        toast.error(data.detail || "Failed to add bonus downloads");
       }
     } catch (error) {
-      toast.error("Error updating downloads");
+      toast.error("Error adding bonus downloads");
     }
   };
 

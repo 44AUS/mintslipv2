@@ -14,8 +14,17 @@ import {
   Shield,
   Clock,
   ArrowRight,
-  Loader2
+  Loader2,
+  TrendingUp
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -26,6 +35,11 @@ export default function SubscriptionPlans() {
   const [selectedTier, setSelectedTier] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [user, setUser] = useState(null);
+  
+  // Upgrade dialog state
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [upgradeDetails, setUpgradeDetails] = useState(null);
+  const [isCalculatingUpgrade, setIsCalculatingUpgrade] = useState(false);
 
   // Plan configurations with icons and colors
   const PLAN_CONFIG = {

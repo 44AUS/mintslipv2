@@ -208,6 +208,14 @@ test_plan:
 # - Admin login with email/password authentication ✅ TESTED AND WORKING
 # - Admin dashboard with purchase tracking ✅ TESTED AND WORKING
 # - Dashboard statistics display ✅ TESTED AND WORKING
+# - Mobile app backend APIs testing ✅ COMPLETED AND WORKING
+#   * POST /api/parse-resume - Resume upload and parsing ✅ WORKING
+#   * POST /api/generate-responsibilities - AI bullet point generation ✅ WORKING
+#   * POST /api/user/login - User login ✅ WORKING (Note: /api/auth/login doesn't exist)
+#   * POST /api/user/signup - User registration ✅ WORKING (Note: /api/auth/register doesn't exist)
+#   * GET /api/user/me - Get current user info ✅ WORKING
+#   * POST /api/user/subscription-download - Download with subscription ✅ WORKING
+#   * GET /api/user/downloads-remaining - Check remaining downloads ✅ WORKING
 # ==========================================================================
 
 agent_communication:

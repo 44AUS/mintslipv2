@@ -187,12 +187,12 @@ export default function UserDashboard() {
                 <p className="text-2xl font-bold text-slate-800">{downloadsRemaining}</p>
               </div>
             </div>
-            {currentTier && currentTier.downloads !== -1 && (
+            {subscriptionDownloadsTotal !== -1 && subscriptionDownloadsTotal > 0 && (
               <div className="w-full bg-slate-100 rounded-full h-2">
                 <div 
                   className="h-2 rounded-full bg-green-600"
                   style={{ 
-                    width: `${Math.max(0, 100 - ((user?.downloadsUsed || 0) / currentTier.downloads) * 100)}%` 
+                    width: `${Math.max(0, ((subscriptionDownloadsRemaining ?? 0) / subscriptionDownloadsTotal) * 100)}%` 
                   }}
                 />
               </div>
@@ -206,8 +206,8 @@ export default function UserDashboard() {
                 <FileText className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Total Downloads</p>
-                <p className="text-2xl font-bold text-slate-800">{user?.downloadsUsed || 0}</p>
+                <p className="text-sm text-slate-500">Downloads Used This Month</p>
+                <p className="text-2xl font-bold text-slate-800">{downloadsUsed}</p>
               </div>
             </div>
             <Link 

@@ -42,6 +42,113 @@ export default function ScheduleCForm() {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [expensesOpen, setExpensesOpen] = useState(true);
+  
+  // User subscription state
+  const [user, setUser] = useState(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+  
+  // Check user subscription on mount
+  useEffect(() => {
+    checkUserSubscription();
+  }, []);
+  
+  const checkUserSubscription = async () => {
+    const token = localStorage.getItem("userToken");
+    const userInfo = localStorage.getItem("userInfo");
+    
+    if (token && userInfo) {
+      try {
+        const userData = JSON.parse(userInfo);
+        setUser(userData);
+        
+        if (userData.subscription && 
+            userData.subscription.status === "active" &&
+            (userData.subscription.downloads_remaining > 0 || userData.subscription.downloads_remaining === -1)) {
+          setHasActiveSubscription(true);
+        }
+        
+        const response = await fetch(`${BACKEND_URL}/api/user/me`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+            localStorage.setItem("userInfo", JSON.stringify(data.user));
+            
+            if (data.user.subscription && 
+                data.user.subscription.status === "active" &&
+                (data.user.subscription.downloads_remaining > 0 || data.user.subscription.downloads_remaining === -1)) {
+              setHasActiveSubscription(true);
+            } else {
+              setHasActiveSubscription(false);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking subscription:", error);
+      }
+    }
+  };
+  
+  // Handle subscription-based download
+  const handleSubscriptionDownload = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      toast.error("Please log in to use your subscription");
+      navigate("/login");
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/user/subscription-download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          documentType: "schedule-c",
+          template: null
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to process subscription download");
+      }
+      
+      await generateAndDownloadScheduleC(formData, selectedTaxYear);
+      
+      if (data.downloadsRemaining !== undefined) {
+        const updatedUser = { ...user };
+        if (updatedUser.subscription) {
+          updatedUser.subscription.downloads_remaining = data.downloadsRemaining;
+        }
+        setUser(updatedUser);
+        localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+        
+        if (data.downloadsRemaining === 0) {
+          setHasActiveSubscription(false);
+        }
+      }
+      
+      toast.success("Schedule C form downloaded successfully!");
+      navigate("/user/downloads");
+      
+    } catch (error) {
+      console.error("Subscription download error:", error);
+      toast.error(error.message || "Failed to download. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const [selectedTaxYear, setSelectedTaxYear] = useState("2024");
 

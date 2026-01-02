@@ -1027,32 +1027,83 @@ export default function VehicleBillOfSaleForm() {
               {/* PayPal - Right Side */}
               <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Complete Payment
+                  {hasActiveSubscription ? 'Download Document' : 'Complete Payment'}
                 </h3>
-                <CouponInput
-                  generatorType="vehicle-bill-of-sale"
-                  originalPrice={9.99}
-                  onDiscountApplied={setAppliedDiscount}
-                />
-                <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
-                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
-                  {!appliedDiscount && ' for vehicle bill of sale generation'}
-                </p>
                 
-                {isProcessing ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-                    <span className="ml-2 text-slate-600">Processing...</span>
+                {hasActiveSubscription ? (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-semibold">Subscription Active</span>
+                      </div>
+                      <p className="text-sm text-green-600">
+                        Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleSubscriptionDownload}
+                      disabled={isProcessing}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download Bill of Sale (Included in Plan)
+                        </>
+                      )}
+                    </Button>
                   </div>
                 ) : (
-                  <PayPalButtons
-                    createOrder={createOrder}
-                    onApprove={onApprove}
-                    onError={onError}
-                    disabled={isProcessing}
-                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                  />
+                  <>
+                    <CouponInput
+                      generatorType="vehicle-bill-of-sale"
+                      originalPrice={9.99}
+                      onDiscountApplied={setAppliedDiscount}
+                    />
+                    <p className="text-sm text-slate-600 mb-4">
+                      Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
+                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {!appliedDiscount && ' for vehicle bill of sale generation'}
+                    </p>
+                    
+                    {isProcessing ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                        <span className="ml-2 text-slate-600">Processing...</span>
+                      </div>
+                    ) : (
+                      <PayPalButtons
+                        createOrder={createOrder}
+                        onApprove={onApprove}
+                        onError={onError}
+                        disabled={isProcessing}
+                        style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                      />
+                    )}
+                    
+                    {/* Subscription upsell */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-center">
+                      <p className="text-sm text-slate-500 mb-2">Want unlimited downloads?</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/pricing")}
+                        className="text-green-600 border-green-600 hover:bg-green-50"
+                      >
+                        View Subscription Plans
+                      </Button>
+                    </div>
+                  </>
                 )}
                 
                 <p className="text-xs text-slate-500 mt-4 text-center">

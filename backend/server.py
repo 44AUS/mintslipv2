@@ -81,8 +81,14 @@ USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_do
 os.makedirs(USER_DOCUMENTS_DIR, exist_ok=True)
 
 # Constants for saved documents
-MAX_SAVED_DOCUMENTS_PER_USER = 15
-DOCUMENT_EXPIRY_DAYS = 60
+DOCUMENT_EXPIRY_DAYS = 30
+
+# Saved documents limits by subscription tier
+SAVED_DOCS_LIMITS = {
+    "starter": 10,
+    "professional": 30,
+    "business": -1  # -1 means unlimited
+}
 
 # Password hashing - Using bcrypt for better security
 def hash_password(password: str) -> str:

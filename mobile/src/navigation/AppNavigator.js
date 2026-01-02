@@ -2,7 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, View, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,25 +20,19 @@ import PreviewScreen from '../screens/PreviewScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Tab Icon Component
+// Tab Icon
 function TabIcon({ name, focused }) {
-  const icons = {
-    Home: '🏠',
-    Documents: '📄',
-    Profile: '👤',
-  };
+  const icons = { Home: '🏠', Documents: '📄', Profile: '👤' };
   return (
-    <View style={styles.tabIcon}>
-      <Text style={[styles.tabIconText, focused && styles.tabIconFocused]}>
-        {icons[name] || '●'}
-      </Text>
+    <View style={[styles.tabIconWrap, focused && styles.tabIconWrapActive]}>
+      <Text style={styles.tabIcon}>{icons[name]}</Text>
     </View>
   );
 }
 
-// Main Tab Navigator
+// Main Tabs
 function MainTabs() {
-  const { user, isGuest } = useAuth();
+  const { isGuest } = useAuth();
   
   return (
     <Tab.Navigator
@@ -46,59 +40,34 @@ function MainTabs() {
         headerShown: false,
         tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textMuted,
+        tabBarInactiveTintColor: COLORS.textTertiary,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabItem,
       })}
     >
-      <Tab.Screen 
-        name="Home" 
-        component={HomeScreen}
-        options={{ tabBarLabel: 'Home' }}
-      />
-      <Tab.Screen 
-        name="Documents" 
-        component={DocumentsStack}
-        options={{ tabBarLabel: 'Create' }}
-      />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
+      <Tab.Screen name="Documents" component={HomeScreen} options={{ tabBarLabel: 'Create' }} />
       <Tab.Screen 
         name="Profile" 
-        component={isGuest ? LoginScreen : ProfileScreen}
-        options={{ tabBarLabel: isGuest ? 'Login' : 'Profile' }}
+        component={isGuest ? LoginScreen : ProfileScreen} 
+        options={{ tabBarLabel: isGuest ? 'Login' : 'Profile' }} 
       />
     </Tab.Navigator>
   );
 }
 
-// Documents Stack (for document creation flow)
-function DocumentsStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="DocumentList" component={HomeScreen} />
-    </Stack.Navigator>
-  );
-}
-
-// Main App Navigator
+// App Navigator
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="MainTabs"
-        screenOptions={{ headerShown: false }}
-      >
+      <Stack.Navigator initialRouteName="MainTabs" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={MainTabs} />
-        
-        {/* Document Generators */}
         <Stack.Screen name="PaystubForm" component={PaystubFormScreen} />
         <Stack.Screen name="CanadianPaystubForm" component={CanadianPaystubFormScreen} />
         <Stack.Screen name="W2Form" component={W2FormScreen} />
         <Stack.Screen name="ResumeBuilder" component={ResumeBuilderScreen} />
-        
-        {/* Preview */}
         <Stack.Screen name="Preview" component={PreviewScreen} />
-        
-        {/* Auth */}
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
       </Stack.Navigator>
@@ -108,26 +77,32 @@ export default function AppNavigator() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     paddingTop: 8,
     paddingBottom: 8,
-    height: 65,
+    height: 70,
   },
   tabLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
   },
-  tabIcon: {
+  tabItem: {
+    paddingVertical: 4,
+  },
+  tabIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tabIconText: {
-    fontSize: 24,
+  tabIconWrapActive: {
+    backgroundColor: COLORS.primarySoft,
   },
-  tabIconFocused: {
-    transform: [{ scale: 1.1 }],
+  tabIcon: {
+    fontSize: 20,
   },
 });

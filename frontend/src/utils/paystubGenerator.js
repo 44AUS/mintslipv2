@@ -158,6 +158,9 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       saveAs(zipBlob, zipFileName);
       console.log("ZIP downloaded successfully");
       
+      // Return blob if requested for saving
+      if (returnBlob) return zipBlob;
+      
     } else {
       // Single stub - download directly as PDF
       console.log("Generating single PDF...");

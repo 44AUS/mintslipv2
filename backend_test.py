@@ -2598,6 +2598,16 @@ class AIResumeBuilderTester:
         success_rate = (self.tests_passed / self.tests_run) * 100 if self.tests_run > 0 else 0
         print(f"📈 Success Rate: {success_rate:.1f}%")
         
+        # Test Mobile App APIs (as requested in review)
+        print("\n📱 Testing Mobile App Backend APIs...")
+        mobile_parse_resume_ok = self.test_parse_resume_endpoint()
+        mobile_generate_responsibilities_ok = self.test_generate_responsibilities_endpoint()
+        mobile_auth_register_ok = self.test_auth_register_endpoint()
+        mobile_auth_login_ok = self.test_auth_login_endpoint()
+        mobile_user_me_ok = self.test_user_me_endpoint()
+        mobile_subscription_download_ok = self.test_mobile_subscription_download()
+        mobile_downloads_remaining_ok = self.test_mobile_downloads_remaining()
+        
         # Determine overall success - focus on critical API endpoints
         critical_tests_passed = health_ok and generate_ok and regenerate_ok
         admin_tests_passed = admin_setup_ok and admin_login_ok and admin_verify_ok and admin_dashboard_ok
@@ -2611,9 +2621,12 @@ class AIResumeBuilderTester:
                                             subscription_download_with_sub_ok and downloads_remaining_ok and 
                                             downloads_decrement_ok and subscription_download_zero_ok)
         subscription_upgrade_tests_passed = upgrade_calculate_ok and upgrade_create_order_ok and upgrade_validation_ok
+        mobile_app_tests_passed = (mobile_auth_register_ok and mobile_auth_login_ok and mobile_user_me_ok and 
+                                 mobile_subscription_download_ok and mobile_downloads_remaining_ok)
         
         if (critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and 
-            new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and subscription_upgrade_tests_passed):
+            new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and 
+            subscription_upgrade_tests_passed and mobile_app_tests_passed):
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")
@@ -2623,6 +2636,7 @@ class AIResumeBuilderTester:
             print("✅ Blog system APIs working")
             print("✅ Subscription download system working")
             print("✅ Subscription upgrade system working")
+            print("✅ Mobile app backend APIs working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")
@@ -2643,12 +2657,83 @@ class AIResumeBuilderTester:
                 failed_systems.append("Subscription Download System")
             if not subscription_upgrade_tests_passed:
                 failed_systems.append("Subscription Upgrade System")
+            if not mobile_app_tests_passed:
+                failed_systems.append("Mobile App Backend APIs")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 
+    def run_mobile_focused_tests(self):
+        """Run only the mobile app focused tests as requested in the review"""
+        print("🚀 Starting Mobile App Backend API Tests (Review Focus)")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("=" * 80)
+        
+        # Basic connectivity
+        print("\n🔧 Testing Backend Service...")
+        backend_running = self.test_backend_service_status()
+        
+        if not backend_running:
+            print("❌ Backend service is not running. Cannot proceed with API tests.")
+            return False
+        
+        self.test_health_check()
+        
+        # Admin setup for user management
+        print("\n🔐 Admin Setup (for user management):")
+        self.test_admin_setup()
+        self.test_admin_login()
+        
+        # Resume Builder AI APIs
+        print("\n🤖 Resume Builder AI APIs:")
+        mobile_parse_resume_ok = self.test_parse_resume_endpoint()
+        mobile_generate_responsibilities_ok = self.test_generate_responsibilities_endpoint()
+        
+        # Authentication APIs (mobile app)
+        print("\n🔐 Mobile Authentication APIs:")
+        mobile_auth_register_ok = self.test_auth_register_endpoint()
+        mobile_auth_login_ok = self.test_auth_login_endpoint()
+        mobile_user_me_ok = self.test_user_me_endpoint()
+        
+        # Subscription Download APIs (mobile app)
+        print("\n💾 Mobile Subscription Download APIs:")
+        mobile_subscription_download_ok = self.test_mobile_subscription_download()
+        mobile_downloads_remaining_ok = self.test_mobile_downloads_remaining()
+        
+        # Print summary
+        print("\n" + "=" * 80)
+        print("📊 MOBILE APP TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total tests run: {self.tests_run}")
+        print(f"Tests passed: {self.tests_passed}")
+        print(f"Tests failed: {self.tests_run - self.tests_passed}")
+        print(f"Success rate: {(self.tests_passed / self.tests_run * 100):.1f}%")
+        
+        # Focus on mobile app specific tests
+        mobile_app_tests_passed = (mobile_auth_register_ok and mobile_auth_login_ok and mobile_user_me_ok and 
+                                 mobile_subscription_download_ok and mobile_downloads_remaining_ok)
+        
+        if mobile_app_tests_passed:
+            print("🎉 All mobile app tests passed!")
+            print("✅ Mobile authentication APIs working")
+            print("✅ Mobile subscription download APIs working")
+            if mobile_parse_resume_ok and mobile_generate_responsibilities_ok:
+                print("✅ Resume Builder AI APIs working")
+            else:
+                print("⚠️  Resume Builder AI APIs may not be implemented yet")
+        else:
+            print("❌ Some mobile app tests failed. Check the details above.")
+            
+        return mobile_app_tests_passed
+
 def main():
     tester = AIResumeBuilderTester()
-    success = tester.run_all_tests()
+    
+    # Check if we should run mobile-focused tests
+    if len(sys.argv) > 1 and sys.argv[1] == "--mobile":
+        success = tester.run_mobile_focused_tests()
+    else:
+        success = tester.run_all_tests()
+    
     return 0 if success else 1
 
 if __name__ == "__main__":

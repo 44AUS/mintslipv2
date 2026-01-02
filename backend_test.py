@@ -918,6 +918,385 @@ class AIResumeBuilderTester:
             self.log_test("Full Admin Flow", False, f"Exception: {str(e)}")
             return False
 
+    # ========== SUBSCRIPTION DOWNLOAD TESTS ==========
+
+    def test_user_registration(self):
+        """Test POST /api/user/register endpoint"""
+        try:
+            # Use timestamp to create unique email
+            import time
+            timestamp = int(time.time())
+            payload = {
+                "email": f"testsubscriber@test.com",
+                "password": "Test123!",
+                "name": "Test Subscriber"
+            }
+            response = requests.post(f"{self.api_url}/user/signup", json=payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("token") and data.get("user"):
+                    user_info = data["user"]
+                    self.test_user_token = data["token"]
+                    self.test_user_id = user_info["id"]
+                    details += f", User created: {user_info.get('email')}, Token received"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            elif response.status_code == 400:
+                # User might already exist, try to login
+                login_payload = {
+                    "email": "testsubscriber@test.com",
+                    "password": "Test123!"
+                }
+                login_response = requests.post(f"{self.api_url}/user/login", json=login_payload, timeout=10)
+                if login_response.status_code == 200:
+                    login_data = login_response.json()
+                    if login_data.get("success") and login_data.get("token"):
+                        self.test_user_token = login_data["token"]
+                        self.test_user_id = login_data["user"]["id"]
+                        success = True
+                        details = f"Status: 200 (existing user login), Token received"
+                    else:
+                        success = False
+                        details += f", Login failed: {login_data}"
+                else:
+                    success = False
+                    details += f", User exists but login failed: {login_response.status_code}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("User Registration", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Registration", False, f"Exception: {str(e)}")
+            return False
+
+    def test_user_login(self):
+        """Test POST /api/user/login endpoint"""
+        try:
+            payload = {
+                "email": "testsubscriber@test.com",
+                "password": "Test123!"
+            }
+            response = requests.post(f"{self.api_url}/user/login", json=payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("token") and data.get("user"):
+                    user_info = data["user"]
+                    self.test_user_token = data["token"]
+                    self.test_user_id = user_info["id"]
+                    details += f", User logged in: {user_info.get('email')}, Token received"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("User Login", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Login", False, f"Exception: {str(e)}")
+            return False
+
+    def test_subscription_download_without_subscription(self):
+        """Test POST /api/user/subscription-download without subscription (should return 403)"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Subscription Download Without Subscription", False, "No user token available (user login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            payload = {
+                "documentType": "paystub",
+                "template": "modern"
+            }
+            response = requests.post(f"{self.api_url}/user/subscription-download", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 403
+            details = f"Status: {response.status_code} (Expected 403)"
+            
+            if success:
+                data = response.json()
+                if "detail" in data and "subscription" in data["detail"].lower():
+                    details += f", Correct error message: {data['detail']}"
+                else:
+                    details += f", Error message: {data.get('detail', 'Unknown')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Subscription Download Without Subscription", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Subscription Download Without Subscription", False, f"Exception: {str(e)}")
+            return False
+
+    def activate_test_user_subscription(self):
+        """Manually activate subscription for test user using admin endpoint"""
+        if not self.admin_token or not hasattr(self, 'test_user_id'):
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            payload = {"tier": "starter"}
+            response = requests.put(
+                f"{self.api_url}/admin/users/{self.test_user_id}/subscription", 
+                json=payload, 
+                headers=headers, 
+                timeout=10
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
+
+    def test_subscription_download_with_subscription(self):
+        """Test POST /api/user/subscription-download with active subscription"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Subscription Download With Subscription", False, "No user token available (user login test must pass first)")
+            return False
+        
+        # First activate subscription for the test user
+        if not self.activate_test_user_subscription():
+            self.log_test("Subscription Download With Subscription", False, "Could not activate subscription for test user")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            
+            # Test different document types
+            document_types = ["paystub", "w9", "1099-nec", "w2"]
+            success = True
+            details = ""
+            
+            for doc_type in document_types:
+                payload = {
+                    "documentType": doc_type,
+                    "template": "modern" if doc_type == "paystub" else None
+                }
+                response = requests.post(f"{self.api_url}/user/subscription-download", json=payload, headers=headers, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "downloadsRemaining" in data and "purchaseId" in data:
+                        downloads_remaining = data["downloadsRemaining"]
+                        purchase_id = data["purchaseId"]
+                        details += f"{doc_type}: ✓ (remaining: {downloads_remaining}, purchase: {purchase_id[:8]}...) "
+                    else:
+                        success = False
+                        details += f"{doc_type}: ✗ (invalid response: {data}) "
+                        break
+                else:
+                    success = False
+                    try:
+                        error_data = response.json()
+                        details += f"{doc_type}: ✗ (status: {response.status_code}, error: {error_data}) "
+                    except:
+                        details += f"{doc_type}: ✗ (status: {response.status_code}, response: {response.text}) "
+                    break
+            
+            self.log_test("Subscription Download With Subscription", success, details.strip())
+            return success
+        except Exception as e:
+            self.log_test("Subscription Download With Subscription", False, f"Exception: {str(e)}")
+            return False
+
+    def test_downloads_remaining_endpoint(self):
+        """Test GET /api/user/downloads-remaining endpoint"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Downloads Remaining Endpoint", False, "No user token available (user login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            response = requests.get(f"{self.api_url}/user/downloads-remaining", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "hasSubscription", "downloadsRemaining"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    has_subscription = data.get("hasSubscription")
+                    downloads_remaining = data.get("downloadsRemaining")
+                    tier = data.get("tier", "Unknown")
+                    
+                    if has_subscription:
+                        details += f", Has subscription: {tier}, Downloads remaining: {downloads_remaining}"
+                        
+                        # Verify downloads remaining is a valid number
+                        if isinstance(downloads_remaining, int) and downloads_remaining >= 0:
+                            details += f", Valid downloads count"
+                        elif downloads_remaining == -1:
+                            details += f", Unlimited downloads"
+                        else:
+                            success = False
+                            details += f", Invalid downloads count: {downloads_remaining}"
+                    else:
+                        details += f", No subscription found"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Downloads Remaining Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Downloads Remaining Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_downloads_decrement_properly(self):
+        """Test that downloads_remaining decrements properly with each download"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Downloads Decrement Properly", False, "No user token available (user login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            
+            # First get initial downloads remaining
+            response = requests.get(f"{self.api_url}/user/downloads-remaining", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Downloads Decrement Properly", False, f"Could not get initial downloads count: {response.status_code}")
+                return False
+            
+            initial_data = response.json()
+            if not initial_data.get("success") or not initial_data.get("hasSubscription"):
+                self.log_test("Downloads Decrement Properly", False, "User does not have active subscription")
+                return False
+            
+            initial_downloads = initial_data.get("downloadsRemaining")
+            if initial_downloads == -1:
+                # Unlimited downloads, can't test decrement
+                self.log_test("Downloads Decrement Properly", True, "Unlimited downloads - decrement test not applicable")
+                return True
+            
+            # Make a download
+            download_payload = {
+                "documentType": "w2",
+                "template": None
+            }
+            download_response = requests.post(f"{self.api_url}/user/subscription-download", json=download_payload, headers=headers, timeout=10)
+            
+            if download_response.status_code != 200:
+                self.log_test("Downloads Decrement Properly", False, f"Download failed: {download_response.status_code}")
+                return False
+            
+            download_data = download_response.json()
+            if not download_data.get("success"):
+                self.log_test("Downloads Decrement Properly", False, f"Download response invalid: {download_data}")
+                return False
+            
+            new_downloads = download_data.get("downloadsRemaining")
+            
+            # Check if downloads decremented by 1
+            expected_downloads = initial_downloads - 1
+            success = new_downloads == expected_downloads
+            details = f"Initial: {initial_downloads}, After download: {new_downloads}, Expected: {expected_downloads}"
+            
+            if success:
+                details += f", Decrement working correctly"
+            else:
+                details += f", Decrement not working properly"
+            
+            self.log_test("Downloads Decrement Properly", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Downloads Decrement Properly", False, f"Exception: {str(e)}")
+            return False
+
+    def test_subscription_download_zero_remaining(self):
+        """Test subscription download when downloads_remaining is 0 (should return 403)"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Subscription Download Zero Remaining", False, "No user token available (user login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            
+            # First, exhaust all downloads by making multiple requests
+            max_attempts = 15  # Safety limit
+            attempts = 0
+            
+            while attempts < max_attempts:
+                # Check current downloads remaining
+                remaining_response = requests.get(f"{self.api_url}/user/downloads-remaining", headers=headers, timeout=10)
+                if remaining_response.status_code == 200:
+                    remaining_data = remaining_response.json()
+                    downloads_remaining = remaining_data.get("downloadsRemaining", 0)
+                    
+                    if downloads_remaining == -1:
+                        # Unlimited downloads, can't test zero remaining
+                        self.log_test("Subscription Download Zero Remaining", True, "Unlimited downloads - zero remaining test not applicable")
+                        return True
+                    elif downloads_remaining == 0:
+                        # Perfect, now test download with 0 remaining
+                        break
+                    else:
+                        # Make a download to reduce count
+                        download_payload = {
+                            "documentType": "1099-misc",
+                            "template": None
+                        }
+                        download_response = requests.post(f"{self.api_url}/user/subscription-download", json=download_payload, headers=headers, timeout=10)
+                        if download_response.status_code != 200:
+                            break
+                
+                attempts += 1
+            
+            # Now test download with 0 remaining
+            payload = {
+                "documentType": "paystub",
+                "template": "modern"
+            }
+            response = requests.post(f"{self.api_url}/user/subscription-download", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 403
+            details = f"Status: {response.status_code} (Expected 403 for zero downloads remaining)"
+            
+            if success:
+                data = response.json()
+                if "detail" in data and ("remaining" in data["detail"].lower() or "download" in data["detail"].lower()):
+                    details += f", Correct error message: {data['detail']}"
+                else:
+                    details += f", Error message: {data.get('detail', 'Unknown')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Subscription Download Zero Remaining", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Subscription Download Zero Remaining", False, f"Exception: {str(e)}")
+            return False
+
     # ========== BLOG SYSTEM TESTS ==========
 
     def test_blog_categories(self):

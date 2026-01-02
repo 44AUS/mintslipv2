@@ -345,9 +345,9 @@ export default function SubscriptionChoose() {
             disabled={!selectedTier || isProcessing}
             className={`
               px-12 py-6 text-lg font-semibold rounded-xl shadow-lg
-              ${selectedTier === "basic" ? "bg-green-600 hover:bg-green-700" : ""}
-              ${selectedTier === "pro" ? "bg-blue-600 hover:bg-blue-700" : ""}
-              ${selectedTier === "unlimited" ? "bg-purple-600 hover:bg-purple-700" : ""}
+              ${selectedTier === "starter" ? "bg-green-600 hover:bg-green-700" : ""}
+              ${selectedTier === "professional" ? "bg-blue-600 hover:bg-blue-700" : ""}
+              ${selectedTier === "business" ? "bg-purple-600 hover:bg-purple-700" : ""}
               ${!selectedTier ? "bg-slate-400" : ""}
               text-white gap-2
             `}

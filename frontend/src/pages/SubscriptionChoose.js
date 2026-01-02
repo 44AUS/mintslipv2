@@ -120,16 +120,40 @@ export default function SubscriptionChoose() {
 
     setIsProcessing(true);
     
-    // For now, show a message that PayPal subscriptions need to be configured
-    // In production, this would redirect to PayPal subscription flow
-    toast.info("PayPal subscription integration coming soon! For now, contact support to activate your subscription.");
-    setIsProcessing(false);
-    
-    // TODO: Implement PayPal subscription flow
-    // This would involve:
-    // 1. Creating PayPal subscription plans in PayPal dashboard
-    // 2. Using PayPal JS SDK to show subscription buttons
-    // 3. Handling subscription.created webhook
+    try {
+      const token = localStorage.getItem("userToken");
+      if (!token) {
+        toast.error("Please log in to subscribe");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/subscriptions/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ tier: selectedTier })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.approval_url) {
+        // Store subscription ID for later activation
+        localStorage.setItem("pending_subscription_id", data.subscription_id);
+        localStorage.setItem("pending_subscription_tier", selectedTier);
+        // Redirect to PayPal for approval
+        window.location.href = data.approval_url;
+      } else {
+        throw new Error(data.detail || "Failed to create subscription");
+      }
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      toast.error(error.message || "Failed to create subscription");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleLogout = () => {

@@ -140,6 +140,10 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       
       doc.save(pdfFileName);
       console.log("PDF downloaded successfully");
+      
+      if (returnBlob) {
+        return pdfBlob;
+      }
     }
   } catch (error) {
     console.error("Error generating Canadian paystub:", error);

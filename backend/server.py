@@ -591,6 +591,430 @@ async def change_user_password(data: ChangeUserPassword, request: Request, sessi
     return {"success": True, "message": "Password changed successfully"}
 
 
+# ========== PAYPAL SUBSCRIPTION ENDPOINTS ==========
+
+# Subscription Plans Configuration
+SUBSCRIPTION_PLANS = {
+    "starter": {
+        "name": "Starter",
+        "price": "9.99",
+        "downloads": 10,
+        "description": "10 downloads per month"
+    },
+    "professional": {
+        "name": "Professional", 
+        "price": "19.99",
+        "downloads": 30,
+        "description": "30 downloads per month"
+    },
+    "business": {
+        "name": "Business",
+        "price": "49.99",
+        "downloads": -1,  # -1 means unlimited
+        "description": "Unlimited downloads"
+    }
+}
+
+# Store for PayPal Plan IDs (will be populated when plans are created)
+paypal_plan_ids = {}
+
+async def get_paypal_access_token():
+    """Get PayPal OAuth access token"""
+    auth = base64.b64encode(f"{PAYPAL_CLIENT_ID}:{PAYPAL_SECRET}".encode()).decode()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/oauth2/token",
+            headers={
+                "Authorization": f"Basic {auth}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            data={"grant_type": "client_credentials"}
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to get PayPal access token")
+        
+        return response.json()["access_token"]
+
+
+async def create_paypal_product():
+    """Create a PayPal product for subscriptions"""
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/catalogs/products",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "name": "MintSlip Subscription",
+                "description": "Monthly subscription for MintSlip document generator",
+                "type": "SERVICE",
+                "category": "SOFTWARE"
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating product: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to create PayPal product")
+        
+        return response.json()["id"]
+
+
+async def create_paypal_plan(product_id: str, tier: str):
+    """Create a PayPal subscription plan"""
+    plan_config = SUBSCRIPTION_PLANS[tier]
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/billing/plans",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "product_id": product_id,
+                "name": f"MintSlip {plan_config['name']} Plan",
+                "description": plan_config["description"],
+                "billing_cycles": [
+                    {
+                        "frequency": {
+                            "interval_unit": "MONTH",
+                            "interval_count": 1
+                        },
+                        "tenure_type": "REGULAR",
+                        "sequence": 1,
+                        "total_cycles": 0,  # 0 = infinite
+                        "pricing_scheme": {
+                            "fixed_price": {
+                                "value": plan_config["price"],
+                                "currency_code": "USD"
+                            }
+                        }
+                    }
+                ],
+                "payment_preferences": {
+                    "auto_bill_outstanding": True,
+                    "setup_fee": {
+                        "value": "0",
+                        "currency_code": "USD"
+                    },
+                    "setup_fee_failure_action": "CONTINUE",
+                    "payment_failure_threshold": 3
+                }
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating plan: {response.text}")
+            raise HTTPException(status_code=500, detail=f"Failed to create PayPal plan for {tier}")
+        
+        return response.json()["id"]
+
+
+@app.post("/api/subscriptions/setup-plans")
+async def setup_paypal_plans(session: dict = Depends(get_current_admin)):
+    """Setup PayPal subscription plans (admin only, run once)"""
+    global paypal_plan_ids
+    
+    try:
+        # Create product first
+        product_id = await create_paypal_product()
+        
+        # Create plans for each tier
+        for tier in SUBSCRIPTION_PLANS.keys():
+            plan_id = await create_paypal_plan(product_id, tier)
+            paypal_plan_ids[tier] = plan_id
+            
+            # Store in database for persistence
+            await db["paypal_plans"].update_one(
+                {"tier": tier},
+                {"$set": {"plan_id": plan_id, "product_id": product_id}},
+                upsert=True
+            )
+        
+        return {
+            "success": True,
+            "message": "PayPal plans created successfully",
+            "plans": paypal_plan_ids
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/subscriptions/plans")
+async def get_subscription_plans():
+    """Get available subscription plans with PayPal plan IDs"""
+    # Load plan IDs from database
+    plans_from_db = await db["paypal_plans"].find({}).to_list(length=10)
+    plan_id_map = {p["tier"]: p["plan_id"] for p in plans_from_db}
+    
+    plans = []
+    for tier, config in SUBSCRIPTION_PLANS.items():
+        plans.append({
+            "tier": tier,
+            "name": config["name"],
+            "price": config["price"],
+            "downloads": config["downloads"],
+            "description": config["description"],
+            "paypal_plan_id": plan_id_map.get(tier)
+        })
+    
+    return {"success": True, "plans": plans}
+
+
+class CreateSubscriptionRequest(BaseModel):
+    tier: str
+
+@app.post("/api/subscriptions/create")
+async def create_subscription(data: CreateSubscriptionRequest, session: dict = Depends(get_current_user)):
+    """Create a PayPal subscription for the user"""
+    if data.tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Get the plan ID from database
+    plan_record = await db["paypal_plans"].find_one({"tier": data.tier})
+    if not plan_record:
+        raise HTTPException(status_code=400, detail="Subscription plans not set up. Please contact admin.")
+    
+    plan_id = plan_record["plan_id"]
+    access_token = await get_paypal_access_token()
+    
+    # Get user info
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "plan_id": plan_id,
+                "subscriber": {
+                    "name": {
+                        "given_name": user.get("name", "").split()[0] if user.get("name") else "User",
+                        "surname": " ".join(user.get("name", "").split()[1:]) if user.get("name") and len(user.get("name", "").split()) > 1 else ""
+                    },
+                    "email_address": user.get("email", "")
+                },
+                "application_context": {
+                    "brand_name": "MintSlip",
+                    "locale": "en-US",
+                    "shipping_preference": "NO_SHIPPING",
+                    "user_action": "SUBSCRIBE_NOW",
+                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/success",
+                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/cancel"
+                }
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating subscription: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to create subscription")
+        
+        subscription_data = response.json()
+        
+        # Find the approval link
+        approval_url = None
+        for link in subscription_data.get("links", []):
+            if link["rel"] == "approve":
+                approval_url = link["href"]
+                break
+        
+        # Store pending subscription
+        await db["pending_subscriptions"].insert_one({
+            "id": subscription_data["id"],
+            "user_id": session["userId"],
+            "tier": data.tier,
+            "status": "PENDING",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {
+            "success": True,
+            "subscription_id": subscription_data["id"],
+            "approval_url": approval_url
+        }
+
+
+@app.post("/api/subscriptions/activate")
+async def activate_subscription(subscription_id: str, session: dict = Depends(get_current_user)):
+    """Activate a subscription after PayPal approval"""
+    # Get pending subscription
+    pending = await db["pending_subscriptions"].find_one({
+        "id": subscription_id,
+        "user_id": session["userId"]
+    })
+    
+    if not pending:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    access_token = await get_paypal_access_token()
+    
+    # Get subscription details from PayPal
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to verify subscription")
+        
+        sub_data = response.json()
+        
+        if sub_data["status"] != "ACTIVE":
+            raise HTTPException(status_code=400, detail=f"Subscription is not active. Status: {sub_data['status']}")
+    
+    # Get plan config
+    tier = pending["tier"]
+    plan_config = SUBSCRIPTION_PLANS[tier]
+    
+    # Update user with subscription
+    subscription_info = {
+        "tier": tier,
+        "paypal_subscription_id": subscription_id,
+        "status": "active",
+        "downloads_remaining": plan_config["downloads"],
+        "downloads_total": plan_config["downloads"],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    }
+    
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {"subscription": subscription_info}}
+    )
+    
+    # Remove pending subscription
+    await db["pending_subscriptions"].delete_one({"id": subscription_id})
+    
+    # Get updated user
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    
+    return {
+        "success": True,
+        "message": "Subscription activated successfully",
+        "user": user
+    }
+
+
+@app.post("/api/subscriptions/cancel")
+async def cancel_subscription(session: dict = Depends(get_current_user)):
+    """Cancel user's PayPal subscription"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="No active subscription found")
+    
+    subscription_id = user["subscription"].get("paypal_subscription_id")
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="No PayPal subscription ID found")
+    
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}/cancel",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={"reason": "User requested cancellation"}
+        )
+        
+        if response.status_code not in [200, 204]:
+            print(f"Error cancelling subscription: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to cancel subscription")
+    
+    # Update user subscription status
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {
+            "subscription.status": "cancelled",
+            "subscription.cancelled_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Subscription cancelled successfully"}
+
+
+@app.post("/api/webhooks/paypal")
+async def paypal_webhook(request: Request):
+    """Handle PayPal webhooks for subscription events"""
+    try:
+        body = await request.json()
+        event_type = body.get("event_type", "")
+        resource = body.get("resource", {})
+        
+        print(f"PayPal Webhook: {event_type}")
+        
+        if event_type == "BILLING.SUBSCRIPTION.ACTIVATED":
+            subscription_id = resource.get("id")
+            # Find user with this subscription
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user:
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"subscription.status": "active"}}
+                )
+        
+        elif event_type == "BILLING.SUBSCRIPTION.CANCELLED":
+            subscription_id = resource.get("id")
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user:
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"subscription.status": "cancelled"}}
+                )
+        
+        elif event_type == "BILLING.SUBSCRIPTION.SUSPENDED":
+            subscription_id = resource.get("id")
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user:
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"subscription.status": "suspended"}}
+                )
+        
+        elif event_type == "PAYMENT.SALE.COMPLETED":
+            # Subscription payment received - reset downloads
+            subscription_id = resource.get("billing_agreement_id")
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user and user.get("subscription"):
+                tier = user["subscription"].get("tier")
+                plan_config = SUBSCRIPTION_PLANS.get(tier, {})
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {
+                        "subscription.downloads_remaining": plan_config.get("downloads", 0),
+                        "subscription.current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+                    }}
+                )
+        
+        return {"status": "received"}
+    except Exception as e:
+        print(f"Webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+
 # ========== PURCHASE TRACKING ENDPOINTS ==========
 
 @app.post("/api/purchases/track")

@@ -147,6 +147,28 @@ export default function UserSignup() {
               </div>
             </div>
 
+            {/* Save Documents Preference */}
+            <div className="flex items-start space-x-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <Checkbox
+                id="saveDocuments"
+                checked={saveDocuments}
+                onCheckedChange={(checked) => setSaveDocuments(checked)}
+                className="mt-0.5"
+              />
+              <div className="space-y-1">
+                <Label 
+                  htmlFor="saveDocuments" 
+                  className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                >
+                  <FolderArchive className="w-4 h-4 text-green-600" />
+                  Save my documents for later
+                </Label>
+                <p className="text-xs text-slate-500">
+                  Keep copies of your generated PDFs/ZIPs for up to 60 days. Max 15 documents stored.
+                </p>
+              </div>
+            </div>
+
             <Button
               type="submit"
               disabled={isLoading}

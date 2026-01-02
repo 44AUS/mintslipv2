@@ -85,6 +85,58 @@ export default function UserSettings() {
     navigate("/login");
   };
 
+  const handleChangePassword = async () => {
+    setPasswordError("");
+    
+    // Validate
+    if (!passwordData.currentPassword) {
+      setPasswordError("Please enter your current password");
+      return;
+    }
+    if (!passwordData.newPassword) {
+      setPasswordError("Please enter a new password");
+      return;
+    }
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters");
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await fetch(`${BACKEND_URL}/api/user/change-password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to change password");
+      }
+      
+      toast.success("Password changed successfully!");
+      setShowPasswordDialog(false);
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      setPasswordError(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleCancelSubscription = async () => {
     setIsProcessing(true);
     try {

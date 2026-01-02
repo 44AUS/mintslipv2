@@ -41,6 +41,8 @@ export default function UserDashboard() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [recentDownloads, setRecentDownloads] = useState([]);
+  const [savedDocuments, setSavedDocuments] = useState([]);
+  const [savedDocsCount, setSavedDocsCount] = useState({ count: 0, maxDocuments: 15 });
 
   useEffect(() => {
     const token = localStorage.getItem("userToken");

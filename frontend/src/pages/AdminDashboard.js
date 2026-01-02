@@ -1698,6 +1698,15 @@ export default function AdminDashboard() {
                                     <CreditCard className="w-4 h-4 mr-2" />
                                     Change Subscription
                                   </DropdownMenuItem>
+                                  {user.subscription && (
+                                    <DropdownMenuItem 
+                                      onClick={() => openDownloadsModal(user)}
+                                      className="text-green-600"
+                                    >
+                                      <Download className="w-4 h-4 mr-2" />
+                                      Edit Downloads
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem 
                                     onClick={() => toggleBanUser(user.id, user.isBanned)}

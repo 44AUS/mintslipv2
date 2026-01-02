@@ -3087,6 +3087,19 @@ class AIResumeBuilderTester:
         upgrade_create_order_ok = self.test_subscription_upgrade_create_order()
         upgrade_validation_ok = self.test_subscription_upgrade_validation_errors()
         
+        # Test Saved Documents Feature
+        print("\n💾 Testing Saved Documents Feature...")
+        save_docs_signup_ok = self.test_user_signup_with_save_documents_preference()
+        save_docs_preferences_ok = self.test_update_user_preferences()
+        save_docs_profile_ok = self.test_get_user_profile_with_preferences()
+        save_docs_empty_ok = self.test_get_saved_documents_empty()
+        save_docs_save_ok = self.test_save_document()
+        save_docs_list_ok = self.test_get_saved_documents_with_one_document()
+        save_docs_count_ok = self.test_get_saved_documents_count()
+        save_docs_download_ok = self.test_download_saved_document()
+        save_docs_delete_ok = self.test_delete_saved_document()
+        save_docs_no_pref_ok = self.test_save_document_without_preference_enabled()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

@@ -1,275 +1,443 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import Header from '../components/Header';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { COLORS, SHADOWS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
+import { useAuth } from '../context/AuthContext';
+
+// Document types available
+const DOCUMENTS = [
+  {
+    id: 'paystub',
+    title: 'Pay Stub',
+    description: 'Generate professional pay stubs with accurate tax calculations for US employees.',
+    icon: '💵',
+    price: '$9.99',
+    screen: 'PaystubForm',
+    color: COLORS.primary,
+    bgColor: COLORS.primaryBg,
+  },
+  {
+    id: 'canadian-paystub',
+    title: 'Canadian Pay Stub',
+    description: 'Create Canadian pay stubs with provincial tax calculations and deductions.',
+    icon: '🇨🇦',
+    price: '$9.99',
+    screen: 'CanadianPaystubForm',
+    color: '#dc2626',
+    bgColor: '#fef2f2',
+  },
+  {
+    id: 'w2',
+    title: 'W-2 Form',
+    description: 'Generate W-2 wage and tax statements for year-end tax reporting.',
+    icon: '📋',
+    price: '$14.99',
+    screen: 'W2Form',
+    color: '#2563eb',
+    bgColor: '#eff6ff',
+  },
+  {
+    id: 'resume',
+    title: 'AI Resume Builder',
+    description: 'Create professional resumes with AI-powered suggestions and formatting.',
+    icon: '📝',
+    price: '$4.99',
+    screen: 'ResumeBuilder',
+    color: '#7c3aed',
+    bgColor: '#f5f3ff',
+  },
+];
 
 export default function HomeScreen({ navigation }) {
+  const { user, isGuest, hasActiveSubscription } = useAuth();
+  const isSubscribed = hasActiveSubscription();
+
   return (
-    <View style={styles.container}>
-      <Header title="DocuMint" />
-      
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
-        <View style={styles.hero}>
-          <Text style={styles.subtitle}>PROFESSIONAL DOCUMENT GENERATION</Text>
-          <Text style={styles.title}>Generate{'\n'}Authentic{'\n'}Documents</Text>
-          <Text style={styles.description}>
-            Create professional pay stubs and bank statements instantly. Simple, secure, and ready to use.
-          </Text>
-          
-          <View style={styles.featurePills}>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>✓ Instant Download</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>✓ Secure Payment</Text>
-            </View>
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>✓ No Registration</Text>
-            </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.logo}>MintSlip</Text>
+            <Text style={styles.tagline}>Professional Documents</Text>
           </View>
+          {!isGuest && user && (
+            <TouchableOpacity 
+              style={styles.profileButton}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              <Text style={styles.profileIcon}>👤</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Document Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose Your Document</Text>
-          <Text style={styles.sectionSubtitle}>Select the document type you need to generate</Text>
-          
-          {/* Pay Stub Card */}
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate('PaystubForm')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.cardIcon}>
-              <Text style={styles.iconText}>📄</Text>
-            </View>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Pay Stub</Text>
-              <Text style={styles.cardDescription}>
-                Generate professional pay stubs with accurate tax calculations, direct deposit information, and customizable pay periods.
-              </Text>
-              <View style={styles.priceContainer}>
-                <Text style={styles.price}>$10</Text>
-                <Text style={styles.priceLabel}>per document</Text>
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Hero Section */}
+          <View style={styles.hero}>
+            <Text style={styles.heroTitle}>Generate{`\n`}Professional{`\n`}Documents</Text>
+            <Text style={styles.heroSubtitle}>
+              Create pay stubs, tax forms, and resumes instantly. Simple, secure, and ready to download.
+            </Text>
+            
+            {/* Feature Pills */}
+            <View style={styles.pills}>
+              <View style={styles.pill}>
+                <Text style={styles.pillText}>✓ Instant Download</Text>
+              </View>
+              <View style={styles.pill}>
+                <Text style={styles.pillText}>✓ Secure Payment</Text>
+              </View>
+              <View style={styles.pill}>
+                <Text style={styles.pillText}>✓ No Sign-up Required</Text>
               </View>
             </View>
-          </TouchableOpacity>
+          </View>
 
-          {/* Bank Statement Card */}
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate('BankStatementForm')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.cardIcon}>
-              <Text style={styles.iconText}>🏦</Text>
-            </View>
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Bank Statement</Text>
-              <Text style={styles.cardDescription}>
-                Create detailed bank statements with transaction history, account summaries, and professional formatting.
-              </Text>
-              <View style={styles.priceContainer}>
-                <Text style={styles.price}>$50</Text>
-                <Text style={styles.priceLabel}>per document</Text>
+          {/* Subscription Banner (if user has subscription) */}
+          {isSubscribed && (
+            <View style={styles.subscriptionBanner}>
+              <Text style={styles.subscriptionIcon}>⭐</Text>
+              <View style={styles.subscriptionInfo}>
+                <Text style={styles.subscriptionTitle}>Active Subscription</Text>
+                <Text style={styles.subscriptionText}>
+                  {user.subscription.downloads_remaining === -1 
+                    ? 'Unlimited downloads' 
+                    : `${user.subscription.downloads_remaining} downloads remaining`}
+                </Text>
               </View>
             </View>
-          </TouchableOpacity>
-        </View>
+          )}
 
-        {/* Trust Section */}
-        <View style={styles.trustSection}>
-          <Text style={styles.trustTitle}>Secure & Instant</Text>
-          <Text style={styles.trustDescription}>
-            Your payment is processed securely through PayPal. Once payment is confirmed, your document is generated and downloaded immediately.
-          </Text>
-          <View style={styles.trustFeatures}>
-            <View style={styles.trustFeature}>
-              <Text style={styles.trustCheckmark}>✓</Text>
-              <Text style={styles.trustFeatureText}>Industry-standard encryption</Text>
-            </View>
-            <View style={styles.trustFeature}>
-              <Text style={styles.trustCheckmark}>✓</Text>
-              <Text style={styles.trustFeatureText}>No data storage after download</Text>
-            </View>
-            <View style={styles.trustFeature}>
-              <Text style={styles.trustCheckmark}>✓</Text>
-              <Text style={styles.trustFeatureText}>Instant PDF generation</Text>
-            </View>
+          {/* Documents Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Choose Document Type</Text>
+            <Text style={styles.sectionSubtitle}>Select the document you need to create</Text>
+            
+            {/* Document Cards */}
+            {DOCUMENTS.map((doc) => (
+              <TouchableOpacity
+                key={doc.id}
+                style={styles.card}
+                onPress={() => navigation.navigate(doc.screen)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.cardIconContainer, { backgroundColor: doc.bgColor }]}>
+                  <Text style={styles.cardIcon}>{doc.icon}</Text>
+                </View>
+                <View style={styles.cardContent}>
+                  <Text style={styles.cardTitle}>{doc.title}</Text>
+                  <Text style={styles.cardDescription}>{doc.description}</Text>
+                  <View style={styles.cardFooter}>
+                    <Text style={[styles.cardPrice, { color: doc.color }]}>
+                      {isSubscribed ? 'Included' : doc.price}
+                    </Text>
+                    <View style={[styles.cardArrow, { backgroundColor: doc.bgColor }]}>
+                      <Text style={[styles.arrowText, { color: doc.color }]}>→</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
-        </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 DocuMint. Professional document generation service.</Text>
-        </View>
-      </ScrollView>
-    </View>
+          {/* Guest Login Prompt */}
+          {isGuest && (
+            <View style={styles.loginPrompt}>
+              <Text style={styles.loginPromptTitle}>Save Your Documents</Text>
+              <Text style={styles.loginPromptText}>
+                Create an account to access your documents anytime and get subscription benefits.
+              </Text>
+              <View style={styles.loginButtons}>
+                <TouchableOpacity
+                  style={styles.loginButton}
+                  onPress={() => navigation.navigate('Login')}
+                >
+                  <Text style={styles.loginButtonText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.signupButton}
+                  onPress={() => navigation.navigate('Signup')}
+                >
+                  <Text style={styles.signupButtonText}>Create Account</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Trust Section */}
+          <View style={styles.trustSection}>
+            <Text style={styles.trustTitle}>🔒 Secure & Private</Text>
+            <Text style={styles.trustText}>
+              Your data is encrypted and never stored after download. We use industry-standard security practices.
+            </Text>
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>© 2025 MintSlip. All rights reserved.</Text>
+          </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.primaryDark,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.white,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryDark,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.lg,
+  },
+  logo: {
+    fontSize: FONT_SIZES.xxl,
+    fontWeight: 'bold',
+    color: COLORS.white,
+  },
+  tagline: {
+    fontSize: FONT_SIZES.xs,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 2,
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileIcon: {
+    fontSize: 20,
   },
   content: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: SPACING.xxxl,
+  },
   hero: {
-    padding: 24,
-    paddingTop: 32,
+    padding: SPACING.xl,
+    paddingTop: SPACING.xxxl,
   },
-  subtitle: {
-    fontSize: 11,
-    letterSpacing: 2,
-    color: '#64748b',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 48,
+  heroTitle: {
+    fontSize: 38,
     fontWeight: 'bold',
-    color: '#1a4731',
-    marginBottom: 16,
-    lineHeight: 52,
+    color: COLORS.primaryDark,
+    lineHeight: 44,
+    marginBottom: SPACING.lg,
   },
-  description: {
-    fontSize: 16,
+  heroSubtitle: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
     lineHeight: 24,
-    color: '#64748b',
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
   },
-  featurePills: {
+  pills: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: SPACING.sm,
   },
   pill: {
-    backgroundColor: '#f0fdf4',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    backgroundColor: COLORS.primaryBg,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: BORDER_RADIUS.sm,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: COLORS.primaryBorder,
   },
   pillText: {
-    fontSize: 13,
+    fontSize: FONT_SIZES.sm,
     fontWeight: '600',
-    color: '#15803d',
+    color: COLORS.primary,
+  },
+  subscriptionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryBg,
+    marginHorizontal: SPACING.xl,
+    marginBottom: SPACING.lg,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.primaryBorder,
+  },
+  subscriptionIcon: {
+    fontSize: 28,
+    marginRight: SPACING.md,
+  },
+  subscriptionInfo: {
+    flex: 1,
+  },
+  subscriptionTitle: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  subscriptionText: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    marginTop: 2,
   },
   section: {
-    padding: 24,
+    padding: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 32,
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: COLORS.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   sectionSubtitle: {
-    fontSize: 16,
-    color: '#64748b',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    flexDirection: 'row',
+    backgroundColor: COLORS.white,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.small,
   },
-  cardIcon: {
+  cardIconContainer: {
     width: 56,
     height: 56,
-    borderRadius: 28,
-    backgroundColor: '#f0fdf4',
+    borderRadius: BORDER_RADIUS.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginRight: SPACING.lg,
   },
-  iconText: {
-    fontSize: 32,
+  cardIcon: {
+    fontSize: 28,
   },
   cardContent: {
     flex: 1,
   },
   cardTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a4731',
-    marginBottom: 12,
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.xs,
   },
   cardDescription: {
-    fontSize: 15,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    marginBottom: SPACING.md,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardPrice: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: 'bold',
+  },
+  cardArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  loginPrompt: {
+    backgroundColor: COLORS.background,
+    margin: SPACING.xl,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+  },
+  loginPromptTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
+  },
+  loginPromptText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
     lineHeight: 22,
-    color: '#64748b',
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
-  priceContainer: {
+  loginButtons: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
+    gap: SPACING.md,
   },
-  price: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a4731',
-  },
-  priceLabel: {
-    fontSize: 16,
-    color: '#64748b',
-  },
-  trustSection: {
-    backgroundColor: '#f8fafc',
-    padding: 24,
-    marginTop: 16,
-  },
-  trustTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a4731',
-    marginBottom: 16,
-  },
-  trustDescription: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#64748b',
-    marginBottom: 24,
-  },
-  trustFeatures: {
-    gap: 16,
-  },
-  trustFeature: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  trustCheckmark: {
-    fontSize: 20,
-    color: '#15803d',
-  },
-  trustFeatureText: {
-    fontSize: 15,
-    color: '#475569',
+  loginButton: {
     flex: 1,
-  },
-  footer: {
-    padding: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
     alignItems: 'center',
   },
+  loginButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  signupButton: {
+    flex: 1,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+  },
+  signupButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.white,
+  },
+  trustSection: {
+    backgroundColor: COLORS.background,
+    margin: SPACING.xl,
+    marginTop: 0,
+    padding: SPACING.xl,
+    borderRadius: BORDER_RADIUS.lg,
+  },
+  trustTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
+  },
+  trustText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+  },
+  footer: {
+    padding: SPACING.xl,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
   footerText: {
-    fontSize: 13,
-    color: '#94a3b8',
-    textAlign: 'center',
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textMuted,
   },
 });

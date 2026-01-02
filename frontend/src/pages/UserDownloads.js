@@ -27,6 +27,13 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   FileText,
   Download,
   Clock,
@@ -38,7 +45,8 @@ import {
   Trash2,
   FolderArchive,
   AlertTriangle,
-  Settings
+  Settings,
+  Filter
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -74,6 +82,8 @@ export default function UserDownloads() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [documentTypeFilter, setDocumentTypeFilter] = useState("all");
+  const [savedDocumentTypeFilter, setSavedDocumentTypeFilter] = useState("all");
   const pageSize = 10;
 
   useEffect(() => {

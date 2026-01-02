@@ -199,10 +199,20 @@ class UserSignup(BaseModel):
     email: str
     password: str
     name: str
+    saveDocuments: Optional[bool] = False  # User preference to save documents
 
 class UserLogin(BaseModel):
     email: str
     password: str
+
+class UserPreferencesUpdate(BaseModel):
+    saveDocuments: Optional[bool] = None
+
+class SaveDocumentRequest(BaseModel):
+    documentType: str
+    fileName: str
+    fileData: str  # Base64 encoded file content
+    template: Optional[str] = None
 
 # ========== PURCHASE TRACKING MODELS ==========
 

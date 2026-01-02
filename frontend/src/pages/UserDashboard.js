@@ -307,6 +307,60 @@ export default function UserDashboard() {
             </div>
           )}
         </div>
+
+        {/* Saved Documents Section */}
+        {user?.preferences?.saveDocuments && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 mt-6">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FolderArchive className="w-5 h-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-slate-800">Saved Documents</h2>
+                <span className="text-sm text-slate-500">
+                  ({savedDocsCount.count}/{savedDocsCount.maxDocuments})
+                </span>
+              </div>
+              <Link 
+                to="/user/downloads" 
+                className="text-sm text-green-600 hover:text-green-700 font-medium"
+              >
+                View All
+              </Link>
+            </div>
+            
+            {savedDocuments.length === 0 ? (
+              <div className="p-8 text-center">
+                <FolderArchive className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <p className="text-slate-500 text-sm">No saved documents yet</p>
+                <p className="text-xs text-slate-400">Documents will be saved when you download</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {savedDocuments.map((doc) => (
+                  <div key={doc.id} className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-800">{doc.documentType}</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Expires in {doc.daysRemaining} days
+                        </p>
+                      </div>
+                    </div>
+                    <Link 
+                      to="/user/downloads"
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <Download className="w-5 h-5" />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       <Footer />

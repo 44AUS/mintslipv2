@@ -147,7 +147,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Subscription upgrade with prorated billing feature tested and working correctly"
+    - "Mobile app backend APIs - Resume Builder AI features (parse-resume, generate-responsibilities)"
+    - "Mobile app form functionality verification"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

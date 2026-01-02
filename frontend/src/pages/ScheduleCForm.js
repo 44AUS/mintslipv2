@@ -124,7 +124,39 @@ export default function ScheduleCForm() {
         throw new Error(data.detail || "Failed to process subscription download");
       }
       
-      await generateAndDownloadScheduleC(formData, selectedTaxYear);
+      // Check if user wants documents saved
+      const shouldSave = user?.preferences?.saveDocuments;
+      
+      const pdfBlob = await generateAndDownloadScheduleC(formData, selectedTaxYear, shouldSave);
+      
+      // Save document if user has preference enabled and blob was returned
+      if (shouldSave && pdfBlob && pdfBlob instanceof Blob) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64Data = reader.result.split(',')[1];
+            const fileName = `ScheduleC_${selectedTaxYear}_${formData.proprietorName?.split(' ')[0] || 'Form'}.pdf`;
+            
+            await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                documentType: "schedule-c",
+                fileName: fileName,
+                fileData: base64Data,
+                template: null
+              })
+            });
+            toast.success("Document saved to your account!");
+          };
+          reader.readAsDataURL(pdfBlob);
+        } catch (saveError) {
+          console.error("Failed to save document:", saveError);
+        }
+      }
       
       if (data.downloadsRemaining !== undefined) {
         const updatedUser = { ...user };

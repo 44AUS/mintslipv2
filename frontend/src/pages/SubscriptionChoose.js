@@ -18,18 +18,18 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-// Subscription tiers
+// Subscription tiers - IDs must match backend SUBSCRIPTION_PLANS
 const SUBSCRIPTION_TIERS = [
   {
-    id: "basic",
-    name: "Basic",
+    id: "starter",
+    name: "Starter",
     price: 19.99,
-    downloads: 5,
+    downloads: 10,
     icon: Zap,
     color: "green",
     popular: false,
     features: [
-      "5 document downloads per month",
+      "10 document downloads per month",
       "All document types included",
       "All templates available",
       "Email support",
@@ -37,15 +37,15 @@ const SUBSCRIPTION_TIERS = [
     ]
   },
   {
-    id: "pro",
-    name: "Pro",
+    id: "professional",
+    name: "Professional",
     price: 29.99,
-    downloads: 10,
+    downloads: 30,
     icon: Sparkles,
     color: "blue",
     popular: true,
     features: [
-      "10 document downloads per month",
+      "30 document downloads per month",
       "All document types included",
       "All templates available",
       "Priority email support",
@@ -54,8 +54,8 @@ const SUBSCRIPTION_TIERS = [
     ]
   },
   {
-    id: "unlimited",
-    name: "Unlimited",
+    id: "business",
+    name: "Business",
     price: 49.99,
     downloads: -1,
     icon: Crown,

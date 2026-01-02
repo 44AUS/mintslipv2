@@ -147,7 +147,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Blog System Phase 1 backend APIs tested and working correctly"
+    - "Subscription upgrade with prorated billing feature tested and working correctly"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

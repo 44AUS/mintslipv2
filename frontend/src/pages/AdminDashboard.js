@@ -1842,51 +1842,62 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Downloads Modal */}
+      {/* Add Bonus Downloads Modal */}
       <Dialog open={downloadsModalOpen} onOpenChange={setDownloadsModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Download className="w-5 h-5 text-green-600" />
-              Edit Downloads Remaining
+              Add Bonus Downloads
             </DialogTitle>
             <DialogDescription>
-              Adjust the number of downloads remaining for {selectedUser?.name} ({selectedUser?.email})
+              Add extra downloads for {selectedUser?.name} ({selectedUser?.email})
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="text-sm text-slate-600 mb-4">
-              Current plan: <span className="font-medium">{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</span>
+            <div className="p-3 bg-slate-50 rounded-lg text-sm">
+              <div className="flex justify-between mb-1">
+                <span className="text-slate-600">Current Plan:</span>
+                <span className="font-medium">{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Downloads Remaining:</span>
+                <span className="font-medium">
+                  {selectedUser?.subscription?.downloads_remaining === -1 
+                    ? "∞ Unlimited" 
+                    : selectedUser?.subscription?.downloads_remaining || 0}
+                </span>
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Downloads Remaining</label>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  value={editDownloadsCount}
-                  onChange={(e) => setEditDownloadsCount(e.target.value)}
-                  placeholder="Enter number or 'unlimited'"
-                  className="flex-1"
-                />
-                <Button 
-                  variant="outline" 
-                  onClick={() => setEditDownloadsCount("unlimited")}
-                  className="whitespace-nowrap"
-                >
-                  Set Unlimited
-                </Button>
+            {selectedUser?.subscription?.downloads_remaining === -1 ? (
+              <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                <p>This user already has unlimited downloads.</p>
               </div>
-              <p className="text-xs text-slate-500">
-                Enter a number (e.g., 10, 25) or type "unlimited" for unlimited downloads
-              </p>
-            </div>
-            
-            {editDownloadsCount && (
-              <div className="p-3 bg-green-50 rounded-lg text-sm text-green-700">
-                <p><strong>New Downloads Count:</strong> {editDownloadsCount === "unlimited" ? "∞ Unlimited" : editDownloadsCount}</p>
-              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Bonus Downloads to Add</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={editDownloadsCount}
+                    onChange={(e) => setEditDownloadsCount(e.target.value)}
+                    placeholder="Enter number of downloads to add"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-slate-500">
+                    These bonus downloads will be added to the current count and reset on the next billing cycle.
+                  </p>
+                </div>
+                
+                {editDownloadsCount && parseInt(editDownloadsCount) > 0 && (
+                  <div className="p-3 bg-green-50 rounded-lg text-sm text-green-700">
+                    <p><strong>After adding:</strong> {(selectedUser?.subscription?.downloads_remaining || 0) + parseInt(editDownloadsCount)} downloads</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
           
@@ -1894,8 +1905,12 @@ export default function AdminDashboard() {
             <Button variant="outline" onClick={() => setDownloadsModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={updateUserDownloads} className="bg-green-600 hover:bg-green-700">
-              Update Downloads
+            <Button 
+              onClick={updateUserDownloads} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={selectedUser?.subscription?.downloads_remaining === -1 || !editDownloadsCount || parseInt(editDownloadsCount) < 1}
+            >
+              Add Downloads
             </Button>
           </DialogFooter>
         </DialogContent>

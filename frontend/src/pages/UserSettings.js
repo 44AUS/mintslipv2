@@ -41,11 +41,11 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-// Subscription tiers
+// Subscription tiers (matching PayPal plan tiers)
 const SUBSCRIPTION_TIERS = {
-  basic: { name: "Basic", price: 19.99, downloads: 5, icon: Zap, color: "green" },
-  pro: { name: "Pro", price: 29.99, downloads: 10, icon: Sparkles, color: "blue" },
-  unlimited: { name: "Unlimited", price: 49.99, downloads: -1, icon: Crown, color: "purple" }
+  starter: { name: "Starter", price: 9.99, downloads: 10, icon: Zap, color: "green" },
+  professional: { name: "Professional", price: 19.99, downloads: 30, icon: Sparkles, color: "blue" },
+  business: { name: "Business", price: 49.99, downloads: -1, icon: Crown, color: "purple" }
 };
 
 export default function UserSettings() {

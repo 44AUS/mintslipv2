@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, Text, ScrollView, StyleSheet, TouchableOpacity, 
-  SafeAreaView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
-  TextInput
+  SafeAreaView, Alert, KeyboardAvoidingView, Platform,
+  TextInput, ActivityIndicator
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '../constants/theme';
-import { Button, Header, Select, RadioGroup, Checkbox } from '../components/ui';
 import { useAuth, API_URL } from '../context/AuthContext';
 
-// US States - exact same as web
+// US States
 const US_STATES = [
   { value: 'AL', label: 'Alabama' }, { value: 'AK', label: 'Alaska' }, { value: 'AZ', label: 'Arizona' },
   { value: 'AR', label: 'Arkansas' }, { value: 'CA', label: 'California' }, { value: 'CO', label: 'Colorado' },
@@ -30,885 +29,494 @@ const US_STATES = [
   { value: 'SC', label: 'South Carolina' }, { value: 'SD', label: 'South Dakota' }, { value: 'TN', label: 'Tennessee' },
   { value: 'TX', label: 'Texas' }, { value: 'UT', label: 'Utah' }, { value: 'VT', label: 'Vermont' },
   { value: 'VA', label: 'Virginia' }, { value: 'WA', label: 'Washington' }, { value: 'WV', label: 'West Virginia' },
-  { value: 'WI', label: 'Wisconsin' }, { value: 'WY', label: 'Wyoming' }, { value: 'DC', label: 'District of Columbia' },
+  { value: 'WI', label: 'Wisconsin' }, { value: 'WY', label: 'Wyoming' }, { value: 'DC', label: 'DC' },
 ];
 
-// Pay Frequencies - exact same as web
-const PAY_FREQUENCIES = [
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Bi-Weekly' },
+// Templates
+const TEMPLATES = [
+  { id: 'template-a', name: 'Gusto', icon: '💚', color: '#00a8a1' },
+  { id: 'template-b', name: 'ADP', icon: '🔴', color: '#d0021b' },
+  { id: 'template-c', name: 'Workday', icon: '🟠', color: '#f5811f' },
+  { id: 'template-h', name: 'OnPay', icon: '🔵', color: '#2563eb' },
 ];
 
-// Filing Statuses - exact same as web
-const FILING_STATUSES = [
-  { value: 'single', label: 'Single' },
-  { value: 'married_jointly', label: 'Married Filing Jointly' },
-  { value: 'married_separately', label: 'Married Filing Separately' },
-  { value: 'head_of_household', label: 'Head of Household' },
-];
-
-// Payroll Templates - EXACT SAME AS WEB
-const PAYROLL_TEMPLATES = [
-  { 
-    id: 'template-a', 
-    name: 'Gusto', 
-    description: 'Modern payroll style with teal accents',
-    icon: '💚',
-    color: '#00a8a1',
-  },
-  { 
-    id: 'template-b', 
-    name: 'ADP', 
-    description: 'Classic corporate payroll format',
-    icon: '🔴',
-    color: '#d0021b',
-  },
-  { 
-    id: 'template-c', 
-    name: 'Workday', 
-    description: 'Clean enterprise-style layout',
-    icon: '🟠',
-    color: '#f5811f',
-  },
-  { 
-    id: 'template-h', 
-    name: 'OnPay', 
-    description: 'Simple and straightforward format',
-    icon: '🔵',
-    color: '#2563eb',
-  },
-];
-
-// Custom Input component with proper state handling
-const FormInput = ({ label, value, onChangeText, placeholder, keyboardType, maxLength, required, editable = true, multiline, style }) => {
-  return (
-    <View style={[styles.inputContainer, style]}>
-      {label && (
-        <Text style={styles.inputLabel}>
-          {label}
-          {required && <Text style={styles.required}> *</Text>}
-        </Text>
-      )}
+// Modern Input Component
+const Input = ({ label, value, onChangeText, placeholder, keyboardType, maxLength, required, editable = true }) => (
+  <View style={styles.inputWrapper}>
+    {label && (
+      <Text style={styles.inputLabel}>
+        {label}{required && <Text style={styles.required}> *</Text>}
+      </Text>
+    )}
+    <View style={[styles.inputContainer, !editable && styles.inputDisabled]}>
       <TextInput
-        style={[
-          styles.textInput,
-          multiline && styles.textInputMultiline,
-          !editable && styles.textInputDisabled,
-        ]}
+        style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={COLORS.textMuted}
-        keyboardType={keyboardType || 'default'}
+        placeholderTextColor={COLORS.textTertiary}
+        keyboardType={keyboardType}
         maxLength={maxLength}
         editable={editable}
-        multiline={multiline}
-        autoCapitalize="none"
-        autoCorrect={false}
       />
+    </View>
+  </View>
+);
+
+// State Picker
+const StatePicker = ({ label, value, onSelect, required }) => {
+  const [showPicker, setShowPicker] = useState(false);
+  const selected = US_STATES.find(s => s.value === value);
+  
+  return (
+    <View style={styles.inputWrapper}>
+      {label && (
+        <Text style={styles.inputLabel}>
+          {label}{required && <Text style={styles.required}> *</Text>}
+        </Text>
+      )}
+      <TouchableOpacity 
+        style={styles.inputContainer} 
+        onPress={() => setShowPicker(!showPicker)}
+      >
+        <Text style={[styles.input, !value && { color: COLORS.textTertiary }]}>
+          {selected?.label || 'Select State'}
+        </Text>
+        <Text style={styles.chevron}>▼</Text>
+      </TouchableOpacity>
+      {showPicker && (
+        <View style={styles.pickerDropdown}>
+          <ScrollView style={styles.pickerList} nestedScrollEnabled>
+            {US_STATES.map(state => (
+              <TouchableOpacity
+                key={state.value}
+                style={[styles.pickerItem, value === state.value && styles.pickerItemSelected]}
+                onPress={() => { onSelect(state.value); setShowPicker(false); }}
+              >
+                <Text style={[styles.pickerItemText, value === state.value && styles.pickerItemTextSelected]}>
+                  {state.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 };
 
 export default function PaystubFormScreen({ navigation }) {
-  const { user, token, hasActiveSubscription } = useAuth();
+  const { token, hasActiveSubscription } = useAuth();
   const isSubscribed = hasActiveSubscription();
   
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
+  const [template, setTemplate] = useState('template-a');
   
-  // Template Selection
-  const [selectedTemplate, setSelectedTemplate] = useState('template-a');
+  // Form data
+  const [employee, setEmployee] = useState({
+    name: '', ssn: '', address: '', city: '', state: '', zip: ''
+  });
   
-  // Form State - EXACT SAME AS WEB
-  const [formData, setFormData] = useState({
-    // Employee Information
-    name: '',
-    ssn: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    hireDate: '',
-    employeeId: '',
-    
-    // Company Information
-    company: '',
-    companyAddress: '',
-    companyCity: '',
-    companyState: '',
-    companyZip: '',
-    companyPhone: '',
-    ein: '',
-    
-    // Pay Information
-    payType: 'hourly',
-    rate: '',
-    annualSalary: '',
-    payFrequency: 'biweekly',
-    payDay: 'Friday',
-    
-    // Pay Period
-    startDate: '',
-    endDate: '',
-    hours: '80',
-    overtime: '0',
-    
-    // Tax Info
-    federalFilingStatus: 'single',
-    stateAllowances: '0',
-    includeLocalTax: true,
-    
-    // Worker Type
-    workerType: 'employee',
-    
-    // Number of stubs
-    numStubs: '1',
+  const [company, setCompany] = useState({
+    name: '', address: '', city: '', state: '', zip: '', phone: ''
+  });
+  
+  const [pay, setPay] = useState({
+    type: 'hourly', rate: '', salary: '', hours: '80', overtime: '0',
+    frequency: 'biweekly', startDate: '', endDate: ''
   });
 
-  // Update form field
-  const updateField = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  // Update helpers
+  const updateEmployee = (field, value) => setEmployee(prev => ({ ...prev, [field]: value }));
+  const updateCompany = (field, value) => setCompany(prev => ({ ...prev, [field]: value }));
+  const updatePay = (field, value) => setPay(prev => ({ ...prev, [field]: value }));
 
   // Calculate gross pay
-  const calculateGrossPay = () => {
-    if (formData.payType === 'salary') {
-      const annual = parseFloat(formData.annualSalary) || 0;
-      const periods = formData.payFrequency === 'weekly' ? 52 : 26;
-      return annual / periods;
-    } else {
-      const rate = parseFloat(formData.rate) || 0;
-      const hours = parseFloat(formData.hours) || 0;
-      const overtime = parseFloat(formData.overtime) || 0;
-      return (rate * hours) + (rate * 1.5 * overtime);
+  const getGrossPay = () => {
+    if (pay.type === 'salary') {
+      const annual = parseFloat(pay.salary) || 0;
+      return annual / (pay.frequency === 'weekly' ? 52 : 26);
+    }
+    const rate = parseFloat(pay.rate) || 0;
+    const hours = parseFloat(pay.hours) || 0;
+    const ot = parseFloat(pay.overtime) || 0;
+    return (rate * hours) + (rate * 1.5 * ot);
+  };
+
+  // Validation
+  const canProceed = () => {
+    switch (step) {
+      case 1: return template;
+      case 2: return employee.name && employee.address && employee.city && employee.state && employee.zip;
+      case 3: return company.name && company.address && company.city && company.state && company.zip;
+      case 4: return pay.type === 'salary' 
+        ? pay.salary && pay.startDate && pay.endDate
+        : pay.rate && pay.hours && pay.startDate && pay.endDate;
+      default: return true;
     }
   };
 
-  // Validate current step
-  const validateStep = () => {
-    switch (currentStep) {
-      case 1:
-        return selectedTemplate !== '';
-      case 2:
-        return formData.name && formData.address && formData.city && formData.state && formData.zip;
-      case 3:
-        return formData.company && formData.companyAddress && formData.companyCity && formData.companyState && formData.companyZip;
-      case 4:
-        if (formData.payType === 'salary') {
-          return formData.annualSalary && formData.startDate && formData.endDate;
-        }
-        return formData.rate && formData.hours && formData.startDate && formData.endDate;
-      default:
-        return true;
-    }
-  };
-
-  const handleNext = () => {
-    if (!validateStep()) {
-      Alert.alert('Missing Information', 'Please fill in all required fields.');
+  // Navigation
+  const goNext = () => {
+    if (!canProceed()) {
+      Alert.alert('Missing Info', 'Please fill in all required fields');
       return;
     }
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (step === 4) generatePreview();
+    else setStep(step + 1);
   };
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    } else {
-      navigation.goBack();
-    }
-  };
+  const goBack = () => step > 1 ? setStep(step - 1) : navigation.goBack();
 
-  // Generate preview using exact same calculations as web
-  const generatePreview = async () => {
-    setIsLoading(true);
-    try {
-      const grossPay = calculateGrossPay();
-      const html = createPreviewHtml(grossPay);
-      setPreviewHtml(html);
-      setCurrentStep(5);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to generate preview');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Create preview HTML matching web templates
-  const createPreviewHtml = (grossPay) => {
-    const rate = parseFloat(formData.rate) || 0;
-    const hours = parseFloat(formData.hours) || 0;
-    const overtime = parseFloat(formData.overtime) || 0;
-    const regularPay = rate * hours;
-    const overtimePay = rate * 1.5 * overtime;
+  // Generate preview
+  const generatePreview = () => {
+    setLoading(true);
+    const gross = getGrossPay();
+    const fed = gross * 0.12, state_tax = gross * 0.05, ss = gross * 0.062, med = gross * 0.0145;
+    const net = gross - fed - state_tax - ss - med;
+    const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const tpl = TEMPLATES.find(t => t.id === template);
     
-    // Tax calculations (simplified - web uses more complex logic)
-    const ssTax = grossPay * 0.062;
-    const medTax = grossPay * 0.0145;
-    const federalTax = grossPay * 0.12;
-    const stateTax = grossPay * 0.05;
-    const totalTax = ssTax + medTax + federalTax + stateTax;
-    const netPay = grossPay - totalTax;
-    
-    const templateColors = {
-      'template-a': { primary: '#00a8a1', name: 'Gusto' },
-      'template-b': { primary: '#d0021b', name: 'ADP' },
-      'template-c': { primary: '#f5811f', name: 'Workday' },
-      'template-h': { primary: '#2563eb', name: 'OnPay' },
-    };
-    
-    const { primary, name } = templateColors[selectedTemplate] || templateColors['template-a'];
-    
-    const fmt = (n) => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 15px; background: #f5f5f5; font-size: 11px; }
-          .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
-          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid ${primary}; padding-bottom: 15px; margin-bottom: 15px; }
-          .logo { font-size: 24px; font-weight: bold; color: ${primary}; }
-          .company-info { text-align: right; font-size: 10px; color: #666; }
-          .company-name { font-weight: bold; color: #333; font-size: 12px; }
-          .title { font-size: 16px; font-weight: bold; color: #333; text-align: center; margin-bottom: 15px; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
-          .section { background: #fafafa; padding: 12px; border-radius: 6px; border: 1px solid #eee; }
-          .section-title { font-size: 10px; font-weight: bold; color: ${primary}; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
-          .row { display: flex; justify-content: space-between; margin: 4px 0; }
-          .label { color: #666; }
-          .value { font-weight: 500; color: #333; }
-          .total-row { border-top: 2px solid ${primary}; margin-top: 8px; padding-top: 8px; }
-          .total-label { font-weight: bold; font-size: 14px; color: #333; }
-          .total-value { font-weight: bold; font-size: 14px; color: ${primary}; }
-          .net-pay { background: ${primary}; color: white; padding: 15px; border-radius: 6px; text-align: center; margin-top: 15px; }
-          .net-pay-label { font-size: 12px; opacity: 0.9; }
-          .net-pay-value { font-size: 24px; font-weight: bold; }
-          .watermark { text-align: center; color: #999; font-size: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ddd; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div>
-              <div class="logo">${name}</div>
-              <div style="font-size: 10px; color: #666; margin-top: 4px;">Earnings Statement</div>
-            </div>
-            <div class="company-info">
-              <div class="company-name">${formData.company || 'Company Name'}</div>
-              <div>${formData.companyAddress || ''}</div>
-              <div>${formData.companyCity || ''}, ${formData.companyState || ''} ${formData.companyZip || ''}</div>
-            </div>
-          </div>
-          
-          <div class="grid">
-            <div class="section">
-              <div class="section-title">Employee Information</div>
-              <div class="row"><span class="label">Name:</span><span class="value">${formData.name || 'Employee'}</span></div>
-              <div class="row"><span class="label">SSN:</span><span class="value">XXX-XX-${formData.ssn || 'XXXX'}</span></div>
-              <div class="row"><span class="label">Address:</span><span class="value">${formData.address}</span></div>
-              <div class="row"><span class="label">City/State:</span><span class="value">${formData.city}, ${formData.state} ${formData.zip}</span></div>
-            </div>
-            
-            <div class="section">
-              <div class="section-title">Pay Period</div>
-              <div class="row"><span class="label">Period:</span><span class="value">${formData.startDate} - ${formData.endDate}</span></div>
-              <div class="row"><span class="label">Pay Date:</span><span class="value">${formData.endDate}</span></div>
-              <div class="row"><span class="label">Frequency:</span><span class="value">${formData.payFrequency === 'weekly' ? 'Weekly' : 'Bi-Weekly'}</span></div>
-            </div>
-          </div>
-          
-          <div class="grid">
-            <div class="section">
-              <div class="section-title">Earnings</div>
-              ${formData.payType === 'hourly' ? `
-                <div class="row"><span class="label">Regular (${hours} hrs @ $${fmt(rate)}):</span><span class="value">$${fmt(regularPay)}</span></div>
-                ${overtime > 0 ? `<div class="row"><span class="label">Overtime (${overtime} hrs @ $${fmt(rate * 1.5)}):</span><span class="value">$${fmt(overtimePay)}</span></div>` : ''}
-              ` : `
-                <div class="row"><span class="label">Salary:</span><span class="value">$${fmt(grossPay)}</span></div>
-              `}
-              <div class="row total-row"><span class="total-label">Gross Pay:</span><span class="total-value">$${fmt(grossPay)}</span></div>
-            </div>
-            
-            <div class="section">
-              <div class="section-title">Deductions</div>
-              <div class="row"><span class="label">Federal Tax:</span><span class="value">$${fmt(federalTax)}</span></div>
-              <div class="row"><span class="label">State Tax:</span><span class="value">$${fmt(stateTax)}</span></div>
-              <div class="row"><span class="label">Social Security:</span><span class="value">$${fmt(ssTax)}</span></div>
-              <div class="row"><span class="label">Medicare:</span><span class="value">$${fmt(medTax)}</span></div>
-              <div class="row total-row"><span class="total-label">Total Deductions:</span><span class="total-value">$${fmt(totalTax)}</span></div>
-            </div>
-          </div>
-          
-          <div class="net-pay">
-            <div class="net-pay-label">Net Pay</div>
-            <div class="net-pay-value">$${fmt(netPay)}</div>
-          </div>
-          
-          <div class="watermark">PREVIEW - Watermark will be removed in final document</div>
+    const html = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+      <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;padding:16px;background:#f5f5f5;font-size:12px}
+      .card{background:#fff;border-radius:12px;padding:20px;max-width:500px;margin:0 auto}
+      .header{border-bottom:3px solid ${tpl.color};padding-bottom:12px;margin-bottom:16px;display:flex;justify-content:space-between}
+      .logo{font-size:20px;font-weight:700;color:${tpl.color}}.company-name{font-weight:600;text-align:right;font-size:11px;color:#333}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+      .box{background:#fafafa;padding:10px;border-radius:8px;border:1px solid #eee}
+      .box-title{font-size:10px;font-weight:600;color:${tpl.color};text-transform:uppercase;margin-bottom:6px}
+      .row{display:flex;justify-content:space-between;font-size:11px;margin:3px 0}.lbl{color:#666}.val{font-weight:500}
+      .total{border-top:2px solid ${tpl.color};padding-top:8px;margin-top:8px}
+      .net{background:${tpl.color};color:#fff;padding:16px;border-radius:10px;text-align:center;margin-top:12px}
+      .net-label{font-size:11px;opacity:0.9}.net-value{font-size:24px;font-weight:700}
+      .watermark{text-align:center;color:#aaa;font-size:10px;margin-top:16px;padding-top:12px;border-top:1px dashed #ddd}</style></head>
+      <body><div class="card">
+        <div class="header"><div class="logo">${tpl.name}</div><div class="company-name">${company.name}<br>${company.city}, ${company.state}</div></div>
+        <div class="grid">
+          <div class="box"><div class="box-title">Employee</div>
+            <div class="row"><span class="lbl">Name</span><span class="val">${employee.name}</span></div>
+            <div class="row"><span class="lbl">SSN</span><span class="val">XXX-XX-${employee.ssn || 'XXXX'}</span></div>
+            <div class="row"><span class="lbl">Location</span><span class="val">${employee.city}, ${employee.state}</span></div></div>
+          <div class="box"><div class="box-title">Pay Period</div>
+            <div class="row"><span class="lbl">Period</span><span class="val">${pay.startDate} - ${pay.endDate}</span></div>
+            <div class="row"><span class="lbl">Frequency</span><span class="val">${pay.frequency === 'weekly' ? 'Weekly' : 'Bi-Weekly'}</span></div></div>
         </div>
-      </body>
-      </html>
-    `;
+        <div class="grid">
+          <div class="box"><div class="box-title">Earnings</div>
+            ${pay.type === 'hourly' 
+              ? `<div class="row"><span class="lbl">Regular (${pay.hours}h)</span><span class="val">$${fmt(parseFloat(pay.rate)*parseFloat(pay.hours))}</span></div>
+                 ${parseFloat(pay.overtime)>0?`<div class="row"><span class="lbl">OT (${pay.overtime}h)</span><span class="val">$${fmt(parseFloat(pay.rate)*1.5*parseFloat(pay.overtime))}</span></div>`:''}`
+              : `<div class="row"><span class="lbl">Salary</span><span class="val">$${fmt(gross)}</span></div>`}
+            <div class="row total"><span class="lbl" style="font-weight:600">Gross Pay</span><span class="val" style="color:${tpl.color}">$${fmt(gross)}</span></div></div>
+          <div class="box"><div class="box-title">Deductions</div>
+            <div class="row"><span class="lbl">Federal Tax</span><span class="val">$${fmt(fed)}</span></div>
+            <div class="row"><span class="lbl">State Tax</span><span class="val">$${fmt(state_tax)}</span></div>
+            <div class="row"><span class="lbl">Social Security</span><span class="val">$${fmt(ss)}</span></div>
+            <div class="row"><span class="lbl">Medicare</span><span class="val">$${fmt(med)}</span></div></div>
+        </div>
+        <div class="net"><div class="net-label">Net Pay</div><div class="net-value">$${fmt(net)}</div></div>
+        <div class="watermark">PREVIEW - Watermark removed in final</div>
+      </div></body></html>`;
+    
+    setPreviewHtml(html);
+    setStep(5);
+    setLoading(false);
   };
 
+  // Download
   const handleDownload = async () => {
-    if (isSubscribed) {
-      await downloadWithSubscription();
-    } else {
-      Alert.alert(
-        'Payment Required',
-        'Pay $9.99 to download your pay stub.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Pay with PayPal', onPress: () => Alert.alert('PayPal', 'Please use web version for payments') },
-        ]
-      );
-    }
-  };
-
-  const downloadWithSubscription = async () => {
-    if (!token) {
-      Alert.alert('Login Required', 'Please login to use your subscription.');
+    if (!isSubscribed) {
+      Alert.alert('Payment Required', '$9.99 to download', [
+        { text: 'Cancel' },
+        { text: 'Pay', onPress: () => Alert.alert('PayPal', 'Use web for payments') }
+      ]);
       return;
     }
     
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/user/subscription-download`, {
+      await fetch(`${API_URL}/api/user/subscription-download`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          documentType: 'paystub',
-          template: selectedTemplate,
-          count: parseInt(formData.numStubs) || 1,
-        }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ documentType: 'paystub', template, count: 1 })
       });
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.detail || 'Download failed');
-      }
-      
-      await generateAndSharePdf();
-      Alert.alert('Success', 'Pay stub downloaded successfully!');
-      
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setIsLoading(false);
+      const clean = previewHtml.replace(/<div class="watermark">.*?<\/div>/, '');
+      const { uri } = await Print.printToFileAsync({ html: clean });
+      await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
+      Alert.alert('Success', 'Pay stub downloaded!');
+    } catch (e) {
+      Alert.alert('Error', e.message);
     }
+    setLoading(false);
   };
 
-  const generateAndSharePdf = async () => {
-    const grossPay = calculateGrossPay();
-    const html = createPreviewHtml(grossPay).replace(
-      '<div class="watermark">PREVIEW - Watermark will be removed in final document</div>',
-      ''
-    );
-    
-    const { uri } = await Print.printToFileAsync({ html });
-    
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Save Pay Stub',
-        UTI: 'com.adobe.pdf',
-      });
-    }
-  };
-
-  // Render step content
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return renderTemplateSelection();
-      case 2:
-        return renderEmployeeInfo();
-      case 3:
-        return renderCompanyInfo();
-      case 4:
-        return renderPayInfo();
-      case 5:
-        return renderPreview();
-      default:
-        return null;
-    }
-  };
-
-  // Step 1: Template Selection
-  const renderTemplateSelection = () => (
+  // Step renderers
+  const renderTemplates = () => (
     <View style={styles.stepContent}>
       <Text style={styles.stepTitle}>Choose Template</Text>
-      <Text style={styles.stepDescription}>Select a payroll template style</Text>
+      <Text style={styles.stepDesc}>Select your preferred payroll style</Text>
       
-      {PAYROLL_TEMPLATES.map((template) => (
-        <TouchableOpacity
-          key={template.id}
-          style={[
-            styles.templateCard,
-            selectedTemplate === template.id && [styles.templateCardSelected, { borderColor: template.color }],
-          ]}
-          onPress={() => setSelectedTemplate(template.id)}
-        >
-          <View style={[styles.templateIcon, { backgroundColor: template.color + '20' }]}>
-            <Text style={styles.templateEmoji}>{template.icon}</Text>
-          </View>
-          <View style={styles.templateInfo}>
-            <Text style={styles.templateName}>{template.name}</Text>
-            <Text style={styles.templateDesc}>{template.description}</Text>
-          </View>
-          {selectedTemplate === template.id && (
-            <View style={[styles.checkmark, { backgroundColor: template.color }]}>
-              <Text style={styles.checkmarkText}>✓</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      ))}
+      <View style={styles.templates}>
+        {TEMPLATES.map(t => (
+          <TouchableOpacity
+            key={t.id}
+            style={[styles.templateCard, template === t.id && styles.templateSelected]}
+            onPress={() => setTemplate(t.id)}
+          >
+            <LinearGradient
+              colors={[t.color, t.color + 'dd']}
+              style={styles.templateIcon}
+            >
+              <Text style={styles.templateEmoji}>{t.icon}</Text>
+            </LinearGradient>
+            <Text style={styles.templateName}>{t.name}</Text>
+            {template === t.id && (
+              <View style={[styles.templateCheck, { backgroundColor: t.color }]}>
+                <Text style={styles.templateCheckText}>✓</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 
-  // Step 2: Employee Information
-  const renderEmployeeInfo = () => (
+  const renderEmployee = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Employee Information</Text>
-      <Text style={styles.stepDescription}>Enter employee details</Text>
+      <Text style={styles.stepTitle}>Employee Details</Text>
+      <Text style={styles.stepDesc}>Enter employee information</Text>
       
-      <FormInput
-        label="Full Name"
-        value={formData.name}
-        onChangeText={(v) => updateField('name', v)}
-        placeholder="John Smith"
-        required
-      />
-      
-      <FormInput
-        label="SSN (Last 4 digits)"
-        value={formData.ssn}
-        onChangeText={(v) => updateField('ssn', v)}
-        placeholder="1234"
-        keyboardType="numeric"
-        maxLength={4}
-      />
-      
-      <FormInput
-        label="Street Address"
-        value={formData.address}
-        onChangeText={(v) => updateField('address', v)}
-        placeholder="123 Main St"
-        required
-      />
+      <Input label="Full Name" value={employee.name} onChangeText={v => updateEmployee('name', v)} placeholder="John Smith" required />
+      <Input label="SSN (Last 4)" value={employee.ssn} onChangeText={v => updateEmployee('ssn', v)} placeholder="1234" keyboardType="numeric" maxLength={4} />
+      <Input label="Street Address" value={employee.address} onChangeText={v => updateEmployee('address', v)} placeholder="123 Main St" required />
       
       <View style={styles.row}>
         <View style={styles.flex2}>
-          <FormInput
-            label="City"
-            value={formData.city}
-            onChangeText={(v) => updateField('city', v)}
-            placeholder="New York"
-            required
-          />
+          <Input label="City" value={employee.city} onChangeText={v => updateEmployee('city', v)} placeholder="New York" required />
         </View>
         <View style={styles.flex1}>
-          <Select
-            label="State"
-            value={formData.state}
-            onValueChange={(v) => updateField('state', v)}
-            options={US_STATES}
-            placeholder="Select"
-            required
-          />
+          <StatePicker label="State" value={employee.state} onSelect={v => updateEmployee('state', v)} required />
         </View>
       </View>
       
-      <View style={styles.row}>
-        <View style={styles.flex1}>
-          <FormInput
-            label="ZIP Code"
-            value={formData.zip}
-            onChangeText={(v) => updateField('zip', v)}
-            placeholder="10001"
-            keyboardType="numeric"
-            maxLength={5}
-            required
-          />
-        </View>
-        <View style={styles.flex1}>
-          <FormInput
-            label="Hire Date"
-            value={formData.hireDate}
-            onChangeText={(v) => updateField('hireDate', v)}
-            placeholder="2024-01-15"
-          />
-        </View>
-      </View>
+      <Input label="ZIP Code" value={employee.zip} onChangeText={v => updateEmployee('zip', v)} placeholder="10001" keyboardType="numeric" maxLength={5} required />
     </View>
   );
 
-  // Step 3: Company Information
-  const renderCompanyInfo = () => (
+  const renderCompany = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Company Information</Text>
-      <Text style={styles.stepDescription}>Enter employer details</Text>
+      <Text style={styles.stepTitle}>Company Details</Text>
+      <Text style={styles.stepDesc}>Enter employer information</Text>
       
-      <FormInput
-        label="Company Name"
-        value={formData.company}
-        onChangeText={(v) => updateField('company', v)}
-        placeholder="Acme Corporation"
-        required
-      />
-      
-      <FormInput
-        label="Company Address"
-        value={formData.companyAddress}
-        onChangeText={(v) => updateField('companyAddress', v)}
-        placeholder="456 Business Ave"
-        required
-      />
+      <Input label="Company Name" value={company.name} onChangeText={v => updateCompany('name', v)} placeholder="Acme Corporation" required />
+      <Input label="Street Address" value={company.address} onChangeText={v => updateCompany('address', v)} placeholder="456 Business Ave" required />
       
       <View style={styles.row}>
         <View style={styles.flex2}>
-          <FormInput
-            label="City"
-            value={formData.companyCity}
-            onChangeText={(v) => updateField('companyCity', v)}
-            placeholder="Los Angeles"
-            required
-          />
+          <Input label="City" value={company.city} onChangeText={v => updateCompany('city', v)} placeholder="Los Angeles" required />
         </View>
         <View style={styles.flex1}>
-          <Select
-            label="State"
-            value={formData.companyState}
-            onValueChange={(v) => updateField('companyState', v)}
-            options={US_STATES}
-            placeholder="Select"
-            required
-          />
+          <StatePicker label="State" value={company.state} onSelect={v => updateCompany('state', v)} required />
         </View>
       </View>
       
       <View style={styles.row}>
         <View style={styles.flex1}>
-          <FormInput
-            label="ZIP Code"
-            value={formData.companyZip}
-            onChangeText={(v) => updateField('companyZip', v)}
-            placeholder="90001"
-            keyboardType="numeric"
-            maxLength={5}
-            required
-          />
+          <Input label="ZIP Code" value={company.zip} onChangeText={v => updateCompany('zip', v)} placeholder="90001" keyboardType="numeric" maxLength={5} required />
         </View>
         <View style={styles.flex1}>
-          <FormInput
-            label="Phone"
-            value={formData.companyPhone}
-            onChangeText={(v) => updateField('companyPhone', v)}
-            placeholder="(555) 123-4567"
-            keyboardType="phone-pad"
-          />
+          <Input label="Phone" value={company.phone} onChangeText={v => updateCompany('phone', v)} placeholder="(555) 123-4567" keyboardType="phone-pad" />
         </View>
       </View>
-      
-      <FormInput
-        label="EIN"
-        value={formData.ein}
-        onChangeText={(v) => updateField('ein', v)}
-        placeholder="XX-XXXXXXX"
-      />
     </View>
   );
 
-  // Step 4: Pay Information
-  const renderPayInfo = () => (
+  const renderPay = () => (
     <View style={styles.stepContent}>
       <Text style={styles.stepTitle}>Pay Information</Text>
-      <Text style={styles.stepDescription}>Enter earnings details</Text>
+      <Text style={styles.stepDesc}>Enter earnings and pay period</Text>
       
-      <RadioGroup
-        label="Pay Type"
-        value={formData.payType}
-        onChange={(v) => updateField('payType', v)}
-        options={[
-          { value: 'hourly', label: 'Hourly' },
-          { value: 'salary', label: 'Salary' },
-        ]}
-        horizontal
-      />
+      <View style={styles.payTypeRow}>
+        {['hourly', 'salary'].map(type => (
+          <TouchableOpacity
+            key={type}
+            style={[styles.payTypeBtn, pay.type === type && styles.payTypeBtnActive]}
+            onPress={() => updatePay('type', type)}
+          >
+            <Text style={[styles.payTypeText, pay.type === type && styles.payTypeTextActive]}>
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       
-      {formData.payType === 'hourly' ? (
+      {pay.type === 'hourly' ? (
         <>
-          <FormInput
-            label="Hourly Rate ($)"
-            value={formData.rate}
-            onChangeText={(v) => updateField('rate', v)}
-            placeholder="25.00"
-            keyboardType="decimal-pad"
-            required
-          />
-          
+          <Input label="Hourly Rate ($)" value={pay.rate} onChangeText={v => updatePay('rate', v)} placeholder="25.00" keyboardType="decimal-pad" required />
           <View style={styles.row}>
             <View style={styles.flex1}>
-              <FormInput
-                label="Regular Hours"
-                value={formData.hours}
-                onChangeText={(v) => updateField('hours', v)}
-                placeholder="80"
-                keyboardType="numeric"
-                required
-              />
+              <Input label="Regular Hours" value={pay.hours} onChangeText={v => updatePay('hours', v)} placeholder="80" keyboardType="numeric" required />
             </View>
             <View style={styles.flex1}>
-              <FormInput
-                label="Overtime Hours"
-                value={formData.overtime}
-                onChangeText={(v) => updateField('overtime', v)}
-                placeholder="0"
-                keyboardType="numeric"
-              />
+              <Input label="Overtime Hours" value={pay.overtime} onChangeText={v => updatePay('overtime', v)} placeholder="0" keyboardType="numeric" />
             </View>
           </View>
         </>
       ) : (
-        <FormInput
-          label="Annual Salary ($)"
-          value={formData.annualSalary}
-          onChangeText={(v) => updateField('annualSalary', v)}
-          placeholder="75000"
-          keyboardType="decimal-pad"
-          required
-        />
+        <Input label="Annual Salary ($)" value={pay.salary} onChangeText={v => updatePay('salary', v)} placeholder="75000" keyboardType="decimal-pad" required />
       )}
-      
-      <Select
-        label="Pay Frequency"
-        value={formData.payFrequency}
-        onValueChange={(v) => updateField('payFrequency', v)}
-        options={PAY_FREQUENCIES}
-      />
       
       <View style={styles.row}>
         <View style={styles.flex1}>
-          <FormInput
-            label="Period Start"
-            value={formData.startDate}
-            onChangeText={(v) => updateField('startDate', v)}
-            placeholder="2024-01-01"
-            required
-          />
+          <Input label="Period Start" value={pay.startDate} onChangeText={v => updatePay('startDate', v)} placeholder="2024-01-01" required />
         </View>
         <View style={styles.flex1}>
-          <FormInput
-            label="Period End"
-            value={formData.endDate}
-            onChangeText={(v) => updateField('endDate', v)}
-            placeholder="2024-01-14"
-            required
-          />
+          <Input label="Period End" value={pay.endDate} onChangeText={v => updatePay('endDate', v)} placeholder="2024-01-14" required />
         </View>
       </View>
-      
-      <Select
-        label="Filing Status"
-        value={formData.federalFilingStatus}
-        onValueChange={(v) => updateField('federalFilingStatus', v)}
-        options={FILING_STATUSES}
-      />
-      
-      <FormInput
-        label="Number of Pay Stubs"
-        value={formData.numStubs}
-        onChangeText={(v) => updateField('numStubs', v)}
-        placeholder="1"
-        keyboardType="numeric"
-      />
     </View>
   );
 
-  // Step 5: Preview
   const renderPreview = () => (
     <View style={styles.previewContainer}>
       <Text style={styles.stepTitle}>Preview</Text>
-      
-      <View style={styles.previewWebview}>
-        <WebView
-          source={{ html: previewHtml }}
-          style={styles.webview}
-          scalesPageToFit={true}
-        />
+      <View style={styles.previewCard}>
+        <WebView source={{ html: previewHtml }} style={styles.webview} scalesPageToFit />
       </View>
-      
       <View style={styles.previewNote}>
-        <Text style={styles.previewNoteIcon}>⚠️</Text>
-        <Text style={styles.previewNoteText}>
-          Preview with estimated taxes. Final document uses accurate calculations.
-        </Text>
+        <Text style={styles.previewNoteText}>⚠️ Preview only. Final PDF will be clean.</Text>
       </View>
     </View>
   );
 
-  // Progress indicator
-  const renderProgress = () => (
+  // Progress dots
+  const ProgressDots = () => (
     <View style={styles.progress}>
-      {[1, 2, 3, 4, 5].map((step) => (
-        <View key={step} style={styles.progressItem}>
-          <View style={[
-            styles.progressDot,
-            currentStep >= step && styles.progressDotActive,
-            currentStep === step && styles.progressDotCurrent,
-          ]}>
-            <Text style={[
-              styles.progressDotText,
-              currentStep >= step && styles.progressDotTextActive,
-            ]}>
-              {currentStep > step ? '✓' : step}
-            </Text>
+      {[1,2,3,4,5].map(i => (
+        <View key={i} style={styles.progressItem}>
+          <View style={[styles.dot, step >= i && styles.dotActive, step === i && styles.dotCurrent]}>
+            <Text style={[styles.dotText, step >= i && styles.dotTextActive]}>{step > i ? '✓' : i}</Text>
           </View>
-          {step < 5 && (
-            <View style={[
-              styles.progressLine,
-              currentStep > step && styles.progressLineActive,
-            ]} />
-          )}
+          {i < 5 && <View style={[styles.line, step > i && styles.lineActive]} />}
         </View>
       ))}
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Header
-        title="Pay Stub Generator"
-        showBack
-        onBack={handleBack}
-        variant="light"
-      />
+    <SafeAreaView style={styles.safe}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={goBack} style={styles.backBtn}>
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Pay Stub</Text>
+        <View style={{ width: 40 }} />
+      </View>
       
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        {renderProgress()}
-        
-        <ScrollView 
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {renderStepContent()}
+      <ProgressDots />
+      
+      <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          {step === 1 && renderTemplates()}
+          {step === 2 && renderEmployee()}
+          {step === 3 && renderCompany()}
+          {step === 4 && renderPay()}
+          {step === 5 && renderPreview()}
         </ScrollView>
-        
-        <View style={styles.actions}>
-          {currentStep < 5 ? (
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={currentStep === 4 ? generatePreview : handleNext}
-              loading={isLoading}
-            >
-              {currentStep === 4 ? 'Generate Preview' : 'Continue'}
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={handleDownload}
-              loading={isLoading}
-            >
-              {isSubscribed ? 'Download (Subscription)' : 'Pay $9.99 & Download'}
-            </Button>
-          )}
-        </View>
       </KeyboardAvoidingView>
+      
+      {/* Bottom Action */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.primaryBtn, !canProceed() && step < 5 && styles.primaryBtnDisabled]}
+          onPress={step === 5 ? handleDownload : goNext}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.primaryBtnText}>
+              {step === 5 ? (isSubscribed ? 'Download PDF' : 'Pay $9.99 & Download') : 'Continue'}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.white },
-  container: { flex: 1, backgroundColor: COLORS.background },
-  progress: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    paddingVertical: SPACING.lg, paddingHorizontal: SPACING.xl,
-    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, backgroundColor: COLORS.surface },
+  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center' },
+  backText: { fontSize: 22, color: COLORS.text },
+  headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.text },
+  progress: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: SPACING.md, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   progressItem: { flexDirection: 'row', alignItems: 'center' },
-  progressDot: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.background,
-    alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.border,
-  },
-  progressDotActive: { backgroundColor: COLORS.primaryBg, borderColor: COLORS.primary },
-  progressDotCurrent: { backgroundColor: COLORS.primary },
-  progressDotText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
-  progressDotTextActive: { color: COLORS.primary },
-  progressLine: { width: 24, height: 2, backgroundColor: COLORS.border, marginHorizontal: 4 },
-  progressLineActive: { backgroundColor: COLORS.primary },
+  dot: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.border },
+  dotActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primarySoft },
+  dotCurrent: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  dotText: { fontSize: 12, fontWeight: '600', color: COLORS.textTertiary },
+  dotTextActive: { color: COLORS.primary },
+  line: { width: 20, height: 2, backgroundColor: COLORS.border, marginHorizontal: 4 },
+  lineActive: { backgroundColor: COLORS.primary },
   content: { flex: 1 },
   stepContent: { padding: SPACING.xl },
-  stepTitle: { fontSize: FONT_SIZES.xxl, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: SPACING.sm },
-  stepDescription: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary, marginBottom: SPACING.xl },
+  stepTitle: { fontSize: FONT_SIZES.xxl, fontWeight: '800', color: COLORS.text, marginBottom: SPACING.xs },
+  stepDesc: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary, marginBottom: SPACING.xl },
+  
+  // Templates
+  templates: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md },
+  templateCard: { width: '47%', backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.xl, padding: SPACING.lg, alignItems: 'center', borderWidth: 2, borderColor: COLORS.border, ...SHADOWS.sm },
+  templateSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.primarySoft },
+  templateIcon: { width: 56, height: 56, borderRadius: BORDER_RADIUS.lg, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.md },
+  templateEmoji: { fontSize: 28 },
+  templateName: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.text },
+  templateCheck: { position: 'absolute', top: 10, right: 10, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  templateCheckText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  
+  // Inputs
+  inputWrapper: { marginBottom: SPACING.lg },
+  inputLabel: { fontSize: FONT_SIZES.sm, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.sm },
+  required: { color: COLORS.error },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border, borderRadius: BORDER_RADIUS.lg, paddingHorizontal: SPACING.lg, minHeight: 52 },
+  inputDisabled: { backgroundColor: COLORS.background },
+  input: { flex: 1, fontSize: FONT_SIZES.md, color: COLORS.text, paddingVertical: SPACING.md },
+  chevron: { fontSize: 10, color: COLORS.textTertiary, marginLeft: SPACING.sm },
+  
+  // Picker
+  pickerDropdown: { position: 'absolute', top: 80, left: 0, right: 0, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, zIndex: 100, ...SHADOWS.md },
+  pickerList: { maxHeight: 200 },
+  pickerItem: { paddingVertical: SPACING.md, paddingHorizontal: SPACING.lg, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  pickerItemSelected: { backgroundColor: COLORS.primarySoft },
+  pickerItemText: { fontSize: FONT_SIZES.md, color: COLORS.text },
+  pickerItemTextSelected: { color: COLORS.primary, fontWeight: '600' },
+  
   row: { flexDirection: 'row', gap: SPACING.md },
   flex1: { flex: 1 },
   flex2: { flex: 2 },
-  templateCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white,
-    padding: SPACING.lg, borderRadius: BORDER_RADIUS.lg, marginBottom: SPACING.md,
-    borderWidth: 2, borderColor: COLORS.border,
-  },
-  templateCardSelected: { backgroundColor: COLORS.primaryBg },
-  templateIcon: {
-    width: 48, height: 48, borderRadius: 24,
-    alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md,
-  },
-  templateEmoji: { fontSize: 24 },
-  templateInfo: { flex: 1 },
-  templateName: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.textPrimary },
-  templateDesc: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, marginTop: 2 },
-  checkmark: {
-    width: 28, height: 28, borderRadius: 14,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  checkmarkText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
+  
+  // Pay type
+  payTypeRow: { flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.xl },
+  payTypeBtn: { flex: 1, paddingVertical: SPACING.md, borderRadius: BORDER_RADIUS.lg, backgroundColor: COLORS.surface, borderWidth: 2, borderColor: COLORS.border, alignItems: 'center' },
+  payTypeBtnActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primarySoft },
+  payTypeText: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.textSecondary },
+  payTypeTextActive: { color: COLORS.primary },
+  
+  // Preview
   previewContainer: { flex: 1, padding: SPACING.lg },
-  previewWebview: {
-    flex: 1, backgroundColor: COLORS.white, borderRadius: BORDER_RADIUS.lg,
-    overflow: 'hidden', marginVertical: SPACING.md, minHeight: 400, ...SHADOWS.medium,
-  },
+  previewCard: { flex: 1, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.xl, overflow: 'hidden', minHeight: 400, ...SHADOWS.md },
   webview: { flex: 1 },
-  previewNote: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.warningBg,
-    padding: SPACING.md, borderRadius: BORDER_RADIUS.md,
-  },
-  previewNoteIcon: { fontSize: 16, marginRight: SPACING.sm },
-  previewNoteText: { flex: 1, fontSize: FONT_SIZES.sm, color: '#92400e' },
-  actions: {
-    padding: SPACING.lg, backgroundColor: COLORS.white,
-    borderTopWidth: 1, borderTopColor: COLORS.border,
-  },
-  // Custom input styles
-  inputContainer: { marginBottom: SPACING.lg },
-  inputLabel: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.textPrimary, marginBottom: SPACING.sm },
-  required: { color: COLORS.error },
-  textInput: {
-    backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border,
-    borderRadius: BORDER_RADIUS.md, paddingVertical: 12, paddingHorizontal: SPACING.lg,
-    fontSize: FONT_SIZES.md, color: COLORS.textPrimary,
-  },
-  textInputMultiline: { minHeight: 100, textAlignVertical: 'top' },
-  textInputDisabled: { backgroundColor: COLORS.background },
+  previewNote: { backgroundColor: COLORS.warningSoft, padding: SPACING.md, borderRadius: BORDER_RADIUS.md, marginTop: SPACING.md },
+  previewNoteText: { fontSize: FONT_SIZES.sm, color: '#92400e', textAlign: 'center' },
+  
+  // Bottom bar
+  bottomBar: { padding: SPACING.lg, backgroundColor: COLORS.surface, borderTopWidth: 1, borderTopColor: COLORS.border },
+  primaryBtn: { backgroundColor: COLORS.primary, paddingVertical: SPACING.lg, borderRadius: BORDER_RADIUS.lg, alignItems: 'center' },
+  primaryBtnDisabled: { opacity: 0.5 },
+  primaryBtnText: { fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.textInverse },
 });

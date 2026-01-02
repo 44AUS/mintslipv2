@@ -152,4 +152,8 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   sessionStorage.setItem('lastDownloadFileName', pdfFileName);
   
   doc.save(pdfFileName);
+  
+  if (returnBlob) {
+    return pdfBlob;
+  }
 };

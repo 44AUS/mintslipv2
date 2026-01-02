@@ -808,8 +808,8 @@ async def create_subscription(data: CreateSubscriptionRequest, session: dict = D
                     "locale": "en-US",
                     "shipping_preference": "NO_SHIPPING",
                     "user_action": "SUBSCRIBE_NOW",
-                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/success",
-                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/cancel"
+                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/success",
+                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/cancel"
                 }
             }
         )
@@ -1064,8 +1064,8 @@ async def create_upgrade_order(data: UpgradeSubscriptionRequest, session: dict =
                     "brand_name": "MintSlip",
                     "landing_page": "NO_PREFERENCE",
                     "user_action": "PAY_NOW",
-                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/upgrade/success",
-                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/upgrade/cancel"
+                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/upgrade/success",
+                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/upgrade/cancel"
                 }
             }
         )

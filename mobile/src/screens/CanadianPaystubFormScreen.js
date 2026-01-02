@@ -410,7 +410,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
             <Text style={styles.stepTitle}>Employer Information</Text>
             <Text style={styles.stepDescription}>Enter company details</Text>
             
-            <Input
+            <FormInput
               label="Company Name"
               value={formData.company}
               onChangeText={(v) => updateField('company', v)}
@@ -418,7 +418,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
               required
             />
             
-            <Input
+            <FormInput
               label="Company Address"
               value={formData.companyAddress}
               onChangeText={(v) => updateField('companyAddress', v)}
@@ -428,7 +428,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex2}>
-                <Input
+                <FormInput
                   label="City"
                   value={formData.companyCity}
                   onChangeText={(v) => updateField('companyCity', v)}
@@ -447,7 +447,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
               </View>
             </View>
             
-            <Input
+            <FormInput
               label="Postal Code"
               value={formData.companyPostalCode}
               onChangeText={(v) => updateField('companyPostalCode', v.toUpperCase())}

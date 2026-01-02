@@ -1863,9 +1863,10 @@ async def get_downloads_remaining(session: dict = Depends(get_current_user)):
 async def get_user_downloads(
     session: dict = Depends(get_current_user),
     skip: int = 0,
-    limit: int = 20
+    limit: int = 20,
+    document_type: Optional[str] = None
 ):
-    """Get user's download history"""
+    """Get user's download history with optional document type filter"""
     # For now, get purchases associated with the user's email or userId
     user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
     
@@ -1879,6 +1880,10 @@ async def get_user_downloads(
             {"paypalEmail": user["email"]}
         ]
     }
+    
+    # Add document type filter if provided
+    if document_type and document_type != "all":
+        query["documentType"] = document_type
     
     downloads = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
     total = await purchases_collection.count_documents(query)

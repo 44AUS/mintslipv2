@@ -83,17 +83,17 @@ const generators = [
     category: "Employment Documents",
     tags: ["ai", "resume", "resume builder", "ats", "employment"]
   },
-  {
-    id: "accounting-mockup",
-    name: "Accounting Mockups Generator",
-    description: "Generate statement templates for personal bookkeeping and organizational purposes.",
-    path: "/accounting-mockup-generator",
-    icon: PiggyBank,
-    price: "$49.99",
-    category: "Financial Documents",
-    tags: ["bank statement", "accounting", "mockup", "bank", "financial", "statement", "bookkeeping"],
-    popular: true
-  },
+  // {
+  //   id: "accounting-mockup",
+  //   name: "Accounting Mockups Generator",
+  //   description: "Generate statement templates for personal bookkeeping and organizational purposes.",
+  //   path: "/accounting-mockup-generator",
+  //   icon: PiggyBank,
+  //   price: "$49.99",
+  //   category: "Financial Documents",
+  //   tags: ["bank statement", "accounting", "mockup", "bank", "financial", "statement", "bookkeeping"],
+  //   popular: true
+  // },
   {
     id: "w2",
     name: "W-2 Form Generator",

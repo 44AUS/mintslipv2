@@ -244,7 +244,7 @@ export const generateScheduleCPDF = async (formData, taxYear) => {
 };
 
 // Generate and download Schedule C
-export const generateAndDownloadScheduleC = async (formData, taxYear) => {
+export const generateAndDownloadScheduleC = async (formData, taxYear, returnBlob = false) => {
   try {
     const pdfBytes = await generateScheduleCPDF(formData, taxYear);
     
@@ -264,6 +264,9 @@ export const generateAndDownloadScheduleC = async (formData, taxYear) => {
     document.body.removeChild(link);
     
     // Don't revoke URL immediately - needed for re-download on success page
+    if (returnBlob) {
+      return blob;
+    }
     return true;
   } catch (error) {
     console.error("Error downloading Schedule C:", error);

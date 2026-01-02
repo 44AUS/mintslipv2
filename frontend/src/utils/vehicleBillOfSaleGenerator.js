@@ -451,7 +451,7 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
 };
 
 // Generate and download
-export const generateAndDownloadVehicleBillOfSale = async (formData) => {
+export const generateAndDownloadVehicleBillOfSale = async (formData, returnBlob = false) => {
   try {
     const pdfBytes = await generateVehicleBillOfSalePDF(formData, false);
     
@@ -470,6 +470,10 @@ export const generateAndDownloadVehicleBillOfSale = async (formData) => {
     link.click();
     document.body.removeChild(link);
     // Don't revoke URL immediately - needed for re-download on success page
+    
+    if (returnBlob) {
+      return blob;
+    }
     
   } catch (error) {
     console.error('Error downloading Vehicle Bill of Sale:', error);

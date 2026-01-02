@@ -913,7 +913,7 @@ export const generateUtilityBillPDF = async (formData, template, isPreview = fal
 };
 
 // Download function
-export const generateAndDownloadUtilityBill = async (formData, template) => {
+export const generateAndDownloadUtilityBill = async (formData, template, returnBlob = false) => {
   const pdfBytes = await generateUtilityBillPDF(formData, template, false);
   
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -931,4 +931,8 @@ export const generateAndDownloadUtilityBill = async (formData, template) => {
   link.click();
   document.body.removeChild(link);
   // Don't revoke URL immediately - needed for re-download on success page
+  
+  if (returnBlob) {
+    return blob;
+  }
 };

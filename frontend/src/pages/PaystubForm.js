@@ -107,7 +107,7 @@ export default function PaystubForm() {
         }
         
         // Fetch fresh user data
-        const response = await fetch(`${BACKEND_URL}/api/user/profile`, {
+        const response = await fetch(`${BACKEND_URL}/api/user/me`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -132,6 +132,90 @@ export default function PaystubForm() {
       }
     }
   };
+  
+  // Handle subscription-based download
+  const handleSubscriptionDownload = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      toast.error("Please log in to use your subscription");
+      navigate("/login");
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      // Call backend to validate and track the subscription download
+      const response = await fetch(`${BACKEND_URL}/api/user/subscription-download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          documentType: "paystub",
+          template: selectedTemplate
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to process subscription download");
+      }
+      
+      // Prepare formData with deductions, contributions, absence plans, employer benefits, and company logo
+      const fullFormData = {
+        ...formData,
+        deductions: deductions,
+        contributions: contributions,
+        absencePlans: absencePlans,
+        employerBenefits: employerBenefits,
+        companyLogo: companyLogo,
+        logoDataUrl: logoPreview,
+      };
+      
+      // Generate and download PDF
+      await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs);
+      
+      // Update local user data with new downloads remaining
+      if (data.downloadsRemaining !== undefined) {
+        const updatedUser = { ...user };
+        if (updatedUser.subscription) {
+          updatedUser.subscription.downloads_remaining = data.downloadsRemaining;
+        }
+        setUser(updatedUser);
+        localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+        
+        // Check if no downloads remaining (and not unlimited)
+        if (data.downloadsRemaining === 0) {
+          setHasActiveSubscription(false);
+        }
+      }
+      
+      // Clear the uploaded logo from localStorage after successful download
+      localStorage.removeItem('paystubCompanyLogo');
+      setCompanyLogo(null);
+      setLogoPreview(null);
+      
+      // Reset payroll company selection
+      setSelectedPayrollCompany(null);
+      setCompanySearchQuery("");
+      setSelectedTemplate("template-a");
+      
+      toast.success("Pay stub(s) downloaded successfully!");
+      
+      // Redirect to user downloads page
+      navigate("/user/downloads");
+      
+    } catch (error) {
+      console.error("Subscription download error:", error);
+      toast.error(error.message || "Failed to download. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
   const [hoursExpanded, setHoursExpanded] = useState(false);
   const [hoursPerPeriod, setHoursPerPeriod] = useState([]);
   const [deductions, setDeductions] = useState([]);

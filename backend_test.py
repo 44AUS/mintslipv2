@@ -1054,7 +1054,7 @@ class AIResumeBuilderTester:
         
         try:
             headers = {"Authorization": f"Bearer {self.admin_token}"}
-            payload = {"tier": "starter"}
+            payload = {"tier": "basic"}  # Use SUBSCRIPTION_TIERS tier name
             response = requests.put(
                 f"{self.api_url}/admin/users/{self.test_user_id}/subscription", 
                 json=payload, 

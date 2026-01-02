@@ -614,6 +614,247 @@ async def change_user_password(data: ChangeUserPassword, request: Request, sessi
     return {"success": True, "message": "Password changed successfully"}
 
 
+# ========== USER PREFERENCES ENDPOINTS ==========
+
+@app.put("/api/user/preferences")
+async def update_user_preferences(data: UserPreferencesUpdate, session: dict = Depends(get_current_user)):
+    """Update user preferences"""
+    update_data = {}
+    
+    if data.saveDocuments is not None:
+        update_data["preferences.saveDocuments"] = data.saveDocuments
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No preferences to update")
+    
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": update_data}
+    )
+    
+    # Get updated user
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    
+    return {"success": True, "user": user, "message": "Preferences updated successfully"}
+
+
+# ========== SAVED DOCUMENTS ENDPOINTS ==========
+
+@app.get("/api/user/saved-documents")
+async def get_saved_documents(
+    session: dict = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 20
+):
+    """Get user's saved documents"""
+    user_id = session["userId"]
+    
+    # Clean up expired documents first
+    expiry_date = datetime.now(timezone.utc) - timedelta(days=DOCUMENT_EXPIRY_DAYS)
+    expired_docs = await saved_documents_collection.find({
+        "userId": user_id,
+        "createdAt": {"$lt": expiry_date.isoformat()}
+    }).to_list(100)
+    
+    # Delete expired documents and their files
+    for doc in expired_docs:
+        file_path = os.path.join(USER_DOCUMENTS_DIR, doc.get("storedFileName", ""))
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except:
+                pass
+        await saved_documents_collection.delete_one({"id": doc["id"]})
+    
+    # Get saved documents
+    documents = await saved_documents_collection.find(
+        {"userId": user_id},
+        {"_id": 0, "storedFileName": 0}  # Don't expose internal filename
+    ).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    
+    total = await saved_documents_collection.count_documents({"userId": user_id})
+    
+    # Add days remaining for each document
+    now = datetime.now(timezone.utc)
+    for doc in documents:
+        created_at = datetime.fromisoformat(doc["createdAt"].replace("Z", "+00:00"))
+        expiry_date = created_at + timedelta(days=DOCUMENT_EXPIRY_DAYS)
+        days_remaining = (expiry_date - now).days
+        doc["daysRemaining"] = max(0, days_remaining)
+        doc["expiresAt"] = expiry_date.isoformat()
+    
+    return {
+        "success": True,
+        "documents": documents,
+        "total": total,
+        "maxDocuments": MAX_SAVED_DOCUMENTS_PER_USER
+    }
+
+
+@app.post("/api/user/saved-documents")
+async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_current_user)):
+    """Save a document for later access"""
+    user_id = session["userId"]
+    
+    # Check user preference
+    user = await users_collection.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user has save documents enabled
+    if not user.get("preferences", {}).get("saveDocuments", False):
+        raise HTTPException(status_code=400, detail="Document saving is not enabled. Enable it in your settings.")
+    
+    # Check document count limit
+    doc_count = await saved_documents_collection.count_documents({"userId": user_id})
+    if doc_count >= MAX_SAVED_DOCUMENTS_PER_USER:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Maximum saved documents limit ({MAX_SAVED_DOCUMENTS_PER_USER}) reached. Delete some documents to save new ones."
+        )
+    
+    # Decode base64 file data
+    try:
+        file_content = base64.b64decode(data.fileData)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid file data")
+    
+    # Generate unique filename
+    file_ext = os.path.splitext(data.fileName)[1] or ".pdf"
+    stored_filename = f"{user_id}_{uuid.uuid4()}{file_ext}"
+    file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
+    
+    # Save file
+    try:
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to save document")
+    
+    # Create document record
+    doc_id = str(uuid.uuid4())
+    document = {
+        "id": doc_id,
+        "userId": user_id,
+        "documentType": data.documentType,
+        "fileName": data.fileName,
+        "storedFileName": stored_filename,
+        "fileSize": len(file_content),
+        "template": data.template,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await saved_documents_collection.insert_one(document)
+    
+    # Calculate expiry info
+    expiry_date = datetime.now(timezone.utc) + timedelta(days=DOCUMENT_EXPIRY_DAYS)
+    
+    return {
+        "success": True,
+        "document": {
+            "id": doc_id,
+            "documentType": data.documentType,
+            "fileName": data.fileName,
+            "fileSize": len(file_content),
+            "template": data.template,
+            "createdAt": document["createdAt"],
+            "daysRemaining": DOCUMENT_EXPIRY_DAYS,
+            "expiresAt": expiry_date.isoformat()
+        },
+        "message": f"Document saved. It will be available for {DOCUMENT_EXPIRY_DAYS} days."
+    }
+
+
+@app.get("/api/user/saved-documents/{doc_id}/download")
+async def download_saved_document(doc_id: str, session: dict = Depends(get_current_user)):
+    """Download a saved document"""
+    from fastapi.responses import FileResponse
+    
+    user_id = session["userId"]
+    
+    # Find document
+    document = await saved_documents_collection.find_one({
+        "id": doc_id,
+        "userId": user_id
+    })
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Check if expired
+    created_at = datetime.fromisoformat(document["createdAt"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) - created_at > timedelta(days=DOCUMENT_EXPIRY_DAYS):
+        # Delete expired document
+        file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        await saved_documents_collection.delete_one({"id": doc_id})
+        raise HTTPException(status_code=404, detail="Document has expired and been deleted")
+    
+    # Get file path
+    file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
+    
+    if not os.path.exists(file_path):
+        await saved_documents_collection.delete_one({"id": doc_id})
+        raise HTTPException(status_code=404, detail="Document file not found")
+    
+    # Determine media type
+    file_ext = os.path.splitext(document["fileName"])[1].lower()
+    media_types = {
+        ".pdf": "application/pdf",
+        ".zip": "application/zip"
+    }
+    media_type = media_types.get(file_ext, "application/octet-stream")
+    
+    return FileResponse(
+        path=file_path,
+        filename=document["fileName"],
+        media_type=media_type
+    )
+
+
+@app.delete("/api/user/saved-documents/{doc_id}")
+async def delete_saved_document(doc_id: str, session: dict = Depends(get_current_user)):
+    """Delete a saved document"""
+    user_id = session["userId"]
+    
+    # Find document
+    document = await saved_documents_collection.find_one({
+        "id": doc_id,
+        "userId": user_id
+    })
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Delete file
+    file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except:
+            pass
+    
+    # Delete record
+    await saved_documents_collection.delete_one({"id": doc_id})
+    
+    return {"success": True, "message": "Document deleted successfully"}
+
+
+@app.get("/api/user/saved-documents/count")
+async def get_saved_documents_count(session: dict = Depends(get_current_user)):
+    """Get count of saved documents for current user"""
+    user_id = session["userId"]
+    count = await saved_documents_collection.count_documents({"userId": user_id})
+    
+    return {
+        "success": True,
+        "count": count,
+        "maxDocuments": MAX_SAVED_DOCUMENTS_PER_USER,
+        "remaining": MAX_SAVED_DOCUMENTS_PER_USER - count
+    }
+
+
 # ========== PAYPAL SUBSCRIPTION ENDPOINTS ==========
 
 # Subscription Plans Configuration

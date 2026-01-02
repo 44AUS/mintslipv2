@@ -212,7 +212,25 @@ function DesktopNavLinks({ location, onNavigate }) {
 
 // User account dropdown component for desktop
 function UserAccountDropdown({ user, onNavigate, onLogout }) {
-  if (!user) return null;
+  // Show Login/Register buttons if user is not logged in
+  if (!user) {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onNavigate("/login")}
+          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-green-700 transition-colors"
+        >
+          Login
+        </button>
+        <button
+          onClick={() => onNavigate("/signup")}
+          className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+        >
+          Register
+        </button>
+      </div>
+    );
+  }
   
   return (
     <DropdownMenu>

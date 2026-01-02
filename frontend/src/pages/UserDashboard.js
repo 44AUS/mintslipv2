@@ -20,8 +20,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Subscription tiers
 const SUBSCRIPTION_TIERS = {
-  starter: { name: "Starter", price: 9.99, downloads: 10, icon: Zap, color: "green" },
-  professional: { name: "Professional", price: 19.99, downloads: 30, icon: Sparkles, color: "blue" },
+  starter: { name: "Starter", price: 19.99, downloads: 10, icon: Zap, color: "green" },
+  professional: { name: "Professional", price: 29.99, downloads: 30, icon: Sparkles, color: "blue" },
   business: { name: "Business", price: 49.99, downloads: -1, icon: Crown, color: "purple" }
 };
 

@@ -689,11 +689,17 @@ async def get_saved_documents(
         doc["daysRemaining"] = max(0, days_remaining)
         doc["expiresAt"] = expiry_date.isoformat()
     
+    # Get user's subscription tier to determine max documents
+    user = await users_collection.find_one({"id": user_id}, {"_id": 0})
+    subscription_tier = user.get("subscription", {}).get("tier", "starter") if user else "starter"
+    max_documents = SAVED_DOCS_LIMITS.get(subscription_tier, 10)
+    
     return {
         "success": True,
         "documents": documents,
         "total": total,
-        "maxDocuments": MAX_SAVED_DOCUMENTS_PER_USER
+        "maxDocuments": max_documents,
+        "subscriptionTier": subscription_tier
     }
 
 

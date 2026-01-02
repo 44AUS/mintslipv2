@@ -164,7 +164,7 @@ export default function UserSignup() {
                   Save my documents for later
                 </Label>
                 <p className="text-xs text-slate-500">
-                  Keep copies of your generated PDFs/ZIPs for up to 60 days. Max 15 documents stored.
+                  Keep copies of your generated PDFs/ZIPs for up to 30 days. Storage limits vary by plan.
                 </p>
               </div>
             </div>

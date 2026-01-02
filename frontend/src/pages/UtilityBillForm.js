@@ -140,7 +140,39 @@ export default function UtilityBillForm() {
         companyLogo: uploadedLogo
       };
       
-      await generateAndDownloadUtilityBill(fullFormData);
+      // Check if user wants documents saved
+      const shouldSave = user?.preferences?.saveDocuments;
+      
+      const pdfBlob = await generateAndDownloadUtilityBill(fullFormData, selectedProvider?.id || "custom", shouldSave);
+      
+      // Save document if user has preference enabled and blob was returned
+      if (shouldSave && pdfBlob && pdfBlob instanceof Blob) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64Data = reader.result.split(',')[1];
+            const fileName = `utility-bill-${formData.customerName?.replace(/\s+/g, '-') || 'statement'}.pdf`;
+            
+            await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                documentType: "utility-bill",
+                fileName: fileName,
+                fileData: base64Data,
+                template: selectedProvider?.id || "custom"
+              })
+            });
+            toast.success("Document saved to your account!");
+          };
+          reader.readAsDataURL(pdfBlob);
+        } catch (saveError) {
+          console.error("Failed to save document:", saveError);
+        }
+      }
       
       if (data.downloadsRemaining !== undefined) {
         const updatedUser = { ...user };

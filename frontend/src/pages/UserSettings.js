@@ -367,6 +367,83 @@ export default function UserSettings() {
         </div>
       </main>
 
+      {/* Change Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={(open) => {
+        setShowPasswordDialog(open);
+        if (!open) {
+          setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+          setPasswordError("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-green-600" />
+              Change Password
+            </DialogTitle>
+            <DialogDescription>
+              Enter your current password and choose a new one.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {passwordError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {passwordError}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                placeholder="Enter your current password"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                placeholder="At least 8 characters"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                placeholder="Confirm your new password"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleChangePassword}
+              disabled={isProcessing}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Change Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Cancel Subscription Dialog */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <DialogContent>

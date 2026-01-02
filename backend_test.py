@@ -1426,11 +1426,14 @@ class AIResumeBuilderTester:
     def test_auth_login_endpoint(self):
         """Test POST /api/auth/login endpoint (mobile app authentication)"""
         try:
-            # First try the mobile app auth endpoint
-            payload = {
-                "email": "testsubscriber@test.com",
-                "password": "Test123!"
-            }
+            # Use the credentials from registration test
+            if not hasattr(self, 'mobile_test_email'):
+                # Fallback to known test user
+                email = "testsubscriber@test.com"
+                password = "Test123!"
+            else:
+                email = self.mobile_test_email
+                password = self.mobile_test_password
             response = requests.post(f"{self.api_url}/auth/login", json=payload, timeout=10)
             
             # If /api/auth/login doesn't exist, try /api/user/login

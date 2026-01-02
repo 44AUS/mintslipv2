@@ -462,6 +462,18 @@ frontend:
         agent: "testing"
         comment: "Subscription upgrade validation endpoints working correctly. ✅ Invalid tier validation: Returns 400 error for invalid tier names. ✅ No subscription validation: Returns 400 error when user has no active subscription. ✅ Proper error messages returned for validation failures. Minor: Same tier and downgrade validation tests skipped due to tier system integration issue between SUBSCRIPTION_TIERS (admin-assigned: basic/pro/unlimited) and SUBSCRIPTION_PLANS (PayPal: starter/professional/business). This is a backend architecture issue where two different subscription tier systems don't integrate properly."
 
+  - task: "Saved Documents Feature Backend APIs"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "SAVED DOCUMENTS FEATURE TESTING COMPLETE: All saved documents backend APIs tested and working perfectly. ✅ User Signup with saveDocuments preference (POST /api/user/signup) - Creates users with preferences.saveDocuments=true. ✅ Update User Preferences (PUT /api/user/preferences) - Successfully toggles saveDocuments preference. ✅ Get User Profile (GET /api/user/me) - Returns user profile including preferences.saveDocuments field. ✅ Get Saved Documents Empty (GET /api/user/saved-documents) - Returns empty documents array with maxDocuments=15. ✅ Save Document (POST /api/user/saved-documents) - Saves base64 encoded documents with 60 days expiry. ✅ Get Saved Documents with One Document - Returns array with 1 document, total=1. ✅ Get Saved Documents Count (GET /api/user/saved-documents/count) - Returns count=1, maxDocuments=15, remaining=14. ✅ Download Saved Document (GET /api/user/saved-documents/{doc_id}/download) - Returns file content with proper headers. ✅ Delete Saved Document (DELETE /api/user/saved-documents/{doc_id}) - Successfully deletes documents. ✅ Save Document Without Preference Enabled - Returns 400 error when saveDocuments=false. All endpoints require proper authentication and handle file storage/retrieval correctly. Document expiry (60 days) and limits (15 max per user) working as designed."
+
 # ==========================================================================
 # Subscription Download Feature Implementation Notes:
 # ==========================================================================

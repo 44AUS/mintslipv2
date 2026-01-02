@@ -284,7 +284,11 @@ export default function UserDownloads() {
               <div>
                 <p className="text-sm text-slate-500">Saved Documents</p>
                 <p className="text-2xl font-bold text-slate-800">
-                  {savedTotal} <span className="text-sm font-normal text-slate-400">/ {maxSavedDocuments}</span>
+                  {savedTotal} {maxSavedDocuments === -1 ? (
+                    <span className="text-sm font-normal text-slate-400">/ ∞</span>
+                  ) : (
+                    <span className="text-sm font-normal text-slate-400">/ {maxSavedDocuments}</span>
+                  )}
                 </p>
               </div>
             </div>

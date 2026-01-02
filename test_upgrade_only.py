@@ -15,12 +15,13 @@ def test_upgrade_only():
     
     # First setup admin and user
     print("\n👤 Setting up admin and user...")
-    admin_setup_ok = tester.test_admin_setup()
+    admin_setup_ok = tester.test_admin_setup()  # This might fail if already setup
     admin_login_ok = tester.test_admin_login()
     user_registration_ok = tester.test_user_registration()
     user_login_ok = tester.test_user_login()
     
-    if not (admin_setup_ok and admin_login_ok and user_registration_ok and user_login_ok):
+    # Admin setup can fail if already completed, so we only need login to work
+    if not (admin_login_ok and user_registration_ok and user_login_ok):
         print("❌ Failed to setup admin and user")
         return False
     

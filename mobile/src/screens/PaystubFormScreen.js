@@ -1,243 +1,489 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import Header from '../components/Header';
-import Button from '../components/Button';
-import Input from '../components/Input';
-import Select from '../components/Select';
-import Checkbox from '../components/Checkbox';
-import RadioGroup from '../components/RadioGroup';
-import PayPalWebView from '../components/PayPalWebView';
-import { generateAndDownloadPaystub } from '../utils/paystubGenerator';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, Text, ScrollView, StyleSheet, TouchableOpacity, 
+  SafeAreaView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform 
+} from 'react-native';
+import { WebView } from 'react-native-webview';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { Button, Input, Select, Header, RadioGroup, Checkbox, Card } from '../components/ui';
+import { useAuth, API_URL } from '../context/AuthContext';
+import { US_STATES, PAY_FREQUENCIES, FILING_STATUSES, PAYROLL_TEMPLATES } from '../constants/formData';
 
-const US_STATES = [
-  { label: 'Alabama', value: 'AL' }, { label: 'Alaska', value: 'AK' }, { label: 'Arizona', value: 'AZ' },
-  { label: 'Arkansas', value: 'AR' }, { label: 'California', value: 'CA' }, { label: 'Colorado', value: 'CO' },
-  { label: 'Connecticut', value: 'CT' }, { label: 'Delaware', value: 'DE' }, { label: 'Florida', value: 'FL' },
-  { label: 'Georgia', value: 'GA' }, { label: 'Hawaii', value: 'HI' }, { label: 'Idaho', value: 'ID' },
-  { label: 'Illinois', value: 'IL' }, { label: 'Indiana', value: 'IN' }, { label: 'Iowa', value: 'IA' },
-  { label: 'Kansas', value: 'KS' }, { label: 'Kentucky', value: 'KY' }, { label: 'Louisiana', value: 'LA' },
-  { label: 'Maine', value: 'ME' }, { label: 'Maryland', value: 'MD' }, { label: 'Massachusetts', value: 'MA' },
-  { label: 'Michigan', value: 'MI' }, { label: 'Minnesota', value: 'MN' }, { label: 'Mississippi', value: 'MS' },
-  { label: 'Missouri', value: 'MO' }, { label: 'Montana', value: 'MT' }, { label: 'Nebraska', value: 'NE' },
-  { label: 'Nevada', value: 'NV' }, { label: 'New Hampshire', value: 'NH' }, { label: 'New Jersey', value: 'NJ' },
-  { label: 'New Mexico', value: 'NM' }, { label: 'New York', value: 'NY' }, { label: 'North Carolina', value: 'NC' },
-  { label: 'North Dakota', value: 'ND' }, { label: 'Ohio', value: 'OH' }, { label: 'Oklahoma', value: 'OK' },
-  { label: 'Oregon', value: 'OR' }, { label: 'Pennsylvania', value: 'PA' }, { label: 'Rhode Island', value: 'RI' },
-  { label: 'South Carolina', value: 'SC' }, { label: 'South Dakota', value: 'SD' }, { label: 'Tennessee', value: 'TN' },
-  { label: 'Texas', value: 'TX' }, { label: 'Utah', value: 'UT' }, { label: 'Vermont', value: 'VT' },
-  { label: 'Virginia', value: 'VA' }, { label: 'Washington', value: 'WA' }, { label: 'West Virginia', value: 'WV' },
-  { label: 'Wisconsin', value: 'WI' }, { label: 'Wyoming', value: 'WY' },
-];
-
-export default function PaystubFormScreen() {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [showPayPal, setShowPayPal] = useState(false);
+export default function PaystubFormScreen({ navigation }) {
+  const { user, token, isGuest, hasActiveSubscription } = useAuth();
+  const isSubscribed = hasActiveSubscription();
+  
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  
+  // Template Selection
   const [selectedTemplate, setSelectedTemplate] = useState('template-a');
   
+  // Form State - Employee Info
   const [formData, setFormData] = useState({
+    // Employee Information
     name: '',
     ssn: '',
-    bank: '',
-    bankName: '',
     address: '',
     city: '',
-    state: 'CA',
+    state: '',
     zip: '',
+    hireDate: '',
+    employeeId: '',
+    
+    // Company Information
     company: '',
     companyAddress: '',
     companyCity: '',
-    companyState: 'CA',
+    companyState: '',
     companyZip: '',
     companyPhone: '',
-    hireDate: '',
-    startDate: '',
-    endDate: '',
+    
+    // Pay Information
+    payType: 'hourly',
     rate: '',
+    annualSalary: '',
     payFrequency: 'biweekly',
     payDay: 'Friday',
-    hoursList: '',
-    overtimeList: '',
+    
+    // Pay Period
+    startDate: '',
+    endDate: '',
+    hours: '80',
+    overtime: '0',
+    
+    // Tax Info
+    federalFilingStatus: 'single',
+    stateAllowances: '0',
     includeLocalTax: true,
+    
+    // Bank Info
+    bankName: '',
+    bank: '',
+    
+    // Worker Type
+    workerType: 'employee',
   });
 
+  // Update form field
   const updateField = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const calculateNumStubs = useMemo(() => {
-    if (!formData.startDate || !formData.endDate) return 0;
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const periodLength = formData.payFrequency === 'biweekly' ? 14 : 7;
-    return Math.ceil(diffDays / periodLength);
-  }, [formData.startDate, formData.endDate, formData.payFrequency]);
+  // Calculate gross pay
+  const calculateGrossPay = () => {
+    if (formData.payType === 'salary') {
+      const annual = parseFloat(formData.annualSalary) || 0;
+      const periods = formData.payFrequency === 'weekly' ? 52 : 26;
+      return annual / periods;
+    } else {
+      const rate = parseFloat(formData.rate) || 0;
+      const hours = parseFloat(formData.hours) || 0;
+      const overtime = parseFloat(formData.overtime) || 0;
+      return (rate * hours) + (rate * 1.5 * overtime);
+    }
+  };
 
-  const preview = useMemo(() => {
-    const rate = parseFloat(formData.rate) || 0;
-    const numStubs = calculateNumStubs;
-    const defaultHours = formData.payFrequency === 'weekly' ? 40 : 80;
-    const hoursArray = formData.hoursList
-      .split(',')
-      .map((h) => parseFloat(h.trim()) || 0)
-      .slice(0, numStubs) || [];
-    const overtimeArray = formData.overtimeList
-      .split(',')
-      .map((h) => parseFloat(h.trim()) || 0)
-      .slice(0, numStubs) || [];
+  // Validate current step
+  const validateStep = () => {
+    switch (currentStep) {
+      case 1: // Template Selection
+        return selectedTemplate !== '';
+      case 2: // Employee Info
+        return formData.name && formData.address && formData.city && formData.state && formData.zip;
+      case 3: // Company Info
+        return formData.company && formData.companyAddress && formData.companyCity && formData.companyState && formData.companyZip;
+      case 4: // Pay Info
+        if (formData.payType === 'salary') {
+          return formData.annualSalary && formData.startDate && formData.endDate;
+        }
+        return formData.rate && formData.hours && formData.startDate && formData.endDate;
+      default:
+        return true;
+    }
+  };
 
-    const results = hoursArray.map((hrs, i) => {
-      const baseHours = hrs || defaultHours;
-      const overtime = overtimeArray[i] || 0;
-      return rate * baseHours + rate * 1.5 * overtime;
-    });
-
-    const totalGross = results.reduce((a, b) => a + b, 0);
-    const ssTax = totalGross * 0.062;
-    const medTax = totalGross * 0.0145;
-    const stateTax = totalGross * 0.05;
-    const localTax = formData.includeLocalTax ? totalGross * 0.01 : 0;
-    const totalTaxes = ssTax + medTax + stateTax + localTax;
-    const netPay = totalGross - totalTaxes;
-
-    return { totalGross, totalTaxes, netPay, numStubs };
-  }, [formData, calculateNumStubs]);
-
-  const handlePayment = () => {
-    // Validate required fields
-    if (!formData.name || !formData.company || !formData.rate || !formData.startDate || !formData.endDate) {
-      Alert.alert('Missing Information', 'Please fill in all required fields');
+  // Handle next step
+  const handleNext = () => {
+    if (!validateStep()) {
+      Alert.alert('Missing Information', 'Please fill in all required fields.');
       return;
     }
-    setShowPayPal(true);
-  };
-
-  const onPaymentSuccess = async () => {
-    setShowPayPal(false);
-    setIsProcessing(true);
-    
-    try {
-      await generateAndDownloadPaystub(formData, selectedTemplate, calculateNumStubs, (progress) => {
-        console.log(`Generation progress: ${(progress * 100).toFixed(0)}%`);
-      });
-      
-      Alert.alert('Success', 'Pay stub(s) generated successfully!', [
-        { text: 'OK', onPress: () => setIsProcessing(false) }
-      ]);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to generate document. Please try again.');
-      setIsProcessing(false);
+    if (currentStep < 5) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
-  const onPaymentError = (error) => {
-    setShowPayPal(false);
-    Alert.alert('Payment Failed', error || 'Please try again');
+  // Handle previous step
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      navigation.goBack();
+    }
   };
 
-  const onPaymentCancel = () => {
-    setShowPayPal(false);
+  // Generate preview
+  const generatePreview = async () => {
+    setIsLoading(true);
+    try {
+      // Create preview HTML (simplified for mobile)
+      const grossPay = calculateGrossPay();
+      const html = createPreviewHtml(grossPay);
+      setPreviewHtml(html);
+      setShowPreview(true);
+      setCurrentStep(5);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to generate preview');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const totalAmount = calculateNumStubs * 10;
+  // Create preview HTML
+  const createPreviewHtml = (grossPay) => {
+    const netPay = grossPay * 0.75; // Simplified tax estimation
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+          .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 2px solid #15803d; padding-bottom: 15px; margin-bottom: 15px; }
+          .company { font-size: 24px; font-weight: bold; color: #15803d; }
+          .title { font-size: 14px; color: #666; margin-top: 5px; }
+          .section { margin: 15px 0; }
+          .section-title { font-weight: bold; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; }
+          .row { display: flex; justify-content: space-between; margin: 5px 0; }
+          .label { color: #666; }
+          .value { font-weight: 500; }
+          .total { font-size: 18px; color: #15803d; font-weight: bold; }
+          .watermark { text-align: center; color: #999; font-size: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ddd; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="company">${formData.company || 'Company Name'}</div>
+            <div class="title">EARNINGS STATEMENT</div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Employee Information</div>
+            <div class="row"><span class="label">Name:</span><span class="value">${formData.name || 'Employee Name'}</span></div>
+            <div class="row"><span class="label">Address:</span><span class="value">${formData.address}, ${formData.city}, ${formData.state} ${formData.zip}</span></div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Pay Period</div>
+            <div class="row"><span class="label">Period:</span><span class="value">${formData.startDate} - ${formData.endDate}</span></div>
+            <div class="row"><span class="label">Pay Date:</span><span class="value">${formData.endDate}</span></div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Earnings</div>
+            ${formData.payType === 'hourly' ? `
+              <div class="row"><span class="label">Regular (${formData.hours} hrs @ $${formData.rate}):</span><span class="value">$${(parseFloat(formData.rate) * parseFloat(formData.hours)).toFixed(2)}</span></div>
+              ${parseFloat(formData.overtime) > 0 ? `<div class="row"><span class="label">Overtime (${formData.overtime} hrs @ $${(parseFloat(formData.rate) * 1.5).toFixed(2)}):</span><span class="value">$${(parseFloat(formData.rate) * 1.5 * parseFloat(formData.overtime)).toFixed(2)}</span></div>` : ''}
+            ` : `
+              <div class="row"><span class="label">Salary:</span><span class="value">$${grossPay.toFixed(2)}</span></div>
+            `}
+            <div class="row"><span class="label">Gross Pay:</span><span class="value total">$${grossPay.toFixed(2)}</span></div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Deductions (Estimated)</div>
+            <div class="row"><span class="label">Federal Tax:</span><span class="value">$${(grossPay * 0.12).toFixed(2)}</span></div>
+            <div class="row"><span class="label">State Tax:</span><span class="value">$${(grossPay * 0.05).toFixed(2)}</span></div>
+            <div class="row"><span class="label">Social Security:</span><span class="value">$${(grossPay * 0.062).toFixed(2)}</span></div>
+            <div class="row"><span class="label">Medicare:</span><span class="value">$${(grossPay * 0.0145).toFixed(2)}</span></div>
+          </div>
+          
+          <div class="section">
+            <div class="row"><span class="label" style="font-size: 18px;">Net Pay:</span><span class="value total">$${netPay.toFixed(2)}</span></div>
+          </div>
+          
+          <div class="watermark">PREVIEW - Watermark will be removed in final document</div>
+        </div>
+      </body>
+      </html>
+    `;
+  };
 
-  return (
-    <View style={styles.container}>
-      <Header title="Generate Pay Stub" showBack={true} />
+  // Handle payment/download
+  const handleDownload = async () => {
+    if (isSubscribed) {
+      // Use subscription
+      await downloadWithSubscription();
+    } else {
+      // Show payment options
+      Alert.alert(
+        'Payment Required',
+        'Pay $9.99 to download your pay stub.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Pay with PayPal', onPress: () => handlePayPalPayment() },
+        ]
+      );
+    }
+  };
+
+  // Download with subscription
+  const downloadWithSubscription = async () => {
+    if (!token) {
+      Alert.alert('Login Required', 'Please login to use your subscription.');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/user/subscription-download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          documentType: 'paystub',
+          template: selectedTemplate,
+          count: 1,
+        }),
+      });
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Template Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose Template</Text>
-          <RadioGroup
-            options={[
-              { label: 'Template A - Classic Professional', value: 'template-a' },
-              { label: 'Template B - Modern Minimalist', value: 'template-b' },
-              { label: 'Template C - Detailed Corporate', value: 'template-c' },
-            ]}
-            value={selectedTemplate}
-            onValueChange={setSelectedTemplate}
-          />
-        </View>
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || 'Download failed');
+      }
+      
+      // Generate and share PDF
+      await generateAndSharePdf();
+      
+      Alert.alert('Success', 'Pay stub downloaded successfully!');
+      
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        {/* Employee Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Employee Information</Text>
-          <Input
-            label="Full Name *"
-            value={formData.name}
-            onChangeText={(v) => updateField('name', v)}
-            placeholder="John Doe"
-          />
-          <Input
-            label="SSN (Last 4 digits)"
-            value={formData.ssn}
-            onChangeText={(v) => updateField('ssn', v)}
-            placeholder="1234"
-            keyboardType="numeric"
-          />
-          <Input
-            label="Address"
-            value={formData.address}
-            onChangeText={(v) => updateField('address', v)}
-            placeholder="123 Main St"
-          />
+  // Generate and share PDF
+  const generateAndSharePdf = async () => {
+    const grossPay = calculateGrossPay();
+    const html = createPreviewHtml(grossPay).replace(
+      '<div class="watermark">PREVIEW - Watermark will be removed in final document</div>',
+      ''
+    );
+    
+    const { uri } = await Print.printToFileAsync({ html });
+    
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(uri, {
+        mimeType: 'application/pdf',
+        dialogTitle: 'Save Pay Stub',
+        UTI: 'com.adobe.pdf',
+      });
+    }
+  };
+
+  // Handle PayPal payment
+  const handlePayPalPayment = () => {
+    // Navigate to PayPal webview or external link
+    Alert.alert('PayPal', 'PayPal integration coming soon. Please use the web version for payments.');
+  };
+
+  // Render step content
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return renderTemplateSelection();
+      case 2:
+        return renderEmployeeInfo();
+      case 3:
+        return renderCompanyInfo();
+      case 4:
+        return renderPayInfo();
+      case 5:
+        return renderPreview();
+      default:
+        return null;
+    }
+  };
+
+  // Step 1: Template Selection
+  const renderTemplateSelection = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Choose Template</Text>
+      <Text style={styles.stepDescription}>Select a payroll template style for your pay stub</Text>
+      
+      {PAYROLL_TEMPLATES.map((template) => (
+        <TouchableOpacity
+          key={template.id}
+          style={[
+            styles.templateCard,
+            selectedTemplate === template.id && styles.templateCardSelected,
+          ]}
+          onPress={() => setSelectedTemplate(template.id)}
+        >
+          <View style={styles.templateIcon}>
+            <Text style={styles.templateEmoji}>{template.icon}</Text>
+          </View>
+          <View style={styles.templateInfo}>
+            <Text style={styles.templateName}>{template.name}</Text>
+            <Text style={styles.templateDesc}>{template.description}</Text>
+          </View>
+          {selectedTemplate === template.id && (
+            <View style={styles.checkmark}>
+              <Text style={styles.checkmarkText}>✓</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  // Step 2: Employee Information
+  const renderEmployeeInfo = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Employee Information</Text>
+      <Text style={styles.stepDescription}>Enter the employee's personal details</Text>
+      
+      <Input
+        label="Full Name"
+        value={formData.name}
+        onChangeText={(v) => updateField('name', v)}
+        placeholder="John Smith"
+        required
+      />
+      
+      <Input
+        label="SSN (Last 4 digits)"
+        value={formData.ssn}
+        onChangeText={(v) => updateField('ssn', v)}
+        placeholder="XXXX"
+        keyboardType="numeric"
+        maxLength={4}
+      />
+      
+      <Input
+        label="Street Address"
+        value={formData.address}
+        onChangeText={(v) => updateField('address', v)}
+        placeholder="123 Main St"
+        required
+      />
+      
+      <View style={styles.row}>
+        <View style={styles.flex2}>
           <Input
             label="City"
             value={formData.city}
             onChangeText={(v) => updateField('city', v)}
-            placeholder="Los Angeles"
+            placeholder="New York"
+            required
           />
+        </View>
+        <View style={styles.flex1}>
           <Select
             label="State"
             value={formData.state}
             onValueChange={(v) => updateField('state', v)}
-            items={US_STATES}
+            options={US_STATES}
+            placeholder="Select"
+            required
           />
+        </View>
+      </View>
+      
+      <View style={styles.row}>
+        <View style={styles.flex1}>
           <Input
             label="ZIP Code"
             value={formData.zip}
             onChangeText={(v) => updateField('zip', v)}
-            placeholder="90001"
+            placeholder="10001"
             keyboardType="numeric"
+            maxLength={5}
+            required
           />
         </View>
+        <View style={styles.flex1}>
+          <Input
+            label="Hire Date"
+            value={formData.hireDate}
+            onChangeText={(v) => updateField('hireDate', v)}
+            placeholder="MM/DD/YYYY"
+          />
+        </View>
+      </View>
+    </View>
+  );
 
-        {/* Company Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Company Information</Text>
-          <Input
-            label="Company Name *"
-            value={formData.company}
-            onChangeText={(v) => updateField('company', v)}
-            placeholder="Acme Corp"
-          />
-          <Input
-            label="Company Address"
-            value={formData.companyAddress}
-            onChangeText={(v) => updateField('companyAddress', v)}
-            placeholder="456 Business Ave"
-          />
+  // Step 3: Company Information
+  const renderCompanyInfo = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Company Information</Text>
+      <Text style={styles.stepDescription}>Enter employer details</Text>
+      
+      <Input
+        label="Company Name"
+        value={formData.company}
+        onChangeText={(v) => updateField('company', v)}
+        placeholder="Acme Corporation"
+        required
+      />
+      
+      <Input
+        label="Company Address"
+        value={formData.companyAddress}
+        onChangeText={(v) => updateField('companyAddress', v)}
+        placeholder="456 Business Ave"
+        required
+      />
+      
+      <View style={styles.row}>
+        <View style={styles.flex2}>
           <Input
             label="City"
             value={formData.companyCity}
             onChangeText={(v) => updateField('companyCity', v)}
             placeholder="Los Angeles"
+            required
           />
+        </View>
+        <View style={styles.flex1}>
           <Select
             label="State"
             value={formData.companyState}
             onValueChange={(v) => updateField('companyState', v)}
-            items={US_STATES}
+            options={US_STATES}
+            placeholder="Select"
+            required
           />
+        </View>
+      </View>
+      
+      <View style={styles.row}>
+        <View style={styles.flex1}>
           <Input
             label="ZIP Code"
             value={formData.companyZip}
             onChangeText={(v) => updateField('companyZip', v)}
             placeholder="90001"
             keyboardType="numeric"
+            maxLength={5}
+            required
           />
+        </View>
+        <View style={styles.flex1}>
           <Input
             label="Phone"
             value={formData.companyPhone}
@@ -246,231 +492,382 @@ export default function PaystubFormScreen() {
             keyboardType="phone-pad"
           />
         </View>
+      </View>
+    </View>
+  );
 
-        {/* Pay Period */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pay Period</Text>
+  // Step 4: Pay Information
+  const renderPayInfo = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Pay Information</Text>
+      <Text style={styles.stepDescription}>Enter earnings and pay period details</Text>
+      
+      <RadioGroup
+        label="Pay Type"
+        value={formData.payType}
+        onChange={(v) => updateField('payType', v)}
+        options={[
+          { value: 'hourly', label: 'Hourly' },
+          { value: 'salary', label: 'Salary' },
+        ]}
+        horizontal
+      />
+      
+      {formData.payType === 'hourly' ? (
+        <>
           <Input
-            label="Start Date *"
-            value={formData.startDate}
-            onChangeText={(v) => updateField('startDate', v)}
-            placeholder="YYYY-MM-DD"
-          />
-          <Input
-            label="End Date *"
-            value={formData.endDate}
-            onChangeText={(v) => updateField('endDate', v)}
-            placeholder="YYYY-MM-DD"
-          />
-          <Select
-            label="Pay Frequency"
-            value={formData.payFrequency}
-            onValueChange={(v) => updateField('payFrequency', v)}
-            items={[
-              { label: 'Weekly', value: 'weekly' },
-              { label: 'Bi-Weekly', value: 'biweekly' },
-            ]}
-          />
-          <Select
-            label="Pay Day"
-            value={formData.payDay}
-            onValueChange={(v) => updateField('payDay', v)}
-            items={[
-              { label: 'Monday', value: 'Monday' },
-              { label: 'Tuesday', value: 'Tuesday' },
-              { label: 'Wednesday', value: 'Wednesday' },
-              { label: 'Thursday', value: 'Thursday' },
-              { label: 'Friday', value: 'Friday' },
-            ]}
-          />
-        </View>
-
-        {/* Pay Details */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pay Details</Text>
-          <Input
-            label="Hourly Rate *"
+            label="Hourly Rate ($)"
             value={formData.rate}
             onChangeText={(v) => updateField('rate', v)}
             placeholder="25.00"
             keyboardType="decimal-pad"
+            required
           />
-          <Input
-            label="Hours List (comma-separated)"
-            value={formData.hoursList}
-            onChangeText={(v) => updateField('hoursList', v)}
-            placeholder="80, 80, 80"
-          />
-          <Input
-            label="Overtime Hours (comma-separated)"
-            value={formData.overtimeList}
-            onChangeText={(v) => updateField('overtimeList', v)}
-            placeholder="0, 5, 0"
-          />
-        </View>
-
-        {/* Banking */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Banking</Text>
-          <Input
-            label="Bank Name"
-            value={formData.bankName}
-            onChangeText={(v) => updateField('bankName', v)}
-            placeholder="Chase Bank"
-          />
-          <Input
-            label="Account # (Last 4 digits)"
-            value={formData.bank}
-            onChangeText={(v) => updateField('bank', v)}
-            placeholder="1234"
-            keyboardType="numeric"
-          />
-        </View>
-
-        {/* Tax Options */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tax Options</Text>
-          <Checkbox
-            label="Include Local Tax (1%)"
-            value={formData.includeLocalTax}
-            onValueChange={(v) => updateField('includeLocalTax', v)}
-          />
-        </View>
-
-        {/* Preview */}
-        {calculateNumStubs > 0 && (
-          <View style={styles.previewSection}>
-            <Text style={styles.previewTitle}>Summary</Text>
-            <View style={styles.previewRow}>
-              <Text style={styles.previewLabel}>Number of Stubs:</Text>
-              <Text style={styles.previewValue}>{calculateNumStubs}</Text>
+          
+          <View style={styles.row}>
+            <View style={styles.flex1}>
+              <Input
+                label="Regular Hours"
+                value={formData.hours}
+                onChangeText={(v) => updateField('hours', v)}
+                placeholder="80"
+                keyboardType="numeric"
+                required
+              />
             </View>
-            <View style={styles.previewRow}>
-              <Text style={styles.previewLabel}>Total Gross Pay:</Text>
-              <Text style={styles.previewValue}>${preview.totalGross.toFixed(2)}</Text>
-            </View>
-            <View style={styles.previewRow}>
-              <Text style={styles.previewLabel}>Total Deductions:</Text>
-              <Text style={styles.previewValue}>${preview.totalTaxes.toFixed(2)}</Text>
-            </View>
-            <View style={styles.previewRow}>
-              <Text style={styles.previewLabel}>Total Net Pay:</Text>
-              <Text style={[styles.previewValue, styles.netPayValue]}>${preview.netPay.toFixed(2)}</Text>
-            </View>
-            <View style={[styles.previewRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Cost:</Text>
-              <Text style={styles.totalValue}>${totalAmount.toFixed(2)}</Text>
+            <View style={styles.flex1}>
+              <Input
+                label="Overtime Hours"
+                value={formData.overtime}
+                onChangeText={(v) => updateField('overtime', v)}
+                placeholder="0"
+                keyboardType="numeric"
+              />
             </View>
           </View>
-        )}
-
-        {/* Pay Button */}
-        <Button
-          title={`Pay $${totalAmount.toFixed(2)} with PayPal`}
-          onPress={handlePayment}
-          disabled={calculateNumStubs === 0 || isProcessing}
-          style={styles.payButton}
+        </>
+      ) : (
+        <Input
+          label="Annual Salary ($)"
+          value={formData.annualSalary}
+          onChangeText={(v) => updateField('annualSalary', v)}
+          placeholder="75000"
+          keyboardType="decimal-pad"
+          required
         />
-
-        {isProcessing && (
-          <View style={styles.processingContainer}>
-            <ActivityIndicator size="large" color="#1a4731" />
-            <Text style={styles.processingText}>Generating your documents...</Text>
-          </View>
-        )}
-      </ScrollView>
-
-      <PayPalWebView
-        visible={showPayPal}
-        amount={totalAmount}
-        description={`Pay Stub Generation (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''})`}
-        onSuccess={onPaymentSuccess}
-        onError={onPaymentError}
-        onCancel={onPaymentCancel}
+      )}
+      
+      <Select
+        label="Pay Frequency"
+        value={formData.payFrequency}
+        onValueChange={(v) => updateField('payFrequency', v)}
+        options={PAY_FREQUENCIES}
+      />
+      
+      <View style={styles.row}>
+        <View style={styles.flex1}>
+          <Input
+            label="Period Start"
+            value={formData.startDate}
+            onChangeText={(v) => updateField('startDate', v)}
+            placeholder="MM/DD/YYYY"
+            required
+          />
+        </View>
+        <View style={styles.flex1}>
+          <Input
+            label="Period End"
+            value={formData.endDate}
+            onChangeText={(v) => updateField('endDate', v)}
+            placeholder="MM/DD/YYYY"
+            required
+          />
+        </View>
+      </View>
+      
+      <Select
+        label="Filing Status"
+        value={formData.federalFilingStatus}
+        onValueChange={(v) => updateField('federalFilingStatus', v)}
+        options={FILING_STATUSES}
       />
     </View>
+  );
+
+  // Step 5: Preview
+  const renderPreview = () => (
+    <View style={styles.previewContainer}>
+      <Text style={styles.stepTitle}>Preview</Text>
+      
+      <View style={styles.previewWebview}>
+        <WebView
+          source={{ html: previewHtml }}
+          style={styles.webview}
+          scalesPageToFit={true}
+        />
+      </View>
+      
+      <View style={styles.previewNote}>
+        <Text style={styles.previewNoteIcon}>⚠️</Text>
+        <Text style={styles.previewNoteText}>
+          This is a preview with estimated taxes. Final document will have accurate calculations.
+        </Text>
+      </View>
+    </View>
+  );
+
+  // Progress indicator
+  const renderProgress = () => (
+    <View style={styles.progress}>
+      {[1, 2, 3, 4, 5].map((step) => (
+        <View key={step} style={styles.progressItem}>
+          <View style={[
+            styles.progressDot,
+            currentStep >= step && styles.progressDotActive,
+            currentStep === step && styles.progressDotCurrent,
+          ]}>
+            <Text style={[
+              styles.progressDotText,
+              currentStep >= step && styles.progressDotTextActive,
+            ]}>
+              {currentStep > step ? '✓' : step}
+            </Text>
+          </View>
+          {step < 5 && (
+            <View style={[
+              styles.progressLine,
+              currentStep > step && styles.progressLineActive,
+            ]} />
+          )}
+        </View>
+      ))}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <Header
+        title="Pay Stub Generator"
+        showBack
+        onBack={handleBack}
+        variant="light"
+      />
+      
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {renderProgress()}
+        
+        <ScrollView 
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {renderStepContent()}
+        </ScrollView>
+        
+        {/* Bottom Actions */}
+        <View style={styles.actions}>
+          {currentStep < 5 ? (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={currentStep === 4 ? generatePreview : handleNext}
+              loading={isLoading}
+            >
+              {currentStep === 4 ? 'Generate Preview' : 'Continue'}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onPress={handleDownload}
+              loading={isLoading}
+            >
+              {isSubscribed ? 'Download (Subscription)' : 'Pay $9.99 & Download'}
+            </Button>
+          )}
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.background,
+  },
+  progress: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  progressItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  progressDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.border,
+  },
+  progressDotActive: {
+    backgroundColor: COLORS.primaryBg,
+    borderColor: COLORS.primary,
+  },
+  progressDotCurrent: {
+    backgroundColor: COLORS.primary,
+  },
+  progressDotText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+  },
+  progressDotTextActive: {
+    color: COLORS.primary,
+  },
+  progressLine: {
+    width: 24,
+    height: 2,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 4,
+  },
+  progressLineActive: {
+    backgroundColor: COLORS.primary,
   },
   content: {
     flex: 1,
-    padding: 20,
   },
-  section: {
-    marginBottom: 24,
+  stepContent: {
+    padding: SPACING.xl,
   },
-  sectionTitle: {
-    fontSize: 20,
+  stepTitle: {
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#1a4731',
-    marginBottom: 16,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
-  previewSection: {
-    backgroundColor: '#f8fafc',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+  stepDescription: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xl,
   },
-  previewTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a4731',
-    marginBottom: 16,
-  },
-  previewRow: {
+  row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    gap: SPACING.md,
   },
-  previewLabel: {
-    fontSize: 15,
-    color: '#64748b',
+  flex1: {
+    flex: 1,
   },
-  previewValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#334155',
+  flex2: {
+    flex: 2,
   },
-  netPayValue: {
-    color: '#1a4731',
-    fontWeight: 'bold',
-  },
-  totalRow: {
-    marginTop: 12,
-    paddingTop: 16,
-    borderTopWidth: 2,
-    borderTopColor: '#1a4731',
-    borderBottomWidth: 0,
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a4731',
-  },
-  totalValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a4731',
-  },
-  payButton: {
-    marginBottom: 40,
-  },
-  processingContainer: {
+  templateCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    backgroundColor: COLORS.white,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    marginBottom: SPACING.md,
+    borderWidth: 2,
+    borderColor: COLORS.border,
   },
-  processingText: {
-    marginTop: 12,
+  templateCardSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryBg,
+  },
+  templateIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  templateEmoji: {
+    fontSize: 24,
+  },
+  templateInfo: {
+    flex: 1,
+  },
+  templateName: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  templateDesc: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  checkmark: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmarkText: {
+    color: COLORS.white,
     fontSize: 16,
-    color: '#64748b',
+    fontWeight: 'bold',
+  },
+  previewContainer: {
+    flex: 1,
+    padding: SPACING.lg,
+  },
+  previewWebview: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: BORDER_RADIUS.lg,
+    overflow: 'hidden',
+    marginVertical: SPACING.md,
+    minHeight: 400,
+    ...SHADOWS.medium,
+  },
+  webview: {
+    flex: 1,
+  },
+  previewNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.warningBg,
+    padding: SPACING.md,
+    borderRadius: BORDER_RADIUS.md,
+  },
+  previewNoteIcon: {
+    fontSize: 16,
+    marginRight: SPACING.sm,
+  },
+  previewNoteText: {
+    flex: 1,
+    fontSize: FONT_SIZES.sm,
+    color: '#92400e',
+  },
+  actions: {
+    padding: SPACING.lg,
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
 });

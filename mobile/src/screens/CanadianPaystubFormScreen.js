@@ -1,713 +1,364 @@
 import React, { useState } from 'react';
 import { 
   View, Text, ScrollView, StyleSheet, TouchableOpacity, 
-  SafeAreaView, Alert, KeyboardAvoidingView, Platform, TextInput
+  SafeAreaView, Alert, KeyboardAvoidingView, Platform,
+  TextInput, ActivityIndicator
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '../constants/theme';
-import { Button, Select, Header, RadioGroup } from '../components/ui';
 import { useAuth, API_URL } from '../context/AuthContext';
-import { CA_PROVINCES, PAY_FREQUENCIES, CANADIAN_TEMPLATES } from '../constants/formData';
 
-// Custom Input component with proper state handling
-const FormInput = ({ label, value, onChangeText, placeholder, keyboardType, maxLength, required, editable = true, multiline, style }) => {
-  return (
-    <View style={[inputStyles.inputContainer, style]}>
-      {label && (
-        <Text style={inputStyles.inputLabel}>
-          {label}
-          {required && <Text style={inputStyles.required}> *</Text>}
-        </Text>
-      )}
+// Canadian Provinces
+const PROVINCES = [
+  { value: 'AB', label: 'Alberta' }, { value: 'BC', label: 'British Columbia' },
+  { value: 'MB', label: 'Manitoba' }, { value: 'NB', label: 'New Brunswick' },
+  { value: 'NL', label: 'Newfoundland' }, { value: 'NS', label: 'Nova Scotia' },
+  { value: 'NT', label: 'Northwest Territories' }, { value: 'NU', label: 'Nunavut' },
+  { value: 'ON', label: 'Ontario' }, { value: 'PE', label: 'Prince Edward Island' },
+  { value: 'QC', label: 'Quebec' }, { value: 'SK', label: 'Saskatchewan' }, { value: 'YT', label: 'Yukon' },
+];
+
+// Templates
+const TEMPLATES = [
+  { id: 'standard', name: 'Standard', icon: '🍁', color: '#DC2626', desc: 'Classic Canadian format' },
+  { id: 'quebec', name: 'Quebec', icon: '⚜️', color: '#1D4ED8', desc: 'Quebec-specific with RRQ' },
+];
+
+// Input Component
+const Input = ({ label, value, onChangeText, placeholder, keyboardType, maxLength, required }) => (
+  <View style={styles.inputWrapper}>
+    {label && <Text style={styles.inputLabel}>{label}{required && <Text style={styles.required}> *</Text>}</Text>}
+    <View style={styles.inputContainer}>
       <TextInput
-        style={[
-          inputStyles.textInput,
-          multiline && inputStyles.textInputMultiline,
-          !editable && inputStyles.textInputDisabled,
-        ]}
+        style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={COLORS.textMuted}
-        keyboardType={keyboardType || 'default'}
+        placeholderTextColor={COLORS.textTertiary}
+        keyboardType={keyboardType}
         maxLength={maxLength}
-        editable={editable}
-        multiline={multiline}
-        autoCapitalize="none"
-        autoCorrect={false}
       />
+    </View>
+  </View>
+);
+
+// Province Picker
+const ProvincePicker = ({ label, value, onSelect, required }) => {
+  const [show, setShow] = useState(false);
+  const selected = PROVINCES.find(p => p.value === value);
+  
+  return (
+    <View style={styles.inputWrapper}>
+      {label && <Text style={styles.inputLabel}>{label}{required && <Text style={styles.required}> *</Text>}</Text>}
+      <TouchableOpacity style={styles.inputContainer} onPress={() => setShow(!show)}>
+        <Text style={[styles.input, !value && { color: COLORS.textTertiary }]}>{selected?.label || 'Select'}</Text>
+        <Text style={styles.chevron}>▼</Text>
+      </TouchableOpacity>
+      {show && (
+        <View style={styles.dropdown}>
+          <ScrollView style={styles.dropdownList} nestedScrollEnabled>
+            {PROVINCES.map(p => (
+              <TouchableOpacity key={p.value} style={[styles.dropdownItem, value === p.value && styles.dropdownItemActive]} onPress={() => { onSelect(p.value); setShow(false); }}>
+                <Text style={[styles.dropdownText, value === p.value && styles.dropdownTextActive]}>{p.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 };
 
-const inputStyles = StyleSheet.create({
-  inputContainer: { marginBottom: SPACING.lg },
-  inputLabel: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.textPrimary, marginBottom: SPACING.sm },
-  required: { color: COLORS.error },
-  textInput: {
-    backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border,
-    borderRadius: BORDER_RADIUS.md, paddingVertical: 12, paddingHorizontal: SPACING.lg,
-    fontSize: FONT_SIZES.md, color: COLORS.textPrimary,
-  },
-  textInputMultiline: { minHeight: 100, textAlignVertical: 'top' },
-  textInputDisabled: { backgroundColor: COLORS.background },
-});
-
 export default function CanadianPaystubFormScreen({ navigation }) {
-  const { user, token, hasActiveSubscription } = useAuth();
+  const { token, hasActiveSubscription } = useAuth();
   const isSubscribed = hasActiveSubscription();
   
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [previewHtml, setPreviewHtml] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('template-h');
+  const [template, setTemplate] = useState('standard');
   
-  const [formData, setFormData] = useState({
-    // Employee Information
-    name: '',
-    sin: '',
-    address: '',
-    city: '',
-    province: 'ON',
-    postalCode: '',
-    hireDate: '',
+  const [employee, setEmployee] = useState({ name: '', sin: '', address: '', city: '', province: 'ON', postal: '' });
+  const [company, setCompany] = useState({ name: '', address: '', city: '', province: 'ON', postal: '' });
+  const [pay, setPay] = useState({ type: 'hourly', rate: '', salary: '', hours: '80', overtime: '0', frequency: 'biweekly', startDate: '', endDate: '' });
+
+  const updateEmployee = (f, v) => setEmployee(p => ({ ...p, [f]: v }));
+  const updateCompany = (f, v) => setCompany(p => ({ ...p, [f]: v }));
+  const updatePay = (f, v) => setPay(p => ({ ...p, [f]: v }));
+
+  const getGrossPay = () => {
+    if (pay.type === 'salary') return (parseFloat(pay.salary) || 0) / (pay.frequency === 'weekly' ? 52 : 26);
+    return (parseFloat(pay.rate) || 0) * (parseFloat(pay.hours) || 0) + (parseFloat(pay.rate) || 0) * 1.5 * (parseFloat(pay.overtime) || 0);
+  };
+
+  const canProceed = () => {
+    switch (step) {
+      case 1: return template;
+      case 2: return employee.name && employee.address && employee.city && employee.province && employee.postal;
+      case 3: return company.name && company.address && company.city && company.province && company.postal;
+      case 4: return pay.type === 'salary' ? pay.salary && pay.startDate && pay.endDate : pay.rate && pay.hours && pay.startDate && pay.endDate;
+      default: return true;
+    }
+  };
+
+  const goNext = () => {
+    if (!canProceed()) { Alert.alert('Missing Info', 'Please fill all required fields'); return; }
+    if (step === 4) generatePreview();
+    else setStep(step + 1);
+  };
+
+  const goBack = () => step > 1 ? setStep(step - 1) : navigation.goBack();
+
+  const generatePreview = () => {
+    setLoading(true);
+    const gross = getGrossPay();
+    const cpp = gross * 0.0595, ei = gross * 0.0163, fedTax = gross * 0.15, provTax = gross * 0.05;
+    const net = gross - cpp - ei - fedTax - provTax;
+    const fmt = n => n.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
-    // Company Information
-    company: '',
-    companyAddress: '',
-    companyCity: '',
-    companyProvince: 'ON',
-    companyPostalCode: '',
-    companyPhone: '',
-    
-    // Pay Information
-    payType: 'hourly',
-    rate: '',
-    annualSalary: '',
-    payFrequency: 'biweekly',
-    
-    // Pay Period
-    startDate: '',
-    endDate: '',
-    hours: '80',
-    overtime: '0',
-  });
-
-  const updateField = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const calculateGrossPay = () => {
-    if (formData.payType === 'salary') {
-      const annual = parseFloat(formData.annualSalary) || 0;
-      const periods = formData.payFrequency === 'weekly' ? 52 : 26;
-      return annual / periods;
-    } else {
-      const rate = parseFloat(formData.rate) || 0;
-      const hours = parseFloat(formData.hours) || 0;
-      const overtime = parseFloat(formData.overtime) || 0;
-      return (rate * hours) + (rate * 1.5 * overtime);
-    }
-  };
-
-  const validateStep = () => {
-    switch (currentStep) {
-      case 1:
-        return selectedTemplate !== '';
-      case 2:
-        return formData.name && formData.address && formData.city && formData.province && formData.postalCode;
-      case 3:
-        return formData.company && formData.companyAddress && formData.companyCity && formData.companyProvince && formData.companyPostalCode;
-      case 4:
-        if (formData.payType === 'salary') {
-          return formData.annualSalary && formData.startDate && formData.endDate;
-        }
-        return formData.rate && formData.hours && formData.startDate && formData.endDate;
-      default:
-        return true;
-    }
-  };
-
-  const handleNext = () => {
-    if (!validateStep()) {
-      Alert.alert('Missing Information', 'Please fill in all required fields.');
-      return;
-    }
-    if (currentStep < 5) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    } else {
-      navigation.goBack();
-    }
-  };
-
-  const generatePreview = async () => {
-    setIsLoading(true);
-    try {
-      const grossPay = calculateGrossPay();
-      const html = createPreviewHtml(grossPay);
-      setPreviewHtml(html);
-      setCurrentStep(5);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to generate preview');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const createPreviewHtml = (grossPay) => {
-    // Canadian tax estimates
-    const cpp = grossPay * 0.0595; // CPP
-    const ei = grossPay * 0.0163; // EI
-    const federalTax = grossPay * 0.15; // Estimated federal
-    const provincialTax = grossPay * 0.05; // Estimated provincial
-    const totalDeductions = cpp + ei + federalTax + provincialTax;
-    const netPay = grossPay - totalDeductions;
-
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-          .container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
-          .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 15px; margin-bottom: 15px; }
-          .company { font-size: 24px; font-weight: bold; color: #dc2626; }
-          .title { font-size: 14px; color: #666; margin-top: 5px; }
-          .flag { font-size: 20px; margin-right: 8px; }
-          .section { margin: 15px 0; }
-          .section-title { font-weight: bold; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; }
-          .row { display: flex; justify-content: space-between; margin: 5px 0; }
-          .label { color: #666; }
-          .value { font-weight: 500; }
-          .total { font-size: 18px; color: #dc2626; font-weight: bold; }
-          .watermark { text-align: center; color: #999; font-size: 12px; margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ddd; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div class="company"><span class="flag">🇨🇦</span>${formData.company || 'Company Name'}</div>
-            <div class="title">PAY STATEMENT / RELEVÉ DE PAIE</div>
-          </div>
-          
-          <div class="section">
-            <div class="section-title">Employee Information</div>
-            <div class="row"><span class="label">Name:</span><span class="value">${formData.name || 'Employee Name'}</span></div>
-            <div class="row"><span class="label">Address:</span><span class="value">${formData.address}, ${formData.city}, ${formData.province} ${formData.postalCode}</span></div>
-            <div class="row"><span class="label">SIN:</span><span class="value">XXX-XXX-${formData.sin || 'XXX'}</span></div>
-          </div>
-          
-          <div class="section">
-            <div class="section-title">Pay Period / Période de paie</div>
-            <div class="row"><span class="label">Period:</span><span class="value">${formData.startDate} - ${formData.endDate}</span></div>
-          </div>
-          
-          <div class="section">
-            <div class="section-title">Earnings / Gains</div>
-            ${formData.payType === 'hourly' ? `
-              <div class="row"><span class="label">Regular (${formData.hours} hrs @ $${formData.rate}):</span><span class="value">$${(parseFloat(formData.rate) * parseFloat(formData.hours)).toFixed(2)}</span></div>
-            ` : `
-              <div class="row"><span class="label">Salary:</span><span class="value">$${grossPay.toFixed(2)}</span></div>
-            `}
-            <div class="row"><span class="label">Gross Pay / Salaire brut:</span><span class="value total">$${grossPay.toFixed(2)}</span></div>
-          </div>
-          
-          <div class="section">
-            <div class="section-title">Deductions / Déductions</div>
-            <div class="row"><span class="label">CPP/RPC:</span><span class="value">$${cpp.toFixed(2)}</span></div>
-            <div class="row"><span class="label">EI/AE:</span><span class="value">$${ei.toFixed(2)}</span></div>
-            <div class="row"><span class="label">Federal Tax:</span><span class="value">$${federalTax.toFixed(2)}</span></div>
-            <div class="row"><span class="label">Provincial Tax:</span><span class="value">$${provincialTax.toFixed(2)}</span></div>
-            <div class="row"><span class="label">Total Deductions:</span><span class="value">$${totalDeductions.toFixed(2)}</span></div>
-          </div>
-          
-          <div class="section">
-            <div class="row"><span class="label" style="font-size: 18px;">Net Pay / Salaire net:</span><span class="value total">$${netPay.toFixed(2)}</span></div>
-          </div>
-          
-          <div class="watermark">PREVIEW - Watermark will be removed in final document</div>
+    const html = `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+      <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;padding:16px;background:#f5f5f5;font-size:12px}
+      .card{background:#fff;border-radius:12px;padding:20px;max-width:500px;margin:0 auto}
+      .header{border-bottom:3px solid #DC2626;padding-bottom:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+      .logo{font-size:20px;font-weight:700;color:#DC2626;display:flex;align-items:center;gap:8px}
+      .flag{font-size:24px}
+      .title{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+      .box{background:#fafafa;padding:10px;border-radius:8px;border:1px solid #eee}
+      .box-title{font-size:10px;font-weight:600;color:#DC2626;text-transform:uppercase;margin-bottom:6px}
+      .row{display:flex;justify-content:space-between;font-size:11px;margin:3px 0}.lbl{color:#666}.val{font-weight:500}
+      .total{border-top:2px solid #DC2626;padding-top:8px;margin-top:8px}
+      .net{background:#DC2626;color:#fff;padding:16px;border-radius:10px;text-align:center;margin-top:12px}
+      .net-label{font-size:11px;opacity:0.9}.net-value{font-size:24px;font-weight:700}
+      .watermark{text-align:center;color:#aaa;font-size:10px;margin-top:16px;padding-top:12px;border-top:1px dashed #ddd}</style></head>
+      <body><div class="card">
+        <div class="header"><div class="logo"><span class="flag">🍁</span>Pay Statement</div><div class="title">Relevé de paie</div></div>
+        <div class="grid">
+          <div class="box"><div class="box-title">Employee / Employé</div>
+            <div class="row"><span class="lbl">Name</span><span class="val">${employee.name}</span></div>
+            <div class="row"><span class="lbl">SIN</span><span class="val">XXX-XXX-${employee.sin || 'XXX'}</span></div>
+            <div class="row"><span class="lbl">Location</span><span class="val">${employee.city}, ${employee.province}</span></div></div>
+          <div class="box"><div class="box-title">Pay Period / Période</div>
+            <div class="row"><span class="lbl">Period</span><span class="val">${pay.startDate} - ${pay.endDate}</span></div>
+            <div class="row"><span class="lbl">Employer</span><span class="val">${company.name}</span></div></div>
         </div>
-      </body>
-      </html>
-    `;
+        <div class="grid">
+          <div class="box"><div class="box-title">Earnings / Gains</div>
+            ${pay.type === 'hourly' ? `<div class="row"><span class="lbl">Regular (${pay.hours}h)</span><span class="val">$${fmt(parseFloat(pay.rate)*parseFloat(pay.hours))}</span></div>` : `<div class="row"><span class="lbl">Salary</span><span class="val">$${fmt(gross)}</span></div>`}
+            <div class="row total"><span class="lbl" style="font-weight:600">Gross / Brut</span><span class="val" style="color:#DC2626">$${fmt(gross)}</span></div></div>
+          <div class="box"><div class="box-title">Deductions / Déductions</div>
+            <div class="row"><span class="lbl">CPP/RPC</span><span class="val">$${fmt(cpp)}</span></div>
+            <div class="row"><span class="lbl">EI/AE</span><span class="val">$${fmt(ei)}</span></div>
+            <div class="row"><span class="lbl">Federal Tax</span><span class="val">$${fmt(fedTax)}</span></div>
+            <div class="row"><span class="lbl">Provincial Tax</span><span class="val">$${fmt(provTax)}</span></div></div>
+        </div>
+        <div class="net"><div class="net-label">Net Pay / Salaire net</div><div class="net-value">$${fmt(net)}</div></div>
+        <div class="watermark">PREVIEW - Watermark removed in final</div>
+      </div></body></html>`;
+    
+    setPreviewHtml(html);
+    setStep(5);
+    setLoading(false);
   };
 
   const handleDownload = async () => {
-    if (isSubscribed) {
-      await downloadWithSubscription();
-    } else {
-      Alert.alert(
-        'Payment Required',
-        'Pay $9.99 to download your Canadian pay stub.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Pay with PayPal', onPress: () => Alert.alert('PayPal', 'Please use web version for payments') },
-        ]
-      );
-    }
-  };
-
-  const downloadWithSubscription = async () => {
-    if (!token) {
-      Alert.alert('Login Required', 'Please login to use your subscription.');
+    if (!isSubscribed) {
+      Alert.alert('Payment Required', '$9.99 to download', [{ text: 'Cancel' }, { text: 'Pay', onPress: () => Alert.alert('PayPal', 'Use web for payments') }]);
       return;
     }
-    
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/user/subscription-download`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          documentType: 'canadian-paystub',
-          template: selectedTemplate,
-          count: 1,
-        }),
+      await fetch(`${API_URL}/api/user/subscription-download`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ documentType: 'canadian-paystub', template, count: 1 })
       });
-      
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Download failed');
-      }
-      
-      await generateAndSharePdf();
-      Alert.alert('Success', 'Canadian pay stub downloaded successfully!');
-      
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    } finally {
-      setIsLoading(false);
-    }
+      const clean = previewHtml.replace(/<div class="watermark">.*?<\/div>/, '');
+      const { uri } = await Print.printToFileAsync({ html: clean });
+      await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
+      Alert.alert('Success', 'Canadian pay stub downloaded!');
+    } catch (e) { Alert.alert('Error', e.message); }
+    setLoading(false);
   };
 
-  const generateAndSharePdf = async () => {
-    const grossPay = calculateGrossPay();
-    const html = createPreviewHtml(grossPay).replace(
-      '<div class="watermark">PREVIEW - Watermark will be removed in final document</div>',
-      ''
-    );
-    
-    const { uri } = await Print.printToFileAsync({ html });
-    
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Save Canadian Pay Stub',
-      });
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>🇨🇦 Canadian Pay Stub</Text>
-            <Text style={styles.stepDescription}>Select template style</Text>
-            
-            {CANADIAN_TEMPLATES.map((template) => (
-              <TouchableOpacity
-                key={template.id}
-                style={[
-                  styles.templateCard,
-                  selectedTemplate === template.id && styles.templateCardSelected,
-                ]}
-                onPress={() => setSelectedTemplate(template.id)}
-              >
-                <View style={styles.templateIcon}>
-                  <Text style={styles.templateEmoji}>{template.icon}</Text>
-                </View>
-                <View style={styles.templateInfo}>
-                  <Text style={styles.templateName}>{template.name}</Text>
-                  <Text style={styles.templateDesc}>{template.description}</Text>
-                </View>
-                {selectedTemplate === template.id && (
-                  <View style={styles.checkmark}>
-                    <Text style={styles.checkmarkText}>✓</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        );
-      case 2:
-        return (
-          <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Employee Information</Text>
-            <Text style={styles.stepDescription}>Enter employee details</Text>
-            
-            <FormInput
-              label="Full Name"
-              value={formData.name}
-              onChangeText={(v) => updateField('name', v)}
-              placeholder="John Smith"
-              required
-            />
-            
-            <FormInput
-              label="SIN (Last 3 digits)"
-              value={formData.sin}
-              onChangeText={(v) => updateField('sin', v)}
-              placeholder="XXX"
-              keyboardType="numeric"
-              maxLength={3}
-            />
-            
-            <FormInput
-              label="Street Address"
-              value={formData.address}
-              onChangeText={(v) => updateField('address', v)}
-              placeholder="123 Main St"
-              required
-            />
-            
-            <View style={styles.row}>
-              <View style={styles.flex2}>
-                <FormInput
-                  label="City"
-                  value={formData.city}
-                  onChangeText={(v) => updateField('city', v)}
-                  placeholder="Toronto"
-                  required
-                />
-              </View>
-              <View style={styles.flex1}>
-                <Select
-                  label="Province"
-                  value={formData.province}
-                  onValueChange={(v) => updateField('province', v)}
-                  options={CA_PROVINCES}
-                  required
-                />
-              </View>
-            </View>
-            
-            <FormInput
-              label="Postal Code"
-              value={formData.postalCode}
-              onChangeText={(v) => updateField('postalCode', v.toUpperCase())}
-              placeholder="M5V 1A1"
-              maxLength={7}
-              required
-            />
-          </View>
-        );
-      case 3:
-        return (
-          <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Employer Information</Text>
-            <Text style={styles.stepDescription}>Enter company details</Text>
-            
-            <FormInput
-              label="Company Name"
-              value={formData.company}
-              onChangeText={(v) => updateField('company', v)}
-              placeholder="Maple Corp Ltd."
-              required
-            />
-            
-            <FormInput
-              label="Company Address"
-              value={formData.companyAddress}
-              onChangeText={(v) => updateField('companyAddress', v)}
-              placeholder="456 Business Ave"
-              required
-            />
-            
-            <View style={styles.row}>
-              <View style={styles.flex2}>
-                <FormInput
-                  label="City"
-                  value={formData.companyCity}
-                  onChangeText={(v) => updateField('companyCity', v)}
-                  placeholder="Vancouver"
-                  required
-                />
-              </View>
-              <View style={styles.flex1}>
-                <Select
-                  label="Province"
-                  value={formData.companyProvince}
-                  onValueChange={(v) => updateField('companyProvince', v)}
-                  options={CA_PROVINCES}
-                  required
-                />
-              </View>
-            </View>
-            
-            <FormInput
-              label="Postal Code"
-              value={formData.companyPostalCode}
-              onChangeText={(v) => updateField('companyPostalCode', v.toUpperCase())}
-              placeholder="V6B 1A1"
-              maxLength={7}
-              required
-            />
-          </View>
-        );
-      case 4:
-        return (
-          <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Pay Information</Text>
-            <Text style={styles.stepDescription}>Enter earnings details</Text>
-            
-            <RadioGroup
-              label="Pay Type"
-              value={formData.payType}
-              onChange={(v) => updateField('payType', v)}
-              options={[
-                { value: 'hourly', label: 'Hourly' },
-                { value: 'salary', label: 'Salary' },
-              ]}
-              horizontal
-            />
-            
-            {formData.payType === 'hourly' ? (
-              <>
-                <FormInput
-                  label="Hourly Rate (CAD)"
-                  value={formData.rate}
-                  onChangeText={(v) => updateField('rate', v)}
-                  placeholder="25.00"
-                  keyboardType="decimal-pad"
-                  required
-                />
-                <View style={styles.row}>
-                  <View style={styles.flex1}>
-                    <FormInput
-                      label="Regular Hours"
-                      value={formData.hours}
-                      onChangeText={(v) => updateField('hours', v)}
-                      placeholder="80"
-                      keyboardType="numeric"
-                      required
-                    />
-                  </View>
-                  <View style={styles.flex1}>
-                    <FormInput
-                      label="Overtime Hours"
-                      value={formData.overtime}
-                      onChangeText={(v) => updateField('overtime', v)}
-                      placeholder="0"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-              </>
-            ) : (
-              <FormInput
-                label="Annual Salary (CAD)"
-                value={formData.annualSalary}
-                onChangeText={(v) => updateField('annualSalary', v)}
-                placeholder="75000"
-                keyboardType="decimal-pad"
-                required
-              />
-            )}
-            
-            <Select
-              label="Pay Frequency"
-              value={formData.payFrequency}
-              onValueChange={(v) => updateField('payFrequency', v)}
-              options={PAY_FREQUENCIES}
-            />
-            
-            <View style={styles.row}>
-              <View style={styles.flex1}>
-                <FormInput
-                  label="Period Start"
-                  value={formData.startDate}
-                  onChangeText={(v) => updateField('startDate', v)}
-                  placeholder="YYYY-MM-DD"
-                  required
-                />
-              </View>
-              <View style={styles.flex1}>
-                <FormInput
-                  label="Period End"
-                  value={formData.endDate}
-                  onChangeText={(v) => updateField('endDate', v)}
-                  placeholder="YYYY-MM-DD"
-                  required
-                />
-              </View>
-            </View>
-          </View>
-        );
-      case 5:
-        return (
-          <View style={styles.previewContainer}>
-            <Text style={styles.stepTitle}>Preview</Text>
-            <View style={styles.previewWebview}>
-              <WebView
-                source={{ html: previewHtml }}
-                style={styles.webview}
-                scalesPageToFit={true}
-              />
-            </View>
-            <View style={styles.previewNote}>
-              <Text style={styles.previewNoteIcon}>⚠️</Text>
-              <Text style={styles.previewNoteText}>
-                Preview with estimated Canadian taxes. Final document will have accurate calculations.
-              </Text>
-            </View>
-          </View>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const renderProgress = () => (
+  // Progress
+  const Progress = () => (
     <View style={styles.progress}>
-      {[1, 2, 3, 4, 5].map((step) => (
-        <View key={step} style={styles.progressItem}>
-          <View style={[
-            styles.progressDot,
-            currentStep >= step && styles.progressDotActive,
-            currentStep === step && styles.progressDotCurrent,
-          ]}>
-            <Text style={[
-              styles.progressDotText,
-              currentStep >= step && styles.progressDotTextActive,
-            ]}>
-              {currentStep > step ? '✓' : step}
-            </Text>
+      {[1,2,3,4,5].map(i => (
+        <View key={i} style={styles.progressItem}>
+          <View style={[styles.dot, step >= i && styles.dotActive, step === i && styles.dotCurrent]}>
+            <Text style={[styles.dotText, step >= i && styles.dotTextActive]}>{step > i ? '✓' : i}</Text>
           </View>
-          {step < 5 && (
-            <View style={[
-              styles.progressLine,
-              currentStep > step && styles.progressLineActive,
-            ]} />
-          )}
+          {i < 5 && <View style={[styles.line, step > i && styles.lineActive]} />}
         </View>
       ))}
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <Header
-        title="Canadian Pay Stub"
-        showBack
-        onBack={handleBack}
-        variant="light"
-      />
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={goBack} style={styles.backBtn}><Text style={styles.backText}>←</Text></TouchableOpacity>
+        <Text style={styles.headerTitle}>🍁 Canadian Pay Stub</Text>
+        <View style={{ width: 40 }} />
+      </View>
       
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        {renderProgress()}
-        
-        <ScrollView 
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {renderStepContent()}
-        </ScrollView>
-        
-        <View style={styles.actions}>
-          {currentStep < 5 ? (
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={currentStep === 4 ? generatePreview : handleNext}
-              loading={isLoading}
-            >
-              {currentStep === 4 ? 'Generate Preview' : 'Continue'}
-            </Button>
-          ) : (
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              onPress={handleDownload}
-              loading={isLoading}
-              style={{ backgroundColor: '#dc2626' }}
-            >
-              {isSubscribed ? 'Download (Subscription)' : 'Pay $9.99 & Download'}
-            </Button>
+      <Progress />
+      
+      <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          {step === 1 && (
+            <View style={styles.stepContent}>
+              <Text style={styles.stepTitle}>Choose Template</Text>
+              <Text style={styles.stepDesc}>Select your preferred Canadian format</Text>
+              <View style={styles.templates}>
+                {TEMPLATES.map(t => (
+                  <TouchableOpacity key={t.id} style={[styles.templateCard, template === t.id && styles.templateSelected]} onPress={() => setTemplate(t.id)}>
+                    <LinearGradient colors={[t.color, t.color + 'dd']} style={styles.templateIcon}>
+                      <Text style={styles.templateEmoji}>{t.icon}</Text>
+                    </LinearGradient>
+                    <Text style={styles.templateName}>{t.name}</Text>
+                    <Text style={styles.templateDesc}>{t.desc}</Text>
+                    {template === t.id && <View style={[styles.templateCheck, { backgroundColor: t.color }]}><Text style={styles.checkText}>✓</Text></View>}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
           )}
-        </View>
+          
+          {step === 2 && (
+            <View style={styles.stepContent}>
+              <Text style={styles.stepTitle}>Employee Details</Text>
+              <Text style={styles.stepDesc}>Enter employee information</Text>
+              <Input label="Full Name" value={employee.name} onChangeText={v => updateEmployee('name', v)} placeholder="John Smith" required />
+              <Input label="SIN (Last 3)" value={employee.sin} onChangeText={v => updateEmployee('sin', v)} placeholder="123" keyboardType="numeric" maxLength={3} />
+              <Input label="Street Address" value={employee.address} onChangeText={v => updateEmployee('address', v)} placeholder="123 Main St" required />
+              <View style={styles.row}>
+                <View style={styles.flex2}><Input label="City" value={employee.city} onChangeText={v => updateEmployee('city', v)} placeholder="Toronto" required /></View>
+                <View style={styles.flex1}><ProvincePicker label="Province" value={employee.province} onSelect={v => updateEmployee('province', v)} required /></View>
+              </View>
+              <Input label="Postal Code" value={employee.postal} onChangeText={v => updateEmployee('postal', v.toUpperCase())} placeholder="M5V 1A1" maxLength={7} required />
+            </View>
+          )}
+          
+          {step === 3 && (
+            <View style={styles.stepContent}>
+              <Text style={styles.stepTitle}>Company Details</Text>
+              <Text style={styles.stepDesc}>Enter employer information</Text>
+              <Input label="Company Name" value={company.name} onChangeText={v => updateCompany('name', v)} placeholder="Maple Corp Ltd." required />
+              <Input label="Street Address" value={company.address} onChangeText={v => updateCompany('address', v)} placeholder="456 Business Ave" required />
+              <View style={styles.row}>
+                <View style={styles.flex2}><Input label="City" value={company.city} onChangeText={v => updateCompany('city', v)} placeholder="Vancouver" required /></View>
+                <View style={styles.flex1}><ProvincePicker label="Province" value={company.province} onSelect={v => updateCompany('province', v)} required /></View>
+              </View>
+              <Input label="Postal Code" value={company.postal} onChangeText={v => updateCompany('postal', v.toUpperCase())} placeholder="V6B 1A1" maxLength={7} required />
+            </View>
+          )}
+          
+          {step === 4 && (
+            <View style={styles.stepContent}>
+              <Text style={styles.stepTitle}>Pay Information</Text>
+              <Text style={styles.stepDesc}>Enter earnings details (CAD)</Text>
+              <View style={styles.payTypeRow}>
+                {['hourly', 'salary'].map(type => (
+                  <TouchableOpacity key={type} style={[styles.payTypeBtn, pay.type === type && styles.payTypeBtnActive]} onPress={() => updatePay('type', type)}>
+                    <Text style={[styles.payTypeText, pay.type === type && styles.payTypeTextActive]}>{type.charAt(0).toUpperCase() + type.slice(1)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {pay.type === 'hourly' ? (
+                <>
+                  <Input label="Hourly Rate (CAD)" value={pay.rate} onChangeText={v => updatePay('rate', v)} placeholder="25.00" keyboardType="decimal-pad" required />
+                  <View style={styles.row}>
+                    <View style={styles.flex1}><Input label="Regular Hours" value={pay.hours} onChangeText={v => updatePay('hours', v)} placeholder="80" keyboardType="numeric" required /></View>
+                    <View style={styles.flex1}><Input label="Overtime Hours" value={pay.overtime} onChangeText={v => updatePay('overtime', v)} placeholder="0" keyboardType="numeric" /></View>
+                  </View>
+                </>
+              ) : (
+                <Input label="Annual Salary (CAD)" value={pay.salary} onChangeText={v => updatePay('salary', v)} placeholder="75000" keyboardType="decimal-pad" required />
+              )}
+              <View style={styles.row}>
+                <View style={styles.flex1}><Input label="Period Start" value={pay.startDate} onChangeText={v => updatePay('startDate', v)} placeholder="2024-01-01" required /></View>
+                <View style={styles.flex1}><Input label="Period End" value={pay.endDate} onChangeText={v => updatePay('endDate', v)} placeholder="2024-01-14" required /></View>
+              </View>
+            </View>
+          )}
+          
+          {step === 5 && (
+            <View style={styles.previewContainer}>
+              <Text style={styles.stepTitle}>Preview</Text>
+              <View style={styles.previewCard}><WebView source={{ html: previewHtml }} style={styles.webview} scalesPageToFit /></View>
+              <View style={styles.previewNote}><Text style={styles.previewNoteText}>⚠️ Preview only. Final PDF will be clean.</Text></View>
+            </View>
+          )}
+        </ScrollView>
       </KeyboardAvoidingView>
+      
+      <View style={styles.bottomBar}>
+        <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: '#DC2626' }]} onPress={step === 5 ? handleDownload : goNext} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>{step === 5 ? (isSubscribed ? 'Download PDF' : 'Pay $9.99 & Download') : 'Continue'}</Text>}
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.white },
-  container: { flex: 1, backgroundColor: COLORS.background },
-  progress: {
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    paddingVertical: SPACING.lg, paddingHorizontal: SPACING.xl,
-    backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, backgroundColor: COLORS.surface },
+  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center' },
+  backText: { fontSize: 22, color: COLORS.text },
+  headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.text },
+  progress: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: SPACING.md, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   progressItem: { flexDirection: 'row', alignItems: 'center' },
-  progressDot: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.background,
-    alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.border,
-  },
-  progressDotActive: { backgroundColor: '#fee2e2', borderColor: '#dc2626' },
-  progressDotCurrent: { backgroundColor: '#dc2626' },
-  progressDotText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
-  progressDotTextActive: { color: '#dc2626' },
-  progressLine: { width: 24, height: 2, backgroundColor: COLORS.border, marginHorizontal: 4 },
-  progressLineActive: { backgroundColor: '#dc2626' },
+  dot: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: COLORS.border },
+  dotActive: { borderColor: '#DC2626', backgroundColor: '#FEE2E2' },
+  dotCurrent: { backgroundColor: '#DC2626', borderColor: '#DC2626' },
+  dotText: { fontSize: 12, fontWeight: '600', color: COLORS.textTertiary },
+  dotTextActive: { color: '#DC2626' },
+  line: { width: 20, height: 2, backgroundColor: COLORS.border, marginHorizontal: 4 },
+  lineActive: { backgroundColor: '#DC2626' },
   content: { flex: 1 },
   stepContent: { padding: SPACING.xl },
-  stepTitle: { fontSize: FONT_SIZES.xxl, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: SPACING.sm },
-  stepDescription: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary, marginBottom: SPACING.xl },
+  stepTitle: { fontSize: FONT_SIZES.xxl, fontWeight: '800', color: COLORS.text, marginBottom: SPACING.xs },
+  stepDesc: { fontSize: FONT_SIZES.md, color: COLORS.textSecondary, marginBottom: SPACING.xl },
+  templates: { gap: SPACING.md },
+  templateCard: { backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.xl, padding: SPACING.lg, flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: COLORS.border, ...SHADOWS.sm },
+  templateSelected: { borderColor: '#DC2626', backgroundColor: '#FEF2F2' },
+  templateIcon: { width: 48, height: 48, borderRadius: BORDER_RADIUS.lg, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md },
+  templateEmoji: { fontSize: 24 },
+  templateName: { fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.text },
+  templateDesc: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, flex: 1 },
+  templateCheck: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  checkText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  inputWrapper: { marginBottom: SPACING.lg },
+  inputLabel: { fontSize: FONT_SIZES.sm, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.sm },
+  required: { color: COLORS.error },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border, borderRadius: BORDER_RADIUS.lg, paddingHorizontal: SPACING.lg, minHeight: 52 },
+  input: { flex: 1, fontSize: FONT_SIZES.md, color: COLORS.text, paddingVertical: SPACING.md },
+  chevron: { fontSize: 10, color: COLORS.textTertiary },
+  dropdown: { position: 'absolute', top: 80, left: 0, right: 0, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.lg, borderWidth: 1, borderColor: COLORS.border, zIndex: 100, ...SHADOWS.md },
+  dropdownList: { maxHeight: 200 },
+  dropdownItem: { paddingVertical: SPACING.md, paddingHorizontal: SPACING.lg, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  dropdownItemActive: { backgroundColor: '#FEE2E2' },
+  dropdownText: { fontSize: FONT_SIZES.md, color: COLORS.text },
+  dropdownTextActive: { color: '#DC2626', fontWeight: '600' },
   row: { flexDirection: 'row', gap: SPACING.md },
   flex1: { flex: 1 },
   flex2: { flex: 2 },
-  templateCard: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white,
-    padding: SPACING.lg, borderRadius: BORDER_RADIUS.lg, marginBottom: SPACING.md,
-    borderWidth: 2, borderColor: COLORS.border,
-  },
-  templateCardSelected: { borderColor: '#dc2626', backgroundColor: '#fef2f2' },
-  templateIcon: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.background,
-    alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md,
-  },
-  templateEmoji: { fontSize: 24 },
-  templateInfo: { flex: 1 },
-  templateName: { fontSize: FONT_SIZES.lg, fontWeight: '600', color: COLORS.textPrimary },
-  templateDesc: { fontSize: FONT_SIZES.sm, color: COLORS.textSecondary, marginTop: 2 },
-  checkmark: {
-    width: 28, height: 28, borderRadius: 14, backgroundColor: '#dc2626',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  checkmarkText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
+  payTypeRow: { flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.xl },
+  payTypeBtn: { flex: 1, paddingVertical: SPACING.md, borderRadius: BORDER_RADIUS.lg, backgroundColor: COLORS.surface, borderWidth: 2, borderColor: COLORS.border, alignItems: 'center' },
+  payTypeBtnActive: { borderColor: '#DC2626', backgroundColor: '#FEF2F2' },
+  payTypeText: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.textSecondary },
+  payTypeTextActive: { color: '#DC2626' },
   previewContainer: { flex: 1, padding: SPACING.lg },
-  previewWebview: {
-    flex: 1, backgroundColor: COLORS.white, borderRadius: BORDER_RADIUS.lg,
-    overflow: 'hidden', marginVertical: SPACING.md, minHeight: 400, ...SHADOWS.medium,
-  },
+  previewCard: { flex: 1, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.xl, overflow: 'hidden', minHeight: 400, ...SHADOWS.md },
   webview: { flex: 1 },
-  previewNote: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.warningBg,
-    padding: SPACING.md, borderRadius: BORDER_RADIUS.md,
-  },
-  previewNoteIcon: { fontSize: 16, marginRight: SPACING.sm },
-  previewNoteText: { flex: 1, fontSize: FONT_SIZES.sm, color: '#92400e' },
-  actions: {
-    padding: SPACING.lg, backgroundColor: COLORS.white,
-    borderTopWidth: 1, borderTopColor: COLORS.border,
-  },
+  previewNote: { backgroundColor: '#FEF3C7', padding: SPACING.md, borderRadius: BORDER_RADIUS.md, marginTop: SPACING.md },
+  previewNoteText: { fontSize: FONT_SIZES.sm, color: '#92400e', textAlign: 'center' },
+  bottomBar: { padding: SPACING.lg, backgroundColor: COLORS.surface, borderTopWidth: 1, borderTopColor: COLORS.border },
+  primaryBtn: { paddingVertical: SPACING.lg, borderRadius: BORDER_RADIUS.lg, alignItems: 'center' },
+  primaryBtnText: { fontSize: FONT_SIZES.md, fontWeight: '700', color: '#fff' },
 });

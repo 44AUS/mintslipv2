@@ -1471,9 +1471,12 @@ class AIResumeBuilderTester:
             # Use timestamp to create unique email
             import time
             timestamp = int(time.time())
+            self.mobile_test_email = f"mobileuser{timestamp}@test.com"
+            self.mobile_test_password = "MobileTest123!"
+            
             payload = {
-                "email": f"mobileuser{timestamp}@test.com",
-                "password": "MobileTest123!",
+                "email": self.mobile_test_email,
+                "password": self.mobile_test_password,
                 "name": "Mobile Test User"
             }
             

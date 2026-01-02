@@ -52,8 +52,15 @@ export default function UserSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [selectedNewTier, setSelectedNewTier] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("userToken");

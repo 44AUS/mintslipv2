@@ -2001,7 +2001,7 @@ class UpdateUserSubscription(BaseModel):
     tier: Optional[str] = None  # starter, professional, business, or null to remove
 
 class UpdateUserDownloads(BaseModel):
-    downloads_remaining: int  # New download count (-1 for unlimited)
+    downloads_to_add: int  # Number of bonus downloads to add
 
 @app.put("/api/admin/users/{user_id}/subscription")
 async def update_user_subscription(user_id: str, data: UpdateUserSubscription, session: dict = Depends(get_current_admin)):

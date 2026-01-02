@@ -187,8 +187,11 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       doc.save(pdfFileName);
       console.log("PDF downloaded successfully");
       
-      // Return blob if requested for saving
-      if (returnBlob) return pdfBlob;
+      // Return blob if requested for saving (with small delay to ensure download initiates)
+      if (returnBlob) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return pdfBlob;
+      }
     }
   } catch (error) {
     console.error("Error generating paystub:", error);

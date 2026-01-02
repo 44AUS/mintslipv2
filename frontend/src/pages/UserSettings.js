@@ -414,6 +414,8 @@ export default function UserSettings() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Footer />
     </div>
   );
 }

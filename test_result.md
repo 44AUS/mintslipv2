@@ -344,3 +344,30 @@ frontend:
 # - All purchases (guest and registered) populate in dashboard with labels
 # - Blog Phase 1: WYSIWYG editor, admin blog management, public blog pages
 # ==========================================================================
+
+  - task: "Subscription Download Feature"
+    implemented: true
+    working: false
+    file: "backend/server.py, frontend/src/pages/*.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: pending
+        agent: "main"
+        comment: "Implemented subscription-based download feature across all document generators. Backend endpoint POST /api/user/subscription-download validates subscription status and tracks downloads. Frontend updated on 12 generators: PaystubForm, W9Form, Form1099NEC, W2Form, Form1099MISC, BankStatementForm, ScheduleCForm, OfferLetterForm, VehicleBillOfSaleForm, CanadianPaystubForm, AIResumeBuilder, UtilityBillForm. Subscribed users see Download button instead of PayPal, with remaining downloads counter and redirect to /user/downloads page after successful download."
+
+# ==========================================================================
+# Subscription Download Feature Implementation Notes:
+# ==========================================================================
+# - Backend: POST /api/user/subscription-download endpoint created
+# - Validates user subscription status (active required)
+# - Tracks download count per subscription tier:
+#   - Starter: 10 downloads/month
+#   - Professional: 30 downloads/month  
+#   - Business: Unlimited (-1)
+# - All 12 generator pages updated with conditional UI
+# - Guest/Free users see PayPal payment buttons
+# - Subscribed users see green Download button with remaining count
+# - After download, user is redirected to /user/downloads
+# ==========================================================================

@@ -344,9 +344,13 @@ export default function UserSettings() {
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
               <div>
                 <h4 className="font-medium text-slate-800">Password</h4>
-                <p className="text-sm text-slate-500">Last changed: Never</p>
+                <p className="text-sm text-slate-500">Keep your account secure</p>
               </div>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowPasswordDialog(true)}
+              >
                 Change Password
               </Button>
             </div>

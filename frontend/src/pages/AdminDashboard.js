@@ -1842,6 +1842,65 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Downloads Modal */}
+      <Dialog open={downloadsModalOpen} onOpenChange={setDownloadsModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="w-5 h-5 text-green-600" />
+              Edit Downloads Remaining
+            </DialogTitle>
+            <DialogDescription>
+              Adjust the number of downloads remaining for {selectedUser?.name} ({selectedUser?.email})
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="text-sm text-slate-600 mb-4">
+              Current plan: <span className="font-medium">{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</span>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Downloads Remaining</label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={editDownloadsCount}
+                  onChange={(e) => setEditDownloadsCount(e.target.value)}
+                  placeholder="Enter number or 'unlimited'"
+                  className="flex-1"
+                />
+                <Button 
+                  variant="outline" 
+                  onClick={() => setEditDownloadsCount("unlimited")}
+                  className="whitespace-nowrap"
+                >
+                  Set Unlimited
+                </Button>
+              </div>
+              <p className="text-xs text-slate-500">
+                Enter a number (e.g., 10, 25) or type "unlimited" for unlimited downloads
+              </p>
+            </div>
+            
+            {editDownloadsCount && (
+              <div className="p-3 bg-green-50 rounded-lg text-sm text-green-700">
+                <p><strong>New Downloads Count:</strong> {editDownloadsCount === "unlimited" ? "∞ Unlimited" : editDownloadsCount}</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDownloadsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={updateUserDownloads} className="bg-green-600 hover:bg-green-700">
+              Update Downloads
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Change Password Modal */}
       <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
         <DialogContent>

@@ -670,7 +670,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
 };
 
 // Generate and download offer letter
-export const generateAndDownloadOfferLetter = async (formData) => {
+export const generateAndDownloadOfferLetter = async (formData, returnBlob = false) => {
   try {
     const pdfBytes = await generateOfferLetterPDF(formData, false);
     
@@ -691,6 +691,9 @@ export const generateAndDownloadOfferLetter = async (formData) => {
     document.body.removeChild(link);
     
     // Don't revoke URL immediately - needed for re-download on success page
+    if (returnBlob) {
+      return blob;
+    }
     return true;
   } catch (error) {
     console.error("Error downloading Offer Letter:", error);

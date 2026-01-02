@@ -455,7 +455,7 @@ export default function UserDownloads() {
               <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-800">Saved Documents</h2>
-                  <p className="text-sm text-slate-500">Documents are kept for 60 days</p>
+                  <p className="text-sm text-slate-500">Documents are kept for 30 days</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   {/* Filter for saved documents */}

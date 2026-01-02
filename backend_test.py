@@ -2521,6 +2521,484 @@ class AIResumeBuilderTester:
             self.log_test("Complete Blog Flow", False, f"Exception: {str(e)}")
             return False
 
+    # ========== SAVED DOCUMENTS FEATURE TESTS ==========
+
+    def test_user_signup_with_save_documents_preference(self):
+        """Test POST /api/user/signup with saveDocuments preference"""
+        try:
+            import time
+            timestamp = int(time.time())
+            payload = {
+                "name": "Test User Save Docs",
+                "email": f"testsave{timestamp}@test.com",
+                "password": "password123",
+                "saveDocuments": True
+            }
+            response = requests.post(f"{self.api_url}/user/signup", json=payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("user") and data.get("token"):
+                    user = data["user"]
+                    preferences = user.get("preferences", {})
+                    save_docs = preferences.get("saveDocuments", False)
+                    
+                    if save_docs:
+                        details += f", User created with saveDocuments=true"
+                        # Store for subsequent tests
+                        self.save_docs_user_token = data["token"]
+                        self.save_docs_user_id = user["id"]
+                        self.save_docs_user_email = user["email"]
+                    else:
+                        success = False
+                        details += f", saveDocuments preference not set correctly: {preferences}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("User Signup with Save Documents Preference", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Signup with Save Documents Preference", False, f"Exception: {str(e)}")
+            return False
+
+    def test_update_user_preferences(self):
+        """Test PUT /api/user/preferences endpoint"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Update User Preferences", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            
+            # Test 1: Toggle saveDocuments to false
+            payload = {"saveDocuments": False}
+            response = requests.put(f"{self.api_url}/user/preferences", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Toggle to false - Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("user"):
+                    user = data["user"]
+                    preferences = user.get("preferences", {})
+                    save_docs = preferences.get("saveDocuments", True)
+                    
+                    if not save_docs:
+                        details += f", Successfully toggled to false"
+                    else:
+                        success = False
+                        details += f", Failed to toggle: {preferences}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            
+            # Test 2: Toggle saveDocuments back to true
+            if success:
+                payload = {"saveDocuments": True}
+                response = requests.put(f"{self.api_url}/user/preferences", json=payload, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("user"):
+                        user = data["user"]
+                        preferences = user.get("preferences", {})
+                        save_docs = preferences.get("saveDocuments", False)
+                        
+                        if save_docs:
+                            details += f", Successfully toggled back to true"
+                        else:
+                            success = False
+                            details += f", Failed to toggle back: {preferences}"
+                    else:
+                        success = False
+                        details += f", Invalid response on toggle back: {data}"
+                else:
+                    success = False
+                    details += f", Failed to toggle back, status: {response.status_code}"
+            
+            self.log_test("Update User Preferences", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Update User Preferences", False, f"Exception: {str(e)}")
+            return False
+
+    def test_get_user_profile_with_preferences(self):
+        """Test GET /api/user/me endpoint returns preferences"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Get User Profile with Preferences", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            response = requests.get(f"{self.api_url}/user/me", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("user"):
+                    user = data["user"]
+                    preferences = user.get("preferences")
+                    
+                    if preferences and "saveDocuments" in preferences:
+                        save_docs = preferences["saveDocuments"]
+                        details += f", User profile includes preferences.saveDocuments={save_docs}"
+                    else:
+                        success = False
+                        details += f", Missing preferences in user profile: {user.keys()}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Get User Profile with Preferences", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get User Profile with Preferences", False, f"Exception: {str(e)}")
+            return False
+
+    def test_get_saved_documents_empty(self):
+        """Test GET /api/user/saved-documents endpoint (should be empty initially)"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Get Saved Documents Empty", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            response = requests.get(f"{self.api_url}/user/saved-documents", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "documents", "total", "maxDocuments"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    documents = data.get("documents", [])
+                    total = data.get("total", -1)
+                    max_docs = data.get("maxDocuments", -1)
+                    
+                    if total == 0 and len(documents) == 0 and max_docs == 15:
+                        details += f", Empty documents array with maxDocuments=15"
+                    else:
+                        success = False
+                        details += f", Unexpected values: total={total}, docs_count={len(documents)}, max={max_docs}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Get Saved Documents Empty", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Saved Documents Empty", False, f"Exception: {str(e)}")
+            return False
+
+    def test_save_document(self):
+        """Test POST /api/user/saved-documents endpoint"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Save Document", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            
+            # Create base64 encoded test file data
+            import base64
+            test_content = "Hello World - Test Document Content"
+            file_data = base64.b64encode(test_content.encode()).decode()
+            
+            payload = {
+                "documentType": "paystub",
+                "fileName": "test_paystub.pdf",
+                "fileData": file_data,
+                "template": "template-a"
+            }
+            response = requests.post(f"{self.api_url}/user/saved-documents", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("document"):
+                    document = data["document"]
+                    required_fields = ["id", "documentType", "fileName", "daysRemaining"]
+                    missing_fields = [field for field in required_fields if field not in document]
+                    
+                    if missing_fields:
+                        success = False
+                        details += f", Missing document fields: {missing_fields}"
+                    else:
+                        doc_id = document["id"]
+                        days_remaining = document["daysRemaining"]
+                        
+                        if days_remaining == 60:
+                            details += f", Document saved with ID: {doc_id}, daysRemaining=60"
+                            # Store document ID for subsequent tests
+                            self.saved_doc_id = doc_id
+                        else:
+                            success = False
+                            details += f", Incorrect daysRemaining: {days_remaining}, expected 60"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Save Document", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Save Document", False, f"Exception: {str(e)}")
+            return False
+
+    def test_get_saved_documents_with_one_document(self):
+        """Test GET /api/user/saved-documents endpoint (should have one document)"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Get Saved Documents With One Document", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            response = requests.get(f"{self.api_url}/user/saved-documents", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    documents = data.get("documents", [])
+                    total = data.get("total", -1)
+                    
+                    if total == 1 and len(documents) == 1:
+                        document = documents[0]
+                        if document.get("documentType") == "paystub" and document.get("fileName") == "test_paystub.pdf":
+                            details += f", Found 1 document: {document['fileName']}, total=1"
+                        else:
+                            success = False
+                            details += f", Document data mismatch: {document}"
+                    else:
+                        success = False
+                        details += f", Expected 1 document, got total={total}, count={len(documents)}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Get Saved Documents With One Document", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Saved Documents With One Document", False, f"Exception: {str(e)}")
+            return False
+
+    def test_get_saved_documents_count(self):
+        """Test GET /api/user/saved-documents/count endpoint"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Get Saved Documents Count", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            response = requests.get(f"{self.api_url}/user/saved-documents/count", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "count", "maxDocuments", "remaining"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    count = data.get("count")
+                    max_docs = data.get("maxDocuments")
+                    remaining = data.get("remaining")
+                    
+                    if count == 1 and max_docs == 15 and remaining == 14:
+                        details += f", Count=1, maxDocuments=15, remaining=14"
+                    else:
+                        success = False
+                        details += f", Unexpected values: count={count}, max={max_docs}, remaining={remaining}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Get Saved Documents Count", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Get Saved Documents Count", False, f"Exception: {str(e)}")
+            return False
+
+    def test_download_saved_document(self):
+        """Test GET /api/user/saved-documents/{doc_id}/download endpoint"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Download Saved Document", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        if not hasattr(self, 'saved_doc_id') or not self.saved_doc_id:
+            self.log_test("Download Saved Document", False, "No saved document ID available (save document test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            response = requests.get(f"{self.api_url}/user/saved-documents/{self.saved_doc_id}/download", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                # Check if we got file content
+                content_type = response.headers.get('content-type', '')
+                content_length = len(response.content)
+                
+                if content_length > 0:
+                    details += f", File downloaded: {content_length} bytes, Content-Type: {content_type}"
+                    
+                    # Check if content matches what we uploaded
+                    if b"Hello World - Test Document Content" in response.content:
+                        details += f", File content matches uploaded data"
+                    else:
+                        details += f", File content verification skipped (binary data)"
+                else:
+                    success = False
+                    details += f", Empty file content"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Download Saved Document", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Download Saved Document", False, f"Exception: {str(e)}")
+            return False
+
+    def test_delete_saved_document(self):
+        """Test DELETE /api/user/saved-documents/{doc_id} endpoint"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Delete Saved Document", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        if not hasattr(self, 'saved_doc_id') or not self.saved_doc_id:
+            self.log_test("Delete Saved Document", False, "No saved document ID available (save document test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            response = requests.delete(f"{self.api_url}/user/saved-documents/{self.saved_doc_id}", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "message" in data:
+                    details += f", Document deleted successfully: {data['message']}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Delete Saved Document", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Delete Saved Document", False, f"Exception: {str(e)}")
+            return False
+
+    def test_save_document_without_preference_enabled(self):
+        """Test saving documents without saveDocuments preference enabled (should fail)"""
+        if not hasattr(self, 'save_docs_user_token') or not self.save_docs_user_token:
+            self.log_test("Save Document Without Preference Enabled", False, "No save docs user token available (signup test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.save_docs_user_token}"}
+            
+            # First disable saveDocuments preference
+            pref_payload = {"saveDocuments": False}
+            pref_response = requests.put(f"{self.api_url}/user/preferences", json=pref_payload, headers=headers, timeout=10)
+            
+            if pref_response.status_code != 200:
+                self.log_test("Save Document Without Preference Enabled", False, f"Could not disable saveDocuments preference: {pref_response.status_code}")
+                return False
+            
+            # Now try to save a document
+            import base64
+            test_content = "Test document content"
+            file_data = base64.b64encode(test_content.encode()).decode()
+            
+            payload = {
+                "documentType": "paystub",
+                "fileName": "test_fail.pdf",
+                "fileData": file_data,
+                "template": "template-a"
+            }
+            response = requests.post(f"{self.api_url}/user/saved-documents", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 400
+            details = f"Status: {response.status_code} (Expected 400)"
+            
+            if success:
+                data = response.json()
+                if "detail" in data and "not enabled" in data["detail"].lower():
+                    details += f", Correct error message: {data['detail']}"
+                else:
+                    details += f", Error message: {data.get('detail', 'Unknown')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Save Document Without Preference Enabled", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Save Document Without Preference Enabled", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

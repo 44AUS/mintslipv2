@@ -13,17 +13,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   FileText,
   Download,
   Clock,
-  LogOut,
-  Settings,
-  User,
   Loader2,
   Calendar,
   Sparkles,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  FolderArchive,
+  AlertTriangle,
+  Settings
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -48,9 +63,17 @@ export default function UserDownloads() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [downloads, setDownloads] = useState([]);
+  const [savedDocuments, setSavedDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavedLoading, setIsSavedLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [savedTotal, setSavedTotal] = useState(0);
+  const [maxSavedDocuments, setMaxSavedDocuments] = useState(15);
+  const [activeTab, setActiveTab] = useState("history");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const pageSize = 10;
 
   useEffect(() => {
@@ -65,6 +88,7 @@ export default function UserDownloads() {
     try {
       setUser(JSON.parse(userInfo));
       fetchDownloads(token);
+      fetchSavedDocuments(token);
     } catch (e) {
       navigate("/login");
     }
@@ -83,7 +107,6 @@ export default function UserDownloads() {
         setDownloads(data.downloads || []);
         setTotal(data.total || 0);
       } else {
-        // For demo, show empty state
         setDownloads([]);
         setTotal(0);
       }
@@ -92,6 +115,91 @@ export default function UserDownloads() {
       setDownloads([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchSavedDocuments = async (token) => {
+    setIsSavedLoading(true);
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/user/saved-documents`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSavedDocuments(data.documents || []);
+        setSavedTotal(data.total || 0);
+        setMaxSavedDocuments(data.maxDocuments || 15);
+      } else {
+        setSavedDocuments([]);
+        setSavedTotal(0);
+      }
+    } catch (error) {
+      console.error("Error fetching saved documents:", error);
+      setSavedDocuments([]);
+    } finally {
+      setIsSavedLoading(false);
+    }
+  };
+
+  const handleDownloadSaved = async (docId, fileName) => {
+    const token = localStorage.getItem("userToken");
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/user/saved-documents/${docId}/download`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Failed to download");
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success("Document downloaded!");
+    } catch (error) {
+      toast.error(error.message || "Failed to download document");
+    }
+  };
+
+  const handleDeleteSaved = async () => {
+    if (!documentToDelete) return;
+    
+    const token = localStorage.getItem("userToken");
+    setIsDeleting(true);
+    
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/user/saved-documents/${documentToDelete.id}`,
+        { 
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${token}` } 
+        }
+      );
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Failed to delete");
+      }
+      
+      toast.success("Document deleted");
+      setDeleteDialogOpen(false);
+      setDocumentToDelete(null);
+      fetchSavedDocuments(token);
+    } catch (error) {
+      toast.error(error.message || "Failed to delete document");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -107,10 +215,11 @@ export default function UserDownloads() {
     });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("userToken");
-    localStorage.removeItem("userInfo");
-    navigate("/login");
+  const formatFileSize = (bytes) => {
+    if (!bytes) return "-";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   if (isLoading && !user) {
@@ -132,8 +241,8 @@ export default function UserDownloads() {
       <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Download History</h1>
-          <p className="text-slate-600">View your recent document downloads</p>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Downloads</h1>
+          <p className="text-slate-600">View your download history and saved documents</p>
         </div>
 
         {/* Stats */}
@@ -153,7 +262,21 @@ export default function UserDownloads() {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-blue-600" />
+                <FolderArchive className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Saved Documents</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {savedTotal} <span className="text-sm font-normal text-slate-400">/ {maxSavedDocuments}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-purple-600" />
               </div>
               <div>
                 <p className="text-sm text-slate-500">Subscription</p>
@@ -165,122 +288,267 @@ export default function UserDownloads() {
               </div>
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">This Month</p>
-                <p className="text-2xl font-bold text-slate-800">
-                  {downloads.filter(d => {
-                    const date = new Date(d.downloadedAt || d.createdAt);
-                    const now = new Date();
-                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                  }).length}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Downloads Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100">
-          <div className="p-6 border-b border-slate-100">
-            <h2 className="text-lg font-semibold text-slate-800">Recent Downloads</h2>
-          </div>
-          
-          {isLoading ? (
-            <div className="p-12 text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
-              <p className="text-slate-500">Loading downloads...</p>
-            </div>
-          ) : downloads.length === 0 ? (
-            <div className="p-12 text-center">
-              <Download className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500 mb-2">No downloads yet</p>
-              <p className="text-sm text-slate-400">Your download history will appear here</p>
-              <Button 
-                onClick={() => navigate("/")} 
-                className="mt-4 bg-green-600 hover:bg-green-700"
-              >
-                Start Creating Documents
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Document Type</TableHead>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Downloaded</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {downloads.map((download, idx) => (
-                    <TableRow key={download.id || idx}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-slate-600" />
-                          </div>
-                          <span className="font-medium">
-                            {DOCUMENT_TYPES[download.documentType] || download.documentType}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {download.template ? (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-mono">
-                            {download.template}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <Clock className="w-4 h-4" />
-                          {formatDate(download.downloadedAt || download.createdAt)}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="history" className="gap-2">
+              <Clock className="w-4 h-4" />
+              Download History
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="gap-2">
+              <FolderArchive className="w-4 h-4" />
+              Saved Documents
+            </TabsTrigger>
+          </TabsList>
 
-              {/* Pagination */}
-              {total > pageSize && (
-                <div className="p-4 border-t border-slate-100 flex items-center justify-between">
-                  <p className="text-sm text-slate-600">
-                    Showing {page * pageSize + 1} - {Math.min((page + 1) * pageSize, total)} of {total}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={page === 0}
-                      onClick={() => setPage(p => p - 1)}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={(page + 1) * pageSize >= total}
-                      onClick={() => setPage(p => p + 1)}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
+          {/* Download History Tab */}
+          <TabsContent value="history">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100">
+              <div className="p-6 border-b border-slate-100">
+                <h2 className="text-lg font-semibold text-slate-800">Recent Downloads</h2>
+              </div>
+              
+              {isLoading ? (
+                <div className="p-12 text-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+                  <p className="text-slate-500">Loading downloads...</p>
                 </div>
+              ) : downloads.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Download className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500 mb-2">No downloads yet</p>
+                  <p className="text-sm text-slate-400">Your download history will appear here</p>
+                  <Button 
+                    onClick={() => navigate("/")} 
+                    className="mt-4 bg-green-600 hover:bg-green-700"
+                  >
+                    Start Creating Documents
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Document Type</TableHead>
+                        <TableHead>Template</TableHead>
+                        <TableHead>Downloaded</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {downloads.map((download, idx) => (
+                        <TableRow key={download.id || idx}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-slate-600" />
+                              </div>
+                              <span className="font-medium">
+                                {DOCUMENT_TYPES[download.documentType] || download.documentType}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {download.template ? (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-mono">
+                                {download.template}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 text-slate-600">
+                              <Clock className="w-4 h-4" />
+                              {formatDate(download.downloadedAt || download.createdAt)}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  {/* Pagination */}
+                  {total > pageSize && (
+                    <div className="p-4 border-t border-slate-100 flex items-center justify-between">
+                      <p className="text-sm text-slate-600">
+                        Showing {page * pageSize + 1} - {Math.min((page + 1) * pageSize, total)} of {total}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={page === 0}
+                          onClick={() => setPage(p => p - 1)}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={(page + 1) * pageSize >= total}
+                          onClick={() => setPage(p => p + 1)}
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </div>
+            </div>
+          </TabsContent>
+
+          {/* Saved Documents Tab */}
+          <TabsContent value="saved">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100">
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-800">Saved Documents</h2>
+                  <p className="text-sm text-slate-500">Documents are kept for 60 days</p>
+                </div>
+                {!user?.preferences?.saveDocuments && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/user/settings")}
+                    className="gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Enable Saving
+                  </Button>
+                )}
+              </div>
+              
+              {isSavedLoading ? (
+                <div className="p-12 text-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+                  <p className="text-slate-500">Loading saved documents...</p>
+                </div>
+              ) : savedDocuments.length === 0 ? (
+                <div className="p-12 text-center">
+                  <FolderArchive className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500 mb-2">No saved documents</p>
+                  {user?.preferences?.saveDocuments ? (
+                    <p className="text-sm text-slate-400">
+                      Documents you download will be saved here automatically
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-slate-400 mb-4">
+                        Enable document saving in settings to keep copies of your downloads
+                      </p>
+                      <Button 
+                        onClick={() => navigate("/user/settings")}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Enable in Settings
+                      </Button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Document</TableHead>
+                      <TableHead>Size</TableHead>
+                      <TableHead>Expires In</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {savedDocuments.map((doc) => (
+                      <TableRow key={doc.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-slate-800">
+                                {DOCUMENT_TYPES[doc.documentType] || doc.documentType}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate max-w-[200px]">
+                                {doc.fileName}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-slate-600">{formatFileSize(doc.fileSize)}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-slate-400" />
+                            <span className={`${doc.daysRemaining <= 7 ? 'text-orange-600 font-medium' : 'text-slate-600'}`}>
+                              {doc.daysRemaining} days
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDownloadSaved(doc.id, doc.fileName)}
+                              className="gap-1"
+                            >
+                              <Download className="w-4 h-4" />
+                              Download
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDocumentToDelete(doc);
+                                setDeleteDialogOpen(true);
+                              }}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Document
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{documentToDelete?.fileName}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteSaved}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

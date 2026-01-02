@@ -1434,6 +1434,13 @@ class AIResumeBuilderTester:
             else:
                 email = self.mobile_test_email
                 password = self.mobile_test_password
+            
+            payload = {
+                "email": email,
+                "password": password
+            }
+            
+            # First try the mobile app auth endpoint
             response = requests.post(f"{self.api_url}/auth/login", json=payload, timeout=10)
             
             # If /api/auth/login doesn't exist, try /api/user/login

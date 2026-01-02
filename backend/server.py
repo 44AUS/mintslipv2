@@ -2055,7 +2055,7 @@ async def update_user_subscription(user_id: str, data: UpdateUserSubscription, s
 
 @app.put("/api/admin/users/{user_id}/downloads")
 async def update_user_downloads(user_id: str, data: UpdateUserDownloads, session: dict = Depends(get_current_admin)):
-    """Update a user's remaining downloads count (admin only)"""
+    """Add bonus downloads to a user's account (admin only) - resets on next billing cycle"""
     user = await users_collection.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -2063,16 +2063,29 @@ async def update_user_downloads(user_id: str, data: UpdateUserDownloads, session
     if not user.get("subscription"):
         raise HTTPException(status_code=400, detail="User has no active subscription")
     
-    # Validate downloads_remaining
-    if data.downloads_remaining < -1:
-        raise HTTPException(status_code=400, detail="Invalid downloads count. Use -1 for unlimited or a positive number.")
+    # Validate downloads to add
+    if data.downloads_to_add < 1:
+        raise HTTPException(status_code=400, detail="Please enter a positive number of downloads to add")
+    
+    current_downloads = user["subscription"].get("downloads_remaining", 0)
+    
+    # If user has unlimited downloads, no need to add more
+    if current_downloads == -1:
+        return {
+            "success": True,
+            "message": "User already has unlimited downloads",
+            "user": user
+        }
+    
+    # Add bonus downloads to current count
+    new_downloads = current_downloads + data.downloads_to_add
     
     # Update downloads_remaining
     await users_collection.update_one(
         {"id": user_id},
         {
             "$set": {
-                "subscription.downloads_remaining": data.downloads_remaining,
+                "subscription.downloads_remaining": new_downloads,
                 "subscription.updatedAt": datetime.now(timezone.utc).isoformat()
             }
         }
@@ -2081,10 +2094,12 @@ async def update_user_downloads(user_id: str, data: UpdateUserDownloads, session
     # Get updated user
     updated_user = await users_collection.find_one({"id": user_id}, {"_id": 0, "password": 0})
     
-    downloads_display = "Unlimited" if data.downloads_remaining == -1 else str(data.downloads_remaining)
     return {
         "success": True, 
-        "message": f"User downloads updated to {downloads_display}",
+        "message": f"Added {data.downloads_to_add} bonus downloads. New total: {new_downloads}",
+        "previousDownloads": current_downloads,
+        "addedDownloads": data.downloads_to_add,
+        "newTotal": new_downloads,
         "user": updated_user
     }
 

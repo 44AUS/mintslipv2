@@ -1939,6 +1939,16 @@ class AIResumeBuilderTester:
         print("\n🔄 Testing Complete Blog Flow...")
         complete_blog_flow_ok = self.test_complete_blog_flow()
         
+        # Test Subscription Download System
+        print("\n💳 Testing Subscription Download System...")
+        user_registration_ok = self.test_user_registration()
+        user_login_ok = self.test_user_login()
+        subscription_download_no_sub_ok = self.test_subscription_download_without_subscription()
+        subscription_download_with_sub_ok = self.test_subscription_download_with_subscription()
+        downloads_remaining_ok = self.test_downloads_remaining_endpoint()
+        downloads_decrement_ok = self.test_downloads_decrement_properly()
+        subscription_download_zero_ok = self.test_subscription_download_zero_remaining()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

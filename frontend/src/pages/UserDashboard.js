@@ -49,13 +49,36 @@ export default function UserDashboard() {
     }
 
     try {
+      // Set initial user from localStorage
       setUser(JSON.parse(userInfo));
+      // Fetch fresh user data from backend
+      fetchUserProfile(token);
       fetchRecentDownloads(token);
     } catch (e) {
       navigate("/login");
     }
     setIsLoading(false);
   }, [navigate]);
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/api/user/profile`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+          // Update localStorage with fresh data
+          localStorage.setItem("userInfo", JSON.stringify(data.user));
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const fetchRecentDownloads = async (token) => {
     try {

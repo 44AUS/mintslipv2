@@ -74,6 +74,15 @@ sessions_collection = db["sessions"]
 subscriptions_collection = db["subscriptions"]
 blog_posts_collection = db["blog_posts"]
 blog_categories_collection = db["blog_categories"]
+saved_documents_collection = db["saved_documents"]
+
+# Create uploads directory for user documents if not exists
+USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_documents")
+os.makedirs(USER_DOCUMENTS_DIR, exist_ok=True)
+
+# Constants for saved documents
+MAX_SAVED_DOCUMENTS_PER_USER = 15
+DOCUMENT_EXPIRY_DAYS = 60
 
 # Password hashing - Using bcrypt for better security
 def hash_password(password: str) -> str:

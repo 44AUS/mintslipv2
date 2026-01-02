@@ -526,7 +526,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Period Start"
                   value={formData.startDate}
                   onChangeText={(v) => updateField('startDate', v)}
@@ -535,7 +535,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
                 />
               </View>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Period End"
                   value={formData.endDate}
                   onChangeText={(v) => updateField('endDate', v)}

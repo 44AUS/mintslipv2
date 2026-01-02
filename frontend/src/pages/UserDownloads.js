@@ -452,22 +452,39 @@ export default function UserDownloads() {
           {/* Saved Documents Tab */}
           <TabsContent value="saved">
             <div className="bg-white rounded-xl shadow-sm border border-slate-100">
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-800">Saved Documents</h2>
                   <p className="text-sm text-slate-500">Documents are kept for 60 days</p>
                 </div>
-                {!user?.preferences?.saveDocuments && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate("/user/settings")}
-                    className="gap-2"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Enable Saving
-                  </Button>
-                )}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  {/* Filter for saved documents */}
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-slate-400" />
+                    <Select value={savedDocumentTypeFilter} onValueChange={setSavedDocumentTypeFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Documents</SelectItem>
+                        {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {!user?.preferences?.saveDocuments && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate("/user/settings")}
+                      className="gap-2"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Enable Saving
+                    </Button>
+                  )}
+                </div>
               </div>
               
               {isSavedLoading ? (
@@ -475,7 +492,7 @@ export default function UserDownloads() {
                   <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
                   <p className="text-slate-500">Loading saved documents...</p>
                 </div>
-              ) : savedDocuments.length === 0 ? (
+              ) : savedDocuments.filter(doc => savedDocumentTypeFilter === "all" || doc.documentType === savedDocumentTypeFilter).length === 0 ? (
                 <div className="p-12 text-center">
                   <FolderArchive className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                   <p className="text-slate-500 mb-2">No saved documents</p>

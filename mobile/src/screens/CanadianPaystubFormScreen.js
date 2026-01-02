@@ -1,15 +1,59 @@
 import React, { useState } from 'react';
 import { 
   View, Text, ScrollView, StyleSheet, TouchableOpacity, 
-  SafeAreaView, Alert, KeyboardAvoidingView, Platform 
+  SafeAreaView, Alert, KeyboardAvoidingView, Platform, TextInput
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '../constants/theme';
-import { Button, Input, Select, Header, RadioGroup } from '../components/ui';
+import { Button, Select, Header, RadioGroup } from '../components/ui';
 import { useAuth, API_URL } from '../context/AuthContext';
 import { CA_PROVINCES, PAY_FREQUENCIES, CANADIAN_TEMPLATES } from '../constants/formData';
+
+// Custom Input component with proper state handling
+const FormInput = ({ label, value, onChangeText, placeholder, keyboardType, maxLength, required, editable = true, multiline, style }) => {
+  return (
+    <View style={[inputStyles.inputContainer, style]}>
+      {label && (
+        <Text style={inputStyles.inputLabel}>
+          {label}
+          {required && <Text style={inputStyles.required}> *</Text>}
+        </Text>
+      )}
+      <TextInput
+        style={[
+          inputStyles.textInput,
+          multiline && inputStyles.textInputMultiline,
+          !editable && inputStyles.textInputDisabled,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.textMuted}
+        keyboardType={keyboardType || 'default'}
+        maxLength={maxLength}
+        editable={editable}
+        multiline={multiline}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+    </View>
+  );
+};
+
+const inputStyles = StyleSheet.create({
+  inputContainer: { marginBottom: SPACING.lg },
+  inputLabel: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.textPrimary, marginBottom: SPACING.sm },
+  required: { color: COLORS.error },
+  textInput: {
+    backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.md, paddingVertical: 12, paddingHorizontal: SPACING.lg,
+    fontSize: FONT_SIZES.md, color: COLORS.textPrimary,
+  },
+  textInputMultiline: { minHeight: 100, textAlignVertical: 'top' },
+  textInputDisabled: { backgroundColor: COLORS.background },
+});
 
 export default function CanadianPaystubFormScreen({ navigation }) {
   const { user, token, hasActiveSubscription } = useAuth();

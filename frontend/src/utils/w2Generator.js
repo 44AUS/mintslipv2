@@ -265,7 +265,7 @@ export const generateW2PDF = async (formData, taxYear) => {
 };
 
 // Generate and download W-2
-export const generateAndDownloadW2 = async (formData, taxYear) => {
+export const generateAndDownloadW2 = async (formData, taxYear, returnBlob = false) => {
   try {
     const pdfBytes = await generateW2PDF(formData, taxYear);
     
@@ -286,6 +286,10 @@ export const generateAndDownloadW2 = async (formData, taxYear) => {
     document.body.removeChild(link);
     
     // Don't revoke URL immediately - needed for re-download on success page
+    // Return blob if requested for saving
+    if (returnBlob) {
+      return blob;
+    }
     return true;
   } catch (error) {
     console.error("Error downloading W-2:", error);

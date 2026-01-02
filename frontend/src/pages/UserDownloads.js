@@ -102,13 +102,20 @@ export default function UserDownloads() {
     } catch (e) {
       navigate("/login");
     }
-  }, [navigate, page]);
+  }, [navigate, page, documentTypeFilter]);
+
+  // Reset page when filter changes
+  const handleFilterChange = (value) => {
+    setPage(0);
+    setDocumentTypeFilter(value);
+  };
 
   const fetchDownloads = async (token) => {
     setIsLoading(true);
     try {
+      const filterParam = documentTypeFilter !== "all" ? `&document_type=${documentTypeFilter}` : "";
       const response = await fetch(
-        `${BACKEND_URL}/api/user/downloads?skip=${page * pageSize}&limit=${pageSize}`,
+        `${BACKEND_URL}/api/user/downloads?skip=${page * pageSize}&limit=${pageSize}${filterParam}`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
       

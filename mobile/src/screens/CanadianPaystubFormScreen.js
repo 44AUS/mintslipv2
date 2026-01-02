@@ -476,7 +476,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
             
             {formData.payType === 'hourly' ? (
               <>
-                <Input
+                <FormInput
                   label="Hourly Rate (CAD)"
                   value={formData.rate}
                   onChangeText={(v) => updateField('rate', v)}
@@ -486,7 +486,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
                 />
                 <View style={styles.row}>
                   <View style={styles.flex1}>
-                    <Input
+                    <FormInput
                       label="Regular Hours"
                       value={formData.hours}
                       onChangeText={(v) => updateField('hours', v)}
@@ -496,7 +496,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
                     />
                   </View>
                   <View style={styles.flex1}>
-                    <Input
+                    <FormInput
                       label="Overtime Hours"
                       value={formData.overtime}
                       onChangeText={(v) => updateField('overtime', v)}
@@ -507,7 +507,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
                 </View>
               </>
             ) : (
-              <Input
+              <FormInput
                 label="Annual Salary (CAD)"
                 value={formData.annualSalary}
                 onChangeText={(v) => updateField('annualSalary', v)}

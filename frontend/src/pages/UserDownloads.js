@@ -323,8 +323,24 @@ export default function UserDownloads() {
           {/* Download History Tab */}
           <TabsContent value="history">
             <div className="bg-white rounded-xl shadow-sm border border-slate-100">
-              <div className="p-6 border-b border-slate-100">
+              <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h2 className="text-lg font-semibold text-slate-800">Recent Downloads</h2>
+                
+                {/* Document Type Filter */}
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-slate-400" />
+                  <Select value={documentTypeFilter} onValueChange={handleFilterChange}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Documents</SelectItem>
+                      {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               {isLoading ? (
@@ -335,14 +351,29 @@ export default function UserDownloads() {
               ) : downloads.length === 0 ? (
                 <div className="p-12 text-center">
                   <Download className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500 mb-2">No downloads yet</p>
-                  <p className="text-sm text-slate-400">Your download history will appear here</p>
-                  <Button 
-                    onClick={() => navigate("/")} 
-                    className="mt-4 bg-green-600 hover:bg-green-700"
-                  >
-                    Start Creating Documents
-                  </Button>
+                  {documentTypeFilter !== "all" ? (
+                    <>
+                      <p className="text-slate-500 mb-2">No {DOCUMENT_TYPES[documentTypeFilter]} downloads found</p>
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleFilterChange("all")} 
+                        className="mt-4"
+                      >
+                        Clear Filter
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-slate-500 mb-2">No downloads yet</p>
+                      <p className="text-sm text-slate-400">Your download history will appear here</p>
+                      <Button 
+                        onClick={() => navigate("/")} 
+                        className="mt-4 bg-green-600 hover:bg-green-700"
+                      >
+                        Start Creating Documents
+                      </Button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <>

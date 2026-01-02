@@ -112,6 +112,10 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       saveAs(zipBlob, zipFileName);
       console.log("ZIP downloaded successfully");
       
+      if (returnBlob) {
+        return zipBlob;
+      }
+      
     } else {
       // Single stub - download directly as PDF
       console.log("Generating single PDF...");

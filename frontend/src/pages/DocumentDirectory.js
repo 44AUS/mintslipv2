@@ -169,16 +169,16 @@ const generators = [
     tags: ["vehicle", "bill of sale", "car", "auto", "seller", "buyer", "notary", "vin"],
     isNew: true
   },
-  {
-    id: "service-expense",
-    name: "Service Expense Generator",
-    description: "Generate professional service expense statements for home budgeting with custom logos and 3 template styles.",
-    path: "/service-expense-generator",
-    icon: Zap,
-    price: "$49.99",
-    category: "Financial Documents",
-    tags: ["utility", "bill", "expense", "service", "electric", "gas", "water", "budget"]
-  }
+  // {
+  //   id: "service-expense",
+  //   name: "Service Expense Generator",
+  //   description: "Generate professional service expense statements for home budgeting with custom logos and 3 template styles.",
+  //   path: "/service-expense-generator",
+  //   icon: Zap,
+  //   price: "$49.99",
+  //   category: "Financial Documents",
+  //   tags: ["utility", "bill", "expense", "service", "electric", "gas", "water", "budget"]
+  // }
 ];
 
 // Get unique categories

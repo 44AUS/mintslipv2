@@ -15,7 +15,7 @@ const FOOTER_LINKS = {
       { name: "Offer Letter Generator", path: "/offer-letter-generator" },
       { name: "Schedule C Form Generator", path: "/schedule-c-generator" },
       { name: "Vehicle Bill of Sale Generator", path: "/vehicle-bill-of-sale-generator" },
-      { name: "Service Expense Generator", path: "/service-expense-generator" },
+      // { name: "Service Expense Generator", path: "/service-expense-generator" },
       { name: "Contractor Paystub Generator", path: "/contractor-paystub-generator" },
       { name: "Instant Paystub Generator", path: "/instant-paystub-generator" },
       { name: "Self Employed Paystub Generator", path: "/self-employed-paystub-generator" },

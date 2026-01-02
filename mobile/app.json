@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "DocuMint Mobile",
-    "slug": "documint-mobile",
+    "name": "MintSlip",
+    "slug": "mintslip-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,18 +9,18 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a4731"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.documint.mobile"
+      "bundleIdentifier": "com.mintslip.mobile"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1a4731"
       },
-      "package": "com.documint.mobile"
+      "package": "com.mintslip.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"

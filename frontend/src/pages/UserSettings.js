@@ -481,7 +481,7 @@ export default function UserSettings() {
           <ul className="space-y-2 my-4">
             <li className="flex items-center gap-2 text-slate-600">
               <Check className="w-4 h-4 text-red-500" />
-              {currentTier?.downloads === -1 ? "Unlimited" : currentTier?.downloads} monthly downloads
+              {user?.subscription?.downloads_total === -1 ? "Unlimited" : (user?.subscription?.downloads_total ?? currentTier?.downloads)} monthly downloads
             </li>
             <li className="flex items-center gap-2 text-slate-600">
               <Check className="w-4 h-4 text-red-500" />

@@ -544,6 +544,46 @@ async def get_user_profile(session: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "user": user}
 
+
+class ChangeUserPassword(BaseModel):
+    currentPassword: str
+    newPassword: str
+
+@app.put("/api/user/change-password")
+async def change_user_password(data: ChangeUserPassword, request: Request, session: dict = Depends(get_current_user)):
+    """Change user password (requires current password)"""
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limit: 3 password change attempts per minute
+    if not check_rate_limit(f"user_change_password_{client_ip}", max_requests=3, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many attempts. Please try again later.")
+    
+    # Get current user with password
+    user = await users_collection.find_one({"id": session["userId"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not verify_password(data.currentPassword, user["password"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Validate new password
+    if len(data.newPassword) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    
+    # Update password
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {
+            "password": hash_password(data.newPassword),
+            "passwordChangedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Password changed successfully"}
+
+
 # ========== PURCHASE TRACKING ENDPOINTS ==========
 
 @app.post("/api/purchases/track")

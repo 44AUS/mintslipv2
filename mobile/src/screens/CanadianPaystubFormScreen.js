@@ -375,7 +375,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex2}>
-                <Input
+                <FormInput
                   label="City"
                   value={formData.city}
                   onChangeText={(v) => updateField('city', v)}
@@ -394,7 +394,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
               </View>
             </View>
             
-            <Input
+            <FormInput
               label="Postal Code"
               value={formData.postalCode}
               onChangeText={(v) => updateField('postalCode', v.toUpperCase())}

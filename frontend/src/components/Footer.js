@@ -26,6 +26,7 @@ const FOOTER_LINKS = {
     links: [
       { name: "About Us", path: "/about" },
       { name: "Contact", path: "/contact" },
+      { name: "Blog", path: "/blog" },
       { name: "FAQ", path: "/faq" },
       { name: "How to Make a Paystub", path: "/how-to-make-a-paystub" },
       { name: "Paystub for Apartment", path: "/paystub-for-apartment" },

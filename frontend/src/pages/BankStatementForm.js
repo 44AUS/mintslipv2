@@ -380,6 +380,79 @@ const createOrder = (data, actions) => {
   });
 };
 
+  // Handle subscription-based download
+  const handleSubscriptionDownload = async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      toast.error("Please log in to use your subscription");
+      navigate("/login");
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/user/subscription-download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          documentType: "bank-statement",
+          template: selectedTemplate
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to process subscription download");
+      }
+      
+      // Generate and download PDF
+      const formDataToSend = {
+        accountName,
+        accountAddress1,
+        accountAddress2,
+        accountNumber,
+        selectedMonth,
+        beginningBalance,
+        transactions,
+        bankName: selectedBank?.id === 'other' ? customBankName : (selectedBank?.name || ''),
+        bankLogo: uploadedLogo
+      };
+      await generateAndDownloadBankStatement(formDataToSend, selectedTemplate);
+      
+      if (data.downloadsRemaining !== undefined) {
+        const updatedUser = { ...user };
+        if (updatedUser.subscription) {
+          updatedUser.subscription.downloads_remaining = data.downloadsRemaining;
+        }
+        setUser(updatedUser);
+        localStorage.setItem("userInfo", JSON.stringify(updatedUser));
+        
+        if (data.downloadsRemaining === 0) {
+          setHasActiveSubscription(false);
+        }
+      }
+      
+      // Clear the uploaded logo
+      localStorage.removeItem('bankStatementLogo');
+      setUploadedLogo(null);
+      setLogoPreview(null);
+      
+      toast.success("Bank statement downloaded successfully!");
+      navigate("/user/downloads");
+      
+    } catch (error) {
+      console.error("Subscription download error:", error);
+      toast.error(error.message || "Failed to download. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
 
   const onApprove = async (data, actions) => {
     setIsProcessing(true);

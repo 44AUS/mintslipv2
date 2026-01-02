@@ -141,6 +141,9 @@ function App() {
             <Route path="/login" element={<UserLogin />} />
             <Route path="/signup" element={<UserSignup />} />
             <Route path="/subscription/choose" element={<SubscriptionChoose />} />
+            <Route path="/pricing" element={<SubscriptionPlans />} />
+            <Route path="/subscription/success" element={<SubscriptionSuccess />} />
+            <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
             <Route path="/user/dashboard" element={<UserDashboard />} />
             <Route path="/user/downloads" element={<UserDownloads />} />
             <Route path="/user/settings" element={<UserSettings />} />

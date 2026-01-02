@@ -139,7 +139,8 @@ export default function CanadianPaystubForm() {
         },
         body: JSON.stringify({
           documentType: "canadian-paystub",
-          template: selectedTemplate
+          template: selectedTemplate,
+          count: calculateNumStubs  // Pass the number of paystubs being downloaded
         })
       });
       

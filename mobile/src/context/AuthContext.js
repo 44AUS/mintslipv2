@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext(null);
 
-export const API_URL = 'https://paypaper-app.preview.emergentagent.com';
+export const API_URL = 'https://pdf-keeper.preview.emergentagent.com';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

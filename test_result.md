@@ -6,6 +6,54 @@
 # ==========================================================================
 
 backend:
+  - task: "Mobile App Resume Parser API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/parse-resume endpoint working correctly. Accepts multipart/form-data file uploads (PDF/DOCX). Returns structured resume data with personalInfo, workExperience, education, and skills fields. AI-powered parsing using Gemini LLM integration working properly."
+
+  - task: "Mobile App AI Responsibilities Generator API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "POST /api/generate-responsibilities endpoint working correctly. Accepts position, company, industry, and jobDescription parameters. Returns AI-generated professional responsibilities array with quantifiable metrics and action verbs. Gemini LLM integration working properly."
+
+  - task: "Mobile App User Authentication APIs"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Mobile authentication APIs working correctly. POST /api/user/signup (registration) and POST /api/user/login endpoints functional. Note: /api/auth/login and /api/auth/register endpoints don't exist - mobile app should use /api/user/* endpoints. GET /api/user/me endpoint returns complete user profile with subscription info."
+
+  - task: "Mobile App Subscription Download APIs"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Mobile subscription download APIs working correctly. POST /api/user/subscription-download validates subscription status and tracks downloads. GET /api/user/downloads-remaining returns subscription status and remaining downloads count. Proper authentication required with Bearer tokens. Error handling working for users without subscriptions."
+
   - task: "Admin Setup Endpoint"
     implemented: true
     working: true

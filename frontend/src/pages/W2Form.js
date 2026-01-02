@@ -1154,7 +1154,7 @@ export default function W2Form() {
                     
                     {/* Subscription upsell */}
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
-                      <p className="text-sm text-slate-500 mb-2">Want unlimited downloads?</p>
+                      <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
                         variant="outline"
                         size="sm"

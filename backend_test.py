@@ -1297,6 +1297,236 @@ class AIResumeBuilderTester:
             self.log_test("Subscription Download Zero Remaining", False, f"Exception: {str(e)}")
             return False
 
+    # ========== SUBSCRIPTION UPGRADE TESTS ==========
+
+    def test_subscription_upgrade_calculate(self):
+        """Test POST /api/subscriptions/calculate-upgrade endpoint"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Subscription Upgrade Calculate", False, "No user token available (user login test must pass first)")
+            return False
+        
+        # First ensure user has a starter subscription
+        if not self.activate_test_user_subscription_starter():
+            self.log_test("Subscription Upgrade Calculate", False, "Could not activate starter subscription for test user")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            
+            # Test 1: Calculate upgrade from starter to professional
+            payload = {"newTier": "professional"}
+            response = requests.post(f"{self.api_url}/subscriptions/calculate-upgrade", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "currentTier", "newTier", "currentPrice", "newPrice", "daysRemaining", "proratedAmount"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    current_tier = data.get("currentTier")
+                    new_tier = data.get("newTier")
+                    current_price = data.get("currentPrice")
+                    new_price = data.get("newPrice")
+                    days_remaining = data.get("daysRemaining")
+                    prorated_amount = data.get("proratedAmount")
+                    
+                    # Validate expected values
+                    if current_tier == "starter" and new_tier == "professional":
+                        if current_price == 19.99 and new_price == 29.99:
+                            if isinstance(days_remaining, int) and days_remaining >= 0:
+                                if isinstance(prorated_amount, (int, float)) and prorated_amount >= 0:
+                                    details += f", Upgrade calculation: {current_tier} (${current_price}) -> {new_tier} (${new_price}), {days_remaining} days remaining, prorated: ${prorated_amount}"
+                                else:
+                                    success = False
+                                    details += f", Invalid prorated amount: {prorated_amount}"
+                            else:
+                                success = False
+                                details += f", Invalid days remaining: {days_remaining}"
+                        else:
+                            success = False
+                            details += f", Unexpected prices: current=${current_price}, new=${new_price}"
+                    else:
+                        success = False
+                        details += f", Unexpected tiers: current={current_tier}, new={new_tier}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Subscription Upgrade Calculate", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Subscription Upgrade Calculate", False, f"Exception: {str(e)}")
+            return False
+
+    def test_subscription_upgrade_create_order(self):
+        """Test POST /api/subscriptions/upgrade/create-order endpoint"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Subscription Upgrade Create Order", False, "No user token available (user login test must pass first)")
+            return False
+        
+        # First ensure user has a starter subscription
+        if not self.activate_test_user_subscription_starter():
+            self.log_test("Subscription Upgrade Create Order", False, "Could not activate starter subscription for test user")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            
+            # Test creating upgrade order from starter to professional
+            payload = {"newTier": "professional"}
+            response = requests.post(f"{self.api_url}/subscriptions/upgrade/create-order", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "orderId", "approvalUrl"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    order_id = data.get("orderId")
+                    approval_url = data.get("approvalUrl")
+                    prorated_amount = data.get("proratedAmount")
+                    
+                    if order_id and approval_url:
+                        details += f", Order created: {order_id[:8]}..., Approval URL provided"
+                        if prorated_amount:
+                            details += f", Prorated amount: ${prorated_amount}"
+                    else:
+                        success = False
+                        details += f", Missing order ID or approval URL"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Subscription Upgrade Create Order", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Subscription Upgrade Create Order", False, f"Exception: {str(e)}")
+            return False
+
+    def test_subscription_upgrade_validation_errors(self):
+        """Test subscription upgrade validation errors"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("Subscription Upgrade Validation", False, "No user token available (user login test must pass first)")
+            return False
+        
+        # First ensure user has a professional subscription for downgrade test
+        if not self.activate_test_user_subscription_professional():
+            self.log_test("Subscription Upgrade Validation", False, "Could not activate professional subscription for test user")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            success = True
+            details = ""
+            
+            # Test 1: Try upgrading to same tier (should fail)
+            payload = {"newTier": "professional"}
+            response = requests.post(f"{self.api_url}/subscriptions/calculate-upgrade", json=payload, headers=headers, timeout=10)
+            if response.status_code == 400:
+                data = response.json()
+                if "already on this plan" in data.get("detail", "").lower():
+                    details += "Same tier validation: ✓ "
+                else:
+                    success = False
+                    details += f"Same tier validation: ✗ (wrong error: {data.get('detail')}) "
+            else:
+                success = False
+                details += f"Same tier validation: ✗ (status: {response.status_code}) "
+            
+            # Test 2: Try "downgrading" from professional to starter (should fail)
+            if success:
+                payload = {"newTier": "starter"}
+                response = requests.post(f"{self.api_url}/subscriptions/calculate-upgrade", json=payload, headers=headers, timeout=10)
+                if response.status_code == 400:
+                    data = response.json()
+                    if "upgrade" in data.get("detail", "").lower() or "higher" in data.get("detail", "").lower():
+                        details += "Downgrade validation: ✓ "
+                    else:
+                        success = False
+                        details += f"Downgrade validation: ✗ (wrong error: {data.get('detail')}) "
+                else:
+                    success = False
+                    details += f"Downgrade validation: ✗ (status: {response.status_code}) "
+            
+            # Test 3: Try with invalid tier name (should fail)
+            if success:
+                payload = {"newTier": "invalid_tier"}
+                response = requests.post(f"{self.api_url}/subscriptions/calculate-upgrade", json=payload, headers=headers, timeout=10)
+                if response.status_code == 400:
+                    data = response.json()
+                    if "invalid" in data.get("detail", "").lower() or "tier" in data.get("detail", "").lower():
+                        details += "Invalid tier validation: ✓"
+                    else:
+                        success = False
+                        details += f"Invalid tier validation: ✗ (wrong error: {data.get('detail')})"
+                else:
+                    success = False
+                    details += f"Invalid tier validation: ✗ (status: {response.status_code})"
+            
+            self.log_test("Subscription Upgrade Validation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Subscription Upgrade Validation", False, f"Exception: {str(e)}")
+            return False
+
+    def activate_test_user_subscription_starter(self):
+        """Manually activate starter subscription for test user using admin endpoint"""
+        if not self.admin_token or not hasattr(self, 'test_user_id'):
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            payload = {"tier": "starter"}  # Use SUBSCRIPTION_PLANS tier name
+            response = requests.put(
+                f"{self.api_url}/admin/users/{self.test_user_id}/subscription", 
+                json=payload, 
+                headers=headers, 
+                timeout=10
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
+
+    def activate_test_user_subscription_professional(self):
+        """Manually activate professional subscription for test user using admin endpoint"""
+        if not self.admin_token or not hasattr(self, 'test_user_id'):
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            payload = {"tier": "professional"}  # Use SUBSCRIPTION_PLANS tier name
+            response = requests.put(
+                f"{self.api_url}/admin/users/{self.test_user_id}/subscription", 
+                json=payload, 
+                headers=headers, 
+                timeout=10
+            )
+            return response.status_code == 200
+        except Exception:
+            return False
+
     # ========== BLOG SYSTEM TESTS ==========
 
     def test_blog_categories(self):

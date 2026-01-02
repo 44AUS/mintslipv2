@@ -177,16 +177,20 @@ export default function PaystubForm() {
         logoDataUrl: logoPreview,
       };
       
-      // Generate and download PDF - get the blob for saving
-      const pdfBlob = await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs, true);
+      // Check if user wants documents saved
+      const shouldSave = user?.preferences?.saveDocuments;
       
-      // Save document if user has preference enabled
-      if (user?.preferences?.saveDocuments && pdfBlob) {
+      // Generate and download PDF - request blob if saving is enabled
+      const pdfBlob = await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs, shouldSave);
+      
+      // Save document if user has preference enabled and blob was returned
+      if (shouldSave && pdfBlob) {
         try {
           const reader = new FileReader();
           reader.onloadend = async () => {
             const base64Data = reader.result.split(',')[1];
-            const fileName = `paystub_${new Date().toISOString().split('T')[0]}.pdf`;
+            const fileExt = calculateNumStubs > 1 ? '.zip' : '.pdf';
+            const fileName = `paystub_${new Date().toISOString().split('T')[0]}${fileExt}`;
             
             await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
               method: "POST",
@@ -201,6 +205,7 @@ export default function PaystubForm() {
                 template: selectedTemplate
               })
             });
+            toast.success("Document saved to your account!");
           };
           reader.readAsDataURL(pdfBlob);
         } catch (saveError) {

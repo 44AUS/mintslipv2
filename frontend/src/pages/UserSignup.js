@@ -3,8 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { User, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import { User, Mail, Lock, Loader2, ArrowRight, FolderArchive } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -14,6 +15,7 @@ export default function UserSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [saveDocuments, setSaveDocuments] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already logged in

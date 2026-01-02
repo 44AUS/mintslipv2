@@ -68,7 +68,7 @@ function getMultiplePaystubsZipFilename(template, name) {
   return `${formatNameForFilename(name)}-paystubs-${downloadDate}.zip`;
 }
 
-export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs) => {
+export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs, returnBlob = false) => {
   try {
     console.log("Starting PDF generation...", { formData, template, numStubs });
     

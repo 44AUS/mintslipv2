@@ -1760,7 +1760,7 @@ export default function AdminDashboard() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No Subscription</SelectItem>
-                {Object.entries(SUBSCRIPTION_TIERS).map(([key, tier]) => (
+                {Object.entries(ADMIN_ASSIGNABLE_TIERS).map(([key, tier]) => (
                   <SelectItem key={key} value={key}>
                     {tier.name} - ${tier.price}/mo ({tier.downloads === -1 ? "Unlimited" : tier.downloads} downloads)
                   </SelectItem>
@@ -1770,9 +1770,9 @@ export default function AdminDashboard() {
             
             {selectedTier && selectedTier !== "none" && (
               <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-                <p><strong>{SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
-                <p>${SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
-                <p>{SUBSCRIPTION_TIERS[selectedTier]?.downloads === -1 ? "Unlimited" : SUBSCRIPTION_TIERS[selectedTier]?.downloads} downloads per month</p>
+                <p><strong>{ADMIN_ASSIGNABLE_TIERS[selectedTier]?.name || SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
+                <p>${ADMIN_ASSIGNABLE_TIERS[selectedTier]?.price || SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
+                <p>{(ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads ?? SUBSCRIPTION_TIERS[selectedTier]?.downloads) === -1 ? "Unlimited" : (ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads || SUBSCRIPTION_TIERS[selectedTier]?.downloads)} downloads per month</p>
               </div>
             )}
             

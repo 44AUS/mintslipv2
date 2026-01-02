@@ -99,11 +99,16 @@ const DOCUMENT_TYPES = {
   "canadian-paystub": "Canadian Pay Stub"
 };
 
-// Subscription tiers
+// Subscription tiers - includes both admin-assigned tiers and PayPal subscription plans
 const SUBSCRIPTION_TIERS = {
+  // Admin-assigned tiers
   "basic": { name: "Basic", price: 19.99, downloads: 5 },
   "pro": { name: "Pro", price: 29.99, downloads: 10 },
-  "unlimited": { name: "Unlimited", price: 49.99, downloads: -1 }
+  "unlimited": { name: "Unlimited", price: 49.99, downloads: -1 },
+  // PayPal subscription plans
+  "starter": { name: "Starter", price: 19.99, downloads: 10 },
+  "professional": { name: "Professional", price: 29.99, downloads: 30 },
+  "business": { name: "Business", price: 49.99, downloads: -1 }
 };
 
 export default function AdminDashboard() {

@@ -1952,48 +1952,101 @@ export default function AIResumeBuilder() {
               </div>
             ) : (
               <div className="space-y-4">
-                <CouponInput
-                  generatorType="ai-resume"
-                  originalPrice={9.99}
-                  onDiscountApplied={setAppliedDiscount}
-                />
-                <div className="text-center">
-                  {appliedDiscount ? (
-                    <>
-                      <p className="text-lg text-slate-400 line-through">${9.99.toFixed(2)}</p>
-                      <p className="text-2xl font-bold text-green-600">${appliedDiscount.discountedPrice.toFixed(2)}</p>
-                      <p className="text-green-600 text-sm">{appliedDiscount.discountPercent}% discount applied!</p>
-                    </>
-                  ) : (
-                    <p className="text-2xl font-bold text-slate-800">$9.99</p>
-                  )}
-                  <p className="text-slate-600">One-time payment for your AI-optimized resume</p>
-                </div>
-                <div className="max-w-md mx-auto">
-                  {isProcessingPayment && (
-                    <div className="flex items-center justify-center py-4">
-                      <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-                      <span className="ml-2 text-slate-600">Processing payment...</span>
+                {hasActiveSubscription ? (
+                  <>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-semibold">Subscription Active</span>
+                      </div>
+                      <p className="text-sm text-green-600">
+                        Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
+                      </p>
                     </div>
-                  )}
-                  <div style={{ display: isProcessingPayment ? 'none' : 'block' }}>
-                    <PayPalButtons
-                      style={{ layout: "vertical", color: "gold", shape: "rect" }}
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                      onCancel={() => {
-                        toast.info("Payment was cancelled.");
-                      }}
-                      onError={(err) => {
-                        console.error("PayPal error:", err);
-                        toast.error("Payment failed. Please try again.");
-                      }}
+                    <Button
+                      onClick={handleSubscriptionDownload}
+                      disabled={isProcessingPayment}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                    >
+                      {isProcessingPayment ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download Resume (Included in Plan)
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-center text-slate-500">
+                      Includes PDF and Word (.docx) formats in a zip file
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <CouponInput
+                      generatorType="ai-resume"
+                      originalPrice={9.99}
+                      onDiscountApplied={setAppliedDiscount}
                     />
-                  </div>
-                </div>
-                <p className="text-xs text-center text-slate-500">
-                  Includes PDF and Word (.docx) formats in a zip file
-                </p>
+                    <div className="text-center">
+                      {appliedDiscount ? (
+                        <>
+                          <p className="text-lg text-slate-400 line-through">${9.99.toFixed(2)}</p>
+                          <p className="text-2xl font-bold text-green-600">${appliedDiscount.discountedPrice.toFixed(2)}</p>
+                          <p className="text-green-600 text-sm">{appliedDiscount.discountPercent}% discount applied!</p>
+                        </>
+                      ) : (
+                        <p className="text-2xl font-bold text-slate-800">$9.99</p>
+                      )}
+                      <p className="text-slate-600">One-time payment for your AI-optimized resume</p>
+                    </div>
+                    <div className="max-w-md mx-auto">
+                      {isProcessingPayment && (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                          <span className="ml-2 text-slate-600">Processing payment...</span>
+                        </div>
+                      )}
+                      <div style={{ display: isProcessingPayment ? 'none' : 'block' }}>
+                        <PayPalButtons
+                          style={{ layout: "vertical", color: "gold", shape: "rect" }}
+                          createOrder={createOrder}
+                          onApprove={onApprove}
+                          onCancel={() => {
+                            toast.info("Payment was cancelled.");
+                          }}
+                          onError={(err) => {
+                            console.error("PayPal error:", err);
+                            toast.error("Payment failed. Please try again.");
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-center text-slate-500">
+                      Includes PDF and Word (.docx) formats in a zip file
+                    </p>
+                    
+                    {/* Subscription upsell */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-center">
+                      <p className="text-sm text-slate-500 mb-2">Want unlimited downloads?</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/pricing")}
+                        className="text-green-600 border-green-600 hover:bg-green-50"
+                      >
+                        View Subscription Plans
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

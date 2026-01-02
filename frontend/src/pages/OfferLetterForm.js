@@ -1371,38 +1371,92 @@ export default function OfferLetterForm() {
               {/* Payment Section */}
               <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Complete Payment
+                  {hasActiveSubscription ? 'Download Document' : 'Complete Payment'}
                 </h3>
-                <CouponInput
-                  generatorType="offer-letter"
-                  originalPrice={9.99}
-                  onDiscountApplied={setAppliedDiscount}
-                />
-                <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
-                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
-                  {!appliedDiscount && ' for Offer Letter generation'}
-                </p>
                 
-                {isProcessing ? (
-                  <div className="text-center py-4">
-                    <svg className="animate-spin h-8 w-8 mx-auto text-green-700" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p className="mt-2 text-slate-600">Processing your document...</p>
+                {hasActiveSubscription ? (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-semibold">Subscription Active</span>
+                      </div>
+                      <p className="text-sm text-green-600">
+                        Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleSubscriptionDownload}
+                      disabled={isProcessing}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download Offer Letter (Included in Plan)
+                        </>
+                      )}
+                    </Button>
                   </div>
                 ) : (
-                  <PayPalButtons
-                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                    createOrder={createOrder}
-                    onApprove={onApprove}
-                    onError={onError}
-                    onCancel={() => {
-                      toast.info("Payment cancelled");
-                    }}
-                    forceReRender={[formData.candidateName, formData.companyName]}
-                  />
+                  <>
+                    <CouponInput
+                      generatorType="offer-letter"
+                      originalPrice={9.99}
+                      onDiscountApplied={setAppliedDiscount}
+                    />
+                    <p className="text-sm text-slate-600 mb-4">
+                      Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
+                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {!appliedDiscount && ' for Offer Letter generation'}
+                    </p>
+                    
+                    {isProcessing ? (
+                      <div className="text-center py-4">
+                        <svg className="animate-spin h-8 w-8 mx-auto text-green-700" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p className="mt-2 text-slate-600">Processing your document...</p>
+                      </div>
+                    ) : (
+                      <PayPalButtons
+                        style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                        createOrder={createOrder}
+                        onApprove={onApprove}
+                        onError={onError}
+                        onCancel={() => {
+                          toast.info("Payment cancelled");
+                        }}
+                        forceReRender={[formData.candidateName, formData.companyName]}
+                      />
+                    )}
+                    
+                    {/* Subscription upsell */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-center">
+                      <p className="text-sm text-slate-500 mb-2">Want unlimited downloads?</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/pricing")}
+                        className="text-green-600 border-green-600 hover:bg-green-50"
+                      >
+                        View Subscription Plans
+                      </Button>
+                    </div>
+                  </>
                 )}
               </div>
 

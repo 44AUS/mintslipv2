@@ -2200,8 +2200,13 @@ class AIResumeBuilderTester:
         blog_tests_passed = (blog_categories_ok and blog_posts_public_ok and admin_blog_posts_ok and 
                            create_blog_post_ok and get_blog_post_by_slug_ok and get_admin_blog_post_by_id_ok and 
                            update_blog_post_ok and delete_blog_post_ok and complete_blog_flow_ok)
+        subscription_download_tests_passed = (user_registration_ok and user_login_ok and subscription_download_no_sub_ok and 
+                                            subscription_download_with_sub_ok and downloads_remaining_ok and 
+                                            downloads_decrement_ok and subscription_download_zero_ok)
+        subscription_upgrade_tests_passed = upgrade_calculate_ok and upgrade_create_order_ok and upgrade_validation_ok
         
-        if critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and new_admin_features_passed and blog_tests_passed:
+        if (critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and 
+            new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and subscription_upgrade_tests_passed):
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")

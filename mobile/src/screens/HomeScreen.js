@@ -1,49 +1,47 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { 
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, 
+  SafeAreaView, Platform, StatusBar, Dimensions 
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SHADOWS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 
-// Document types available
+const { width } = Dimensions.get('window');
+
+// Document types
 const DOCUMENTS = [
   {
     id: 'paystub',
     title: 'Pay Stub',
-    description: 'Generate professional pay stubs with accurate tax calculations for US employees.',
+    subtitle: 'US Employees',
     icon: '💵',
-    price: '$9.99',
     screen: 'PaystubForm',
-    color: COLORS.primary,
-    bgColor: COLORS.primaryBg,
+    gradient: ['#00C853', '#00A844'],
   },
   {
     id: 'canadian-paystub',
     title: 'Canadian Pay Stub',
-    description: 'Create Canadian pay stubs with provincial tax calculations and deductions.',
-    icon: '🇨🇦',
-    price: '$9.99',
+    subtitle: 'CA Employees',
+    icon: '🍁',
     screen: 'CanadianPaystubForm',
-    color: '#dc2626',
-    bgColor: '#fef2f2',
+    gradient: ['#FF5252', '#D32F2F'],
   },
   {
     id: 'w2',
     title: 'W-2 Form',
-    description: 'Generate W-2 wage and tax statements for year-end tax reporting.',
+    subtitle: 'Tax Documents',
     icon: '📋',
-    price: '$14.99',
     screen: 'W2Form',
-    color: '#2563eb',
-    bgColor: '#eff6ff',
+    gradient: ['#2196F3', '#1976D2'],
   },
   {
     id: 'resume',
-    title: 'AI Resume Builder',
-    description: 'Create professional resumes with AI-powered suggestions and formatting.',
-    icon: '📝',
-    price: '$4.99',
+    title: 'AI Resume',
+    subtitle: 'Smart Builder',
+    icon: '✨',
     screen: 'ResumeBuilder',
-    color: '#7c3aed',
-    bgColor: '#f5f3ff',
+    gradient: ['#7C4DFF', '#651FFF'],
   },
 ];
 
@@ -52,392 +50,421 @@ export default function HomeScreen({ navigation }) {
   const isSubscribed = hasActiveSubscription();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.logo}>MintSlip</Text>
-            <Text style={styles.tagline}>Professional Documents</Text>
+            <Text style={styles.greeting}>
+              {isGuest ? 'Welcome' : `Hi, ${user?.name?.split(' ')[0] || 'there'}`}
+            </Text>
+            <Text style={styles.headerTitle}>MintSlip</Text>
           </View>
-          {!isGuest && user && (
-            <TouchableOpacity 
-              style={styles.profileButton}
-              onPress={() => navigation.navigate('Profile')}
+          <TouchableOpacity 
+            style={styles.avatarButton}
+            onPress={() => navigation.navigate(isGuest ? 'Login' : 'Profile')}
+          >
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.primaryDark]}
+              style={styles.avatar}
             >
-              <Text style={styles.profileIcon}>👤</Text>
-            </TouchableOpacity>
-          )}
+              <Text style={styles.avatarText}>
+                {isGuest ? '?' : (user?.name?.charAt(0)?.toUpperCase() || 'U')}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
 
-        <ScrollView 
-          style={styles.content} 
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Hero Section */}
-          <View style={styles.hero}>
-            <Text style={styles.heroTitle}>Generate{`\n`}Professional{`\n`}Documents</Text>
-            <Text style={styles.heroSubtitle}>
-              Create pay stubs, tax forms, and resumes instantly. Simple, secure, and ready to download.
-            </Text>
-            
-            {/* Feature Pills */}
-            <View style={styles.pills}>
-              <View style={styles.pill}>
-                <Text style={styles.pillText}>✓ Instant Download</Text>
+        {/* Subscription Card */}
+        {isSubscribed ? (
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.subscriptionCard}
+          >
+            <View style={styles.subscriptionContent}>
+              <View style={styles.subscriptionBadge}>
+                <Text style={styles.subscriptionBadgeText}>PRO</Text>
               </View>
-              <View style={styles.pill}>
-                <Text style={styles.pillText}>✓ Secure Payment</Text>
-              </View>
-              <View style={styles.pill}>
-                <Text style={styles.pillText}>✓ No Sign-up Required</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Subscription Banner (if user has subscription) */}
-          {isSubscribed && (
-            <View style={styles.subscriptionBanner}>
-              <Text style={styles.subscriptionIcon}>⭐</Text>
-              <View style={styles.subscriptionInfo}>
-                <Text style={styles.subscriptionTitle}>Active Subscription</Text>
-                <Text style={styles.subscriptionText}>
-                  {user.subscription.downloads_remaining === -1 
-                    ? 'Unlimited downloads' 
-                    : `${user.subscription.downloads_remaining} downloads remaining`}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Documents Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Choose Document Type</Text>
-            <Text style={styles.sectionSubtitle}>Select the document you need to create</Text>
-            
-            {/* Document Cards */}
-            {DOCUMENTS.map((doc) => (
-              <TouchableOpacity
-                key={doc.id}
-                style={styles.card}
-                onPress={() => navigation.navigate(doc.screen)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.cardIconContainer, { backgroundColor: doc.bgColor }]}>
-                  <Text style={styles.cardIcon}>{doc.icon}</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <Text style={styles.cardTitle}>{doc.title}</Text>
-                  <Text style={styles.cardDescription}>{doc.description}</Text>
-                  <View style={styles.cardFooter}>
-                    <Text style={[styles.cardPrice, { color: doc.color }]}>
-                      {isSubscribed ? 'Included' : doc.price}
-                    </Text>
-                    <View style={[styles.cardArrow, { backgroundColor: doc.bgColor }]}>
-                      <Text style={[styles.arrowText, { color: doc.color }]}>→</Text>
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Guest Login Prompt */}
-          {isGuest && (
-            <View style={styles.loginPrompt}>
-              <Text style={styles.loginPromptTitle}>Save Your Documents</Text>
-              <Text style={styles.loginPromptText}>
-                Create an account to access your documents anytime and get subscription benefits.
+              <Text style={styles.subscriptionTitle}>Active Subscription</Text>
+              <Text style={styles.subscriptionDownloads}>
+                {user?.subscription?.downloads_remaining === -1 
+                  ? '∞ Unlimited Downloads' 
+                  : `${user?.subscription?.downloads_remaining || 0} Downloads Left`}
               </Text>
-              <View style={styles.loginButtons}>
-                <TouchableOpacity
-                  style={styles.loginButton}
-                  onPress={() => navigation.navigate('Login')}
-                >
-                  <Text style={styles.loginButtonText}>Sign In</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.signupButton}
-                  onPress={() => navigation.navigate('Signup')}
-                >
-                  <Text style={styles.signupButtonText}>Create Account</Text>
-                </TouchableOpacity>
+            </View>
+            <Text style={styles.subscriptionEmoji}>⭐</Text>
+          </LinearGradient>
+        ) : (
+          <TouchableOpacity style={styles.promoCard}>
+            <View style={styles.promoContent}>
+              <Text style={styles.promoTitle}>Unlock Unlimited Access</Text>
+              <Text style={styles.promoSubtitle}>Save up to 60% with a subscription</Text>
+            </View>
+            <View style={styles.promoButton}>
+              <Text style={styles.promoButtonText}>View Plans</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* Quick Actions */}
+        <Text style={styles.sectionTitle}>Create Document</Text>
+        
+        <View style={styles.documentsGrid}>
+          {DOCUMENTS.map((doc) => (
+            <TouchableOpacity
+              key={doc.id}
+              style={styles.documentCard}
+              onPress={() => navigation.navigate(doc.screen)}
+              activeOpacity={0.7}
+            >
+              <LinearGradient
+                colors={doc.gradient}
+                style={styles.documentIconBg}
+              >
+                <Text style={styles.documentIcon}>{doc.icon}</Text>
+              </LinearGradient>
+              <Text style={styles.documentTitle}>{doc.title}</Text>
+              <Text style={styles.documentSubtitle}>{doc.subtitle}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Features */}
+        <View style={styles.featuresSection}>
+          <Text style={styles.sectionTitle}>Why MintSlip?</Text>
+          
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: COLORS.successSoft }]}>
+                <Text>⚡</Text>
+              </View>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>Instant Generation</Text>
+                <Text style={styles.featureDesc}>Create documents in under 60 seconds</Text>
               </View>
             </View>
-          )}
+            
+            <View style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: COLORS.blueSoft }]}>
+                <Text>🔒</Text>
+              </View>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>Bank-Level Security</Text>
+                <Text style={styles.featureDesc}>Your data is encrypted & never stored</Text>
+              </View>
+            </View>
+            
+            <View style={styles.featureItem}>
+              <View style={[styles.featureIcon, { backgroundColor: COLORS.purpleSoft }]}>
+                <Text>✨</Text>
+              </View>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>AI-Powered</Text>
+                <Text style={styles.featureDesc}>Smart autofill & recommendations</Text>
+              </View>
+            </View>
+          </View>
+        </View>
 
-          {/* Trust Section */}
-          <View style={styles.trustSection}>
-            <Text style={styles.trustTitle}>🔒 Secure & Private</Text>
-            <Text style={styles.trustText}>
-              Your data is encrypted and never stored after download. We use industry-standard security practices.
+        {/* Login Prompt for Guests */}
+        {isGuest && (
+          <View style={styles.loginPrompt}>
+            <Text style={styles.loginPromptTitle}>Save Your Progress</Text>
+            <Text style={styles.loginPromptText}>
+              Create a free account to access your documents from any device.
             </Text>
+            <View style={styles.loginButtons}>
+              <TouchableOpacity
+                style={styles.loginButtonOutline}
+                onPress={() => navigation.navigate('Login')}
+              >
+                <Text style={styles.loginButtonOutlineText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.loginButtonFilled}
+                onPress={() => navigation.navigate('Signup')}
+              >
+                <Text style={styles.loginButtonFilledText}>Create Account</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+        )}
 
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>© 2025 MintSlip. All rights reserved.</Text>
-          </View>
-        </ScrollView>
-      </View>
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>© 2025 MintSlip</Text>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.primaryDark,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: SPACING.huge,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.primaryDark,
     paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
   },
-  logo: {
+  greeting: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    marginBottom: 2,
+  },
+  headerTitle: {
     fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.white,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -0.5,
   },
-  tagline: {
-    fontSize: FONT_SIZES.xs,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
+  avatarButton: {
+    padding: 2,
   },
-  profileButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileIcon: {
-    fontSize: 20,
-  },
-  content: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: SPACING.xxxl,
-  },
-  hero: {
-    padding: SPACING.xl,
-    paddingTop: SPACING.xxxl,
-  },
-  heroTitle: {
-    fontSize: 38,
-    fontWeight: 'bold',
-    color: COLORS.primaryDark,
-    lineHeight: 44,
-    marginBottom: SPACING.lg,
-  },
-  heroSubtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-    lineHeight: 24,
-    marginBottom: SPACING.xl,
-  },
-  pills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  pill: {
-    backgroundColor: COLORS.primaryBg,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.sm,
-    borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
-  },
-  pillText: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  subscriptionBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryBg,
-    marginHorizontal: SPACING.xl,
-    marginBottom: SPACING.lg,
-    padding: SPACING.lg,
-    borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.primaryBorder,
-  },
-  subscriptionIcon: {
-    fontSize: 28,
-    marginRight: SPACING.md,
-  },
-  subscriptionInfo: {
-    flex: 1,
-  },
-  subscriptionTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  subscriptionText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  section: {
-    padding: SPACING.xl,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-  },
-  sectionSubtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.xl,
-  },
-  card: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.white,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.small,
-  },
-  cardIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: BORDER_RADIUS.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.lg,
-  },
-  cardIcon: {
-    fontSize: 28,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardTitle: {
+  avatarText: {
     fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
+    fontWeight: '700',
+    color: COLORS.textInverse,
   },
-  cardDescription: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-    marginBottom: SPACING.md,
-  },
-  cardFooter: {
+  subscriptionCard: {
+    marginHorizontal: SPACING.xl,
+    marginTop: SPACING.md,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.xl,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  cardPrice: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: 'bold',
+  subscriptionContent: {
+    flex: 1,
   },
-  cardArrow: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  subscriptionBadge: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: BORDER_RADIUS.sm,
+    alignSelf: 'flex-start',
+    marginBottom: SPACING.sm,
+  },
+  subscriptionBadgeText: {
+    fontSize: FONT_SIZES.xs,
+    fontWeight: '700',
+    color: COLORS.textInverse,
+  },
+  subscriptionTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.textInverse,
+    marginBottom: 4,
+  },
+  subscriptionDownloads: {
+    fontSize: FONT_SIZES.sm,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  subscriptionEmoji: {
+    fontSize: 40,
+  },
+  promoCard: {
+    marginHorizontal: SPACING.xl,
+    marginTop: SPACING.md,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  promoContent: {
+    flex: 1,
+  },
+  promoTitle: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  promoSubtitle: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+  },
+  promoButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.full,
+  },
+  promoButtonText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.textInverse,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginHorizontal: SPACING.xl,
+    marginTop: SPACING.xxl,
+    marginBottom: SPACING.lg,
+  },
+  documentsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.md,
+  },
+  documentCard: {
+    width: (width - SPACING.lg * 2 - SPACING.md) / 2,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.lg,
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  documentIconBg: {
+    width: 48,
+    height: 48,
+    borderRadius: BORDER_RADIUS.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: SPACING.md,
   },
-  arrowText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  documentIcon: {
+    fontSize: 24,
+  },
+  documentTitle: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  documentSubtitle: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+  },
+  featuresSection: {
+    marginTop: SPACING.lg,
+  },
+  featuresList: {
+    paddingHorizontal: SPACING.xl,
+    gap: SPACING.md,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  featureIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: BORDER_RADIUS.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  featureContent: {
+    flex: 1,
+  },
+  featureTitle: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  featureDesc: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
   },
   loginPrompt: {
-    backgroundColor: COLORS.background,
-    margin: SPACING.xl,
+    marginHorizontal: SPACING.xl,
+    marginTop: SPACING.xxl,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.xl,
-    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   loginPromptTitle: {
     fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   loginPromptText: {
-    fontSize: FONT_SIZES.md,
+    fontSize: FONT_SIZES.sm,
     color: COLORS.textSecondary,
-    lineHeight: 22,
+    lineHeight: 20,
     marginBottom: SPACING.lg,
   },
   loginButtons: {
     flexDirection: 'row',
     gap: SPACING.md,
   },
-  loginButton: {
+  loginButtonOutline: {
     flex: 1,
     paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 2,
     borderColor: COLORS.primary,
     alignItems: 'center',
   },
-  loginButtonText: {
+  loginButtonOutlineText: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
     color: COLORS.primary,
   },
-  signupButton: {
+  loginButtonFilled: {
     flex: 1,
     paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.lg,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
   },
-  signupButtonText: {
+  loginButtonFilledText: {
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
-    color: COLORS.white,
-  },
-  trustSection: {
-    backgroundColor: COLORS.background,
-    margin: SPACING.xl,
-    marginTop: 0,
-    padding: SPACING.xl,
-    borderRadius: BORDER_RADIUS.lg,
-  },
-  trustTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
-  },
-  trustText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-    lineHeight: 22,
+    color: COLORS.textInverse,
   },
   footer: {
-    padding: SPACING.xl,
+    paddingVertical: SPACING.xxl,
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   footerText: {
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+    color: COLORS.textTertiary,
   },
 });

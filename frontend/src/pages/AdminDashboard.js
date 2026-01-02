@@ -595,6 +595,49 @@ export default function AdminDashboard() {
     }
   };
 
+  const openDownloadsModal = (user) => {
+    setSelectedUser(user);
+    const currentDownloads = user.subscription?.downloads_remaining;
+    setEditDownloadsCount(currentDownloads === -1 ? "unlimited" : String(currentDownloads || 0));
+    setDownloadsModalOpen(true);
+  };
+
+  const updateUserDownloads = async () => {
+    if (!selectedUser) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const downloadsValue = editDownloadsCount === "unlimited" ? -1 : parseInt(editDownloadsCount, 10);
+      
+      if (isNaN(downloadsValue) || (downloadsValue < 0 && downloadsValue !== -1)) {
+        toast.error("Please enter a valid number or 'unlimited'");
+        return;
+      }
+      
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}/downloads`, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ downloads_remaining: downloadsValue })
+      });
+      
+      if (response.ok) {
+        const displayValue = downloadsValue === -1 ? "Unlimited" : downloadsValue;
+        toast.success(`User downloads updated to ${displayValue}`);
+        setDownloadsModalOpen(false);
+        setSelectedUser(null);
+        loadUsers();
+      } else {
+        const error = await response.json();
+        toast.error(error.detail || "Failed to update downloads");
+      }
+    } catch (error) {
+      toast.error("Error updating downloads");
+    }
+  };
+
   useEffect(() => {
     if (!isLoading) {
       loadPurchases();

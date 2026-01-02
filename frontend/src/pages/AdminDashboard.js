@@ -1739,7 +1739,12 @@ export default function AdminDashboard() {
           
           <div className="py-4 space-y-4">
             <div className="text-sm text-slate-600 mb-4">
-              Current plan: <span className="font-medium">{selectedUser?.subscription?.tier ? SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name : "None"}</span>
+              Current plan: <span className="font-medium">{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</span>
+              {selectedUser?.subscription?.downloads_remaining !== undefined && (
+                <span className="ml-2 text-slate-500">
+                  ({selectedUser.subscription.downloads_remaining === -1 ? "Unlimited" : `${selectedUser.subscription.downloads_remaining} downloads remaining`})
+                </span>
+              )}
             </div>
             
             <Select value={selectedTier} onValueChange={setSelectedTier}>

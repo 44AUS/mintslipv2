@@ -259,7 +259,7 @@ export const generateW9PDF = async (formData, taxYear) => {
 };
 
 // Generate and download W-9
-export const generateAndDownloadW9 = async (formData, taxYear) => {
+export const generateAndDownloadW9 = async (formData, taxYear, returnBlob = false) => {
   try {
     const pdfBytes = await generateW9PDF(formData, taxYear);
     
@@ -280,6 +280,9 @@ export const generateAndDownloadW9 = async (formData, taxYear) => {
     document.body.removeChild(link);
     
     // Don't revoke URL immediately - needed for re-download on success page
+    if (returnBlob) {
+      return blob;
+    }
     return true;
   } catch (error) {
     console.error("Error downloading W-9:", error);

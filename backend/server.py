@@ -1322,20 +1322,24 @@ async def get_downloads_remaining(session: dict = Depends(get_current_user)):
     if not user or not user.get("subscription"):
         return {"success": True, "hasSubscription": False, "downloadsRemaining": 0}
     
-    tier = SUBSCRIPTION_TIERS.get(user["subscription"]["tier"])
-    if not tier:
+    subscription = user.get("subscription")
+    if subscription.get("status") != "active":
         return {"success": True, "hasSubscription": False, "downloadsRemaining": 0}
     
-    if tier["downloads"] == -1:
+    # Get downloads_remaining directly from user's subscription
+    downloads_remaining = subscription.get("downloads_remaining", 0)
+    downloads_total = subscription.get("downloads_total", 0)
+    
+    # -1 means unlimited
+    if downloads_remaining == -1:
         return {"success": True, "hasSubscription": True, "downloadsRemaining": -1, "unlimited": True}
     
-    remaining = tier["downloads"] - user.get("downloadsUsed", 0)
     return {
         "success": True,
         "hasSubscription": True,
-        "downloadsRemaining": max(0, remaining),
-        "downloadsUsed": user.get("downloadsUsed", 0),
-        "totalDownloads": tier["downloads"]
+        "downloadsRemaining": max(0, downloads_remaining),
+        "totalDownloads": downloads_total,
+        "tier": subscription.get("tier")
     }
 
 @app.get("/api/user/downloads")

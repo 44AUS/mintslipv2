@@ -1297,6 +1297,406 @@ class AIResumeBuilderTester:
             self.log_test("Subscription Download Zero Remaining", False, f"Exception: {str(e)}")
             return False
 
+    # ========== MOBILE APP BACKEND API TESTS ==========
+
+    def test_parse_resume_endpoint(self):
+        """Test POST /api/parse-resume endpoint for resume upload and parsing"""
+        try:
+            # Test with multipart/form-data file upload
+            # Create a sample resume file content
+            resume_content = """
+            John Doe
+            Software Engineer
+            john.doe@email.com
+            (555) 123-4567
+            
+            EXPERIENCE
+            Software Engineer at Google (2020-2023)
+            - Developed scalable web applications
+            - Led team of 5 developers
+            
+            EDUCATION
+            Bachelor of Computer Science
+            Stanford University (2016-2020)
+            
+            SKILLS
+            Python, JavaScript, React, Node.js
+            """
+            
+            # Create a file-like object
+            files = {
+                'resume': ('resume.txt', resume_content, 'text/plain')
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/parse-resume", 
+                files=files, 
+                timeout=30
+            )
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                expected_fields = ["personalInfo", "workExperience", "education", "skills"]
+                missing_fields = [field for field in expected_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                else:
+                    # Validate structure
+                    personal_info = data.get("personalInfo", {})
+                    work_experience = data.get("workExperience", [])
+                    education = data.get("education", [])
+                    skills = data.get("skills", [])
+                    
+                    details += f", Parsed: {len(work_experience)} work entries, {len(education)} education entries, {len(skills)} skills"
+                    
+                    # Check if personal info contains expected fields
+                    if "name" in personal_info or "email" in personal_info:
+                        details += f", Personal info extracted"
+                    else:
+                        details += f", Personal info incomplete"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Parse Resume API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Parse Resume API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_responsibilities_endpoint(self):
+        """Test POST /api/generate-responsibilities endpoint for AI bullet point generation"""
+        try:
+            payload = {
+                "position": "Software Engineer",
+                "company": "Google",
+                "jobDescription": "Build scalable systems using Python and cloud technologies. Work with cross-functional teams to deliver high-quality software solutions."
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/generate-responsibilities", 
+                json=payload, 
+                timeout=30
+            )
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if "responsibilities" in data and isinstance(data["responsibilities"], list):
+                    responsibilities = data["responsibilities"]
+                    if len(responsibilities) > 0:
+                        details += f", Generated {len(responsibilities)} responsibilities"
+                        # Check if responsibilities are meaningful (not empty strings)
+                        valid_responsibilities = [r for r in responsibilities if isinstance(r, str) and len(r.strip()) > 10]
+                        if len(valid_responsibilities) == len(responsibilities):
+                            details += f", All responsibilities are valid"
+                        else:
+                            success = False
+                            details += f", Some responsibilities are invalid"
+                    else:
+                        success = False
+                        details += f", No responsibilities generated"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Responsibilities API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Responsibilities API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_auth_login_endpoint(self):
+        """Test POST /api/auth/login endpoint (mobile app authentication)"""
+        try:
+            # First try the mobile app auth endpoint
+            payload = {
+                "email": "testsubscriber@test.com",
+                "password": "Test123!"
+            }
+            response = requests.post(f"{self.api_url}/auth/login", json=payload, timeout=10)
+            
+            # If /api/auth/login doesn't exist, try /api/user/login
+            if response.status_code == 404:
+                response = requests.post(f"{self.api_url}/user/login", json=payload, timeout=10)
+                endpoint_used = "/api/user/login"
+            else:
+                endpoint_used = "/api/auth/login"
+            
+            success = response.status_code == 200
+            details = f"Endpoint: {endpoint_used}, Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("token") and data.get("user"):
+                    user_info = data["user"]
+                    self.mobile_user_token = data["token"]
+                    details += f", User logged in: {user_info.get('email')}, Token received"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Mobile Auth Login API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Mobile Auth Login API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_auth_register_endpoint(self):
+        """Test POST /api/auth/register endpoint (mobile app registration)"""
+        try:
+            # Use timestamp to create unique email
+            import time
+            timestamp = int(time.time())
+            payload = {
+                "email": f"mobileuser{timestamp}@test.com",
+                "password": "MobileTest123!",
+                "name": "Mobile Test User"
+            }
+            
+            # First try the mobile app auth endpoint
+            response = requests.post(f"{self.api_url}/auth/register", json=payload, timeout=10)
+            
+            # If /api/auth/register doesn't exist, try /api/user/signup
+            if response.status_code == 404:
+                response = requests.post(f"{self.api_url}/user/signup", json=payload, timeout=10)
+                endpoint_used = "/api/user/signup"
+            else:
+                endpoint_used = "/api/auth/register"
+            
+            success = response.status_code == 200
+            details = f"Endpoint: {endpoint_used}, Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("token") and data.get("user"):
+                    user_info = data["user"]
+                    details += f", User registered: {user_info.get('email')}, Token received"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            elif response.status_code == 400:
+                # User might already exist
+                try:
+                    error_data = response.json()
+                    if "already" in error_data.get("detail", "").lower():
+                        success = True
+                        details += f", User already exists (expected behavior)"
+                    else:
+                        details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Mobile Auth Register API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Mobile Auth Register API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_user_me_endpoint(self):
+        """Test GET /api/user/me endpoint for getting current user info"""
+        # Use the token from auth login test
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            # Try to get token from regular user login
+            if hasattr(self, 'test_user_token') and self.test_user_token:
+                token = self.test_user_token
+            else:
+                self.log_test("User Me API", False, "No user token available (auth login test must pass first)")
+                return False
+        else:
+            token = self.mobile_user_token
+        
+        try:
+            headers = {"Authorization": f"Bearer {token}"}
+            response = requests.get(f"{self.api_url}/user/me", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "user" in data:
+                    user_info = data["user"]
+                    required_fields = ["id", "email", "name"]
+                    missing_fields = [field for field in required_fields if field not in user_info]
+                    
+                    if missing_fields:
+                        success = False
+                        details += f", Missing user fields: {missing_fields}"
+                    else:
+                        details += f", User info: {user_info.get('email')}, Name: {user_info.get('name')}"
+                        
+                        # Check if subscription info is included
+                        if "subscription" in user_info:
+                            subscription = user_info["subscription"]
+                            if subscription:
+                                details += f", Subscription: {subscription.get('tier', 'Unknown')}"
+                            else:
+                                details += f", No subscription"
+                        else:
+                            details += f", Subscription field missing"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("User Me API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Me API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_mobile_subscription_download(self):
+        """Test POST /api/user/subscription-download for mobile app"""
+        # Use the token from auth login test
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            # Try to get token from regular user login
+            if hasattr(self, 'test_user_token') and self.test_user_token:
+                token = self.test_user_token
+            else:
+                self.log_test("Mobile Subscription Download API", False, "No user token available (auth login test must pass first)")
+                return False
+        else:
+            token = self.mobile_user_token
+        
+        try:
+            headers = {"Authorization": f"Bearer {token}"}
+            
+            # Test with different document types that mobile app might use
+            payload = {
+                "documentType": "paystub",
+                "template": "modern",
+                "count": 1
+            }
+            
+            response = requests.post(f"{self.api_url}/user/subscription-download", json=payload, headers=headers, timeout=10)
+            
+            # Accept both success (200) and expected failure (403 for no subscription)
+            success = response.status_code in [200, 403]
+            details = f"Status: {response.status_code}"
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "downloadsRemaining" in data:
+                    downloads_remaining = data["downloadsRemaining"]
+                    purchase_id = data.get("purchaseId", "Unknown")
+                    details += f", Download successful, Remaining: {downloads_remaining}, Purchase ID: {purchase_id[:8]}..."
+                else:
+                    success = False
+                    details += f", Invalid success response: {data}"
+            elif response.status_code == 403:
+                # Expected for users without subscription
+                try:
+                    error_data = response.json()
+                    if "subscription" in error_data.get("detail", "").lower():
+                        details += f", Expected error (no subscription): {error_data['detail']}"
+                    else:
+                        details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Mobile Subscription Download API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Mobile Subscription Download API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_mobile_downloads_remaining(self):
+        """Test GET /api/user/downloads-remaining for mobile app"""
+        # Use the token from auth login test
+        if not hasattr(self, 'mobile_user_token') or not self.mobile_user_token:
+            # Try to get token from regular user login
+            if hasattr(self, 'test_user_token') and self.test_user_token:
+                token = self.test_user_token
+            else:
+                self.log_test("Mobile Downloads Remaining API", False, "No user token available (auth login test must pass first)")
+                return False
+        else:
+            token = self.mobile_user_token
+        
+        try:
+            headers = {"Authorization": f"Bearer {token}"}
+            response = requests.get(f"{self.api_url}/user/downloads-remaining", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "hasSubscription", "downloadsRemaining"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    has_subscription = data.get("hasSubscription")
+                    downloads_remaining = data.get("downloadsRemaining")
+                    
+                    if has_subscription:
+                        tier = data.get("tier", "Unknown")
+                        total_downloads = data.get("totalDownloads", "Unknown")
+                        details += f", Has subscription: {tier}, Remaining: {downloads_remaining}, Total: {total_downloads}"
+                        
+                        # Validate downloads remaining is a valid number
+                        if isinstance(downloads_remaining, int) and (downloads_remaining >= 0 or downloads_remaining == -1):
+                            details += f", Valid downloads count"
+                        else:
+                            success = False
+                            details += f", Invalid downloads count: {downloads_remaining}"
+                    else:
+                        details += f", No subscription (downloads: {downloads_remaining})"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Mobile Downloads Remaining API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Mobile Downloads Remaining API", False, f"Exception: {str(e)}")
+            return False
+
     # ========== SUBSCRIPTION UPGRADE TESTS ==========
 
     def test_subscription_upgrade_calculate(self):

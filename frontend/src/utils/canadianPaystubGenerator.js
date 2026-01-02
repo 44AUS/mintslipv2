@@ -25,7 +25,7 @@ function nextWeekday(date, weekday) {
   return result;
 }
 
-export const generateAndDownloadCanadianPaystub = async (formData, template = 'template-a', numStubs) => {
+export const generateAndDownloadCanadianPaystub = async (formData, template = 'template-a', numStubs, returnBlob = false) => {
   try {
     console.log("Starting Canadian PDF generation...", { formData, template, numStubs });
     

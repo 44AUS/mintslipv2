@@ -104,9 +104,20 @@ export default function UserDashboard() {
 
   const currentTier = user?.subscription?.tier ? SUBSCRIPTION_TIERS[user.subscription.tier] : null;
   const CurrentTierIcon = currentTier?.icon || Zap;
-  const downloadsRemaining = currentTier 
-    ? (currentTier.downloads === -1 ? "∞" : Math.max(0, currentTier.downloads - (user?.downloadsUsed || 0)))
-    : 0;
+  
+  // Get downloads remaining from subscription data
+  const subscriptionDownloadsRemaining = user?.subscription?.downloads_remaining;
+  const subscriptionDownloadsTotal = user?.subscription?.downloads_total || currentTier?.downloads || 0;
+  
+  // Display downloads remaining
+  const downloadsRemaining = subscriptionDownloadsRemaining === -1 
+    ? "∞" 
+    : (subscriptionDownloadsRemaining ?? 0);
+  
+  // Calculate downloads used for progress bar
+  const downloadsUsed = subscriptionDownloadsTotal === -1 
+    ? 0 
+    : Math.max(0, subscriptionDownloadsTotal - (subscriptionDownloadsRemaining ?? 0));
 
   if (isLoading) {
     return (

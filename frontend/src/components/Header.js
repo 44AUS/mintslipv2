@@ -571,7 +571,7 @@ export default function Header({ title }) {
                   </nav>
                   
                   {/* User info in mobile menu */}
-                  {user && (
+                  {user ? (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="px-4 py-2 mb-2">
                         <p className="font-medium text-slate-800">{user.name}</p>
@@ -597,6 +597,22 @@ export default function Header({ title }) {
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Log Out</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        onClick={() => handleNavigation("/login")}
+                        className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md hover:bg-green-50 transition-colors text-slate-600"
+                      >
+                        <User className="w-4 h-4" />
+                        <span className="font-medium">Login</span>
+                      </button>
+                      <button
+                        onClick={() => handleNavigation("/signup")}
+                        className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md bg-green-600 hover:bg-green-700 transition-colors text-white mt-2"
+                      >
+                        <span className="font-medium">Register</span>
                       </button>
                     </div>
                   )}

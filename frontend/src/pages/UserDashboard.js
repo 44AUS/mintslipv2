@@ -63,7 +63,7 @@ export default function UserDashboard() {
   const fetchUserProfile = async (token) => {
     try {
       const response = await fetch(
-        `${BACKEND_URL}/api/user/profile`,
+        `${BACKEND_URL}/api/user/me`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
       

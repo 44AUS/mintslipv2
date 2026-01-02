@@ -597,13 +597,13 @@ async def change_user_password(data: ChangeUserPassword, request: Request, sessi
 SUBSCRIPTION_PLANS = {
     "starter": {
         "name": "Starter",
-        "price": "9.99",
+        "price": "19.99",
         "downloads": 10,
         "description": "10 downloads per month"
     },
     "professional": {
         "name": "Professional", 
-        "price": "19.99",
+        "price": "29.99",
         "downloads": 30,
         "description": "30 downloads per month"
     },

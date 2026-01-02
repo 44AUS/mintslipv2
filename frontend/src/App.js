@@ -39,6 +39,7 @@ import SubscriptionChoose from "@/pages/SubscriptionChoose";
 import SubscriptionPlans from "@/pages/SubscriptionPlans";
 import SubscriptionSuccess from "@/pages/SubscriptionSuccess";
 import SubscriptionCancel from "@/pages/SubscriptionCancel";
+import SubscriptionUpgradeSuccess from "@/pages/SubscriptionUpgradeSuccess";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";

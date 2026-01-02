@@ -348,7 +348,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
             <Text style={styles.stepTitle}>Employee Information</Text>
             <Text style={styles.stepDescription}>Enter employee details</Text>
             
-            <Input
+            <FormInput
               label="Full Name"
               value={formData.name}
               onChangeText={(v) => updateField('name', v)}
@@ -356,7 +356,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
               required
             />
             
-            <Input
+            <FormInput
               label="SIN (Last 3 digits)"
               value={formData.sin}
               onChangeText={(v) => updateField('sin', v)}
@@ -365,7 +365,7 @@ export default function CanadianPaystubFormScreen({ navigation }) {
               maxLength={3}
             />
             
-            <Input
+            <FormInput
               label="Street Address"
               value={formData.address}
               onChangeText={(v) => updateField('address', v)}

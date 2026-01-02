@@ -239,20 +239,20 @@ class ManualPurchaseCreate(BaseModel):
 # ========== SUBSCRIPTION MODELS ==========
 
 SUBSCRIPTION_TIERS = {
-    "basic": {
-        "name": "Basic",
+    "starter": {
+        "name": "Starter",
         "price": 19.99,
-        "downloads": 5,
+        "downloads": 10,
         "paypalPlanId": ""  # To be filled with PayPal plan ID
     },
-    "pro": {
-        "name": "Pro", 
+    "professional": {
+        "name": "Professional", 
         "price": 29.99,
-        "downloads": 10,
+        "downloads": 30,
         "paypalPlanId": ""
     },
-    "unlimited": {
-        "name": "Unlimited",
+    "business": {
+        "name": "Business",
         "price": 49.99,
         "downloads": -1,  # -1 means unlimited
         "paypalPlanId": ""
@@ -261,7 +261,7 @@ SUBSCRIPTION_TIERS = {
 
 class SubscriptionCreate(BaseModel):
     userId: str
-    tier: str  # basic, pro, unlimited
+    tier: str  # starter, professional, business
     paypalSubscriptionId: str
     paypalEmail: str
 

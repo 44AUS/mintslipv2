@@ -1998,7 +1998,10 @@ async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     return {"success": True, "isBanned": new_status}
 
 class UpdateUserSubscription(BaseModel):
-    tier: Optional[str] = None  # basic, pro, unlimited, or null to remove
+    tier: Optional[str] = None  # starter, professional, business, or null to remove
+
+class UpdateUserDownloads(BaseModel):
+    downloads_remaining: int  # New download count (-1 for unlimited)
 
 @app.put("/api/admin/users/{user_id}/subscription")
 async def update_user_subscription(user_id: str, data: UpdateUserSubscription, session: dict = Depends(get_current_admin)):

@@ -310,7 +310,7 @@ export default function W2FormScreen({ navigation }) {
             <Text style={styles.stepTitle}>📋 Employee Information</Text>
             <Text style={styles.stepDescription}>Enter employee details for the W-2</Text>
             
-            <Input
+            <FormInput
               label="Employee Full Name"
               value={formData.employeeName}
               onChangeText={(v) => updateField('employeeName', v)}
@@ -318,7 +318,7 @@ export default function W2FormScreen({ navigation }) {
               required
             />
             
-            <Input
+            <FormInput
               label="Social Security Number"
               value={formData.employeeSSN}
               onChangeText={(v) => updateField('employeeSSN', v)}
@@ -328,7 +328,7 @@ export default function W2FormScreen({ navigation }) {
               required
             />
             
-            <Input
+            <FormInput
               label="Street Address"
               value={formData.employeeAddress}
               onChangeText={(v) => updateField('employeeAddress', v)}
@@ -338,7 +338,7 @@ export default function W2FormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex2}>
-                <Input
+                <FormInput
                   label="City"
                   value={formData.employeeCity}
                   onChangeText={(v) => updateField('employeeCity', v)}
@@ -357,7 +357,7 @@ export default function W2FormScreen({ navigation }) {
               </View>
             </View>
             
-            <Input
+            <FormInput
               label="ZIP Code"
               value={formData.employeeZip}
               onChangeText={(v) => updateField('employeeZip', v)}
@@ -374,7 +374,7 @@ export default function W2FormScreen({ navigation }) {
             <Text style={styles.stepTitle}>🏢 Employer Information</Text>
             <Text style={styles.stepDescription}>Enter employer details</Text>
             
-            <Input
+            <FormInput
               label="Employer/Company Name"
               value={formData.employerName}
               onChangeText={(v) => updateField('employerName', v)}
@@ -382,7 +382,7 @@ export default function W2FormScreen({ navigation }) {
               required
             />
             
-            <Input
+            <FormInput
               label="Employer Identification Number (EIN)"
               value={formData.employerEIN}
               onChangeText={(v) => updateField('employerEIN', v)}
@@ -390,7 +390,7 @@ export default function W2FormScreen({ navigation }) {
               required
             />
             
-            <Input
+            <FormInput
               label="Employer Address"
               value={formData.employerAddress}
               onChangeText={(v) => updateField('employerAddress', v)}
@@ -400,7 +400,7 @@ export default function W2FormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex2}>
-                <Input
+                <FormInput
                   label="City"
                   value={formData.employerCity}
                   onChangeText={(v) => updateField('employerCity', v)}
@@ -419,7 +419,7 @@ export default function W2FormScreen({ navigation }) {
               </View>
             </View>
             
-            <Input
+            <FormInput
               label="ZIP Code"
               value={formData.employerZip}
               onChangeText={(v) => updateField('employerZip', v)}
@@ -436,7 +436,7 @@ export default function W2FormScreen({ navigation }) {
             <Text style={styles.stepTitle}>💰 Wage & Tax Data</Text>
             <Text style={styles.stepDescription}>Enter wage and tax withholding amounts</Text>
             
-            <Input
+            <FormInput
               label="Tax Year"
               value={formData.taxYear}
               onChangeText={(v) => updateField('taxYear', v)}
@@ -447,7 +447,7 @@ export default function W2FormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Box 1: Wages"
                   value={formData.box1}
                   onChangeText={(v) => updateField('box1', v)}
@@ -457,7 +457,7 @@ export default function W2FormScreen({ navigation }) {
                 />
               </View>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Box 2: Federal Tax"
                   value={formData.box2}
                   onChangeText={(v) => updateField('box2', v)}
@@ -470,7 +470,7 @@ export default function W2FormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Box 3: SS Wages"
                   value={formData.box3}
                   onChangeText={(v) => updateField('box3', v)}
@@ -479,7 +479,7 @@ export default function W2FormScreen({ navigation }) {
                 />
               </View>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Box 4: SS Tax"
                   value={formData.box4}
                   onChangeText={(v) => updateField('box4', v)}
@@ -491,7 +491,7 @@ export default function W2FormScreen({ navigation }) {
             
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Box 16: State Wages"
                   value={formData.box16}
                   onChangeText={(v) => updateField('box16', v)}
@@ -500,7 +500,7 @@ export default function W2FormScreen({ navigation }) {
                 />
               </View>
               <View style={styles.flex1}>
-                <Input
+                <FormInput
                   label="Box 17: State Tax"
                   value={formData.box17}
                   onChangeText={(v) => updateField('box17', v)}

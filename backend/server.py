@@ -866,11 +866,19 @@ async def get_saved_documents_count(session: dict = Depends(get_current_user)):
     user_id = session["userId"]
     count = await saved_documents_collection.count_documents({"userId": user_id})
     
+    # Get user's subscription tier to determine max documents
+    user = await users_collection.find_one({"id": user_id}, {"_id": 0})
+    subscription_tier = user.get("subscription", {}).get("tier", "starter") if user and user.get("subscription") else "starter"
+    max_documents = SAVED_DOCS_LIMITS.get(subscription_tier, 10)
+    
+    remaining = "unlimited" if max_documents == -1 else max(0, max_documents - count)
+    
     return {
         "success": True,
         "count": count,
-        "maxDocuments": MAX_SAVED_DOCUMENTS_PER_USER,
-        "remaining": MAX_SAVED_DOCUMENTS_PER_USER - count
+        "maxDocuments": max_documents,
+        "remaining": remaining,
+        "subscriptionTier": subscription_tier
     }
 
 

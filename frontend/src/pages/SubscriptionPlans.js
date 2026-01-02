@@ -401,6 +401,30 @@ export default function SubscriptionPlans() {
                     </li>
                   ))}
                 </ul>
+
+                {/* Upgrade Button - shown inline for users with subscription */}
+                {user?.subscription?.tier && isUpgrade(plan.tier) && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUpgradeClick(plan.tier);
+                    }}
+                    disabled={isCalculatingUpgrade && selectedTier === plan.tier}
+                    className={`w-full mt-6 ${colors.button} text-white`}
+                  >
+                    {isCalculatingUpgrade && selectedTier === plan.tier ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Calculating...
+                      </>
+                    ) : (
+                      <>
+                        <TrendingUp className="w-4 h-4 mr-2" />
+                        Upgrade Now
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             );
           })}

@@ -59,6 +59,7 @@ export default function UserDashboard() {
       // Fetch fresh user data from backend
       fetchUserProfile(token);
       fetchRecentDownloads(token);
+      fetchSavedDocuments(token);
     } catch (e) {
       navigate("/login");
     }

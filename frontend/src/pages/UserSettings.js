@@ -300,12 +300,12 @@ export default function UserSettings() {
                 {/* Usage */}
                 <div className="p-4 bg-slate-50 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-600">Downloads this month</span>
+                    <span className="text-sm text-slate-600">Downloads remaining</span>
                     <span className="font-semibold text-slate-800">
-                      {user?.downloadsUsed || 0} / {currentTier?.downloads === -1 ? "∞" : currentTier?.downloads}
+                      {user?.subscription?.downloads_remaining === -1 ? "∞" : (user?.subscription?.downloads_remaining ?? 0)} / {user?.subscription?.downloads_total === -1 ? "∞" : (user?.subscription?.downloads_total ?? currentTier?.downloads ?? 0)}
                     </span>
                   </div>
-                  {currentTier?.downloads !== -1 && (
+                  {user?.subscription?.downloads_total !== -1 && user?.subscription?.downloads_total > 0 && (
                     <div className="w-full bg-slate-200 rounded-full h-2">
                       <div 
                         className={`h-2 rounded-full ${
@@ -313,7 +313,7 @@ export default function UserSettings() {
                           currentTier?.color === "blue" ? "bg-blue-600" :
                           "bg-purple-600"
                         }`}
-                        style={{ width: `${Math.min(((user?.downloadsUsed || 0) / currentTier?.downloads) * 100, 100)}%` }}
+                        style={{ width: `${Math.min(((user?.subscription?.downloads_remaining ?? 0) / (user?.subscription?.downloads_total ?? 1)) * 100, 100)}%` }}
                       />
                     </div>
                   )}

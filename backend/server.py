@@ -1481,6 +1481,7 @@ async def create_subscription(data: SubscriptionCreate, session: dict = Depends(
 class SubscriptionDownloadRequest(BaseModel):
     documentType: str  # paystub, w9, 1099-nec, etc.
     template: Optional[str] = None  # Template used (for paystubs)
+    count: int = 1  # Number of documents being downloaded (for paystubs with multiple stubs)
 
 
 @app.post("/api/user/subscription-download")
@@ -1488,6 +1489,7 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
     """
     Validate and track a subscription-based download.
     Returns success if user can download, decrements remaining count.
+    Supports downloading multiple documents at once (e.g., multiple paystubs).
     """
     user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
     
@@ -1508,6 +1510,9 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
     if not plan_config:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")
     
+    # Validate count
+    download_count = max(1, data.count)  # Minimum 1 download
+    
     # Check downloads remaining
     downloads_remaining = subscription.get("downloads_remaining", 0)
     
@@ -1519,8 +1524,14 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
                 detail="No downloads remaining this month. Please upgrade your plan or wait for the next billing cycle."
             )
         
-        # Decrement downloads remaining
-        new_remaining = downloads_remaining - 1
+        if downloads_remaining < download_count:
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Not enough downloads remaining. You have {downloads_remaining} downloads left but are trying to download {download_count} documents."
+            )
+        
+        # Decrement downloads remaining by the count
+        new_remaining = downloads_remaining - download_count
         await users_collection.update_one(
             {"id": session["userId"]},
             {"$set": {"subscription.downloads_remaining": new_remaining}}
@@ -1541,6 +1552,7 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
         "template": data.template,
         "subscriptionDownload": True,  # Flag to identify subscription downloads
         "subscriptionTier": tier,
+        "downloadCount": download_count,  # Track how many documents were downloaded
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "downloadedAt": datetime.now(timezone.utc).isoformat()
     }

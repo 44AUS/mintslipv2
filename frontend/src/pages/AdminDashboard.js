@@ -1593,7 +1593,12 @@ export default function AdminDashboard() {
                     <TableBody>
                       {users.map((user) => {
                         const tier = user.subscription ? SUBSCRIPTION_TIERS[user.subscription.tier] : null;
-                        const downloadsLimit = tier ? (tier.downloads === -1 ? "∞" : tier.downloads) : "-";
+                        // Use downloads_remaining from subscription object if available, otherwise fall back to tier config
+                        const isUnlimited = user.subscription?.downloads_remaining === -1 || tier?.downloads === -1;
+                        const downloadsTotal = user.subscription?.downloads_total || tier?.downloads || 0;
+                        const downloadsRemaining = user.subscription?.downloads_remaining ?? 0;
+                        const downloadsUsed = isUnlimited ? 0 : Math.max(0, downloadsTotal - downloadsRemaining);
+                        const downloadsLimit = isUnlimited ? "∞" : downloadsTotal;
                         return (
                           <TableRow key={user.id} className={user.isBanned ? "bg-red-50" : ""}>
                             <TableCell className="font-medium">{user.name}</TableCell>
@@ -1608,19 +1613,29 @@ export default function AdminDashboard() {
                             <TableCell>
                               {user.subscription ? (
                                 <span className={`px-2 py-1 rounded-md text-sm ${
-                                  user.subscription.tier === "unlimited" ? "bg-purple-100 text-purple-700" :
-                                  user.subscription.tier === "pro" ? "bg-blue-100 text-blue-700" :
+                                  user.subscription.tier === "unlimited" || user.subscription.tier === "business" ? "bg-purple-100 text-purple-700" :
+                                  user.subscription.tier === "pro" || user.subscription.tier === "professional" ? "bg-blue-100 text-blue-700" :
                                   "bg-green-100 text-green-700"
                                 }`}>
-                                  {user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
+                                  {tier?.name || user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
                                 </span>
                               ) : (
                                 <span className="text-slate-400">None</span>
                               )}
                             </TableCell>
                             <TableCell>
-                              <span className="font-medium">{user.downloadsUsed || 0}</span>
-                              <span className="text-slate-400"> / {downloadsLimit}</span>
+                              {user.subscription ? (
+                                isUnlimited ? (
+                                  <span className="font-medium text-purple-600">Unlimited</span>
+                                ) : (
+                                  <>
+                                    <span className="font-medium">{downloadsRemaining}</span>
+                                    <span className="text-slate-400"> / {downloadsLimit}</span>
+                                  </>
+                                )
+                              ) : (
+                                <span className="text-slate-400">-</span>
+                              )}
                             </TableCell>
                             <TableCell className="text-sm">{formatDate(user.createdAt)}</TableCell>
                             <TableCell>

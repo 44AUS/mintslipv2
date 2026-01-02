@@ -195,8 +195,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mobile app backend APIs testing COMPLETED ✅"
-    - "All requested mobile app APIs verified and working"
+    - "Saved documents feature backend APIs testing COMPLETED ✅"
+    - "All saved documents endpoints verified and working"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -216,6 +216,16 @@ test_plan:
 #   * GET /api/user/me - Get current user info ✅ WORKING
 #   * POST /api/user/subscription-download - Download with subscription ✅ WORKING
 #   * GET /api/user/downloads-remaining - Check remaining downloads ✅ WORKING
+# - Saved documents feature backend APIs testing ✅ COMPLETED AND WORKING
+#   * POST /api/user/signup with saveDocuments preference ✅ WORKING
+#   * PUT /api/user/preferences - Update saveDocuments preference ✅ WORKING
+#   * GET /api/user/me - Returns preferences.saveDocuments field ✅ WORKING
+#   * GET /api/user/saved-documents - Get saved documents list ✅ WORKING
+#   * POST /api/user/saved-documents - Save document with base64 data ✅ WORKING
+#   * GET /api/user/saved-documents/count - Get documents count ✅ WORKING
+#   * GET /api/user/saved-documents/{doc_id}/download - Download document ✅ WORKING
+#   * DELETE /api/user/saved-documents/{doc_id} - Delete document ✅ WORKING
+#   * Limit enforcement when saveDocuments=false ✅ WORKING
 # ==========================================================================
 
 agent_communication:

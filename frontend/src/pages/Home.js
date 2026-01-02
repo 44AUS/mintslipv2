@@ -1157,7 +1157,7 @@ export default function Home() {
   const features = [
     { icon: CheckCircle, text: "Instant Download", desc: "Get your documents in seconds" },
     { icon: Shield, text: "Secure Payment", desc: "256-bit SSL encryption" },
-    { icon: Clock, text: "No Registration", desc: "Start generating immediately" },
+    { icon: Clock, text: "No Sign-Up Required", desc: "Start generating immediately" },
   ];
 
   return (

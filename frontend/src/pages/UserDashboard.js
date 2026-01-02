@@ -28,7 +28,7 @@ const SUBSCRIPTION_TIERS = {
 // Document types for quick actions
 const QUICK_ACTIONS = [
   { name: "Pay Stub", path: "/paystub-generator", icon: "💰" },
-  { name: "Bank Statement", path: "/bank-statement-generator", icon: "🏦" },
+  { name: "Canada Pay Stub", path: "/canadian-paystub-generator", icon: "🍁" },
   { name: "W-2 Form", path: "/w2-generator", icon: "📋" },
   { name: "AI Resume", path: "/ai-resume-builder", icon: "📄" },
 ];

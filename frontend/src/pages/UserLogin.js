@@ -150,9 +150,8 @@ export default function UserLogin() {
             Subscription Benefits
           </h3>
           <ul className="text-sm text-slate-600 space-y-1">
-            <li>• Unlimited document generation</li>
+            <li>• Save on document generation</li>
             <li>• Priority support</li>
-            <li>• Access to all templates</li>
             <li>• Download history</li>
           </ul>
         </div>

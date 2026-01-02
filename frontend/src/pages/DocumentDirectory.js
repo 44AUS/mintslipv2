@@ -18,7 +18,8 @@ import {
   Filter,
   Grid3X3,
   List,
-  X
+  X,
+  TreePine
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +67,7 @@ const generators = [
     name: "Canadian Pay Stub Generator",
     description: "Generate Canadian pay stubs with accurate CPP/QPP, EI, and provincial tax calculations for all provinces and territories.",
     path: "/canadian-paystub-generator",
-    icon: MapPin,
+    icon: TreePine,
     iconColor: "text-red-600",
     price: "$9.99",
     category: "Income Documents",

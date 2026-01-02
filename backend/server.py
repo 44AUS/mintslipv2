@@ -948,7 +948,246 @@ async def cancel_subscription(session: dict = Depends(get_current_user)):
     return {"success": True, "message": "Subscription cancelled successfully"}
 
 
-@app.post("/api/webhooks/paypal")
+class UpgradeSubscriptionRequest(BaseModel):
+    newTier: str
+
+
+@app.post("/api/subscriptions/calculate-upgrade")
+async def calculate_upgrade_cost(data: UpgradeSubscriptionRequest, session: dict = Depends(get_current_user)):
+    """Calculate the prorated cost for upgrading subscription"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="No active subscription found")
+    
+    current_subscription = user["subscription"]
+    current_tier = current_subscription.get("tier")
+    new_tier = data.newTier
+    
+    if new_tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    if current_tier == new_tier:
+        raise HTTPException(status_code=400, detail="Already on this plan")
+    
+    # Get prices
+    current_price = float(SUBSCRIPTION_PLANS.get(current_tier, {}).get("price", "0"))
+    new_price = float(SUBSCRIPTION_PLANS[new_tier]["price"])
+    
+    # Only allow upgrades (new price > current price)
+    if new_price <= current_price:
+        raise HTTPException(status_code=400, detail="Can only upgrade to a higher tier. Use downgrade endpoint for lower tiers.")
+    
+    # Calculate days remaining in current billing cycle
+    current_period_end = current_subscription.get("current_period_end")
+    if current_period_end:
+        period_end = datetime.fromisoformat(current_period_end.replace('Z', '+00:00'))
+        now = datetime.now(timezone.utc)
+        days_remaining = max(0, (period_end - now).days)
+    else:
+        days_remaining = 30  # Default to full month if no end date
+    
+    # Calculate prorated amount
+    # Price difference per day * days remaining
+    daily_difference = (new_price - current_price) / 30
+    prorated_amount = round(daily_difference * days_remaining, 2)
+    
+    return {
+        "success": True,
+        "currentTier": current_tier,
+        "newTier": new_tier,
+        "currentPrice": current_price,
+        "newPrice": new_price,
+        "daysRemaining": days_remaining,
+        "proratedAmount": prorated_amount,
+        "newDownloads": SUBSCRIPTION_PLANS[new_tier]["downloads"]
+    }
+
+
+@app.post("/api/subscriptions/upgrade/create-order")
+async def create_upgrade_order(data: UpgradeSubscriptionRequest, session: dict = Depends(get_current_user)):
+    """Create a PayPal order for the prorated upgrade amount"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="No active subscription found")
+    
+    current_subscription = user["subscription"]
+    current_tier = current_subscription.get("tier")
+    new_tier = data.newTier
+    
+    if new_tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Get prices
+    current_price = float(SUBSCRIPTION_PLANS.get(current_tier, {}).get("price", "0"))
+    new_price = float(SUBSCRIPTION_PLANS[new_tier]["price"])
+    
+    if new_price <= current_price:
+        raise HTTPException(status_code=400, detail="Can only upgrade to a higher tier")
+    
+    # Calculate prorated amount
+    current_period_end = current_subscription.get("current_period_end")
+    if current_period_end:
+        period_end = datetime.fromisoformat(current_period_end.replace('Z', '+00:00'))
+        now = datetime.now(timezone.utc)
+        days_remaining = max(0, (period_end - now).days)
+    else:
+        days_remaining = 30
+    
+    daily_difference = (new_price - current_price) / 30
+    prorated_amount = round(daily_difference * days_remaining, 2)
+    
+    # Minimum charge of $1.00 (PayPal requirement)
+    if prorated_amount < 1.00:
+        prorated_amount = 1.00
+    
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v2/checkout/orders",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "intent": "CAPTURE",
+                "purchase_units": [{
+                    "amount": {
+                        "currency_code": "USD",
+                        "value": str(prorated_amount)
+                    },
+                    "description": f"Upgrade from {SUBSCRIPTION_PLANS.get(current_tier, {}).get('name', current_tier)} to {SUBSCRIPTION_PLANS[new_tier]['name']} (prorated)"
+                }],
+                "application_context": {
+                    "brand_name": "MintSlip",
+                    "landing_page": "NO_PREFERENCE",
+                    "user_action": "PAY_NOW",
+                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/upgrade/success",
+                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/subscription/upgrade/cancel"
+                }
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating upgrade order: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to create upgrade order")
+        
+        order_data = response.json()
+        
+        # Store pending upgrade
+        await db["pending_upgrades"].insert_one({
+            "order_id": order_data["id"],
+            "user_id": session["userId"],
+            "current_tier": current_tier,
+            "new_tier": new_tier,
+            "prorated_amount": prorated_amount,
+            "days_remaining": days_remaining,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Get approval URL
+        approval_url = None
+        for link in order_data.get("links", []):
+            if link.get("rel") == "approve":
+                approval_url = link.get("href")
+                break
+        
+        return {
+            "success": True,
+            "orderId": order_data["id"],
+            "approvalUrl": approval_url,
+            "proratedAmount": prorated_amount
+        }
+
+
+@app.post("/api/subscriptions/upgrade/capture")
+async def capture_upgrade_order(order_id: str, session: dict = Depends(get_current_user)):
+    """Capture the upgrade payment and update subscription"""
+    # Get pending upgrade
+    pending = await db["pending_upgrades"].find_one({
+        "order_id": order_id,
+        "user_id": session["userId"]
+    })
+    
+    if not pending:
+        raise HTTPException(status_code=404, detail="Upgrade order not found")
+    
+    access_token = await get_paypal_access_token()
+    
+    # Capture the payment
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}/capture",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error capturing upgrade payment: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to capture upgrade payment")
+        
+        capture_data = response.json()
+        
+        if capture_data.get("status") != "COMPLETED":
+            raise HTTPException(status_code=400, detail="Payment was not completed")
+    
+    new_tier = pending["new_tier"]
+    plan_config = SUBSCRIPTION_PLANS[new_tier]
+    
+    # Get current user subscription to preserve period end
+    user = await users_collection.find_one({"id": session["userId"]})
+    current_subscription = user.get("subscription", {})
+    
+    # Update user subscription to new tier
+    # Keep the same billing period end, just upgrade the tier and reset downloads
+    updated_subscription = {
+        "tier": new_tier,
+        "paypal_subscription_id": current_subscription.get("paypal_subscription_id"),
+        "status": "active",
+        "downloads_remaining": plan_config["downloads"],
+        "downloads_total": plan_config["downloads"],
+        "started_at": current_subscription.get("started_at"),
+        "current_period_end": current_subscription.get("current_period_end"),
+        "upgraded_at": datetime.now(timezone.utc).isoformat(),
+        "upgraded_from": pending["current_tier"]
+    }
+    
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {"subscription": updated_subscription}}
+    )
+    
+    # Record the upgrade payment
+    upgrade_record = {
+        "id": str(uuid.uuid4()),
+        "user_id": session["userId"],
+        "order_id": order_id,
+        "from_tier": pending["current_tier"],
+        "to_tier": new_tier,
+        "prorated_amount": pending["prorated_amount"],
+        "status": "completed",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db["subscription_upgrades"].insert_one(upgrade_record)
+    
+    # Remove pending upgrade
+    await db["pending_upgrades"].delete_one({"order_id": order_id})
+    
+    # Get updated user
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    
+    return {
+        "success": True,
+        "message": f"Successfully upgraded to {plan_config['name']}",
+        "user": user
+    }
+
+
+
 async def paypal_webhook(request: Request):
     """Handle PayPal webhooks for subscription events"""
     try:

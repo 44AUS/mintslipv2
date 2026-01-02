@@ -64,6 +64,10 @@ export default function PaystubForm() {
   // Get template from URL query parameter
   const templateFromUrl = searchParams.get('template');
   
+  // User subscription state
+  const [user, setUser] = useState(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  
   // Location detection state
   const [userCountry, setUserCountry] = useState(null);
   const [showLocationAlert, setShowLocationAlert] = useState(false);
@@ -78,6 +82,56 @@ export default function PaystubForm() {
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+  
+  // Check user subscription on mount
+  useEffect(() => {
+    checkUserSubscription();
+  }, []);
+  
+  const checkUserSubscription = async () => {
+    const token = localStorage.getItem("userToken");
+    const userInfo = localStorage.getItem("userInfo");
+    
+    if (token && userInfo) {
+      try {
+        const userData = JSON.parse(userInfo);
+        setUser(userData);
+        
+        // Check if user has active subscription with downloads remaining
+        if (userData.subscription && 
+            userData.subscription.status === "active" &&
+            (userData.subscription.downloads_remaining > 0 || userData.subscription.downloads_remaining === -1)) {
+          setHasActiveSubscription(true);
+        }
+        
+        // Fetch fresh user data
+        const response = await fetch(`${BACKEND_URL}/api/user/profile`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.user) {
+            setUser(data.user);
+            localStorage.setItem("userInfo", JSON.stringify(data.user));
+            
+            // Update subscription status
+            if (data.user.subscription && 
+                data.user.subscription.status === "active" &&
+                (data.user.subscription.downloads_remaining > 0 || data.user.subscription.downloads_remaining === -1)) {
+              setHasActiveSubscription(true);
+            } else {
+              setHasActiveSubscription(false);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking subscription:", error);
+      }
+    }
+  };
   const [hoursExpanded, setHoursExpanded] = useState(false);
   const [hoursPerPeriod, setHoursPerPeriod] = useState([]);
   const [deductions, setDeductions] = useState([]);

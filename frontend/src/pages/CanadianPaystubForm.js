@@ -1832,7 +1832,7 @@ export default function CanadianPaystubForm() {
                                   <p className="text-xs text-slate-500">{dynamicLabel}</p>
                                 </div>
                                 {/* Date inputs for pay period */}
-                                <div className="flex-1 grid grid-cols-3 gap-3">
+                                <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Period Start</Label>
                                     <Input

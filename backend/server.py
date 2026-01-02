@@ -1237,6 +1237,83 @@ async def create_subscription(data: SubscriptionCreate, session: dict = Depends(
     
     return {"success": True, "subscriptionId": subscription["id"]}
 
+# ========== SUBSCRIPTION DOWNLOAD ENDPOINT ==========
+
+class SubscriptionDownloadRequest(BaseModel):
+    documentType: str  # paystub, w9, 1099-nec, etc.
+    template: Optional[str] = None  # Template used (for paystubs)
+
+
+@app.post("/api/user/subscription-download")
+async def subscription_download(data: SubscriptionDownloadRequest, session: dict = Depends(get_current_user)):
+    """
+    Validate and track a subscription-based download.
+    Returns success if user can download, decrements remaining count.
+    """
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user has active subscription
+    subscription = user.get("subscription")
+    if not subscription or subscription.get("status") != "active":
+        raise HTTPException(status_code=403, detail="No active subscription found. Please subscribe to download.")
+    
+    # Get subscription tier config
+    tier = subscription.get("tier")
+    plan_config = SUBSCRIPTION_PLANS.get(tier)
+    
+    if not plan_config:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Check downloads remaining
+    downloads_remaining = subscription.get("downloads_remaining", 0)
+    
+    # -1 means unlimited
+    if downloads_remaining != -1:
+        if downloads_remaining <= 0:
+            raise HTTPException(
+                status_code=403, 
+                detail="No downloads remaining this month. Please upgrade your plan or wait for the next billing cycle."
+            )
+        
+        # Decrement downloads remaining
+        new_remaining = downloads_remaining - 1
+        await users_collection.update_one(
+            {"id": session["userId"]},
+            {"$set": {"subscription.downloads_remaining": new_remaining}}
+        )
+    else:
+        new_remaining = -1  # Still unlimited
+    
+    # Track the download in purchases collection (with $0 amount for subscription)
+    purchase = {
+        "id": str(uuid.uuid4()),
+        "documentType": data.documentType,
+        "amount": 0,  # Subscription download = $0
+        "paypalEmail": user.get("email", ""),
+        "paypalTransactionId": None,
+        "discountCode": None,
+        "discountAmount": 0,
+        "userId": user["id"],
+        "template": data.template,
+        "subscriptionDownload": True,  # Flag to identify subscription downloads
+        "subscriptionTier": tier,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "downloadedAt": datetime.now(timezone.utc).isoformat()
+    }
+    await purchases_collection.insert_one(purchase)
+    
+    return {
+        "success": True,
+        "message": "Download authorized",
+        "downloadsRemaining": new_remaining,
+        "unlimited": new_remaining == -1,
+        "purchaseId": purchase["id"]
+    }
+
+
 @app.get("/api/user/downloads-remaining")
 async def get_downloads_remaining(session: dict = Depends(get_current_user)):
     """Get remaining downloads for subscribed user"""

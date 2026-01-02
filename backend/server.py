@@ -1262,7 +1262,9 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
     
     # Get subscription tier config
     tier = subscription.get("tier")
-    plan_config = SUBSCRIPTION_PLANS.get(tier)
+    
+    # Try SUBSCRIPTION_PLANS first (for PayPal subscriptions), then SUBSCRIPTION_TIERS (for admin-assigned)
+    plan_config = SUBSCRIPTION_PLANS.get(tier) or SUBSCRIPTION_TIERS.get(tier)
     
     if not plan_config:
         raise HTTPException(status_code=400, detail="Invalid subscription tier")

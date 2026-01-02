@@ -159,6 +159,87 @@ export default function SubscriptionPlans() {
     }
   };
 
+  // Check if this is an upgrade (user has subscription and selecting higher tier)
+  const isUpgrade = (tier) => {
+    if (!user?.subscription?.tier) return false;
+    const tierOrder = { starter: 1, professional: 2, business: 3 };
+    return tierOrder[tier] > tierOrder[user.subscription.tier];
+  };
+
+  // Calculate upgrade cost
+  const handleUpgradeClick = async (tier) => {
+    if (!user) {
+      toast.error("Please log in to upgrade");
+      navigate("/login");
+      return;
+    }
+
+    setIsCalculatingUpgrade(true);
+    setSelectedTier(tier);
+
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await fetch(`${BACKEND_URL}/api/subscriptions/calculate-upgrade`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ newTier: tier })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to calculate upgrade");
+      }
+
+      setUpgradeDetails(data);
+      setUpgradeDialogOpen(true);
+    } catch (error) {
+      console.error("Error calculating upgrade:", error);
+      toast.error(error.message || "Failed to calculate upgrade cost");
+    } finally {
+      setIsCalculatingUpgrade(false);
+    }
+  };
+
+  // Process the upgrade payment
+  const handleConfirmUpgrade = async () => {
+    if (!upgradeDetails) return;
+
+    setIsProcessing(true);
+
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await fetch(`${BACKEND_URL}/api/subscriptions/upgrade/create-order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ newTier: upgradeDetails.newTier })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.approvalUrl) {
+        // Store upgrade info for later
+        localStorage.setItem("pending_upgrade_order_id", data.orderId);
+        localStorage.setItem("pending_upgrade_tier", upgradeDetails.newTier);
+        // Redirect to PayPal for approval
+        window.location.href = data.approvalUrl;
+      } else {
+        throw new Error(data.detail || "Failed to create upgrade order");
+      }
+    } catch (error) {
+      console.error("Error creating upgrade order:", error);
+      toast.error(error.message || "Failed to process upgrade");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const getColorClasses = (color, isSelected) => {
     const colors = {
       green: {

@@ -1,9 +1,11 @@
-import * as Print from 'expo-print';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import JSZip from 'jszip';
-import { generateHTMLTemplateA, generateHTMLTemplateB, generateHTMLTemplateC } from './paystubTemplates';
+import { jsPDF } from "jspdf";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "./paystubTemplates";
+import { getLocalTaxRate, getSUTARate } from "./taxRates";
+import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 
+// Helper to calculate next weekday
 const DAY_MAP = {
   Sunday: 0,
   Monday: 1,
@@ -24,167 +26,373 @@ function nextWeekday(date, weekday) {
   return result;
 }
 
-export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs, onProgress) => {
+// Helper to format name for filenames (firstName-lastName format)
+function formatNameForFilename(name) {
+  if (!name) return 'Employee';
+  // Replace spaces with dashes and remove any special characters
+  return name.trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+}
+
+// Helper to get template-specific individual paystub filename
+function getIndividualPaystubFilename(template, name, payDate) {
+  const date = new Date(payDate);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const yearShort = String(year).slice(-2);
+  
+  switch (template) {
+    case 'template-a': // Gusto: firstName-lastName-paystub-2025-03-21.pdf
+      return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
+    
+    case 'template-c': // Workday: Payslip-03_21_2025.pdf
+      return `Payslip-${month}_${day}_${year}.pdf`;
+    
+    case 'template-b': // ADP: Name-Earning Statement_04-21-23.pdf
+      return `${formatNameForFilename(name)}-Earning Statement_${month}-${day}-${yearShort}.pdf`;
+    
+    default:
+      return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
+  }
+}
+
+// Helper to get template-specific ZIP filename for multiple paystubs
+function getMultiplePaystubsZipFilename(template, name) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const downloadDate = `${year}-${month}-${day}`;
+  
+  // All templates use the same ZIP naming format: name-paystubs-downloadDate.zip
+  return `${formatNameForFilename(name)}-paystubs-${downloadDate}.zip`;
+}
+
+export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs) => {
   try {
-    console.log('Starting PDF generation...', { formData, template, numStubs });
+    console.log("Starting PDF generation...", { formData, template, numStubs });
     
     const rate = parseFloat(formData.rate) || 0;
+    const annualSalary = parseFloat(formData.annualSalary) || 0;
     const calculatedNumStubs = numStubs || 1;
-    const payFrequency = formData.payFrequency || 'biweekly';
-    const periodLength = payFrequency === 'biweekly' ? 14 : 7;
-    const defaultHours = payFrequency === 'weekly' ? 40 : 80;
-    const payDay = formData.payDay || 'Friday';
+    const payFrequency = formData.payFrequency || "biweekly";
+    const periodLength = payFrequency === "biweekly" ? 14 : 7;
+    const defaultHours = payFrequency === "weekly" ? 40 : 80;
+    const payDay = formData.payDay || "Friday";
+    const payType = formData.payType || "hourly";
+    const workerType = formData.workerType || "employee";
+    const isContractor = workerType === "contractor";
 
-    const hoursArray = (formData.hoursList || '')
-      .split(',')
+    // Calculate salary per period if salary type
+    const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
+    const salaryPerPeriod = payType === "salary" ? annualSalary / periodsPerYear : 0;
+
+    const hoursArray = (formData.hoursList || "")
+      .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
       .slice(0, calculatedNumStubs);
-    const overtimeArray = (formData.overtimeList || '')
-      .split(',')
+    const overtimeArray = (formData.overtimeList || "")
+      .split(",")
       .map((h) => parseFloat(h.trim()) || 0)
+      .slice(0, calculatedNumStubs);
+    
+    // Parse per-period check numbers and memos for OnPay template
+    const checkNumberArray = (formData.checkNumberList || "")
+      .split(",")
+      .map((c) => c.trim())
+      .slice(0, calculatedNumStubs);
+    const memoArray = (formData.memoList || "")
+      .split("|||")
+      .map((m) => m.trim())
       .slice(0, calculatedNumStubs);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
 
-    // State tax rates
-    const stateRates = {
-      AL: 0.05, AK: 0, AZ: 0.025, AR: 0.047, CA: 0.06, CO: 0.0455, CT: 0.05,
-      DE: 0.052, FL: 0, GA: 0.0575, HI: 0.07, ID: 0.059, IL: 0.0495, IN: 0.0323,
-      IA: 0.05, KS: 0.0525, KY: 0.045, LA: 0.045, ME: 0.0715, MD: 0.0575,
-      MA: 0.05, MI: 0.0425, MN: 0.055, MS: 0.05, MO: 0.05, MT: 0.0675, NE: 0.05,
-      NV: 0, NH: 0, NJ: 0.0637, NM: 0.049, NY: 0.064, NC: 0.0475, ND: 0.027,
-      OH: 0.035, OK: 0.05, OR: 0.08, PA: 0.0307, RI: 0.0375, SC: 0.07, SD: 0,
-      TN: 0, TX: 0, UT: 0.0485, VT: 0.065, VA: 0.0575, WA: 0, WV: 0.065,
-      WI: 0.053, WY: 0,
-    };
+    // Get state tax rate from centralized tax calculator
+    const state = formData.state?.toUpperCase() || "";
+    const stateRate = isContractor ? 0 : getStateTaxRate(state);
 
-    const state = formData.state?.toUpperCase() || '';
-    const stateRate = stateRates[state] || 0.05;
+    console.log("Calculated values:", { calculatedNumStubs, rate, payFrequency, payType, workerType, isContractor });
 
     // If multiple stubs, create ZIP
     if (calculatedNumStubs > 1) {
-      console.log('Creating ZIP for multiple stubs...');
+      console.log("Creating ZIP for multiple stubs...");
       const zip = new JSZip();
       let currentStartDate = new Date(startDate);
       
       for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
-        if (onProgress) {
-          onProgress((stubNum + 1) / calculatedNumStubs);
-        }
-        
         console.log(`Generating stub ${stubNum + 1}/${calculatedNumStubs}`);
+        const doc = new jsPDF({ unit: "pt", format: "letter" });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         
-        const stubData = generateSingleStubData(
-          formData, stubNum, new Date(currentStartDate), periodLength,
-          hoursArray, overtimeArray, defaultHours, rate, stateRate,
-          payDay, calculatedNumStubs, payFrequency
+        const stubData = await generateSingleStub(
+          doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
+          hoursArray, overtimeArray, defaultHours, rate, stateRate, 
+          payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
+          checkNumberArray, memoArray
         );
         
-        // Generate HTML based on template
-        let html;
-        if (template === 'template-b') {
-          html = generateHTMLTemplateB(stubData);
-        } else if (template === 'template-c') {
-          html = generateHTMLTemplateC(stubData);
-        } else {
-          html = generateHTMLTemplateA(stubData);
-        }
+        // Template-specific filename with pay date
+        const fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
+        console.log(`Adding ${fileName} to ZIP`);
         
-        // Generate PDF
-        const { uri } = await Print.printToFileAsync({ html });
-        
-        // Read file as base64
-        const pdfBase64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        // Add to ZIP
-        const fileName = `PayStub_${stubData.payDate.toISOString().split('T')[0]}.pdf`;
-        zip.file(fileName, pdfBase64, { base64: true });
+        // Add PDF directly to zip root
+        const pdfBlob = doc.output('blob');
+        zip.file(fileName, pdfBlob);
         
         currentStartDate.setDate(currentStartDate.getDate() + periodLength);
       }
       
-      // Generate ZIP
-      console.log('Generating ZIP file...');
-      const zipBase64 = await zip.generateAsync({ type: 'base64' });
+      // Generate and download ZIP with template-specific naming
+      console.log("Generating ZIP file...");
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const zipFileName = getMultiplePaystubsZipFilename(template, formData.name);
       
-      // Save ZIP to file system
-      const zipUri = FileSystem.documentDirectory + `PayStubs_${formData.name || 'Employee'}.zip`;
-      await FileSystem.writeAsStringAsync(zipUri, zipBase64, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Store download info for payment success page
+      const blobUrl = URL.createObjectURL(zipBlob);
+      sessionStorage.setItem('lastDownloadUrl', blobUrl);
+      sessionStorage.setItem('lastDownloadFileName', zipFileName);
       
-      // Share the ZIP file
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(zipUri);
-      }
+      saveAs(zipBlob, zipFileName);
+      console.log("ZIP downloaded successfully");
       
-      console.log('ZIP downloaded successfully');
-      return { success: true, numFiles: calculatedNumStubs };
     } else {
-      // Single stub
-      console.log('Generating single stub...');
+      // Single stub - download directly as PDF
+      console.log("Generating single PDF...");
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       
-      const stubData = generateSingleStubData(
-        formData, 0, new Date(startDate), periodLength,
+      const stubData = await generateSingleStub(
+        doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, stateRate,
-        payDay, 1, payFrequency
+        payDay, pageWidth, pageHeight, 1, payFrequency,
+        checkNumberArray, memoArray
       );
       
-      // Generate HTML based on template
-      let html;
-      if (template === 'template-b') {
-        html = generateHTMLTemplateB(stubData);
-      } else if (template === 'template-c') {
-        html = generateHTMLTemplateC(stubData);
-      } else {
-        html = generateHTMLTemplateA(stubData);
-      }
+      // Template-specific filename with pay date
+      const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
       
-      // Generate PDF
-      const { uri } = await Print.printToFileAsync({ html });
+      // Store download info for payment success page
+      const pdfBlob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      sessionStorage.setItem('lastDownloadUrl', blobUrl);
+      sessionStorage.setItem('lastDownloadFileName', pdfFileName);
       
-      // Share the PDF
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri);
-      }
-      
-      console.log('PDF downloaded successfully');
-      return { success: true, numFiles: 1 };
+      doc.save(pdfFileName);
+      console.log("PDF downloaded successfully");
     }
   } catch (error) {
-    console.error('Error generating paystub:', error);
+    console.error("Error generating paystub:", error);
     throw error;
   }
 };
 
-function generateSingleStubData(
-  formData, stubNum, currentStartDate, periodLength,
+// Helper function to calculate number of pay periods from hire date to current pay period end
+function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLength) {
+  // Use the start of the year of the current pay period OR hire date, whichever is later
+  const payPeriodYear = currentPeriodEnd.getFullYear();
+  const startOfYear = new Date(payPeriodYear, 0, 1);
+  
+  // YTD starts from either January 1 of the pay period year OR hire date (whichever is later)
+  const ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
+  
+  // Calculate number of days from YTD start to current period end
+  const diffTime = currentPeriodEnd.getTime() - ytdStartDate.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Calculate number of complete pay periods (at least 1)
+  const numPeriods = Math.max(1, Math.ceil(diffDays / periodLength));
+  
+  return numPeriods;
+}
+
+// Helper function to generate a single paystub
+async function generateSingleStub(
+  doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
-  payDay, totalStubs, payFrequency
+  payDay, pageWidth, pageHeight, totalStubs, payFrequency,
+  checkNumberArray = [], memoArray = []
 ) {
-  const endDate = new Date(currentStartDate);
-  endDate.setDate(endDate.getDate() + periodLength - 1);
+  const payType = formData.payType || "hourly";
+  const workerType = formData.workerType || "employee";
+  const isContractor = workerType === "contractor";
+  const annualSalary = parseFloat(formData.annualSalary) || 0;
+  const periodsPerYear = payFrequency === "weekly" ? 52 : 26;
   
+  // Get per-period check number and memo for OnPay template
+  const periodCheckNumber = checkNumberArray[stubNum] || "";
+  const periodMemo = memoArray[stubNum] || "";
+  
+  // Calculate gross pay based on pay type
+  let hours = 0;
+  let overtime = 0;
+  let regularPay = 0;
+  let overtimePay = 0;
+  let grossPay = 0;
+  
+  if (payType === "salary") {
+    // Salary calculation - fixed amount per period
+    grossPay = annualSalary / periodsPerYear;
+    regularPay = grossPay;
+    hours = defaultHours; // Standard hours for display purposes
+    overtime = 0;
+    overtimePay = 0;
+  } else {
+    // Hourly calculation
+    hours = hoursArray[stubNum] || defaultHours;
+    overtime = overtimeArray[stubNum] || 0;
+    regularPay = rate * hours;
+    overtimePay = rate * 1.5 * overtime;
+    grossPay = regularPay + overtimePay;
+  }
+
+  // Get actual local tax rate
+  const localTaxRate = getLocalTaxRate(formData.state, formData.city);
+  
+  // Get actual SUTA rate for employer taxes
+  const sutaRate = getSUTARate(formData.state);
+
+  // Contractors don't have taxes withheld
+  const ssTax = isContractor ? 0 : grossPay * 0.062;
+  const medTax = isContractor ? 0 : grossPay * 0.0145;
+  
+  // Calculate federal income tax based on filing status (no allowances per 2020+ W-4)
+  let federalTax = 0;
+  if (!isContractor) {
+    if (formData.federalFilingStatus) {
+      federalTax = calculateFederalTax(
+        grossPay,
+        payFrequency,
+        formData.federalFilingStatus
+      );
+    } else {
+      // Default flat rate if no filing status selected
+      federalTax = grossPay * 0.22;
+    }
+  }
+  
+  // Calculate state tax with allowances (only for applicable states)
+  let stateTax = 0;
+  if (!isContractor) {
+    stateTax = calculateStateTax(
+      grossPay,
+      formData.state,
+      payFrequency,
+      formData.stateAllowances || 0,
+      stateRate
+    );
+  }
+  
+  const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
+  const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
+
+  // Pre-tax deduction types
+  const preTaxDeductionTypes = ['401k', 'health_insurance', 'dental_insurance', 'vision_insurance'];
+  const preTaxContributionTypes = ['401k', 'hsa', 'fsa', 'dependent_care_fsa', 'commuter'];
+
+  // Calculate deductions for this pay period
+  const deductionsData = (formData.deductions || []).map(d => {
+    const amount = parseFloat(d.amount) || 0;
+    const currentAmount = d.isPercentage ? (grossPay * amount / 100) : amount;
+    const isPreTax = d.preTax !== undefined ? d.preTax : preTaxDeductionTypes.includes(d.type);
+    return {
+      ...d,
+      currentAmount,
+      preTax: isPreTax,
+      name: d.type === 'other' ? d.name : d.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    };
+  });
+  const totalDeductions = deductionsData.reduce((sum, d) => sum + d.currentAmount, 0);
+  const preTaxDeductions = deductionsData.filter(d => d.preTax).reduce((sum, d) => sum + d.currentAmount, 0);
+  const postTaxDeductions = deductionsData.filter(d => !d.preTax).reduce((sum, d) => sum + d.currentAmount, 0);
+
+  // Calculate contributions for this pay period
+  const contributionsData = (formData.contributions || []).map(c => {
+    const amount = parseFloat(c.amount) || 0;
+    const currentAmount = c.isPercentage ? (grossPay * amount / 100) : amount;
+    const isPreTax = c.preTax !== undefined ? c.preTax : preTaxContributionTypes.includes(c.type);
+    return {
+      ...c,
+      currentAmount,
+      preTax: isPreTax,
+      name: c.type === 'other' ? c.name : c.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    };
+  });
+  const totalContributions = contributionsData.reduce((sum, c) => sum + c.currentAmount, 0);
+  const preTaxContributions = contributionsData.filter(c => c.preTax).reduce((sum, c) => sum + c.currentAmount, 0);
+  const postTaxContributions = contributionsData.filter(c => !c.preTax).reduce((sum, c) => sum + c.currentAmount, 0);
+
+  // Combined pre-tax and post-tax totals
+  const totalPreTax = preTaxDeductions + preTaxContributions;
+  const totalPostTax = postTaxDeductions + postTaxContributions;
+
+  const netPay = grossPay - totalTax - totalDeductions - totalContributions;
+
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + periodLength - 1);
   const payDate = nextWeekday(new Date(endDate), payDay);
+
+  // Calculate YTD values based on pay periods from hire date
+  const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date(startDate);
+  const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
   
-  const hours = hoursArray[stubNum] || defaultHours;
-  const overtime = overtimeArray[stubNum] || 0;
+  // Calculate YTD values
+  const ytdRegularPay = regularPay * ytdPayPeriods;
+  const ytdOvertimePay = overtimePay * ytdPayPeriods;
+  const ytdGrossPay = grossPay * ytdPayPeriods;
+  const ytdSsTax = ssTax * ytdPayPeriods;
+  const ytdMedTax = medTax * ytdPayPeriods;
+  const ytdFederalTax = federalTax * ytdPayPeriods;
+  const ytdStateTax = stateTax * ytdPayPeriods;
+  const ytdLocalTax = localTax * ytdPayPeriods;
+  const ytdTotalTax = totalTax * ytdPayPeriods;
+  const ytdDeductions = totalDeductions * ytdPayPeriods;
+  const ytdContributions = totalContributions * ytdPayPeriods;
+  const ytdNetPay = netPay * ytdPayPeriods;
+  const ytdHours = (hours + overtime) * ytdPayPeriods;
+
+  const margin = 40;
   
-  const regularPay = hours * rate;
-  const overtimePay = overtime * rate * 1.5;
-  const grossPay = regularPay + overtimePay;
+  // Prepare absence plans data for Template C
+  const absencePlansData = (formData.absencePlans || []).map(plan => ({
+    description: plan.description || "PTO Plan",
+    accrued: plan.accrued || "0",
+    reduced: plan.reduced || "0"
+  }));
+
+  // Prepare employer benefits data for Template C
+  const employerBenefits = formData.employerBenefits || [];
+  let totalEmployerBenefits = 0;
+  const employerBenefitsData = employerBenefits.map(b => {
+    let amount;
+    if (b.type === '401k_match') {
+      // Calculate 401k match based on employee contribution
+      const employee401k = contributionsData.find(c => c.type === '401k' || c.type === 'roth_401k');
+      if (employee401k) {
+        const matchUpTo = parseFloat(b.matchUpTo) || 6;
+        const matchPercent = parseFloat(b.matchPercent) || 50;
+        const maxMatchableAmount = grossPay * (matchUpTo / 100);
+        const matchableAmount = Math.min(employee401k.currentAmount, maxMatchableAmount);
+        amount = matchableAmount * (matchPercent / 100);
+      } else {
+        amount = 0;
+      }
+    } else {
+      amount = b.isPercentage ? (grossPay * parseFloat(b.amount) / 100) : parseFloat(b.amount) || 0;
+    }
+    totalEmployerBenefits += amount;
+    return { 
+      name: b.name || "Employer Benefit", 
+      type: b.type,
+      currentAmount: amount 
+    };
+  });
   
-  const ssTax = grossPay * 0.062;
-  const medTax = grossPay * 0.0145;
-  const stateTax = grossPay * stateRate;
-  const localTax = formData.includeLocalTax ? grossPay * 0.01 : 0;
-  const totalTax = ssTax + medTax + stateTax + localTax;
-  const netPay = grossPay - totalTax;
-  
-  return {
+  // Prepare data object for template
+  const templateData = {
     formData,
     hours,
     overtime,
@@ -193,17 +401,74 @@ function generateSingleStubData(
     grossPay,
     ssTax,
     medTax,
+    federalTax,
     stateTax,
     localTax,
     totalTax,
     netPay,
     rate,
     stateRate,
-    startDate: currentStartDate,
+    localTaxRate,
+    sutaRate,
+    startDate,
     endDate,
     payDate,
     payFrequency,
     stubNum,
     totalStubs,
+    // Deductions and contributions
+    deductionsData,
+    totalDeductions,
+    preTaxDeductions,
+    postTaxDeductions,
+    contributionsData,
+    totalContributions,
+    preTaxContributions,
+    postTaxContributions,
+    totalPreTax,
+    totalPostTax,
+    ytdDeductions,
+    ytdContributions,
+    // YTD values
+    ytdPayPeriods,
+    ytdRegularPay,
+    ytdOvertimePay,
+    ytdGrossPay,
+    ytdSsTax,
+    ytdMedTax,
+    ytdFederalTax,
+    ytdStateTax,
+    ytdLocalTax,
+    ytdTotalTax,
+    ytdNetPay,
+    ytdHours,
+    // Worker and pay type
+    payType,
+    workerType,
+    isContractor,
+    annualSalary,
+    // Logo for Workday template
+    logoDataUrl: formData.logoDataUrl || null,
+    // Absence plans for Template C (Workday)
+    absencePlansData,
+    // Employer benefits for Template C (Workday)
+    employerBenefitsData,
+    totalEmployerBenefits,
+    // Per-period check number and memo for OnPay template
+    periodCheckNumber,
+    periodMemo
   };
+
+  // Call the appropriate template
+  if (template === 'template-b') {
+    generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+  } else if (template === 'template-c') {
+    await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+  } else if (template === 'template-h') {
+    generateTemplateH(doc, templateData, pageWidth, pageHeight, margin);
+  } else {
+    await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  }
+
+  return { payDate, startDate, endDate };
 }

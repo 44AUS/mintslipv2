@@ -251,6 +251,8 @@ export default function UserDashboard() {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

@@ -480,7 +480,7 @@ export default function SubscriptionPlans() {
               },
               {
                 q: "Can I upgrade or downgrade my plan?",
-                a: "Absolutely! You can change your plan at any time. Changes will take effect at the start of your next billing cycle."
+                a: "You can upgrade your plan at any time and pay the prorated difference immediately. The new downloads and features are available right away."
               },
               {
                 q: "What payment methods do you accept?",
@@ -495,6 +495,99 @@ export default function SubscriptionPlans() {
           </div>
         </div>
       </main>
+
+      {/* Upgrade Confirmation Dialog */}
+      <Dialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+              Upgrade Your Plan
+            </DialogTitle>
+            <DialogDescription>
+              You're upgrading from {upgradeDetails?.currentTier && plans.find(p => p.tier === upgradeDetails.currentTier)?.name} to {upgradeDetails?.newTier && plans.find(p => p.tier === upgradeDetails.newTier)?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          {upgradeDetails && (
+            <div className="space-y-4 py-4">
+              {/* Pricing breakdown */}
+              <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Current plan</span>
+                  <span className="font-medium">${upgradeDetails.currentPrice}/month</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">New plan</span>
+                  <span className="font-medium">${upgradeDetails.newPrice}/month</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Days remaining in cycle</span>
+                  <span className="font-medium">{upgradeDetails.daysRemaining} days</span>
+                </div>
+                <div className="border-t border-slate-200 pt-3 mt-3">
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-slate-800">Prorated charge today</span>
+                    <span className="font-bold text-green-600 text-lg">${upgradeDetails.proratedAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* What you get */}
+              <div className="bg-green-50 rounded-lg p-4">
+                <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  What you'll get immediately
+                </h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    {upgradeDetails.newDownloads === -1 ? "Unlimited" : upgradeDetails.newDownloads} downloads reset
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    All {plans.find(p => p.tier === upgradeDetails.newTier)?.name} features
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    Same billing date maintained
+                  </li>
+                </ul>
+              </div>
+
+              <p className="text-xs text-slate-500 text-center">
+                Your next full charge of ${upgradeDetails.newPrice} will be on your regular billing date.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setUpgradeDialogOpen(false)}
+              disabled={isProcessing}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmUpgrade}
+              disabled={isProcessing}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Pay ${upgradeDetails?.proratedAmount.toFixed(2)} & Upgrade
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

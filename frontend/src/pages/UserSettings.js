@@ -357,6 +357,67 @@ export default function UserSettings() {
           </div>
         </div>
 
+        {/* Preferences Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
+          <div className="p-6 border-b border-slate-100">
+            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+              <FolderArchive className="w-5 h-5" />
+              Document Storage
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex-1 mr-4">
+                <h4 className="font-medium text-slate-800">Save Documents for Later</h4>
+                <p className="text-sm text-slate-500">
+                  Keep copies of your generated PDFs/ZIPs for up to 60 days. Maximum 15 documents stored.
+                </p>
+              </div>
+              <Switch
+                checked={user?.preferences?.saveDocuments || false}
+                disabled={isSavingPreference}
+                onCheckedChange={async (checked) => {
+                  setIsSavingPreference(true);
+                  try {
+                    const token = localStorage.getItem("userToken");
+                    const response = await fetch(`${BACKEND_URL}/api/user/preferences`, {
+                      method: "PUT",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                      },
+                      body: JSON.stringify({ saveDocuments: checked })
+                    });
+                    
+                    if (!response.ok) {
+                      throw new Error("Failed to update preference");
+                    }
+                    
+                    const data = await response.json();
+                    setUser(data.user);
+                    localStorage.setItem("userInfo", JSON.stringify(data.user));
+                    toast.success(checked ? "Document saving enabled" : "Document saving disabled");
+                  } catch (error) {
+                    toast.error("Failed to update preference");
+                  } finally {
+                    setIsSavingPreference(false);
+                  }
+                }}
+              />
+            </div>
+            {user?.preferences?.saveDocuments && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700">
+                  ✓ Your documents will be saved automatically when you download. View them in your{" "}
+                  <Link to="/user/downloads" className="font-medium underline hover:no-underline">
+                    Downloads page
+                  </Link>.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Security Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100">
           <div className="p-6 border-b border-slate-100">

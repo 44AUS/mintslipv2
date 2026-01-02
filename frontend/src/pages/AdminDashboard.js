@@ -1704,7 +1704,7 @@ export default function AdminDashboard() {
                                       className="text-green-600"
                                     >
                                       <Download className="w-4 h-4 mr-2" />
-                                      Edit Downloads
+                                      Add Bonus Downloads
                                     </DropdownMenuItem>
                                   )}
                                   <DropdownMenuSeparator />

@@ -129,7 +129,7 @@ export const generate1099NECPDF = async (formData, taxYear) => {
 };
 
 // Generate and download 1099-NEC
-export const generateAndDownload1099NEC = async (formData, taxYear) => {
+export const generateAndDownload1099NEC = async (formData, taxYear, returnBlob = false) => {
   try {
     const pdfBytes = await generate1099NECPDF(formData, taxYear);
     
@@ -150,6 +150,9 @@ export const generateAndDownload1099NEC = async (formData, taxYear) => {
     document.body.removeChild(link);
     
     // Don't revoke URL immediately - needed for re-download on success page
+    if (returnBlob) {
+      return blob;
+    }
     return true;
   } catch (error) {
     console.error("Error downloading 1099-NEC:", error);

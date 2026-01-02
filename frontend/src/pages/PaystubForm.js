@@ -146,6 +146,7 @@ export default function PaystubForm() {
     
     try {
       // Call backend to validate and track the subscription download
+      // Pass the count of paystubs being generated
       const response = await fetch(`${BACKEND_URL}/api/user/subscription-download`, {
         method: "POST",
         headers: {
@@ -154,7 +155,8 @@ export default function PaystubForm() {
         },
         body: JSON.stringify({
           documentType: "paystub",
-          template: selectedTemplate
+          template: selectedTemplate,
+          count: calculateNumStubs  // Pass the number of paystubs being downloaded
         })
       });
       

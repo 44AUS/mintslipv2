@@ -59,6 +59,7 @@ export default function UserSettings() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [selectedNewTier, setSelectedNewTier] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSavingPreference, setIsSavingPreference] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",

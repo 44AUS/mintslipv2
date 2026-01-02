@@ -2052,6 +2052,43 @@ async def update_user_subscription(user_id: str, data: UpdateUserSubscription, s
         )
         return {"success": True, "message": "User subscription removed", "subscription": None}
 
+
+@app.put("/api/admin/users/{user_id}/downloads")
+async def update_user_downloads(user_id: str, data: UpdateUserDownloads, session: dict = Depends(get_current_admin)):
+    """Update a user's remaining downloads count (admin only)"""
+    user = await users_collection.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="User has no active subscription")
+    
+    # Validate downloads_remaining
+    if data.downloads_remaining < -1:
+        raise HTTPException(status_code=400, detail="Invalid downloads count. Use -1 for unlimited or a positive number.")
+    
+    # Update downloads_remaining
+    await users_collection.update_one(
+        {"id": user_id},
+        {
+            "$set": {
+                "subscription.downloads_remaining": data.downloads_remaining,
+                "subscription.updatedAt": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Get updated user
+    updated_user = await users_collection.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    
+    downloads_display = "Unlimited" if data.downloads_remaining == -1 else str(data.downloads_remaining)
+    return {
+        "success": True, 
+        "message": f"User downloads updated to {downloads_display}",
+        "user": updated_user
+    }
+
+
 # ========== DISCOUNT CODES ENDPOINTS (Token-based Auth) ==========
 
 @app.get("/api/admin/discounts")

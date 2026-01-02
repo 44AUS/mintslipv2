@@ -105,10 +105,17 @@ const SUBSCRIPTION_TIERS = {
   "basic": { name: "Basic", price: 19.99, downloads: 5 },
   "pro": { name: "Pro", price: 29.99, downloads: 10 },
   "unlimited": { name: "Unlimited", price: 49.99, downloads: -1 },
-  // PayPal subscription plans
+  // PayPal subscription plans (for display purposes when viewing users with PayPal subscriptions)
   "starter": { name: "Starter", price: 19.99, downloads: 10 },
   "professional": { name: "Professional", price: 29.99, downloads: 30 },
   "business": { name: "Business", price: 49.99, downloads: -1 }
+};
+
+// Admin-assignable tiers only (used in subscription change modal)
+const ADMIN_ASSIGNABLE_TIERS = {
+  "basic": { name: "Basic", price: 19.99, downloads: 5 },
+  "pro": { name: "Pro", price: 29.99, downloads: 10 },
+  "unlimited": { name: "Unlimited", price: 49.99, downloads: -1 }
 };
 
 export default function AdminDashboard() {

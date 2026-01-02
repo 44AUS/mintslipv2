@@ -1496,11 +1496,17 @@ async def update_user_subscription(user_id: str, data: UpdateUserSubscription, s
     
     if data.tier:
         # Set or update subscription
+        tier_config = SUBSCRIPTION_TIERS.get(data.tier)
+        if not tier_config:
+            raise HTTPException(status_code=400, detail="Invalid subscription tier")
+        
         subscription = {
             "id": str(uuid.uuid4()),
             "tier": data.tier,
             "status": "active",
             "adminAssigned": True,
+            "downloads_remaining": tier_config["downloads"],
+            "downloads_total": tier_config["downloads"],
             "updatedAt": datetime.now(timezone.utc).isoformat()
         }
         await users_collection.update_one(

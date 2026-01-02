@@ -248,7 +248,7 @@ export default function SubscriptionChoose() {
             { icon: Download, text: "Instant Downloads" },
             { icon: Shield, text: "Secure & Private" },
             { icon: Clock, text: "Cancel Anytime" },
-            { icon: FileText, text: "All Templates Included" }
+            { icon: FileText, text: "Save on Document Generation" }
           ].map((benefit, idx) => (
             <div key={idx} className="flex items-center gap-2 text-slate-600">
               <benefit.icon className="w-5 h-5 text-green-600" />

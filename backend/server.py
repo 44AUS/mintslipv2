@@ -484,6 +484,9 @@ async def user_signup(data: UserSignup):
         "subscription": None,
         "downloadsUsed": 0,
         "downloadsReset": None,
+        "preferences": {
+            "saveDocuments": data.saveDocuments if data.saveDocuments else False
+        },
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     await users_collection.insert_one(user)
@@ -507,7 +510,8 @@ async def user_signup(data: UserSignup):
             "id": user["id"],
             "email": user["email"],
             "name": user["name"],
-            "subscription": None
+            "subscription": None,
+            "preferences": user["preferences"]
         }
     }
 

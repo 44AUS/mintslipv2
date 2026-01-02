@@ -1497,6 +1497,7 @@ class AIResumeBuilderTester:
                 data = response.json()
                 if data.get("success") and data.get("token") and data.get("user"):
                     user_info = data["user"]
+                    self.mobile_user_token = data["token"]
                     details += f", User registered: {user_info.get('email')}, Token received"
                 else:
                     success = False

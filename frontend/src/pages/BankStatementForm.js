@@ -1054,7 +1054,7 @@ const createOrder = (data, actions) => {
               {/* PayPal - Right Side */}
               <div className="p-6 bg-slate-50 border-2 border-slate-200 rounded-md">
                 <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Complete Payment
+                  {hasActiveSubscription ? 'Download Document' : 'Complete Payment'}
                 </h3>
                 <p className="text-xs text-slate-500 mb-4 text-center">
                   By proceeding, you agree that these are accounting mockups for lawful record-keeping and personal organization only.
@@ -1063,41 +1063,109 @@ const createOrder = (data, actions) => {
                   MintSlip does not provide "official" documents, verify employment, or guarantee acceptance by any third party.
                 </p>
                 
-                <CouponInput
-                  generatorType="bank-statement"
-                  originalPrice={getStatementPrice()}
-                  onDiscountApplied={setAppliedDiscount}
-                />
-                
-                <p className="text-sm text-slate-600 mb-4">
-                  Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : getStatementPrice().toFixed(2)}</strong>
-                  {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
-                  {!appliedDiscount && ' for accounting mockup generation'}
-                </p>
-                
-                {!isFormValid() && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                    <p className="text-sm text-amber-700">
-                      Please complete the following before payment:
-                    </p>
-                    <ul className="text-xs text-amber-600 mt-1 list-disc list-inside">
-                      {!selectedBank && <li>Select a category</li>}
-                      {!uploadedLogo && <li>Upload a logo</li>}
-                      {!accountName && <li>Enter account holder name</li>}
-                      {!accountNumber && <li>Enter account number</li>}
-                    </ul>
+                {hasActiveSubscription ? (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-semibold">Subscription Active</span>
+                      </div>
+                      <p className="text-sm text-green-600">
+                        Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
+                      </p>
+                    </div>
+                    
+                    {!isFormValid() && (
+                      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                        <p className="text-sm text-amber-700">
+                          Please complete the following before download:
+                        </p>
+                        <ul className="text-xs text-amber-600 mt-1 list-disc list-inside">
+                          {!selectedBank && <li>Select a category</li>}
+                          {!uploadedLogo && <li>Upload a logo</li>}
+                          {!accountName && <li>Enter account holder name</li>}
+                          {!accountNumber && <li>Enter account number</li>}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <Button
+                      onClick={handleSubscriptionDownload}
+                      disabled={isProcessing || !isFormValid()}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download Statement (Included in Plan)
+                        </>
+                      )}
+                    </Button>
                   </div>
+                ) : (
+                  <>
+                    <CouponInput
+                      generatorType="bank-statement"
+                      originalPrice={getStatementPrice()}
+                      onDiscountApplied={setAppliedDiscount}
+                    />
+                    
+                    <p className="text-sm text-slate-600 mb-4">
+                      Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : getStatementPrice().toFixed(2)}</strong>
+                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {!appliedDiscount && ' for accounting mockup generation'}
+                    </p>
+                    
+                    {!isFormValid() && (
+                      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                        <p className="text-sm text-amber-700">
+                          Please complete the following before payment:
+                        </p>
+                        <ul className="text-xs text-amber-600 mt-1 list-disc list-inside">
+                          {!selectedBank && <li>Select a category</li>}
+                          {!uploadedLogo && <li>Upload a logo</li>}
+                          {!accountName && <li>Enter account holder name</li>}
+                          {!accountNumber && <li>Enter account number</li>}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <div data-testid="paypal-button-container-bank" className={!isFormValid() ? 'opacity-50 pointer-events-none' : ''}>
+                      <PayPalButtons
+                        createOrder={createOrder}
+                        onApprove={onApprove}
+                        onError={onError}
+                        disabled={isProcessing || !isFormValid()}
+                        style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
+                      />
+                    </div>
+                    
+                    {/* Subscription upsell */}
+                    <div className="mt-4 pt-4 border-t border-slate-200 text-center">
+                      <p className="text-sm text-slate-500 mb-2">Want unlimited downloads?</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate("/pricing")}
+                        className="text-green-600 border-green-600 hover:bg-green-50"
+                      >
+                        View Subscription Plans
+                      </Button>
+                    </div>
+                  </>
                 )}
-                
-                <div data-testid="paypal-button-container-bank" className={!isFormValid() ? 'opacity-50 pointer-events-none' : ''}>
-                  <PayPalButtons
-                    createOrder={createOrder}
-                    onApprove={onApprove}
-                    onError={onError}
-                    disabled={isProcessing || !isFormValid()}
-                    style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                  />
-                </div>
               </div>
             </div>
           </div>

@@ -27,6 +27,9 @@ export default function PaymentSuccess() {
   const [error, setError] = useState(null);
   const [documentGenerated, setDocumentGenerated] = useState(false);
   
+  // Ref to prevent double download (React StrictMode runs effects twice)
+  const hasStartedRef = React.useRef(false);
+  
   const isZipFile = fileCount > 1;
 
   // Clear any stale download data at the start of a new payment verification

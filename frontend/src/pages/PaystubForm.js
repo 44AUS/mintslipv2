@@ -1142,7 +1142,7 @@ export default function PaystubForm() {
       // Get current URL for redirects
       const origin = window.location.origin;
       
-      // Store form data for after payment completion
+      // Store form data for after payment completion - use localStorage for persistence across redirects
       const fullFormData = {
         ...formData,
         deductions: deductions,
@@ -1152,9 +1152,9 @@ export default function PaystubForm() {
         companyLogo: companyLogo,
         logoDataUrl: logoPreview,
       };
-      sessionStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
-      sessionStorage.setItem("pendingPaystubTemplate", selectedTemplate);
-      sessionStorage.setItem("pendingPaystubCount", calculateNumStubs.toString());
+      localStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
+      localStorage.setItem("pendingPaystubTemplate", selectedTemplate);
+      localStorage.setItem("pendingPaystubCount", calculateNumStubs.toString());
       
       // Create checkout session for one-time payment
       const response = await fetch(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {

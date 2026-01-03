@@ -2219,6 +2219,99 @@ async def delete_discount(discount_id: str, session: dict = Depends(get_current_
         raise HTTPException(status_code=404, detail="Discount not found")
     return {"success": True}
 
+
+# ========== PROMOTIONAL BANNER ENDPOINTS ==========
+
+@app.get("/api/banner")
+async def get_active_banner():
+    """Get the currently active promotional banner (public endpoint)"""
+    settings = await site_settings_collection.find_one({"key": "promotional_banner"})
+    
+    if not settings or not settings.get("isActive"):
+        return {"success": True, "banner": None}
+    
+    # Check if the associated discount is still valid
+    if settings.get("discountId"):
+        discount = await discounts_collection.find_one({"id": settings["discountId"]})
+        if discount:
+            # Check if discount is active and not expired
+            now = datetime.now(timezone.utc).isoformat()
+            if not discount.get("isActive"):
+                return {"success": True, "banner": None}
+            if discount.get("expiryDate") and discount["expiryDate"] < now:
+                return {"success": True, "banner": None}
+            if discount.get("startDate") and discount["startDate"] > now:
+                return {"success": True, "banner": None}
+    
+    return {
+        "success": True,
+        "banner": {
+            "message": settings.get("message", ""),
+            "discountCode": settings.get("discountCode", ""),
+            "discountPercent": settings.get("discountPercent", 0),
+            "backgroundColor": settings.get("backgroundColor", "#10b981"),
+            "textColor": settings.get("textColor", "#ffffff"),
+            "isActive": settings.get("isActive", False)
+        }
+    }
+
+
+@app.get("/api/admin/banner")
+async def get_banner_settings(session: dict = Depends(get_current_admin)):
+    """Get banner settings (admin only)"""
+    settings = await site_settings_collection.find_one({"key": "promotional_banner"}, {"_id": 0})
+    
+    if not settings:
+        return {
+            "success": True,
+            "banner": {
+                "isActive": False,
+                "message": "",
+                "discountId": None,
+                "discountCode": "",
+                "discountPercent": 0,
+                "backgroundColor": "#10b981",
+                "textColor": "#ffffff"
+            }
+        }
+    
+    return {"success": True, "banner": settings}
+
+
+@app.put("/api/admin/banner")
+async def update_banner_settings(request: dict, session: dict = Depends(get_current_admin)):
+    """Update promotional banner settings (admin only)"""
+    discount_id = request.get("discountId")
+    discount_code = ""
+    discount_percent = 0
+    
+    # If a discount is selected, get its details
+    if discount_id:
+        discount = await discounts_collection.find_one({"id": discount_id})
+        if discount:
+            discount_code = discount.get("code", "")
+            discount_percent = discount.get("discountPercent", 0)
+    
+    banner_settings = {
+        "key": "promotional_banner",
+        "isActive": request.get("isActive", False),
+        "message": request.get("message", ""),
+        "discountId": discount_id,
+        "discountCode": discount_code,
+        "discountPercent": discount_percent,
+        "backgroundColor": request.get("backgroundColor", "#10b981"),
+        "textColor": request.get("textColor", "#ffffff"),
+        "updatedAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await site_settings_collection.update_one(
+        {"key": "promotional_banner"},
+        {"$set": banner_settings},
+        upsert=True
+    )
+    
+    return {"success": True, "banner": banner_settings}
+
 @app.post("/api/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     """Parse an uploaded resume (PDF or DOCX) and extract structured data"""

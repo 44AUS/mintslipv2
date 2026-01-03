@@ -1585,7 +1585,7 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     # Total purchases
     total_purchases = await purchases_collection.count_documents({})
     
-    # Total revenue
+    # Total revenue from one-time purchases
     pipeline = [
         {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
     ]
@@ -1601,13 +1601,42 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     # Recent purchases (last 10)
     recent_purchases = await purchases_collection.find({}, {"_id": 0}).sort("createdAt", -1).limit(10).to_list(10)
     
-    # Total subscribers
-    total_subscribers = await users_collection.count_documents({"subscription": {"$ne": None}})
-    
     # Total users
     total_users = await users_collection.count_documents({})
     
-    # Today's purchases
+    # ===== SUBSCRIPTION STATS =====
+    # Total active subscribers
+    total_subscribers = await users_collection.count_documents({
+        "subscription.status": "active"
+    })
+    
+    # Subscribers by tier
+    subscribers_by_tier = {
+        "starter": await users_collection.count_documents({"subscription.tier": "starter", "subscription.status": "active"}),
+        "professional": await users_collection.count_documents({"subscription.tier": "professional", "subscription.status": "active"}),
+        "business": await users_collection.count_documents({"subscription.tier": "business", "subscription.status": "active"})
+    }
+    
+    # Monthly subscription revenue (calculated from active subscribers)
+    subscription_prices = {"starter": 19.99, "professional": 29.99, "business": 49.99}
+    monthly_subscription_revenue = sum(
+        count * subscription_prices.get(tier, 0) 
+        for tier, count in subscribers_by_tier.items()
+    )
+    
+    # Recent subscriptions (users who subscribed recently)
+    recent_subscribers = await users_collection.find(
+        {"subscription.status": "active"},
+        {"_id": 0, "password": 0}
+    ).sort("subscription.createdAt", -1).limit(10).to_list(10)
+    
+    # Subscription records from subscriptions collection
+    subscription_records = await subscriptions_collection.find(
+        {},
+        {"_id": 0}
+    ).sort("createdAt", -1).limit(20).to_list(20)
+    
+    # Today's stats
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     today_purchases = await purchases_collection.count_documents({"createdAt": {"$gte": today_start}})
     
@@ -1619,6 +1648,9 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     today_revenue_result = await purchases_collection.aggregate(today_revenue_pipeline).to_list(1)
     today_revenue = today_revenue_result[0]["total"] if today_revenue_result else 0
     
+    # New subscribers today
+    today_new_subscribers = await subscriptions_collection.count_documents({"createdAt": {"$gte": today_start}})
+    
     return {
         "success": True,
         "stats": {
@@ -1627,7 +1659,16 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
             "totalSubscribers": total_subscribers,
             "totalUsers": total_users,
             "todayPurchases": today_purchases,
-            "todayRevenue": round(today_revenue, 2)
+            "todayRevenue": round(today_revenue, 2),
+            "todayNewSubscribers": today_new_subscribers,
+            "monthlySubscriptionRevenue": round(monthly_subscription_revenue, 2)
+        },
+        "subscriptionStats": {
+            "total": total_subscribers,
+            "byTier": subscribers_by_tier,
+            "monthlyRevenue": round(monthly_subscription_revenue, 2),
+            "recentSubscribers": recent_subscribers,
+            "subscriptionRecords": subscription_records
         },
         "purchasesByType": purchases_by_type,
         "recentPurchases": recent_purchases

@@ -93,6 +93,8 @@ export default function UserDownloads() {
   const [savedDocumentTypeFilter, setSavedDocumentTypeFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [savedStartDate, setSavedStartDate] = useState("");
+  const [savedEndDate, setSavedEndDate] = useState("");
   const pageSize = 10;
 
   useEffect(() => {

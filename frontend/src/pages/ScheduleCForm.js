@@ -393,7 +393,36 @@ export default function ScheduleCForm() {
 
   const onError = (err) => {
     toast.error("Payment failed. Please try again.");
-    console.error("PayPal error:", err);
+    console.error("Payment error:", err);
+  };
+
+  // Handle Stripe checkout for Schedule C payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 14.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Store form data for after payment
+      localStorage.setItem("pendingScheduleCData", JSON.stringify(formData));
+      localStorage.setItem("pendingScheduleCTaxYear", selectedTaxYear);
+      
+      const { url } = await createStripeCheckout({
+        amount: finalAmount,
+        documentType: "schedule-c",
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/schedule-c-generator"
+      });
+      
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Calculate summary preview

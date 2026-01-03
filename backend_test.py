@@ -1445,7 +1445,7 @@ class AIResumeBuilderTester:
                     "email": "stripetest@test.com",
                     "password": "test123"
                 }
-                login_response = requests.post(f"{self.api_url}/auth/login", json=login_payload, timeout=10)
+                login_response = requests.post(f"{self.api_url}/user/login", json=login_payload, timeout=10)
                 
                 if login_response.status_code == 200:
                     login_data = login_response.json()

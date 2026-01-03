@@ -1173,17 +1173,19 @@ async def get_checkout_status(session_id: str):
                     )
             
             elif purchase_type == "one_time_purchase":
-                # Track one-time guest purchase (if not already tracked)
+                # Track one-time purchase (if not already tracked)
                 existing = await purchases_collection.find_one({"stripeSessionId": session_id})
                 if not existing:
                     document_type = session.metadata.get("documentType", "unknown")
                     template = session.metadata.get("template", "")
                     discount_code = session.metadata.get("discountCode", "")
                     discount_amount = float(session.metadata.get("discountAmount", 0))
+                    user_id = session.metadata.get("userId", "")
+                    user_email = session.metadata.get("userEmail", "")
                     
-                    # Get customer email
-                    customer_email = ""
-                    if hasattr(session, 'customer_details') and session.customer_details:
+                    # Get customer email from session if not in metadata
+                    customer_email = user_email
+                    if not customer_email and hasattr(session, 'customer_details') and session.customer_details:
                         customer_email = getattr(session.customer_details, 'email', "") or ""
                     
                     purchase = {
@@ -1191,16 +1193,17 @@ async def get_checkout_status(session_id: str):
                         "documentType": document_type,
                         "amount": session.amount_total / 100 if session.amount_total else 0,
                         "email": customer_email,
+                        "userId": user_id if user_id else None,
                         "stripeSessionId": session_id,
                         "stripePaymentIntentId": session.payment_intent,
                         "discountCode": discount_code if discount_code else None,
                         "discountAmount": discount_amount,
                         "template": template if template else None,
-                        "isGuest": True,
+                        "isGuest": not bool(user_id),
                         "createdAt": datetime.now(timezone.utc).isoformat()
                     }
                     await purchases_collection.insert_one(purchase)
-                    print(f"Tracked guest purchase via status check: {document_type} - ${purchase['amount']}")
+                    print(f"Tracked purchase via status check: {document_type} - ${purchase['amount']} - userId: {user_id or 'guest'}")
         
         return {
             "status": session.status,

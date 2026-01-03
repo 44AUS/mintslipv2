@@ -135,8 +135,7 @@ export default function PaymentSuccess() {
           await generateAndDownloadW2(formData, taxYear);
           generated = true;
           
-          localStorage.removeItem('pendingW2Data');
-          localStorage.removeItem('pendingW2TaxYear');
+          // DON'T clear form data yet - user may need to re-download
           
           toast.success('Your W-2 has been downloaded!');
         }
@@ -149,7 +148,7 @@ export default function PaymentSuccess() {
           await generateAndDownloadW9(formData);
           generated = true;
           
-          localStorage.removeItem('pendingW9Data');
+          // DON'T clear form data yet - user may need to re-download
           
           toast.success('Your W-9 has been downloaded!');
         }
@@ -163,8 +162,7 @@ export default function PaymentSuccess() {
           await generateAndDownloadBankStatement(formData, template);
           generated = true;
           
-          localStorage.removeItem('pendingBankStatementData');
-          localStorage.removeItem('pendingBankStatementTemplate');
+          // DON'T clear form data yet - user may need to re-download
           
           toast.success('Your bank statement has been downloaded!');
         }

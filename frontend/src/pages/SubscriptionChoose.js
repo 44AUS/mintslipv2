@@ -114,6 +114,10 @@ export default function SubscriptionChoose() {
   }, [navigate]);
 
   const handleSelectTier = (tierId) => {
+    setSelectedTier(tierId);
+  };
+
+  const handleSubscribe = async () => {
     if (!selectedTier) {
       toast.error("Please select a subscription plan");
       return;

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   Table,
@@ -40,7 +41,12 @@ import {
   Percent,
   Calendar,
   Check,
-  X
+  X,
+  Megaphone,
+  Sparkles,
+  Eye,
+  EyeOff,
+  Palette
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

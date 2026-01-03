@@ -922,6 +922,21 @@ SUBSCRIPTION_PLANS = {
 stripe_price_ids = {}
 
 
+@app.get("/api/subscriptions/plans")
+async def get_subscription_plans():
+    """Get available subscription plans"""
+    plans = []
+    for tier, config in SUBSCRIPTION_PLANS.items():
+        plans.append({
+            "tier": tier,
+            "name": config["name"],
+            "price": config["price"],
+            "downloads": config["downloads"],
+            "downloads_display": "Unlimited" if config["downloads"] == -1 else str(config["downloads"])
+        })
+    return {"success": True, "plans": plans}
+
+
 @app.get("/api/stripe/config")
 async def get_stripe_config():
     """Get Stripe publishable key for frontend"""

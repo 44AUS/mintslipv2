@@ -614,7 +614,7 @@ export default function UserDownloads() {
                             </div>
                             <div>
                               <p className="font-medium text-slate-800">
-                                {DOCUMENT_TYPES[doc.documentType] || doc.documentType}
+                                {ALL_DOCUMENT_TYPES[doc.documentType] || doc.documentType}
                               </p>
                               <p className="text-xs text-slate-500 truncate max-w-[200px]">
                                 {doc.fileName}

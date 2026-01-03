@@ -110,13 +110,14 @@ export default function PaymentSuccess() {
       if (orderType === 'paystub') {
         const formDataStr = localStorage.getItem('pendingPaystubData');
         const template = localStorage.getItem('pendingPaystubTemplate') || 'template-a';
+        const numStubs = parseInt(localStorage.getItem('pendingPaystubCount') || '1', 10);
         
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
-          console.log('Generating paystub with stored data...');
+          console.log('Generating paystub with stored data...', { template, numStubs });
           
-          // Generate paystub - the function handles download internally
-          await generateAndDownloadPaystub(formData, template);
+          // Generate paystub - pass numStubs for ZIP generation when multiple
+          await generateAndDownloadPaystub(formData, template, numStubs);
           generated = true;
           
           // Clean up localStorage
@@ -124,7 +125,7 @@ export default function PaymentSuccess() {
           localStorage.removeItem('pendingPaystubTemplate');
           localStorage.removeItem('pendingPaystubCount');
           
-          toast.success('Your paystub has been downloaded!');
+          toast.success(numStubs > 1 ? `Your ${numStubs} paystubs have been downloaded!` : 'Your paystub has been downloaded!');
         }
       } else if (orderType === 'w2') {
         const formDataStr = localStorage.getItem('pendingW2Data');

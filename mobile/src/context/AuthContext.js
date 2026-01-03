@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext(null);
 
-export const API_URL = 'https://docustorage.preview.emergentagent.com';
+export const API_URL = 'https://doc-generator-28.preview.emergentagent.com';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

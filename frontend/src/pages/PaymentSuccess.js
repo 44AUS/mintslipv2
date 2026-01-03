@@ -29,20 +29,20 @@ export default function PaymentSuccess() {
   
   const isZipFile = fileCount > 1;
 
+  // Clear any stale download data at the start of a new payment verification
+  useEffect(() => {
+    // Clear old download URLs when a new session starts
+    if (sessionId) {
+      localStorage.removeItem('lastDownloadUrl');
+      localStorage.removeItem('lastDownloadFileName');
+    }
+  }, [sessionId]);
+
   // Verify payment and generate document
   const verifyAndGenerate = useCallback(async () => {
     if (!sessionId) {
-      // Check if we have stored download info (legacy flow)
-      const storedDownloadUrl = localStorage.getItem('lastDownloadUrl');
-      const storedFileName = localStorage.getItem('lastDownloadFileName');
-      if (storedDownloadUrl) {
-        setDownloadUrl(storedDownloadUrl);
-        setFileName(storedFileName || 'document.pdf');
-        setPaymentVerified(true);
-        setDocumentGenerated(true);
-      } else {
-        setError('No payment session found. Please contact support if you were charged.');
-      }
+      // No session ID - show error (don't use old cached data)
+      setError('No payment session found. Please contact support if you were charged.');
       setIsVerifying(false);
       return;
     }

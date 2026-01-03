@@ -77,6 +77,30 @@ export default function AdminDiscounts() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState(null);
   
+  // Banner state
+  const [bannerSettings, setBannerSettings] = useState({
+    isActive: false,
+    message: "",
+    discountId: null,
+    discountCode: "",
+    discountPercent: 0,
+    backgroundColor: "#10b981",
+    textColor: "#ffffff"
+  });
+  const [savingBanner, setSavingBanner] = useState(false);
+  
+  // Preset banner colors
+  const bannerColorPresets = [
+    { name: "Green", bg: "#10b981", text: "#ffffff" },
+    { name: "Blue", bg: "#3b82f6", text: "#ffffff" },
+    { name: "Purple", bg: "#8b5cf6", text: "#ffffff" },
+    { name: "Red", bg: "#ef4444", text: "#ffffff" },
+    { name: "Orange", bg: "#f97316", text: "#ffffff" },
+    { name: "Pink", bg: "#ec4899", text: "#ffffff" },
+    { name: "Dark", bg: "#1f2937", text: "#ffffff" },
+    { name: "Gold", bg: "#eab308", text: "#1f2937" }
+  ];
+  
   // Form state
   const [formData, setFormData] = useState({
     code: "",

@@ -46,7 +46,6 @@ import BlogPost from "@/pages/BlogPost";
 import ScrollToTop from "@/components/ScrollToTop";
 import PromoBanner from "@/components/PromoBanner";
 import { Toaster } from "sonner";
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Reviews from "@/pages/Reviews";
 import ComparisonPage from "@/pages/ComparisonPage";
 import DocumentDirectory from "@/pages/DocumentDirectory";
@@ -55,8 +54,8 @@ import AIResumeLanding from "@/pages/AIResumeLanding";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
-// Stripe Configuration
-const STRIPE_PUBLISHABLE_KEY = "pk_test_51SOOSM0OuJwef38xh7dnPwMMH0YhWqjhbZnJfLGKx3cq8K97jLNmVTtJqhLqyLg3pKqfDSLhK9v6Z2Y7S6thm1Qk00VJqM9wKX";
+// Stripe Configuration - Use environment variable
+const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM";
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 function App() {

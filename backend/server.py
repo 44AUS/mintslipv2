@@ -925,10 +925,8 @@ stripe_price_ids = {}
 @app.get("/api/stripe/config")
 async def get_stripe_config():
     """Get Stripe publishable key for frontend"""
-    # Extract publishable key from secret key pattern
-    # In production, you'd have a separate publishable key
     return {
-        "publishableKey": "pk_test_51SOOSM0OuJwef38xh7dnPwMMH0YhWqjhbZnJfLGKx3cq8K97jLNmVTtJqhLqyLg3pKqfDSLhK9v6Z2Y7S6thm1Qk00VJqM9wKX"
+        "publishableKey": os.environ.get("STRIPE_PUBLISHABLE_KEY", "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM")
     }
 
 

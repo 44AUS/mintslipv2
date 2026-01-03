@@ -52,42 +52,17 @@ import ComparisonPage from "@/pages/ComparisonPage";
 import DocumentDirectory from "@/pages/DocumentDirectory";
 import AIResumeBuilder from "@/pages/AIResumeBuilder";
 import AIResumeLanding from "@/pages/AIResumeLanding";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 
-// PayPal Client IDs
-const PAYPAL_SANDBOX_CLIENT_ID = "AaLPbPlOPPIiSXdlRvDbBUX8oxahW_7R-csGaJvS0TNA2AwDYxMNi3l2hAtW_5KonXhIoC6YasnjJlqx";
-const PAYPAL_LIVE_CLIENT_ID = "AawVFBRkotEckyQ7SZnpA9jeRCVKnrcW0b0mUgWAk_h7eoWSUWIHmwBFWibAKZj-YSFI3vGSH0f3ACuf";
-
-// Function to determine environment and get correct PayPal Client ID
-const getPayPalClientId = () => {
-  // Check if running on localhost or preview environments (sandbox)
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    const isDevelopment = hostname === 'localhost' || 
-                          hostname === '127.0.0.1' ||
-                          hostname.includes('preview.emergentagent.com');
-    
-    if (isDevelopment) {
-      console.log('PayPal: Using Sandbox mode for', hostname);
-      return PAYPAL_SANDBOX_CLIENT_ID;
-    }
-  }
-  
-  // Production - use Live Client ID (ignore env variable in production)
-  console.log('PayPal: Using Live mode');
-  return PAYPAL_LIVE_CLIENT_ID;
-};
-
-// Always use the dynamic function - don't rely on env variable for PayPal
-const PAYPAL_CLIENT_ID = getPayPalClientId();
+// Stripe Configuration
+const STRIPE_PUBLISHABLE_KEY = "pk_test_51SOOSM0OuJwef38xh7dnPwMMH0YhWqjhbZnJfLGKx3cq8K97jLNmVTtJqhLqyLg3pKqfDSLhK9v6Z2Y7S6thm1Qk00VJqM9wKX";
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 function App() {
   return (
     <HelmetProvider>
-      <PayPalScriptProvider options={{ 
-        "client-id": PAYPAL_CLIENT_ID, 
-        currency: "USD", 
-        intent: "capture"
-      }}>
+      <Elements stripe={stripePromise}>
         <div className="App">
           <PromoBanner />
           <Toaster position="top-center" richColors />

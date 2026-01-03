@@ -774,8 +774,8 @@ export default function AIResumeBuilder() {
     try {
       const basePrice = 9.99;
       
-      // Store resume data for after payment
-      sessionStorage.setItem("pendingResumeData", JSON.stringify({
+      // Store resume data for after payment - use localStorage for persistence
+      localStorage.setItem("pendingResumeData", JSON.stringify({
         resumeData,
         selectedTemplate
       }));

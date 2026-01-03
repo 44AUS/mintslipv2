@@ -230,10 +230,13 @@ export default function UserSettings() {
 
       <main className="flex-1 max-w-4xl mx-auto px-4 py-8 w-full">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Account Settings</h1>
           <p className="text-slate-600">Manage your account and subscription</p>
         </div>
+
+        {/* Navigation Tabs */}
+        <UserNavTabs />
 
         {/* Profile Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">

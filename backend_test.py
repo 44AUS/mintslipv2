@@ -3456,6 +3456,8 @@ class AIResumeBuilderTester:
                 failed_systems.append("Subscription Download System")
             if not subscription_upgrade_tests_passed:
                 failed_systems.append("Subscription Upgrade System")
+            if not stripe_integration_tests_passed:
+                failed_systems.append("Stripe Integration System")
             if not mobile_app_tests_passed:
                 failed_systems.append("Mobile App Backend APIs")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")

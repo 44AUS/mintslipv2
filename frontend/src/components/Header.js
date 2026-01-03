@@ -656,11 +656,11 @@ export default function Header({ title }) {
                   <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                     <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Support</p>
                     <a 
-                      href="tel:+18001234567" 
+                      href="tel:+18556236746" 
                       className="flex items-center gap-2 px-4 py-2 w-full rounded-md hover:bg-green-50 transition-colors text-slate-600"
                     >
                       <Phone className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">(800) 123-4567</span>
+                      <span className="text-sm">(855) 623-6746</span>
                     </a>
                     <a 
                       href="mailto:support@mintslip.com" 

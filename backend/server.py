@@ -225,8 +225,8 @@ class SaveDocumentRequest(BaseModel):
 class PurchaseCreate(BaseModel):
     documentType: str  # paystub, resume, w2, w9, 1099-nec, 1099-misc, bank-statement, offer-letter, vehicle-bill-of-sale, schedule-c, utility-bill
     amount: float
-    paypalEmail: str
-    paypalTransactionId: Optional[str] = None
+    email: Optional[str] = None
+    stripePaymentIntentId: Optional[str] = None
     discountCode: Optional[str] = None
     discountAmount: Optional[float] = 0
     userId: Optional[str] = None  # For subscribed users
@@ -235,7 +235,7 @@ class PurchaseCreate(BaseModel):
 class ManualPurchaseCreate(BaseModel):
     documentType: str
     amount: float
-    paypalEmail: str
+    email: str
     purchaseDate: Optional[str] = None  # ISO date string, defaults to now
     template: Optional[str] = None
     discountCode: Optional[str] = None

@@ -175,7 +175,16 @@ export default function PaymentSuccess() {
       
       if (generated) {
         setDocumentGenerated(true);
-        setFileName(getDefaultFileName(orderType, fileCount));
+        
+        // Check for stored download URL from the generator
+        const storedUrl = localStorage.getItem('lastDownloadUrl');
+        const storedName = localStorage.getItem('lastDownloadFileName');
+        if (storedUrl) {
+          setDownloadUrl(storedUrl);
+          setFileName(storedName || getDefaultFileName(orderType, fileCount));
+        } else {
+          setFileName(getDefaultFileName(orderType, fileCount));
+        }
       } else {
         // No stored data found - show manual download option
         console.log('No stored form data found for type:', orderType);

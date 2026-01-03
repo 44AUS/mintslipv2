@@ -12,12 +12,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { PayPalButtons } from "@paypal/react-paypal-js";
+import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import { generateCanadianPreviewPDF, generateAllCanadianPreviewPDFs } from "@/utils/canadianPaystubPreviewGenerator";
 import { CANADIAN_PROVINCES, calculateCanadianTaxes, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
-import { Upload, X, Search, Building2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Upload, X, Search, Building2, ChevronLeft, ChevronRight , CreditCard, Lock, Loader2 } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
   formatBankLast4, validateBankLast4

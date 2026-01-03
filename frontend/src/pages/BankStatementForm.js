@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 , CreditCard, Lock, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { PayPalButtons } from "@paypal/react-paypal-js";
+import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";

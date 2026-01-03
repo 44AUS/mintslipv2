@@ -11,12 +11,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { PayPalButtons } from "@paypal/react-paypal-js";
+import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadVehicleBillOfSale } from "@/utils/vehicleBillOfSaleGenerator";
 import { generateVehicleBillOfSalePreview } from "@/utils/vehicleBillOfSalePreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
-import { CheckCircle, Car, Sparkles, FileText, Palette, Loader2, Maximize2 } from "lucide-react";
+import { CheckCircle, Car, Sparkles, FileText, Palette, Loader2, Maximize2 , CreditCard, Lock, Loader2 } from "lucide-react";
 
 // US States list
 const US_STATES = [

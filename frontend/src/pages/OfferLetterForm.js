@@ -10,12 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { PayPalButtons } from "@paypal/react-paypal-js";
+import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
-import { Upload, X, CheckCircle, Briefcase, Sparkles, Palette, HelpCircle } from "lucide-react";
+import { Upload, X, CheckCircle, Briefcase, Sparkles, Palette, HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { trackDocumentGenerated, trackPaymentInitiated } from "@/utils/analyticsTracker";
 

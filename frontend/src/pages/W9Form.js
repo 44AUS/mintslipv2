@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { PayPalButtons } from "@paypal/react-paypal-js";
+import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW9 } from "@/utils/w9Generator";
 import { generateW9Preview } from "@/utils/w9PreviewGenerator";

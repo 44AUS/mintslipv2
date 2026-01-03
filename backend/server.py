@@ -26,11 +26,10 @@ load_dotenv()
 # Import Emergent Integrations for Gemini
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-# PayPal Configuration
-PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID")
-PAYPAL_SECRET = os.environ.get("PAYPAL_SECRET")
-PAYPAL_MODE = os.environ.get("PAYPAL_MODE", "sandbox")
-PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox" else "https://api-m.paypal.com"
+# Stripe Configuration
+import stripe
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
+stripe.api_key = STRIPE_API_KEY
 
 # Rate limiting storage (in production, use Redis)
 rate_limit_storage = defaultdict(list)

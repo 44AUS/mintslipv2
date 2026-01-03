@@ -326,7 +326,35 @@ export default function W9Form() {
 
   const onError = (err) => {
     toast.error("Payment failed. Please try again.");
-    console.error("PayPal error:", err);
+    console.error("Payment error:", err);
+  };
+
+  // Handle Stripe checkout for W-9 payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 14.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Store form data for after payment
+      localStorage.setItem("pendingW9Data", JSON.stringify(formData));
+      
+      const { url } = await createStripeCheckout({
+        amount: finalAmount,
+        documentType: "w9",
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/w9-generator"
+      });
+      
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Get TIN display value

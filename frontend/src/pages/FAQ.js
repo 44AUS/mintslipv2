@@ -45,7 +45,7 @@ const FAQ_CATEGORIES = {
       },
       {
         question: "What payment methods do you accept?",
-        answer: "We accept all major payment methods through PayPal, including credit cards (Visa, Mastercard, American Express, Discover), debit cards, and PayPal balance. All payments are processed securely."
+        answer: "We accept all major payment methods through Stripe, including credit cards (Visa, Mastercard, American Express, Discover), debit cards, Apple Pay, and Google Pay. All payments are processed securely."
       },
       {
         question: "Can I get a refund?",

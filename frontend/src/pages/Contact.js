@@ -40,7 +40,7 @@ const FAQS = [
   },
   {
     question: "What payment methods do you accept?",
-    answer: "We accept all major payment methods through PayPal, including credit cards, debit cards, and PayPal balance."
+    answer: "We accept all major payment methods through Stripe, including credit cards, debit cards, Apple Pay, and Google Pay."
   },
 ];
 

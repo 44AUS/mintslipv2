@@ -120,10 +120,8 @@ export default function PaymentSuccess() {
           await generateAndDownloadPaystub(formData, template, numStubs);
           generated = true;
           
-          // Clean up localStorage
-          localStorage.removeItem('pendingPaystubData');
-          localStorage.removeItem('pendingPaystubTemplate');
-          localStorage.removeItem('pendingPaystubCount');
+          // DON'T clear form data yet - user may need to re-download
+          // Data will be cleared when they start a new payment flow
           
           toast.success(numStubs > 1 ? `Your ${numStubs} paystubs have been downloaded!` : 'Your paystub has been downloaded!');
         }

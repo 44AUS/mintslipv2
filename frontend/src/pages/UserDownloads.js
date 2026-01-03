@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import UserNavTabs from "@/components/UserNavTabs";
 import {
   Table,
   TableBody,

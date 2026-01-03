@@ -3352,6 +3352,14 @@ class AIResumeBuilderTester:
         print("\n🔄 Testing Complete Blog Flow...")
         complete_blog_flow_ok = self.test_complete_blog_flow()
         
+        # Test Stripe Integration System
+        print("\n💳 Testing Stripe Integration System...")
+        stripe_config_ok = self.test_stripe_config()
+        stripe_one_time_ok = self.test_stripe_one_time_checkout()
+        stripe_user_auth_ok = self.test_user_auth_for_stripe()
+        stripe_subscription_ok = self.test_stripe_subscription_checkout()
+        stripe_status_ok = self.test_stripe_checkout_status()
+
         # Test Subscription Download System
         print("\n💳 Testing Subscription Download System...")
         user_registration_ok = self.test_user_registration()

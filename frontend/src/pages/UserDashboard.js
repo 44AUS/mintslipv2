@@ -161,12 +161,15 @@ export default function UserDashboard() {
 
       <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
         {/* Welcome Section */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">
             Welcome back, {user?.name?.split(' ')[0] || "User"}! 👋
           </h1>
           <p className="text-slate-600">Here's your account overview</p>
         </div>
+
+        {/* Navigation Tabs */}
+        <UserNavTabs />
 
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

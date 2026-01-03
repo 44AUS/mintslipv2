@@ -472,7 +472,7 @@ export default function UserDownloads() {
                                 <FileText className="w-5 h-5 text-slate-600" />
                               </div>
                               <span className="font-medium">
-                                {DOCUMENT_TYPES[download.documentType] || download.documentType}
+                                {ALL_DOCUMENT_TYPES[download.documentType] || download.documentType}
                               </span>
                             </div>
                           </TableCell>

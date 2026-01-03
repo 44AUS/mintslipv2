@@ -139,6 +139,36 @@ export default function UserDownloads() {
     setEndDate("");
   };
 
+  // Clear saved documents filters
+  const clearSavedFilters = () => {
+    setSavedDocumentTypeFilter("all");
+    setSavedStartDate("");
+    setSavedEndDate("");
+  };
+
+  // Filter saved documents by type and date
+  const getFilteredSavedDocuments = () => {
+    return savedDocuments.filter(doc => {
+      // Type filter
+      if (savedDocumentTypeFilter !== "all" && doc.documentType !== savedDocumentTypeFilter) {
+        return false;
+      }
+      
+      // Date filter
+      if (savedStartDate || savedEndDate) {
+        const docDate = new Date(doc.createdAt).toISOString().split('T')[0];
+        if (savedStartDate && docDate < savedStartDate) {
+          return false;
+        }
+        if (savedEndDate && docDate > savedEndDate) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  };
+
   const fetchDownloads = async (token) => {
     setIsLoading(true);
     try {

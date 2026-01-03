@@ -11,12 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, CreditCard, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { PayPalButtons } from "@paypal/react-paypal-js";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW2, BOX_12_CODES } from "@/utils/w2Generator";
 import { generateW2Preview } from "@/utils/w2PreviewGenerator";
+import { createStripeCheckout } from "@/utils/stripePayment";
 import { 
   formatEIN, validateEIN,
   formatZipCode, validateZipCode,

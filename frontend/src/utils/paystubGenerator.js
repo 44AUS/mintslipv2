@@ -105,6 +105,23 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       .split("|||")
       .map((m) => m.trim())
       .slice(0, calculatedNumStubs);
+    
+    // Parse per-period dates (start, end, pay dates)
+    const startDateArray = (formData.startDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d)
+      .slice(0, calculatedNumStubs);
+    const endDateArray = (formData.endDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d)
+      .slice(0, calculatedNumStubs);
+    const payDateArray = (formData.payDateList || "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(d => d)
+      .slice(0, calculatedNumStubs);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);

@@ -657,6 +657,7 @@ export default function Header({ title }) {
           </div>
         </div>
       </div>
-    </header>
+      </header>
+    </>
   );
 }

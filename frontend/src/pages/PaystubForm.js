@@ -1126,6 +1126,71 @@ export default function PaystubForm() {
     });
   };
 
+  // Handle Stripe one-time payment checkout
+  const handleStripeCheckout = async () => {
+    if (calculateNumStubs === 0) {
+      toast.error("Please configure at least one pay period");
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    try {
+      const baseAmount = calculateNumStubs * 9.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : baseAmount;
+      
+      // Get current URL for redirects
+      const origin = window.location.origin;
+      
+      // Store form data for after payment completion
+      const fullFormData = {
+        ...formData,
+        deductions: deductions,
+        contributions: contributions,
+        absencePlans: absencePlans,
+        employerBenefits: employerBenefits,
+        companyLogo: companyLogo,
+        logoDataUrl: logoPreview,
+      };
+      sessionStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
+      sessionStorage.setItem("pendingPaystubTemplate", selectedTemplate);
+      sessionStorage.setItem("pendingPaystubCount", calculateNumStubs.toString());
+      
+      // Create checkout session for one-time payment
+      const response = await fetch(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: finalAmount,
+          documentType: "paystub",
+          template: selectedTemplate,
+          discountCode: appliedDiscount?.code || null,
+          discountAmount: appliedDiscount ? baseAmount - finalAmount : 0,
+          successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${origin}/paystub-generator`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to create checkout session");
+      }
+
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {

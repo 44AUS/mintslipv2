@@ -3418,12 +3418,13 @@ class AIResumeBuilderTester:
                                             subscription_download_with_sub_ok and downloads_remaining_ok and 
                                             downloads_decrement_ok and subscription_download_zero_ok)
         subscription_upgrade_tests_passed = upgrade_calculate_ok and upgrade_create_order_ok and upgrade_validation_ok
+        stripe_integration_tests_passed = stripe_config_ok and stripe_one_time_ok and stripe_user_auth_ok and stripe_subscription_ok and stripe_status_ok
         mobile_app_tests_passed = (mobile_auth_register_ok and mobile_auth_login_ok and mobile_user_me_ok and 
                                  mobile_subscription_download_ok and mobile_downloads_remaining_ok)
         
         if (critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and 
             new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and 
-            subscription_upgrade_tests_passed and mobile_app_tests_passed):
+            subscription_upgrade_tests_passed and stripe_integration_tests_passed and mobile_app_tests_passed):
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")

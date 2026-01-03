@@ -1151,6 +1151,38 @@ export default function CanadianPaystubForm() {
     toast.error("Payment failed. Please try again.");
     setIsProcessing(false);
   };
+
+  // Handle Stripe checkout for Canadian Paystub payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 9.99 * calculateNumStubs;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Store form data for after payment - use localStorage for persistence
+      localStorage.setItem("pendingCanadianPaystubData", JSON.stringify(formData));
+      localStorage.setItem("pendingCanadianPaystubTemplate", selectedTemplate);
+      localStorage.setItem("pendingCanadianPaystubCount", calculateNumStubs.toString());
+      
+      const { url } = await createStripeCheckout({
+        amount: finalAmount,
+        documentType: "canadian-paystub",
+        template: selectedTemplate,
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/canadian-paystub-generator"
+      });
+      
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   
   // Clear logo and reset payroll company when leaving the page
   useEffect(() => {

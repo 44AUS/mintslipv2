@@ -243,7 +243,8 @@ async function generateSingleStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, stateRate,
   payDay, pageWidth, pageHeight, totalStubs, payFrequency,
-  checkNumberArray = [], memoArray = []
+  checkNumberArray = [], memoArray = [],
+  startDateArray = [], endDateArray = [], payDateArray = []
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";
@@ -254,6 +255,14 @@ async function generateSingleStub(
   // Get per-period check number and memo for OnPay template
   const periodCheckNumber = checkNumberArray[stubNum] || "";
   const periodMemo = memoArray[stubNum] || "";
+  
+  // Use user-provided dates if available, otherwise use calculated dates
+  const actualStartDate = startDateArray[stubNum] ? new Date(startDateArray[stubNum]) : new Date(startDate);
+  const actualEndDate = endDateArray[stubNum] ? new Date(endDateArray[stubNum]) : (() => {
+    const end = new Date(actualStartDate);
+    end.setDate(actualStartDate.getDate() + periodLength - 1);
+    return end;
+  })();
   
   // Calculate gross pay based on pay type
   let hours = 0;

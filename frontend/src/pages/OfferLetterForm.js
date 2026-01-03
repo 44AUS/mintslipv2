@@ -451,7 +451,37 @@ export default function OfferLetterForm() {
 
   const onError = (err) => {
     toast.error("Payment failed. Please try again.");
-    console.error("PayPal error:", err);
+    console.error("Payment error:", err);
+  };
+
+  // Handle Stripe checkout for Offer Letter payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 9.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Store form data for after payment
+      localStorage.setItem("pendingOfferLetterData", JSON.stringify(formData));
+      localStorage.setItem("pendingOfferLetterTemplate", selectedTemplate);
+      
+      const { url } = await createStripeCheckout({
+        amount: finalAmount,
+        documentType: "offer-letter",
+        template: selectedTemplate,
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/offer-letter-generator"
+      });
+      
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Format compensation for display

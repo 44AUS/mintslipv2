@@ -13,7 +13,9 @@ import {
   Clock,
   ArrowRight,
   Loader2,
-  LogOut
+  LogOut,
+  CreditCard,
+  Apple
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -86,9 +88,9 @@ export default function SubscriptionChoose() {
     const userInfo = localStorage.getItem("userInfo");
     
     if (!token || !userInfo) {
-      // For preview, show page with demo user
-      setUser({ name: "Guest User", email: "guest@example.com" });
-      setIsLoading(false);
+      // Redirect to login if not authenticated
+      toast.error("Please log in to subscribe");
+      navigate("/login");
       return;
     }
 
@@ -96,13 +98,15 @@ export default function SubscriptionChoose() {
       const parsedUser = JSON.parse(userInfo);
       setUser(parsedUser);
 
-      // If user already has subscription, redirect to dashboard
-      if (parsedUser.subscription) {
+      // If user already has active subscription, redirect to dashboard
+      if (parsedUser.subscription && parsedUser.subscription.status === "active") {
         navigate("/user/dashboard");
         return;
       }
     } catch (e) {
-      setUser({ name: "Guest User", email: "guest@example.com" });
+      toast.error("Session expired. Please log in again.");
+      navigate("/login");
+      return;
     }
 
     setIsLoading(false);
@@ -128,25 +132,40 @@ export default function SubscriptionChoose() {
         return;
       }
 
-      const response = await fetch(`${BACKEND_URL}/api/subscriptions/create`, {
+      // Get current URL for success/cancel redirects
+      const origin = window.location.origin;
+      const successUrl = `${origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${origin}/subscription/cancel`;
+
+      // Create Stripe checkout session
+      const response = await fetch(`${BACKEND_URL}/api/stripe/create-checkout-session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ tier: selectedTier })
+        body: JSON.stringify({ 
+          tier: selectedTier,
+          successUrl: successUrl,
+          cancelUrl: cancelUrl
+        })
       });
 
       const data = await response.json();
 
-      if (data.success && data.approval_url) {
-        // Store subscription ID for later activation
-        localStorage.setItem("pending_subscription_id", data.subscription_id);
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to create checkout session");
+      }
+
+      if (data.success && data.url) {
+        // Store pending subscription info
         localStorage.setItem("pending_subscription_tier", selectedTier);
-        // Redirect to PayPal for approval
-        window.location.href = data.approval_url;
+        localStorage.setItem("pending_checkout_session_id", data.sessionId);
+        
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
       } else {
-        throw new Error(data.detail || "Failed to create subscription");
+        throw new Error("No checkout URL received");
       }
     } catch (error) {
       console.error("Error creating subscription:", error);
@@ -355,7 +374,7 @@ export default function SubscriptionChoose() {
             {isProcessing ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
+                Redirecting to checkout...
               </>
             ) : (
               <>
@@ -365,9 +384,17 @@ export default function SubscriptionChoose() {
             )}
           </Button>
 
-          <p className="mt-4 text-sm text-slate-500">
-            Secure payment via PayPal. Cancel anytime.
-          </p>
+          {/* Payment methods info */}
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <p className="text-sm text-slate-500">
+              Secure payment powered by Stripe
+            </p>
+            <div className="flex items-center gap-4 text-slate-400">
+              <CreditCard className="w-6 h-6" />
+              <Apple className="w-6 h-6" />
+              <span className="text-xs">Visa, Mastercard, Amex, Apple Pay & more</span>
+            </div>
+          </div>
         </div>
 
         {/* FAQ Section */}
@@ -392,7 +419,7 @@ export default function SubscriptionChoose() {
               },
               {
                 q: "What payment methods do you accept?",
-                a: "We accept PayPal and all major credit cards through PayPal's secure payment system."
+                a: "We accept all major credit cards (Visa, Mastercard, American Express, Discover), Apple Pay, and Google Pay through Stripe's secure payment system."
               }
             ].map((faq, idx) => (
               <div key={idx} className="bg-white rounded-xl p-5 border border-slate-200">

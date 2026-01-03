@@ -1297,6 +1297,287 @@ class AIResumeBuilderTester:
             self.log_test("Subscription Download Zero Remaining", False, f"Exception: {str(e)}")
             return False
 
+    # ========== STRIPE INTEGRATION TESTS ==========
+
+    def test_stripe_config(self):
+        """Test GET /api/stripe/config endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/stripe/config", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if "publishableKey" in data:
+                    pub_key = data["publishableKey"]
+                    if pub_key and pub_key.startswith("pk_test_"):
+                        details += f", Valid publishable key: {pub_key[:20]}..."
+                    else:
+                        success = False
+                        details += f", Invalid publishable key: {pub_key}"
+                else:
+                    success = False
+                    details += f", Missing publishableKey in response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Stripe Config API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Config API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_stripe_one_time_checkout(self):
+        """Test POST /api/stripe/create-one-time-checkout endpoint"""
+        try:
+            payload = {
+                "amount": 9.99,
+                "documentType": "paystub",
+                "template": "template-a"
+            }
+            response = requests.post(f"{self.api_url}/stripe/create-one-time-checkout", json=payload, timeout=15)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "sessionId", "url"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success") and data.get("sessionId") and data.get("url"):
+                    session_id = data["sessionId"]
+                    checkout_url = data["url"]
+                    
+                    # Validate session ID format
+                    if session_id.startswith("cs_test_"):
+                        details += f", Valid session ID: {session_id[:20]}..."
+                    else:
+                        success = False
+                        details += f", Invalid session ID format: {session_id}"
+                    
+                    # Validate checkout URL
+                    if "checkout.stripe.com" in checkout_url:
+                        details += f", Valid checkout URL"
+                    else:
+                        success = False
+                        details += f", Invalid checkout URL: {checkout_url}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Stripe One-Time Checkout API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe One-Time Checkout API", False, f"Exception: {str(e)}")
+            return False
+
+    def create_test_user_for_stripe(self):
+        """Create a test user for Stripe subscription testing"""
+        try:
+            import time
+            timestamp = int(time.time())
+            payload = {
+                "name": "Stripe Test User",
+                "email": f"stripetest{timestamp}@test.com",
+                "password": "test123"
+            }
+            response = requests.post(f"{self.api_url}/auth/register", json=payload, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and data.get("token"):
+                    return data["token"], data["user"]["id"]
+            
+            # If registration fails, try login with existing test user
+            login_payload = {
+                "email": "stripetest@test.com",
+                "password": "test123"
+            }
+            login_response = requests.post(f"{self.api_url}/auth/login", json=login_payload, timeout=10)
+            if login_response.status_code == 200:
+                login_data = login_response.json()
+                if login_data.get("success") and login_data.get("token"):
+                    return login_data["token"], login_data["user"]["id"]
+            
+            return None, None
+        except Exception:
+            return None, None
+
+    def test_user_auth_for_stripe(self):
+        """Test user authentication endpoints needed for Stripe subscription testing"""
+        try:
+            # Test user registration
+            import time
+            timestamp = int(time.time())
+            register_payload = {
+                "name": "Stripe Test User",
+                "email": f"stripetest{timestamp}@test.com", 
+                "password": "test123"
+            }
+            
+            register_response = requests.post(f"{self.api_url}/auth/register", json=register_payload, timeout=10)
+            
+            # Accept both success and "already exists" scenarios
+            if register_response.status_code == 200:
+                register_data = register_response.json()
+                if register_data.get("success") and register_data.get("token"):
+                    self.stripe_test_token = register_data["token"]
+                    self.stripe_test_user_id = register_data["user"]["id"]
+                    details = f"User registered successfully, token received"
+                else:
+                    self.log_test("User Auth for Stripe", False, f"Invalid registration response: {register_data}")
+                    return False
+            else:
+                # Try login with existing test user
+                login_payload = {
+                    "email": "stripetest@test.com",
+                    "password": "test123"
+                }
+                login_response = requests.post(f"{self.api_url}/auth/login", json=login_payload, timeout=10)
+                
+                if login_response.status_code == 200:
+                    login_data = login_response.json()
+                    if login_data.get("success") and login_data.get("token"):
+                        self.stripe_test_token = login_data["token"]
+                        self.stripe_test_user_id = login_data["user"]["id"]
+                        details = f"Existing user login successful, token received"
+                    else:
+                        self.log_test("User Auth for Stripe", False, f"Invalid login response: {login_data}")
+                        return False
+                else:
+                    self.log_test("User Auth for Stripe", False, f"Both registration and login failed. Register: {register_response.status_code}, Login: {login_response.status_code}")
+                    return False
+            
+            self.log_test("User Auth for Stripe", True, details)
+            return True
+        except Exception as e:
+            self.log_test("User Auth for Stripe", False, f"Exception: {str(e)}")
+            return False
+
+    def test_stripe_subscription_checkout(self):
+        """Test POST /api/stripe/create-checkout-session endpoint (requires authentication)"""
+        if not hasattr(self, 'stripe_test_token') or not self.stripe_test_token:
+            self.log_test("Stripe Subscription Checkout API", False, "No user token available (user auth test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.stripe_test_token}"}
+            payload = {"tier": "starter"}
+            
+            response = requests.post(f"{self.api_url}/stripe/create-checkout-session", json=payload, headers=headers, timeout=15)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "sessionId", "url"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success") and data.get("sessionId") and data.get("url"):
+                    session_id = data["sessionId"]
+                    checkout_url = data["url"]
+                    
+                    # Store session ID for status testing
+                    self.stripe_session_id = session_id
+                    
+                    # Validate session ID format
+                    if session_id.startswith("cs_test_"):
+                        details += f", Valid session ID: {session_id[:20]}..."
+                    else:
+                        success = False
+                        details += f", Invalid session ID format: {session_id}"
+                    
+                    # Validate checkout URL
+                    if "checkout.stripe.com" in checkout_url:
+                        details += f", Valid checkout URL"
+                    else:
+                        success = False
+                        details += f", Invalid checkout URL: {checkout_url}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Stripe Subscription Checkout API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Subscription Checkout API", False, f"Exception: {str(e)}")
+            return False
+
+    def test_stripe_checkout_status(self):
+        """Test GET /api/stripe/checkout-status/{session_id} endpoint"""
+        if not hasattr(self, 'stripe_session_id') or not self.stripe_session_id:
+            self.log_test("Stripe Checkout Status API", False, "No session ID available (subscription checkout test must pass first)")
+            return False
+        
+        try:
+            response = requests.get(f"{self.api_url}/stripe/checkout-status/{self.stripe_session_id}", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["status", "payment_status"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                else:
+                    session_status = data.get("status")
+                    payment_status = data.get("payment_status")
+                    amount_total = data.get("amount_total")
+                    currency = data.get("currency")
+                    
+                    details += f", Session status: {session_status}, Payment status: {payment_status}"
+                    
+                    if amount_total and currency:
+                        details += f", Amount: {amount_total} {currency}"
+                    
+                    # Validate status values
+                    valid_session_statuses = ["open", "complete", "expired"]
+                    valid_payment_statuses = ["paid", "unpaid", "no_payment_required"]
+                    
+                    if session_status not in valid_session_statuses:
+                        success = False
+                        details += f", Invalid session status: {session_status}"
+                    
+                    if payment_status not in valid_payment_statuses:
+                        success = False
+                        details += f", Invalid payment status: {payment_status}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Stripe Checkout Status API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Stripe Checkout Status API", False, f"Exception: {str(e)}")
+            return False
+
     # ========== MOBILE APP BACKEND API TESTS ==========
 
     def test_parse_resume_endpoint(self):

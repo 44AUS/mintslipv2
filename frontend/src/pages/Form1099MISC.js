@@ -345,7 +345,36 @@ export default function Form1099MISC() {
 
   const onError = (err) => {
     toast.error("Payment failed. Please try again.");
-    console.error("PayPal error:", err);
+    console.error("Payment error:", err);
+  };
+
+  // Handle Stripe checkout for 1099-MISC payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 14.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Store form data for after payment
+      localStorage.setItem("pending1099MISCData", JSON.stringify(formData));
+      localStorage.setItem("pending1099MISCTaxYear", selectedTaxYear);
+      
+      const { url } = await createStripeCheckout({
+        amount: finalAmount,
+        documentType: "1099-misc",
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/1099-misc-generator"
+      });
+      
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Format currency for display

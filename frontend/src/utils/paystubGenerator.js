@@ -181,11 +181,11 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       // Template-specific filename with pay date
       const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
       
-      // Store download info for payment success page
+      // Store download info for payment success page (use localStorage for persistence)
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
-      sessionStorage.setItem('lastDownloadUrl', blobUrl);
-      sessionStorage.setItem('lastDownloadFileName', pdfFileName);
+      localStorage.setItem('lastDownloadUrl', blobUrl);
+      localStorage.setItem('lastDownloadFileName', pdfFileName);
       
       doc.save(pdfFileName);
       console.log("PDF downloaded successfully");

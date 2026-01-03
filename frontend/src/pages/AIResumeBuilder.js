@@ -2041,25 +2041,26 @@ export default function AIResumeBuilder() {
                       <p className="text-slate-600">One-time payment for your AI-optimized resume</p>
                     </div>
                     <div className="max-w-md mx-auto">
-                      {isProcessingPayment && (
-                        <div className="flex items-center justify-center py-4">
-                          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-                          <span className="ml-2 text-slate-600">Processing payment...</span>
-                        </div>
-                      )}
-                      <div style={{ display: isProcessingPayment ? 'none' : 'block' }}>
-                        <PayPalButtons
-                          style={{ layout: "vertical", color: "gold", shape: "rect" }}
-                          createOrder={createOrder}
-                          onApprove={onApprove}
-                          onCancel={() => {
-                            toast.info("Payment was cancelled.");
-                          }}
-                          onError={(err) => {
-                            console.error("PayPal error:", err);
-                            toast.error("Payment failed. Please try again.");
-                          }}
-                        />
+                      <Button
+                        onClick={handleStripeCheckout}
+                        disabled={isProcessingPayment}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                      >
+                        {isProcessingPayment ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-5 h-5" />
+                            Pay ${appliedDiscount && appliedDiscount.discountedPrice ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}
+                          </>
+                        )}
+                      </Button>
+                      <div className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-2">
+                        <Lock className="w-3 h-3" />
+                        <span>Secured by Stripe</span>
                       </div>
                     </div>
                     <p className="text-xs text-center text-slate-500">

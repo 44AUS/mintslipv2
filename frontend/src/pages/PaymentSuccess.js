@@ -82,8 +82,8 @@ export default function PaymentSuccess() {
       let generated = false;
       
       if (orderType === 'paystub') {
-        const formDataStr = sessionStorage.getItem('pendingPaystubData');
-        const template = sessionStorage.getItem('pendingPaystubTemplate') || 'template-a';
+        const formDataStr = localStorage.getItem('pendingPaystubData');
+        const template = localStorage.getItem('pendingPaystubTemplate') || 'template-a';
         
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
@@ -93,30 +93,30 @@ export default function PaymentSuccess() {
           await generateAndDownloadPaystub(formData, template);
           generated = true;
           
-          // Clean up session storage
-          sessionStorage.removeItem('pendingPaystubData');
-          sessionStorage.removeItem('pendingPaystubTemplate');
-          sessionStorage.removeItem('pendingPaystubCount');
+          // Clean up localStorage
+          localStorage.removeItem('pendingPaystubData');
+          localStorage.removeItem('pendingPaystubTemplate');
+          localStorage.removeItem('pendingPaystubCount');
           
           toast.success('Your paystub has been downloaded!');
         }
       } else if (orderType === 'w2') {
-        const formDataStr = sessionStorage.getItem('pendingW2Data');
+        const formDataStr = localStorage.getItem('pendingW2Data');
         
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
-          const taxYear = sessionStorage.getItem('pendingW2TaxYear') || '2024';
+          const taxYear = localStorage.getItem('pendingW2TaxYear') || '2024';
           
           await generateAndDownloadW2(formData, taxYear);
           generated = true;
           
-          sessionStorage.removeItem('pendingW2Data');
-          sessionStorage.removeItem('pendingW2TaxYear');
+          localStorage.removeItem('pendingW2Data');
+          localStorage.removeItem('pendingW2TaxYear');
           
           toast.success('Your W-2 has been downloaded!');
         }
       } else if (orderType === 'w9') {
-        const formDataStr = sessionStorage.getItem('pendingW9Data');
+        const formDataStr = localStorage.getItem('pendingW9Data');
         
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
@@ -124,22 +124,22 @@ export default function PaymentSuccess() {
           await generateAndDownloadW9(formData);
           generated = true;
           
-          sessionStorage.removeItem('pendingW9Data');
+          localStorage.removeItem('pendingW9Data');
           
           toast.success('Your W-9 has been downloaded!');
         }
       } else if (orderType === 'bank-statement') {
-        const formDataStr = sessionStorage.getItem('pendingBankStatementData');
+        const formDataStr = localStorage.getItem('pendingBankStatementData');
         
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
-          const template = sessionStorage.getItem('pendingBankStatementTemplate') || 'chase';
+          const template = localStorage.getItem('pendingBankStatementTemplate') || 'chase';
           
           await generateAndDownloadBankStatement(formData, template);
           generated = true;
           
-          sessionStorage.removeItem('pendingBankStatementData');
-          sessionStorage.removeItem('pendingBankStatementTemplate');
+          localStorage.removeItem('pendingBankStatementData');
+          localStorage.removeItem('pendingBankStatementTemplate');
           
           toast.success('Your bank statement has been downloaded!');
         }

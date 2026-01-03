@@ -227,16 +227,31 @@ export default function PaymentSuccess() {
 
   // Handle manual re-download
   const handleRedownload = async () => {
-    if (downloadUrl) {
-      // Use stored URL
+    // First check localStorage for the download URL (set by the generator)
+    const storedUrl = localStorage.getItem('lastDownloadUrl');
+    const storedName = localStorage.getItem('lastDownloadFileName');
+    
+    if (storedUrl) {
+      // Use stored URL - create a download link
+      const link = document.createElement('a');
+      link.href = storedUrl;
+      link.download = storedName || fileName || 'document.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Download started!');
+    } else if (downloadUrl) {
+      // Use state URL (fallback)
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = fileName || 'document.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      toast.success('Download started!');
     } else {
-      // Try to regenerate
+      // No URL available - try to regenerate the document
+      toast.info('Regenerating your document...');
       await generateDocument();
     }
   };

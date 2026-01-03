@@ -1048,6 +1048,53 @@ async def create_payment_intent(request: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.get("/api/stripe/checkout-status/{session_id}")
+async def get_checkout_status(session_id: str):
+    """Get the status of a Stripe checkout session"""
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # If payment is complete, also try to activate the subscription
+        if session.payment_status == "paid" and session.status == "complete":
+            user_id = session.metadata.get("userId")
+            tier = session.metadata.get("tier")
+            
+            if user_id and tier:
+                # Check if subscription is already active
+                user = await users_collection.find_one({"id": user_id})
+                if user and (not user.get("subscription") or user.get("subscription", {}).get("stripeSubscriptionId") != session.subscription):
+                    plan_config = SUBSCRIPTION_PLANS.get(tier, {})
+                    
+                    # Update user subscription
+                    await users_collection.update_one(
+                        {"id": user_id},
+                        {"$set": {
+                            "subscription": {
+                                "tier": tier,
+                                "status": "active",
+                                "stripeSubscriptionId": session.subscription,
+                                "stripeCustomerId": session.customer,
+                                "downloads_remaining": plan_config.get("downloads", 0),
+                                "downloads_total": plan_config.get("downloads", 0),
+                                "current_period_start": datetime.now(timezone.utc).isoformat(),
+                                "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+                                "createdAt": datetime.now(timezone.utc).isoformat()
+                            }
+                        }}
+                    )
+        
+        return {
+            "status": session.status,
+            "payment_status": session.payment_status,
+            "amount_total": session.amount_total,
+            "currency": session.currency,
+            "metadata": dict(session.metadata) if session.metadata else {}
+        }
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(request: Request):
     """Handle Stripe webhooks"""

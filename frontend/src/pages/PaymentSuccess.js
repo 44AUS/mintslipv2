@@ -304,6 +304,11 @@ export default function PaymentSuccess() {
   };
 
   useEffect(() => {
+    // Prevent double execution (React StrictMode runs effects twice in dev)
+    if (hasStartedRef.current) {
+      return;
+    }
+    hasStartedRef.current = true;
     verifyAndGenerate();
   }, [verifyAndGenerate]);
 

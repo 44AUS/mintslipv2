@@ -181,6 +181,69 @@ export default function AdminDiscounts() {
     }
   };
 
+  const fetchBannerSettings = async (token) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/banner`, {
+        headers: { "Authorization": `Bearer ${token || adminToken}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.banner) {
+          setBannerSettings(data.banner);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching banner settings:", error);
+    }
+  };
+
+  const saveBannerSettings = async () => {
+    setSavingBanner(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/banner`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${adminToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bannerSettings)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setBannerSettings(data.banner);
+        toast.success(bannerSettings.isActive ? "Banner is now live!" : "Banner has been disabled");
+      } else {
+        toast.error("Failed to save banner settings");
+      }
+    } catch (error) {
+      toast.error("Error saving banner settings");
+    } finally {
+      setSavingBanner(false);
+    }
+  };
+
+  const handleBannerDiscountChange = (discountId) => {
+    if (discountId === "none") {
+      setBannerSettings(prev => ({
+        ...prev,
+        discountId: null,
+        discountCode: "",
+        discountPercent: 0
+      }));
+    } else {
+      const discount = discounts.find(d => d.id === discountId);
+      if (discount) {
+        setBannerSettings(prev => ({
+          ...prev,
+          discountId: discount.id,
+          discountCode: discount.code,
+          discountPercent: discount.discountPercent
+        }));
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     

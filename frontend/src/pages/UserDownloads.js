@@ -111,7 +111,7 @@ export default function UserDownloads() {
     } catch (e) {
       navigate("/login");
     }
-  }, [navigate, page, documentTypeFilter]);
+  }, [navigate, page, documentTypeFilter, startDate, endDate]);
 
   // Reset page when filter changes
   const handleFilterChange = (value) => {
@@ -119,12 +119,40 @@ export default function UserDownloads() {
     setDocumentTypeFilter(value);
   };
 
+  // Reset page when date filters change
+  const handleDateChange = (type, value) => {
+    setPage(0);
+    if (type === "start") {
+      setStartDate(value);
+    } else {
+      setEndDate(value);
+    }
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setPage(0);
+    setDocumentTypeFilter("all");
+    setStartDate("");
+    setEndDate("");
+  };
+
   const fetchDownloads = async (token) => {
     setIsLoading(true);
     try {
-      const filterParam = documentTypeFilter !== "all" ? `&document_type=${documentTypeFilter}` : "";
+      let params = `skip=${page * pageSize}&limit=${pageSize}`;
+      if (documentTypeFilter !== "all") {
+        params += `&document_type=${documentTypeFilter}`;
+      }
+      if (startDate) {
+        params += `&start_date=${startDate}`;
+      }
+      if (endDate) {
+        params += `&end_date=${endDate}`;
+      }
+      
       const response = await fetch(
-        `${BACKEND_URL}/api/user/downloads?skip=${page * pageSize}&limit=${pageSize}${filterParam}`,
+        `${BACKEND_URL}/api/user/downloads?${params}`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
       

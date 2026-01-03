@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import UserNavTabs from "@/components/UserNavTabs";
 import {
   Dialog,
   DialogContent,

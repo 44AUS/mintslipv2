@@ -426,6 +426,7 @@ export default function AdminDashboard() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         purchasesToExport = purchasesToExport.filter(p => 
+          p.email?.toLowerCase().includes(query) ||
           p.paypalEmail?.toLowerCase().includes(query) ||
           p.documentType?.toLowerCase().includes(query) ||
           p.template?.toLowerCase().includes(query)
@@ -441,7 +442,7 @@ export default function AdminDashboard() {
           new Date(purchase.createdAt).toLocaleDateString(),
           DOCUMENT_TYPES[purchase.documentType] || purchase.documentType,
           purchase.template || "-",
-          purchase.paypalEmail,
+          purchase.email || purchase.paypalEmail || "N/A",
           purchase.userId ? "Registered" : "Guest",
           purchase.amount?.toFixed(2) || "0.00",
           purchase.discountCode || "-",

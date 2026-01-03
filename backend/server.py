@@ -1842,17 +1842,18 @@ async def get_user_downloads(
     end_date: Optional[str] = None
 ):
     """Get user's download history with optional document type and date filters"""
-    # For now, get purchases associated with the user's email or userId
+    # Get purchases associated with the user's email or userId
     user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
     
     if not user:
         return {"success": True, "downloads": [], "total": 0}
     
-    # Query purchases by userId or paypal email
+    # Query purchases by userId or email (works for both PayPal and Stripe)
     query = {
         "$or": [
             {"userId": user["id"]},
-            {"paypalEmail": user["email"]}
+            {"paypalEmail": user["email"]},
+            {"email": user["email"]}  # For Stripe purchases
         ]
     }
     

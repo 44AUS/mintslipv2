@@ -89,6 +89,7 @@ function App() {
         intent: "capture"
       }}>
         <div className="App">
+          <PromoBanner />
           <Toaster position="top-center" richColors />
           <BrowserRouter>
             <ScrollToTop />

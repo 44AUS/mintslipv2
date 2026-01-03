@@ -1048,6 +1048,62 @@ async def create_payment_intent(request: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+class OneTimeCheckoutRequest(BaseModel):
+    amount: float
+    documentType: str
+    template: Optional[str] = None
+    discountCode: Optional[str] = None
+    discountAmount: Optional[float] = 0
+    successUrl: Optional[str] = None
+    cancelUrl: Optional[str] = None
+
+
+@app.post("/api/stripe/create-one-time-checkout")
+async def create_one_time_checkout(data: OneTimeCheckoutRequest):
+    """Create a Stripe checkout session for one-time document purchase"""
+    try:
+        # Convert to cents
+        amount_cents = int(float(data.amount) * 100)
+        
+        # Get frontend URL from environment or use default
+        frontend_url = os.environ.get("FRONTEND_URL", "https://l7ltqw-3000.csb.app")
+        
+        # Create checkout session for one-time payment
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": f"MintSlip - {data.documentType.replace('-', ' ').title()}",
+                        "description": f"Professional {data.documentType} document generation"
+                    },
+                    "unit_amount": amount_cents,
+                },
+                "quantity": 1
+            }],
+            mode="payment",
+            success_url=data.successUrl or f"{frontend_url}/payment-success?type={data.documentType}&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=data.cancelUrl or frontend_url,
+            metadata={
+                "documentType": data.documentType,
+                "template": data.template or "",
+                "discountCode": data.discountCode or "",
+                "discountAmount": str(data.discountAmount or 0),
+                "type": "one_time_purchase"
+            }
+        )
+        
+        return {
+            "success": True,
+            "sessionId": checkout_session.id,
+            "url": checkout_session.url
+        }
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.get("/api/stripe/checkout-status/{session_id}")
 async def get_checkout_status(session_id: str):
     """Get the status of a Stripe checkout session"""

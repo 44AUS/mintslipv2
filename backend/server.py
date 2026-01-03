@@ -248,28 +248,36 @@ SUBSCRIPTION_TIERS = {
     "starter": {
         "name": "Starter",
         "price": 19.99,
+        "price_cents": 1999,
         "downloads": 10,
-        "paypalPlanId": ""  # To be filled with PayPal plan ID
+        "stripePriceId": ""  # Will be filled when Stripe products are created
     },
     "professional": {
         "name": "Professional", 
         "price": 29.99,
+        "price_cents": 2999,
         "downloads": 30,
-        "paypalPlanId": ""
+        "stripePriceId": ""
     },
     "business": {
         "name": "Business",
         "price": 49.99,
+        "price_cents": 4999,
         "downloads": -1,  # -1 means unlimited
-        "paypalPlanId": ""
+        "stripePriceId": ""
     }
 }
 
 class SubscriptionCreate(BaseModel):
     userId: str
     tier: str  # starter, professional, business
-    paypalSubscriptionId: str
-    paypalEmail: str
+    stripeSubscriptionId: str
+    stripeCustomerId: str
+
+class CreateCheckoutSession(BaseModel):
+    tier: str
+    successUrl: Optional[str] = None
+    cancelUrl: Optional[str] = None
 
 # ========== BLOG MODELS ==========
 

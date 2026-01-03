@@ -234,40 +234,74 @@ export default function PaymentSuccess() {
     return names[type] || 'Document';
   };
 
-  // Handle manual re-download
+  // Handle manual re-download - regenerate the document
   const handleRedownload = async () => {
-    // First check React state (set after generation)
-    if (downloadUrl) {
-      // Use state URL
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = fileName || 'document.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('Download started!');
-      return;
+    setIsGenerating(true);
+    toast.info('Preparing your download...');
+    
+    try {
+      // Try to regenerate using stored form data
+      let regenerated = false;
+      
+      if (orderType === 'paystub') {
+        const formDataStr = localStorage.getItem('pendingPaystubData');
+        const template = localStorage.getItem('pendingPaystubTemplate') || 'template-a';
+        const numStubs = parseInt(localStorage.getItem('pendingPaystubCount') || fileCount.toString(), 10);
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          await generateAndDownloadPaystub(formData, template, numStubs);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      } else if (orderType === 'w2') {
+        const formDataStr = localStorage.getItem('pendingW2Data');
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          const taxYear = localStorage.getItem('pendingW2TaxYear') || '2024';
+          await generateAndDownloadW2(formData, taxYear);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      } else if (orderType === 'w9') {
+        const formDataStr = localStorage.getItem('pendingW9Data');
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          await generateAndDownloadW9(formData);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      } else if (orderType === 'bank-statement') {
+        const formDataStr = localStorage.getItem('pendingBankStatementData');
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          const template = localStorage.getItem('pendingBankStatementTemplate') || 'chase';
+          await generateAndDownloadBankStatement(formData, template);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      }
+      
+      if (!regenerated) {
+        // Try using blob URL as last resort
+        if (downloadUrl) {
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = fileName || 'document.pdf';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          toast.success('Download started!');
+        } else {
+          toast.error('Unable to download. Please try creating your document again.');
+        }
+      }
+    } catch (err) {
+      console.error('Error regenerating document:', err);
+      toast.error('Download failed. Please try creating your document again.');
+    } finally {
+      setIsGenerating(false);
     }
-    
-    // Fallback: check localStorage for the download URL
-    const storedUrl = localStorage.getItem('lastDownloadUrl');
-    const storedName = localStorage.getItem('lastDownloadFileName');
-    
-    if (storedUrl) {
-      // Use stored URL - create a download link
-      const link = document.createElement('a');
-      link.href = storedUrl;
-      link.download = storedName || fileName || 'document.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('Download started!');
-      return;
-    }
-    
-    // No URL available - try to regenerate the document
-    toast.info('Regenerating your document...');
-    await generateDocument();
   };
 
   useEffect(() => {

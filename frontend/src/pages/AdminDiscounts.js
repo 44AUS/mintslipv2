@@ -467,6 +467,171 @@ export default function AdminDiscounts() {
           </div>
         </div>
 
+        {/* Promotional Banner Management */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                <Megaphone className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-800">Promotional Banner</h2>
+                <p className="text-sm text-slate-500">Display a discount banner across your website</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600">Banner Active</span>
+                <Switch
+                  checked={bannerSettings.isActive}
+                  onCheckedChange={(checked) => setBannerSettings(prev => ({ ...prev, isActive: checked }))}
+                />
+              </div>
+              <Button 
+                onClick={saveBannerSettings}
+                disabled={savingBanner}
+                className="bg-purple-600 hover:bg-purple-700 gap-2"
+              >
+                {savingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {bannerSettings.isActive ? "Update Banner" : "Save Settings"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Banner Preview */}
+          <div className="mb-6">
+            <Label className="text-sm font-medium text-slate-700 mb-2 block">Preview</Label>
+            <div
+              className="relative py-3 px-4 rounded-lg text-center"
+              style={{
+                backgroundColor: bannerSettings.backgroundColor,
+                color: bannerSettings.textColor
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  {bannerSettings.message || "Your promotional message here..."}
+                </span>
+                {bannerSettings.discountCode && (
+                  <span 
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold"
+                    style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                  >
+                    <Tag className="w-3.5 h-3.5" />
+                    {bannerSettings.discountCode}
+                  </span>
+                )}
+                {bannerSettings.discountPercent > 0 && (
+                  <span 
+                    className="text-sm font-bold px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+                  >
+                    {bannerSettings.discountPercent}% OFF
+                  </span>
+                )}
+              </div>
+              {!bannerSettings.isActive && (
+                <div className="absolute inset-0 bg-slate-900/50 rounded-lg flex items-center justify-center">
+                  <span className="flex items-center gap-2 text-white text-sm font-medium bg-slate-800 px-3 py-1 rounded-full">
+                    <EyeOff className="w-4 h-4" />
+                    Banner Disabled
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Banner Settings */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Message */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700">Banner Message</Label>
+              <Input
+                value={bannerSettings.message}
+                onChange={(e) => setBannerSettings(prev => ({ ...prev, message: e.target.value }))}
+                placeholder="e.g., Limited Time Offer! Use code for special discount"
+                className="w-full"
+              />
+            </div>
+
+            {/* Select Discount Code */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700">Linked Discount Code</Label>
+              <Select 
+                value={bannerSettings.discountId || "none"} 
+                onValueChange={handleBannerDiscountChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a discount code" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No discount code</SelectItem>
+                  {discounts
+                    .filter(d => d.isActive && !isExpired(d.expiryDate))
+                    .map(discount => (
+                      <SelectItem key={discount.id} value={discount.id}>
+                        {discount.code} ({discount.discountPercent}% OFF)
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Color Presets */}
+            <div className="space-y-2 md:col-span-2">
+              <Label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Banner Color
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {bannerColorPresets.map(preset => (
+                  <button
+                    key={preset.name}
+                    onClick={() => setBannerSettings(prev => ({ 
+                      ...prev, 
+                      backgroundColor: preset.bg, 
+                      textColor: preset.text 
+                    }))}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105 ${
+                      bannerSettings.backgroundColor === preset.bg 
+                        ? "ring-2 ring-offset-2 ring-slate-400" 
+                        : ""
+                    }`}
+                    style={{ backgroundColor: preset.bg, color: preset.text }}
+                  >
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Custom Color Inputs */}
+              <div className="flex gap-4 mt-3">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-slate-500">Background:</Label>
+                  <input
+                    type="color"
+                    value={bannerSettings.backgroundColor}
+                    onChange={(e) => setBannerSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                    className="w-8 h-8 rounded cursor-pointer"
+                  />
+                  <span className="text-xs font-mono text-slate-500">{bannerSettings.backgroundColor}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-slate-500">Text:</Label>
+                  <input
+                    type="color"
+                    value={bannerSettings.textColor}
+                    onChange={(e) => setBannerSettings(prev => ({ ...prev, textColor: e.target.value }))}
+                    className="w-8 h-8 rounded cursor-pointer"
+                  />
+                  <span className="text-xs font-mono text-slate-500">{bannerSettings.textColor}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Main Content */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">

@@ -1891,9 +1891,11 @@ async def get_user_downloads(
     session: dict = Depends(get_current_user),
     skip: int = 0,
     limit: int = 20,
-    document_type: Optional[str] = None
+    document_type: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
 ):
-    """Get user's download history with optional document type filter"""
+    """Get user's download history with optional document type and date filters"""
     # For now, get purchases associated with the user's email or userId
     user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
     
@@ -1911,6 +1913,18 @@ async def get_user_downloads(
     # Add document type filter if provided
     if document_type and document_type != "all":
         query["documentType"] = document_type
+    
+    # Add date range filters if provided
+    if start_date or end_date:
+        date_filter = {}
+        if start_date:
+            # Start of the day
+            date_filter["$gte"] = f"{start_date}T00:00:00"
+        if end_date:
+            # End of the day
+            date_filter["$lte"] = f"{end_date}T23:59:59"
+        if date_filter:
+            query["createdAt"] = date_filter
     
     downloads = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
     total = await purchases_collection.count_documents(query)

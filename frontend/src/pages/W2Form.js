@@ -36,9 +36,14 @@ const US_STATES = [
 // Generate tax year options (current year and 5 years back)
 const generateTaxYears = () => {
   const currentYear = new Date().getFullYear();
+  // Cap at 2025 since we only have templates up to 2025
+  const maxYear = Math.min(currentYear, 2025);
   const years = [];
   for (let i = 0; i <= 5; i++) {
-    years.push(currentYear - i);
+    const year = maxYear - i;
+    if (year >= 2020) { // Don't go below 2020
+      years.push(year);
+    }
   }
   return years;
 };

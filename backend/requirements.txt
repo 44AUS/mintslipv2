@@ -72,7 +72,6 @@ pandas==2.3.3
 passlib==1.7.4
 pathspec==0.12.1
 paypalrestsdk==1.13.3
-pdfminer.six==20251230
 pdfplumber==0.10.3
 pillow==12.0.0
 platformdirs==4.5.1

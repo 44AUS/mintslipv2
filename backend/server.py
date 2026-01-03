@@ -1188,8 +1188,10 @@ async def stripe_webhook(request: Request):
         # Get metadata
         user_id = session.metadata.get("userId")
         tier = session.metadata.get("tier")
+        purchase_type = session.metadata.get("type")
         
         if user_id and tier:
+            # Handle subscription purchase
             plan_config = SUBSCRIPTION_PLANS.get(tier, {})
             
             # Update user subscription
@@ -1221,6 +1223,34 @@ async def stripe_webhook(request: Request):
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await subscriptions_collection.insert_one(subscription_record)
+        
+        elif purchase_type == "one_time_purchase":
+            # Handle one-time guest purchase
+            document_type = session.metadata.get("documentType", "unknown")
+            template = session.metadata.get("template", "")
+            discount_code = session.metadata.get("discountCode", "")
+            discount_amount = float(session.metadata.get("discountAmount", 0))
+            
+            # Get customer email from session if available
+            customer_email = ""
+            if session.customer_details:
+                customer_email = session.customer_details.get("email", "")
+            
+            purchase = {
+                "id": str(uuid.uuid4()),
+                "documentType": document_type,
+                "amount": session.amount_total / 100 if session.amount_total else 0,
+                "email": customer_email,
+                "stripeSessionId": session.id,
+                "stripePaymentIntentId": session.payment_intent,
+                "discountCode": discount_code if discount_code else None,
+                "discountAmount": discount_amount,
+                "template": template if template else None,
+                "isGuest": True,
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            }
+            await purchases_collection.insert_one(purchase)
+            print(f"Tracked guest purchase: {document_type} - ${purchase['amount']}")
     
     elif event.type == "invoice.payment_succeeded":
         invoice = event.data.object

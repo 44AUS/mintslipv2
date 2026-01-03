@@ -651,6 +651,25 @@ export default function Header({ title }) {
                       <span className="font-medium text-base">Back to Home</span>
                     </button>
                   </div>
+                  
+                  {/* Support Contact in Mobile Menu */}
+                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
+                    <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Support</p>
+                    <a 
+                      href="tel:+18001234567" 
+                      className="flex items-center gap-2 px-4 py-2 w-full rounded-md hover:bg-green-50 transition-colors text-slate-600"
+                    >
+                      <Phone className="w-4 h-4 text-green-600" />
+                      <span className="text-sm">(800) 123-4567</span>
+                    </a>
+                    <a 
+                      href="mailto:support@mintslip.com" 
+                      className="flex items-center gap-2 px-4 py-2 w-full rounded-md hover:bg-green-50 transition-colors text-slate-600"
+                    >
+                      <Mail className="w-4 h-4 text-green-600" />
+                      <span className="text-sm">support@mintslip.com</span>
+                    </a>
+                  </div>
                 </SheetContent>
               </Sheet>
             </div>

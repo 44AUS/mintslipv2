@@ -131,25 +131,40 @@ export default function SubscriptionPlans() {
 
     try {
       const token = localStorage.getItem("userToken");
-      const response = await fetch(`${BACKEND_URL}/api/subscriptions/create`, {
+      
+      // Get current URL for success/cancel redirects
+      const origin = window.location.origin;
+      const successUrl = `${origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${origin}/subscription/cancel`;
+
+      // Create Stripe checkout session
+      const response = await fetch(`${BACKEND_URL}/api/stripe/create-checkout-session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ tier: selectedTier })
+        body: JSON.stringify({ 
+          tier: selectedTier,
+          successUrl: successUrl,
+          cancelUrl: cancelUrl
+        })
       });
 
       const data = await response.json();
 
-      if (data.success && data.approval_url) {
-        // Store subscription ID for later activation
-        localStorage.setItem("pending_subscription_id", data.subscription_id);
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to create checkout session");
+      }
+
+      if (data.success && data.url) {
+        // Store pending subscription info
         localStorage.setItem("pending_subscription_tier", selectedTier);
-        // Redirect to PayPal for approval
-        window.location.href = data.approval_url;
+        localStorage.setItem("pending_checkout_session_id", data.sessionId);
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
       } else {
-        throw new Error(data.detail || "Failed to create subscription");
+        throw new Error("No checkout URL received");
       }
     } catch (error) {
       console.error("Error creating subscription:", error);

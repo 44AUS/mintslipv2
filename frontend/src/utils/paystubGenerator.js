@@ -514,5 +514,5 @@ async function generateSingleStub(
     await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
   }
 
-  return { payDate, startDate, endDate };
+  return { payDate, startDate: actualStartDate, endDate };
 }

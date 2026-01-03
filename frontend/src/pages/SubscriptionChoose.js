@@ -176,12 +176,6 @@ export default function SubscriptionChoose() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("userToken");
-    localStorage.removeItem("userInfo");
-    navigate("/login");
-  };
-
   const getColorClasses = (color, isSelected) => {
     const colors = {
       green: {

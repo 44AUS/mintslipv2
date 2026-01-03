@@ -1071,12 +1071,27 @@ class OneTimeCheckoutRequest(BaseModel):
     discountAmount: Optional[float] = 0
     successUrl: Optional[str] = None
     cancelUrl: Optional[str] = None
+    userId: Optional[str] = None  # Optional userId for logged-in users
+    userEmail: Optional[str] = None  # Optional user email
 
 
 @app.post("/api/stripe/create-one-time-checkout")
-async def create_one_time_checkout(data: OneTimeCheckoutRequest):
+async def create_one_time_checkout(data: OneTimeCheckoutRequest, authorization: Optional[str] = Header(None)):
     """Create a Stripe checkout session for one-time document purchase"""
     try:
+        # Try to get user info from token if provided
+        user_id = data.userId
+        user_email = data.userEmail
+        
+        if authorization and authorization.startswith("Bearer "):
+            token = authorization.split(" ")[1]
+            session = await sessions_collection.find_one({"token": token})
+            if session:
+                user = await users_collection.find_one({"id": session["userId"]})
+                if user:
+                    user_id = user["id"]
+                    user_email = user["email"]
+        
         # Convert to cents
         amount_cents = int(float(data.amount) * 100)
         
@@ -1105,7 +1120,9 @@ async def create_one_time_checkout(data: OneTimeCheckoutRequest):
                 "template": data.template or "",
                 "discountCode": data.discountCode or "",
                 "discountAmount": str(data.discountAmount or 0),
-                "type": "one_time_purchase"
+                "type": "one_time_purchase",
+                "userId": user_id or "",
+                "userEmail": user_email or ""
             }
         )
         

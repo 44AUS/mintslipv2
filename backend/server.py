@@ -335,6 +335,9 @@ BLOG_CATEGORIES = [
 
 # Initialize Gemini LLM Chat
 def get_llm_chat():
+    if not EMERGENT_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI features are not available in this environment")
+    
     api_key = os.environ.get("EMERGENT_LLM_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")

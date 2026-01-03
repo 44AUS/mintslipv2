@@ -133,7 +133,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
-    </PayPalScriptProvider>
+    </Elements>
   </HelmetProvider>
   );
 }

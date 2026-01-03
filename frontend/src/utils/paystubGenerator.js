@@ -35,10 +35,24 @@ function formatNameForFilename(name) {
 
 // Helper to get template-specific individual paystub filename
 function getIndividualPaystubFilename(template, name, payDate) {
-  const date = new Date(payDate);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  // Handle timezone issues by parsing the date string directly if it's in YYYY-MM-DD format
+  let year, month, day;
+  
+  if (typeof payDate === 'string' && payDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    // Parse YYYY-MM-DD format directly to avoid timezone conversion
+    const parts = payDate.split('-');
+    year = parts[0];
+    month = parts[1];
+    day = parts[2];
+  } else {
+    // For Date objects, use local date methods
+    const date = payDate instanceof Date ? payDate : new Date(payDate);
+    // Use UTC methods to avoid timezone shifting
+    year = date.getUTCFullYear();
+    month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    day = String(date.getUTCDate()).padStart(2, '0');
+  }
+  
   const yearShort = String(year).slice(-2);
   
   switch (template) {

@@ -742,7 +742,7 @@ export default function AIResumeBuilder() {
 
   // PayPal handlers - regular functions like PaystubForm
   const createOrder = (data, actions) => {
-    console.log("AIResumeBuilder: Creating PayPal order...");
+    console.log("AIResumeBuilder: Creating Stripe order...");
     const basePrice = 9.99;
     const finalPrice = appliedDiscount && appliedDiscount.discountedPrice 
       ? appliedDiscount.discountedPrice 
@@ -764,6 +764,39 @@ export default function AIResumeBuilder() {
         }
       ]
     });
+  };
+
+  // Handle Stripe checkout for AI Resume
+  const handleStripeCheckout = async () => {
+    console.log("AIResumeBuilder: Starting Stripe checkout...");
+    setIsProcessingPayment(true);
+    
+    try {
+      const basePrice = 9.99;
+      
+      // Store resume data for after payment
+      sessionStorage.setItem("pendingResumeData", JSON.stringify({
+        resumeData,
+        selectedTemplate
+      }));
+      
+      const { url } = await createStripeCheckout({
+        amount: basePrice,
+        documentType: "ai-resume",
+        template: selectedTemplate,
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/ai-resume-builder"
+      });
+      
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const onApprove = async (data, actions) => {

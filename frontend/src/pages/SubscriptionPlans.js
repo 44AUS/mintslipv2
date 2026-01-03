@@ -227,7 +227,11 @@ export default function SubscriptionPlans() {
 
     try {
       const token = localStorage.getItem("userToken");
-      const response = await fetch(`${BACKEND_URL}/api/subscriptions/upgrade/create-order`, {
+      
+      // Get current URL for success/cancel redirects
+      const origin = window.location.origin;
+      
+      const response = await fetch(`${BACKEND_URL}/api/stripe/change-subscription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,17 +242,28 @@ export default function SubscriptionPlans() {
 
       const data = await response.json();
 
-      if (data.success && data.approvalUrl) {
-        // Store upgrade info for later
-        localStorage.setItem("pending_upgrade_order_id", data.orderId);
-        localStorage.setItem("pending_upgrade_tier", upgradeDetails.newTier);
-        // Redirect to PayPal for approval
-        window.location.href = data.approvalUrl;
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to process upgrade");
+      }
+
+      if (data.success) {
+        // Refresh user data
+        const userResponse = await fetch(`${BACKEND_URL}/api/user/me`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const userData = await userResponse.json();
+        if (userData.success && userData.user) {
+          localStorage.setItem("userInfo", JSON.stringify(userData.user));
+        }
+        
+        toast.success("Subscription upgraded successfully!");
+        setUpgradeDialogOpen(false);
+        navigate("/subscription/upgrade/success");
       } else {
-        throw new Error(data.detail || "Failed to create upgrade order");
+        throw new Error(data.detail || "Failed to upgrade subscription");
       }
     } catch (error) {
-      console.error("Error creating upgrade order:", error);
+      console.error("Error processing upgrade:", error);
       toast.error(error.message || "Failed to process upgrade");
     } finally {
       setIsProcessing(false);

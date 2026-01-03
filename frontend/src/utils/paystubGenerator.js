@@ -369,12 +369,16 @@ async function generateSingleStub(
 
   const netPay = grossPay - totalTax - totalDeductions - totalContributions;
 
-  const endDate = new Date(startDate);
-  endDate.setDate(startDate.getDate() + periodLength - 1);
-  const payDate = nextWeekday(new Date(endDate), payDay);
+  // Use user-provided end date if available, otherwise calculate from start date
+  const endDate = new Date(actualEndDate);
+  
+  // Use user-provided pay date if available, otherwise calculate next weekday after end date
+  const payDate = payDateArray[stubNum] 
+    ? new Date(payDateArray[stubNum]) 
+    : nextWeekday(new Date(endDate), payDay);
 
   // Calculate YTD values based on pay periods from hire date
-  const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date(startDate);
+  const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date(actualStartDate);
   const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
   
   // Calculate YTD values

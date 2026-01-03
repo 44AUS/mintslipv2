@@ -150,10 +150,10 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const zipFileName = getMultiplePaystubsZipFilename(template, formData.name);
       
-      // Store download info for payment success page
+      // Store download info for payment success page (use localStorage for persistence)
       const blobUrl = URL.createObjectURL(zipBlob);
-      sessionStorage.setItem('lastDownloadUrl', blobUrl);
-      sessionStorage.setItem('lastDownloadFileName', zipFileName);
+      localStorage.setItem('lastDownloadUrl', blobUrl);
+      localStorage.setItem('lastDownloadFileName', zipFileName);
       
       saveAs(zipBlob, zipFileName);
       console.log("ZIP downloaded successfully");

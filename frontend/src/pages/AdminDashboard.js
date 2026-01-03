@@ -507,6 +507,7 @@ export default function AdminDashboard() {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(p => 
+        p.email?.toLowerCase().includes(query) ||
         p.paypalEmail?.toLowerCase().includes(query) ||
         p.documentType?.toLowerCase().includes(query) ||
         p.template?.toLowerCase().includes(query)

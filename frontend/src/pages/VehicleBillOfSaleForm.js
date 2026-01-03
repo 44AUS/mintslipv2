@@ -16,7 +16,7 @@ import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadVehicleBillOfSale } from "@/utils/vehicleBillOfSaleGenerator";
 import { generateVehicleBillOfSalePreview } from "@/utils/vehicleBillOfSalePreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
-import { CheckCircle, Car, Sparkles, FileText, Palette, Loader2, Maximize2 , CreditCard, Lock, Loader2 } from "lucide-react";
+import { CheckCircle, Car, Sparkles, FileText, Palette, Loader2, Maximize2  } from "lucide-react";
 
 // US States list
 const US_STATES = [

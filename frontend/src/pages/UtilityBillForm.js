@@ -15,7 +15,7 @@ import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
-import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets , CreditCard, Lock, Loader2 } from "lucide-react";
+import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets  } from "lucide-react";
 
 // US States list
 const US_STATES = [

@@ -3296,14 +3296,28 @@ export default function PaystubForm() {
                         </p>
                       </>
                     )}
-                    <div data-testid="paypal-button-container">
-                      <PayPalButtons
-                        createOrder={createOrder}
-                        onApprove={onApprove}
-                        onError={onError}
+                    <div data-testid="stripe-button-container">
+                      <Button
+                        onClick={handleStripeCheckout}
                         disabled={isProcessing || calculateNumStubs === 0}
-                        style={{ layout: "vertical", color: "gold", shape: "rect", label: "pay" }}
-                      />
+                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-5 h-5" />
+                            Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : (calculateNumStubs * 9.99).toFixed(2)}
+                          </>
+                        )}
+                      </Button>
+                      <div className="flex items-center justify-center gap-2 text-xs text-slate-500 mt-2">
+                        <Lock className="w-3 h-3" />
+                        <span>Secured by Stripe - Cards, Apple Pay & Google Pay accepted</span>
+                      </div>
                     </div>
                     
                     {/* Subscription upsell */}

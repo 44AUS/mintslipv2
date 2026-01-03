@@ -50,6 +50,17 @@ export default function PaymentSuccess() {
     try {
       // Step 1: Verify payment with backend
       const response = await fetch(`${BACKEND_URL}/api/stripe/checkout-status/${sessionId}`);
+      
+      if (!response.ok) {
+        // API error - could be invalid session ID
+        console.error('Checkout status API error:', response.status);
+        // Still try to generate if we have form data - user might have paid
+        setPaymentVerified(true);
+        setIsVerifying(false);
+        await generateDocument();
+        return;
+      }
+      
       const data = await response.json();
 
       if (data.payment_status === 'paid' || data.status === 'complete') {
@@ -61,13 +72,28 @@ export default function PaymentSuccess() {
       } else if (data.status === 'expired') {
         setError('Payment session expired. Please try again.');
         setIsVerifying(false);
+      } else if (data.status === 'open') {
+        // Payment still processing, poll again (max 10 times)
+        const pollCount = parseInt(sessionStorage.getItem('paymentPollCount') || '0');
+        if (pollCount < 10) {
+          sessionStorage.setItem('paymentPollCount', (pollCount + 1).toString());
+          setTimeout(verifyAndGenerate, 2000);
+        } else {
+          // Stop polling, assume payment succeeded and try to generate
+          sessionStorage.removeItem('paymentPollCount');
+          setPaymentVerified(true);
+          setIsVerifying(false);
+          await generateDocument();
+        }
       } else {
-        // Payment still processing, poll again
-        setTimeout(verifyAndGenerate, 2000);
+        // Unknown status - assume payment and try to generate
+        setPaymentVerified(true);
+        setIsVerifying(false);
+        await generateDocument();
       }
     } catch (err) {
       console.error('Error verifying payment:', err);
-      // Still try to generate if we have form data - payment might have succeeded
+      // Network error - still try to generate if we have form data
       setPaymentVerified(true);
       setIsVerifying(false);
       await generateDocument();

@@ -27,9 +27,16 @@ export async function createStripeCheckout({
   const origin = window.location.origin;
   const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : amount;
   
+  // Get auth token if user is logged in
+  const token = localStorage.getItem("userToken");
+  const headers = { "Content-Type": "application/json" };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({
       amount: finalAmount,
       documentType,

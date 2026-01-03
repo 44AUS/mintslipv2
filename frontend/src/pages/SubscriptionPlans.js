@@ -458,7 +458,7 @@ export default function SubscriptionPlans() {
           </Button>
 
           <p className="mt-4 text-sm text-slate-500">
-            Secure payment via PayPal. Cancel anytime.
+            Secure payment via Stripe. Cancel anytime.
           </p>
         </div>
 
@@ -484,7 +484,7 @@ export default function SubscriptionPlans() {
               },
               {
                 q: "What payment methods do you accept?",
-                a: "We accept PayPal and all major credit cards through PayPal's secure payment system."
+                a: "We accept all major credit cards (Visa, Mastercard, American Express, Discover), Apple Pay, and Google Pay through Stripe's secure payment system."
               }
             ].map((faq, idx) => (
               <div key={idx} className="bg-white rounded-xl p-5 border border-slate-200">

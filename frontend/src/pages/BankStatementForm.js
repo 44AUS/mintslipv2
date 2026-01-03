@@ -549,6 +549,42 @@ const createOrder = (data, actions) => {
     toast.error("Payment failed. Please try again.");
     setIsProcessing(false);
   };
+
+  // Handle Stripe checkout for Bank Statement payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 14.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Store form data for after payment
+      localStorage.setItem("pendingBankStatementData", JSON.stringify({
+        formData,
+        transactions,
+        bankLogo,
+        beginningBalance,
+        statementPeriod
+      }));
+      localStorage.setItem("pendingBankStatementTemplate", selectedBank);
+      
+      const { url } = await createStripeCheckout({
+        amount: finalAmount,
+        documentType: "bank-statement",
+        template: selectedBank,
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/bank-statement-generator"
+      });
+      
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   
   // Clear logo from localStorage when leaving the page
   useEffect(() => {

@@ -364,23 +364,60 @@ export default function UserDownloads() {
           {/* Download History Tab */}
           <TabsContent value="history">
             <div className="bg-white rounded-xl shadow-sm border border-slate-100">
-              <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h2 className="text-lg font-semibold text-slate-800">Recent Downloads</h2>
-                
-                {/* Document Type Filter */}
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-slate-400" />
-                  <Select value={documentTypeFilter} onValueChange={handleFilterChange}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filter by type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Documents</SelectItem>
-                      {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="p-6 border-b border-slate-100">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <h2 className="text-lg font-semibold text-slate-800">All Downloads</h2>
+                  
+                  {/* Filters */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Document Type Filter */}
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4 text-slate-400" />
+                      <Select value={documentTypeFilter} onValueChange={handleFilterChange}>
+                        <SelectTrigger className="w-[160px]">
+                          <SelectValue placeholder="Filter by type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Documents</SelectItem>
+                          {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>{label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Date Range Filter */}
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4 text-slate-400" />
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => handleDateChange("start", e.target.value)}
+                        className="w-[140px]"
+                        placeholder="Start date"
+                      />
+                      <span className="text-slate-400">to</span>
+                      <Input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => handleDateChange("end", e.target.value)}
+                        className="w-[140px]"
+                        placeholder="End date"
+                      />
+                    </div>
+                    
+                    {/* Clear Filters Button */}
+                    {(documentTypeFilter !== "all" || startDate || endDate) && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={clearFilters}
+                        className="text-slate-500 hover:text-slate-700"
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -392,15 +429,15 @@ export default function UserDownloads() {
               ) : downloads.length === 0 ? (
                 <div className="p-12 text-center">
                   <Download className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  {documentTypeFilter !== "all" ? (
+                  {(documentTypeFilter !== "all" || startDate || endDate) ? (
                     <>
-                      <p className="text-slate-500 mb-2">No {DOCUMENT_TYPES[documentTypeFilter]} downloads found</p>
+                      <p className="text-slate-500 mb-2">No downloads found matching your filters</p>
                       <Button 
                         variant="outline"
-                        onClick={() => handleFilterChange("all")} 
+                        onClick={clearFilters} 
                         className="mt-4"
                       >
-                        Clear Filter
+                        Clear Filters
                       </Button>
                     </>
                   ) : (

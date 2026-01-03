@@ -890,234 +890,655 @@ async def get_saved_documents_count(session: dict = Depends(get_current_user)):
     }
 
 
-
-# ========== STRIPE SUBSCRIPTION ENDPOINTS ==========
+# ========== PAYPAL SUBSCRIPTION ENDPOINTS ==========
 
 # Subscription Plans Configuration
 SUBSCRIPTION_PLANS = {
     "starter": {
         "name": "Starter",
-        "price": 19.99,
-        "price_cents": 1999,
+        "price": "19.99",
         "downloads": 10,
         "description": "10 downloads per month"
     },
     "professional": {
         "name": "Professional", 
-        "price": 29.99,
-        "price_cents": 2999,
+        "price": "29.99",
         "downloads": 30,
         "description": "30 downloads per month"
     },
     "business": {
         "name": "Business",
-        "price": 49.99,
-        "price_cents": 4999,
-        "downloads": -1,
+        "price": "49.99",
+        "downloads": -1,  # -1 means unlimited
         "description": "Unlimited downloads"
     }
 }
 
-# Store for Stripe Price IDs (will be populated when products are created)
-stripe_price_ids = {}
+# Store for PayPal Plan IDs (will be populated when plans are created)
+paypal_plan_ids = {}
+
+async def get_paypal_access_token():
+    """Get PayPal OAuth access token"""
+    auth = base64.b64encode(f"{PAYPAL_CLIENT_ID}:{PAYPAL_SECRET}".encode()).decode()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/oauth2/token",
+            headers={
+                "Authorization": f"Basic {auth}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            data={"grant_type": "client_credentials"}
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to get PayPal access token")
+        
+        return response.json()["access_token"]
 
 
-@app.get("/api/stripe/config")
-async def get_stripe_config():
-    """Get Stripe publishable key for frontend"""
-    # Extract publishable key from secret key pattern
-    # In production, you'd have a separate publishable key
+async def create_paypal_product():
+    """Create a PayPal product for subscriptions"""
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/catalogs/products",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "name": "MintSlip Subscription",
+                "description": "Monthly subscription for MintSlip document generator",
+                "type": "SERVICE",
+                "category": "SOFTWARE"
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating product: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to create PayPal product")
+        
+        return response.json()["id"]
+
+
+async def create_paypal_plan(product_id: str, tier: str):
+    """Create a PayPal subscription plan"""
+    plan_config = SUBSCRIPTION_PLANS[tier]
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/billing/plans",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "product_id": product_id,
+                "name": f"MintSlip {plan_config['name']} Plan",
+                "description": plan_config["description"],
+                "billing_cycles": [
+                    {
+                        "frequency": {
+                            "interval_unit": "MONTH",
+                            "interval_count": 1
+                        },
+                        "tenure_type": "REGULAR",
+                        "sequence": 1,
+                        "total_cycles": 0,  # 0 = infinite
+                        "pricing_scheme": {
+                            "fixed_price": {
+                                "value": plan_config["price"],
+                                "currency_code": "USD"
+                            }
+                        }
+                    }
+                ],
+                "payment_preferences": {
+                    "auto_bill_outstanding": True,
+                    "setup_fee": {
+                        "value": "0",
+                        "currency_code": "USD"
+                    },
+                    "setup_fee_failure_action": "CONTINUE",
+                    "payment_failure_threshold": 3
+                }
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating plan: {response.text}")
+            raise HTTPException(status_code=500, detail=f"Failed to create PayPal plan for {tier}")
+        
+        return response.json()["id"]
+
+
+@app.post("/api/subscriptions/setup-plans")
+async def setup_paypal_plans(session: dict = Depends(get_current_admin)):
+    """Setup PayPal subscription plans (admin only, run once)"""
+    global paypal_plan_ids
+    
+    try:
+        # Create product first
+        product_id = await create_paypal_product()
+        
+        # Create plans for each tier
+        for tier in SUBSCRIPTION_PLANS.keys():
+            plan_id = await create_paypal_plan(product_id, tier)
+            paypal_plan_ids[tier] = plan_id
+            
+            # Store in database for persistence
+            await db["paypal_plans"].update_one(
+                {"tier": tier},
+                {"$set": {"plan_id": plan_id, "product_id": product_id}},
+                upsert=True
+            )
+        
+        return {
+            "success": True,
+            "message": "PayPal plans created successfully",
+            "plans": paypal_plan_ids
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/subscriptions/plans")
+async def get_subscription_plans():
+    """Get available subscription plans with PayPal plan IDs"""
+    # Load plan IDs from database
+    plans_from_db = await db["paypal_plans"].find({}).to_list(length=10)
+    plan_id_map = {p["tier"]: p["plan_id"] for p in plans_from_db}
+    
+    plans = []
+    for tier, config in SUBSCRIPTION_PLANS.items():
+        plans.append({
+            "tier": tier,
+            "name": config["name"],
+            "price": config["price"],
+            "downloads": config["downloads"],
+            "description": config["description"],
+            "paypal_plan_id": plan_id_map.get(tier)
+        })
+    
+    return {"success": True, "plans": plans}
+
+
+class CreateSubscriptionRequest(BaseModel):
+    tier: str
+
+@app.post("/api/subscriptions/create")
+async def create_subscription(data: CreateSubscriptionRequest, session: dict = Depends(get_current_user)):
+    """Create a PayPal subscription for the user"""
+    if data.tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Get the plan ID from database
+    plan_record = await db["paypal_plans"].find_one({"tier": data.tier})
+    if not plan_record:
+        raise HTTPException(status_code=400, detail="Subscription plans not set up. Please contact admin.")
+    
+    plan_id = plan_record["plan_id"]
+    access_token = await get_paypal_access_token()
+    
+    # Get user info
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "plan_id": plan_id,
+                "subscriber": {
+                    "name": {
+                        "given_name": user.get("name", "").split()[0] if user.get("name") else "User",
+                        "surname": " ".join(user.get("name", "").split()[1:]) if user.get("name") and len(user.get("name", "").split()) > 1 else ""
+                    },
+                    "email_address": user.get("email", "")
+                },
+                "application_context": {
+                    "brand_name": "MintSlip",
+                    "locale": "en-US",
+                    "shipping_preference": "NO_SHIPPING",
+                    "user_action": "SUBSCRIBE_NOW",
+                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/success",
+                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/cancel"
+                }
+            }
+        )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating subscription: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to create subscription")
+        
+        subscription_data = response.json()
+        
+        # Find the approval link
+        approval_url = None
+        for link in subscription_data.get("links", []):
+            if link["rel"] == "approve":
+                approval_url = link["href"]
+                break
+        
+        # Store pending subscription
+        await db["pending_subscriptions"].insert_one({
+            "id": subscription_data["id"],
+            "user_id": session["userId"],
+            "tier": data.tier,
+            "status": "PENDING",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {
+            "success": True,
+            "subscription_id": subscription_data["id"],
+            "approval_url": approval_url
+        }
+
+
+@app.post("/api/subscriptions/activate")
+async def activate_subscription(subscription_id: str, session: dict = Depends(get_current_user)):
+    """Activate a subscription after PayPal approval"""
+    # Get pending subscription
+    pending = await db["pending_subscriptions"].find_one({
+        "id": subscription_id,
+        "user_id": session["userId"]
+    })
+    
+    if not pending:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    access_token = await get_paypal_access_token()
+    
+    # Get subscription details from PayPal
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            }
+        )
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to verify subscription")
+        
+        sub_data = response.json()
+        
+        if sub_data["status"] != "ACTIVE":
+            raise HTTPException(status_code=400, detail=f"Subscription is not active. Status: {sub_data['status']}")
+    
+    # Get plan config
+    tier = pending["tier"]
+    plan_config = SUBSCRIPTION_PLANS[tier]
+    
+    # Update user with subscription
+    subscription_info = {
+        "tier": tier,
+        "paypal_subscription_id": subscription_id,
+        "status": "active",
+        "downloads_remaining": plan_config["downloads"],
+        "downloads_total": plan_config["downloads"],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    }
+    
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {"subscription": subscription_info}}
+    )
+    
+    # Remove pending subscription
+    await db["pending_subscriptions"].delete_one({"id": subscription_id})
+    
+    # Get updated user
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    
     return {
-        "publishableKey": "pk_test_51SOOSM0OuJwef38xh7dnPwMMH0YhWqjhbZnJfLGKx3cq8K97jLNmVTtJqhLqyLg3pKqfDSLhK9v6Z2Y7S6thm1Qk00VJqM9wKX"
+        "success": True,
+        "message": "Subscription activated successfully",
+        "user": user
     }
 
 
-@app.post("/api/stripe/create-checkout-session")
-async def create_checkout_session(data: CreateCheckoutSession, session: dict = Depends(get_current_user)):
-    """Create a Stripe checkout session for subscription"""
-    tier = data.tier
-    
-    if tier not in SUBSCRIPTION_PLANS:
-        raise HTTPException(status_code=400, detail="Invalid subscription tier")
-    
-    plan = SUBSCRIPTION_PLANS[tier]
+@app.post("/api/subscriptions/cancel")
+async def cancel_subscription(session: dict = Depends(get_current_user)):
+    """Cancel user's PayPal subscription"""
     user = await users_collection.find_one({"id": session["userId"]})
     
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="No active subscription found")
     
-    try:
-        # Create or get Stripe customer
-        stripe_customer_id = user.get("stripeCustomerId")
+    subscription_id = user["subscription"].get("paypal_subscription_id")
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="No PayPal subscription ID found")
+    
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}/cancel",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={"reason": "User requested cancellation"}
+        )
         
-        if not stripe_customer_id:
-            customer = stripe.Customer.create(
-                email=user["email"],
-                name=user.get("name", ""),
-                metadata={"userId": user["id"]}
-            )
-            stripe_customer_id = customer.id
-            await users_collection.update_one(
-                {"id": user["id"]},
-                {"$set": {"stripeCustomerId": stripe_customer_id}}
-            )
-        
-        # Create price if not exists
-        price_id = stripe_price_ids.get(tier)
-        if not price_id:
-            # Create product and price
-            product = stripe.Product.create(
-                name=f"MintSlip {plan['name']} Plan",
-                description=plan["description"]
-            )
-            
-            price = stripe.Price.create(
-                product=product.id,
-                unit_amount=plan["price_cents"],
-                currency="usd",
-                recurring={"interval": "month"}
-            )
-            price_id = price.id
-            stripe_price_ids[tier] = price_id
-        
-        # Get frontend URL from environment or use default
-        frontend_url = os.environ.get("FRONTEND_URL", "https://l7ltqw-3000.csb.app")
-        
-        # Create checkout session
-        checkout_session = stripe.checkout.Session.create(
-            customer=stripe_customer_id,
-            payment_method_types=["card"],
-            line_items=[{
-                "price": price_id,
-                "quantity": 1
-            }],
-            mode="subscription",
-            success_url=data.successUrl or f"{frontend_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=data.cancelUrl or f"{frontend_url}/subscription/cancel",
-            metadata={
-                "userId": user["id"],
-                "tier": tier
+        if response.status_code not in [200, 204]:
+            print(f"Error cancelling subscription: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to cancel subscription")
+    
+    # Update user subscription status
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {
+            "subscription.status": "cancelled",
+            "subscription.cancelled_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"success": True, "message": "Subscription cancelled successfully"}
+
+
+class UpgradeSubscriptionRequest(BaseModel):
+    newTier: str
+
+
+@app.post("/api/subscriptions/calculate-upgrade")
+async def calculate_upgrade_cost(data: UpgradeSubscriptionRequest, session: dict = Depends(get_current_user)):
+    """Calculate the prorated cost for upgrading subscription"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="No active subscription found")
+    
+    current_subscription = user["subscription"]
+    current_tier = current_subscription.get("tier")
+    new_tier = data.newTier
+    
+    if new_tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    if current_tier == new_tier:
+        raise HTTPException(status_code=400, detail="Already on this plan")
+    
+    # Get prices
+    current_price = float(SUBSCRIPTION_PLANS.get(current_tier, {}).get("price", "0"))
+    new_price = float(SUBSCRIPTION_PLANS[new_tier]["price"])
+    
+    # Only allow upgrades (new price > current price)
+    if new_price <= current_price:
+        raise HTTPException(status_code=400, detail="Can only upgrade to a higher tier. Use downgrade endpoint for lower tiers.")
+    
+    # Calculate days remaining in current billing cycle
+    current_period_end = current_subscription.get("current_period_end")
+    if current_period_end:
+        period_end = datetime.fromisoformat(current_period_end.replace('Z', '+00:00'))
+        now = datetime.now(timezone.utc)
+        days_remaining = max(0, (period_end - now).days)
+    else:
+        days_remaining = 30  # Default to full month if no end date
+    
+    # Calculate prorated amount
+    # Price difference per day * days remaining
+    daily_difference = (new_price - current_price) / 30
+    prorated_amount = round(daily_difference * days_remaining, 2)
+    
+    return {
+        "success": True,
+        "currentTier": current_tier,
+        "newTier": new_tier,
+        "currentPrice": current_price,
+        "newPrice": new_price,
+        "daysRemaining": days_remaining,
+        "proratedAmount": prorated_amount,
+        "newDownloads": SUBSCRIPTION_PLANS[new_tier]["downloads"]
+    }
+
+
+@app.post("/api/subscriptions/upgrade/create-order")
+async def create_upgrade_order(data: UpgradeSubscriptionRequest, session: dict = Depends(get_current_user)):
+    """Create a PayPal order for the prorated upgrade amount"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=400, detail="No active subscription found")
+    
+    current_subscription = user["subscription"]
+    current_tier = current_subscription.get("tier")
+    new_tier = data.newTier
+    
+    if new_tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Get prices
+    current_price = float(SUBSCRIPTION_PLANS.get(current_tier, {}).get("price", "0"))
+    new_price = float(SUBSCRIPTION_PLANS[new_tier]["price"])
+    
+    if new_price <= current_price:
+        raise HTTPException(status_code=400, detail="Can only upgrade to a higher tier")
+    
+    # Calculate prorated amount
+    current_period_end = current_subscription.get("current_period_end")
+    if current_period_end:
+        period_end = datetime.fromisoformat(current_period_end.replace('Z', '+00:00'))
+        now = datetime.now(timezone.utc)
+        days_remaining = max(0, (period_end - now).days)
+    else:
+        days_remaining = 30
+    
+    daily_difference = (new_price - current_price) / 30
+    prorated_amount = round(daily_difference * days_remaining, 2)
+    
+    # Minimum charge of $1.00 (PayPal requirement)
+    if prorated_amount < 1.00:
+        prorated_amount = 1.00
+    
+    access_token = await get_paypal_access_token()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v2/checkout/orders",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "intent": "CAPTURE",
+                "purchase_units": [{
+                    "amount": {
+                        "currency_code": "USD",
+                        "value": str(prorated_amount)
+                    },
+                    "description": f"Upgrade from {SUBSCRIPTION_PLANS.get(current_tier, {}).get('name', current_tier)} to {SUBSCRIPTION_PLANS[new_tier]['name']} (prorated)"
+                }],
+                "application_context": {
+                    "brand_name": "MintSlip",
+                    "landing_page": "NO_PREFERENCE",
+                    "user_action": "PAY_NOW",
+                    "return_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/upgrade/success",
+                    "cancel_url": f"{os.environ.get('FRONTEND_URL', 'http://mintslip.com')}/subscription/upgrade/cancel"
+                }
             }
         )
+        
+        if response.status_code not in [200, 201]:
+            print(f"Error creating upgrade order: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to create upgrade order")
+        
+        order_data = response.json()
+        
+        # Store pending upgrade
+        await db["pending_upgrades"].insert_one({
+            "order_id": order_data["id"],
+            "user_id": session["userId"],
+            "current_tier": current_tier,
+            "new_tier": new_tier,
+            "prorated_amount": prorated_amount,
+            "days_remaining": days_remaining,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Get approval URL
+        approval_url = None
+        for link in order_data.get("links", []):
+            if link.get("rel") == "approve":
+                approval_url = link.get("href")
+                break
         
         return {
             "success": True,
-            "sessionId": checkout_session.id,
-            "url": checkout_session.url
+            "orderId": order_data["id"],
+            "approvalUrl": approval_url,
+            "proratedAmount": prorated_amount
         }
-        
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.post("/api/stripe/create-payment-intent")
-async def create_payment_intent(request: dict):
-    """Create a Stripe payment intent for one-time purchase"""
-    amount = request.get("amount")  # Amount in dollars
-    document_type = request.get("documentType")
-    template = request.get("template")
-    email = request.get("email")
-    discount_code = request.get("discountCode")
-    discount_amount = request.get("discountAmount", 0)
+@app.post("/api/subscriptions/upgrade/capture")
+async def capture_upgrade_order(order_id: str, session: dict = Depends(get_current_user)):
+    """Capture the upgrade payment and update subscription"""
+    # Get pending upgrade
+    pending = await db["pending_upgrades"].find_one({
+        "order_id": order_id,
+        "user_id": session["userId"]
+    })
     
-    if not amount:
-        raise HTTPException(status_code=400, detail="Amount is required")
+    if not pending:
+        raise HTTPException(status_code=404, detail="Upgrade order not found")
     
-    try:
-        # Convert to cents
-        amount_cents = int(float(amount) * 100)
-        
-        # Create payment intent
-        intent = stripe.PaymentIntent.create(
-            amount=amount_cents,
-            currency="usd",
-            metadata={
-                "documentType": document_type or "",
-                "template": template or "",
-                "email": email or "",
-                "discountCode": discount_code or "",
-                "discountAmount": str(discount_amount)
+    access_token = await get_paypal_access_token()
+    
+    # Capture the payment
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}/capture",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
             }
         )
         
-        return {
-            "success": True,
-            "clientSecret": intent.client_secret,
-            "paymentIntentId": intent.id
-        }
+        if response.status_code not in [200, 201]:
+            print(f"Error capturing upgrade payment: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to capture upgrade payment")
         
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.post("/api/stripe/webhook")
-async def stripe_webhook(request: Request):
-    """Handle Stripe webhooks"""
-    payload = await request.body()
-    sig_header = request.headers.get("stripe-signature")
+        capture_data = response.json()
+        
+        if capture_data.get("status") != "COMPLETED":
+            raise HTTPException(status_code=400, detail="Payment was not completed")
     
-    # In production, verify webhook signature
-    # For now, just parse the event
+    new_tier = pending["new_tier"]
+    plan_config = SUBSCRIPTION_PLANS[new_tier]
+    
+    # Get current user subscription to preserve period end
+    user = await users_collection.find_one({"id": session["userId"]})
+    current_subscription = user.get("subscription", {})
+    
+    # Update user subscription to new tier
+    # Keep the same billing period end, just upgrade the tier and reset downloads
+    updated_subscription = {
+        "tier": new_tier,
+        "paypal_subscription_id": current_subscription.get("paypal_subscription_id"),
+        "status": "active",
+        "downloads_remaining": plan_config["downloads"],
+        "downloads_total": plan_config["downloads"],
+        "started_at": current_subscription.get("started_at"),
+        "current_period_end": current_subscription.get("current_period_end"),
+        "upgraded_at": datetime.now(timezone.utc).isoformat(),
+        "upgraded_from": pending["current_tier"]
+    }
+    
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {"subscription": updated_subscription}}
+    )
+    
+    # Record the upgrade payment
+    upgrade_record = {
+        "id": str(uuid.uuid4()),
+        "user_id": session["userId"],
+        "order_id": order_id,
+        "from_tier": pending["current_tier"],
+        "to_tier": new_tier,
+        "prorated_amount": pending["prorated_amount"],
+        "status": "completed",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db["subscription_upgrades"].insert_one(upgrade_record)
+    
+    # Remove pending upgrade
+    await db["pending_upgrades"].delete_one({"order_id": order_id})
+    
+    # Get updated user
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    
+    return {
+        "success": True,
+        "message": f"Successfully upgraded to {plan_config['name']}",
+        "user": user
+    }
+
+
+
+async def paypal_webhook(request: Request):
+    """Handle PayPal webhooks for subscription events"""
     try:
-        event = stripe.Event.construct_from(
-            json.loads(payload), stripe.api_key
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Webhook error: {str(e)}")
-    
-    # Handle the event
-    if event.type == "checkout.session.completed":
-        session = event.data.object
+        body = await request.json()
+        event_type = body.get("event_type", "")
+        resource = body.get("resource", {})
         
-        # Get metadata
-        user_id = session.metadata.get("userId")
-        tier = session.metadata.get("tier")
+        print(f"PayPal Webhook: {event_type}")
         
-        if user_id and tier:
-            plan_config = SUBSCRIPTION_PLANS.get(tier, {})
-            
-            # Update user subscription
-            await users_collection.update_one(
-                {"id": user_id},
-                {"$set": {
-                    "subscription": {
-                        "tier": tier,
-                        "status": "active",
-                        "stripeSubscriptionId": session.subscription,
-                        "stripeCustomerId": session.customer,
-                        "downloads_remaining": plan_config.get("downloads", 0),
-                        "downloads_total": plan_config.get("downloads", 0),
-                        "current_period_start": datetime.now(timezone.utc).isoformat(),
-                        "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
-                        "createdAt": datetime.now(timezone.utc).isoformat()
-                    }
-                }}
-            )
-            
-            # Create subscription record
-            subscription_record = {
-                "id": str(uuid.uuid4()),
-                "userId": user_id,
-                "tier": tier,
-                "stripeSubscriptionId": session.subscription,
-                "stripeCustomerId": session.customer,
-                "status": "active",
-                "createdAt": datetime.now(timezone.utc).isoformat()
-            }
-            await subscriptions_collection.insert_one(subscription_record)
-    
-    elif event.type == "invoice.payment_succeeded":
-        invoice = event.data.object
-        subscription_id = invoice.subscription
-        
-        if subscription_id:
+        if event_type == "BILLING.SUBSCRIPTION.ACTIVATED":
+            subscription_id = resource.get("id")
             # Find user with this subscription
-            user = await users_collection.find_one({"subscription.stripeSubscriptionId": subscription_id})
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
             if user:
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"subscription.status": "active"}}
+                )
+        
+        elif event_type == "BILLING.SUBSCRIPTION.CANCELLED":
+            subscription_id = resource.get("id")
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user:
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"subscription.status": "cancelled"}}
+                )
+        
+        elif event_type == "BILLING.SUBSCRIPTION.SUSPENDED":
+            subscription_id = resource.get("id")
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user:
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {"subscription.status": "suspended"}}
+                )
+        
+        elif event_type == "PAYMENT.SALE.COMPLETED":
+            # Subscription payment received - reset downloads
+            subscription_id = resource.get("billing_agreement_id")
+            user = await users_collection.find_one({
+                "subscription.paypal_subscription_id": subscription_id
+            })
+            if user and user.get("subscription"):
                 tier = user["subscription"].get("tier")
                 plan_config = SUBSCRIPTION_PLANS.get(tier, {})
-                
-                # Reset downloads for the new billing period
                 await users_collection.update_one(
                     {"id": user["id"]},
                     {"$set": {
@@ -1125,194 +1546,12 @@ async def stripe_webhook(request: Request):
                         "subscription.current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
                     }}
                 )
-    
-    elif event.type == "customer.subscription.deleted":
-        subscription = event.data.object
-        subscription_id = subscription.id
         
-        # Find and update user
-        user = await users_collection.find_one({"subscription.stripeSubscriptionId": subscription_id})
-        if user:
-            await users_collection.update_one(
-                {"id": user["id"]},
-                {"$set": {"subscription.status": "cancelled"}}
-            )
-    
-    elif event.type == "payment_intent.succeeded":
-        payment_intent = event.data.object
-        
-        # Track purchase for one-time payments
-        metadata = payment_intent.metadata
-        if metadata.get("documentType"):
-            purchase = {
-                "id": str(uuid.uuid4()),
-                "documentType": metadata.get("documentType"),
-                "amount": payment_intent.amount / 100,
-                "email": metadata.get("email", ""),
-                "stripePaymentIntentId": payment_intent.id,
-                "discountCode": metadata.get("discountCode"),
-                "discountAmount": float(metadata.get("discountAmount", 0)),
-                "template": metadata.get("template"),
-                "createdAt": datetime.now(timezone.utc).isoformat()
-            }
-            await purchases_collection.insert_one(purchase)
-    
-    return {"status": "received"}
+        return {"status": "received"}
+    except Exception as e:
+        print(f"Webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
 
-
-@app.post("/api/stripe/cancel-subscription")
-async def cancel_stripe_subscription(session: dict = Depends(get_current_user)):
-    """Cancel user's Stripe subscription"""
-    user = await users_collection.find_one({"id": session["userId"]})
-    
-    if not user or not user.get("subscription"):
-        raise HTTPException(status_code=404, detail="No active subscription found")
-    
-    subscription_id = user["subscription"].get("stripeSubscriptionId")
-    
-    if not subscription_id:
-        raise HTTPException(status_code=400, detail="No Stripe subscription found")
-    
-    try:
-        # Cancel at period end (user keeps access until end of billing period)
-        stripe.Subscription.modify(
-            subscription_id,
-            cancel_at_period_end=True
-        )
-        
-        await users_collection.update_one(
-            {"id": user["id"]},
-            {"$set": {"subscription.status": "cancelling"}}
-        )
-        
-        return {"success": True, "message": "Subscription will be cancelled at the end of the billing period"}
-        
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.post("/api/stripe/reactivate-subscription")
-async def reactivate_stripe_subscription(session: dict = Depends(get_current_user)):
-    """Reactivate a cancelled Stripe subscription"""
-    user = await users_collection.find_one({"id": session["userId"]})
-    
-    if not user or not user.get("subscription"):
-        raise HTTPException(status_code=404, detail="No subscription found")
-    
-    subscription_id = user["subscription"].get("stripeSubscriptionId")
-    
-    if not subscription_id:
-        raise HTTPException(status_code=400, detail="No Stripe subscription found")
-    
-    try:
-        stripe.Subscription.modify(
-            subscription_id,
-            cancel_at_period_end=False
-        )
-        
-        await users_collection.update_one(
-            {"id": user["id"]},
-            {"$set": {"subscription.status": "active"}}
-        )
-        
-        return {"success": True, "message": "Subscription reactivated"}
-        
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.post("/api/stripe/change-subscription")
-async def change_stripe_subscription(request: dict, session: dict = Depends(get_current_user)):
-    """Change subscription tier"""
-    new_tier = request.get("tier")
-    
-    if new_tier not in SUBSCRIPTION_PLANS:
-        raise HTTPException(status_code=400, detail="Invalid subscription tier")
-    
-    user = await users_collection.find_one({"id": session["userId"]})
-    
-    if not user or not user.get("subscription"):
-        raise HTTPException(status_code=404, detail="No active subscription found")
-    
-    subscription_id = user["subscription"].get("stripeSubscriptionId")
-    
-    if not subscription_id:
-        raise HTTPException(status_code=400, detail="No Stripe subscription found")
-    
-    try:
-        # Get current subscription
-        subscription = stripe.Subscription.retrieve(subscription_id)
-        
-        # Get or create price for new tier
-        price_id = stripe_price_ids.get(new_tier)
-        if not price_id:
-            plan = SUBSCRIPTION_PLANS[new_tier]
-            product = stripe.Product.create(
-                name=f"MintSlip {plan['name']} Plan",
-                description=plan["description"]
-            )
-            price = stripe.Price.create(
-                product=product.id,
-                unit_amount=plan["price_cents"],
-                currency="usd",
-                recurring={"interval": "month"}
-            )
-            price_id = price.id
-            stripe_price_ids[new_tier] = price_id
-        
-        # Update subscription
-        stripe.Subscription.modify(
-            subscription_id,
-            items=[{
-                "id": subscription["items"]["data"][0].id,
-                "price": price_id
-            }],
-            proration_behavior="create_prorations"
-        )
-        
-        # Update user record
-        plan_config = SUBSCRIPTION_PLANS[new_tier]
-        await users_collection.update_one(
-            {"id": user["id"]},
-            {"$set": {
-                "subscription.tier": new_tier,
-                "subscription.downloads_remaining": plan_config["downloads"],
-                "subscription.downloads_total": plan_config["downloads"]
-            }}
-        )
-        
-        return {"success": True, "message": f"Subscription changed to {plan_config['name']}"}
-        
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.get("/api/stripe/subscription-status")
-async def get_subscription_status(session: dict = Depends(get_current_user)):
-    """Get current user's subscription status from Stripe"""
-    user = await users_collection.find_one({"id": session["userId"]})
-    
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    if not user.get("subscription") or not user["subscription"].get("stripeSubscriptionId"):
-        return {"success": True, "hasSubscription": False}
-    
-    try:
-        subscription = stripe.Subscription.retrieve(user["subscription"]["stripeSubscriptionId"])
-        
-        return {
-            "success": True,
-            "hasSubscription": True,
-            "status": subscription.status,
-            "cancelAtPeriodEnd": subscription.cancel_at_period_end,
-            "currentPeriodEnd": datetime.fromtimestamp(subscription.current_period_end).isoformat(),
-            "tier": user["subscription"].get("tier"),
-            "downloadsRemaining": user["subscription"].get("downloads_remaining", 0)
-        }
-        
-    except stripe.error.StripeError as e:
-        return {"success": False, "error": str(e)}
 
 # ========== PURCHASE TRACKING ENDPOINTS ==========
 

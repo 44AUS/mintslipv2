@@ -406,15 +406,7 @@ export default function SubscriptionChoose() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-16 py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-slate-500">
-          <p>© 2024 MintSlip. All rights reserved.</p>
-          <p className="mt-2">
-            Questions? Contact us at support@mintslip.com
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

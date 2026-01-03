@@ -44,6 +44,7 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import ScrollToTop from "@/components/ScrollToTop";
+import PromoBanner from "@/components/PromoBanner";
 import { Toaster } from "sonner";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Reviews from "@/pages/Reviews";

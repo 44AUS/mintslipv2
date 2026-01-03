@@ -46,12 +46,14 @@ import {
   FolderArchive,
   AlertTriangle,
   Settings,
-  Filter
+  Filter,
+  CalendarDays
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-// Document type labels
+// Document type labels (excluding bank-statement and utility-bill)
 const DOCUMENT_TYPES = {
   "paystub": "Pay Stub",
   "canadian-paystub": "Canadian Pay Stub",
@@ -60,10 +62,15 @@ const DOCUMENT_TYPES = {
   "w9": "W-9 Form",
   "1099-nec": "1099-NEC",
   "1099-misc": "1099-MISC",
-  "bank-statement": "Bank Statement",
   "offer-letter": "Offer Letter",
   "vehicle-bill-of-sale": "Vehicle Bill of Sale",
-  "schedule-c": "Schedule C",
+  "schedule-c": "Schedule C"
+};
+
+// All document types for display purposes (includes all)
+const ALL_DOCUMENT_TYPES = {
+  ...DOCUMENT_TYPES,
+  "bank-statement": "Bank Statement",
   "utility-bill": "Utility Bill"
 };
 
@@ -84,6 +91,8 @@ export default function UserDownloads() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [documentTypeFilter, setDocumentTypeFilter] = useState("all");
   const [savedDocumentTypeFilter, setSavedDocumentTypeFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const pageSize = 10;
 
   useEffect(() => {

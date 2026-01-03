@@ -33,8 +33,8 @@ export default function PaymentSuccess() {
   const verifyAndGenerate = useCallback(async () => {
     if (!sessionId) {
       // Check if we have stored download info (legacy flow)
-      const storedDownloadUrl = sessionStorage.getItem('lastDownloadUrl');
-      const storedFileName = sessionStorage.getItem('lastDownloadFileName');
+      const storedDownloadUrl = localStorage.getItem('lastDownloadUrl');
+      const storedFileName = localStorage.getItem('lastDownloadFileName');
       if (storedDownloadUrl) {
         setDownloadUrl(storedDownloadUrl);
         setFileName(storedFileName || 'document.pdf');

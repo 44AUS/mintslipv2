@@ -519,30 +519,52 @@ export default function Header({ title }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* Left: Logo */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-            <h1 
-              className="text-xl sm:text-2xl font-black tracking-tight cursor-pointer" 
-              style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
-              onClick={() => navigate("/")}
-            >
-              MintSlip
-            </h1>
-          </div>
-          
-          {/* Center: Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
-            <DesktopNavLinks location={location} onNavigate={handleNavigation} />
-          </nav>
+    <>
+      {/* Support Bar */}
+      <div className="bg-slate-800 text-white py-1.5 px-4 text-center text-sm hidden sm:block">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-6">
+          <a 
+            href="tel:+18001234567" 
+            className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span>Support: (800) 123-4567</span>
+          </a>
+          <span className="text-slate-500">|</span>
+          <a 
+            href="mailto:support@mintslip.com" 
+            className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>support@mintslip.com</span>
+          </a>
+        </div>
+      </div>
+      
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left: Logo */}
+            <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+              <h1 
+                className="text-xl sm:text-2xl font-black tracking-tight cursor-pointer" 
+                style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
+                onClick={() => navigate("/")}
+              >
+                MintSlip
+              </h1>
+            </div>
+            
+            {/* Center: Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
+              <DesktopNavLinks location={location} onNavigate={handleNavigation} />
+            </nav>
 
-          {/* Right: User Account (Desktop) + Mobile Menu */}
-          <div className="flex items-center gap-3">
-            {/* User Account - Desktop Only */}
-            <div className="hidden lg:block">
-              <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} />
+            {/* Right: User Account (Desktop) + Mobile Menu */}
+            <div className="flex items-center gap-3">
+              {/* User Account - Desktop Only */}
+              <div className="hidden lg:block">
+                <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} />
             </div>
 
             {/* Mobile/Tablet Hamburger Menu */}

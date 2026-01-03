@@ -136,6 +136,7 @@ export default function AdminDiscounts() {
         setAdminToken(token);
         setIsAuthenticated(true);
         fetchDiscounts(token);
+        fetchBannerSettings(token);
       } else {
         localStorage.removeItem("adminToken");
         navigate("/admin/login");

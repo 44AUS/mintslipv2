@@ -236,7 +236,20 @@ export default function PaymentSuccess() {
 
   // Handle manual re-download
   const handleRedownload = async () => {
-    // First check localStorage for the download URL (set by the generator)
+    // First check React state (set after generation)
+    if (downloadUrl) {
+      // Use state URL
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName || 'document.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('Download started!');
+      return;
+    }
+    
+    // Fallback: check localStorage for the download URL
     const storedUrl = localStorage.getItem('lastDownloadUrl');
     const storedName = localStorage.getItem('lastDownloadFileName');
     
@@ -249,20 +262,12 @@ export default function PaymentSuccess() {
       link.click();
       document.body.removeChild(link);
       toast.success('Download started!');
-    } else if (downloadUrl) {
-      // Use state URL (fallback)
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = fileName || 'document.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('Download started!');
-    } else {
-      // No URL available - try to regenerate the document
-      toast.info('Regenerating your document...');
-      await generateDocument();
+      return;
     }
+    
+    // No URL available - try to regenerate the document
+    toast.info('Regenerating your document...');
+    await generateDocument();
   };
 
   useEffect(() => {

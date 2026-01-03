@@ -890,3 +890,427 @@ async def get_saved_documents_count(session: dict = Depends(get_current_user)):
     }
 
 
+
+# ========== STRIPE SUBSCRIPTION ENDPOINTS ==========
+
+# Subscription Plans Configuration
+SUBSCRIPTION_PLANS = {
+    "starter": {
+        "name": "Starter",
+        "price": 19.99,
+        "price_cents": 1999,
+        "downloads": 10,
+        "description": "10 downloads per month"
+    },
+    "professional": {
+        "name": "Professional", 
+        "price": 29.99,
+        "price_cents": 2999,
+        "downloads": 30,
+        "description": "30 downloads per month"
+    },
+    "business": {
+        "name": "Business",
+        "price": 49.99,
+        "price_cents": 4999,
+        "downloads": -1,
+        "description": "Unlimited downloads"
+    }
+}
+
+# Store for Stripe Price IDs (will be populated when products are created)
+stripe_price_ids = {}
+
+
+@app.get("/api/stripe/config")
+async def get_stripe_config():
+    """Get Stripe publishable key for frontend"""
+    # Extract publishable key from secret key pattern
+    # In production, you'd have a separate publishable key
+    return {
+        "publishableKey": "pk_test_51SOOSM0OuJwef38xh7dnPwMMH0YhWqjhbZnJfLGKx3cq8K97jLNmVTtJqhLqyLg3pKqfDSLhK9v6Z2Y7S6thm1Qk00VJqM9wKX"
+    }
+
+
+@app.post("/api/stripe/create-checkout-session")
+async def create_checkout_session(data: CreateCheckoutSession, session: dict = Depends(get_current_user)):
+    """Create a Stripe checkout session for subscription"""
+    tier = data.tier
+    
+    if tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    plan = SUBSCRIPTION_PLANS[tier]
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    try:
+        # Create or get Stripe customer
+        stripe_customer_id = user.get("stripeCustomerId")
+        
+        if not stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user["email"],
+                name=user.get("name", ""),
+                metadata={"userId": user["id"]}
+            )
+            stripe_customer_id = customer.id
+            await users_collection.update_one(
+                {"id": user["id"]},
+                {"$set": {"stripeCustomerId": stripe_customer_id}}
+            )
+        
+        # Create price if not exists
+        price_id = stripe_price_ids.get(tier)
+        if not price_id:
+            # Create product and price
+            product = stripe.Product.create(
+                name=f"MintSlip {plan['name']} Plan",
+                description=plan["description"]
+            )
+            
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=plan["price_cents"],
+                currency="usd",
+                recurring={"interval": "month"}
+            )
+            price_id = price.id
+            stripe_price_ids[tier] = price_id
+        
+        # Get frontend URL from environment or use default
+        frontend_url = os.environ.get("FRONTEND_URL", "https://l7ltqw-3000.csb.app")
+        
+        # Create checkout session
+        checkout_session = stripe.checkout.Session.create(
+            customer=stripe_customer_id,
+            payment_method_types=["card"],
+            line_items=[{
+                "price": price_id,
+                "quantity": 1
+            }],
+            mode="subscription",
+            success_url=data.successUrl or f"{frontend_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=data.cancelUrl or f"{frontend_url}/subscription/cancel",
+            metadata={
+                "userId": user["id"],
+                "tier": tier
+            }
+        )
+        
+        return {
+            "success": True,
+            "sessionId": checkout_session.id,
+            "url": checkout_session.url
+        }
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/stripe/create-payment-intent")
+async def create_payment_intent(request: dict):
+    """Create a Stripe payment intent for one-time purchase"""
+    amount = request.get("amount")  # Amount in dollars
+    document_type = request.get("documentType")
+    template = request.get("template")
+    email = request.get("email")
+    discount_code = request.get("discountCode")
+    discount_amount = request.get("discountAmount", 0)
+    
+    if not amount:
+        raise HTTPException(status_code=400, detail="Amount is required")
+    
+    try:
+        # Convert to cents
+        amount_cents = int(float(amount) * 100)
+        
+        # Create payment intent
+        intent = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            metadata={
+                "documentType": document_type or "",
+                "template": template or "",
+                "email": email or "",
+                "discountCode": discount_code or "",
+                "discountAmount": str(discount_amount)
+            }
+        )
+        
+        return {
+            "success": True,
+            "clientSecret": intent.client_secret,
+            "paymentIntentId": intent.id
+        }
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    
+    # In production, verify webhook signature
+    # For now, just parse the event
+    try:
+        event = stripe.Event.construct_from(
+            json.loads(payload), stripe.api_key
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Webhook error: {str(e)}")
+    
+    # Handle the event
+    if event.type == "checkout.session.completed":
+        session = event.data.object
+        
+        # Get metadata
+        user_id = session.metadata.get("userId")
+        tier = session.metadata.get("tier")
+        
+        if user_id and tier:
+            plan_config = SUBSCRIPTION_PLANS.get(tier, {})
+            
+            # Update user subscription
+            await users_collection.update_one(
+                {"id": user_id},
+                {"$set": {
+                    "subscription": {
+                        "tier": tier,
+                        "status": "active",
+                        "stripeSubscriptionId": session.subscription,
+                        "stripeCustomerId": session.customer,
+                        "downloads_remaining": plan_config.get("downloads", 0),
+                        "downloads_total": plan_config.get("downloads", 0),
+                        "current_period_start": datetime.now(timezone.utc).isoformat(),
+                        "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+                        "createdAt": datetime.now(timezone.utc).isoformat()
+                    }
+                }}
+            )
+            
+            # Create subscription record
+            subscription_record = {
+                "id": str(uuid.uuid4()),
+                "userId": user_id,
+                "tier": tier,
+                "stripeSubscriptionId": session.subscription,
+                "stripeCustomerId": session.customer,
+                "status": "active",
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            }
+            await subscriptions_collection.insert_one(subscription_record)
+    
+    elif event.type == "invoice.payment_succeeded":
+        invoice = event.data.object
+        subscription_id = invoice.subscription
+        
+        if subscription_id:
+            # Find user with this subscription
+            user = await users_collection.find_one({"subscription.stripeSubscriptionId": subscription_id})
+            if user:
+                tier = user["subscription"].get("tier")
+                plan_config = SUBSCRIPTION_PLANS.get(tier, {})
+                
+                # Reset downloads for the new billing period
+                await users_collection.update_one(
+                    {"id": user["id"]},
+                    {"$set": {
+                        "subscription.downloads_remaining": plan_config.get("downloads", 0),
+                        "subscription.current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+                    }}
+                )
+    
+    elif event.type == "customer.subscription.deleted":
+        subscription = event.data.object
+        subscription_id = subscription.id
+        
+        # Find and update user
+        user = await users_collection.find_one({"subscription.stripeSubscriptionId": subscription_id})
+        if user:
+            await users_collection.update_one(
+                {"id": user["id"]},
+                {"$set": {"subscription.status": "cancelled"}}
+            )
+    
+    elif event.type == "payment_intent.succeeded":
+        payment_intent = event.data.object
+        
+        # Track purchase for one-time payments
+        metadata = payment_intent.metadata
+        if metadata.get("documentType"):
+            purchase = {
+                "id": str(uuid.uuid4()),
+                "documentType": metadata.get("documentType"),
+                "amount": payment_intent.amount / 100,
+                "email": metadata.get("email", ""),
+                "stripePaymentIntentId": payment_intent.id,
+                "discountCode": metadata.get("discountCode"),
+                "discountAmount": float(metadata.get("discountAmount", 0)),
+                "template": metadata.get("template"),
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            }
+            await purchases_collection.insert_one(purchase)
+    
+    return {"status": "received"}
+
+
+@app.post("/api/stripe/cancel-subscription")
+async def cancel_stripe_subscription(session: dict = Depends(get_current_user)):
+    """Cancel user's Stripe subscription"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=404, detail="No active subscription found")
+    
+    subscription_id = user["subscription"].get("stripeSubscriptionId")
+    
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="No Stripe subscription found")
+    
+    try:
+        # Cancel at period end (user keeps access until end of billing period)
+        stripe.Subscription.modify(
+            subscription_id,
+            cancel_at_period_end=True
+        )
+        
+        await users_collection.update_one(
+            {"id": user["id"]},
+            {"$set": {"subscription.status": "cancelling"}}
+        )
+        
+        return {"success": True, "message": "Subscription will be cancelled at the end of the billing period"}
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/stripe/reactivate-subscription")
+async def reactivate_stripe_subscription(session: dict = Depends(get_current_user)):
+    """Reactivate a cancelled Stripe subscription"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=404, detail="No subscription found")
+    
+    subscription_id = user["subscription"].get("stripeSubscriptionId")
+    
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="No Stripe subscription found")
+    
+    try:
+        stripe.Subscription.modify(
+            subscription_id,
+            cancel_at_period_end=False
+        )
+        
+        await users_collection.update_one(
+            {"id": user["id"]},
+            {"$set": {"subscription.status": "active"}}
+        )
+        
+        return {"success": True, "message": "Subscription reactivated"}
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/stripe/change-subscription")
+async def change_stripe_subscription(request: dict, session: dict = Depends(get_current_user)):
+    """Change subscription tier"""
+    new_tier = request.get("tier")
+    
+    if new_tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=404, detail="No active subscription found")
+    
+    subscription_id = user["subscription"].get("stripeSubscriptionId")
+    
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="No Stripe subscription found")
+    
+    try:
+        # Get current subscription
+        subscription = stripe.Subscription.retrieve(subscription_id)
+        
+        # Get or create price for new tier
+        price_id = stripe_price_ids.get(new_tier)
+        if not price_id:
+            plan = SUBSCRIPTION_PLANS[new_tier]
+            product = stripe.Product.create(
+                name=f"MintSlip {plan['name']} Plan",
+                description=plan["description"]
+            )
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=plan["price_cents"],
+                currency="usd",
+                recurring={"interval": "month"}
+            )
+            price_id = price.id
+            stripe_price_ids[new_tier] = price_id
+        
+        # Update subscription
+        stripe.Subscription.modify(
+            subscription_id,
+            items=[{
+                "id": subscription["items"]["data"][0].id,
+                "price": price_id
+            }],
+            proration_behavior="create_prorations"
+        )
+        
+        # Update user record
+        plan_config = SUBSCRIPTION_PLANS[new_tier]
+        await users_collection.update_one(
+            {"id": user["id"]},
+            {"$set": {
+                "subscription.tier": new_tier,
+                "subscription.downloads_remaining": plan_config["downloads"],
+                "subscription.downloads_total": plan_config["downloads"]
+            }}
+        )
+        
+        return {"success": True, "message": f"Subscription changed to {plan_config['name']}"}
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/stripe/subscription-status")
+async def get_subscription_status(session: dict = Depends(get_current_user)):
+    """Get current user's subscription status from Stripe"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.get("subscription") or not user["subscription"].get("stripeSubscriptionId"):
+        return {"success": True, "hasSubscription": False}
+    
+    try:
+        subscription = stripe.Subscription.retrieve(user["subscription"]["stripeSubscriptionId"])
+        
+        return {
+            "success": True,
+            "hasSubscription": True,
+            "status": subscription.status,
+            "cancelAtPeriodEnd": subscription.cancel_at_period_end,
+            "currentPeriodEnd": datetime.fromtimestamp(subscription.current_period_end).isoformat(),
+            "tier": user["subscription"].get("tier"),
+            "downloadsRemaining": user["subscription"].get("downloads_remaining", 0)
+        }
+        
+    except stripe.error.StripeError as e:
+        return {"success": False, "error": str(e)}
+

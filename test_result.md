@@ -1,29 +1,106 @@
-# MintSlip Stripe Integration Testing
+backend:
+  - task: "Stripe Config Endpoint"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Stripe config endpoint implemented, needs testing"
 
-## Test Scope
-- Stripe subscription checkout flow
-- Stripe one-time payment checkout flow
-- Backend API endpoints for Stripe
-- Frontend payment UI components
+  - task: "Stripe One-Time Checkout"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "One-time checkout endpoint implemented, needs testing"
 
-## Critical API Endpoints to Test
-1. `GET /api/stripe/config` - Get publishable key
-2. `POST /api/stripe/create-checkout-session` - Create subscription checkout (requires auth)
-3. `POST /api/stripe/create-one-time-checkout` - Create one-time payment checkout
-4. `GET /api/stripe/checkout-status/{session_id}` - Get checkout session status
+  - task: "Stripe Subscription Checkout"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Subscription checkout endpoint implemented, requires authentication testing"
 
-## Pages to Test
-1. `/pricing` - Subscription plans page with Stripe checkout
-2. `/subscription/choose` - Subscription selection (requires login)
-3. `/paystub-generator` - Document generator with Stripe payment button
+  - task: "Stripe Checkout Status"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Checkout status endpoint implemented, needs testing"
 
-## Incorporate User Feedback
-None currently
+  - task: "User Authentication"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "User auth endpoints needed for subscription checkout testing"
 
-## Test Files Location
-/app/backend/tests/
+frontend:
+  - task: "Pricing Page UI"
+    implemented: true
+    working: "NA"
+    file: "pricing.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Frontend testing not in scope for this testing session"
 
-## Notes
-- PayPal has been replaced with Stripe throughout the application
-- Subscription tiers: Starter ($19.99), Professional ($29.99), Business ($49.99)
-- One-time payments for document generation ($9.99 per paystub, $14.99 for tax forms)
+  - task: "Paystub Generator Payment UI"
+    implemented: true
+    working: "NA"
+    file: "paystub-generator.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Frontend testing not in scope for this testing session"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Stripe Config Endpoint"
+    - "Stripe One-Time Checkout"
+    - "Stripe Subscription Checkout"
+    - "Stripe Checkout Status"
+    - "User Authentication"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Stripe integration implemented, ready for backend API testing"

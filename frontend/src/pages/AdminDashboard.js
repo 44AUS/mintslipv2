@@ -1378,7 +1378,7 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="text-sm">{purchase.paypalEmail}</span>
+                            <span className="text-sm">{purchase.email || purchase.paypalEmail || "N/A"}</span>
                             {purchase.userId ? (
                               <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded w-fit">Registered</span>
                             ) : (

@@ -374,6 +374,35 @@ export default function W2Form() {
     });
   };
 
+  // Handle Stripe checkout for W2 payment
+  const handleStripeCheckout = async () => {
+    setIsProcessing(true);
+    
+    try {
+      const basePrice = 14.99;
+      
+      // Store form data for after payment
+      sessionStorage.setItem("pendingW2Data", JSON.stringify(formData));
+      sessionStorage.setItem("pendingW2TaxYear", selectedTaxYear);
+      
+      const { url } = await createStripeCheckout({
+        amount: basePrice,
+        documentType: "w2",
+        appliedDiscount,
+        successPath: "/payment-success",
+        cancelPath: "/w2-generator"
+      });
+      
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error(error.message || "Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const onApprove = async (data, actions) => {
     setIsProcessing(true);
     try {

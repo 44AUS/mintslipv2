@@ -1125,13 +1125,14 @@ async def get_checkout_status(session_id: str):
     try:
         session = stripe.checkout.Session.retrieve(session_id)
         
-        # If payment is complete, also try to activate the subscription
+        # If payment is complete, process accordingly
         if session.payment_status == "paid" and session.status == "complete":
             user_id = session.metadata.get("userId")
             tier = session.metadata.get("tier")
+            purchase_type = session.metadata.get("type")
             
             if user_id and tier:
-                # Check if subscription is already active
+                # Handle subscription activation
                 user = await users_collection.find_one({"id": user_id})
                 if user and (not user.get("subscription") or user.get("subscription", {}).get("stripeSubscriptionId") != session.subscription):
                     plan_config = SUBSCRIPTION_PLANS.get(tier, {})
@@ -1153,6 +1154,36 @@ async def get_checkout_status(session_id: str):
                             }
                         }}
                     )
+            
+            elif purchase_type == "one_time_purchase":
+                # Track one-time guest purchase (if not already tracked)
+                existing = await purchases_collection.find_one({"stripeSessionId": session_id})
+                if not existing:
+                    document_type = session.metadata.get("documentType", "unknown")
+                    template = session.metadata.get("template", "")
+                    discount_code = session.metadata.get("discountCode", "")
+                    discount_amount = float(session.metadata.get("discountAmount", 0))
+                    
+                    # Get customer email
+                    customer_email = ""
+                    if hasattr(session, 'customer_details') and session.customer_details:
+                        customer_email = getattr(session.customer_details, 'email', "") or ""
+                    
+                    purchase = {
+                        "id": str(uuid.uuid4()),
+                        "documentType": document_type,
+                        "amount": session.amount_total / 100 if session.amount_total else 0,
+                        "email": customer_email,
+                        "stripeSessionId": session_id,
+                        "stripePaymentIntentId": session.payment_intent,
+                        "discountCode": discount_code if discount_code else None,
+                        "discountAmount": discount_amount,
+                        "template": template if template else None,
+                        "isGuest": True,
+                        "createdAt": datetime.now(timezone.utc).isoformat()
+                    }
+                    await purchases_collection.insert_one(purchase)
+                    print(f"Tracked guest purchase via status check: {document_type} - ${purchase['amount']}")
         
         return {
             "status": session.status,

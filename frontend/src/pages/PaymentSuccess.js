@@ -235,7 +235,7 @@ export default function PaymentSuccess() {
         
         {/* Footer note */}
         <p className="text-center text-sm text-slate-500 mt-6">
-          A confirmation email has been sent to your PayPal email address.
+          A confirmation email has been sent to your email address.
         </p>
       </div>
     </div>

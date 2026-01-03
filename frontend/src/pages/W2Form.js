@@ -381,9 +381,9 @@ export default function W2Form() {
     try {
       const basePrice = 14.99;
       
-      // Store form data for after payment
-      sessionStorage.setItem("pendingW2Data", JSON.stringify(formData));
-      sessionStorage.setItem("pendingW2TaxYear", selectedTaxYear);
+      // Store form data for after payment - use localStorage for persistence
+      localStorage.setItem("pendingW2Data", JSON.stringify(formData));
+      localStorage.setItem("pendingW2TaxYear", selectedTaxYear);
       
       const { url } = await createStripeCheckout({
         amount: basePrice,

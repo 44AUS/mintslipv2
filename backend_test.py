@@ -1427,7 +1427,7 @@ class AIResumeBuilderTester:
                 "password": "test123"
             }
             
-            register_response = requests.post(f"{self.api_url}/auth/register", json=register_payload, timeout=10)
+            register_response = requests.post(f"{self.api_url}/user/signup", json=register_payload, timeout=10)
             
             # Accept both success and "already exists" scenarios
             if register_response.status_code == 200:

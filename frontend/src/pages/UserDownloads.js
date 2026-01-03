@@ -681,9 +681,7 @@ export default function UserDownloads() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {savedDocuments
-                      .filter(doc => savedDocumentTypeFilter === "all" || doc.documentType === savedDocumentTypeFilter)
-                      .map((doc) => (
+                    {getFilteredSavedDocuments().map((doc) => (
                       <TableRow key={doc.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">

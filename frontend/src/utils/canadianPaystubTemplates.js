@@ -1096,6 +1096,21 @@ export async function generateCanadianTemplateC(doc, data, pageWidth, pageHeight
       return 'left';
     };
 
+    // Helper to truncate text that exceeds column width
+    const truncateText = (text, maxWidth, fontSize) => {
+      doc.setFontSize(fontSize);
+      const textStr = String(text);
+      const textWidth = doc.getTextWidth(textStr);
+      if (textWidth <= maxWidth - 6) return textStr; // 6px padding
+      
+      // Truncate with ellipsis
+      let truncated = textStr;
+      while (doc.getTextWidth(truncated + '...') > maxWidth - 6 && truncated.length > 0) {
+        truncated = truncated.slice(0, -1);
+      }
+      return truncated.length < textStr.length ? truncated + '...' : textStr;
+    };
+
     // 1. Gray Title Area (light gray #bebebe matching Workday style)
     if (showTitle && title) {
       doc.setFillColor(190, 190, 190);

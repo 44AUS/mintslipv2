@@ -1171,12 +1171,13 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
 
       row.forEach((cell, colIndex) => {
         const align = getAlignment(colIndex);
+        const truncatedCell = truncateText(cell, colWidths[colIndex], 7);
         if (align === 'right') {
-          doc.text(String(cell), currentX + colWidths[colIndex] - 3, y + 7, { align: 'right' });
+          doc.text(truncatedCell, currentX + colWidths[colIndex] - 3, y + 7, { align: 'right' });
         } else if (align === 'center') {
-          doc.text(String(cell), currentX + colWidths[colIndex] / 2, y + 7, { align: 'center' });
+          doc.text(truncatedCell, currentX + colWidths[colIndex] / 2, y + 7, { align: 'center' });
         } else {
-          doc.text(String(cell), currentX + 3, y + 7);
+          doc.text(truncatedCell, currentX + 3, y + 7);
         }
         currentX += colWidths[colIndex];
       });

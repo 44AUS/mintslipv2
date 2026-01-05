@@ -2010,16 +2010,113 @@ export default function AdminDashboard() {
 
             {/* Users Table */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-slate-800">Registered Users</h2>
-                <p className="text-sm text-slate-500">{usersTotal} total users</p>
+              <div className="flex flex-col gap-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-slate-800">Registered Users</h2>
+                  <p className="text-sm text-slate-500">{usersTotal} total users</p>
+                </div>
+                
+                {/* Filters Row */}
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Search */}
+                  <div className="relative flex-1 min-w-[200px] max-w-[300px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      placeholder="Search by name or email..."
+                      value={usersSearchQuery}
+                      onChange={(e) => {
+                        setUsersSearchQuery(e.target.value);
+                        setUsersPage(0);
+                      }}
+                      className="pl-9"
+                    />
+                  </div>
+                  
+                  {/* Subscription Type Filter */}
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-slate-500" />
+                    <Select 
+                      value={usersSubscriptionFilter} 
+                      onValueChange={(v) => { 
+                        setUsersSubscriptionFilter(v); 
+                        setUsersPage(0); 
+                      }}
+                    >
+                      <SelectTrigger className="w-[160px]">
+                        <SelectValue placeholder="Subscription" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Subscriptions</SelectItem>
+                        <SelectItem value="none">No Subscription</SelectItem>
+                        <SelectItem value="starter">Starter</SelectItem>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Join Date Filter */}
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-500" />
+                    <Select 
+                      value={usersDateFilter} 
+                      onValueChange={(v) => { 
+                        setUsersDateFilter(v); 
+                        setUsersPage(0); 
+                      }}
+                    >
+                      <SelectTrigger className="w-[150px]">
+                        <SelectValue placeholder="Join Date" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Time</SelectItem>
+                        <SelectItem value="today">Joined Today</SelectItem>
+                        <SelectItem value="week">This Week</SelectItem>
+                        <SelectItem value="month">This Month</SelectItem>
+                        <SelectItem value="quarter">This Quarter</SelectItem>
+                        <SelectItem value="year">This Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Clear Filters */}
+                  {(usersSubscriptionFilter !== "all" || usersDateFilter !== "all" || usersSearchQuery) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setUsersSubscriptionFilter("all");
+                        setUsersDateFilter("all");
+                        setUsersSearchQuery("");
+                        setUsersPage(0);
+                      }}
+                      className="text-slate-500 hover:text-slate-700"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Results Summary */}
+                <div className="text-sm text-slate-500">
+                  Showing {users.length} of {usersTotal} users
+                  {(usersSubscriptionFilter !== "all" || usersDateFilter !== "all" || usersSearchQuery) && " (filtered)"}
+                </div>
               </div>
 
             {users.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500">No registered users yet</p>
-                <p className="text-sm text-slate-400">Users will appear here when they sign up for subscriptions</p>
+                <p className="text-slate-500">
+                  {(usersSubscriptionFilter !== "all" || usersDateFilter !== "all" || usersSearchQuery) 
+                    ? "No users match your filters" 
+                    : "No registered users yet"}
+                </p>
+                <p className="text-sm text-slate-400">
+                  {(usersSubscriptionFilter !== "all" || usersDateFilter !== "all" || usersSearchQuery) 
+                    ? "Try adjusting your search or filters" 
+                    : "Users will appear here when they sign up for subscriptions"}
+                </p>
               </div>
             ) : (
               <>

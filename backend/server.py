@@ -75,6 +75,7 @@ blog_posts_collection = db["blog_posts"]
 blog_categories_collection = db["blog_categories"]
 saved_documents_collection = db["saved_documents"]
 site_settings_collection = db["site_settings"]
+banned_ips_collection = db["banned_ips"]
 
 # Create uploads directory for user documents if not exists
 USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_documents")

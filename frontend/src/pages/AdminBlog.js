@@ -35,13 +35,11 @@ import {
   Search,
   Filter,
   Loader2,
-  ArrowLeft,
   Calendar,
   Clock,
   MoreVertical,
   ExternalLink,
-  Sparkles,
-  RefreshCw
+  Sparkles
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,6 +47,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 

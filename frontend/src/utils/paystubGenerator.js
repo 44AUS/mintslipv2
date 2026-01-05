@@ -202,6 +202,9 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
           startDateArray, endDateArray, payDateArray
         );
         
+        // Set PDF metadata based on template
+        setPdfMetadata(doc, template, stubData.payDate);
+        
         // Template-specific filename with pay date
         const fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
         console.log(`Adding ${fileName} to ZIP`);

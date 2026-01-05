@@ -693,6 +693,194 @@ class AIResumeBuilderTester:
             self.log_test("Admin Users List", False, f"Exception: {str(e)}")
             return False
 
+    def test_admin_users_filtering_api(self):
+        """Test GET /api/admin/users endpoint with filtering and search parameters"""
+        if not self.admin_token:
+            self.log_test("Admin Users Filtering API", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            success = True
+            details = ""
+            
+            # Test 1: Search functionality - search by name/email containing "test"
+            params = {"search": "test"}
+            response = requests.get(f"{self.api_url}/admin/users", headers=headers, params=params, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "users" in data and "total" in data:
+                    users = data["users"]
+                    total = data["total"]
+                    details += f"Search 'test': {len(users)} users found (total: {total})"
+                    
+                    # Verify search results contain "test" in name or email
+                    if users:
+                        search_valid = True
+                        for user in users:
+                            name = user.get("name", "").lower()
+                            email = user.get("email", "").lower()
+                            if "test" not in name and "test" not in email:
+                                search_valid = False
+                                break
+                        
+                        if search_valid:
+                            details += " ✓"
+                        else:
+                            success = False
+                            details += " ✗ (search results don't match criteria)"
+                    else:
+                        details += " (no results - acceptable)"
+                else:
+                    success = False
+                    details += " ✗ (invalid response structure)"
+            else:
+                success = False
+                details += f" ✗ (status: {response.status_code})"
+            
+            # Test 2: Subscription type filter - starter subscription
+            if success:
+                params = {"subscription_type": "starter"}
+                response = requests.get(f"{self.api_url}/admin/users", headers=headers, params=params, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "users" in data:
+                        users = data["users"]
+                        details += f", Starter subs: {len(users)} users"
+                        
+                        # Verify all users have starter subscription
+                        if users:
+                            starter_valid = True
+                            for user in users:
+                                subscription = user.get("subscription", {})
+                                if not subscription or subscription.get("tier") != "starter":
+                                    starter_valid = False
+                                    break
+                            
+                            if starter_valid:
+                                details += " ✓"
+                            else:
+                                success = False
+                                details += " ✗ (non-starter users in results)"
+                        else:
+                            details += " (no results - acceptable)"
+                    else:
+                        success = False
+                        details += " ✗ (invalid response)"
+                else:
+                    success = False
+                    details += f" ✗ (status: {response.status_code})"
+            
+            # Test 3: Subscription type filter - none (users without subscription)
+            if success:
+                params = {"subscription_type": "none"}
+                response = requests.get(f"{self.api_url}/admin/users", headers=headers, params=params, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "users" in data:
+                        users = data["users"]
+                        details += f", No subs: {len(users)} users"
+                        
+                        # Verify all users have no subscription
+                        if users:
+                            none_valid = True
+                            for user in users:
+                                if user.get("subscription"):
+                                    none_valid = False
+                                    break
+                            
+                            if none_valid:
+                                details += " ✓"
+                            else:
+                                success = False
+                                details += " ✗ (users with subscriptions in results)"
+                        else:
+                            details += " (no results - acceptable)"
+                    else:
+                        success = False
+                        details += " ✗ (invalid response)"
+                else:
+                    success = False
+                    details += f" ✗ (status: {response.status_code})"
+            
+            # Test 4: Date filter - users who joined after specific date
+            if success:
+                params = {"date_from": "2024-01-01T00:00:00Z"}
+                response = requests.get(f"{self.api_url}/admin/users", headers=headers, params=params, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "users" in data:
+                        users = data["users"]
+                        details += f", After 2024-01-01: {len(users)} users"
+                        
+                        # Verify all users joined after the specified date
+                        if users:
+                            date_valid = True
+                            for user in users:
+                                created_at = user.get("createdAt", "")
+                                if created_at < "2024-01-01T00:00:00Z":
+                                    date_valid = False
+                                    break
+                            
+                            if date_valid:
+                                details += " ✓"
+                            else:
+                                success = False
+                                details += " ✗ (users before date in results)"
+                        else:
+                            details += " (no results - acceptable)"
+                    else:
+                        success = False
+                        details += " ✗ (invalid response)"
+                else:
+                    success = False
+                    details += f" ✗ (status: {response.status_code})"
+            
+            # Test 5: Combined filters - search + subscription type
+            if success:
+                params = {"search": "test", "subscription_type": "professional"}
+                response = requests.get(f"{self.api_url}/admin/users", headers=headers, params=params, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and "users" in data:
+                        users = data["users"]
+                        details += f", Combined filter: {len(users)} users"
+                        
+                        # Verify users match both criteria
+                        if users:
+                            combined_valid = True
+                            for user in users:
+                                name = user.get("name", "").lower()
+                                email = user.get("email", "").lower()
+                                subscription = user.get("subscription", {})
+                                
+                                has_test = "test" in name or "test" in email
+                                has_professional = subscription and subscription.get("tier") == "professional"
+                                
+                                if not (has_test and has_professional):
+                                    combined_valid = False
+                                    break
+                            
+                            if combined_valid:
+                                details += " ✓"
+                            else:
+                                success = False
+                                details += " ✗ (combined filter criteria not met)"
+                        else:
+                            details += " (no results - acceptable)"
+                    else:
+                        success = False
+                        details += " ✗ (invalid response)"
+                else:
+                    success = False
+                    details += f" ✗ (status: {response.status_code})"
+            
+            self.log_test("Admin Users Filtering API", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Users Filtering API", False, f"Exception: {str(e)}")
+            return False
+
     def create_test_user(self):
         """Create a test user for subscription testing"""
         try:

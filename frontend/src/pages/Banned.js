@@ -63,7 +63,7 @@ export default function Banned() {
           </div>
           
           <a 
-            href="mailto:support@example.com"
+            href="mailto:support@mintslip.com"
             className="inline-flex items-center justify-center px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors"
           >
             Contact Support

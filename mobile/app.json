@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MintSlip",
-    "slug": "mintslip-mobile",
+    "slug": "mintslip",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -40,6 +40,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "owner": "austinflatt",
+    "extra": {
+      "eas": {
+        "projectId": "a2b1a955-c0bc-4b95-9fd1-99de84ad23ed"
+      }
+    }
   }
 }

@@ -49,7 +49,9 @@ import {
   UserPlus,
   UserCheck,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Shield,
+  Globe
 } from "lucide-react";
 import {
   AreaChart,

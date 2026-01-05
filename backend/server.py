@@ -1548,30 +1548,38 @@ async def preview_subscription_proration(request: dict, session: dict = Depends(
             }
         )
         
-        # Calculate amounts from invoice lines
-        # In newer Stripe API, we check the 'type' field instead of 'proration'
-        proration_amount = 0
-        credit_amount = 0
-        new_plan_amount = 0
+        # Calculate proration amounts from invoice lines
+        # The invoice preview includes: proration charges + next billing period
+        # We only want to show the proration (immediate charge), not the next period
+        proration_charge = 0  # Amount charged for new plan's remaining time
+        proration_credit = 0  # Credit for old plan's unused time
+        next_period_amount = 0  # Next full billing cycle (not immediate)
         
         for line in upcoming_invoice.lines.data:
-            # Check if this is a proration line by looking at the description or type
-            line_type = getattr(line, 'type', None)
             description = getattr(line, 'description', '') or ''
+            amount = line.amount
             
-            # Proration lines typically have "Remaining time" or "Unused time" in description
-            is_proration = 'proration' in description.lower() or 'remaining time' in description.lower() or 'unused time' in description.lower()
+            # Debug: print line details
+            print(f"Invoice line: {description[:50]}... amount={amount}")
             
-            if is_proration or line_type == 'invoiceitem':
-                if line.amount > 0:
-                    proration_amount += line.amount
+            # Proration lines contain "Remaining time" or "Unused time"
+            # Or they might say "time on [Plan Name]"
+            is_proration_line = any(phrase in description.lower() for phrase in [
+                'remaining time', 'unused time', 'time on', 'proration'
+            ])
+            
+            if is_proration_line:
+                if amount > 0:
+                    proration_charge += amount
                 else:
-                    credit_amount += abs(line.amount)
+                    proration_credit += abs(amount)
             else:
-                new_plan_amount += line.amount
+                # This is the next billing period charge
+                next_period_amount += amount
         
-        # Net amount due now (could be negative if downgrading)
-        net_amount = upcoming_invoice.amount_due
+        # Net proration amount (what user pays NOW, not including next period)
+        net_proration = proration_charge - proration_credit
+        
         is_upgrade = SUBSCRIPTION_PLANS[new_tier]["price_cents"] > SUBSCRIPTION_PLANS[current_tier]["price_cents"]
         
         # Get period end date - use get() for safety
@@ -1583,6 +1591,19 @@ async def preview_subscription_proration(request: dict, session: dict = Depends(
             period_end = datetime.now() + timedelta(days=30)
             days_remaining = 30
         
+        # Calculate a sensible proration if Stripe's numbers seem off
+        # Proration should be: (new_price - old_price) * (days_remaining / 30)
+        old_price = SUBSCRIPTION_PLANS[current_tier]["price_cents"]
+        new_price = SUBSCRIPTION_PLANS[new_tier]["price_cents"]
+        expected_proration = (new_price - old_price) * (max(0, days_remaining) / 30)
+        
+        # Use calculated proration if Stripe's seems unreasonable
+        # (more than 2x the monthly difference is suspicious)
+        monthly_diff = abs(new_price - old_price)
+        if abs(net_proration) > monthly_diff * 2:
+            print(f"Warning: Stripe proration {net_proration} seems high, using calculated: {expected_proration}")
+            net_proration = int(expected_proration)
+        
         return {
             "success": True,
             "preview": {
@@ -1591,14 +1612,14 @@ async def preview_subscription_proration(request: dict, session: dict = Depends(
                 "newTier": new_tier,
                 "newTierName": SUBSCRIPTION_PLANS[new_tier]["name"],
                 "isUpgrade": is_upgrade,
-                "currentPlanCredit": credit_amount / 100,  # Convert cents to dollars
-                "newPlanCharge": proration_amount / 100,
-                "netAmountDue": net_amount / 100,
-                "newMonthlyPrice": SUBSCRIPTION_PLANS[new_tier]["price_cents"] / 100,
+                "currentPlanCredit": proration_credit / 100,  # Convert cents to dollars
+                "newPlanCharge": proration_charge / 100,
+                "netAmountDue": net_proration / 100,  # Just the proration, not next period
+                "newMonthlyPrice": new_price / 100,
                 "daysRemainingInPeriod": max(0, days_remaining),
                 "periodEndDate": period_end.isoformat(),
-                "immediateCharge": net_amount > 0,
-                "creditApplied": net_amount < 0
+                "immediateCharge": net_proration > 0,
+                "creditApplied": net_proration < 0
             }
         }
         

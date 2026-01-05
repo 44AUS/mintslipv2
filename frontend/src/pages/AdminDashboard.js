@@ -1614,11 +1614,268 @@ export default function AdminDashboard() {
 
         {/* Users Tab */}
         {activeTab === "users" && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-800">Registered Users</h2>
-              <p className="text-sm text-slate-500">{usersTotal} total users</p>
+          <div className="space-y-6">
+            {/* User Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                title="Total Registered Users"
+                value={dashboardStats?.stats?.totalUsers || 0}
+                icon={Users}
+                color="blue"
+              />
+              <StatCard
+                title="Active Subscribers"
+                value={dashboardStats?.stats?.totalSubscribers || 0}
+                icon={UserCheck}
+                color="green"
+              />
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-orange-100 text-orange-600">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Cancelling</p>
+                    <p className="text-2xl font-bold text-slate-800">{dashboardStats?.stats?.cancellingSubscribers || 0}</p>
+                    <p className="text-xs text-orange-600">Pending cancellation</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-100 text-purple-600">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Monthly Recurring Revenue</p>
+                    <p className="text-2xl font-bold text-slate-800">{formatCurrency(dashboardStats?.stats?.monthlySubscriptionRevenue || 0)}</p>
+                    <p className="text-xs text-purple-600">From active subscriptions</p>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Subscription Tier Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">Starter Plan</p>
+                    <p className="text-2xl font-bold text-green-600">{dashboardStats?.subscriptionStats?.byTier?.starter || 0}</p>
+                    <p className="text-xs text-slate-400">$19.99/mo</p>
+                  </div>
+                  {dashboardStats?.subscriptionStats?.cancellingByTier?.starter > 0 && (
+                    <div className="text-right">
+                      <p className="text-xs text-orange-500">{dashboardStats?.subscriptionStats?.cancellingByTier?.starter} cancelling</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">Professional Plan</p>
+                    <p className="text-2xl font-bold text-blue-600">{dashboardStats?.subscriptionStats?.byTier?.professional || 0}</p>
+                    <p className="text-xs text-slate-400">$29.99/mo</p>
+                  </div>
+                  {dashboardStats?.subscriptionStats?.cancellingByTier?.professional > 0 && (
+                    <div className="text-right">
+                      <p className="text-xs text-orange-500">{dashboardStats?.subscriptionStats?.cancellingByTier?.professional} cancelling</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-500">Business Plan</p>
+                    <p className="text-2xl font-bold text-purple-600">{dashboardStats?.subscriptionStats?.byTier?.business || 0}</p>
+                    <p className="text-xs text-slate-400">$49.99/mo</p>
+                  </div>
+                  {dashboardStats?.subscriptionStats?.cancellingByTier?.business > 0 && (
+                    <div className="text-right">
+                      <p className="text-xs text-orange-500">{dashboardStats?.subscriptionStats?.cancellingByTier?.business} cancelling</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Subscription Tier Distribution Pie Chart */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-4">Subscription Distribution</h2>
+                <div className="h-[300px]">
+                  {dashboardStats?.subscriptionStats && (dashboardStats.subscriptionStats.byTier?.starter > 0 || dashboardStats.subscriptionStats.byTier?.professional > 0 || dashboardStats.subscriptionStats.byTier?.business > 0) ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Starter', value: dashboardStats.subscriptionStats.byTier?.starter || 0, fill: '#16a34a' },
+                            { name: 'Professional', value: dashboardStats.subscriptionStats.byTier?.professional || 0, fill: '#3b82f6' },
+                            { name: 'Business', value: dashboardStats.subscriptionStats.byTier?.business || 0, fill: '#8b5cf6' }
+                          ].filter(item => item.value > 0)}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={2}
+                          dataKey="value"
+                        >
+                          {[
+                            { name: 'Starter', value: dashboardStats.subscriptionStats.byTier?.starter || 0, fill: '#16a34a' },
+                            { name: 'Professional', value: dashboardStats.subscriptionStats.byTier?.professional || 0, fill: '#3b82f6' },
+                            { name: 'Business', value: dashboardStats.subscriptionStats.byTier?.business || 0, fill: '#8b5cf6' }
+                          ].filter(item => item.value > 0).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                          formatter={(value) => [value, 'Subscribers']}
+                        />
+                        <Legend 
+                          layout="vertical" 
+                          align="right" 
+                          verticalAlign="middle"
+                          wrapperStyle={{ fontSize: '12px' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      <div className="text-center">
+                        <UserCheck className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>No active subscribers yet</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* User Registration Trend Chart */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-slate-800 mb-4">User Registrations (Last 30 Days)</h2>
+                <div className="h-[300px]">
+                  {dashboardStats?.userRegistrations && dashboardStats.userRegistrations.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={dashboardStats.userRegistrations.map(item => ({
+                        name: new Date(item._id).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        users: item.count
+                      }))}>
+                        <defs>
+                          <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          tickLine={false}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12, fill: '#64748b' }}
+                          tickLine={false}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                          }}
+                          formatter={(value) => [value, 'New Users']}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="users" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          fillOpacity={1} 
+                          fill="url(#colorUsers)" 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      <div className="text-center">
+                        <UserPlus className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>No registration data available</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Subscriber Growth Bar Chart */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">Active vs Cancelling Subscribers by Tier</h2>
+              <div className="h-[250px]">
+                {dashboardStats?.subscriptionStats ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[
+                      { 
+                        name: 'Starter', 
+                        active: dashboardStats.subscriptionStats.byTier?.starter || 0,
+                        cancelling: dashboardStats.subscriptionStats.cancellingByTier?.starter || 0
+                      },
+                      { 
+                        name: 'Professional', 
+                        active: dashboardStats.subscriptionStats.byTier?.professional || 0,
+                        cancelling: dashboardStats.subscriptionStats.cancellingByTier?.professional || 0
+                      },
+                      { 
+                        name: 'Business', 
+                        active: dashboardStats.subscriptionStats.byTier?.business || 0,
+                        cancelling: dashboardStats.subscriptionStats.cancellingByTier?.business || 0
+                      }
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 12, fill: '#64748b' }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12, fill: '#64748b' }}
+                        tickLine={false}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#fff', 
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="active" name="Active" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="cancelling" name="Cancelling" fill="#f97316" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-slate-400">
+                    No data available
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-slate-800">Registered Users</h2>
+                <p className="text-sm text-slate-500">{usersTotal} total users</p>
+              </div>
 
             {users.length === 0 ? (
               <div className="text-center py-12">

@@ -2320,6 +2320,15 @@ export default function AdminDashboard() {
                                     <Ban className="w-4 h-4 mr-2" />
                                     {user.isBanned ? "Unban User" : "Ban User"}
                                   </DropdownMenuItem>
+                                  {user.ipAddress && user.ipAddress !== "unknown" && (
+                                    <DropdownMenuItem 
+                                      onClick={() => banUserIP(user)}
+                                      className="text-red-600"
+                                    >
+                                      <Shield className="w-4 h-4 mr-2" />
+                                      Ban IP Address
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuItem 
                                     onClick={() => deleteUser(user.id)}
                                     className="text-red-600"

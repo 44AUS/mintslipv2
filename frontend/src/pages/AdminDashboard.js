@@ -1920,13 +1920,21 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell>
                               {user.subscription ? (
-                                <span className={`px-2 py-1 rounded-md text-sm ${
-                                  user.subscription.tier === "unlimited" || user.subscription.tier === "business" ? "bg-purple-100 text-purple-700" :
-                                  user.subscription.tier === "pro" || user.subscription.tier === "professional" ? "bg-blue-100 text-blue-700" :
-                                  "bg-green-100 text-green-700"
-                                }`}>
-                                  {tier?.name || user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
-                                </span>
+                                <div className="flex flex-col gap-1">
+                                  <span className={`px-2 py-1 rounded-md text-sm w-fit ${
+                                    user.subscription.tier === "unlimited" || user.subscription.tier === "business" ? "bg-purple-100 text-purple-700" :
+                                    user.subscription.tier === "pro" || user.subscription.tier === "professional" ? "bg-blue-100 text-blue-700" :
+                                    "bg-green-100 text-green-700"
+                                  }`}>
+                                    {tier?.name || user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
+                                  </span>
+                                  {user.subscription.status === "cancelling" && (
+                                    <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded text-xs w-fit flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      Cancelling
+                                    </span>
+                                  )}
+                                </div>
                               ) : (
                                 <span className="text-slate-400">None</span>
                               )}

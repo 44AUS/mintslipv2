@@ -1394,6 +1394,7 @@ class AIResumeBuilderTester:
             return False
         
         try:
+            import time
             headers = {"Authorization": f"Bearer {self.admin_token}"}
             
             # Step 1: Get list of users to find a real user ID
@@ -1444,7 +1445,6 @@ class AIResumeBuilderTester:
             
             # Test 2: Update email only (if name update succeeded)
             if success:
-                import time
                 new_email = f"updated{int(time.time())}@mintslip.com"
                 payload = {"email": new_email}
                 response = requests.put(f"{self.api_url}/admin/users/{user_id}", json=payload, headers=headers, timeout=10)

@@ -342,21 +342,6 @@ export default function AdminDiscounts() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch(`${BACKEND_URL}/api/admin/logout`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${adminToken}` }
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-    
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminInfo");
-    navigate("/admin/login");
-  };
-
   // Loading state
   if (loading && !isAuthenticated) {
     return (

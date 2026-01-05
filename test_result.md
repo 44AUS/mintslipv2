@@ -106,15 +106,18 @@ backend:
 
   - task: "Admin Users Filtering API"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added search by name/email, filter by subscription type, and filter by join date to /api/admin/users endpoint"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin Users Filtering API test passed - All filtering scenarios working correctly: 1) Search by name/email containing 'test' ✓ (3 users found), 2) Filter by subscription type 'starter' ✓ (1 user found), 3) Filter by subscription type 'none' ✓ (3 users found), 4) Filter by join date from 2024-01-01 ✓ (5 users found), 5) Combined filters (search + subscription type) ✓ (1 user found). Fixed MongoDB query logic to properly handle combined filters using $and operator and null subscription values."
 
 frontend:
   - task: "Pricing Page UI"

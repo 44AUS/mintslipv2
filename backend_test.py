@@ -1721,6 +1721,372 @@ class AIResumeBuilderTester:
             self.log_test("Admin User Edit Endpoint", False, f"Exception: {str(e)}")
             return False
 
+    # ========== IP BAN MANAGEMENT TESTS ==========
+
+    def test_check_ip_ban_public(self):
+        """Test GET /api/check-ip-ban endpoint (public endpoint)"""
+        try:
+            response = requests.get(f"{self.api_url}/check-ip-ban", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                # For non-banned IPs, should return {"banned": false}
+                if "banned" in data and isinstance(data["banned"], bool):
+                    if data["banned"] == False:
+                        details += f", IP not banned (expected for test IP)"
+                    else:
+                        # If IP is banned, should have reason and bannedAt
+                        if "reason" in data and "bannedAt" in data:
+                            details += f", IP is banned: {data['reason']}"
+                        else:
+                            success = False
+                            details += f", IP banned but missing required fields: {data}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Check IP Ban Public Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Check IP Ban Public Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_banned_ips_list(self):
+        """Test GET /api/admin/banned-ips endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Banned IPs List", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/banned-ips", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "bannedIps" in data:
+                    banned_ips = data["bannedIps"]
+                    details += f", Found {len(banned_ips)} banned IPs"
+                    
+                    # Validate structure of banned IPs if any exist
+                    if banned_ips:
+                        first_ip = banned_ips[0]
+                        required_fields = ["id", "ip", "isActive", "bannedAt"]
+                        missing_fields = [field for field in required_fields if field not in first_ip]
+                        
+                        if missing_fields:
+                            success = False
+                            details += f", Missing fields in banned IP record: {missing_fields}"
+                        else:
+                            details += f", Structure valid"
+                    else:
+                        details += " (empty list - acceptable)"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Banned IPs List", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Banned IPs List", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_ban_ip(self):
+        """Test POST /api/admin/banned-ips endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Ban IP", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            test_ip = "192.168.1.100"
+            test_reason = "Test ban for IP management testing"
+            
+            payload = {
+                "ip": test_ip,
+                "reason": test_reason
+            }
+            
+            response = requests.post(f"{self.api_url}/admin/banned-ips", json=payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "message" in data:
+                    message = data["message"]
+                    if test_ip in message and "banned" in message.lower():
+                        details += f", IP banned successfully: {message}"
+                        
+                        # Check if bannedIp details are returned
+                        if "bannedIp" in data:
+                            banned_ip = data["bannedIp"]
+                            if banned_ip.get("ip") == test_ip and banned_ip.get("reason") == test_reason:
+                                details += f", Banned IP details correct"
+                            else:
+                                success = False
+                                details += f", Banned IP details incorrect: {banned_ip}"
+                    else:
+                        success = False
+                        details += f", Invalid success message: {message}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Ban IP", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Ban IP", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_unban_ip(self):
+        """Test DELETE /api/admin/banned-ips/{ip} endpoint"""
+        if not self.admin_token:
+            self.log_test("Admin Unban IP", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            test_ip = "192.168.1.100"  # Same IP we banned in previous test
+            
+            response = requests.delete(f"{self.api_url}/admin/banned-ips/{test_ip}", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "message" in data:
+                    message = data["message"]
+                    if test_ip in message and "unbanned" in message.lower():
+                        details += f", IP unbanned successfully: {message}"
+                    else:
+                        success = False
+                        details += f", Invalid success message: {message}"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            elif response.status_code == 404:
+                # IP might not exist, which is acceptable if previous test failed
+                try:
+                    error_data = response.json()
+                    details += f", IP not found (acceptable if ban test failed): {error_data.get('detail', 'Unknown error')}"
+                    success = True  # Consider this acceptable
+                except:
+                    details += f", IP not found response"
+                    success = True
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Unban IP", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Unban IP", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_banned_ips_after_unban(self):
+        """Test GET /api/admin/banned-ips endpoint after unbanning to verify IP shows as inactive"""
+        if not self.admin_token:
+            self.log_test("Admin Banned IPs After Unban", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/banned-ips", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "bannedIps" in data:
+                    banned_ips = data["bannedIps"]
+                    test_ip = "192.168.1.100"
+                    
+                    # Look for our test IP
+                    test_ip_record = None
+                    for ip_record in banned_ips:
+                        if ip_record.get("ip") == test_ip:
+                            test_ip_record = ip_record
+                            break
+                    
+                    if test_ip_record:
+                        if test_ip_record.get("isActive") == False:
+                            details += f", Test IP {test_ip} found as inactive (unbanned) ✓"
+                            
+                            # Check for unban timestamp
+                            if "unbannedAt" in test_ip_record:
+                                details += f", Unban timestamp present"
+                            else:
+                                details += f", Missing unban timestamp (minor issue)"
+                        else:
+                            success = False
+                            details += f", Test IP {test_ip} still shows as active: {test_ip_record}"
+                    else:
+                        # IP might not be in list if it was never successfully banned
+                        details += f", Test IP {test_ip} not found in banned list (acceptable if ban test failed)"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Banned IPs After Unban", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Banned IPs After Unban", False, f"Exception: {str(e)}")
+            return False
+
+    def test_ip_ban_management_full_flow(self):
+        """Test complete IP ban management flow: list -> ban -> verify -> unban -> verify"""
+        if not self.admin_token:
+            self.log_test("IP Ban Management Full Flow", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            test_ip = "10.0.0.50"  # Different IP for full flow test
+            test_reason = "Full flow test ban"
+            success = True
+            details = ""
+            
+            # Step 1: Get initial banned IPs list
+            response = requests.get(f"{self.api_url}/admin/banned-ips", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("IP Ban Management Full Flow", False, f"Failed to get initial banned IPs: {response.status_code}")
+                return False
+            
+            initial_data = response.json()
+            initial_count = len(initial_data.get("bannedIps", []))
+            details += f"Initial banned IPs: {initial_count}"
+            
+            # Step 2: Ban the test IP
+            ban_payload = {"ip": test_ip, "reason": test_reason}
+            response = requests.post(f"{self.api_url}/admin/banned-ips", json=ban_payload, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("IP Ban Management Full Flow", False, f"Failed to ban IP: {response.status_code}")
+                return False
+            
+            ban_data = response.json()
+            if not ban_data.get("success"):
+                self.log_test("IP Ban Management Full Flow", False, f"Ban IP failed: {ban_data}")
+                return False
+            
+            details += f" -> IP {test_ip} banned"
+            
+            # Step 3: Verify IP appears in banned list
+            response = requests.get(f"{self.api_url}/admin/banned-ips", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("IP Ban Management Full Flow", False, f"Failed to get banned IPs after ban: {response.status_code}")
+                return False
+            
+            after_ban_data = response.json()
+            banned_ips = after_ban_data.get("bannedIps", [])
+            
+            # Find our test IP
+            test_ip_found = False
+            for ip_record in banned_ips:
+                if ip_record.get("ip") == test_ip and ip_record.get("isActive") == True:
+                    test_ip_found = True
+                    if ip_record.get("reason") == test_reason:
+                        details += f" -> Verified in banned list with correct reason"
+                    else:
+                        success = False
+                        details += f" -> Found in list but reason mismatch: {ip_record.get('reason')}"
+                    break
+            
+            if not test_ip_found:
+                success = False
+                details += f" -> IP not found in banned list after banning"
+            
+            # Step 4: Check public IP ban endpoint (should return banned: false for our test client IP)
+            if success:
+                response = requests.get(f"{self.api_url}/check-ip-ban", timeout=10)
+                if response.status_code == 200:
+                    check_data = response.json()
+                    if "banned" in check_data:
+                        details += f" -> Public check endpoint working (banned: {check_data['banned']})"
+                    else:
+                        success = False
+                        details += f" -> Public check endpoint invalid response: {check_data}"
+                else:
+                    success = False
+                    details += f" -> Public check endpoint failed: {response.status_code}"
+            
+            # Step 5: Unban the IP
+            if success:
+                response = requests.delete(f"{self.api_url}/admin/banned-ips/{test_ip}", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    unban_data = response.json()
+                    if unban_data.get("success"):
+                        details += f" -> IP {test_ip} unbanned"
+                    else:
+                        success = False
+                        details += f" -> Unban failed: {unban_data}"
+                else:
+                    success = False
+                    details += f" -> Unban request failed: {response.status_code}"
+            
+            # Step 6: Verify IP shows as inactive in banned list
+            if success:
+                response = requests.get(f"{self.api_url}/admin/banned-ips", headers=headers, timeout=10)
+                if response.status_code == 200:
+                    final_data = response.json()
+                    final_banned_ips = final_data.get("bannedIps", [])
+                    
+                    # Find our test IP again
+                    test_ip_inactive = False
+                    for ip_record in final_banned_ips:
+                        if ip_record.get("ip") == test_ip:
+                            if ip_record.get("isActive") == False:
+                                test_ip_inactive = True
+                                details += f" -> Verified as inactive in banned list"
+                            else:
+                                success = False
+                                details += f" -> IP still shows as active after unban: {ip_record}"
+                            break
+                    
+                    if not test_ip_inactive:
+                        success = False
+                        details += f" -> IP not found in final banned list"
+                else:
+                    success = False
+                    details += f" -> Failed to get final banned IPs: {response.status_code}"
+            
+            self.log_test("IP Ban Management Full Flow", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("IP Ban Management Full Flow", False, f"Exception: {str(e)}")
+            return False
+
     # ========== STRIPE INTEGRATION TESTS ==========
 
     def test_stripe_config(self):

@@ -1251,12 +1251,13 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm">
+        <div className="flex gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm flex-wrap">
           {[
             { id: "overview", label: "Overview", icon: LayoutDashboard },
             { id: "purchases", label: "Purchases", icon: ShoppingCart },
             { id: "users", label: "Users", icon: Users },
-            { id: "discounts", label: "Discount Codes", icon: Tag },
+            { id: "discounts", label: "Discounts", icon: Tag },
+            { id: "banned-ips", label: "Banned IPs", icon: Shield },
             { id: "blog", label: "Blog", icon: FileText }
           ].map((tab) => {
             // Define the route for each tab
@@ -1266,6 +1267,7 @@ export default function AdminDashboard() {
                 case "purchases": return "/admin/purchases";
                 case "users": return "/admin/users";
                 case "discounts": return "/admin/discounts";
+                case "banned-ips": return "/admin/banned-ips";
                 case "blog": return "/admin/blog";
                 default: return "/admin/dashboard";
               }

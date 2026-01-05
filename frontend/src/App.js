@@ -55,22 +55,62 @@ import AIResumeBuilder from "@/pages/AIResumeBuilder";
 import AIResumeLanding from "@/pages/AIResumeLanding";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import { useState, useEffect } from "react";
 
 // Stripe Configuration - Use environment variable
 const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM";
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// IP Ban Check Wrapper
+function IPBanCheck({ children }) {
+  const [isBanned, setIsBanned] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkBan = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/check-ip-ban`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsBanned(data.banned);
+        }
+      } catch (error) {
+        console.error("Error checking IP ban:", error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    
+    checkBan();
+  }, []);
+
+  // Don't block while checking - show app immediately
+  if (isChecking) {
+    return children;
+  }
+
+  // If banned, redirect to banned page (except if already on banned page)
+  if (isBanned && window.location.pathname !== "/banned") {
+    window.location.href = "/banned";
+    return null;
+  }
+
+  return children;
+}
 
 function App() {
   return (
     <HelmetProvider>
       <Elements stripe={stripePromise}>
-        <div className="App">
-          <PromoBanner />
-          <Toaster position="top-center" richColors />
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Home />} />
+        <IPBanCheck>
+          <div className="App">
+            <PromoBanner />
+            <Toaster position="top-center" richColors />
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<Home />} />
               <Route path="/paystub-generator" element={<PaystubForm />} />
               <Route path="/paystub-samples" element={<PaystubSamples />} />
               <Route path="/instant-paystub-generator" element={<PaystubForm />} />

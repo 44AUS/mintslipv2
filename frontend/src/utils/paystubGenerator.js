@@ -211,9 +211,6 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         startDateArray, endDateArray, payDateArray
       );
       
-      // Set PDF metadata based on template
-      setPdfMetadata(doc, template, stubData.payDate);
-      
       // Template-specific filename with pay date
       const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
       

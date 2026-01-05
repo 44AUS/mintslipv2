@@ -1610,14 +1610,26 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
         "subscription.status": "active"
     })
     
-    # Subscribers by tier
+    # Total cancelling subscribers (pending cancellation at period end)
+    cancelling_subscribers = await users_collection.count_documents({
+        "subscription.status": "cancelling"
+    })
+    
+    # Subscribers by tier (active only)
     subscribers_by_tier = {
         "starter": await users_collection.count_documents({"subscription.tier": "starter", "subscription.status": "active"}),
         "professional": await users_collection.count_documents({"subscription.tier": "professional", "subscription.status": "active"}),
         "business": await users_collection.count_documents({"subscription.tier": "business", "subscription.status": "active"})
     }
     
-    # Monthly subscription revenue (calculated from active subscribers)
+    # Cancelling subscribers by tier
+    cancelling_by_tier = {
+        "starter": await users_collection.count_documents({"subscription.tier": "starter", "subscription.status": "cancelling"}),
+        "professional": await users_collection.count_documents({"subscription.tier": "professional", "subscription.status": "cancelling"}),
+        "business": await users_collection.count_documents({"subscription.tier": "business", "subscription.status": "cancelling"})
+    }
+    
+    # Monthly subscription revenue (calculated from active subscribers only)
     subscription_prices = {"starter": 19.99, "professional": 29.99, "business": 49.99}
     monthly_subscription_revenue = sum(
         count * subscription_prices.get(tier, 0) 
@@ -1626,7 +1638,7 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     
     # Recent subscriptions (users who subscribed recently)
     recent_subscribers = await users_collection.find(
-        {"subscription.status": "active"},
+        {"subscription.status": {"$in": ["active", "cancelling"]}},
         {"_id": 0, "password": 0}
     ).sort("subscription.createdAt", -1).limit(10).to_list(10)
     
@@ -1651,12 +1663,26 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     # New subscribers today
     today_new_subscribers = await subscriptions_collection.count_documents({"createdAt": {"$gte": today_start}})
     
+    # ===== USER REGISTRATION TRENDS (for charts) =====
+    # Get user registrations over the last 30 days
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    user_registration_pipeline = [
+        {"$match": {"createdAt": {"$gte": thirty_days_ago}}},
+        {"$group": {
+            "_id": {"$substr": ["$createdAt", 0, 10]},  # Group by date (YYYY-MM-DD)
+            "count": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    user_registrations = await users_collection.aggregate(user_registration_pipeline).to_list(31)
+    
     return {
         "success": True,
         "stats": {
             "totalPurchases": total_purchases,
             "totalRevenue": round(total_revenue, 2),
             "totalSubscribers": total_subscribers,
+            "cancellingSubscribers": cancelling_subscribers,
             "totalUsers": total_users,
             "todayPurchases": today_purchases,
             "todayRevenue": round(today_revenue, 2),
@@ -1665,13 +1691,16 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
         },
         "subscriptionStats": {
             "total": total_subscribers,
+            "cancelling": cancelling_subscribers,
             "byTier": subscribers_by_tier,
+            "cancellingByTier": cancelling_by_tier,
             "monthlyRevenue": round(monthly_subscription_revenue, 2),
             "recentSubscribers": recent_subscribers,
             "subscriptionRecords": subscription_records
         },
         "purchasesByType": purchases_by_type,
-        "recentPurchases": recent_purchases
+        "recentPurchases": recent_purchases,
+        "userRegistrations": user_registrations
     }
 
 @app.get("/api/admin/users")

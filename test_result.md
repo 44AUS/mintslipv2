@@ -89,6 +89,21 @@ backend:
         agent: "testing"
         comment: "✅ Admin Dashboard Subscription Stats test passed - All required fields present: stats.cancellingSubscribers (0), subscriptionStats.cancelling (0), subscriptionStats.cancellingByTier (starter: 0, professional: 0, business: 0), userRegistrations (0 entries). API structure is correct and working as expected."
 
+  - task: "Admin User Edit Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "New admin user edit endpoint testing requested - PUT /api/admin/users/{user_id} with name/email updates and validation"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin User Edit Endpoint test passed - All scenarios working: name-only update, email-only update, both name+email update, and duplicate email validation (returns 400 error as expected). Endpoint properly validates input and prevents duplicate emails."
+
 frontend:
   - task: "Pricing Page UI"
     implemented: true

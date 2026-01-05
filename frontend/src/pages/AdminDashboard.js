@@ -649,6 +649,62 @@ export default function AdminDashboard() {
     }
   };
 
+  // Edit user functions
+  const openEditUserModal = (user) => {
+    setSelectedUser(user);
+    setEditUserData({ name: user.name || "", email: user.email || "" });
+    setEditUserModalOpen(true);
+  };
+
+  const updateUser = async () => {
+    if (!selectedUser) return;
+    
+    if (!editUserData.name.trim() || !editUserData.email.trim()) {
+      toast.error("Name and email are required");
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editUserData.email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    setIsUpdatingUser(true);
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}`, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: editUserData.name.trim(),
+          email: editUserData.email.trim()
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast.success("User updated successfully");
+        setEditUserModalOpen(false);
+        setSelectedUser(null);
+        setEditUserData({ name: "", email: "" });
+        loadUsers();
+      } else {
+        toast.error(data.detail || "Failed to update user");
+      }
+    } catch (error) {
+      toast.error("Error updating user");
+    } finally {
+      setIsUpdatingUser(false);
+    }
+  };
+
   useEffect(() => {
     if (!isLoading) {
       loadPurchases();

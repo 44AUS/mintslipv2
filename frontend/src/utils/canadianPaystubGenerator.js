@@ -130,11 +130,6 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         checkNumberArray, memoArray
       );
       
-      // Set PDF metadata based on template
-      // For single stub, calculate pay date from startDate
-      const payDate = nextWeekday(new Date(startDate.getTime() + (periodLength - 1) * 24 * 60 * 60 * 1000), formData.payDay || "Friday");
-      setPdfMetadata(doc, template, payDate);
-      
       const pdfFileName = `Canadian-PayStub-${formData.name || "document"}.pdf`;
       
       // Store download info for payment success page

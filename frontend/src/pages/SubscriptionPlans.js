@@ -241,9 +241,6 @@ export default function SubscriptionPlans() {
     try {
       const token = localStorage.getItem("userToken");
       
-      // Get current URL for success/cancel redirects
-      const origin = window.location.origin;
-      
       const response = await fetch(`${BACKEND_URL}/api/stripe/change-subscription`, {
         method: "POST",
         headers: {
@@ -267,6 +264,8 @@ export default function SubscriptionPlans() {
         const userData = await userResponse.json();
         if (userData.success && userData.user) {
           localStorage.setItem("userInfo", JSON.stringify(userData.user));
+          // Also update local state
+          setUser(userData.user);
         }
         
         toast.success("Subscription upgraded successfully!");

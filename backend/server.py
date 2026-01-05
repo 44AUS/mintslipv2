@@ -1365,6 +1365,50 @@ async def stripe_webhook(request: Request):
                 {"$set": {"subscription.status": "cancelled"}}
             )
     
+    elif event.type == "customer.subscription.updated":
+        # Handle subscription updates from Stripe (e.g., plan changes, renewals)
+        subscription = event.data.object
+        subscription_id = subscription.id
+        
+        # Find user with this subscription
+        user = await users_collection.find_one({"subscription.stripeSubscriptionId": subscription_id})
+        if user:
+            # Get the current price/plan from Stripe subscription
+            if subscription.items and subscription.items.data:
+                current_item = subscription.items.data[0]
+                stripe_price_id = current_item.price.id
+                
+                # Try to find the matching tier from our stored price IDs
+                new_tier = None
+                for tier, price_id in stripe_price_ids.items():
+                    if price_id == stripe_price_id:
+                        new_tier = tier
+                        break
+                
+                # If we found a matching tier and it's different from current, update
+                if new_tier and new_tier != user.get("subscription", {}).get("tier"):
+                    plan_config = SUBSCRIPTION_PLANS.get(new_tier, {})
+                    await users_collection.update_one(
+                        {"id": user["id"]},
+                        {"$set": {
+                            "subscription.tier": new_tier,
+                            "subscription.downloads_remaining": plan_config.get("downloads", 0),
+                            "subscription.downloads_total": plan_config.get("downloads", 0),
+                            "subscription.status": subscription.status,
+                            "subscription.updatedAt": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    print(f"Webhook updated user {user['id']} subscription to {new_tier}")
+                else:
+                    # Just update the status if tier hasn't changed
+                    await users_collection.update_one(
+                        {"id": user["id"]},
+                        {"$set": {
+                            "subscription.status": subscription.status,
+                            "subscription.updatedAt": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+    
     elif event.type == "payment_intent.succeeded":
         payment_intent = event.data.object
         

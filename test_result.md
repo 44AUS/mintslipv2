@@ -130,6 +130,7 @@ test_plan:
     - "Stripe Subscription Checkout"
     - "Stripe Checkout Status"
     - "User Authentication"
+    - "Admin Dashboard Subscription Stats"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -141,3 +142,7 @@ agent_communication:
     message: "✅ ALL STRIPE INTEGRATION TESTS PASSED! Config endpoint returns valid publishable key, one-time checkout creates valid sessions, subscription checkout works with authentication, and status endpoint returns proper session data. All critical Stripe payment flows are working correctly."
   - agent: "testing"
     message: "✅ PAYSTUB GENERATOR UI TEST PASSED! Guest payment flow working correctly - Stripe payment button shows proper pricing, 'Secured by Stripe' text visible, no PayPal buttons present, form accepts sample data as expected. Ready for production use."
+  - agent: "main"
+    message: "Admin dashboard endpoint updated with new subscription stats fields (cancellingSubscribers, cancellingByTier, userRegistrations), needs testing to verify API structure"
+  - agent: "testing"
+    message: "✅ ADMIN DASHBOARD SUBSCRIPTION STATS TEST PASSED! Verified all new fields are present and correctly structured: stats.cancellingSubscribers (number), subscriptionStats.cancelling (number), subscriptionStats.cancellingByTier (object with starter/professional/business tiers), and userRegistrations (array). API endpoint is working correctly and returning the expected data structure."

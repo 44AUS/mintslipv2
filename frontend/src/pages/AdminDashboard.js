@@ -2024,6 +2024,13 @@ export default function AdminDashboard() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem 
+                                    onClick={() => openEditUserModal(user)}
+                                    className="text-slate-600"
+                                  >
+                                    <Pencil className="w-4 h-4 mr-2" />
+                                    Edit User
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
                                     onClick={() => openSubscriptionModal(user)}
                                     className="text-blue-600"
                                   >

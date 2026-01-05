@@ -671,7 +671,6 @@ export default function AdminDiscounts() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

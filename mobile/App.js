@@ -9,7 +9,8 @@ const STORAGE_KEY = '@mintslip_has_launched';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [currentScreen, setCurrentScreen] = useState('loading');
+  const [isReady, setIsReady] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('welcome');
   const [initialPath, setInitialPath] = useState('');
 
   useEffect(() => {
@@ -19,17 +20,22 @@ export default function App() {
   const checkFirstLaunch = async () => {
     try {
       const hasLaunched = await AsyncStorage.getItem(STORAGE_KEY);
+      console.log('Has launched before:', hasLaunched);
+      
       if (hasLaunched === 'true') {
-        // User has seen welcome screen before, show main app after splash
+        // User has seen welcome screen before, show main app
         setCurrentScreen('webview');
         setInitialPath('');
       } else {
-        // First launch, show welcome screen after splash
+        // First launch, show welcome screen
         setCurrentScreen('welcome');
       }
     } catch (error) {
       console.error('Error checking first launch:', error);
+      // Default to welcome screen on error
       setCurrentScreen('welcome');
+    } finally {
+      setIsReady(true);
     }
   };
 
@@ -38,19 +44,31 @@ export default function App() {
   };
 
   const handleLogin = async () => {
-    await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    } catch (e) {
+      console.error('Error saving to storage:', e);
+    }
     setInitialPath('/login');
     setCurrentScreen('webview');
   };
 
   const handleSignup = async () => {
-    await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    } catch (e) {
+      console.error('Error saving to storage:', e);
+    }
     setInitialPath('/signup');
     setCurrentScreen('webview');
   };
 
   const handleGuest = async () => {
-    await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    } catch (e) {
+      console.error('Error saving to storage:', e);
+    }
     setInitialPath('');
     setCurrentScreen('webview');
   };
@@ -59,13 +77,9 @@ export default function App() {
     setCurrentScreen('welcome');
   };
 
-  // Show animated splash screen first
-  if (showSplash) {
+  // Show animated splash screen until both splash animation completes AND app is ready
+  if (showSplash || !isReady) {
     return <AnimatedSplashScreen onFinish={handleSplashFinish} />;
-  }
-
-  if (currentScreen === 'loading') {
-    return <View style={styles.loading} />;
   }
 
   if (currentScreen === 'welcome') {

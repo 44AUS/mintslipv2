@@ -30,6 +30,8 @@ import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminBlog from "@/pages/AdminBlog";
 import AdminBlogEditor from "@/pages/AdminBlogEditor";
+import AdminBannedIPs from "@/pages/AdminBannedIPs";
+import Banned from "@/pages/Banned";
 import UserLogin from "@/pages/UserLogin";
 import UserSignup from "@/pages/UserSignup";
 import UserDashboard from "@/pages/UserDashboard";

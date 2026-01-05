@@ -1543,8 +1543,11 @@ async def get_subscription_status(session: dict = Depends(get_current_user)):
 # ========== PURCHASE TRACKING ENDPOINTS ==========
 
 @app.post("/api/purchases/track")
-async def track_purchase(data: PurchaseCreate):
+async def track_purchase(data: PurchaseCreate, request: Request):
     """Track a purchase"""
+    # Get client IP
+    client_ip = get_client_ip(request)
+    
     purchase = {
         "id": str(uuid.uuid4()),
         "documentType": data.documentType,
@@ -1555,6 +1558,7 @@ async def track_purchase(data: PurchaseCreate):
         "discountAmount": data.discountAmount,
         "userId": data.userId,
         "template": data.template,
+        "ipAddress": client_ip,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "downloadedAt": datetime.now(timezone.utc).isoformat()
     }

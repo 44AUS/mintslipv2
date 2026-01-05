@@ -818,6 +818,6 @@ export default function AdminDiscounts() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 }

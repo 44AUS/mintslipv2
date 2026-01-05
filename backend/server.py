@@ -1536,14 +1536,16 @@ async def preview_subscription_proration(request: dict, session: dict = Depends(
             stripe_price_ids[new_tier] = price_id
         
         # Create an invoice preview to see the proration
-        upcoming_invoice = stripe.Invoice.upcoming(
+        upcoming_invoice = stripe.Invoice.create_preview(
             customer=subscription.customer,
             subscription=subscription_id,
-            subscription_items=[{
-                "id": subscription["items"]["data"][0].id,
-                "price": price_id
-            }],
-            subscription_proration_behavior="create_prorations"
+            subscription_details={
+                "items": [{
+                    "id": subscription["items"]["data"][0].id,
+                    "price": price_id
+                }],
+                "proration_behavior": "create_prorations"
+            }
         )
         
         # Calculate amounts

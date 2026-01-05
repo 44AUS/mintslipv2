@@ -1447,6 +1447,105 @@ async def reactivate_stripe_subscription(session: dict = Depends(get_current_use
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/api/stripe/preview-proration")
+async def preview_subscription_proration(request: dict, session: dict = Depends(get_current_user)):
+    """Preview the prorated amount for a subscription change"""
+    new_tier = request.get("tier")
+    
+    if new_tier not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=404, detail="No active subscription found")
+    
+    current_tier = user["subscription"].get("tier")
+    if current_tier == new_tier:
+        raise HTTPException(status_code=400, detail="Already on this plan")
+    
+    subscription_id = user["subscription"].get("stripeSubscriptionId")
+    
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="No Stripe subscription found")
+    
+    try:
+        # Get current subscription
+        subscription = stripe.Subscription.retrieve(subscription_id)
+        
+        # Get or create price for new tier
+        price_id = stripe_price_ids.get(new_tier)
+        if not price_id:
+            plan = SUBSCRIPTION_PLANS[new_tier]
+            product = stripe.Product.create(
+                name=f"MintSlip {plan['name']} Plan",
+                description=plan["description"]
+            )
+            price = stripe.Price.create(
+                product=product.id,
+                unit_amount=plan["price_cents"],
+                currency="usd",
+                recurring={"interval": "month"}
+            )
+            price_id = price.id
+            stripe_price_ids[new_tier] = price_id
+        
+        # Create an invoice preview to see the proration
+        upcoming_invoice = stripe.Invoice.upcoming(
+            customer=subscription.customer,
+            subscription=subscription_id,
+            subscription_items=[{
+                "id": subscription["items"]["data"][0].id,
+                "price": price_id
+            }],
+            subscription_proration_behavior="create_prorations"
+        )
+        
+        # Calculate amounts
+        proration_amount = 0
+        credit_amount = 0
+        new_plan_amount = 0
+        
+        for line in upcoming_invoice.lines.data:
+            if line.proration:
+                if line.amount > 0:
+                    proration_amount += line.amount
+                else:
+                    credit_amount += abs(line.amount)
+            else:
+                new_plan_amount += line.amount
+        
+        # Net amount due now (could be negative if downgrading)
+        net_amount = upcoming_invoice.amount_due
+        is_upgrade = SUBSCRIPTION_PLANS[new_tier]["price_cents"] > SUBSCRIPTION_PLANS[current_tier]["price_cents"]
+        
+        # Get period end date
+        period_end = datetime.fromtimestamp(subscription.current_period_end)
+        days_remaining = (period_end - datetime.now()).days
+        
+        return {
+            "success": True,
+            "preview": {
+                "currentTier": current_tier,
+                "currentTierName": SUBSCRIPTION_PLANS[current_tier]["name"],
+                "newTier": new_tier,
+                "newTierName": SUBSCRIPTION_PLANS[new_tier]["name"],
+                "isUpgrade": is_upgrade,
+                "currentPlanCredit": credit_amount / 100,  # Convert cents to dollars
+                "newPlanCharge": proration_amount / 100,
+                "netAmountDue": net_amount / 100,
+                "newMonthlyPrice": SUBSCRIPTION_PLANS[new_tier]["price_cents"] / 100,
+                "daysRemainingInPeriod": max(0, days_remaining),
+                "periodEndDate": period_end.isoformat(),
+                "immediateCharge": net_amount > 0,
+                "creditApplied": net_amount < 0
+            }
+        }
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/api/stripe/change-subscription")
 async def change_stripe_subscription(request: dict, session: dict = Depends(get_current_user)):
     """Change subscription tier"""

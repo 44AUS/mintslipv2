@@ -1707,11 +1707,44 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
 async def get_all_users(
     session: dict = Depends(get_current_admin),
     skip: int = 0,
-    limit: int = 50
+    limit: int = 50,
+    search: Optional[str] = None,
+    subscription_type: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None
 ):
-    """Get all users (admin only)"""
-    users = await users_collection.find({}, {"_id": 0, "password": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
-    total = await users_collection.count_documents({})
+    """Get all users (admin only) with optional filtering and search"""
+    # Build query based on filters
+    query = {}
+    
+    # Search by name or email
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        query["$or"] = [
+            {"name": search_regex},
+            {"email": search_regex}
+        ]
+    
+    # Filter by subscription type
+    if subscription_type:
+        if subscription_type == "none":
+            # Users with no subscription
+            query["subscription"] = {"$exists": False}
+        elif subscription_type in ["starter", "professional", "business"]:
+            query["subscription.tier"] = subscription_type
+    
+    # Filter by join date
+    if date_from or date_to:
+        date_query = {}
+        if date_from:
+            date_query["$gte"] = date_from
+        if date_to:
+            date_query["$lte"] = date_to
+        if date_query:
+            query["createdAt"] = date_query
+    
+    users = await users_collection.find(query, {"_id": 0, "password": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    total = await users_collection.count_documents(query)
     
     return {
         "success": True,

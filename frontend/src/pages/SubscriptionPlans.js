@@ -194,13 +194,13 @@ export default function SubscriptionPlans() {
 
     try {
       const token = localStorage.getItem("userToken");
-      const response = await fetch(`${BACKEND_URL}/api/subscriptions/calculate-upgrade`, {
+      const response = await fetch(`${BACKEND_URL}/api/stripe/preview-proration`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ newTier: tier })
+        body: JSON.stringify({ tier: tier })
       });
 
       const data = await response.json();
@@ -209,7 +209,20 @@ export default function SubscriptionPlans() {
         throw new Error(data.detail || "Failed to calculate upgrade");
       }
 
-      setUpgradeDetails(data);
+      // Map the response to the format expected by the dialog
+      setUpgradeDetails({
+        currentTier: data.preview.currentTier,
+        newTier: data.preview.newTier,
+        currentPrice: plans.find(p => p.tier === data.preview.currentTier)?.price || 0,
+        newPrice: data.preview.newMonthlyPrice,
+        daysRemaining: data.preview.daysRemainingInPeriod,
+        proratedAmount: Math.max(0, data.preview.netAmountDue),
+        creditAmount: data.preview.currentPlanCredit,
+        isUpgrade: data.preview.isUpgrade,
+        newDownloads: plans.find(p => p.tier === data.preview.newTier)?.downloads || 0,
+        periodEndDate: data.preview.periodEndDate,
+        immediateCharge: data.preview.immediateCharge
+      });
       setUpgradeDialogOpen(true);
     } catch (error) {
       console.error("Error calculating upgrade:", error);

@@ -503,8 +503,16 @@ async def setup_admin():
 # ========== USER AUTHENTICATION ENDPOINTS ==========
 
 @app.post("/api/user/signup")
-async def user_signup(data: UserSignup):
+async def user_signup(data: UserSignup, request: Request):
     """User signup endpoint"""
+    # Get client IP
+    client_ip = get_client_ip(request)
+    
+    # Check if IP is banned
+    banned = await banned_ips_collection.find_one({"ip": client_ip, "isActive": True})
+    if banned:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     # Check if email already exists
     existing = await users_collection.find_one({"email": data.email.lower()})
     if existing:
@@ -521,6 +529,7 @@ async def user_signup(data: UserSignup):
         "preferences": {
             "saveDocuments": data.saveDocuments if data.saveDocuments else False
         },
+        "ipAddress": client_ip,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     await users_collection.insert_one(user)

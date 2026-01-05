@@ -1,4 +1,16 @@
 backend:
+  - task: "IP Ban Management API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added IP logging on signup and purchase, banned_ips collection, and ban management endpoints"
+
   - task: "Stripe Config Endpoint"
     implemented: true
     working: true

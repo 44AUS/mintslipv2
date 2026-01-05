@@ -25,42 +25,6 @@ function nextWeekday(date, weekday) {
   return result;
 }
 
-// Helper to set PDF metadata based on template
-function setPdfMetadata(doc, template, payDate) {
-  if (template === 'template-a') {
-    // Gusto template - specific metadata
-    // Creation date is one day before pay date
-    let creationDate;
-    if (payDate instanceof Date) {
-      creationDate = new Date(payDate);
-    } else if (typeof payDate === 'string' && payDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      const parts = payDate.split('-');
-      creationDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-    } else {
-      creationDate = new Date(payDate);
-    }
-    creationDate.setDate(creationDate.getDate() - 1);
-    
-    doc.setProperties({
-      title: 'Gusto',
-      subject: '',
-      author: '',
-      keywords: '',
-      creator: 'wkhtmltopdf 0.12.6.1',
-    });
-    
-    // Set the creation date in PDF info
-    doc.setCreationDate(creationDate);
-    
-    // Override the producer by modifying internal PDF info
-    if (doc.internal && doc.internal.events) {
-      doc.internal.events.subscribe('putInfo', function() {
-        this.internal.write('/Producer (Qt 4.8.7)');
-      }.bind(doc));
-    }
-  }
-}
-
 export const generateAndDownloadCanadianPaystub = async (formData, template = 'template-a', numStubs, returnBlob = false) => {
   try {
     console.log("Starting Canadian PDF generation...", { formData, template, numStubs });

@@ -2303,6 +2303,132 @@ async def update_user_downloads(user_id: str, data: UpdateUserDownloads, session
     }
 
 
+# ========== BANNED IPS ENDPOINTS ==========
+
+class BannedIPCreate(BaseModel):
+    ip: str
+    reason: Optional[str] = None
+
+@app.get("/api/check-ip-ban")
+async def check_ip_ban(request: Request):
+    """Check if the current IP is banned - public endpoint"""
+    client_ip = get_client_ip(request)
+    banned = await banned_ips_collection.find_one({"ip": client_ip, "isActive": True})
+    
+    if banned:
+        return {
+            "banned": True,
+            "reason": banned.get("reason", "Your access has been restricted."),
+            "bannedAt": banned.get("bannedAt")
+        }
+    
+    return {"banned": False}
+
+@app.get("/api/admin/banned-ips")
+async def get_banned_ips(session: dict = Depends(get_current_admin)):
+    """Get all banned IPs (admin only)"""
+    banned_ips = await banned_ips_collection.find({}, {"_id": 0}).sort("bannedAt", -1).to_list(1000)
+    return {"success": True, "bannedIps": banned_ips}
+
+@app.post("/api/admin/banned-ips")
+async def ban_ip(data: BannedIPCreate, session: dict = Depends(get_current_admin)):
+    """Ban an IP address (admin only)"""
+    # Check if IP is already banned
+    existing = await banned_ips_collection.find_one({"ip": data.ip})
+    
+    if existing:
+        # Reactivate if previously unbanned
+        await banned_ips_collection.update_one(
+            {"ip": data.ip},
+            {
+                "$set": {
+                    "isActive": True,
+                    "reason": data.reason or existing.get("reason"),
+                    "bannedAt": datetime.now(timezone.utc).isoformat(),
+                    "bannedBy": session.get("adminId")
+                }
+            }
+        )
+        return {"success": True, "message": f"IP {data.ip} has been banned"}
+    
+    banned_ip = {
+        "id": str(uuid.uuid4()),
+        "ip": data.ip,
+        "reason": data.reason,
+        "isActive": True,
+        "bannedAt": datetime.now(timezone.utc).isoformat(),
+        "bannedBy": session.get("adminId")
+    }
+    
+    await banned_ips_collection.insert_one(banned_ip)
+    return {"success": True, "message": f"IP {data.ip} has been banned", "bannedIp": {k: v for k, v in banned_ip.items() if k != "_id"}}
+
+@app.delete("/api/admin/banned-ips/{ip}")
+async def unban_ip(ip: str, session: dict = Depends(get_current_admin)):
+    """Unban an IP address (admin only)"""
+    # URL decode the IP (in case it was encoded)
+    from urllib.parse import unquote
+    decoded_ip = unquote(ip)
+    
+    result = await banned_ips_collection.update_one(
+        {"ip": decoded_ip},
+        {
+            "$set": {
+                "isActive": False,
+                "unbannedAt": datetime.now(timezone.utc).isoformat(),
+                "unbannedBy": session.get("adminId")
+            }
+        }
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="IP not found in ban list")
+    
+    return {"success": True, "message": f"IP {decoded_ip} has been unbanned"}
+
+@app.post("/api/admin/ban-user-ip/{user_id}")
+async def ban_user_ip(user_id: str, data: dict, session: dict = Depends(get_current_admin)):
+    """Ban a user's IP address (admin only)"""
+    user = await users_collection.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    ip = user.get("ipAddress")
+    if not ip or ip == "unknown":
+        raise HTTPException(status_code=400, detail="User IP address not available")
+    
+    # Ban the IP
+    reason = data.get("reason", f"Banned via user {user.get('email')}")
+    
+    existing = await banned_ips_collection.find_one({"ip": ip})
+    if existing:
+        await banned_ips_collection.update_one(
+            {"ip": ip},
+            {
+                "$set": {
+                    "isActive": True,
+                    "reason": reason,
+                    "bannedAt": datetime.now(timezone.utc).isoformat(),
+                    "bannedBy": session.get("adminId"),
+                    "associatedUserId": user_id
+                }
+            }
+        )
+    else:
+        banned_ip = {
+            "id": str(uuid.uuid4()),
+            "ip": ip,
+            "reason": reason,
+            "isActive": True,
+            "bannedAt": datetime.now(timezone.utc).isoformat(),
+            "bannedBy": session.get("adminId"),
+            "associatedUserId": user_id
+        }
+        await banned_ips_collection.insert_one(banned_ip)
+    
+    return {"success": True, "message": f"IP {ip} has been banned", "ip": ip}
+
+
 # ========== DISCOUNT CODES ENDPOINTS (Token-based Auth) ==========
 
 @app.get("/api/admin/discounts")

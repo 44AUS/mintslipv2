@@ -400,9 +400,9 @@ export default function AdminDashboard() {
         limit: pageSize.toString()
       });
       
-      // Add search query
-      if (usersSearchQuery.trim()) {
-        params.append("search", usersSearchQuery.trim());
+      // Add search query (use debounced value)
+      if (usersSearchDebounced.trim()) {
+        params.append("search", usersSearchDebounced.trim());
       }
       
       // Add subscription type filter

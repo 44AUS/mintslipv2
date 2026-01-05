@@ -407,6 +407,6 @@ export default function AdminBlog() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 }

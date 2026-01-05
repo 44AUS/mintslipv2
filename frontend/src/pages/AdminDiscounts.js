@@ -29,25 +29,20 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  LayoutDashboard,
   Plus,
   Trash2,
   Edit2,
   Tag,
-  LogOut,
-  RefreshCw,
   Loader2,
-  ArrowLeft,
   Percent,
-  Calendar,
   Check,
-  X,
   Megaphone,
   Sparkles,
   Eye,
   EyeOff,
   Palette
 } from "lucide-react";
+import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 

@@ -3648,7 +3648,7 @@ class AIResumeBuilderTester:
         admin_tests_passed = admin_setup_ok and admin_login_ok and admin_verify_ok and admin_dashboard_ok
         purchase_tests_passed = purchase_track_ok and admin_purchases_ok
         subscription_tests_passed = subscription_tiers_ok
-        new_admin_features_passed = admin_users_ok and admin_update_subscription_ok and admin_revenue_ok and full_admin_flow_ok
+        new_admin_features_passed = admin_users_ok and admin_user_edit_ok and admin_update_subscription_ok and admin_revenue_ok and full_admin_flow_ok
         blog_tests_passed = (blog_categories_ok and blog_posts_public_ok and admin_blog_posts_ok and 
                            create_blog_post_ok and get_blog_post_by_slug_ok and get_admin_blog_post_by_id_ok and 
                            update_blog_post_ok and delete_blog_post_ok and complete_blog_flow_ok)

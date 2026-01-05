@@ -61,16 +61,19 @@ export default function AdminBlog() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [adminInfo, setAdminInfo] = useState(null);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
+    const info = localStorage.getItem("adminInfo");
     if (!token) {
       navigate("/admin/login");
       return;
     }
+    if (info) setAdminInfo(JSON.parse(info));
     loadPosts();
     loadCategories();
   }, [currentPage, statusFilter]);

@@ -1716,25 +1716,30 @@ async def get_all_users(
     """Get all users (admin only) with optional filtering and search"""
     # Build query based on filters
     query = {}
+    conditions = []
     
     # Search by name or email
     if search:
         search_regex = {"$regex": search, "$options": "i"}
-        query["$or"] = [
-            {"name": search_regex},
-            {"email": search_regex}
-        ]
+        conditions.append({
+            "$or": [
+                {"name": search_regex},
+                {"email": search_regex}
+            ]
+        })
     
     # Filter by subscription type
     if subscription_type:
         if subscription_type == "none":
             # Users with no subscription (either field doesn't exist or is null)
-            query["$or"] = [
-                {"subscription": {"$exists": False}},
-                {"subscription": None}
-            ]
+            conditions.append({
+                "$or": [
+                    {"subscription": {"$exists": False}},
+                    {"subscription": None}
+                ]
+            })
         elif subscription_type in ["starter", "professional", "business"]:
-            query["subscription.tier"] = subscription_type
+            conditions.append({"subscription.tier": subscription_type})
     
     # Filter by join date
     if date_from or date_to:
@@ -1744,7 +1749,14 @@ async def get_all_users(
         if date_to:
             date_query["$lte"] = date_to
         if date_query:
-            query["createdAt"] = date_query
+            conditions.append({"createdAt": date_query})
+    
+    # Combine all conditions
+    if conditions:
+        if len(conditions) == 1:
+            query = conditions[0]
+        else:
+            query["$and"] = conditions
     
     users = await users_collection.find(query, {"_id": 0, "password": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
     total = await users_collection.count_documents(query)

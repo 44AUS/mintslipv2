@@ -9,9 +9,10 @@ const PRIVACY_SECTIONS = [
     title: "Information We Collect",
     content: `When you use MintSlip, we may collect certain information to provide our services effectively:
 
-• **Personal Information**: Name, email address, and contact details when you reach out to our support team.
-• **Document Data**: Information you enter into our document generators (pay stubs, accounting mockups, W-2 forms, etc). This data is processed in your browser and is NOT stored on our servers.
-• **Payment Information**: Payment details are processed securely through PayPal. We do not store your credit card or bank account information.
+• **Personal Information**: Name, email address, and contact details when you create an account or reach out to our support team.
+• **Document Data**: Information you enter into our document generators (pay stubs, accounting mockups, W-2 forms, etc). This data is processed in your browser and is NOT stored on our servers unless you choose to save your documents.
+• **PDF Downloads**: If you opt to save your generated documents, we may store your download history to allow you to re-access your files.
+• **Payment Information**: Payment details are processed securely through Stripe. We do not store your credit card or bank account information on our servers.
 • **Usage Data**: General analytics about how you interact with our website to improve our services.`
   },
   {
@@ -20,6 +21,7 @@ const PRIVACY_SECTIONS = [
     content: `We use the information we collect for the following purposes:
 
 • **Service Delivery**: To generate the documents you request and process your payments.
+• **Document Storage**: If you choose to save your documents, we store them securely for your future access.
 • **Customer Support**: To respond to your inquiries and provide assistance.
 • **Service Improvement**: To understand how users interact with our platform and make improvements.
 • **Communication**: To send important updates about our services (only when necessary).
@@ -31,10 +33,10 @@ We do NOT sell, rent, or share your personal information with third parties for 
     title: "Data Security",
     content: `We take the security of your information seriously:
 
-• **Browser-Based Processing**: All document generation happens directly in your browser. Your sensitive data (wages, SSN, etc.) is never transmitted to or stored on our servers.
-• **Secure Payments**: All payment transactions are processed through PayPal's secure payment system.
+• **Browser-Based Processing**: All document generation happens directly in your browser. Your sensitive data (wages, SSN, etc.) is never transmitted to or stored on our servers unless you explicitly choose to save your documents.
+• **Secure Payments**: All payment transactions are processed through Stripe's secure payment system with industry-standard encryption.
 • **SSL Encryption**: Our website uses SSL encryption to protect data transmission.
-• **No Data Retention**: We do not retain copies of the documents you generate. Once downloaded, the data exists only on your device.`
+• **Optional Data Retention**: We only retain copies of documents if you choose to save them. Otherwise, once downloaded, the data exists only on your device.`
   },
   {
     icon: Eye,
@@ -43,7 +45,7 @@ We do NOT sell, rent, or share your personal information with third parties for 
 
 • **Access**: You can request information about what personal data we have about you.
 • **Correction**: You can request corrections to any inaccurate information.
-• **Deletion**: You can request deletion of your personal information from our systems.
+• **Deletion**: You can request deletion of your personal information and saved documents from our systems.
 • **Opt-Out**: You can opt out of any marketing communications at any time.
 
 To exercise any of these rights, please contact us at support@mintslip.com.`
@@ -53,7 +55,7 @@ To exercise any of these rights, please contact us at support@mintslip.com.`
     title: "Third-Party Services",
     content: `We use the following third-party services:
 
-• **PayPal**: For secure payment processing. PayPal's privacy policy governs how they handle your payment information.
+• **Stripe**: For secure payment processing. Stripe's privacy policy governs how they handle your payment information.
 • **Analytics**: We may use analytics services to understand website usage patterns. These services collect anonymized data only.
 
 We carefully select our partners and require them to maintain appropriate security measures.`

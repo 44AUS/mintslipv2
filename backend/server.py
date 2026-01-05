@@ -1586,8 +1586,8 @@ async def change_stripe_subscription(request: dict, session: dict = Depends(get_
             price_id = price.id
             stripe_price_ids[new_tier] = price_id
         
-        # Update subscription
-        stripe.Subscription.modify(
+        # Update subscription in Stripe
+        updated_stripe_sub = stripe.Subscription.modify(
             subscription_id,
             items=[{
                 "id": subscription["items"]["data"][0].id,
@@ -1596,20 +1596,31 @@ async def change_stripe_subscription(request: dict, session: dict = Depends(get_
             proration_behavior="create_prorations"
         )
         
-        # Update user record
+        print(f"Stripe subscription updated: {updated_stripe_sub.id} to price {price_id}")
+        
+        # Update user record in MongoDB
         plan_config = SUBSCRIPTION_PLANS[new_tier]
-        await users_collection.update_one(
+        update_result = await users_collection.update_one(
             {"id": user["id"]},
             {"$set": {
                 "subscription.tier": new_tier,
                 "subscription.downloads_remaining": plan_config["downloads"],
-                "subscription.downloads_total": plan_config["downloads"]
+                "subscription.downloads_total": plan_config["downloads"],
+                "subscription.updatedAt": datetime.now(timezone.utc).isoformat()
             }}
         )
         
-        return {"success": True, "message": f"Subscription changed to {plan_config['name']}"}
+        print(f"MongoDB update result: matched={update_result.matched_count}, modified={update_result.modified_count}")
+        
+        # Verify the update
+        updated_user = await users_collection.find_one({"id": user["id"]})
+        if updated_user:
+            print(f"Verified user subscription tier: {updated_user.get('subscription', {}).get('tier')}")
+        
+        return {"success": True, "message": f"Subscription changed to {plan_config['name']}", "newTier": new_tier}
         
     except stripe.error.StripeError as e:
+        print(f"Stripe error during subscription change: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 

@@ -191,19 +191,67 @@ export default function UserSettings() {
 
     setIsProcessing(true);
     try {
-      // TODO: Implement actual PayPal subscription change
-      toast.info(`Plan change to ${SUBSCRIPTION_TIERS[selectedNewTier].name} will take effect at your next billing date.`);
-      setShowUpgradeDialog(false);
+      const token = localStorage.getItem("userToken");
       
-      // Update local user state
-      const updatedUser = { 
-        ...user, 
-        subscription: { ...user.subscription, tier: selectedNewTier, pendingChange: true }
-      };
-      localStorage.setItem("userInfo", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      // First preview the proration
+      const previewResponse = await fetch(`${BACKEND_URL}/api/stripe/preview-proration`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ tier: selectedNewTier })
+      });
+      
+      const previewData = await previewResponse.json();
+      
+      if (!previewResponse.ok) {
+        throw new Error(previewData.detail || "Failed to preview plan change");
+      }
+      
+      // Show confirmation with prorated amount
+      const confirmMessage = previewData.preview.immediateCharge 
+        ? `You will be charged $${previewData.preview.netAmountDue.toFixed(2)} now for the prorated difference. Continue?`
+        : `Your plan will be changed to ${SUBSCRIPTION_TIERS[selectedNewTier].name}. Continue?`;
+      
+      if (!window.confirm(confirmMessage)) {
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Process the actual change
+      const changeResponse = await fetch(`${BACKEND_URL}/api/stripe/change-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ tier: selectedNewTier })
+      });
+      
+      const changeData = await changeResponse.json();
+      
+      if (!changeResponse.ok) {
+        throw new Error(changeData.detail || "Failed to change plan");
+      }
+      
+      // Refresh user data from server
+      const userResponse = await fetch(`${BACKEND_URL}/api/user/me`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const userData = await userResponse.json();
+      
+      if (userData.success && userData.user) {
+        localStorage.setItem("userInfo", JSON.stringify(userData.user));
+        setUser(userData.user);
+      }
+      
+      toast.success(`Successfully changed to ${SUBSCRIPTION_TIERS[selectedNewTier].name} plan!`);
+      setShowUpgradeDialog(false);
+      setSelectedNewTier(null);
     } catch (error) {
-      toast.error("Failed to change plan. Please contact support.");
+      console.error("Error changing plan:", error);
+      toast.error(error.message || "Failed to change plan. Please contact support.");
     } finally {
       setIsProcessing(false);
     }

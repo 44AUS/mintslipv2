@@ -301,6 +301,20 @@ export default function PaymentSuccess() {
           regenerated = true;
           toast.success('Download started!');
         }
+      } else if (orderType === 'ai-resume') {
+        const resumeDataStr = localStorage.getItem('pendingResumeData');
+        if (resumeDataStr) {
+          const { generatedResume, formData, selectedTemplate } = JSON.parse(resumeDataStr);
+          if (generatedResume) {
+            const resumeData = {
+              ...generatedResume,
+              template: selectedTemplate || formData?.template || 'ats'
+            };
+            await generateAndDownloadResume(resumeData);
+            regenerated = true;
+            toast.success('Download started!');
+          }
+        }
       }
       
       if (!regenerated) {

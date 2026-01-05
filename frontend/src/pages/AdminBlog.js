@@ -386,7 +386,6 @@ export default function AdminBlog() {
             </Table>
           )}
         </div>
-      </div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

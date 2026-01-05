@@ -476,7 +476,7 @@ export default function AdminDashboard() {
         const row = [
           new Date(purchase.createdAt).toLocaleDateString(),
           DOCUMENT_TYPES[purchase.documentType] || purchase.documentType,
-          purchase.template || "-",
+          getTemplateName(purchase.template),
           purchase.email || purchase.paypalEmail || "N/A",
           purchase.userId ? "Registered" : "Guest",
           purchase.amount?.toFixed(2) || "0.00",

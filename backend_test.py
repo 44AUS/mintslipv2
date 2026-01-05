@@ -3408,6 +3408,7 @@ class AIResumeBuilderTester:
         admin_login_ok = self.test_admin_login()
         admin_verify_ok = self.test_admin_verify()
         admin_dashboard_ok = self.test_admin_dashboard()
+        admin_dashboard_subscription_stats_ok = self.test_admin_dashboard_subscription_stats()
         
         print("\n💰 Testing Purchase Tracking System...")
         purchase_track_ok = self.test_purchase_tracking()

@@ -167,48 +167,22 @@ export default function AdminBlog() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/admin/dashboard")}
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
-              </Button>
-              <div className="h-6 w-px bg-slate-200" />
-              <h1 className="text-xl font-bold text-slate-800">Blog Management</h1>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={loadPosts}
-                className="gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => navigate("/admin/blog/new")}
-                className="gap-2 bg-green-600 hover:bg-green-700"
-              >
-                <Plus className="w-4 h-4" />
-                New Post
-              </Button>
-            </div>
-          </div>
+    <AdminLayout 
+      adminInfo={adminInfo} 
+      onRefresh={loadPosts}
+    >
+        {/* Page Header with New Post Button */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-slate-800">Blog Management</h2>
+          <Button
+            onClick={() => navigate("/admin/blog/new")}
+            className="gap-2 bg-green-600 hover:bg-green-700"
+          >
+            <Plus className="w-4 h-4" />
+            New Post
+          </Button>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-5 border">

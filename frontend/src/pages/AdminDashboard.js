@@ -103,6 +103,32 @@ const DOCUMENT_TYPES = {
   "canadian-paystub": "Canadian Pay Stub"
 };
 
+// Template name mappings
+const TEMPLATE_NAMES = {
+  // Paystub templates
+  "template-a": "Gusto",
+  "template-b": "ADP",
+  "template-c": "Workday",
+  "template-h": "OnPay",
+  // Bank statement templates
+  "chime": "Chime",
+  "bank-of-america": "Bank of America",
+  "chase": "Chase",
+  // Vehicle bill of sale templates
+  "standard": "Standard",
+  "detailed": "Detailed",
+  // Resume templates
+  "modern": "Modern",
+  "classic": "Classic",
+  "minimal": "Minimal"
+};
+
+// Helper function to get template display name
+const getTemplateName = (templateId) => {
+  if (!templateId) return "-";
+  return TEMPLATE_NAMES[templateId] || templateId;
+};
+
 // Subscription tiers - aligned with frontend subscription plans
 const SUBSCRIPTION_TIERS = {
   "starter": { name: "Starter", price: 19.99, downloads: 10 },

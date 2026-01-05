@@ -250,7 +250,7 @@ export default function SubscriptionPlans() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ newTier: upgradeDetails.newTier })
+        body: JSON.stringify({ tier: upgradeDetails.newTier })
       });
 
       const data = await response.json();

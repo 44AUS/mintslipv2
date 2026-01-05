@@ -204,8 +204,27 @@ export default function AdminDashboard() {
   
   // Users filter state
   const [usersSearchQuery, setUsersSearchQuery] = useState("");
+  const [usersSearchDebounced, setUsersSearchDebounced] = useState("");
   const [usersSubscriptionFilter, setUsersSubscriptionFilter] = useState("all");
   const [usersDateFilter, setUsersDateFilter] = useState("all");
+  const usersSearchTimeoutRef = useRef(null);
+
+  // Debounce users search
+  useEffect(() => {
+    if (usersSearchTimeoutRef.current) {
+      clearTimeout(usersSearchTimeoutRef.current);
+    }
+    usersSearchTimeoutRef.current = setTimeout(() => {
+      setUsersSearchDebounced(usersSearchQuery);
+      setUsersPage(0);
+    }, 400);
+    
+    return () => {
+      if (usersSearchTimeoutRef.current) {
+        clearTimeout(usersSearchTimeoutRef.current);
+      }
+    };
+  }, [usersSearchQuery]);
 
   // Check auth and get admin info
   useEffect(() => {

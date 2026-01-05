@@ -2256,6 +2256,82 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit User Modal */}
+      <Dialog open={editUserModalOpen} onOpenChange={setEditUserModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-slate-600" />
+              Edit User
+            </DialogTitle>
+            <DialogDescription>
+              Update user information for {selectedUser?.email}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Name</label>
+              <Input
+                type="text"
+                value={editUserData.name}
+                onChange={(e) => setEditUserData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter user's name"
+                className="w-full"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Email</label>
+              <Input
+                type="email"
+                value={editUserData.email}
+                onChange={(e) => setEditUserData(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="Enter user's email"
+                className="w-full"
+              />
+            </div>
+            
+            <div className="p-3 bg-slate-50 rounded-lg text-sm">
+              <div className="flex justify-between mb-1">
+                <span className="text-slate-600">User ID:</span>
+                <span className="font-mono text-xs">{selectedUser?.id}</span>
+              </div>
+              <div className="flex justify-between mb-1">
+                <span className="text-slate-600">Joined:</span>
+                <span>{selectedUser?.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Status:</span>
+                <span className={selectedUser?.isBanned ? "text-red-600" : "text-green-600"}>
+                  {selectedUser?.isBanned ? "Banned" : "Active"}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUserModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={updateUser} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isUpdatingUser || !editUserData.name.trim() || !editUserData.email.trim()}
+            >
+              {isUpdatingUser ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Change Password Modal */}
       <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
         <DialogContent>

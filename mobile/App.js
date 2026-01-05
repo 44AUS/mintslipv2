@@ -1,128 +1,83 @@
-import React, { useState, useRef } from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  ActivityIndicator, 
-  SafeAreaView, 
-  StatusBar,
-  BackHandler,
-  Platform
-} from 'react-native';
-import { WebView } from 'react-native-webview';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import WelcomeScreen from './src/screens/WelcomeScreen';
+import WebViewScreen from './src/screens/WebViewScreen';
 
-const MINTSLIP_URL = 'https://mintslip.com';
+const STORAGE_KEY = '@mintslip_has_launched';
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const webViewRef = useRef(null);
+  const [currentScreen, setCurrentScreen] = useState('loading');
+  const [initialPath, setInitialPath] = useState('');
 
-  // Handle Android back button
-  React.useEffect(() => {
-    if (Platform.OS === 'android') {
-      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-        if (webViewRef.current) {
-          webViewRef.current.goBack();
-          return true;
-        }
-        return false;
-      });
-
-      return () => backHandler.remove();
-    }
+  useEffect(() => {
+    checkFirstLaunch();
   }, []);
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#16a34a" />
-        </View>
-      )}
-      
-      <WebView
-        ref={webViewRef}
-        source={{ uri: MINTSLIP_URL }}
-        style={styles.webview}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        startInLoadingState={true}
-        scalesPageToFit={true}
-        allowsBackForwardNavigationGestures={true}
-        allowsInlineMediaPlayback={true}
-        mediaPlaybackRequiresUserAction={false}
-        mixedContentMode="compatibility"
-        cacheEnabled={true}
-        pullToRefreshEnabled={true}
-        // Allow file downloads
-        allowFileAccess={true}
-        allowFileAccessFromFileURLs={true}
-        allowUniversalAccessFromFileURLs={true}
-        // Handle external links
-        setSupportMultipleWindows={false}
-        onShouldStartLoadWithRequest={(request) => {
-          // Allow all requests to mintslip.com
-          if (request.url.includes('mintslip.com') || 
-              request.url.includes('stripe.com') ||
-              request.url.startsWith('blob:') ||
-              request.url.startsWith('data:')) {
-            return true;
-          }
-          return true;
-        }}
-        // Inject JavaScript to handle downloads
-        injectedJavaScript={`
-          // Prevent zooming issues
-          const meta = document.createElement('meta');
-          meta.setAttribute('name', 'viewport');
-          meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
-          document.getElementsByTagName('head')[0].appendChild(meta);
-          true;
-        `}
-        onMessage={(event) => {
-          // Handle messages from the web page if needed
-          console.log('WebView message:', event.nativeEvent.data);
-        }}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error:', nativeEvent);
-        }}
-        renderError={(errorName) => (
-          <View style={styles.errorContainer}>
-            <ActivityIndicator size="large" color="#16a34a" />
-          </View>
-        )}
+  const checkFirstLaunch = async () => {
+    try {
+      const hasLaunched = await AsyncStorage.getItem(STORAGE_KEY);
+      if (hasLaunched === 'true') {
+        // User has seen welcome screen before, show main app
+        setCurrentScreen('webview');
+        setInitialPath('');
+      } else {
+        // First launch, show welcome screen
+        setCurrentScreen('welcome');
+      }
+    } catch (error) {
+      console.error('Error checking first launch:', error);
+      setCurrentScreen('welcome');
+    }
+  };
+
+  const handleLogin = async () => {
+    await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    setInitialPath('/login');
+    setCurrentScreen('webview');
+  };
+
+  const handleSignup = async () => {
+    await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    setInitialPath('/signup');
+    setCurrentScreen('webview');
+  };
+
+  const handleGuest = async () => {
+    await AsyncStorage.setItem(STORAGE_KEY, 'true');
+    setInitialPath('');
+    setCurrentScreen('webview');
+  };
+
+  const handleBackToWelcome = () => {
+    setCurrentScreen('welcome');
+  };
+
+  if (currentScreen === 'loading') {
+    return <View style={styles.loading} />;
+  }
+
+  if (currentScreen === 'welcome') {
+    return (
+      <WelcomeScreen
+        onLogin={handleLogin}
+        onSignup={handleSignup}
+        onGuest={handleGuest}
       />
-    </SafeAreaView>
+    );
+  }
+
+  return (
+    <WebViewScreen
+      initialPath={initialPath}
+      onBack={handleBackToWelcome}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loading: {
     flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  webview: {
-    flex: 1,
-  },
-  loadingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    zIndex: 10,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f0fdf4',
   },
 });

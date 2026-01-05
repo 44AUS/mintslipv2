@@ -4182,6 +4182,15 @@ class AIResumeBuilderTester:
         save_docs_delete_ok = self.test_delete_saved_document()
         save_docs_no_pref_ok = self.test_save_document_without_preference_enabled()
         
+        # Test IP Ban Management Feature
+        print("\n🚫 Testing IP Ban Management Feature...")
+        ip_ban_check_public_ok = self.test_check_ip_ban_public()
+        ip_ban_list_ok = self.test_admin_banned_ips_list()
+        ip_ban_ban_ok = self.test_admin_ban_ip()
+        ip_ban_unban_ok = self.test_admin_unban_ip()
+        ip_ban_after_unban_ok = self.test_admin_banned_ips_after_unban()
+        ip_ban_full_flow_ok = self.test_ip_ban_management_full_flow()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

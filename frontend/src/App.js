@@ -180,6 +180,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
+    </IPBanCheck>
     </Elements>
   </HelmetProvider>
   );

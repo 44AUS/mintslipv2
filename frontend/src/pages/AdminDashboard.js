@@ -1738,6 +1738,11 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <span className="text-xs font-mono text-slate-500">
+                          {purchase.ipAddress || "-"}
+                        </span>
+                      </TableCell>
                       <TableCell className="font-medium">{formatCurrency(purchase.amount)}</TableCell>
                       <TableCell>
                         {purchase.discountCode ? (

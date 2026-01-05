@@ -450,6 +450,94 @@ class AIResumeBuilderTester:
             self.log_test("Admin Dashboard", False, f"Exception: {str(e)}")
             return False
 
+    def test_admin_dashboard_subscription_stats(self):
+        """Test GET /api/admin/dashboard endpoint for new subscription stats fields"""
+        if not self.admin_token:
+            self.log_test("Admin Dashboard Subscription Stats", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/dashboard", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    # Check for new subscription stats fields
+                    validation_errors = []
+                    
+                    # Check stats.cancellingSubscribers
+                    stats = data.get("stats", {})
+                    if "cancellingSubscribers" not in stats:
+                        validation_errors.append("stats.cancellingSubscribers missing")
+                    elif not isinstance(stats["cancellingSubscribers"], int):
+                        validation_errors.append("stats.cancellingSubscribers should be a number")
+                    
+                    # Check subscriptionStats section
+                    subscription_stats = data.get("subscriptionStats", {})
+                    if not subscription_stats:
+                        validation_errors.append("subscriptionStats section missing")
+                    else:
+                        # Check subscriptionStats.cancelling
+                        if "cancelling" not in subscription_stats:
+                            validation_errors.append("subscriptionStats.cancelling missing")
+                        elif not isinstance(subscription_stats["cancelling"], int):
+                            validation_errors.append("subscriptionStats.cancelling should be a number")
+                        
+                        # Check subscriptionStats.cancellingByTier
+                        if "cancellingByTier" not in subscription_stats:
+                            validation_errors.append("subscriptionStats.cancellingByTier missing")
+                        else:
+                            cancelling_by_tier = subscription_stats["cancellingByTier"]
+                            if not isinstance(cancelling_by_tier, dict):
+                                validation_errors.append("subscriptionStats.cancellingByTier should be an object")
+                            else:
+                                required_tiers = ["starter", "professional", "business"]
+                                for tier in required_tiers:
+                                    if tier not in cancelling_by_tier:
+                                        validation_errors.append(f"subscriptionStats.cancellingByTier.{tier} missing")
+                                    elif not isinstance(cancelling_by_tier[tier], int):
+                                        validation_errors.append(f"subscriptionStats.cancellingByTier.{tier} should be a number")
+                    
+                    # Check userRegistrations array
+                    if "userRegistrations" not in data:
+                        validation_errors.append("userRegistrations missing")
+                    elif not isinstance(data["userRegistrations"], list):
+                        validation_errors.append("userRegistrations should be an array")
+                    
+                    if validation_errors:
+                        success = False
+                        details += f", Validation errors: {validation_errors}"
+                    else:
+                        # All fields present and correct structure
+                        cancelling_subs = stats.get("cancellingSubscribers", 0)
+                        cancelling_stats = subscription_stats.get("cancelling", 0)
+                        cancelling_by_tier = subscription_stats.get("cancellingByTier", {})
+                        user_registrations_count = len(data.get("userRegistrations", []))
+                        
+                        details += f", ✅ All new subscription stats fields present"
+                        details += f", cancellingSubscribers: {cancelling_subs}"
+                        details += f", subscriptionStats.cancelling: {cancelling_stats}"
+                        details += f", cancellingByTier: {cancelling_by_tier}"
+                        details += f", userRegistrations: {user_registrations_count} entries"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Dashboard Subscription Stats", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Dashboard Subscription Stats", False, f"Exception: {str(e)}")
+            return False
+
     def test_purchase_tracking(self):
         """Test POST /api/purchases/track endpoint"""
         try:

@@ -1385,6 +1385,154 @@ class AIResumeBuilderTester:
             self.log_test("Subscription Download Zero Remaining", False, f"Exception: {str(e)}")
             return False
 
+    # ========== ADMIN USER EDIT TESTS ==========
+
+    def test_admin_user_edit_endpoint(self):
+        """Test PUT /api/admin/users/{user_id} endpoint with various scenarios"""
+        if not self.admin_token:
+            self.log_test("Admin User Edit Endpoint", False, "No admin token available (login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Step 1: Get list of users to find a real user ID
+            response = requests.get(f"{self.api_url}/admin/users", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Admin User Edit Endpoint", False, f"Failed to get users list: {response.status_code}")
+                return False
+            
+            users_data = response.json()
+            if not users_data.get("success") or not users_data.get("users"):
+                # Create a test user if no users exist
+                test_user_id = self.create_test_user()
+                if not test_user_id:
+                    self.log_test("Admin User Edit Endpoint", False, "No users found and could not create test user")
+                    return False
+                user_id = test_user_id
+                original_name = "Test User"
+                original_email = f"testuser{int(time.time())}@mintslip.com"
+            else:
+                # Use the first user from the list
+                first_user = users_data["users"][0]
+                user_id = first_user["id"]
+                original_name = first_user.get("name", "Test User")
+                original_email = first_user.get("email", "test@example.com")
+            
+            details = f"Testing with user ID: {user_id[:8]}..."
+            success = True
+            
+            # Test 1: Update name only
+            new_name = f"Updated Name {int(time.time())}"
+            payload = {"name": new_name}
+            response = requests.put(f"{self.api_url}/admin/users/{user_id}", json=payload, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and data.get("message"):
+                    details += f" | Name update: ✓"
+                else:
+                    success = False
+                    details += f" | Name update: ✗ (invalid response: {data})"
+            else:
+                success = False
+                try:
+                    error_data = response.json()
+                    details += f" | Name update: ✗ (status: {response.status_code}, error: {error_data})"
+                except:
+                    details += f" | Name update: ✗ (status: {response.status_code})"
+            
+            # Test 2: Update email only (if name update succeeded)
+            if success:
+                import time
+                new_email = f"updated{int(time.time())}@mintslip.com"
+                payload = {"email": new_email}
+                response = requests.put(f"{self.api_url}/admin/users/{user_id}", json=payload, headers=headers, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("message"):
+                        details += f" | Email update: ✓"
+                    else:
+                        success = False
+                        details += f" | Email update: ✗ (invalid response: {data})"
+                else:
+                    success = False
+                    try:
+                        error_data = response.json()
+                        details += f" | Email update: ✗ (status: {response.status_code}, error: {error_data})"
+                    except:
+                        details += f" | Email update: ✗ (status: {response.status_code})"
+            
+            # Test 3: Update both name and email (if previous tests succeeded)
+            if success:
+                new_name_both = f"Both Updated {int(time.time())}"
+                new_email_both = f"bothupdated{int(time.time())}@mintslip.com"
+                payload = {"name": new_name_both, "email": new_email_both}
+                response = requests.put(f"{self.api_url}/admin/users/{user_id}", json=payload, headers=headers, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("message"):
+                        details += f" | Both update: ✓"
+                    else:
+                        success = False
+                        details += f" | Both update: ✗ (invalid response: {data})"
+                else:
+                    success = False
+                    try:
+                        error_data = response.json()
+                        details += f" | Both update: ✗ (status: {response.status_code}, error: {error_data})"
+                    except:
+                        details += f" | Both update: ✗ (status: {response.status_code})"
+            
+            # Test 4: Test duplicate email validation (if previous tests succeeded)
+            if success:
+                # Try to create another user first
+                another_user_id = self.create_test_user()
+                if another_user_id and another_user_id != user_id:
+                    # Try to update the first user with the second user's email
+                    # First get the second user's email
+                    users_response = requests.get(f"{self.api_url}/admin/users", headers=headers, timeout=10)
+                    if users_response.status_code == 200:
+                        users_data = users_response.json()
+                        second_user = None
+                        for user in users_data.get("users", []):
+                            if user.get("id") == another_user_id:
+                                second_user = user
+                                break
+                        
+                        if second_user and second_user.get("email"):
+                            duplicate_email = second_user["email"]
+                            payload = {"email": duplicate_email}
+                            response = requests.put(f"{self.api_url}/admin/users/{user_id}", json=payload, headers=headers, timeout=10)
+                            
+                            if response.status_code == 400:
+                                try:
+                                    error_data = response.json()
+                                    if "already in use" in error_data.get("detail", "").lower():
+                                        details += f" | Duplicate email validation: ✓"
+                                    else:
+                                        details += f" | Duplicate email validation: ✓ (error: {error_data.get('detail')})"
+                                except:
+                                    details += f" | Duplicate email validation: ✓ (status 400)"
+                            else:
+                                success = False
+                                details += f" | Duplicate email validation: ✗ (expected 400, got {response.status_code})"
+                        else:
+                            details += f" | Duplicate email validation: skipped (could not get second user email)"
+                    else:
+                        details += f" | Duplicate email validation: skipped (could not get users list)"
+                else:
+                    details += f" | Duplicate email validation: skipped (could not create second user)"
+            
+            self.log_test("Admin User Edit Endpoint", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Admin User Edit Endpoint", False, f"Exception: {str(e)}")
+            return False
+
     # ========== STRIPE INTEGRATION TESTS ==========
 
     def test_stripe_config(self):

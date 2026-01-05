@@ -201,6 +201,11 @@ export default function AdminDashboard() {
     notes: ""
   });
   const [isAddingPurchase, setIsAddingPurchase] = useState(false);
+  
+  // Users filter state
+  const [usersSearchQuery, setUsersSearchQuery] = useState("");
+  const [usersSubscriptionFilter, setUsersSubscriptionFilter] = useState("all");
+  const [usersDateFilter, setUsersDateFilter] = useState("all");
 
   // Check auth and get admin info
   useEffect(() => {

@@ -2179,6 +2179,7 @@ export default function AdminDashboard() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>IP Address</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Subscription</TableHead>
                         <TableHead>Downloads</TableHead>
@@ -2199,6 +2200,11 @@ export default function AdminDashboard() {
                           <TableRow key={user.id} className={user.isBanned ? "bg-red-50" : ""}>
                             <TableCell className="font-medium">{user.name}</TableCell>
                             <TableCell className="text-sm">{user.email}</TableCell>
+                            <TableCell>
+                              <span className="text-xs font-mono text-slate-500">
+                                {user.ipAddress || "-"}
+                              </span>
+                            </TableCell>
                             <TableCell>
                               {user.isBanned ? (
                                 <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">Banned</span>

@@ -17,6 +17,7 @@ const BASE_URL = 'https://mintslip.com';
 export default function WebViewScreen({ initialPath = '', onBack }) {
   const [isLoading, setIsLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
   const webViewRef = useRef(null);
 
   const url = `${BASE_URL}${initialPath}`;
@@ -40,9 +41,50 @@ export default function WebViewScreen({ initialPath = '', onBack }) {
     }
   }, [canGoBack, onBack]);
 
+  const handleWebViewGoBack = () => {
+    if (canGoBack && webViewRef.current) {
+      webViewRef.current.goBack();
+    } else if (onBack) {
+      onBack();
+    }
+  };
+
+  const handleRefresh = () => {
+    if (webViewRef.current) {
+      webViewRef.current.reload();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      
+      {/* Header with back button */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={handleWebViewGoBack}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backIcon}>←</Text>
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.headerCenter}>
+          <View style={styles.logoSmall}>
+            <Text style={styles.logoIconSmall}>✦</Text>
+          </View>
+          <Text style={styles.headerTitle}>MintSlip</Text>
+        </View>
+        
+        <TouchableOpacity 
+          style={styles.refreshButton} 
+          onPress={handleRefresh}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.refreshIcon}>↻</Text>
+        </TouchableOpacity>
+      </View>
       
       {isLoading && (
         <View style={styles.loadingContainer}>
@@ -59,6 +101,7 @@ export default function WebViewScreen({ initialPath = '', onBack }) {
         onLoadEnd={() => setIsLoading(false)}
         onNavigationStateChange={(navState) => {
           setCanGoBack(navState.canGoBack);
+          setCurrentUrl(navState.url);
         }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
@@ -112,12 +155,68 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingRight: 12,
+  },
+  backIcon: {
+    fontSize: 20,
+    color: '#16a34a',
+    marginRight: 4,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#16a34a',
+    fontWeight: '500',
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoSmall: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#16a34a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  logoIconSmall: {
+    fontSize: 14,
+    color: '#ffffff',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  refreshButton: {
+    paddingVertical: 8,
+    paddingLeft: 12,
+  },
+  refreshIcon: {
+    fontSize: 22,
+    color: '#64748b',
+  },
   webview: {
     flex: 1,
   },
   loadingContainer: {
     position: 'absolute',
-    top: 0,
+    top: 60,
     left: 0,
     right: 0,
     bottom: 0,

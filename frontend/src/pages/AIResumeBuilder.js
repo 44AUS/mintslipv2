@@ -776,14 +776,15 @@ export default function AIResumeBuilder() {
       
       // Store resume data for after payment - use localStorage for persistence
       localStorage.setItem("pendingResumeData", JSON.stringify({
-        resumeData,
-        selectedTemplate
+        generatedResume,
+        formData,
+        selectedTemplate: formData.template
       }));
       
       const { url } = await createStripeCheckout({
         amount: basePrice,
         documentType: "ai-resume",
-        template: selectedTemplate,
+        template: formData.template,
         appliedDiscount,
         successPath: "/payment-success",
         cancelPath: "/ai-resume-builder"

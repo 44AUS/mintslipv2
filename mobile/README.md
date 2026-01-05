@@ -1,94 +1,117 @@
-# DocuMint Mobile - React Native Expo App
+# MintSlip Mobile App
 
-A mobile version of DocuMint for generating professional pay stubs and bank statements on iOS and Android.
+A React Native mobile app that wraps the MintSlip website (https://mintslip.com) in a native WebView.
 
 ## Features
 
-- 📱 Native iOS and Android support
-- 🎨 3 templates each for pay stubs and bank statements
-- 💳 PayPal payment integration
-- 📦 ZIP downloads for multiple paystubs
-- 📅 Date range selector
-- 🎯 No backend required
+- Full access to mintslip.com within a native mobile app
+- Android back button navigation support
+- Pull-to-refresh functionality
+- Stripe payment integration support
+- File download support
+- Smooth loading experience with loading indicator
 
-## Prerequisites
+## Quick Start
 
-- Node.js (v16 or higher)
+### Prerequisites
+
+- Node.js (v18 or higher)
 - npm or yarn
-- Expo CLI: `npm install -g expo-cli`
-- For iOS: Xcode (Mac only)
-- For Android: Android Studio
+- Expo CLI (`npm install -g expo-cli`)
+- Expo Go app on your mobile device (for testing)
 
-## Installation
+### Installation
 
-1. Navigate to mobile directory:
 ```bash
 cd mobile
-```
-
-2. Install dependencies:
-```bash
 npm install
+# or
+yarn install
 ```
 
-## Running the App
+### Run the App
 
-### Development
 ```bash
+# Start the development server
 npm start
-```
+# or
+yarn start
 
-This opens Expo Dev Tools. Then:
-- Press `i` for iOS simulator
-- Press `a` for Android emulator
-- Scan QR code with Expo Go app on your physical device
+# Run on Android
+npm run android
 
-### iOS
-```bash
+# Run on iOS
 npm run ios
 ```
 
-### Android
-```bash
-npm run android
-```
+### Testing on Device
+
+1. Install the **Expo Go** app on your phone (iOS App Store or Google Play)
+2. Run `npm start` in the mobile directory
+3. Scan the QR code with your phone's camera (iOS) or Expo Go app (Android)
 
 ## Building for Production
 
-### iOS (requires Mac)
-```bash
-eas build --platform ios
-```
+### Using EAS Build (Recommended)
 
-### Android
-```bash
-eas build --platform android
-```
+1. Install EAS CLI: `npm install -g eas-cli`
+2. Login to Expo: `eas login`
+3. Configure your project: `eas build:configure`
+4. Build for Android: `eas build --platform android`
+5. Build for iOS: `eas build --platform ios`
 
-## Project Structure
+### APK Download
+
+After building with EAS, you'll receive a link to download the APK (Android) or IPA (iOS) file.
+
+## Configuration
+
+- **Website URL**: The app loads `https://mintslip.com` by default
+- To change the URL, edit the `MINTSLIP_URL` constant in `App.js`
+
+## App Structure
 
 ```
 mobile/
-├── src/
-│   ├── screens/          # App screens
-│   ├── components/       # Reusable components
-│   ├── utils/            # PDF generation utilities
-│   └── navigation/       # Navigation setup
-├── assets/              # Images and fonts
-├── App.js              # Entry point
-└── package.json        # Dependencies
+├── App.js              # Main app with WebView
+├── app.json            # Expo configuration
+├── package.json        # Dependencies
+├── assets/             # App icons and splash screen
+│   ├── icon.png
+│   ├── splash.png
+│   └── adaptive-icon.png
+└── README.md
 ```
 
-## Technologies
+## Customization
 
-- React Native
-- Expo
-- React Navigation
-- NativeWind (Tailwind CSS for React Native)
-- expo-print (PDF generation)
-- JSZip (ZIP file creation)
-- PayPal WebView
+### Change App Icon
+Replace the following files in the `assets` folder:
+- `icon.png` (1024x1024px) - App store icon
+- `adaptive-icon.png` (1024x1024px) - Android adaptive icon
+- `splash.png` - Splash screen image
 
-## License
+### Change App Name
+Edit `app.json`:
+```json
+{
+  "expo": {
+    "name": "Your App Name",
+    "slug": "your-app-slug"
+  }
+}
+```
 
-MIT
+## Troubleshooting
+
+### WebView not loading
+- Ensure your device has internet connectivity
+- Check if mintslip.com is accessible from your device
+
+### Build issues
+- Run `expo doctor` to check for issues
+- Clear cache: `expo start -c`
+
+## Support
+
+For issues with the mobile app, contact support@mintslip.com

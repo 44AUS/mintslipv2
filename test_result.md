@@ -104,6 +104,18 @@ backend:
         agent: "testing"
         comment: "✅ Admin User Edit Endpoint test passed - All scenarios working: name-only update, email-only update, both name+email update, and duplicate email validation (returns 400 error as expected). Endpoint properly validates input and prevents duplicate emails."
 
+  - task: "Admin Users Filtering API"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added search by name/email, filter by subscription type, and filter by join date to /api/admin/users endpoint"
+
 frontend:
   - task: "Pricing Page UI"
     implemented: true

@@ -3756,6 +3756,7 @@ class AIResumeBuilderTester:
         # Test New Admin Dashboard Features
         print("\n🆕 Testing New Admin Dashboard Features...")
         admin_users_ok = self.test_admin_users_list()
+        admin_users_filtering_ok = self.test_admin_users_filtering_api()
         admin_user_edit_ok = self.test_admin_user_edit_endpoint()
         admin_update_subscription_ok = self.test_admin_update_user_subscription()
         admin_revenue_ok = self.test_admin_revenue_by_period()

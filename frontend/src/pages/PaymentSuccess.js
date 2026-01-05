@@ -170,6 +170,27 @@ export default function PaymentSuccess() {
           
           toast.success('Your bank statement has been downloaded!');
         }
+      } else if (orderType === 'ai-resume') {
+        const resumeDataStr = localStorage.getItem('pendingResumeData');
+        
+        if (resumeDataStr) {
+          const { generatedResume, formData, selectedTemplate } = JSON.parse(resumeDataStr);
+          
+          if (generatedResume) {
+            console.log('Generating AI resume with stored data...', { selectedTemplate });
+            
+            // Prepare resume data for the generator
+            const resumeData = {
+              ...generatedResume,
+              template: selectedTemplate || formData?.template || 'ats'
+            };
+            
+            await generateAndDownloadResume(resumeData);
+            generated = true;
+            
+            toast.success('Your AI resume has been downloaded!');
+          }
+        }
       }
       // Add more document types as needed...
       

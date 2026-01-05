@@ -9,18 +9,27 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a4731"
+      "backgroundColor": "#16a34a"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mintslip.mobile"
+      "bundleIdentifier": "com.mintslip.mobile",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1a4731"
+        "backgroundColor": "#16a34a"
       },
-      "package": "com.mintslip.mobile"
+      "package": "com.mintslip.mobile",
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

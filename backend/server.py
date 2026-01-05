@@ -1574,9 +1574,14 @@ async def preview_subscription_proration(request: dict, session: dict = Depends(
         net_amount = upcoming_invoice.amount_due
         is_upgrade = SUBSCRIPTION_PLANS[new_tier]["price_cents"] > SUBSCRIPTION_PLANS[current_tier]["price_cents"]
         
-        # Get period end date
-        period_end = datetime.fromtimestamp(subscription.current_period_end)
-        days_remaining = (period_end - datetime.now()).days
+        # Get period end date - use get() for safety
+        period_end_timestamp = getattr(subscription, 'current_period_end', None)
+        if period_end_timestamp:
+            period_end = datetime.fromtimestamp(period_end_timestamp)
+            days_remaining = (period_end - datetime.now()).days
+        else:
+            period_end = datetime.now() + timedelta(days=30)
+            days_remaining = 30
         
         return {
             "success": True,

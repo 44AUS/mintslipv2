@@ -2043,10 +2043,7 @@ export default function AdminDashboard() {
                     <Input
                       placeholder="Search by name or email..."
                       value={usersSearchQuery}
-                      onChange={(e) => {
-                        setUsersSearchQuery(e.target.value);
-                        setUsersPage(0);
-                      }}
+                      onChange={(e) => setUsersSearchQuery(e.target.value)}
                       className="pl-9"
                     />
                   </div>

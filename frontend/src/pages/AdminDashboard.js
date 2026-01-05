@@ -375,8 +375,54 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("adminToken");
     
     try {
+      // Build query params with filters
+      const params = new URLSearchParams({
+        skip: (usersPage * pageSize).toString(),
+        limit: pageSize.toString()
+      });
+      
+      // Add search query
+      if (usersSearchQuery.trim()) {
+        params.append("search", usersSearchQuery.trim());
+      }
+      
+      // Add subscription type filter
+      if (usersSubscriptionFilter !== "all") {
+        params.append("subscription_type", usersSubscriptionFilter);
+      }
+      
+      // Add date filter
+      if (usersDateFilter !== "all") {
+        const now = new Date();
+        let startDate;
+        
+        switch (usersDateFilter) {
+          case "today":
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            break;
+          case "week":
+            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case "month":
+            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+          case "quarter":
+            startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+            break;
+          case "year":
+            startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+            break;
+          default:
+            startDate = null;
+        }
+        
+        if (startDate) {
+          params.append("date_from", startDate.toISOString());
+        }
+      }
+      
       const response = await fetch(
-        `${BACKEND_URL}/api/admin/users?skip=${usersPage * pageSize}&limit=${pageSize}`,
+        `${BACKEND_URL}/api/admin/users?${params.toString()}`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
       

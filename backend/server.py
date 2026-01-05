@@ -728,7 +728,8 @@ async def get_saved_documents(
     
     # Get user's subscription tier to determine max documents
     user = await users_collection.find_one({"id": user_id}, {"_id": 0})
-    subscription_tier = user.get("subscription", {}).get("tier", "starter") if user else "starter"
+    subscription = user.get("subscription") if user else None
+    subscription_tier = subscription.get("tier", "starter") if subscription else "starter"
     max_documents = SAVED_DOCS_LIMITS.get(subscription_tier, 10)
     
     return {

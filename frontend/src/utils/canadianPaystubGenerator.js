@@ -124,6 +124,9 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
           checkNumberArray, memoArray
         );
         
+        // Set PDF metadata based on template
+        setPdfMetadata(doc, template, stubData.payDate);
+        
         // Simple filename with date
         const fileName = `${formData.name}-canadian-paystub-${stubData.payDate.toISOString().split('T')[0]}.pdf`;
         console.log(`Adding ${fileName} to ZIP`);

@@ -124,6 +124,25 @@ def check_rate_limit(identifier: str, max_requests: int = 10, window_seconds: in
     rate_limit_storage[identifier].append(current_time)
     return True
 
+# Helper function to get client IP address
+def get_client_ip(request: Request) -> str:
+    """Extract client IP from request, handling proxies"""
+    # Check for forwarded headers (common with proxies/load balancers)
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        # Take the first IP in the chain (original client)
+        return forwarded_for.split(",")[0].strip()
+    
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
+    
+    # Fallback to direct client IP
+    if request.client:
+        return request.client.host
+    
+    return "unknown"
+
 # CORS
 app.add_middleware(
     CORSMiddleware,

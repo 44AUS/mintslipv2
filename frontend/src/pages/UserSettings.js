@@ -633,7 +633,7 @@ export default function UserSettings() {
           <DialogHeader>
             <DialogTitle>Change Subscription Plan</DialogTitle>
             <DialogDescription>
-              Select a new plan. Changes will take effect at your next billing date.
+              Select a new plan. You'll be charged the prorated difference immediately.
             </DialogDescription>
           </DialogHeader>
           <div className="my-4">
@@ -677,6 +677,7 @@ export default function UserSettings() {
                   </>
                 )}
               </div>
+              <p className="text-xs mt-1">Changes take effect immediately with prorated billing.</p>
             </div>
           )}
           <DialogFooter>

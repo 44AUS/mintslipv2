@@ -1225,17 +1225,31 @@ export default function AdminDashboard() {
             { id: "users", label: "Users", icon: Users },
             { id: "discounts", label: "Discount Codes", icon: Tag },
             { id: "blog", label: "Blog", icon: FileText }
-          ].map((tab) => (
-            <Button
-              key={tab.id}
-              variant={activeTab === tab.id ? "default" : "ghost"}
-              onClick={() => tab.id === "blog" ? navigate("/admin/blog") : setActiveTab(tab.id)}
-              className={`gap-2 ${activeTab === tab.id ? "bg-green-600 hover:bg-green-700" : ""}`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </Button>
-          ))}
+          ].map((tab) => {
+            // Define the route for each tab
+            const getTabRoute = (tabId) => {
+              switch (tabId) {
+                case "overview": return "/admin/overview";
+                case "purchases": return "/admin/purchases";
+                case "users": return "/admin/users";
+                case "discounts": return "/admin/discounts";
+                case "blog": return "/admin/blog";
+                default: return "/admin/dashboard";
+              }
+            };
+            
+            return (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "default" : "ghost"}
+                onClick={() => navigate(getTabRoute(tab.id))}
+                className={`gap-2 ${activeTab === tab.id ? "bg-green-600 hover:bg-green-700" : ""}`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.label}
+              </Button>
+            );
+          })}
         </div>
 
         {/* Overview Tab */}

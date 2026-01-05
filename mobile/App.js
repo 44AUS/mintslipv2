@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AnimatedSplashScreen from './src/screens/AnimatedSplashScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import WebViewScreen from './src/screens/WebViewScreen';
 
 const STORAGE_KEY = '@mintslip_has_launched';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [currentScreen, setCurrentScreen] = useState('loading');
   const [initialPath, setInitialPath] = useState('');
 
@@ -18,17 +20,21 @@ export default function App() {
     try {
       const hasLaunched = await AsyncStorage.getItem(STORAGE_KEY);
       if (hasLaunched === 'true') {
-        // User has seen welcome screen before, show main app
+        // User has seen welcome screen before, show main app after splash
         setCurrentScreen('webview');
         setInitialPath('');
       } else {
-        // First launch, show welcome screen
+        // First launch, show welcome screen after splash
         setCurrentScreen('welcome');
       }
     } catch (error) {
       console.error('Error checking first launch:', error);
       setCurrentScreen('welcome');
     }
+  };
+
+  const handleSplashFinish = () => {
+    setShowSplash(false);
   };
 
   const handleLogin = async () => {
@@ -52,6 +58,11 @@ export default function App() {
   const handleBackToWelcome = () => {
     setCurrentScreen('welcome');
   };
+
+  // Show animated splash screen first
+  if (showSplash) {
+    return <AnimatedSplashScreen onFinish={handleSplashFinish} />;
+  }
 
   if (currentScreen === 'loading') {
     return <View style={styles.loading} />;
@@ -78,6 +89,6 @@ export default function App() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#059669',
   },
 });

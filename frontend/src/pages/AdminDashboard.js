@@ -149,6 +149,11 @@ export default function AdminDashboard() {
   const [downloadsModalOpen, setDownloadsModalOpen] = useState(false);
   const [editDownloadsCount, setEditDownloadsCount] = useState("");
   
+  // Edit user modal state
+  const [editUserModalOpen, setEditUserModalOpen] = useState(false);
+  const [editUserData, setEditUserData] = useState({ name: "", email: "" });
+  const [isUpdatingUser, setIsUpdatingUser] = useState(false);
+  
   // Password change modal state
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AnimatedSplashScreen from './src/screens/AnimatedSplashScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen';
 import WebViewScreen from './src/screens/WebViewScreen';
 
 const STORAGE_KEY = '@mintslip_has_launched';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('welcome');
+  const [currentScreen, setCurrentScreen] = useState('loading');
   const [initialPath, setInitialPath] = useState('');
-  const [isReady, setIsReady] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
+  const [isReturningUser, setIsReturningUser] = useState(false);
 
   useEffect(() => {
     checkFirstLaunch();
@@ -20,17 +22,25 @@ export default function App() {
       const hasLaunched = await AsyncStorage.getItem(STORAGE_KEY);
       
       if (hasLaunched === 'true') {
+        // Returning user - show animated splash then webview
+        setIsReturningUser(true);
+        setShowSplash(true);
         setCurrentScreen('webview');
         setInitialPath('');
       } else {
+        // First time user - show welcome screen directly
+        setIsReturningUser(false);
+        setShowSplash(false);
         setCurrentScreen('welcome');
       }
     } catch (error) {
       console.error('Error checking first launch:', error);
       setCurrentScreen('welcome');
-    } finally {
-      setIsReady(true);
     }
+  };
+
+  const handleSplashFinish = () => {
+    setShowSplash(false);
   };
 
   const handleLogin = async () => {
@@ -68,10 +78,16 @@ export default function App() {
   };
 
   // Show loading while checking storage
-  if (!isReady) {
+  if (currentScreen === 'loading') {
     return <View style={styles.loading} />;
   }
 
+  // Returning users: show animated splash screen
+  if (showSplash && isReturningUser) {
+    return <AnimatedSplashScreen onFinish={handleSplashFinish} />;
+  }
+
+  // First time users: show welcome screen
   if (currentScreen === 'welcome') {
     return (
       <WelcomeScreen
@@ -82,6 +98,7 @@ export default function App() {
     );
   }
 
+  // Main app webview
   return (
     <WebViewScreen
       initialPath={initialPath}

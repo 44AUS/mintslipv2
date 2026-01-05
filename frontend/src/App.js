@@ -116,9 +116,12 @@ function App() {
             <Route path="/admin/users" element={<AdminDashboard />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/discounts" element={<AdminDiscounts />} />
+            <Route path="/admin/banned-ips" element={<AdminBannedIPs />} />
             <Route path="/admin/blog" element={<AdminBlog />} />
             <Route path="/admin/blog/new" element={<AdminBlogEditor />} />
             <Route path="/admin/blog/edit/:id" element={<AdminBlogEditor />} />
+            {/* Banned Page */}
+            <Route path="/banned" element={<Banned />} />
             {/* User Auth Routes (hidden - accessible via direct URL only) */}
             <Route path="/login" element={<UserLogin />} />
             <Route path="/signup" element={<UserSignup />} />

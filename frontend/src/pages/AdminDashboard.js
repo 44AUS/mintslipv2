@@ -792,7 +792,7 @@ export default function AdminDashboard() {
     if (!isLoading) {
       loadUsers();
     }
-  }, [usersPage]);
+  }, [usersPage, usersSearchQuery, usersSubscriptionFilter, usersDateFilter]);
 
   // Calculate period-based revenue
   useEffect(() => {

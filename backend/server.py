@@ -2061,6 +2061,41 @@ async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "message": "User deleted"}
 
+class UpdateUserDetails(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+
+@app.put("/api/admin/users/{user_id}")
+async def update_user_details(user_id: str, data: UpdateUserDetails, session: dict = Depends(get_current_admin)):
+    """Update a user's details (admin only)"""
+    user = await users_collection.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    update_data = {}
+    
+    if data.name is not None:
+        update_data["name"] = data.name.strip()
+    
+    if data.email is not None:
+        new_email = data.email.strip().lower()
+        # Check if email is already taken by another user
+        if new_email != user.get("email", "").lower():
+            existing_user = await users_collection.find_one({"email": new_email, "id": {"$ne": user_id}})
+            if existing_user:
+                raise HTTPException(status_code=400, detail="Email already in use by another user")
+        update_data["email"] = new_email
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    await users_collection.update_one(
+        {"id": user_id},
+        {"$set": update_data}
+    )
+    
+    return {"success": True, "message": "User updated successfully"}
+
 @app.put("/api/admin/users/{user_id}/ban")
 async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     """Ban/unban a user (admin only)"""

@@ -1728,8 +1728,11 @@ async def get_all_users(
     # Filter by subscription type
     if subscription_type:
         if subscription_type == "none":
-            # Users with no subscription
-            query["subscription"] = {"$exists": False}
+            # Users with no subscription (either field doesn't exist or is null)
+            query["$or"] = [
+                {"subscription": {"$exists": False}},
+                {"subscription": None}
+            ]
         elif subscription_type in ["starter", "professional", "business"]:
             query["subscription.tier"] = subscription_type
     

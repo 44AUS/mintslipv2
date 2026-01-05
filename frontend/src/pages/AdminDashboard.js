@@ -45,7 +45,11 @@ import {
   EyeOff,
   FileDown,
   Search,
-  Pencil
+  Pencil,
+  UserPlus,
+  UserCheck,
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import {
   AreaChart,

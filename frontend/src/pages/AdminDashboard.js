@@ -1704,6 +1704,7 @@ export default function AdminDashboard() {
                     <TableHead>Document Type</TableHead>
                     <TableHead>Template</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>IP Address</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Discount</TableHead>
                     <TableHead className="w-[80px]">Actions</TableHead>

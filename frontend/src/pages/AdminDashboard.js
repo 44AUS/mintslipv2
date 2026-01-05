@@ -686,6 +686,37 @@ export default function AdminDashboard() {
     }
   };
 
+  const banUserIP = async (user) => {
+    if (!user.ipAddress || user.ipAddress === "unknown") {
+      toast.error("User IP address not available");
+      return;
+    }
+    
+    if (!window.confirm(`Are you sure you want to ban IP ${user.ipAddress}? This will block all access from this IP address.`)) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/ban-user-ip/${user.id}`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ reason: `Banned via user ${user.email}` })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(`IP ${data.ip} has been banned`);
+      } else {
+        const data = await response.json();
+        toast.error(data.detail || "Failed to ban IP");
+      }
+    } catch (error) {
+      toast.error("Error banning IP");
+    }
+  };
+
   const openSubscriptionModal = (user) => {
     setSelectedUser(user);
     setSelectedTier(user.subscription?.tier || "");

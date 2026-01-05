@@ -9,6 +9,7 @@ import { generateAndDownloadPaystub } from '@/utils/paystubGenerator';
 import { generateAndDownloadW2 } from '@/utils/w2Generator';
 import { generateAndDownloadW9 } from '@/utils/w9Generator';
 import { generateAndDownloadBankStatement } from '@/utils/bankStatementGenerator';
+import { generateAndDownloadResume } from '@/utils/resumeGenerator';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 

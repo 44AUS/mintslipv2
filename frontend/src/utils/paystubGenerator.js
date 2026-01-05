@@ -33,6 +33,42 @@ function formatNameForFilename(name) {
   return name.trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
 }
 
+// Helper to set PDF metadata based on template
+function setPdfMetadata(doc, template, payDate) {
+  if (template === 'template-a') {
+    // Gusto template - specific metadata
+    // Creation date is one day before pay date
+    let creationDate;
+    if (typeof payDate === 'string' && payDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const parts = payDate.split('-');
+      creationDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    } else {
+      creationDate = payDate instanceof Date ? new Date(payDate) : new Date(payDate);
+    }
+    creationDate.setDate(creationDate.getDate() - 1);
+    
+    doc.setProperties({
+      title: 'Gusto',
+      subject: '',
+      author: '',
+      keywords: '',
+      creator: 'wkhtmltopdf 0.12.6.1',
+    });
+    
+    // Set the creation date in PDF info
+    doc.setCreationDate(creationDate);
+    
+    // Override the producer by modifying internal PDF info
+    // Note: jsPDF doesn't have a direct setProducer method, so we modify the internal structure
+    if (doc.internal && doc.internal.events) {
+      doc.internal.events.subscribe('putInfo', function() {
+        this.internal.write('/Producer (Qt 4.8.7)');
+      }.bind(doc));
+    }
+  }
+  // Other templates can have their own metadata settings here
+}
+
 // Helper to get template-specific individual paystub filename
 function getIndividualPaystubFilename(template, name, payDate) {
   // Handle timezone issues by parsing the date string directly if it's in YYYY-MM-DD format

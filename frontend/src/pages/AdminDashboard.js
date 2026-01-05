@@ -141,9 +141,26 @@ const ADMIN_ASSIGNABLE_TIERS = SUBSCRIPTION_TIERS;
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const location = useLocation();
+  
+  // Determine active tab from URL path
+  const getTabFromPath = (pathname) => {
+    if (pathname.includes("/admin/users")) return "users";
+    if (pathname.includes("/admin/purchases")) return "purchases";
+    return "overview";
+  };
+  
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
   const [isLoading, setIsLoading] = useState(true);
   const [adminInfo, setAdminInfo] = useState(null);
+  
+  // Sync activeTab with URL changes
+  useEffect(() => {
+    const tabFromPath = getTabFromPath(location.pathname);
+    if (tabFromPath !== activeTab) {
+      setActiveTab(tabFromPath);
+    }
+  }, [location.pathname]);
   
   // Dashboard data
   const [dashboardStats, setDashboardStats] = useState(null);

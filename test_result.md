@@ -74,6 +74,21 @@ backend:
         agent: "testing"
         comment: "✅ User Auth for Stripe test passed - Registration and login working correctly for Stripe integration"
 
+  - task: "Admin Dashboard Subscription Stats"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Admin dashboard endpoint updated with new subscription stats fields, needs testing"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin Dashboard Subscription Stats test passed - All required fields present: stats.cancellingSubscribers (0), subscriptionStats.cancelling (0), subscriptionStats.cancellingByTier (starter: 0, professional: 0, business: 0), userRegistrations (0 entries). API structure is correct and working as expected."
+
 frontend:
   - task: "Pricing Page UI"
     implemented: true

@@ -235,7 +235,7 @@ class PurchaseCreate(BaseModel):
 class ManualPurchaseCreate(BaseModel):
     documentType: str
     amount: float
-    email: str
+    paypalEmail: str
     purchaseDate: Optional[str] = None  # ISO date string, defaults to now
     template: Optional[str] = None
     discountCode: Optional[str] = None

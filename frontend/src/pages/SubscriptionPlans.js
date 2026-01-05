@@ -545,10 +545,10 @@ export default function SubscriptionPlans() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
-              Upgrade Your Plan
+              {upgradeDetails?.isUpgrade ? "Upgrade Your Plan" : "Change Your Plan"}
             </DialogTitle>
             <DialogDescription>
-              You're upgrading from {upgradeDetails?.currentTier && plans.find(p => p.tier === upgradeDetails.currentTier)?.name} to {upgradeDetails?.newTier && plans.find(p => p.tier === upgradeDetails.newTier)?.name}
+              You're {upgradeDetails?.isUpgrade ? "upgrading" : "changing"} from {upgradeDetails?.currentTier && plans.find(p => p.tier === upgradeDetails.currentTier)?.name} to {upgradeDetails?.newTier && plans.find(p => p.tier === upgradeDetails.newTier)?.name}
             </DialogDescription>
           </DialogHeader>
 
@@ -568,10 +568,23 @@ export default function SubscriptionPlans() {
                   <span className="text-slate-600">Days remaining in cycle</span>
                   <span className="font-medium">{upgradeDetails.daysRemaining} days</span>
                 </div>
+                {upgradeDetails.creditAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Credit from current plan</span>
+                    <span className="font-medium text-green-600">-${upgradeDetails.creditAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t border-slate-200 pt-3 mt-3">
                   <div className="flex justify-between">
-                    <span className="font-semibold text-slate-800">Prorated charge today</span>
-                    <span className="font-bold text-green-600 text-lg">${upgradeDetails.proratedAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-800">
+                      {upgradeDetails.immediateCharge ? "Amount due today" : "Credit applied"}
+                    </span>
+                    <span className={`font-bold text-lg ${upgradeDetails.immediateCharge ? "text-green-600" : "text-blue-600"}`}>
+                      {upgradeDetails.immediateCharge 
+                        ? `$${upgradeDetails.proratedAmount.toFixed(2)}`
+                        : `$${Math.abs(upgradeDetails.proratedAmount).toFixed(2)} credit`
+                      }
+                    </span>
                   </div>
                 </div>
               </div>
@@ -624,7 +637,10 @@ export default function SubscriptionPlans() {
                 </>
               ) : (
                 <>
-                  Pay ${upgradeDetails?.proratedAmount.toFixed(2)} & Upgrade
+                  {upgradeDetails?.immediateCharge 
+                    ? `Pay $${upgradeDetails?.proratedAmount.toFixed(2)} & ${upgradeDetails?.isUpgrade ? "Upgrade" : "Change"}`
+                    : `Confirm ${upgradeDetails?.isUpgrade ? "Upgrade" : "Change"}`
+                  }
                 </>
               )}
             </Button>

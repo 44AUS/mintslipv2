@@ -1548,13 +1548,21 @@ async def preview_subscription_proration(request: dict, session: dict = Depends(
             }
         )
         
-        # Calculate amounts
+        # Calculate amounts from invoice lines
+        # In newer Stripe API, we check the 'type' field instead of 'proration'
         proration_amount = 0
         credit_amount = 0
         new_plan_amount = 0
         
         for line in upcoming_invoice.lines.data:
-            if line.proration:
+            # Check if this is a proration line by looking at the description or type
+            line_type = getattr(line, 'type', None)
+            description = getattr(line, 'description', '') or ''
+            
+            # Proration lines typically have "Remaining time" or "Unused time" in description
+            is_proration = 'proration' in description.lower() or 'remaining time' in description.lower() or 'unused time' in description.lower()
+            
+            if is_proration or line_type == 'invoiceitem':
                 if line.amount > 0:
                     proration_amount += line.amount
                 else:

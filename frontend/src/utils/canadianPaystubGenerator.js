@@ -267,15 +267,20 @@ async function generateSingleCanadianStub(
   const basePay = regularPay + overtimePay;
   const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
   
-  const ytdCpp = cpp * ytdPayPeriods;
-  const ytdEi = ei * ytdPayPeriods;
-  const ytdQpip = qpip * ytdPayPeriods;
-  const ytdFederalTax = federalTax * ytdPayPeriods;
-  const ytdProvincialTax = provincialTax * ytdPayPeriods;
-  const ytdTotalTax = totalTax * ytdPayPeriods;
-  const ytdNetPay = netPay * ytdPayPeriods;
+  // YTD Taxes should be calculated on YTD Gross Pay for accuracy
+  // CPP/QPP, EI, QPIP are flat percentages, so calculate directly on ytdGrossPay
+  const ytdCpp = ytdGrossPay * (isQuebec ? 0.064 : 0.0595);
+  const ytdEi = ytdGrossPay * (isQuebec ? 0.0127 : 0.0163);
+  const ytdQpip = isQuebec ? ytdGrossPay * 0.00494 : 0;
+  
+  // For federal and provincial taxes, use ytdGrossPay with approximate rates
+  const ytdFederalTax = ytdGrossPay * 0.15; // Federal base rate approximation
+  const ytdProvincialTax = ytdGrossPay * (getProvincialTaxRate(province) || 0.05);
+  const ytdTotalTax = ytdCpp + ytdEi + ytdQpip + ytdFederalTax + ytdProvincialTax;
+  
   const ytdDeductions = totalDeductions * ytdPayPeriods;
   const ytdContributions = totalContributions * ytdPayPeriods;
+  const ytdNetPay = ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions;
   const ytdHours = totalHours * ytdPayPeriods;
   
   // Process employer benefits for Template C

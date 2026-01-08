@@ -2063,10 +2063,15 @@ async def get_revenue_by_period(
     # Build final query
     query = {"$and": conditions} if conditions else {}
     
-    # Calculate revenue
+    # Calculate revenue and download count (sum of quantities)
     pipeline = [
         {"$match": query} if query else {"$match": {}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}, "count": {"$sum": 1}}}
+        {"$group": {
+            "_id": None, 
+            "total": {"$sum": "$amount"}, 
+            "count": {"$sum": 1},
+            "downloadCount": {"$sum": {"$ifNull": ["$quantity", 1]}}
+        }}
     ]
     
     result = await purchases_collection.aggregate(pipeline).to_list(1)
@@ -2075,6 +2080,7 @@ async def get_revenue_by_period(
         "success": True,
         "revenue": round(result[0]["total"], 2) if result else 0,
         "purchaseCount": result[0]["count"] if result else 0,
+        "downloadCount": result[0]["downloadCount"] if result else 0,
         "period": {
             "startDate": startDate,
             "endDate": endDate

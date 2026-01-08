@@ -1158,7 +1158,8 @@ async def create_one_time_checkout(data: OneTimeCheckoutRequest, request: Reques
                 "type": "one_time_purchase",
                 "userId": user_id or "",
                 "userEmail": user_email or "",
-                "clientIp": client_ip
+                "clientIp": client_ip,
+                "quantity": str(data.quantity or 1)
             }
         )
         

@@ -2010,22 +2010,35 @@ async def get_revenue_by_period(
     userType: Optional[str] = None  # "guest" or "registered"
 ):
     """Get revenue for a specific period (admin only)"""
-    query = {}
+    conditions = []
     
     if startDate:
-        query["createdAt"] = {"$gte": startDate}
+        conditions.append({"createdAt": {"$gte": startDate}})
     
     if endDate:
-        if "createdAt" in query:
-            query["createdAt"]["$lte"] = endDate
-        else:
-            query["createdAt"] = {"$lte": endDate}
+        conditions.append({"createdAt": {"$lte": endDate}})
     
     # Filter by user type
     if userType == "guest":
-        query["$or"] = [{"userId": None}, {"userId": ""}, {"userId": {"$exists": False}}, {"isGuest": True}]
+        conditions.append({
+            "$or": [
+                {"userId": None}, 
+                {"userId": ""}, 
+                {"userId": {"$exists": False}}, 
+                {"isGuest": True}
+            ]
+        })
     elif userType == "registered":
-        query["userId"] = {"$exists": True, "$ne": None, "$ne": ""}
+        conditions.append({
+            "$and": [
+                {"userId": {"$exists": True}},
+                {"userId": {"$ne": None}},
+                {"userId": {"$ne": ""}}
+            ]
+        })
+    
+    # Build final query
+    query = {"$and": conditions} if conditions else {}
     
     # Calculate revenue
     pipeline = [

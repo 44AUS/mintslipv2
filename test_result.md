@@ -147,6 +147,21 @@ frontend:
         agent: "main"
         comment: "Frontend testing not in scope for this testing session"
 
+  - task: "Gusto Paystub YTD Net Pay Calculation Fix"
+    implemented: true
+    working: true
+    file: "paystubGenerator.js, paystubPreviewGenerator.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed YTD Net Pay calculation bug where ytdContributions was being ADDED instead of SUBTRACTED in Gusto template"
+      - working: true
+        agent: "testing"
+        comment: "✅ YTD Net Pay calculation fix verified - Code review confirms ytdContributions now correctly SUBTRACTED in both paystubGenerator.js (line 454) and paystubPreviewGenerator.js (line 285). Formula now correct: YTD Net Pay = YTD Gross Pay - YTD Taxes - YTD Deductions - YTD Contributions. Paystub generator page loads and functions properly."
+
   - task: "Paystub Generator Payment UI"
     implemented: true
     working: true

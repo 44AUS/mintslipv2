@@ -1933,14 +1933,18 @@ export default function Home() {
                             <FileText className="w-16 h-16 text-green-300" />
                           </div>
                         )}
-                        {/* Category Badge */}
-                        {post.category && (
-                          <div className="absolute top-3 left-3">
-                            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold rounded-full">
-                              {post.category}
+                        {/* Category Badge and Views */}
+                        <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
+                          {post.category && (
+                            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold rounded-full capitalize">
+                              {post.category.replace(/-/g, ' ')}
                             </span>
-                          </div>
-                        )}
+                          )}
+                          <span className="px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {post.views || 0}
+                          </span>
+                        </div>
                       </div>
 
                       {/* Content */}

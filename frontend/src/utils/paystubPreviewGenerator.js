@@ -277,6 +277,11 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   
   const ytdDeductions = Math.round(totalDeductions * ytdPayPeriods * 100) / 100;
   const ytdContributions = Math.round(totalContributions * ytdPayPeriods * 100) / 100;
+  
+  // Calculate YTD Pre-Tax and Post-Tax amounts
+  const ytdPreTax = Math.round(totalPreTax * ytdPayPeriods * 100) / 100;
+  const ytdPostTax = Math.round(totalPostTax * ytdPayPeriods * 100) / 100;
+  
   const ytdNetPay = Math.round((ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions) * 100) / 100;
   const ytdHours = (hours + overtime) * ytdPayPeriods;
 
@@ -290,7 +295,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
     ytdNetPay, ytdHours, payType, workerType, isContractor, annualSalary,
     deductionsData, totalDeductions, preTaxDeductions, postTaxDeductions,
     contributionsData, totalContributions, preTaxContributions, postTaxContributions,
-    totalPreTax, totalPostTax,
+    totalPreTax, totalPostTax, ytdPreTax, ytdPostTax,
     ytdDeductions, ytdContributions,
     logoDataUrl: formData.logoDataUrl || null,
     isPreview: true,

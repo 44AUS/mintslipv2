@@ -293,11 +293,12 @@ async function generateSingleStub(
   let regularPay = 0;
   let overtimePay = 0;
   let grossPay = 0;
+  let commission = commissionArray[stubNum] || 0;
   
   if (payType === "salary") {
-    // Salary calculation - fixed amount per period
-    grossPay = annualSalary / periodsPerYear;
-    regularPay = grossPay;
+    // Salary calculation - fixed amount per period plus commission
+    grossPay = (annualSalary / periodsPerYear) + commission;
+    regularPay = annualSalary / periodsPerYear;
     hours = defaultHours; // Standard hours for display purposes
     overtime = 0;
     overtimePay = 0;
@@ -307,7 +308,7 @@ async function generateSingleStub(
     overtime = overtimeArray[stubNum] || 0;
     regularPay = rate * hours;
     overtimePay = rate * 1.5 * overtime;
-    grossPay = regularPay + overtimePay;
+    grossPay = regularPay + overtimePay + commission;
   }
 
   // Get actual local tax rate

@@ -337,16 +337,20 @@ export default function BlogPost() {
                 <Clock className="w-4 h-4" />
                 {post.readingTime || 5} min read
               </span>
+              <span className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                {post.views || 0} views
+              </span>
             </div>
           </header>
 
           {/* Featured Image */}
           {post.featuredImage && (
-            <div className="mb-8 rounded-xl overflow-hidden">
+            <div className="mb-8 rounded-xl overflow-hidden max-h-[400px]">
               <img
                 src={post.featuredImage.startsWith('/') ? `${BACKEND_URL}${post.featuredImage}` : post.featuredImage}
                 alt={post.title}
-                className="w-full h-auto"
+                className="w-full h-full object-cover"
               />
             </div>
           )}

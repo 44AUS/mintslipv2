@@ -128,6 +128,8 @@ const TEMPLATE_NAMES = {
 // Helper function to get template display name
 const getTemplateName = (templateId) => {
   if (!templateId) return "-";
+  return TEMPLATE_NAMES[templateId] || templateId;
+};
 
 // Helper function to format document type with quantity
 const formatDocumentType = (purchase) => {
@@ -140,8 +142,6 @@ const formatDocumentType = (purchase) => {
   }
   
   return baseType;
-};
-  return TEMPLATE_NAMES[templateId] || templateId;
 };
 
 // Subscription tiers - aligned with frontend subscription plans

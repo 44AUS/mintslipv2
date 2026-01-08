@@ -1187,7 +1187,9 @@ export default function AdminDashboard() {
       template: "",
       discountCode: "",
       discountAmount: "",
-      notes: ""
+      notes: "",
+      quantity: "1",
+      ipAddress: ""
     });
   };
 

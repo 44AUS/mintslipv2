@@ -282,7 +282,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const ytdPreTax = Math.round(totalPreTax * ytdPayPeriods * 100) / 100;
   const ytdPostTax = Math.round(totalPostTax * ytdPayPeriods * 100) / 100;
   
-  const ytdNetPay = Math.round((ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions) * 100) / 100;
+  const ytdNetPay = Math.round((ytdGrossPay - ytdTotalTax - ytdDeductions - ytdContributions) * 100) / 100;
   const ytdHours = (hours + overtime) * ytdPayPeriods;
 
   const templateData = {

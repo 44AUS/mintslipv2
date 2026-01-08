@@ -250,8 +250,8 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   
   // YTD Taxes should be calculated on YTD Gross Pay for accuracy
   // SS and Medicare are flat percentages, so calculate directly on ytdGrossPay
-  const ytdSsTax = isContractor ? 0 : ytdGrossPay * 0.062;
-  const ytdMedTax = isContractor ? 0 : ytdGrossPay * 0.0145;
+  const ytdSsTax = isContractor ? 0 : Math.round(ytdGrossPay * 0.062 * 100) / 100;
+  const ytdMedTax = isContractor ? 0 : Math.round(ytdGrossPay * 0.0145 * 100) / 100;
   
   // For federal and state taxes, we approximate by using the average gross pay per period
   // This accounts for varying commissions across periods
@@ -260,24 +260,24 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   if (!isContractor) {
     if (formData.federalFilingStatus) {
       const avgFederalTax = calculateFederalTax(avgGrossPayPerPeriod, payFrequency, formData.federalFilingStatus);
-      ytdFederalTax = avgFederalTax * ytdPayPeriods;
+      ytdFederalTax = Math.round(avgFederalTax * ytdPayPeriods * 100) / 100;
     } else {
-      ytdFederalTax = ytdGrossPay * 0.22;
+      ytdFederalTax = Math.round(ytdGrossPay * 0.22 * 100) / 100;
     }
   }
   
   let ytdStateTax = 0;
   if (!isContractor) {
     const avgStateTax = calculateStateTax(avgGrossPayPerPeriod, formData.state, payFrequency, formData.stateAllowances || 0, stateRate);
-    ytdStateTax = avgStateTax * ytdPayPeriods;
+    ytdStateTax = Math.round(avgStateTax * ytdPayPeriods * 100) / 100;
   }
   
-  const ytdLocalTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? ytdGrossPay * localTaxRate : 0);
-  const ytdTotalTax = ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax + ytdLocalTax;
+  const ytdLocalTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? Math.round(ytdGrossPay * localTaxRate * 100) / 100 : 0);
+  const ytdTotalTax = Math.round((ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax + ytdLocalTax) * 100) / 100;
   
-  const ytdDeductions = totalDeductions * ytdPayPeriods;
-  const ytdContributions = totalContributions * ytdPayPeriods;
-  const ytdNetPay = ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions;
+  const ytdDeductions = Math.round(totalDeductions * ytdPayPeriods * 100) / 100;
+  const ytdContributions = Math.round(totalContributions * ytdPayPeriods * 100) / 100;
+  const ytdNetPay = Math.round((ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions) * 100) / 100;
   const ytdHours = (hours + overtime) * ytdPayPeriods;
 
   const templateData = {

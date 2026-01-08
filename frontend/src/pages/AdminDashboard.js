@@ -1591,9 +1591,12 @@ export default function AdminDashboard() {
                     <TableRow>
                       <TableHead>Date</TableHead>
                       <TableHead>Document Type</TableHead>
+                      <TableHead>Template</TableHead>
                       <TableHead>Customer</TableHead>
+                      <TableHead>IP Address</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Discount</TableHead>
+                      <TableHead className="w-[80px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1606,6 +1609,15 @@ export default function AdminDashboard() {
                           </span>
                         </TableCell>
                         <TableCell>
+                          {purchase.template ? (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
+                              {getTemplateName(purchase.template)}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-col">
                             <span className="text-sm">{purchase.email || purchase.paypalEmail || "N/A"}</span>
                             {purchase.userId ? (
@@ -1614,6 +1626,11 @@ export default function AdminDashboard() {
                               <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded w-fit">Guest</span>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs font-mono text-slate-500">
+                            {purchase.ipAddress || "-"}
+                          </span>
                         </TableCell>
                         <TableCell className="font-medium">{formatCurrency(purchase.amount)}</TableCell>
                         <TableCell>
@@ -1624,6 +1641,26 @@ export default function AdminDashboard() {
                           ) : (
                             <span className="text-slate-400">-</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEditPurchase(purchase)}
+                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deletePurchase(purchase.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

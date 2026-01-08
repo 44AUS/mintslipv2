@@ -243,7 +243,13 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   // YTD Commission should be cumulative sum of all commissions up to and including current stub
   const ytdCommission = commissionArray.slice(0, stubIndex + 1).reduce((sum, c) => sum + (c || 0), 0);
   
-  const ytdGrossPay = grossPay * ytdPayPeriods;
+  // YTD Gross Pay = (base pay * periods) + cumulative commission
+  // Base pay is regularPay + overtimePay (without commission)
+  const basePay = regularPay + overtimePay;
+  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
+  
+  // Taxes and other YTD values are based on base pay * periods (commission doesn't change tax rates proportionally)
+  // We use the current period's tax rates applied to ytdPayPeriods
   const ytdSsTax = ssTax * ytdPayPeriods;
   const ytdMedTax = medTax * ytdPayPeriods;
   const ytdFederalTax = federalTax * ytdPayPeriods;

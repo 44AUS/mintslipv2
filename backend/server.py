@@ -3670,6 +3670,74 @@ async def upload_blog_image(file: UploadFile = File(...), session: dict = Depend
     
     return {"success": True, "url": image_url, "filename": filename}
 
+class AIImageGenerateRequest(BaseModel):
+    title: str
+    category: Optional[str] = None
+    keywords: Optional[str] = None
+
+@app.post("/api/admin/blog/generate-image")
+async def generate_blog_image(data: AIImageGenerateRequest, session: dict = Depends(get_current_admin)):
+    """Generate a blog featured image using AI (admin)"""
+    import base64
+    
+    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")
+    
+    try:
+        # Create a prompt for the blog image
+        category_context = f" about {data.category}" if data.category else ""
+        keywords_context = f" Keywords: {data.keywords}" if data.keywords else ""
+        
+        prompt = f"""Create a professional, modern blog featured image for an article titled: "{data.title}"{category_context}.{keywords_context}
+
+The image should be:
+- Clean and professional looking
+- Suitable for a financial/business blog
+- Modern flat design or minimalist style
+- No text overlays
+- Visually appealing with good color contrast
+- 16:9 aspect ratio composition"""
+
+        # Initialize LLM Chat with image generation capabilities
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=str(uuid.uuid4()),
+            system_message="You are an expert at generating professional blog featured images."
+        ).with_model("gemini", "gemini-2.5-flash-preview-05-20").with_params(modalities=["image", "text"])
+        
+        # Generate image
+        msg = UserMessage(text=prompt)
+        text_response, images = await chat.send_message_multimodal_response(msg)
+        
+        if not images or len(images) == 0:
+            raise HTTPException(status_code=500, detail="Failed to generate image - no image returned")
+        
+        # Get the first generated image
+        img = images[0]
+        image_bytes = base64.b64decode(img['data'])
+        
+        # Save the generated image
+        filename = f"ai_{uuid.uuid4()}.png"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        
+        with open(filepath, "wb") as f:
+            f.write(image_bytes)
+        
+        # Return URL
+        image_url = f"/api/uploads/blog/{filename}"
+        
+        return {
+            "success": True, 
+            "url": image_url, 
+            "filename": filename,
+            "message": "Image generated successfully"
+        }
+        
+    except Exception as e:
+        print(f"Error generating blog image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate image: {str(e)}")
+
 @app.post("/api/admin/blog/categories")
 async def create_blog_category(data: BlogCategoryCreate, session: dict = Depends(get_current_admin)):
     """Create a new blog category (admin)"""

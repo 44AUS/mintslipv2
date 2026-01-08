@@ -185,6 +185,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Gusto Paystub YTD Net Pay Calculation Fix"
     - "Stripe Config Endpoint"
     - "Stripe One-Time Checkout"
     - "Stripe Subscription Checkout"

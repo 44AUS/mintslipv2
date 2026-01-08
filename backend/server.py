@@ -2380,6 +2380,7 @@ async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
 class UpdateUserDetails(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
+    ipAddress: Optional[str] = None
 
 @app.put("/api/admin/users/{user_id}")
 async def update_user_details(user_id: str, data: UpdateUserDetails, session: dict = Depends(get_current_admin)):
@@ -2401,6 +2402,9 @@ async def update_user_details(user_id: str, data: UpdateUserDetails, session: di
             if existing_user:
                 raise HTTPException(status_code=400, detail="Email already in use by another user")
         update_data["email"] = new_email
+    
+    if data.ipAddress is not None:
+        update_data["ipAddress"] = data.ipAddress.strip() if data.ipAddress.strip() else None
     
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")

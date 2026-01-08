@@ -295,6 +295,9 @@ async function generateSingleStub(
   let grossPay = 0;
   let commission = commissionArray[stubNum] || 0;
   
+  // Debug log
+  console.log('Download Generator - Commission Debug:', { stubNum, commissionArray, commission });
+  
   if (payType === "salary") {
     // Salary calculation - fixed amount per period plus commission
     grossPay = (annualSalary / periodsPerYear) + commission;

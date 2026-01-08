@@ -153,6 +153,9 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   let overtimePay = 0;
   let commission = commissionArray[stubIndex] || 0;
   let grossPay = 0;
+  
+  // Debug log
+  console.log('Preview Generator - Commission Debug:', { stubIndex, commissionArray, commission });
 
   if (payType === "salary") {
     grossPay = annualSalary / periodsPerYear + commission;

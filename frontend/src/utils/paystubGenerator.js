@@ -530,6 +530,8 @@ async function generateSingleStub(
     totalPostTax,
     ytdDeductions,
     ytdContributions,
+    ytdPreTax,
+    ytdPostTax,
     // YTD values
     ytdPayPeriods,
     ytdRegularPay,

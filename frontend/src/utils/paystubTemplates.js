@@ -59,7 +59,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     payType, workerType, isContractor, annualSalary,
     deductionsData, totalDeductions, preTaxDeductions = 0, postTaxDeductions = 0,
     contributionsData, totalContributions, preTaxContributions = 0, postTaxContributions = 0,
-    totalPreTax = 0, totalPostTax = 0,
+    totalPreTax = 0, totalPostTax = 0, ytdPreTax = 0, ytdPostTax = 0,
     ytdDeductions, ytdContributions,
     logoDataUrl, ytdPayPeriods = 1
   } = data;

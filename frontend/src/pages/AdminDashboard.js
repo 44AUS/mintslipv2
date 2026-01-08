@@ -1655,7 +1655,7 @@ export default function AdminDashboard() {
                         <TableCell className="text-sm">{formatDate(purchase.createdAt)}</TableCell>
                         <TableCell>
                           <span className="px-2 py-1 bg-slate-100 rounded-md text-sm">
-                            {DOCUMENT_TYPES[purchase.documentType] || purchase.documentType}
+                            {formatDocumentType(purchase)}
                           </span>
                         </TableCell>
                         <TableCell>

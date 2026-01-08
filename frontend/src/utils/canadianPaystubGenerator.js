@@ -63,6 +63,12 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       .split("|||")
       .map((m) => m.trim())
       .slice(0, calculatedNumStubs);
+    
+    // Parse commission array
+    const commissionArray = (formData.commissionList || "")
+      .split(",")
+      .map((c) => parseFloat(c.trim()) || 0)
+      .slice(0, calculatedNumStubs);
 
     const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
     let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);

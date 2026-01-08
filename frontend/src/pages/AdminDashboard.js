@@ -919,32 +919,26 @@ export default function AdminDashboard() {
   };
 
   // Calculate period-based purchases count
-  useEffect(() => {
-    if (dashboardStats?.recentPurchases) {
-      calculatePeriodPurchases();
-    }
-  }, [purchasesPeriod, purchaseTypeFilter, dashboardStats]);
-
-  const calculatePeriodPurchases = async () => {
+  const calculatePeriodPurchases = useCallback(async () => {
     const token = localStorage.getItem("adminToken");
     const now = new Date();
     let startDate;
     
     switch (purchasesPeriod) {
       case "week":
-        startDate = new Date(now.setDate(now.getDate() - 7));
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         break;
       case "month":
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         break;
       case "quarter":
-        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
         break;
       case "year":
-        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
         break;
       default:
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
     try {
@@ -976,7 +970,13 @@ export default function AdminDashboard() {
         setPeriodPurchases(filtered.length);
       }
     }
-  };
+  }, [purchasesPeriod, purchaseTypeFilter, dashboardStats?.recentPurchases]);
+
+  useEffect(() => {
+    if (dashboardStats?.recentPurchases) {
+      calculatePeriodPurchases();
+    }
+  }, [calculatePeriodPurchases, dashboardStats?.recentPurchases]);
 
   const changePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {

@@ -1937,6 +1937,7 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
         "success": True,
         "stats": {
             "totalPurchases": total_purchases,
+            "totalDownloads": total_downloads,
             "totalRevenue": round(total_revenue, 2),
             "totalSubscribers": total_subscribers,
             "cancellingSubscribers": cancelling_subscribers,

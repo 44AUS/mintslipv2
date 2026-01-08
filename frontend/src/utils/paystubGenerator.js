@@ -446,6 +446,11 @@ async function generateSingleStub(
   
   const ytdDeductions = Math.round(totalDeductions * ytdPayPeriods * 100) / 100;
   const ytdContributions = Math.round(totalContributions * ytdPayPeriods * 100) / 100;
+  
+  // Calculate YTD Pre-Tax and Post-Tax amounts
+  const ytdPreTax = Math.round(totalPreTax * ytdPayPeriods * 100) / 100;
+  const ytdPostTax = Math.round(totalPostTax * ytdPayPeriods * 100) / 100;
+  
   const ytdNetPay = Math.round((ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions) * 100) / 100;
   const ytdHours = (hours + overtime) * ytdPayPeriods;
 

@@ -190,7 +190,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
   // Pre-tax deduction types
-  const preTaxDeductionTypes = ['health_insurance', 'dental_insurance', 'vision_insurance', 'hsa', 'fsa', 'dependent_care_fsa', 'commuter'];
+  const preTaxDeductionTypes = ['health_insurance', 'dental_insurance', 'vision_insurance'];
   const preTaxContributionTypes = ['401k', 'hsa', 'fsa', 'dependent_care_fsa', 'commuter'];
 
   // Calculate deductions

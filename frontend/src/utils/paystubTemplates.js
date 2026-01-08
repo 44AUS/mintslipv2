@@ -252,10 +252,10 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
-  const earningsTableHeight = drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
-  // Use fixed spacing after earnings table for consistent layout (based on max 4 rows: header + regular + overtime + commission)
-  const maxEarningsHeight = 4 * 16; // 4 rows × 16px row height
-  y += maxEarningsHeight + 12; // Fixed spacing regardless of actual rows
+  drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
+  // Calculate y based on actual table height + consistent gap
+  const actualTableHeight = earningsRows.length * 16;
+  y += actualTableHeight + 12; // Consistent 12px gap after the table ends
 
   // ========== TAXES SECTION (Two Columns) - Only for Employees ==========
   if (!isContractor) {

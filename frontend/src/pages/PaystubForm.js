@@ -981,8 +981,9 @@ export default function PaystubForm() {
   const handlePeriodHoursChange = (index, field, value) => {
     setHoursPerPeriod(prev => {
       const updated = [...prev];
-      // For date fields, keep the string value; for numeric fields, parse as float
-      const processedValue = (field === 'startDate' || field === 'endDate' || field === 'payDate') ? value : (parseFloat(value) || 0);
+      // For date fields and string fields (checkNumber, memo), keep the string value; for numeric fields, parse as float
+      const stringFields = ['startDate', 'endDate', 'payDate', 'checkNumber', 'memo'];
+      const processedValue = stringFields.includes(field) ? value : (parseFloat(value) || 0);
       updated[index] = {
         ...updated[index],
         [field]: processedValue

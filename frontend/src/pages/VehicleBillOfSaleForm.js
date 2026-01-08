@@ -356,12 +356,12 @@ export default function VehicleBillOfSaleForm() {
       
       // Store form data for after payment
       localStorage.setItem("pendingVehicleBillOfSaleData", JSON.stringify(formData));
-      localStorage.setItem("pendingVehicleBillOfSaleTemplate", selectedTemplate);
+      localStorage.setItem("pendingVehicleBillOfSaleTemplate", formData.template);
       
       const { url } = await createStripeCheckout({
         amount: finalAmount,
         documentType: "vehicle-bill-of-sale",
-        template: selectedTemplate,
+        template: formData.template,
         appliedDiscount,
         successPath: "/payment-success",
         cancelPath: "/vehicle-bill-of-sale-generator"

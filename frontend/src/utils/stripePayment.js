@@ -22,7 +22,8 @@ export async function createStripeCheckout({
   template = null,
   appliedDiscount = null,
   successPath = "/payment-success",
-  cancelPath = "/"
+  cancelPath = "/",
+  quantity = 1
 }) {
   const origin = window.location.origin;
   const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : amount;
@@ -45,6 +46,7 @@ export async function createStripeCheckout({
       discountAmount: appliedDiscount ? amount - finalAmount : 0,
       successUrl: `${origin}${successPath}?type=${documentType}&session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${origin}${cancelPath}`,
+      quantity,
     }),
   });
 

@@ -2006,7 +2006,8 @@ async def get_all_users(
 async def get_revenue_by_period(
     session: dict = Depends(get_current_admin),
     startDate: Optional[str] = None,
-    endDate: Optional[str] = None
+    endDate: Optional[str] = None,
+    userType: Optional[str] = None  # "guest" or "registered"
 ):
     """Get revenue for a specific period (admin only)"""
     query = {}
@@ -2019,6 +2020,12 @@ async def get_revenue_by_period(
             query["createdAt"]["$lte"] = endDate
         else:
             query["createdAt"] = {"$lte": endDate}
+    
+    # Filter by user type
+    if userType == "guest":
+        query["$or"] = [{"userId": None}, {"userId": ""}, {"userId": {"$exists": False}}, {"isGuest": True}]
+    elif userType == "registered":
+        query["userId"] = {"$exists": True, "$ne": None, "$ne": ""}
     
     # Calculate revenue
     pipeline = [
@@ -2035,7 +2042,8 @@ async def get_revenue_by_period(
         "period": {
             "startDate": startDate,
             "endDate": endDate
-        }
+        },
+        "userType": userType
     }
 
 # ========== SUBSCRIPTION ENDPOINTS ==========

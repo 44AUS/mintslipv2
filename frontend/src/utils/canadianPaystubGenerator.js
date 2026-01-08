@@ -170,8 +170,8 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
           checkNumberArray, memoArray, commissionArray
         );
         
-        // Simple filename with date
-        const fileName = `${formData.name}-canadian-paystub-${stubData.payDate.toISOString().split('T')[0]}.pdf`;
+        // Template-specific filename with pay date (same as US)
+        const fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
         console.log(`Adding ${fileName} to ZIP`);
         
         // Add PDF directly to zip root
@@ -181,10 +181,10 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         currentStartDate.setDate(currentStartDate.getDate() + periodLength);
       }
       
-      // Generate and download ZIP
+      // Generate and download ZIP with template-specific filename (same as US)
       console.log("Generating ZIP file...");
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      const zipFileName = `Canadian_Paystubs_${formData.name || "Employee"}.zip`;
+      const zipFileName = getMultiplePaystubsZipFilename(template, formData.name);
       
       // Store download info for payment success page
       const blobUrl = URL.createObjectURL(zipBlob);
@@ -205,14 +205,15 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       
-      await generateSingleCanadianStub(
+      const stubData = await generateSingleCanadianStub(
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, province,
         payDay, pageWidth, pageHeight, 1, payFrequency,
         checkNumberArray, memoArray, commissionArray
       );
       
-      const pdfFileName = `Canadian-PayStub-${formData.name || "document"}.pdf`;
+      // Template-specific filename with pay date (same as US)
+      const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
       
       // Store download info for payment success page
       const pdfBlob = doc.output('blob');

@@ -257,12 +257,15 @@ async function generateSingleCanadianStub(
   const netPay = grossPay - totalTax - totalDeductions;
   
   // Calculate YTD values based on pay periods from hire date
-  const ytdGrossPay = grossPay * ytdPayPeriods;
   const ytdRegularPay = regularPay * ytdPayPeriods;
   const ytdOvertimePay = overtimePay * ytdPayPeriods;
   
   // YTD Commission should be cumulative sum of all commissions up to and including current stub
   const ytdCommission = commissionArray.slice(0, stubNum + 1).reduce((sum, c) => sum + (c || 0), 0);
+  
+  // YTD Gross Pay = (base pay * periods) + cumulative commission
+  const basePay = regularPay + overtimePay;
+  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
   
   const ytdCpp = cpp * ytdPayPeriods;
   const ytdEi = ei * ytdPayPeriods;

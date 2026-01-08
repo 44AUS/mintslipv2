@@ -260,7 +260,10 @@ async function generateSingleCanadianStub(
   const ytdGrossPay = grossPay * ytdPayPeriods;
   const ytdRegularPay = regularPay * ytdPayPeriods;
   const ytdOvertimePay = overtimePay * ytdPayPeriods;
-  const ytdCommission = commission * ytdPayPeriods;
+  
+  // YTD Commission should be cumulative sum of all commissions up to and including current stub
+  const ytdCommission = commissionArray.slice(0, stubNum + 1).reduce((sum, c) => sum + (c || 0), 0);
+  
   const ytdCpp = cpp * ytdPayPeriods;
   const ytdEi = ei * ytdPayPeriods;
   const ytdQpip = qpip * ytdPayPeriods;

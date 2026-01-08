@@ -408,6 +408,7 @@ async function generateSingleStub(
   // Calculate YTD values
   const ytdRegularPay = regularPay * ytdPayPeriods;
   const ytdOvertimePay = overtimePay * ytdPayPeriods;
+  const ytdCommission = commission * ytdPayPeriods;
   const ytdGrossPay = grossPay * ytdPayPeriods;
   const ytdSsTax = ssTax * ytdPayPeriods;
   const ytdMedTax = medTax * ytdPayPeriods;

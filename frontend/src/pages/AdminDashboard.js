@@ -967,7 +967,8 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         const data = await response.json();
-        setPeriodPurchases(data.purchaseCount || 0);
+        // Use downloadCount which sums quantities (e.g., 3 paystubs = 3 downloads)
+        setPeriodPurchases(data.downloadCount || data.purchaseCount || 0);
       }
     } catch (error) {
       console.error("Error calculating period purchases:", error);
@@ -983,7 +984,9 @@ export default function AdminDashboard() {
             return isInPeriod && p.userId;
           }
         });
-        setPeriodPurchases(filtered.length);
+        // Sum quantities for accurate download count
+        const totalDownloads = filtered.reduce((sum, p) => sum + (p.quantity || 1), 0);
+        setPeriodPurchases(totalDownloads);
       }
     }
   }, [purchasesPeriod, purchaseTypeFilter, dashboardStats?.recentPurchases]);

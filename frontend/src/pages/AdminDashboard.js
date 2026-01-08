@@ -2697,6 +2697,18 @@ export default function AdminDashboard() {
               />
             </div>
             
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">IP Address</label>
+              <Input
+                type="text"
+                value={editUserData.ipAddress}
+                onChange={(e) => setEditUserData(prev => ({ ...prev, ipAddress: e.target.value }))}
+                placeholder="e.g., 192.168.1.1"
+                className="w-full font-mono"
+              />
+              <p className="text-xs text-slate-400">The IP address associated with this user</p>
+            </div>
+            
             <div className="p-3 bg-slate-50 rounded-lg text-sm">
               <div className="flex justify-between mb-1">
                 <span className="text-slate-600">User ID:</span>

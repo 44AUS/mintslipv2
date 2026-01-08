@@ -963,6 +963,9 @@ export default function PaystubForm() {
       const checkNumberList = hoursPerPeriod.map(p => p.checkNumber || '').join(', ');
       const memoList = hoursPerPeriod.map(p => p.memo || '').join('|||'); // Use ||| as delimiter for memos since they can contain commas
       
+      // Debug log
+      console.log('PaystubForm - Commission Update:', { hoursPerPeriod, commissionList });
+      
       setFormData(prev => ({
         ...prev,
         hoursList,

@@ -232,7 +232,17 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
-  if (Number(overtime) > 0 && payType === "hourly") {
+  // Always show 4 rows in earnings table for consistent spacing (header + regular + overtime + commission)
+  // Add placeholder rows if overtime or commission are not present
+  if (Number(overtime) <= 0 || payType !== "hourly") {
+    earningsRows.push([
+      "Overtime Hours | 1.5x",
+      "-",
+      "-",
+      "$0.00",
+      "$0.00",
+    ]);
+  } else {
     earningsRows.push([
       "Overtime Hours | 1.5x",
       `$${fmt(overtimeRate)}`,
@@ -242,15 +252,14 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
-  if (commission > 0) {
-    earningsRows.push([
-      "Commission",
-      "-",
-      "-",
-      `$${fmt(commission)}`,
-      `$${fmt(ytdCommission)}`,
-    ]);
-  }
+  // Always show commission row
+  earningsRows.push([
+    "Commission",
+    "-",
+    "-",
+    commission > 0 ? `$${fmt(commission)}` : "$0.00",
+    commission > 0 ? `$${fmt(ytdCommission)}` : "$0.00",
+  ]);
 
   drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
   y += 60;

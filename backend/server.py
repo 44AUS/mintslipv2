@@ -3704,7 +3704,7 @@ The image should be:
             api_key=api_key,
             session_id=str(uuid.uuid4()),
             system_message="You are an expert at generating professional blog featured images."
-        ).with_model("gemini", "gemini-2.5-flash-preview-05-20").with_params(modalities=["image", "text"])
+        ).with_model("gemini", "gemini-2.5-flash-image-preview").with_params(modalities=["image", "text"])
         
         # Generate image
         msg = UserMessage(text=prompt)

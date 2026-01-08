@@ -232,17 +232,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
-  // Always show 4 rows in earnings table for consistent spacing (header + regular + overtime + commission)
-  // Add placeholder rows if overtime or commission are not present
-  if (Number(overtime) <= 0 || payType !== "hourly") {
-    earningsRows.push([
-      "Overtime Hours | 1.5x",
-      "-",
-      "-",
-      "$0.00",
-      "$0.00",
-    ]);
-  } else {
+  if (Number(overtime) > 0 && payType === "hourly") {
     earningsRows.push([
       "Overtime Hours | 1.5x",
       `$${fmt(overtimeRate)}`,
@@ -252,17 +242,20 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
-  // Always show commission row
-  earningsRows.push([
-    "Commission",
-    "-",
-    "-",
-    commission > 0 ? `$${fmt(commission)}` : "$0.00",
-    commission > 0 ? `$${fmt(ytdCommission)}` : "$0.00",
-  ]);
+  if (commission > 0) {
+    earningsRows.push([
+      "Commission",
+      "-",
+      "-",
+      `$${fmt(commission)}`,
+      `$${fmt(ytdCommission)}`,
+    ]);
+  }
 
-  drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
-  y += 60;
+  const earningsTableHeight = drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
+  // Use fixed spacing after earnings table for consistent layout (based on max 4 rows: header + regular + overtime + commission)
+  const maxEarningsHeight = 4 * 16; // 4 rows × 16px row height
+  y += maxEarningsHeight + 12; // Fixed spacing regardless of actual rows
 
   // ========== TAXES SECTION (Two Columns) - Only for Employees ==========
   if (!isContractor) {

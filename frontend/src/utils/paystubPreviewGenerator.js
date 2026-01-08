@@ -248,17 +248,36 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const basePay = regularPay + overtimePay;
   const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
   
-  // Taxes and other YTD values are based on base pay * periods (commission doesn't change tax rates proportionally)
-  // We use the current period's tax rates applied to ytdPayPeriods
-  const ytdSsTax = ssTax * ytdPayPeriods;
-  const ytdMedTax = medTax * ytdPayPeriods;
-  const ytdFederalTax = federalTax * ytdPayPeriods;
-  const ytdStateTax = stateTax * ytdPayPeriods;
-  const ytdLocalTax = localTax * ytdPayPeriods;
-  const ytdTotalTax = totalTax * ytdPayPeriods;
+  // YTD Taxes should be calculated on YTD Gross Pay for accuracy
+  // SS and Medicare are flat percentages, so calculate directly on ytdGrossPay
+  const ytdSsTax = isContractor ? 0 : ytdGrossPay * 0.062;
+  const ytdMedTax = isContractor ? 0 : ytdGrossPay * 0.0145;
+  
+  // For federal and state taxes, we approximate by using the average gross pay per period
+  // This accounts for varying commissions across periods
+  const avgGrossPayPerPeriod = ytdGrossPay / ytdPayPeriods;
+  let ytdFederalTax = 0;
+  if (!isContractor) {
+    if (formData.federalFilingStatus) {
+      const avgFederalTax = calculateFederalTax(avgGrossPayPerPeriod, payFrequency, formData.federalFilingStatus);
+      ytdFederalTax = avgFederalTax * ytdPayPeriods;
+    } else {
+      ytdFederalTax = ytdGrossPay * 0.22;
+    }
+  }
+  
+  let ytdStateTax = 0;
+  if (!isContractor) {
+    const avgStateTax = calculateStateTax(avgGrossPayPerPeriod, formData.state, payFrequency, formData.stateAllowances || 0, stateRate);
+    ytdStateTax = avgStateTax * ytdPayPeriods;
+  }
+  
+  const ytdLocalTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? ytdGrossPay * localTaxRate : 0);
+  const ytdTotalTax = ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax + ytdLocalTax;
+  
   const ytdDeductions = totalDeductions * ytdPayPeriods;
   const ytdContributions = totalContributions * ytdPayPeriods;
-  const ytdNetPay = netPay * ytdPayPeriods;
+  const ytdNetPay = ytdGrossPay - ytdTotalTax - ytdDeductions + ytdContributions;
   const ytdHours = (hours + overtime) * ytdPayPeriods;
 
   const templateData = {

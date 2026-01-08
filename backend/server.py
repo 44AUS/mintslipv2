@@ -24,7 +24,7 @@ import base64
 load_dotenv()
 
 # Import Emergent Integrations for Gemini
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 
 # Stripe Configuration
 import stripe

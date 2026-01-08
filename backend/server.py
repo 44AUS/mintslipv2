@@ -1328,6 +1328,9 @@ async def stripe_webhook(request: Request):
             # Also try to get IP from metadata if passed during checkout creation
             metadata_ip = session.metadata.get("clientIp", "")
             
+            # Get quantity from metadata
+            quantity = int(session.metadata.get("quantity", 1))
+            
             purchase = {
                 "id": str(uuid.uuid4()),
                 "documentType": document_type,
@@ -1338,6 +1341,7 @@ async def stripe_webhook(request: Request):
                 "discountCode": discount_code if discount_code else None,
                 "discountAmount": discount_amount,
                 "template": template if template else None,
+                "quantity": quantity,
                 "isGuest": True,
                 "ipAddress": metadata_ip if metadata_ip else client_ip,
                 "createdAt": datetime.now(timezone.utc).isoformat()

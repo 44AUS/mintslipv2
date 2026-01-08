@@ -262,6 +262,8 @@ class ManualPurchaseCreate(BaseModel):
     discountCode: Optional[str] = None
     discountAmount: Optional[float] = 0
     notes: Optional[str] = None  # Admin notes
+    quantity: Optional[int] = 1  # Number of documents
+    ipAddress: Optional[str] = None  # Customer IP address
 
 # ========== SUBSCRIPTION MODELS ==========
 

@@ -91,7 +91,7 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
           doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
           hoursArray, overtimeArray, defaultHours, rate, province,
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
-          checkNumberArray, memoArray
+          checkNumberArray, memoArray, commissionArray
         );
         
         // Simple filename with date

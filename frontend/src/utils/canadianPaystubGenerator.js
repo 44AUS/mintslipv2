@@ -4,6 +4,62 @@ import { saveAs } from "file-saver";
 import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
 
+// Helper to format name for filenames (firstName-lastName format)
+function formatNameForFilename(name) {
+  if (!name) return 'Employee';
+  // Replace spaces with dashes and remove any special characters
+  return name.trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+}
+
+// Helper to get template-specific individual paystub filename
+function getIndividualPaystubFilename(template, name, payDate) {
+  // Handle timezone issues by parsing the date string directly if it's in YYYY-MM-DD format
+  let year, month, day;
+  
+  if (typeof payDate === 'string' && payDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    // Parse YYYY-MM-DD format directly to avoid timezone conversion
+    const parts = payDate.split('-');
+    year = parts[0];
+    month = parts[1];
+    day = parts[2];
+  } else {
+    // For Date objects, use local date methods
+    const date = payDate instanceof Date ? payDate : new Date(payDate);
+    // Use UTC methods to avoid timezone shifting
+    year = date.getUTCFullYear();
+    month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    day = String(date.getUTCDate()).padStart(2, '0');
+  }
+  
+  const yearShort = String(year).slice(-2);
+  
+  switch (template) {
+    case 'template-a': // Gusto: firstName-lastName-paystub-2025-03-21.pdf
+      return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
+    
+    case 'template-c': // Workday: Payslip-03_21_2025.pdf
+      return `Payslip-${month}_${day}_${year}.pdf`;
+    
+    case 'template-b': // ADP: Name-Earning Statement_04-21-23.pdf
+      return `${formatNameForFilename(name)}-Earning Statement_${month}-${day}-${yearShort}.pdf`;
+    
+    default:
+      return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
+  }
+}
+
+// Helper to get template-specific ZIP filename for multiple paystubs
+function getMultiplePaystubsZipFilename(template, name) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const downloadDate = `${year}-${month}-${day}`;
+  
+  // All templates use the same ZIP naming format: name-paystubs-downloadDate.zip
+  return `${formatNameForFilename(name)}-paystubs-${downloadDate}.zip`;
+}
+
 // Helper to get provincial tax rate for YTD calculations
 function getProvincialTaxRate(province) {
   const rates = {

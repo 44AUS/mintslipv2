@@ -412,7 +412,11 @@ async function generateSingleStub(
   // YTD Commission should be cumulative sum of all commissions up to and including current stub
   const ytdCommission = commissionArray.slice(0, stubNum + 1).reduce((sum, c) => sum + (c || 0), 0);
   
-  const ytdGrossPay = grossPay * ytdPayPeriods;
+  // YTD Gross Pay = (base pay * periods) + cumulative commission
+  // Base pay is regularPay + overtimePay (without commission)
+  const basePay = regularPay + overtimePay;
+  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
+  
   const ytdSsTax = ssTax * ytdPayPeriods;
   const ytdMedTax = medTax * ytdPayPeriods;
   const ytdFederalTax = federalTax * ytdPayPeriods;

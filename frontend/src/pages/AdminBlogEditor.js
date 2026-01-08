@@ -209,6 +209,45 @@ export default function AdminBlogEditor() {
     }
   };
 
+  // AI Image Generation Handler
+  const handleGenerateImage = async () => {
+    if (!post.title.trim()) {
+      toast.error("Please enter a blog title first");
+      return;
+    }
+    
+    setIsGeneratingImage(true);
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/blog/generate-image`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: post.title,
+          category: post.category || null,
+          keywords: post.tags.join(", ") || null
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setPost(prev => ({ ...prev, featuredImage: data.url }));
+        toast.success("AI image generated successfully!");
+      } else {
+        toast.error(data.detail || "Failed to generate image");
+      }
+    } catch (error) {
+      console.error("Error generating image:", error);
+      toast.error("Error generating AI image");
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   const handleAddTag = () => {
     if (!newTag.trim()) return;
     if (post.tags.includes(newTag.trim())) {

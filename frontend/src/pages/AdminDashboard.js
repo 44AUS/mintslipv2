@@ -923,7 +923,7 @@ export default function AdminDashboard() {
     if (dashboardStats?.recentPurchases) {
       calculatePeriodPurchases();
     }
-  }, [purchasesPeriod, dashboardStats]);
+  }, [purchasesPeriod, purchaseTypeFilter, dashboardStats]);
 
   const calculatePeriodPurchases = async () => {
     const token = localStorage.getItem("adminToken");
@@ -948,8 +948,10 @@ export default function AdminDashboard() {
     }
 
     try {
+      // Build URL with userType filter
+      const userTypeParam = purchaseTypeFilter === "guests" ? "&userType=guest" : "&userType=registered";
       const response = await fetch(
-        `${BACKEND_URL}/api/admin/revenue?startDate=${startDate.toISOString()}`,
+        `${BACKEND_URL}/api/admin/revenue?startDate=${startDate.toISOString()}${userTypeParam}`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
       
@@ -963,7 +965,13 @@ export default function AdminDashboard() {
       if (dashboardStats?.recentPurchases) {
         const filtered = dashboardStats.recentPurchases.filter(p => {
           const purchaseDate = new Date(p.createdAt);
-          return purchaseDate >= startDate;
+          const isInPeriod = purchaseDate >= startDate;
+          // Filter by user type
+          if (purchaseTypeFilter === "guests") {
+            return isInPeriod && !p.userId;
+          } else {
+            return isInPeriod && p.userId;
+          }
         });
         setPeriodPurchases(filtered.length);
       }

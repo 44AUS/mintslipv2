@@ -133,7 +133,7 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, province,
         payDay, pageWidth, pageHeight, 1, payFrequency,
-        checkNumberArray, memoArray
+        checkNumberArray, memoArray, commissionArray
       );
       
       const pdfFileName = `Canadian-PayStub-${formData.name || "document"}.pdf`;

@@ -2350,6 +2350,8 @@ async def update_purchase(purchase_id: str, data: ManualPurchaseCreate, session:
         "discountCode": data.discountCode,
         "discountAmount": data.discountAmount or 0,
         "notes": data.notes,
+        "quantity": data.quantity or 1,
+        "ipAddress": data.ipAddress,
         "createdAt": purchase_date,
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "updatedBy": session.get("adminId")

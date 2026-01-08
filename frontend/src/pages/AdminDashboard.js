@@ -815,7 +815,7 @@ export default function AdminDashboard() {
   // Edit user functions
   const openEditUserModal = (user) => {
     setSelectedUser(user);
-    setEditUserData({ name: user.name || "", email: user.email || "" });
+    setEditUserData({ name: user.name || "", email: user.email || "", ipAddress: user.ipAddress || "" });
     setEditUserModalOpen(true);
   };
 
@@ -846,7 +846,8 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({
           name: editUserData.name.trim(),
-          email: editUserData.email.trim()
+          email: editUserData.email.trim(),
+          ipAddress: editUserData.ipAddress.trim() || null
         })
       });
       
@@ -856,7 +857,7 @@ export default function AdminDashboard() {
         toast.success("User updated successfully");
         setEditUserModalOpen(false);
         setSelectedUser(null);
-        setEditUserData({ name: "", email: "" });
+        setEditUserData({ name: "", email: "", ipAddress: "" });
         loadUsers();
       } else {
         toast.error(data.detail || "Failed to update user");

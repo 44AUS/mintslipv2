@@ -242,7 +242,10 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
   const ytdRegularPay = regularPay * ytdPayPeriods;
   const ytdOvertimePay = overtimePay * ytdPayPeriods;
-  const ytdCommission = commission * ytdPayPeriods;
+  
+  // YTD Commission should be cumulative sum of all commissions up to and including current stub
+  const ytdCommission = commissionArray.slice(0, stubIndex + 1).reduce((sum, c) => sum + (c || 0), 0);
+  
   const ytdGrossPay = grossPay * ytdPayPeriods;
   const ytdSsTax = ssTax * ytdPayPeriods;
   const ytdMedTax = medTax * ytdPayPeriods;

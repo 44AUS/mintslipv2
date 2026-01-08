@@ -2915,6 +2915,30 @@ export default function AdminDashboard() {
                 onChange={(e) => setNewPurchase(prev => ({ ...prev, notes: e.target.value }))}
               />
             </div>
+            
+            {/* Quantity and IP Address */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Quantity</label>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="1"
+                  value={newPurchase.quantity}
+                  onChange={(e) => setNewPurchase(prev => ({ ...prev, quantity: e.target.value }))}
+                />
+                <p className="text-xs text-slate-400">Number of documents (e.g., paystubs)</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">IP Address</label>
+                <Input
+                  placeholder="192.168.1.1"
+                  value={newPurchase.ipAddress}
+                  onChange={(e) => setNewPurchase(prev => ({ ...prev, ipAddress: e.target.value }))}
+                />
+                <p className="text-xs text-slate-400">Customer's IP address</p>
+              </div>
+            </div>
           </div>
           
           <DialogFooter>

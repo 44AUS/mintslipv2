@@ -610,7 +610,25 @@ export default function AdminBlogEditor() {
 
             {/* Featured Image */}
             <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-              <h3 className="font-semibold text-slate-800">Featured Image</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-slate-800">Featured Image</h3>
+                {post.featuredImage && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateImage}
+                    disabled={isGeneratingImage || !post.title.trim()}
+                    className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    {isGeneratingImage ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                    Regenerate
+                  </Button>
+                )}
+              </div>
               
               {post.featuredImage ? (
                 <div className="relative">
@@ -629,24 +647,59 @@ export default function AdminBlogEditor() {
                   </Button>
                 </div>
               ) : (
-                <label className="block cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <div className="border-2 border-dashed border-slate-200 rounded-lg p-8 text-center hover:border-green-500 transition-colors">
-                    {isUploading ? (
-                      <Loader2 className="w-8 h-8 mx-auto text-slate-400 animate-spin" />
+                <div className="space-y-3">
+                  {/* AI Generate Button */}
+                  <Button
+                    variant="outline"
+                    onClick={handleGenerateImage}
+                    disabled={isGeneratingImage || !post.title.trim()}
+                    className="w-full gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+                  >
+                    {isGeneratingImage ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Generating AI Image...
+                      </>
                     ) : (
                       <>
-                        <Upload className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                        <p className="text-sm text-slate-500">Click to upload</p>
+                        <Sparkles className="w-4 h-4" />
+                        Generate with AI
                       </>
                     )}
+                  </Button>
+                  
+                  {!post.title.trim() && (
+                    <p className="text-xs text-slate-400 text-center">Enter a title to enable AI generation</p>
+                  )}
+                  
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-slate-200" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-slate-400">or upload manually</span>
+                    </div>
                   </div>
-                </label>
+                  
+                  <label className="block cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                      {isUploading ? (
+                        <Loader2 className="w-6 h-6 mx-auto text-slate-400 animate-spin" />
+                      ) : (
+                        <>
+                          <Upload className="w-6 h-6 mx-auto text-slate-400 mb-2" />
+                          <p className="text-sm text-slate-500">Click to upload</p>
+                        </>
+                      )}
+                    </div>
+                  </label>
+                </div>
               )}
             </div>
 

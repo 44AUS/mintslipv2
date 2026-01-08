@@ -1913,9 +1913,41 @@ export default function AdminDashboard() {
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-100 text-purple-600">
                     <DollarSign className="w-6 h-6" />
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Monthly Recurring Revenue</p>
-                    <p className="text-2xl font-bold text-slate-800">{formatCurrency(dashboardStats?.stats?.monthlySubscriptionRevenue || 0)}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-slate-500">
+                        {mrrPeriod === "monthly" ? "Monthly" : "Annual"} Recurring Revenue
+                      </p>
+                      <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+                        <button
+                          onClick={() => setMrrPeriod("monthly")}
+                          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                            mrrPeriod === "monthly" 
+                              ? "bg-white text-purple-600 shadow-sm font-medium" 
+                              : "text-slate-500 hover:text-slate-700"
+                          }`}
+                        >
+                          Monthly
+                        </button>
+                        <button
+                          onClick={() => setMrrPeriod("yearly")}
+                          className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                            mrrPeriod === "yearly" 
+                              ? "bg-white text-purple-600 shadow-sm font-medium" 
+                              : "text-slate-500 hover:text-slate-700"
+                          }`}
+                        >
+                          Yearly
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-2xl font-bold text-slate-800">
+                      {formatCurrency(
+                        mrrPeriod === "monthly" 
+                          ? (dashboardStats?.stats?.monthlySubscriptionRevenue || 0)
+                          : (dashboardStats?.stats?.monthlySubscriptionRevenue || 0) * 12
+                      )}
+                    </p>
                     <p className="text-xs text-purple-600">From active subscriptions</p>
                   </div>
                 </div>

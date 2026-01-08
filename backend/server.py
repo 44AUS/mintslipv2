@@ -251,6 +251,7 @@ class PurchaseCreate(BaseModel):
     discountAmount: Optional[float] = 0
     userId: Optional[str] = None  # For subscribed users
     template: Optional[str] = None  # Template name/ID used (for paystubs, bank statements)
+    quantity: Optional[int] = 1  # Number of documents (e.g., number of paystubs)
 
 class ManualPurchaseCreate(BaseModel):
     documentType: str

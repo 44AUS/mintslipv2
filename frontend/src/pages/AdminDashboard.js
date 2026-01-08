@@ -226,6 +226,7 @@ export default function AdminDashboard() {
   const [usersSearchDebounced, setUsersSearchDebounced] = useState("");
   const [usersSubscriptionFilter, setUsersSubscriptionFilter] = useState("all");
   const [usersDateFilter, setUsersDateFilter] = useState("all");
+  const [mrrPeriod, setMrrPeriod] = useState("monthly"); // monthly or yearly
   const usersSearchTimeoutRef = useRef(null);
 
   // Debounce users search

@@ -1827,8 +1827,15 @@ async def get_all_purchases(
 @app.get("/api/admin/dashboard")
 async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     """Get admin dashboard data"""
-    # Total purchases
+    # Total purchases (count of purchase records)
     total_purchases = await purchases_collection.count_documents({})
+    
+    # Total downloads (sum of quantities - for paystubs etc.)
+    total_downloads_pipeline = [
+        {"$group": {"_id": None, "total": {"$sum": {"$ifNull": ["$quantity", 1]}}}}
+    ]
+    downloads_result = await purchases_collection.aggregate(total_downloads_pipeline).to_list(1)
+    total_downloads = downloads_result[0]["total"] if downloads_result else total_purchases
     
     # Total revenue from one-time purchases
     pipeline = [
@@ -1837,9 +1844,14 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     revenue_result = await purchases_collection.aggregate(pipeline).to_list(1)
     total_revenue = revenue_result[0]["total"] if revenue_result else 0
     
-    # Purchases by document type
+    # Purchases by document type (with quantity sum)
     type_pipeline = [
-        {"$group": {"_id": "$documentType", "count": {"$sum": 1}, "revenue": {"$sum": "$amount"}}}
+        {"$group": {
+            "_id": "$documentType", 
+            "count": {"$sum": 1}, 
+            "totalQuantity": {"$sum": {"$ifNull": ["$quantity", 1]}},
+            "revenue": {"$sum": "$amount"}
+        }}
     ]
     purchases_by_type = await purchases_collection.aggregate(type_pipeline).to_list(100)
     

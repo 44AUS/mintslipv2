@@ -1168,6 +1168,7 @@ export default function PaystubForm() {
           discountAmount: appliedDiscount ? baseAmount - finalAmount : 0,
           successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${origin}/paystub-generator`,
+          quantity: calculateNumStubs,
         }),
       });
 

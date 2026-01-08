@@ -352,7 +352,7 @@ async function generateSingleStub(
   const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
   // Pre-tax deduction types
-  const preTaxDeductionTypes = ['401k', 'health_insurance', 'dental_insurance', 'vision_insurance'];
+  const preTaxDeductionTypes = ['health_insurance', 'dental_insurance', 'vision_insurance'];
   const preTaxContributionTypes = ['401k', 'hsa', 'fsa', 'dependent_care_fsa', 'commuter'];
 
   // Calculate deductions for this pay period

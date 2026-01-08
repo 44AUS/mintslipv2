@@ -1104,6 +1104,7 @@ class OneTimeCheckoutRequest(BaseModel):
     cancelUrl: Optional[str] = None
     userId: Optional[str] = None  # Optional userId for logged-in users
     userEmail: Optional[str] = None  # Optional user email
+    quantity: Optional[int] = 1  # Number of documents (e.g., number of paystubs)
 
 
 @app.post("/api/stripe/create-one-time-checkout")

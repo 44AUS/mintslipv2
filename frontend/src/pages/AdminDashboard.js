@@ -1154,7 +1154,9 @@ export default function AdminDashboard() {
           template: newPurchase.template || null,
           discountCode: newPurchase.discountCode || null,
           discountAmount: newPurchase.discountAmount ? parseFloat(newPurchase.discountAmount) : 0,
-          notes: newPurchase.notes || null
+          notes: newPurchase.notes || null,
+          quantity: newPurchase.quantity ? parseInt(newPurchase.quantity) : 1,
+          ipAddress: newPurchase.ipAddress || null
         })
       });
       

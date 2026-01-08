@@ -260,6 +260,7 @@ async function generateSingleCanadianStub(
   const ytdGrossPay = grossPay * ytdPayPeriods;
   const ytdRegularPay = regularPay * ytdPayPeriods;
   const ytdOvertimePay = overtimePay * ytdPayPeriods;
+  const ytdCommission = commission * ytdPayPeriods;
   const ytdCpp = cpp * ytdPayPeriods;
   const ytdEi = ei * ytdPayPeriods;
   const ytdQpip = qpip * ytdPayPeriods;

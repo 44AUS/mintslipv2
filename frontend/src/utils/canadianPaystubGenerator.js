@@ -4,6 +4,26 @@ import { saveAs } from "file-saver";
 import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
 
+// Helper to get provincial tax rate for YTD calculations
+function getProvincialTaxRate(province) {
+  const rates = {
+    'ON': 0.0505,  // Ontario
+    'QC': 0.14,    // Quebec
+    'BC': 0.0506,  // British Columbia
+    'AB': 0.10,    // Alberta
+    'SK': 0.105,   // Saskatchewan
+    'MB': 0.108,   // Manitoba
+    'NB': 0.094,   // New Brunswick
+    'NS': 0.0879,  // Nova Scotia
+    'PE': 0.098,   // Prince Edward Island
+    'NL': 0.087,   // Newfoundland and Labrador
+    'YT': 0.064,   // Yukon
+    'NT': 0.059,   // Northwest Territories
+    'NU': 0.04,    // Nunavut
+  };
+  return rates[province] || 0.05;
+}
+
 // Helper to calculate next weekday
 const DAY_MAP = {
   Sunday: 0,

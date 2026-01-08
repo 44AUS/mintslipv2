@@ -1924,7 +1924,7 @@ export default function Home() {
                       <div className="relative h-48 bg-gradient-to-br from-green-100 to-emerald-50 overflow-hidden">
                         {post.featuredImage ? (
                           <img
-                            src={post.featuredImage}
+                            src={post.featuredImage.startsWith('/') ? `${BACKEND_URL}${post.featuredImage}` : post.featuredImage}
                             alt={post.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />

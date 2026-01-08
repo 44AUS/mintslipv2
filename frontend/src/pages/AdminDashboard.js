@@ -1109,12 +1109,14 @@ export default function AdminDashboard() {
     setNewPurchase({
       documentType: purchase.documentType || "paystub",
       amount: purchase.amount?.toString() || "",
-      paypalEmail: purchase.paypalEmail || "",
+      paypalEmail: purchase.paypalEmail || purchase.email || "",
       purchaseDate: purchase.createdAt ? new Date(purchase.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       template: purchase.template || "",
       discountCode: purchase.discountCode || "",
       discountAmount: purchase.discountAmount?.toString() || "",
-      notes: purchase.notes || ""
+      notes: purchase.notes || "",
+      quantity: purchase.quantity?.toString() || "1",
+      ipAddress: purchase.ipAddress || ""
     });
     setAddPurchaseModalOpen(true);
   };

@@ -47,6 +47,7 @@ export default function AdminBlogEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [categories, setCategories] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [aiDialogOpen, setAiDialogOpen] = useState(false);

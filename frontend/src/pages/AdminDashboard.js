@@ -128,6 +128,19 @@ const TEMPLATE_NAMES = {
 // Helper function to get template display name
 const getTemplateName = (templateId) => {
   if (!templateId) return "-";
+
+// Helper function to format document type with quantity
+const formatDocumentType = (purchase) => {
+  const baseType = DOCUMENT_TYPES[purchase.documentType] || purchase.documentType;
+  const quantity = purchase.quantity || 1;
+  
+  // Only show quantity for paystubs and similar documents where quantity > 1 matters
+  if (purchase.documentType === "paystub" || purchase.documentType === "canadian-paystub") {
+    return `${baseType} x${quantity}`;
+  }
+  
+  return baseType;
+};
   return TEMPLATE_NAMES[templateId] || templateId;
 };
 

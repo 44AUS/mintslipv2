@@ -43,6 +43,9 @@ function getIndividualPaystubFilename(template, name, payDate) {
     case 'template-b': // ADP: Name-Earning Statement_04-21-23.pdf
       return `${formatNameForFilename(name)}-Earning Statement_${month}-${day}-${yearShort}.pdf`;
     
+    case 'template-h': // OnPay: Name-Pay Stub-2025-03-21.pdf
+      return `${formatNameForFilename(name)}-Pay Stub-${year}-${month}-${day}.pdf`;
+    
     default:
       return `${formatNameForFilename(name)}-paystub-${year}-${month}-${day}.pdf`;
   }

@@ -173,7 +173,7 @@ async function generateSingleCanadianStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, province,
   payDay, pageWidth, pageHeight, totalStubs, payFrequency,
-  checkNumberArray = [], memoArray = []
+  checkNumberArray = [], memoArray = [], commissionArray = []
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";

@@ -64,6 +64,9 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     logoDataUrl, ytdPayPeriods = 1
   } = data;
   
+  // Debug log to trace commission value
+  console.log('Template A - Commission Debug:', { commission, ytdCommission, grossPay, data: JSON.stringify({ commission: data.commission, ytdCommission: data.ytdCommission }) });
+  
   const totalHours = Number(hours) + Number(overtime || 0);
   const overtimeRate = rate * 1.5;
   const left = margin;

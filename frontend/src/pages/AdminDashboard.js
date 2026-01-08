@@ -1330,12 +1330,39 @@ export default function AdminDashboard() {
                   </Select>
                 </div>
                 <div className="mt-2">
-                  <p className="text-sm text-slate-500">
-                    {purchasesPeriod === "week" ? "Weekly" : 
-                     purchasesPeriod === "month" ? "Monthly" : 
-                     purchasesPeriod === "quarter" ? "Quarterly" : "Yearly"} Purchases
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-slate-500">
+                      {purchasesPeriod === "week" ? "Weekly" : 
+                       purchasesPeriod === "month" ? "Monthly" : 
+                       purchasesPeriod === "quarter" ? "Quarterly" : "Yearly"} {purchaseTypeFilter === "guests" ? "Purchases" : "Downloads"}
+                    </p>
+                    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+                      <button
+                        onClick={() => setPurchaseTypeFilter("guests")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          purchaseTypeFilter === "guests" 
+                            ? "bg-white text-blue-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Guests
+                      </button>
+                      <button
+                        onClick={() => setPurchaseTypeFilter("users")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          purchaseTypeFilter === "users" 
+                            ? "bg-white text-blue-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Users
+                      </button>
+                    </div>
+                  </div>
                   <p className="text-2xl font-bold text-slate-800 mt-1">{periodPurchases}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {purchaseTypeFilter === "guests" ? "One-time guest purchases" : "Registered user downloads"}
+                  </p>
                 </div>
               </div>
               

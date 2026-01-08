@@ -203,17 +203,18 @@ async function generateSingleCanadianStub(
   const hours = hoursArray[stubNum] || defaultHours;
   const overtime = isContractor ? 0 : (overtimeArray[stubNum] || 0);
   const totalHours = hours + overtime;
+  const commission = commissionArray[stubNum] || 0;
   
   // Calculate earnings
   let regularPay, overtimePay, grossPay;
   if (payType === "salary") {
     regularPay = annualSalary / periodsPerYear;
     overtimePay = 0;
-    grossPay = regularPay;
+    grossPay = regularPay + commission;
   } else {
     regularPay = rate * hours;
     overtimePay = rate * 1.5 * overtime;
-    grossPay = regularPay + overtimePay;
+    grossPay = regularPay + overtimePay + commission;
   }
   
   // Calculate Canadian taxes (only for employees)

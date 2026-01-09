@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +11,8 @@ import {
   RefreshCw,
   Lock,
   Shield,
+  Menu,
+  X,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -17,6 +20,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 export default function AdminLayout({ children, onRefresh, adminInfo, showPasswordModal }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Determine active tab from URL path
   const getActiveTab = () => {
@@ -57,22 +61,34 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
     { id: "blog", label: "Blog", icon: FileText, path: "/admin/blog" }
   ];
 
+  const handleNavigation = (path) => {
+    navigate(path);
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-              <LayoutDashboard className="w-5 h-5 text-white" />
-            </div>
-            <div>
+            {/* Favicon Logo */}
+            <img 
+              src="/favicon.ico" 
+              alt="MintSlip" 
+              className="w-10 h-10 rounded-xl"
+            />
+            <div className="hidden sm:block">
               <h1 className="text-xl font-bold text-slate-800">MintSlip Admin</h1>
               <p className="text-sm text-slate-500">{adminInfo?.email}</p>
             </div>
+            <div className="sm:hidden">
+              <h1 className="text-lg font-bold text-slate-800">Admin</h1>
+            </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-3">
             {onRefresh && (
               <Button
                 variant="outline"
@@ -92,7 +108,7 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
                 className="gap-2"
               >
                 <Lock className="w-4 h-4" />
-                <span className="hidden sm:inline">Change Password</span>
+                <span className="hidden lg:inline">Change Password</span>
               </Button>
             )}
             <Button
@@ -105,12 +121,84 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
               Logout
             </Button>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6 text-slate-700" />
+            ) : (
+              <Menu className="w-6 h-6 text-slate-700" />
+            )}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-200 bg-white">
+            <div className="px-4 py-3 space-y-2">
+              {/* Mobile Navigation Tabs */}
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => handleNavigation(tab.path)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeTab === tab.id 
+                      ? "bg-green-600 text-white" 
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  <span className="font-medium">{tab.label}</span>
+                </button>
+              ))}
+              
+              {/* Mobile Actions Divider */}
+              <div className="border-t border-slate-200 my-3"></div>
+              
+              {/* Mobile Actions */}
+              {onRefresh && (
+                <button
+                  onClick={() => {
+                    onRefresh();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  <span className="font-medium">Refresh</span>
+                </button>
+              )}
+              {showPasswordModal && (
+                <button
+                  onClick={() => {
+                    showPasswordModal();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  <Lock className="w-5 h-5" />
+                  <span className="font-medium">Change Password</span>
+                </button>
+              )}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">Logout</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm flex-wrap">
+        {/* Desktop Navigation Tabs */}
+        <div className="hidden md:flex gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm flex-wrap">
           {tabs.map((tab) => (
             <Button
               key={tab.id}

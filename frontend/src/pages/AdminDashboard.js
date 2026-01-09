@@ -170,6 +170,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
   const [isLoading, setIsLoading] = useState(true);
   const [adminInfo, setAdminInfo] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Sync activeTab with URL changes
   useEffect(() => {

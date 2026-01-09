@@ -51,7 +51,9 @@ import {
   Clock,
   AlertCircle,
   Shield,
-  Globe
+  Globe,
+  Menu,
+  X
 } from "lucide-react";
 import {
   AreaChart,

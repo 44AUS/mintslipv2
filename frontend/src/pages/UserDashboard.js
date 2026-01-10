@@ -316,7 +316,14 @@ export default function UserDashboard() {
                       <FileText className="w-5 h-5 text-slate-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-800">{download.documentType}</p>
+                      <p className="font-medium text-slate-800">
+                        {ALL_DOCUMENT_TYPES[download.documentType] || download.documentType}
+                      </p>
+                      {download.fileName && (
+                        <p className="text-xs text-slate-500 truncate max-w-[200px]">
+                          {download.fileName}
+                        </p>
+                      )}
                       <p className="text-sm text-slate-500">
                         {new Date(download.createdAt).toLocaleDateString()}
                       </p>

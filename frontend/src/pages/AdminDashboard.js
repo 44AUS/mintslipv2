@@ -1559,12 +1559,53 @@ export default function AdminDashboard() {
                   </Select>
                 </div>
                 <div className="mt-2">
-                  <p className="text-sm text-slate-500">
-                    {revenuePeriod === "week" ? "Weekly" : 
-                     revenuePeriod === "month" ? "Monthly" : 
-                     revenuePeriod === "quarter" ? "Quarterly" : "Yearly"} Revenue
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-slate-500">
+                      {revenuePeriod === "week" ? "Weekly" : 
+                       revenuePeriod === "month" ? "Monthly" : 
+                       revenuePeriod === "quarter" ? "Quarterly" : "Yearly"} Revenue
+                    </p>
+                    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+                      <button
+                        onClick={() => setRevenueTypeFilter("all")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          revenueTypeFilter === "all" 
+                            ? "bg-white text-purple-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setRevenueTypeFilter("guest")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          revenueTypeFilter === "guest" 
+                            ? "bg-white text-purple-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Guests
+                      </button>
+                      <button
+                        onClick={() => setRevenueTypeFilter("subscription")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          revenueTypeFilter === "subscription" 
+                            ? "bg-white text-purple-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Subs
+                      </button>
+                    </div>
+                  </div>
                   <p className="text-2xl font-bold text-slate-800 mt-1">{formatCurrency(periodRevenue)}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {revenueTypeFilter === "all" 
+                      ? "Guest purchases + Subscriptions" 
+                      : revenueTypeFilter === "guest"
+                        ? "One-time guest purchases only"
+                        : "Subscription payments only"}
+                  </p>
                 </div>
               </div>
 

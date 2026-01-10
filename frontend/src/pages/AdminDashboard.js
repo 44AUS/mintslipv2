@@ -1082,7 +1082,7 @@ export default function AdminDashboard() {
         setImportResult(data.stats);
         toast.success(`Imported ${data.stats.imported} subscription payments! Total revenue: $${data.stats.totalImportedRevenue}`);
         // Refresh dashboard stats
-        fetchDashboard();
+        loadDashboardData();
       } else {
         console.error("Import failed:", data);
         toast.error(data.detail || data.message || "Failed to import historical data");

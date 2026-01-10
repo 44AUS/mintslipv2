@@ -1978,11 +1978,15 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
             "totalPurchases": total_purchases,
             "totalDownloads": total_downloads,
             "totalRevenue": round(total_revenue, 2),
+            "totalSubscriptionRevenue": round(total_subscription_revenue, 2),
+            "combinedTotalRevenue": round(combined_total_revenue, 2),
             "totalSubscribers": total_subscribers,
             "cancellingSubscribers": cancelling_subscribers,
             "totalUsers": total_users,
             "todayPurchases": today_purchases,
             "todayRevenue": round(today_revenue, 2),
+            "todayGuestRevenue": round(today_guest_revenue, 2),
+            "todaySubscriptionRevenue": round(today_subscription_revenue, 2),
             "todayNewSubscribers": today_new_subscribers,
             "monthlySubscriptionRevenue": round(monthly_subscription_revenue, 2)
         },
@@ -1992,6 +1996,7 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
             "byTier": subscribers_by_tier,
             "cancellingByTier": cancelling_by_tier,
             "monthlyRevenue": round(monthly_subscription_revenue, 2),
+            "totalRevenue": round(total_subscription_revenue, 2),
             "recentSubscribers": recent_subscribers,
             "subscriptionRecords": subscription_records
         },

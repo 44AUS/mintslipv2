@@ -213,7 +213,7 @@ def template_subscription_thank_you(user_name: str, plan_name: str, plan_price: 
     }
 
 
-def template_download_confirmation(user_name: str, document_type: str, download_link: Optional[str] = None) -> Dict[str, str]:
+def template_download_confirmation(user_name: str, document_type: str, download_link: Optional[str] = None, is_guest: bool = False) -> Dict[str, str]:
     """Download confirmation after purchase"""
     document_names = {
         "paystub": "Pay Stub",
@@ -240,6 +240,27 @@ def template_download_confirmation(user_name: str, document_type: str, download_
         <p class="text-muted" style="text-align: center; font-size: 12px;">This link expires in 24 hours</p>
         """
     
+    # Different message for guests vs registered users
+    if is_guest:
+        access_message = """
+        <p>Your document should have downloaded automatically. If you missed it, don't worry - you can generate a new one anytime.</p>
+        
+        <div class="highlight" style="margin-top: 20px;">
+            <h3 style="margin-top: 0; color: #059669;">💡 Create a Free Account</h3>
+            <p style="margin-bottom: 0;">Sign up to save your documents for 30 days, access them from any device, and get exclusive discounts on future purchases!</p>
+        </div>
+        
+        <p style="text-align: center; margin: 20px 0;">
+            <a href="{SITE_URL}/signup" class="button" style="background-color: #6366f1;">Create Free Account</a>
+        </p>
+        """
+    else:
+        access_message = f"""
+        <p>Your document should have downloaded automatically. If not, you can access it from your <a href="{SITE_URL}/user/downloads" style="color: #10b981;">Downloads page</a>.</p>
+        
+        <p class="text-muted">Need to make changes? You can generate a new document anytime from your dashboard.</p>
+        """
+    
     content = f"""
         <h1>Your Document is Ready! 📄</h1>
         <p>Hi {user_name or 'there'},</p>
@@ -260,9 +281,7 @@ def template_download_confirmation(user_name: str, document_type: str, download_
         
         {download_section}
         
-        <p>Your document should have downloaded automatically. If not, you can access it from your <a href="{SITE_URL}/user/downloads" style="color: #10b981;">Downloads page</a>.</p>
-        
-        <p class="text-muted">Need to make changes? You can generate a new document anytime from your dashboard.</p>
+        {access_message}
     """
     return {
         "subject": f"Your {doc_name} is Ready - MintSlip",

@@ -736,6 +736,12 @@ async def send_password_changed_email(user_email: str, user_name: str):
     return await send_email(user_email, template["subject"], template["html"], "password_changed")
 
 
+async def send_password_reset_email(user_email: str, user_name: str, reset_link: str, reset_code: str):
+    """Send password reset email"""
+    template = template_password_reset(user_name, reset_link, reset_code)
+    return await send_email(user_email, template["subject"], template["html"], "password_reset")
+
+
 async def cancel_signup_no_purchase_reminder(user_id: str):
     """Cancel the signup no-purchase reminder when user makes a purchase or subscribes"""
     return await cancel_scheduled_email(user_id, "signup_no_purchase")

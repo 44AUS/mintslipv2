@@ -695,6 +695,63 @@ async def change_user_password(data: ChangeUserPassword, request: Request, sessi
     return {"success": True, "message": "Password changed successfully"}
 
 
+# ========== EMAIL VERIFICATION ENDPOINTS ==========
+
+class VerifyEmailRequest(BaseModel):
+    email: str
+    code: str
+
+@app.post("/api/user/verify-email")
+async def verify_email(data: VerifyEmailRequest):
+    """Verify user's email address"""
+    user = await users_collection.find_one({"email": data.email.lower()})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("emailVerified"):
+        return {"success": True, "message": "Email already verified"}
+    
+    if user.get("verificationCode") != data.code.upper():
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    await users_collection.update_one(
+        {"email": data.email.lower()},
+        {"$set": {"emailVerified": True}, "$unset": {"verificationCode": ""}}
+    )
+    
+    return {"success": True, "message": "Email verified successfully"}
+
+
+@app.post("/api/user/resend-verification")
+async def resend_verification(session: dict = Depends(get_current_user)):
+    """Resend verification email"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("emailVerified"):
+        return {"success": True, "message": "Email already verified"}
+    
+    # Generate new code
+    new_code = secrets.token_hex(3).upper()
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {"verificationCode": new_code}}
+    )
+    
+    # Send verification email
+    asyncio.create_task(send_verification_email(
+        user["email"],
+        user.get("name", ""),
+        new_code,
+        f"{os.environ.get('SITE_URL', 'https://mintslip.com')}/verify-email?code={new_code}&email={user['email']}"
+    ))
+    
+    return {"success": True, "message": "Verification email sent"}
+
+
 # ========== USER PREFERENCES ENDPOINTS ==========
 
 @app.put("/api/user/preferences")

@@ -96,7 +96,7 @@ def template_welcome(user_name: str, user_email: str) -> Dict[str, str]:
             <li>✅ And much more!</li>
         </ul>
         <p style="text-align: center; margin: 30px 0;">
-            <a href="{SITE_URL}/dashboard" class="button">Go to Dashboard</a>
+            <a href="{SITE_URL}/user/dashboard" class="button">Go to Dashboard</a>
         </p>
         <p class="text-muted">If you have any questions, just reply to this email. We're here to help!</p>
     """

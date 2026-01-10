@@ -890,7 +890,7 @@ export default function AdminDashboard() {
     if (dashboardStats?.recentPurchases) {
       calculatePeriodRevenue();
     }
-  }, [revenuePeriod, dashboardStats]);
+  }, [revenuePeriod, revenueTypeFilter, dashboardStats]);
 
   const calculatePeriodRevenue = async () => {
     const token = localStorage.getItem("adminToken");
@@ -915,8 +915,9 @@ export default function AdminDashboard() {
     }
 
     try {
+      const revenueTypeParam = revenueTypeFilter !== "all" ? `&revenueType=${revenueTypeFilter}` : "";
       const response = await fetch(
-        `${BACKEND_URL}/api/admin/revenue?startDate=${startDate.toISOString()}`,
+        `${BACKEND_URL}/api/admin/revenue?startDate=${startDate.toISOString()}${revenueTypeParam}`,
         { headers: { "Authorization": `Bearer ${token}` } }
       );
       

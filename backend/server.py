@@ -2767,7 +2767,7 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
     user_email = user.get("email")
     user_name = user.get("name", "")
     if user_email:
-        asyncio.create_task(send_download_confirmation(user_email, user_name, data.documentType))
+        asyncio.create_task(send_download_confirmation(user_email, user_name, data.documentType, None, False))  # is_guest=False
         asyncio.create_task(send_review_request(user_email, user_name, data.documentType, user["id"]))
     
     return {

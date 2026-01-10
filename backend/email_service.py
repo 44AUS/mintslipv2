@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize Resend
 resend.api_key = os.environ.get("RESEND_API_KEY")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "austin@mintslip.com")
 TRUSTPILOT_URL = os.environ.get("TRUSTPILOT_URL", "https://www.trustpilot.com/review/mintslip.com")
 SITE_URL = os.environ.get("SITE_URL", "https://mintslip.com")
 

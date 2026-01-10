@@ -369,7 +369,14 @@ export default function UserDashboard() {
                         <FileText className="w-5 h-5 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-slate-800">{doc.documentType}</p>
+                        <p className="font-medium text-slate-800">
+                          {ALL_DOCUMENT_TYPES[doc.documentType] || doc.documentType}
+                        </p>
+                        {doc.fileName && (
+                          <p className="text-xs text-slate-500 truncate max-w-[200px]">
+                            {doc.fileName}
+                          </p>
+                        )}
                         <p className="text-xs text-slate-500 flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           Expires in {doc.daysRemaining} days

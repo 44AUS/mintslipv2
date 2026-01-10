@@ -196,6 +196,7 @@ export default function AdminDashboard() {
   const [purchasesPeriod, setPurchasesPeriod] = useState("month");
   const [periodPurchases, setPeriodPurchases] = useState(0);
   const [purchaseTypeFilter, setPurchaseTypeFilter] = useState("guests"); // "guests" or "users"
+  const [revenueTypeFilter, setRevenueTypeFilter] = useState("all"); // "all", "guest", "subscription"
   const [dateRangeFilter, setDateRangeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [revenueChartData, setRevenueChartData] = useState([]);

@@ -20,6 +20,22 @@ import {
   Calendar
 } from "lucide-react";
 
+// Document type labels for proper display
+const ALL_DOCUMENT_TYPES = {
+  "paystub": "Pay Stub",
+  "canadian-paystub": "Canadian Pay Stub",
+  "resume": "AI Resume",
+  "w2": "W-2 Form",
+  "w9": "W-9 Form",
+  "1099-nec": "1099-NEC",
+  "1099-misc": "1099-MISC",
+  "offer-letter": "Offer Letter",
+  "vehicle-bill-of-sale": "Vehicle Bill of Sale",
+  "schedule-c": "Schedule C",
+  "bank-statement": "Bank Statement",
+  "utility-bill": "Utility Bill"
+};
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Subscription tiers

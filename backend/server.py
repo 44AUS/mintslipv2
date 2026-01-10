@@ -1355,6 +1355,18 @@ async def get_checkout_status(session_id: str):
                     await purchases_collection.insert_one(purchase)
                     print(f"Tracked purchase via status check: {document_type} - ${purchase['amount']} - userId: {user_id or 'guest'}")
                     
+                    # Send download confirmation and review request emails
+                    if customer_email:
+                        # Get user name if logged in
+                        user_name = ""
+                        if user_id:
+                            user = await users_collection.find_one({"id": user_id})
+                            if user:
+                                user_name = user.get("name", "")
+                        asyncio.create_task(send_download_confirmation(customer_email, user_name, document_type))
+                        asyncio.create_task(send_review_request(customer_email, user_name, document_type, user_id if user_id else None))
+                        asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
+                    
                     # Increment discount code usage if one was used
                     if discount_code:
                         customer_identifier = customer_email or user_id or session_id

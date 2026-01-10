@@ -753,6 +753,126 @@ async def resend_verification(session: dict = Depends(get_current_user)):
     return {"success": True, "message": "Verification email sent"}
 
 
+# ========== FORGOT PASSWORD ENDPOINTS ==========
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+@app.post("/api/user/forgot-password")
+async def forgot_password(data: ForgotPasswordRequest, request: Request):
+    """Send password reset email"""
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limit: 3 password reset requests per minute per IP
+    if not check_rate_limit(f"forgot_password_{client_ip}", max_requests=3, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many requests. Please try again later.")
+    
+    user = await users_collection.find_one({"email": data.email.lower()})
+    
+    # Always return success even if user doesn't exist (security best practice)
+    if not user:
+        return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
+    
+    # Generate reset token and code
+    reset_token = secrets.token_urlsafe(32)
+    reset_code = secrets.token_hex(3).upper()  # 6-char code
+    reset_expiry = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    # Store reset token in user record
+    await users_collection.update_one(
+        {"email": data.email.lower()},
+        {"$set": {
+            "passwordResetToken": reset_token,
+            "passwordResetCode": reset_code,
+            "passwordResetExpiry": reset_expiry.isoformat()
+        }}
+    )
+    
+    # Send reset email
+    reset_link = f"{os.environ.get('SITE_URL', 'https://mintslip.com')}/reset-password?token={reset_token}&email={data.email.lower()}"
+    asyncio.create_task(send_password_reset_email(
+        user["email"],
+        user.get("name", ""),
+        reset_link,
+        reset_code
+    ))
+    
+    return {"success": True, "message": "If an account exists with this email, you will receive a password reset link."}
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    token: Optional[str] = None
+    code: Optional[str] = None
+    newPassword: str
+
+@app.post("/api/user/reset-password")
+async def reset_password(data: ResetPasswordRequest, request: Request):
+    """Reset password using token or code"""
+    # Get client IP for rate limiting
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Rate limit: 5 reset attempts per minute per IP
+    if not check_rate_limit(f"reset_password_{client_ip}", max_requests=5, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many attempts. Please try again later.")
+    
+    user = await users_collection.find_one({"email": data.email.lower()})
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid reset request")
+    
+    # Check if reset token/code exists and is valid
+    stored_token = user.get("passwordResetToken")
+    stored_code = user.get("passwordResetCode")
+    expiry = user.get("passwordResetExpiry")
+    
+    if not stored_token or not expiry:
+        raise HTTPException(status_code=400, detail="No password reset request found. Please request a new reset link.")
+    
+    # Check expiry
+    expiry_dt = datetime.fromisoformat(expiry.replace('Z', '+00:00')) if isinstance(expiry, str) else expiry
+    if datetime.now(timezone.utc) > expiry_dt:
+        # Clear expired reset data
+        await users_collection.update_one(
+            {"email": data.email.lower()},
+            {"$unset": {"passwordResetToken": "", "passwordResetCode": "", "passwordResetExpiry": ""}}
+        )
+        raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
+    
+    # Verify token or code
+    token_valid = data.token and data.token == stored_token
+    code_valid = data.code and data.code.upper() == stored_code
+    
+    if not token_valid and not code_valid:
+        raise HTTPException(status_code=400, detail="Invalid reset token or code")
+    
+    # Validate new password
+    if len(data.newPassword) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    
+    # Update password and clear reset data
+    await users_collection.update_one(
+        {"email": data.email.lower()},
+        {
+            "$set": {
+                "password": hash_password(data.newPassword),
+                "passwordChangedAt": datetime.now(timezone.utc).isoformat()
+            },
+            "$unset": {
+                "passwordResetToken": "",
+                "passwordResetCode": "",
+                "passwordResetExpiry": ""
+            }
+        }
+    )
+    
+    # Send password changed notification
+    asyncio.create_task(send_password_changed_email(user["email"], user.get("name", "")))
+    
+    return {"success": True, "message": "Password reset successfully. You can now log in with your new password."}
+
+
 # ========== USER PREFERENCES ENDPOINTS ==========
 
 @app.put("/api/user/preferences")

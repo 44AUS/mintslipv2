@@ -248,6 +248,10 @@ export default function AdminDashboard() {
   const [usersDateFilter, setUsersDateFilter] = useState("all");
   const [mrrPeriod, setMrrPeriod] = useState("monthly"); // monthly or yearly
   const usersSearchTimeoutRef = useRef(null);
+  
+  // Historical import state
+  const [isImportingHistory, setIsImportingHistory] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   // Debounce users search
   useEffect(() => {

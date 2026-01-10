@@ -1359,6 +1359,19 @@ async def stripe_webhook(request: Request):
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await subscriptions_collection.insert_one(subscription_record)
+            
+            # Send subscription thank you email and cancel no-purchase reminder
+            user = await users_collection.find_one({"id": user_id})
+            if user:
+                asyncio.create_task(schedule_subscription_thank_you(
+                    user["email"],
+                    user.get("name", ""),
+                    user_id,
+                    plan_config.get("name", tier.title()),
+                    str(plan_config.get("price", 0)),
+                    plan_config.get("downloads", 0)
+                ))
+                asyncio.create_task(cancel_signup_no_purchase_reminder(user_id))
         
         elif purchase_type == "one_time_purchase":
             # Handle one-time guest purchase

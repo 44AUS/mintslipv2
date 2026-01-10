@@ -36,6 +36,7 @@ from email_service import (
     cancel_abandoned_checkout_email,
     send_review_request,
     send_password_changed_email,
+    send_password_reset_email,
     cancel_signup_no_purchase_reminder,
     process_scheduled_emails
 )

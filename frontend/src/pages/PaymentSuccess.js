@@ -6,10 +6,17 @@ import { toast } from 'sonner';
 
 // Import all generators
 import { generateAndDownloadPaystub } from '@/utils/paystubGenerator';
+import { generateAndDownloadCanadianPaystub } from '@/utils/canadianPaystubGenerator';
 import { generateAndDownloadW2 } from '@/utils/w2Generator';
 import { generateAndDownloadW9 } from '@/utils/w9Generator';
+import { generateAndDownload1099NEC } from '@/utils/1099necGenerator';
+import { generateAndDownload1099MISC } from '@/utils/1099miscGenerator';
 import { generateAndDownloadBankStatement } from '@/utils/bankStatementGenerator';
 import { generateAndDownloadResume } from '@/utils/resumeGenerator';
+import { generateAndDownloadOfferLetter } from '@/utils/offerLetterGenerator';
+import { generateAndDownloadScheduleC } from '@/utils/scheduleCGenerator';
+import { generateAndDownloadUtilityBill } from '@/utils/utilityBillGenerator';
+import { generateAndDownloadVehicleBillOfSale } from '@/utils/vehicleBillOfSaleGenerator';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 

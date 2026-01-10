@@ -2286,6 +2286,52 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            {/* Admin Tools Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-slate-800 mb-4">Admin Tools</h2>
+              <div className="flex flex-wrap gap-4">
+                {/* Import Historical Subscriptions */}
+                <div className="flex-1 min-w-[300px] p-4 border border-slate-200 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-medium text-slate-800">Import Historical Subscription Payments</h3>
+                      <p className="text-sm text-slate-500 mt-1">
+                        Fetch all paid subscription invoices from Stripe and add them to your revenue tracking.
+                      </p>
+                      {importResult && (
+                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+                          <p className="font-medium text-green-800">Last Import Results:</p>
+                          <ul className="mt-1 text-green-700 space-y-1">
+                            <li>• Processed: {importResult.totalProcessed} invoices</li>
+                            <li>• Imported: {importResult.imported} new payments</li>
+                            <li>• Already existed: {importResult.alreadyExists}</li>
+                            <li>• Total imported revenue: ${importResult.totalImportedRevenue?.toFixed(2)}</li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      onClick={importHistoricalSubscriptions}
+                      disabled={isImportingHistory}
+                      className="bg-purple-600 hover:bg-purple-700 text-white ml-4"
+                    >
+                      {isImportingHistory ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Importing...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          Import from Stripe
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Subscription Tier Distribution Pie Chart */}

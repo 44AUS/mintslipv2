@@ -2217,6 +2217,9 @@ async def import_historical_subscriptions(
                 total_processed += 1
                 
                 try:
+                    # Debug: Log invoice info
+                    print(f"Processing invoice {invoice.id}: subscription={invoice.subscription}, amount={invoice.amount_paid}")
+                    
                     # Get subscription ID - handle both string and None cases
                     subscription_id = None
                     if hasattr(invoice, 'subscription') and invoice.subscription:
@@ -2227,14 +2230,18 @@ async def import_historical_subscriptions(
                     
                     # Skip non-subscription invoices
                     if not subscription_id:
+                        print(f"  -> Skipping invoice {invoice.id}: no subscription ID")
                         skipped_count += 1
                         continue
+                    
+                    print(f"  -> Found subscription ID: {subscription_id}")
                     
                     # Check if this payment already exists
                     existing = await subscription_payments_collection.find_one({
                         "stripeInvoiceId": invoice.id
                     })
                     if existing:
+                        print(f"  -> Already exists in DB")
                         already_exists_count += 1
                         continue
                     
@@ -2248,6 +2255,7 @@ async def import_historical_subscriptions(
                         if subscription_id:
                             query_conditions.append({"subscription.stripeSubscriptionId": subscription_id})
                         if customer_id:
+                            query_conditions.append({"subscription.stripeCustomerId": customer_id})
                             query_conditions.append({"subscription.stripeCustomerId": customer_id})
                         
                         if query_conditions:

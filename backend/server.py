@@ -3798,6 +3798,22 @@ async def init_blog_categories():
                 "createdAt": datetime.now(timezone.utc).isoformat()
             })
 
+# Background task for processing scheduled emails
+async def email_scheduler_task():
+    """Background task that runs every 5 minutes to process scheduled emails"""
+    while True:
+        try:
+            await process_scheduled_emails()
+        except Exception as e:
+            print(f"Error in email scheduler: {e}")
+        await asyncio.sleep(300)  # Run every 5 minutes
+
+@app.on_event("startup")
+async def start_email_scheduler():
+    """Start the email scheduler background task"""
+    asyncio.create_task(email_scheduler_task())
+    print("Email scheduler started")
+
 # ===== PUBLIC BLOG ENDPOINTS =====
 
 @app.get("/api/blog/posts")

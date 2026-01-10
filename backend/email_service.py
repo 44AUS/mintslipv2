@@ -646,9 +646,9 @@ async def schedule_subscription_thank_you(user_email: str, user_name: str, user_
     )
 
 
-async def send_download_confirmation(user_email: str, user_name: str, document_type: str, download_link: Optional[str] = None):
+async def send_download_confirmation(user_email: str, user_name: str, document_type: str, download_link: Optional[str] = None, is_guest: bool = False):
     """Send download confirmation immediately after purchase"""
-    template = template_download_confirmation(user_name, document_type, download_link)
+    template = template_download_confirmation(user_name, document_type, download_link, is_guest)
     return await send_email(user_email, template["subject"], template["html"], "download_confirmation")
 
 

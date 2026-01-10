@@ -1055,6 +1055,39 @@ export default function AdminDashboard() {
     }
   };
 
+  // Import historical subscription payments from Stripe
+  const importHistoricalSubscriptions = async () => {
+    setIsImportingHistory(true);
+    setImportResult(null);
+    const token = localStorage.getItem("adminToken");
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/import-historical-subscriptions?limit=1000`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setImportResult(data.stats);
+        toast.success(`Imported ${data.stats.imported} subscription payments! Total revenue: $${data.stats.totalImportedRevenue}`);
+        // Refresh dashboard stats
+        fetchDashboard();
+      } else {
+        toast.error(data.detail || "Failed to import historical data");
+      }
+    } catch (error) {
+      console.error("Import error:", error);
+      toast.error("Error importing historical subscriptions");
+    } finally {
+      setIsImportingHistory(false);
+    }
+  };
+
   const addManualPurchase = async () => {
     if (!newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail) {
       toast.error("Please fill in required fields (Document Type, Amount, Email)");

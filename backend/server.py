@@ -551,6 +551,8 @@ async def user_signup(data: UserSignup, request: Request):
             "saveDocuments": data.saveDocuments if data.saveDocuments else False
         },
         "ipAddress": client_ip,
+        "emailVerified": False,
+        "verificationCode": secrets.token_hex(3).upper(),  # 6-char code
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     await users_collection.insert_one(user)
@@ -567,6 +569,17 @@ async def user_signup(data: UserSignup, request: Request):
     }
     await sessions_collection.insert_one(session)
     
+    # Send emails asynchronously (don't wait for them)
+    asyncio.create_task(send_welcome_email(user["email"], user["name"]))
+    asyncio.create_task(send_verification_email(
+        user["email"], 
+        user["name"], 
+        user["verificationCode"],
+        f"{os.environ.get('SITE_URL', 'https://mintslip.com')}/verify-email?code={user['verificationCode']}&email={user['email']}"
+    ))
+    asyncio.create_task(schedule_getting_started_email(user["email"], user["name"], user["id"]))
+    asyncio.create_task(schedule_signup_no_purchase_reminder(user["email"], user["name"], user["id"]))
+    
     return {
         "success": True,
         "token": token,
@@ -575,7 +588,8 @@ async def user_signup(data: UserSignup, request: Request):
             "email": user["email"],
             "name": user["name"],
             "subscription": None,
-            "preferences": user["preferences"]
+            "preferences": user["preferences"],
+            "emailVerified": False
         }
     }
 

@@ -1416,12 +1416,69 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard
-                title="All Time Revenue"
-                value={formatCurrency(dashboardStats.stats.totalRevenue)}
-                icon={DollarSign}
-                color="green"
-              />
+              {/* All Time Revenue Card with Filter */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 text-green-600">
+                      <DollarSign className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-slate-500">All Time Revenue</p>
+                    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+                      <button
+                        onClick={() => setRevenueTypeFilter("all")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          revenueTypeFilter === "all" 
+                            ? "bg-white text-green-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setRevenueTypeFilter("guest")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          revenueTypeFilter === "guest" 
+                            ? "bg-white text-green-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Guests
+                      </button>
+                      <button
+                        onClick={() => setRevenueTypeFilter("subscription")}
+                        className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                          revenueTypeFilter === "subscription" 
+                            ? "bg-white text-green-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Subs
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-slate-800 mt-1">
+                    {formatCurrency(
+                      revenueTypeFilter === "all" 
+                        ? (dashboardStats.stats.combinedTotalRevenue || dashboardStats.stats.totalRevenue)
+                        : revenueTypeFilter === "guest"
+                          ? dashboardStats.stats.totalRevenue
+                          : (dashboardStats.stats.totalSubscriptionRevenue || 0)
+                    )}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {revenueTypeFilter === "all" 
+                      ? "Guest purchases + Subscriptions" 
+                      : revenueTypeFilter === "guest"
+                        ? "One-time guest purchases only"
+                        : "Subscription payments only"}
+                  </p>
+                </div>
+              </div>
               
               {/* Period-based Purchases Card with Dropdown */}
               <div className="bg-white rounded-xl shadow-sm p-6">

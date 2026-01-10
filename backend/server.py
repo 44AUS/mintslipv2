@@ -1399,6 +1399,12 @@ async def stripe_webhook(request: Request):
             await purchases_collection.insert_one(purchase)
             print(f"Tracked guest purchase: {document_type} - ${purchase['amount']}")
             
+            # Send emails for guest purchase
+            if customer_email:
+                asyncio.create_task(send_download_confirmation(customer_email, "", document_type))
+                asyncio.create_task(send_review_request(customer_email, "", document_type, None))
+                asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
+            
             # Increment discount code usage if one was used
             if discount_code:
                 customer_identifier = customer_email or session.id

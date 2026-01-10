@@ -2074,62 +2074,111 @@ async def get_revenue_by_period(
     session: dict = Depends(get_current_admin),
     startDate: Optional[str] = None,
     endDate: Optional[str] = None,
-    userType: Optional[str] = None  # "guest" or "registered"
+    userType: Optional[str] = None,  # "guest" or "registered"
+    revenueType: Optional[str] = None  # "all", "guest", "subscription"
 ):
     """Get revenue for a specific period (admin only)"""
-    conditions = []
     
+    # Build date conditions
+    date_conditions = []
     if startDate:
-        conditions.append({"createdAt": {"$gte": startDate}})
-    
+        date_conditions.append({"createdAt": {"$gte": startDate}})
     if endDate:
-        conditions.append({"createdAt": {"$lte": endDate}})
+        date_conditions.append({"createdAt": {"$lte": endDate}})
     
-    # Filter by user type
-    if userType == "guest":
-        conditions.append({
-            "$or": [
-                {"userId": None}, 
-                {"userId": ""}, 
-                {"userId": {"$exists": False}}, 
-                {"isGuest": True}
-            ]
-        })
-    elif userType == "registered":
-        conditions.append({
-            "$and": [
-                {"userId": {"$exists": True}},
-                {"userId": {"$ne": None}},
-                {"userId": {"$ne": ""}}
-            ]
-        })
+    # Calculate guest/one-time purchase revenue
+    guest_revenue = 0
+    guest_count = 0
+    guest_downloads = 0
     
-    # Build final query
-    query = {"$and": conditions} if conditions else {}
+    if revenueType in [None, "all", "guest"]:
+        conditions = date_conditions.copy()
+        
+        # Filter by user type for guest purchases
+        if userType == "guest":
+            conditions.append({
+                "$or": [
+                    {"userId": None}, 
+                    {"userId": ""}, 
+                    {"userId": {"$exists": False}}, 
+                    {"isGuest": True}
+                ]
+            })
+        elif userType == "registered":
+            conditions.append({
+                "$and": [
+                    {"userId": {"$exists": True}},
+                    {"userId": {"$ne": None}},
+                    {"userId": {"$ne": ""}}
+                ]
+            })
+        
+        query = {"$and": conditions} if conditions else {}
+        
+        pipeline = [
+            {"$match": query} if query else {"$match": {}},
+            {"$group": {
+                "_id": None, 
+                "total": {"$sum": "$amount"}, 
+                "count": {"$sum": 1},
+                "downloadCount": {"$sum": {"$ifNull": ["$quantity", 1]}}
+            }}
+        ]
+        
+        result = await purchases_collection.aggregate(pipeline).to_list(1)
+        if result:
+            guest_revenue = result[0]["total"]
+            guest_count = result[0]["count"]
+            guest_downloads = result[0]["downloadCount"]
     
-    # Calculate revenue and download count (sum of quantities)
-    pipeline = [
-        {"$match": query} if query else {"$match": {}},
-        {"$group": {
-            "_id": None, 
-            "total": {"$sum": "$amount"}, 
-            "count": {"$sum": 1},
-            "downloadCount": {"$sum": {"$ifNull": ["$quantity", 1]}}
-        }}
-    ]
+    # Calculate subscription revenue
+    subscription_revenue = 0
+    subscription_count = 0
     
-    result = await purchases_collection.aggregate(pipeline).to_list(1)
+    if revenueType in [None, "all", "subscription"]:
+        sub_conditions = date_conditions.copy()
+        sub_query = {"$and": sub_conditions} if sub_conditions else {}
+        
+        sub_pipeline = [
+            {"$match": sub_query} if sub_query else {"$match": {}},
+            {"$group": {
+                "_id": None, 
+                "total": {"$sum": "$amount"}, 
+                "count": {"$sum": 1}
+            }}
+        ]
+        
+        sub_result = await subscription_payments_collection.aggregate(sub_pipeline).to_list(1)
+        if sub_result:
+            subscription_revenue = sub_result[0]["total"]
+            subscription_count = sub_result[0]["count"]
+    
+    # Calculate totals based on filter
+    if revenueType == "guest":
+        total_revenue = guest_revenue
+        total_count = guest_count
+    elif revenueType == "subscription":
+        total_revenue = subscription_revenue
+        total_count = subscription_count
+    else:  # "all" or None
+        total_revenue = guest_revenue + subscription_revenue
+        total_count = guest_count + subscription_count
     
     return {
         "success": True,
-        "revenue": round(result[0]["total"], 2) if result else 0,
-        "purchaseCount": result[0]["count"] if result else 0,
-        "downloadCount": result[0]["downloadCount"] if result else 0,
+        "revenue": round(total_revenue, 2),
+        "guestRevenue": round(guest_revenue, 2),
+        "subscriptionRevenue": round(subscription_revenue, 2),
+        "purchaseCount": total_count,
+        "guestPurchaseCount": guest_count,
+        "subscriptionPaymentCount": subscription_count,
+        "downloadCount": guest_downloads,
         "period": {
             "startDate": startDate,
             "endDate": endDate
         },
-        "userType": userType
+        "userType": userType,
+        "revenueType": revenueType or "all"
     }
 
 # ========== SUBSCRIPTION ENDPOINTS ==========

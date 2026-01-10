@@ -65,7 +65,7 @@ def get_base_template(content: str, preview_text: str = "") -> str:
     <span style="display: none; max-height: 0; overflow: hidden;">{preview_text}</span>
     <div class="container">
         <div class="header">
-            <div class="logo">💼 MintSlip</div>
+            <div class="logo">🍃 MintSlip</div>
         </div>
         <div class="content">
             {content}
@@ -92,7 +92,6 @@ def template_welcome(user_name: str, user_email: str) -> Dict[str, str]:
         <ul style="color: #374151; line-height: 2;">
             <li>✅ Pay Stubs & Canadian Pay Stubs</li>
             <li>✅ W-2 Forms & 1099 Forms</li>
-            <li>✅ Bank Statements</li>
             <li>✅ AI-Powered Resumes</li>
             <li>✅ And much more!</li>
         </ul>
@@ -153,9 +152,8 @@ def template_getting_started(user_name: str) -> Dict[str, str]:
         
         <h3>💡 Pro Tips:</h3>
         <ul style="color: #374151; line-height: 2;">
-            <li><strong>Subscribe & Save:</strong> Get unlimited downloads with our subscription plans</li>
+            <li><strong>Subscribe & Save:</strong> Get unlimited downloads with our business subscription plan</li>
             <li><strong>Save Your Documents:</strong> Registered users can save documents for 30 days</li>
-            <li><strong>Use Templates:</strong> Save time by reusing your information</li>
         </ul>
         
         <p style="text-align: center; margin: 30px 0;">
@@ -246,7 +244,7 @@ def template_download_confirmation(user_name: str, document_type: str, download_
         <p>Your document should have downloaded automatically. If you missed it, don't worry - you can generate a new one anytime.</p>
         
         <div class="highlight" style="margin-top: 20px;">
-            <h3 style="margin-top: 0; color: #059669;">💡 Create a Free Account</h3>
+            <h3 style="margin-top: 0; color: #059669;">💡 Create an Account</h3>
             <p style="margin-bottom: 0;">Sign up to save your documents for 30 days, access them from any device, and get exclusive discounts on future purchases!</p>
         </div>
         
@@ -300,7 +298,7 @@ def template_signup_no_purchase(user_name: str) -> Dict[str, str]:
         <div class="highlight">
             <h3 style="margin-top: 0;">Why Choose MintSlip?</h3>
             <ul style="margin-bottom: 0; color: #374151; line-height: 2;">
-                <li>⚡ Generate documents in under 60 seconds</li>
+                <li>⚡ Generate documents in under 2 minutes</li>
                 <li>📄 Professional, print-ready PDFs</li>
                 <li>🔒 Secure and confidential</li>
                 <li>💰 Affordable pricing starting at $9.99</li>
@@ -311,7 +309,6 @@ def template_signup_no_purchase(user_name: str) -> Dict[str, str]:
         <ul style="color: #374151; line-height: 2;">
             <li>💼 Pay Stubs - Perfect for proof of income</li>
             <li>📋 W-2 & 1099 Forms - Tax season essentials</li>
-            <li>🏦 Bank Statements - Financial verification</li>
             <li>📝 AI Resumes - Stand out from the crowd</li>
         </ul>
         

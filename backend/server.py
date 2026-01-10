@@ -1926,16 +1926,38 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     today_purchases = await purchases_collection.count_documents({"createdAt": {"$gte": today_start}})
     
-    # Today's revenue
+    # Today's revenue from guest purchases
     today_revenue_pipeline = [
         {"$match": {"createdAt": {"$gte": today_start}}},
         {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
     ]
     today_revenue_result = await purchases_collection.aggregate(today_revenue_pipeline).to_list(1)
-    today_revenue = today_revenue_result[0]["total"] if today_revenue_result else 0
+    today_guest_revenue = today_revenue_result[0]["total"] if today_revenue_result else 0
+    
+    # Today's subscription revenue
+    today_sub_revenue_pipeline = [
+        {"$match": {"createdAt": {"$gte": today_start}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    today_sub_revenue_result = await subscription_payments_collection.aggregate(today_sub_revenue_pipeline).to_list(1)
+    today_subscription_revenue = today_sub_revenue_result[0]["total"] if today_sub_revenue_result else 0
+    
+    # Combined today's revenue
+    today_revenue = today_guest_revenue + today_subscription_revenue
     
     # New subscribers today
     today_new_subscribers = await subscriptions_collection.count_documents({"createdAt": {"$gte": today_start}})
+    
+    # ===== ALL-TIME SUBSCRIPTION REVENUE =====
+    # Total revenue from subscription payments (all-time)
+    total_sub_revenue_pipeline = [
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    total_sub_revenue_result = await subscription_payments_collection.aggregate(total_sub_revenue_pipeline).to_list(1)
+    total_subscription_revenue = total_sub_revenue_result[0]["total"] if total_sub_revenue_result else 0
+    
+    # Combined all-time revenue (guest purchases + subscription payments)
+    combined_total_revenue = total_revenue + total_subscription_revenue
     
     # ===== USER REGISTRATION TRENDS (for charts) =====
     # Get user registrations over the last 30 days

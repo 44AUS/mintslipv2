@@ -295,7 +295,7 @@ export default function Form1099NEC() {
 
   // PayPal handlers
   const createOrder = (data, actions) => {
-    const basePrice = 9.99;
+    const basePrice = 14.99;
     const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
     return actions.order.create({
       purchase_units: [

@@ -198,6 +198,90 @@ export default function PaymentSuccess() {
             toast.success('Your AI resume has been downloaded!');
           }
         }
+      } else if (orderType === '1099-nec') {
+        const formDataStr = localStorage.getItem('pending1099NECData');
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          const taxYear = localStorage.getItem('pending1099NECTaxYear') || '2024';
+          
+          await generateAndDownload1099NEC(formData, taxYear);
+          generated = true;
+          
+          toast.success('Your 1099-NEC has been downloaded!');
+        }
+      } else if (orderType === '1099-misc') {
+        const formDataStr = localStorage.getItem('pending1099MISCData');
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          const taxYear = localStorage.getItem('pending1099MISCTaxYear') || '2024';
+          
+          await generateAndDownload1099MISC(formData, taxYear);
+          generated = true;
+          
+          toast.success('Your 1099-MISC has been downloaded!');
+        }
+      } else if (orderType === 'canadian-paystub') {
+        const formDataStr = localStorage.getItem('pendingCanadianPaystubData');
+        const template = localStorage.getItem('pendingCanadianPaystubTemplate') || 'template-a';
+        const numStubs = parseInt(localStorage.getItem('pendingCanadianPaystubCount') || '1', 10);
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          console.log('Generating Canadian paystub with stored data...', { template, numStubs });
+          
+          await generateAndDownloadCanadianPaystub(formData, template, numStubs);
+          generated = true;
+          
+          toast.success(numStubs > 1 ? `Your ${numStubs} Canadian paystubs have been downloaded!` : 'Your Canadian paystub has been downloaded!');
+        }
+      } else if (orderType === 'offer-letter') {
+        const formDataStr = localStorage.getItem('pendingOfferLetterData');
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          
+          await generateAndDownloadOfferLetter(formData);
+          generated = true;
+          
+          toast.success('Your offer letter has been downloaded!');
+        }
+      } else if (orderType === 'schedule-c') {
+        const formDataStr = localStorage.getItem('pendingScheduleCData');
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          const taxYear = localStorage.getItem('pendingScheduleCTaxYear') || '2024';
+          
+          await generateAndDownloadScheduleC(formData, taxYear);
+          generated = true;
+          
+          toast.success('Your Schedule C has been downloaded!');
+        }
+      } else if (orderType === 'utility-bill') {
+        const formDataStr = localStorage.getItem('pendingUtilityBillData');
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          const template = localStorage.getItem('pendingUtilityBillTemplate') || 'electric';
+          
+          await generateAndDownloadUtilityBill(formData, template);
+          generated = true;
+          
+          toast.success('Your utility bill has been downloaded!');
+        }
+      } else if (orderType === 'vehicle-bill-of-sale') {
+        const formDataStr = localStorage.getItem('pendingVehicleBillOfSaleData');
+        
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          
+          await generateAndDownloadVehicleBillOfSale(formData);
+          generated = true;
+          
+          toast.success('Your vehicle bill of sale has been downloaded!');
+        }
       }
       // Add more document types as needed...
       

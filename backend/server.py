@@ -1364,6 +1364,17 @@ async def stripe_webhook(request: Request):
             }
             await purchases_collection.insert_one(purchase)
             print(f"Tracked guest purchase: {document_type} - ${purchase['amount']}")
+            
+            # Increment discount code usage if one was used
+            if discount_code:
+                customer_identifier = customer_email or session.id
+                update_ops = {"$inc": {"usageCount": 1}}
+                # Check if it's a one_per_customer discount
+                discount = await discounts_collection.find_one({"code": discount_code.upper()})
+                if discount and discount.get("usageType") == "one_per_customer" and customer_identifier:
+                    update_ops["$push"] = {"usedByCustomers": customer_identifier}
+                await discounts_collection.update_one({"code": discount_code.upper()}, update_ops)
+                print(f"Incremented usage count for discount code: {discount_code}")
     
     elif event.type == "invoice.payment_succeeded":
         invoice = event.data.object

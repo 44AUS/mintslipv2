@@ -689,6 +689,9 @@ async def change_user_password(data: ChangeUserPassword, request: Request, sessi
         }}
     )
     
+    # Send password changed notification email
+    asyncio.create_task(send_password_changed_email(user["email"], user.get("name", "")))
+    
     return {"success": True, "message": "Password changed successfully"}
 
 

@@ -1131,6 +1131,25 @@ async def create_payment_intent(request: dict):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+class TrackCheckoutStarted(BaseModel):
+    email: str
+    documentType: str
+    userName: Optional[str] = ""
+    userId: Optional[str] = None
+
+@app.post("/api/track-checkout-started")
+async def api_track_checkout_started(data: TrackCheckoutStarted):
+    """Track when a user starts checkout for abandoned cart emails"""
+    if data.email:
+        asyncio.create_task(track_checkout_started(
+            data.email,
+            data.userName or "",
+            data.userId,
+            data.documentType
+        ))
+    return {"success": True}
+
+
 class OneTimeCheckoutRequest(BaseModel):
     amount: float
     documentType: str

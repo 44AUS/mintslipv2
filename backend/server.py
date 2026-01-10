@@ -20,8 +20,25 @@ import shutil
 from collections import defaultdict
 import time
 import base64
+import asyncio
 
 load_dotenv()
+
+# Import Email Service
+from email_service import (
+    send_welcome_email,
+    send_verification_email,
+    schedule_getting_started_email,
+    schedule_subscription_thank_you,
+    send_download_confirmation,
+    schedule_signup_no_purchase_reminder,
+    track_checkout_started,
+    cancel_abandoned_checkout_email,
+    send_review_request,
+    send_password_changed_email,
+    cancel_signup_no_purchase_reminder,
+    process_scheduled_emails
+)
 
 # Import Emergent Integrations for Gemini
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent

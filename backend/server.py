@@ -2629,6 +2629,13 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
     }
     await purchases_collection.insert_one(purchase)
     
+    # Send download confirmation and review request emails
+    user_email = user.get("email")
+    user_name = user.get("name", "")
+    if user_email:
+        asyncio.create_task(send_download_confirmation(user_email, user_name, data.documentType))
+        asyncio.create_task(send_review_request(user_email, user_name, data.documentType, user["id"]))
+    
     return {
         "success": True,
         "message": "Download authorized",

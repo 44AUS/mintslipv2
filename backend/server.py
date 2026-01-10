@@ -1365,6 +1365,22 @@ async def stripe_webhook(request: Request):
                 tier = user["subscription"].get("tier")
                 plan_config = SUBSCRIPTION_PLANS.get(tier, {})
                 
+                # Record the subscription payment
+                payment_amount = invoice.amount_paid / 100  # Convert from cents
+                subscription_payment = {
+                    "id": str(uuid.uuid4()),
+                    "userId": user["id"],
+                    "userEmail": user.get("email", ""),
+                    "tier": tier,
+                    "amount": payment_amount,
+                    "stripeInvoiceId": invoice.id,
+                    "stripeSubscriptionId": subscription_id,
+                    "billingReason": invoice.billing_reason,  # 'subscription_create', 'subscription_cycle', 'subscription_update'
+                    "createdAt": datetime.now(timezone.utc).isoformat()
+                }
+                await subscription_payments_collection.insert_one(subscription_payment)
+                print(f"Recorded subscription payment: {payment_amount} for user {user['id']} tier {tier}")
+                
                 # Reset downloads for the new billing period
                 await users_collection.update_one(
                     {"id": user["id"]},

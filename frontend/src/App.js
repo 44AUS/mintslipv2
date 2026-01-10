@@ -34,6 +34,8 @@ import AdminBannedIPs from "@/pages/AdminBannedIPs";
 import Banned from "@/pages/Banned";
 import UserLogin from "@/pages/UserLogin";
 import UserSignup from "@/pages/UserSignup";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import UserDashboard from "@/pages/UserDashboard";
 import UserDownloads from "@/pages/UserDownloads";
 import UserSettings from "@/pages/UserSettings";

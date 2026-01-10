@@ -1624,7 +1624,7 @@ async def stripe_webhook(request: Request):
             
             # Send emails for guest purchase
             if customer_email:
-                asyncio.create_task(send_download_confirmation(customer_email, "", document_type))
+                asyncio.create_task(send_download_confirmation(customer_email, "", document_type, None, True))  # is_guest=True
                 asyncio.create_task(send_review_request(customer_email, "", document_type, None))
                 asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
             

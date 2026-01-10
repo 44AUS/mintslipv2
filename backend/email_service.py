@@ -454,6 +454,33 @@ def template_password_changed(user_name: str) -> Dict[str, str]:
     }
 
 
+def template_password_reset(user_name: str, reset_link: str, reset_code: str) -> Dict[str, str]:
+    """Password reset email"""
+    content = f"""
+        <h1>Reset Your Password 🔐</h1>
+        <p>Hi {user_name or 'there'},</p>
+        <p>We received a request to reset your MintSlip password. Click the button below to create a new password:</p>
+        
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{reset_link}" class="button">Reset Password</a>
+        </p>
+        
+        <p>Or use this code on the reset page:</p>
+        <div class="highlight" style="text-align: center;">
+            <p style="font-size: 32px; font-weight: bold; color: #10b981; letter-spacing: 4px; margin: 10px 0;">{reset_code}</p>
+        </div>
+        
+        <p class="text-muted" style="margin-top: 30px;"><strong>Didn't request this?</strong></p>
+        <p class="text-muted">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+        
+        <p class="text-muted" style="font-size: 12px;">This link expires in 1 hour for security reasons.</p>
+    """
+    return {
+        "subject": "Reset your password - MintSlip",
+        "html": get_base_template(content, "Reset your MintSlip password")
+    }
+
+
 # ============================================================
 # EMAIL SENDING FUNCTIONS
 # ============================================================

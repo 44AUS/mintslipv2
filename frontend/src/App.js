@@ -167,6 +167,8 @@ function App() {
             {/* User Auth Routes (hidden - accessible via direct URL only) */}
             <Route path="/login" element={<UserLogin />} />
             <Route path="/signup" element={<UserSignup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/subscription/choose" element={<SubscriptionChoose />} />
             <Route path="/pricing" element={<SubscriptionPlans />} />
             <Route path="/subscription/success" element={<SubscriptionSuccess />} />

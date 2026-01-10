@@ -2181,6 +2181,141 @@ async def get_revenue_by_period(
         "revenueType": revenueType or "all"
     }
 
+@app.post("/api/admin/import-historical-subscriptions")
+async def import_historical_subscriptions(
+    session: dict = Depends(get_current_admin),
+    limit: int = 100  # Process in batches to avoid timeout
+):
+    """
+    Import historical subscription payments from Stripe.
+    Fetches all paid invoices from Stripe and records them in subscription_payments_collection.
+    """
+    try:
+        imported_count = 0
+        skipped_count = 0
+        error_count = 0
+        already_exists_count = 0
+        
+        # Fetch paid invoices from Stripe (subscription-related only)
+        # starting_after is used for pagination
+        has_more = True
+        starting_after = None
+        total_processed = 0
+        
+        while has_more and total_processed < limit:
+            # Fetch invoices from Stripe
+            params = {
+                "status": "paid",
+                "limit": min(100, limit - total_processed),
+                "expand": ["data.subscription"]
+            }
+            if starting_after:
+                params["starting_after"] = starting_after
+            
+            invoices = stripe.Invoice.list(**params)
+            
+            for invoice in invoices.data:
+                total_processed += 1
+                
+                # Skip non-subscription invoices
+                if not invoice.subscription:
+                    skipped_count += 1
+                    continue
+                
+                # Check if this payment already exists
+                existing = await subscription_payments_collection.find_one({
+                    "stripeInvoiceId": invoice.id
+                })
+                if existing:
+                    already_exists_count += 1
+                    continue
+                
+                # Try to find the user by Stripe customer ID or subscription ID
+                subscription_id = invoice.subscription if isinstance(invoice.subscription, str) else invoice.subscription.id
+                customer_id = invoice.customer
+                
+                user = await users_collection.find_one({
+                    "$or": [
+                        {"subscription.stripeSubscriptionId": subscription_id},
+                        {"subscription.stripeCustomerId": customer_id}
+                    ]
+                })
+                
+                # Determine the tier from the invoice line items
+                tier = "unknown"
+                if invoice.lines and invoice.lines.data:
+                    for line in invoice.lines.data:
+                        if line.price and line.price.id:
+                            price_id = line.price.id
+                            # Match price ID to tier
+                            for t, pid in stripe_price_ids.items():
+                                if pid == price_id:
+                                    tier = t
+                                    break
+                
+                # If we couldn't determine tier from price, try to get from user
+                if tier == "unknown" and user and user.get("subscription", {}).get("tier"):
+                    tier = user["subscription"]["tier"]
+                
+                # Create the payment record
+                payment_amount = invoice.amount_paid / 100  # Convert from cents
+                
+                # Convert Stripe timestamp to ISO format
+                created_at = datetime.fromtimestamp(invoice.created, tz=timezone.utc).isoformat()
+                
+                subscription_payment = {
+                    "id": str(uuid.uuid4()),
+                    "userId": user["id"] if user else None,
+                    "userEmail": user.get("email", "") if user else (invoice.customer_email or ""),
+                    "tier": tier,
+                    "amount": payment_amount,
+                    "stripeInvoiceId": invoice.id,
+                    "stripeSubscriptionId": subscription_id,
+                    "stripeCustomerId": customer_id,
+                    "billingReason": invoice.billing_reason or "unknown",
+                    "createdAt": created_at,
+                    "importedAt": datetime.now(timezone.utc).isoformat(),
+                    "isHistoricalImport": True
+                }
+                
+                try:
+                    await subscription_payments_collection.insert_one(subscription_payment)
+                    imported_count += 1
+                except Exception as e:
+                    print(f"Error inserting payment for invoice {invoice.id}: {e}")
+                    error_count += 1
+            
+            # Check if there are more invoices
+            has_more = invoices.has_more
+            if invoices.data:
+                starting_after = invoices.data[-1].id
+        
+        # Calculate total imported revenue
+        total_revenue_pipeline = [
+            {"$match": {"isHistoricalImport": True}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]
+        revenue_result = await subscription_payments_collection.aggregate(total_revenue_pipeline).to_list(1)
+        total_imported_revenue = revenue_result[0]["total"] if revenue_result else 0
+        
+        return {
+            "success": True,
+            "message": f"Historical subscription import complete",
+            "stats": {
+                "totalProcessed": total_processed,
+                "imported": imported_count,
+                "skipped": skipped_count,
+                "alreadyExists": already_exists_count,
+                "errors": error_count,
+                "totalImportedRevenue": round(total_imported_revenue, 2)
+            }
+        }
+        
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Import error: {str(e)}")
+
 # ========== SUBSCRIPTION ENDPOINTS ==========
 
 @app.get("/api/subscription/tiers")

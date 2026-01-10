@@ -1061,6 +1061,12 @@ export default function AdminDashboard() {
     setImportResult(null);
     const token = localStorage.getItem("adminToken");
     
+    if (!token) {
+      toast.error("No admin token found. Please log in again.");
+      setIsImportingHistory(false);
+      return;
+    }
+    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/import-historical-subscriptions?limit=1000`, {
         method: "POST",
@@ -1078,11 +1084,12 @@ export default function AdminDashboard() {
         // Refresh dashboard stats
         fetchDashboard();
       } else {
-        toast.error(data.detail || "Failed to import historical data");
+        console.error("Import failed:", data);
+        toast.error(data.detail || data.message || "Failed to import historical data");
       }
     } catch (error) {
       console.error("Import error:", error);
-      toast.error("Error importing historical subscriptions");
+      toast.error(`Error: ${error.message || "Failed to connect to server"}`);
     } finally {
       setIsImportingHistory(false);
     }

@@ -933,11 +933,11 @@ export default function Form1099NEC() {
                   <>
                     <CouponInput
                       generatorType="1099-nec"
-                      originalPrice={9.99}
+                      originalPrice={14.99}
                       onDiscountApplied={setAppliedDiscount}
                     />
                     <p className="text-sm text-slate-600 mb-4">
-                      Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
+                      Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '14.99'}</strong>
                       {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && ' for 1099-NEC generation'}
                     </p>

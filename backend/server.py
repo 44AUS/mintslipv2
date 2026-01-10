@@ -1244,6 +1244,17 @@ async def get_checkout_status(session_id: str):
                     }
                     await purchases_collection.insert_one(purchase)
                     print(f"Tracked purchase via status check: {document_type} - ${purchase['amount']} - userId: {user_id or 'guest'}")
+                    
+                    # Increment discount code usage if one was used
+                    if discount_code:
+                        customer_identifier = customer_email or user_id or session_id
+                        update_ops = {"$inc": {"usageCount": 1}}
+                        # Check if it's a one_per_customer discount
+                        discount = await discounts_collection.find_one({"code": discount_code.upper()})
+                        if discount and discount.get("usageType") == "one_per_customer" and customer_identifier:
+                            update_ops["$push"] = {"usedByCustomers": customer_identifier}
+                        await discounts_collection.update_one({"code": discount_code.upper()}, update_ops)
+                        print(f"Incremented usage count for discount code: {discount_code}")
         
         return {
             "status": session.status,

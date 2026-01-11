@@ -70,6 +70,13 @@ export default function UserSettings() {
     confirmPassword: ""
   });
   const [passwordError, setPasswordError] = useState("");
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailData, setEmailData] = useState({
+    newEmail: "",
+    password: "",
+    showPassword: false
+  });
+  const [emailError, setEmailError] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("userToken");

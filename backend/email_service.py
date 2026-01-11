@@ -683,10 +683,27 @@ async def schedule_subscription_thank_you(user_email: str, user_name: str, user_
     )
 
 
-async def send_download_confirmation(user_email: str, user_name: str, document_type: str, download_link: Optional[str] = None, is_guest: bool = False):
-    """Send download confirmation immediately after purchase"""
+async def send_download_confirmation(user_email: str, user_name: str, document_type: str, download_link: Optional[str] = None, is_guest: bool = False, pdf_attachment: Optional[Dict[str, str]] = None):
+    """Send download confirmation immediately after purchase
+    
+    Args:
+        user_email: Recipient email
+        user_name: User's name
+        document_type: Type of document (paystub, w2, etc.)
+        download_link: Optional download link
+        is_guest: Whether user is a guest
+        pdf_attachment: Optional dict with 'filename' and 'content' (base64 encoded PDF)
+    """
     template = template_download_confirmation(user_name, document_type, download_link, is_guest)
-    return await send_email(user_email, template["subject"], template["html"], "download_confirmation")
+    
+    attachments = None
+    if pdf_attachment:
+        attachments = [{
+            "filename": pdf_attachment.get("filename", f"{document_type}.pdf"),
+            "content": pdf_attachment.get("content")  # base64 encoded
+        }]
+    
+    return await send_email(user_email, template["subject"], template["html"], "download_confirmation", attachments)
 
 
 async def schedule_signup_no_purchase_reminder(user_email: str, user_name: str, user_id: str):

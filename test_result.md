@@ -1,4 +1,16 @@
 backend:
+  - task: "Email with PDF Attachment Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Email with PDF Attachment API test passed - POST /api/send-download-email endpoint working correctly: 1) Accepts payload with email, userName, documentType, pdfBase64, isGuest ✓, 2) Returns success response with confirmation message ✓, 3) Email log created in MongoDB email_logs collection with status 'sent' and has_attachment: true ✓, 4) PDF attachment successfully processed and sent via Resend API ✓. Email service integration working as expected."
+
   - task: "IP Ban Management API"
     implemented: true
     working: true

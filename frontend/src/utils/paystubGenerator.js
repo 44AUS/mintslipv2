@@ -85,6 +85,40 @@ function getMultiplePaystubsZipFilename(template, name) {
   return `${formatNameForFilename(name)}-paystubs-${downloadDate}.zip`;
 }
 
+// PDF metadata configuration per template (matching real document signatures)
+const TEMPLATE_METADATA = {
+  'template-a': {  // Gusto template
+    title: 'Gusto',
+    creator: 'wkhtmltopdf 0.12.6.1',
+    producer: 'Qt 4.8.7',
+  },
+  'template-b': {  // ADP template
+    title: 'ADP Earnings Statement',
+    creator: 'ADP Workforce Now',
+    producer: 'ADP, Inc.',
+  },
+  'template-c': {  // Paychex template
+    title: 'Paychex Earnings Statement',
+    creator: 'Paychex Flex',
+    producer: 'Paychex, Inc.',
+  },
+  'template-h': {  // OnPay/QuickBooks style
+    title: 'Pay Statement',
+    creator: 'QuickBooks Payroll',
+    producer: 'Intuit Inc.',
+  },
+};
+
+// Apply template-specific PDF metadata
+function applyPdfMetadata(doc, template) {
+  const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
+  doc.setProperties({
+    title: metadata.title,
+    creator: metadata.creator,
+    producer: metadata.producer,
+  });
+}
+
 export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs, returnBlob = false) => {
   try {
     console.log("Starting PDF generation...", { formData, template, numStubs });

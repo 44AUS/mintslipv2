@@ -239,8 +239,12 @@ export default function PaymentSuccess() {
               template: selectedTemplate || formData?.template || 'ats'
             };
             
-            await generateAndDownloadResume(resumeData);
+            pdfBlob = await generateAndDownloadResume(resumeData, true);
             generated = true;
+            
+            if (emailToUse && pdfBlob) {
+              sendPdfEmail(pdfBlob, emailToUse, 'ai-resume', generatedResume?.personalInfo?.name);
+            }
             
             toast.success('Your AI resume has been downloaded!');
           }
@@ -252,8 +256,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const taxYear = localStorage.getItem('pending1099NECTaxYear') || '2024';
           
-          await generateAndDownload1099NEC(formData, taxYear);
+          pdfBlob = await generateAndDownload1099NEC(formData, taxYear, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, '1099-nec', formData.recipientName);
+          }
           
           toast.success('Your 1099-NEC has been downloaded!');
         }
@@ -264,8 +272,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const taxYear = localStorage.getItem('pending1099MISCTaxYear') || '2024';
           
-          await generateAndDownload1099MISC(formData, taxYear);
+          pdfBlob = await generateAndDownload1099MISC(formData, taxYear, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, '1099-misc', formData.recipientName);
+          }
           
           toast.success('Your 1099-MISC has been downloaded!');
         }
@@ -278,8 +290,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           console.log('Generating Canadian paystub with stored data...', { template, numStubs });
           
-          await generateAndDownloadCanadianPaystub(formData, template, numStubs);
+          pdfBlob = await generateAndDownloadCanadianPaystub(formData, template, numStubs, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'canadian-paystub', formData.name);
+          }
           
           toast.success(numStubs > 1 ? `Your ${numStubs} Canadian paystubs have been downloaded!` : 'Your Canadian paystub has been downloaded!');
         }
@@ -289,8 +305,12 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           
-          await generateAndDownloadOfferLetter(formData);
+          pdfBlob = await generateAndDownloadOfferLetter(formData, false, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'offer-letter', formData.recipientName);
+          }
           
           toast.success('Your offer letter has been downloaded!');
         }
@@ -301,8 +321,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const taxYear = localStorage.getItem('pendingScheduleCTaxYear') || '2024';
           
-          await generateAndDownloadScheduleC(formData, taxYear);
+          pdfBlob = await generateAndDownloadScheduleC(formData, taxYear, false, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'schedule-c', formData.businessName);
+          }
           
           toast.success('Your Schedule C has been downloaded!');
         }
@@ -313,8 +337,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const template = localStorage.getItem('pendingUtilityBillTemplate') || 'electric';
           
-          await generateAndDownloadUtilityBill(formData, template);
+          pdfBlob = await generateAndDownloadUtilityBill(formData, template, false, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'utility-bill', formData.customerName);
+          }
           
           toast.success('Your utility bill has been downloaded!');
         }

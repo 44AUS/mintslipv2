@@ -980,6 +980,13 @@ export default function AdminDashboard() {
     }
   }, [usersPage, usersSearchDebounced, usersSubscriptionFilter, usersDateFilter]);
 
+  // Load saved documents when filters change
+  useEffect(() => {
+    if (!isLoading) {
+      loadSavedDocuments();
+    }
+  }, [savedDocumentsPage, savedDocumentsTypeFilter, savedDocumentsUserFilter]);
+
   // Calculate period-based revenue
   useEffect(() => {
     if (dashboardStats?.recentPurchases) {

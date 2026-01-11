@@ -295,8 +295,9 @@ export default function PaymentSuccess() {
           pdfBlob = await generateAndDownloadCanadianPaystub(formData, template, numStubs, true);
           generated = true;
           
+          // Send email with attachment (ZIP if multiple, PDF if single)
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'canadian-paystub', formData.name);
+            sendFileEmail(pdfBlob, emailToUse, 'canadian-paystub', formData.name, numStubs > 1);
           }
           
           toast.success(numStubs > 1 ? `Your ${numStubs} Canadian paystubs have been downloaded!` : 'Your Canadian paystub has been downloaded!');

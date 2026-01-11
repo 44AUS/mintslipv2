@@ -99,6 +99,14 @@ export default function SubscriptionChoose() {
       const parsedUser = JSON.parse(userInfo);
       setUser(parsedUser);
 
+      // Check if email is verified (for new users)
+      // Existing users without emailVerified field are considered verified
+      if (parsedUser.emailVerified === false) {
+        toast.error("Please verify your email first");
+        navigate("/verify-email");
+        return;
+      }
+
       // If user already has active subscription, redirect to dashboard
       if (parsedUser.subscription && parsedUser.subscription.status === "active") {
         navigate("/user/dashboard");

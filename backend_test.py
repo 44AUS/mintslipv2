@@ -4070,6 +4070,55 @@ class AIResumeBuilderTester:
             self.log_test("Save Document Without Preference Enabled", False, f"Exception: {str(e)}")
             return False
 
+    def test_send_download_email_with_pdf(self):
+        """Test POST /api/send-download-email endpoint with PDF attachment"""
+        try:
+            # Create a minimal base64 encoded PDF for testing
+            minimal_pdf_base64 = "JVBERi0xLjQKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDYxMiA3OTJdL1BhcmVudCAyIDAgUj4+CmVuZG9iagp4cmVmCjAgNAowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1MiAwMDAwMCBuIAowMDAwMDAwMTAyIDAwMDAwIG4gCnRyYWlsZXIKPDwvU2l6ZSA0L1Jvb3QgMSAwIFI+PgpzdGFydHhyZWYKMTcwCiUlRU9G"
+            
+            payload = {
+                "email": "test@example.com",
+                "userName": "Test User",
+                "documentType": "paystub",
+                "pdfBase64": minimal_pdf_base64,
+                "isGuest": True
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/send-download-email", 
+                json=payload, 
+                timeout=30
+            )
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and "message" in data:
+                    details += f", Response: {data['message']}"
+                    
+                    # Additional validation - check if the response indicates email was sent
+                    if "sent" in data["message"].lower() or "email" in data["message"].lower():
+                        details += " ✓ Email sending confirmed"
+                    else:
+                        success = False
+                        details += " ✗ Unexpected success message"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Send Download Email with PDF Attachment", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Send Download Email with PDF Attachment", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

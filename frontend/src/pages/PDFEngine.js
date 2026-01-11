@@ -34,7 +34,10 @@ import {
   Brain,
   Calculator,
   CalendarCheck,
-  Sparkles
+  Sparkles,
+  Edit3,
+  Settings2,
+  Wand2
 } from "lucide-react";
 import { toast } from "sonner";
 

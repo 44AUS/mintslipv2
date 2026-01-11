@@ -1,4 +1,16 @@
 backend:
+  - task: "Email Change Duplicate Protection"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Email Change Duplicate Protection test passed - PUT /api/user/change-email endpoint working correctly: 1) Created test user with email 'test_emailcheck@test.com' ✓, 2) Attempting to change to existing email 'austindflatt@gmail.com' correctly blocked with 400 error and message 'This email is already registered to another account' ✓, 3) Case insensitivity working - 'AUSTINDFLATT@GMAIL.COM' also blocked ✓, 4) Another existing email 'support@mintslip.com' also blocked ✓, 5) Valid new email change works correctly ✓. All duplicate email protection functionality is working as expected."
+
   - task: "Email with PDF Attachment Endpoint"
     implemented: true
     working: true

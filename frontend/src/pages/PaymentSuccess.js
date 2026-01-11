@@ -244,8 +244,9 @@ export default function PaymentSuccess() {
             pdfBlob = await generateAndDownloadResume(resumeData, true);
             generated = true;
             
+            // Resume is always a ZIP (contains PDF + DOCX)
             if (emailToUse && pdfBlob) {
-              sendPdfEmail(pdfBlob, emailToUse, 'ai-resume', generatedResume?.personalInfo?.name);
+              sendFileEmail(pdfBlob, emailToUse, 'ai-resume', generatedResume?.personalInfo?.name, true);
             }
             
             toast.success('Your AI resume has been downloaded!');

@@ -159,17 +159,32 @@ backend:
         comment: "✅ Admin Users Filtering API test passed - All filtering scenarios working correctly: 1) Search by name/email containing 'test' ✓ (3 users found), 2) Filter by subscription type 'starter' ✓ (1 user found), 3) Filter by subscription type 'none' ✓ (3 users found), 4) Filter by join date from 2024-01-01 ✓ (5 users found), 5) Combined filters (search + subscription type) ✓ (1 user found). Fixed MongoDB query logic to properly handle combined filters using $and operator and null subscription values."
 
 frontend:
-  - task: "Bank Statement Checkout formData Fix"
+  - task: "PDF Metadata & Consistency Engine"
     implemented: true
     working: "NA"
-    file: "BankStatementForm.js"
+    file: "PDFEngine.js, UserNavTabs.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
+        comment: "Implemented PDF Engine feature for Business plan users - includes metadata analysis, consistency checking, risk scoring, normalization, and report generation. Tab only visible to Business users."
+
+  - task: "Bank Statement Checkout formData Fix"
+    implemented: true
+    working: true
+    file: "BankStatementForm.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
         comment: "Fixed 'formData not defined' error in handleStripeCheckout function. The function was referencing undefined variables (formData, bankLogo, statementPeriod) instead of the actual state variables (accountName, accountAddress1, etc., uploadedLogo, selectedMonth). Fixed by creating formDataToStore object with all form values and using correct variable names."
+      - working: true
+        agent: "main"
+        comment: "Fixed and verified working"
 
   - task: "Pricing Page UI"
     implemented: true

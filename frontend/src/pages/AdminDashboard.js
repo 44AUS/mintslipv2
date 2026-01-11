@@ -1459,6 +1459,7 @@ export default function AdminDashboard() {
                 { id: "overview", label: "Overview", icon: LayoutDashboard, path: "/admin/overview" },
                 { id: "purchases", label: "Purchases", icon: ShoppingCart, path: "/admin/purchases" },
                 { id: "users", label: "Users", icon: Users, path: "/admin/users" },
+                { id: "saved-docs", label: "Saved Docs", icon: FolderArchive, path: "/admin/saved-docs" },
                 { id: "discounts", label: "Discounts", icon: Tag, path: "/admin/discounts" },
                 { id: "banned-ips", label: "Banned IPs", icon: Shield, path: "/admin/banned-ips" },
                 { id: "blog", label: "Blog", icon: FileText, path: "/admin/blog" }

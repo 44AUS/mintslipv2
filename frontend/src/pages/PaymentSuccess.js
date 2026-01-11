@@ -79,9 +79,10 @@ export default function PaymentSuccess() {
       
       const data = await response.json();
       
-      // Extract customer email from metadata if available
-      if (data.metadata?.userEmail) {
-        setCustomerEmail(data.metadata.userEmail);
+      // Extract customer email - prefer customer_email from Stripe, fallback to metadata
+      const email = data.customer_email || data.metadata?.userEmail || '';
+      if (email) {
+        setCustomerEmail(email);
       }
 
       if (data.payment_status === 'paid' || data.status === 'complete') {
@@ -89,7 +90,7 @@ export default function PaymentSuccess() {
         setIsVerifying(false);
         
         // Step 2: Generate document if we have pending data
-        await generateDocument(data.metadata?.userEmail);
+        await generateDocument(email);
       } else if (data.status === 'expired') {
         setError('Payment session expired. Please try again.');
         setIsVerifying(false);

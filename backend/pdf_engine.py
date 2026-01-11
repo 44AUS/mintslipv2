@@ -460,6 +460,7 @@ class PDFAnalysisResult:
         self.detected_producer = None
         self.producer_match = None
         self.content_matches = []
+        self.ai_analysis = None  # AI-powered analysis results
         
     def to_dict(self) -> Dict:
         return {
@@ -479,6 +480,7 @@ class PDFAnalysisResult:
             "detectedProducer": self.detected_producer,
             "producerMatch": self.producer_match,
             "contentMatches": self.content_matches,
+            "aiAnalysis": self.ai_analysis,
         }
     
     def get_risk_level(self) -> str:

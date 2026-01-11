@@ -5193,6 +5193,7 @@ async def analyze_pdf_endpoint(
     file: UploadFile = File(...),
     normalize: bool = False,
     document_type: str = "other",
+    enable_ai: bool = True,
     session: dict = Depends(get_current_user)
 ):
     """
@@ -5200,6 +5201,7 @@ async def analyze_pdf_endpoint(
     Business Plan feature only
     
     document_type options: paystub, bank_statement, tax_form, other
+    enable_ai: Enable AI-powered content analysis (default: True)
     """
     # Verify Business subscription
     user = await verify_business_subscription(session)
@@ -5246,11 +5248,25 @@ async def analyze_pdf_endpoint(
         # Analyze the PDF with document type
         analysis = analyze_pdf_metadata(pdf_bytes, document_type)
         
+        # Run AI analysis if enabled and text content exists
+        ai_analysis_result = None
+        if enable_ai and analysis.text_content:
+            ai_analysis_result = await analyze_document_with_ai(
+                analysis.text_content,
+                document_type,
+                analysis.metadata
+            )
+            # Apply AI findings to the analysis result
+            if ai_analysis_result and ai_analysis_result.get("success"):
+                apply_ai_analysis_to_result(analysis, ai_analysis_result)
+        
         result = {
             "success": True,
             "filename": file.filename,
             "analysis": analysis.to_dict(),
-            "analyzedAt": datetime.now(timezone.utc).isoformat()
+            "analyzedAt": datetime.now(timezone.utc).isoformat(),
+            "aiEnabled": enable_ai,
+            "aiAnalysisSuccess": ai_analysis_result.get("success") if ai_analysis_result else False
         }
         
         # If normalize requested, also normalize

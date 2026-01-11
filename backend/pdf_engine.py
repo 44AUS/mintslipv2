@@ -3,22 +3,15 @@ PDF Metadata & Document Consistency Engine
 Business Plan Feature - Analyzes, normalizes, and validates PDF metadata
 """
 
-import os
 import io
 import re
-import json
-import hashlib
-import tempfile
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Dict, List, Any, Tuple
-from collections import Counter
+from typing import Optional, Dict, List, Tuple
 
-import PyPDF2
-from PyPDF2 import PdfReader, PdfWriter
-from PyPDF2.generic import NameObject, TextStringObject, ArrayObject
+from PyPDF2 import PdfReader
 import pikepdf
 from pdfminer.high_level import extract_text, extract_pages
-from pdfminer.layout import LTTextContainer, LTChar, LTPage
+from pdfminer.layout import LTTextContainer, LTChar
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
@@ -281,7 +274,7 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
                 if result.incremental_updates > 2:
                     result.add_risk("incremental_updates", f"Document has {result.incremental_updates} incremental updates - may indicate multiple edits", RISK_WEIGHTS["incremental_updates"])
                     result.add_finding("structure", "info", f"Multiple incremental updates detected ({result.incremental_updates})", "This may indicate the document was edited multiple times")
-        except Exception as e:
+        except Exception:
             result.metadata["hasXmp"] = False
             result.metadata["incrementalUpdates"] = 0
         

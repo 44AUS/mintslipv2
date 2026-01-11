@@ -108,9 +108,9 @@ function App() {
       <Elements stripe={stripePromise}>
         <IPBanCheck>
           <div className="App">
-            <PromoBanner />
             <Toaster position="top-center" richColors />
             <BrowserRouter>
+              <PromoBanner />
               <ScrollToTop />
               <Routes>
                 <Route path="/" element={<Home />} />

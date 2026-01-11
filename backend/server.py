@@ -3172,6 +3172,101 @@ async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     
     return {"success": True, "isBanned": new_status}
 
+
+# ========== ADMIN SAVED DOCUMENTS MANAGEMENT ==========
+
+@app.get("/api/admin/saved-documents")
+async def get_all_saved_documents(
+    skip: int = 0,
+    limit: int = 20,
+    userId: Optional[str] = None,
+    documentType: Optional[str] = None,
+    session: dict = Depends(get_current_admin)
+):
+    """Get all saved documents (admin only)"""
+    query = {}
+    
+    if userId:
+        query["userId"] = userId
+    if documentType and documentType != "all":
+        query["documentType"] = documentType
+    
+    # Get documents with pagination
+    documents = await saved_documents_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    total = await saved_documents_collection.count_documents(query)
+    
+    # Enrich with user info
+    enriched_documents = []
+    for doc in documents:
+        user = await users_collection.find_one({"id": doc.get("userId")}, {"_id": 0, "email": 1, "name": 1})
+        enriched_documents.append({
+            **doc,
+            "userEmail": user.get("email", "Unknown") if user else "Deleted User",
+            "userName": user.get("name", "") if user else ""
+        })
+    
+    return {
+        "documents": enriched_documents,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
+
+@app.delete("/api/admin/saved-documents/{doc_id}")
+async def admin_delete_saved_document(doc_id: str, session: dict = Depends(get_current_admin)):
+    """Delete a saved document (admin only)"""
+    # Find the document first
+    document = await saved_documents_collection.find_one({"id": doc_id})
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Delete the actual file if it exists
+    stored_filename = document.get("storedFileName")
+    if stored_filename:
+        file_path = os.path.join(UPLOAD_DIR, stored_filename)
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                logger.info(f"Admin deleted file: {file_path}")
+            except Exception as e:
+                logger.error(f"Failed to delete file {file_path}: {e}")
+    
+    # Delete from database
+    result = await saved_documents_collection.delete_one({"id": doc_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return {"success": True, "message": "Document deleted successfully"}
+
+
+@app.delete("/api/admin/users/{user_id}/saved-documents")
+async def admin_delete_user_saved_documents(user_id: str, session: dict = Depends(get_current_admin)):
+    """Delete all saved documents for a user (admin only)"""
+    # Get all documents for this user
+    documents = await saved_documents_collection.find({"userId": user_id}).to_list(1000)
+    
+    deleted_count = 0
+    for doc in documents:
+        # Delete the actual file if it exists
+        stored_filename = doc.get("storedFileName")
+        if stored_filename:
+            file_path = os.path.join(UPLOAD_DIR, stored_filename)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    logger.error(f"Failed to delete file {file_path}: {e}")
+        deleted_count += 1
+    
+    # Delete all from database
+    await saved_documents_collection.delete_many({"userId": user_id})
+    
+    return {"success": True, "message": f"Deleted {deleted_count} documents for user"}
+
+
 class UpdateUserSubscription(BaseModel):
     tier: Optional[str] = None  # starter, professional, business, or null to remove
 

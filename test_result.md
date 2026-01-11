@@ -158,6 +158,21 @@ backend:
         agent: "testing"
         comment: "✅ Admin Users Filtering API test passed - All filtering scenarios working correctly: 1) Search by name/email containing 'test' ✓ (3 users found), 2) Filter by subscription type 'starter' ✓ (1 user found), 3) Filter by subscription type 'none' ✓ (3 users found), 4) Filter by join date from 2024-01-01 ✓ (5 users found), 5) Combined filters (search + subscription type) ✓ (1 user found). Fixed MongoDB query logic to properly handle combined filters using $and operator and null subscription values."
 
+  - task: "PDF Metadata & Consistency Engine Backend API"
+    implemented: true
+    working: true
+    file: "server.py, pdf_engine.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented PDF Engine backend API endpoints for Business plan users - includes /api/pdf-engine/check-access, /api/pdf-engine/analyze, /api/pdf-engine/normalize, and /api/pdf-engine/generate-report endpoints with proper authentication and Business subscription validation"
+      - working: true
+        agent: "testing"
+        comment: "✅ PDF Engine Backend API test passed - All endpoints working correctly: 1) GET /api/pdf-engine/check-access requires authentication (401 without auth) ✓, 2) Regular users correctly denied access (hasAccess: false) ✓, 3) POST /api/pdf-engine/analyze requires authentication (401 without auth) ✓, 4) File type validation working (non-PDF files rejected with clear error message) ✓, 5) POST /api/pdf-engine/normalize requires authentication (401 without auth) ✓, 6) POST /api/pdf-engine/generate-report requires authentication (401 without auth) ✓, 7) All endpoints properly validate Business subscription requirement (403 error with message 'This feature requires an active Business subscription') ✓. Fixed null subscription handling bug in verify_business_subscription and check_pdf_engine_access functions."
+
 frontend:
   - task: "PDF Metadata & Consistency Engine"
     implemented: true

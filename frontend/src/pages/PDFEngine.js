@@ -23,11 +23,58 @@ import {
   Crown,
   AlertCircle,
   Clock,
-  File
+  File,
+  Building2,
+  Landmark,
+  Receipt,
+  FileQuestion,
+  BadgeCheck,
+  TrendingDown,
+  TrendingUp
 } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// Document type configurations with icons
+const DOCUMENT_TYPES = {
+  paystub: {
+    name: "Pay Stub",
+    description: "Paycheck stub or earnings statement",
+    icon: Receipt,
+    color: "bg-blue-500",
+    bgLight: "bg-blue-50",
+    borderColor: "border-blue-200",
+    textColor: "text-blue-700"
+  },
+  bank_statement: {
+    name: "Bank Statement",
+    description: "Bank account statement",
+    icon: Landmark,
+    color: "bg-emerald-500",
+    bgLight: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    textColor: "text-emerald-700"
+  },
+  tax_form: {
+    name: "Tax Form",
+    description: "W-2, 1099, or other tax documents",
+    icon: Building2,
+    color: "bg-purple-500",
+    bgLight: "bg-purple-50",
+    borderColor: "border-purple-200",
+    textColor: "text-purple-700"
+  },
+  other: {
+    name: "Other Document",
+    description: "General PDF document",
+    icon: FileQuestion,
+    color: "bg-slate-500",
+    bgLight: "bg-slate-50",
+    borderColor: "border-slate-200",
+    textColor: "text-slate-700"
+  }
+};
 
 // Risk level colors and labels
 const RISK_LEVELS = {
@@ -68,20 +115,28 @@ function CollapsibleSection({ title, icon: Icon, children, defaultOpen = false, 
 }
 
 // Risk Score Display Component
-function RiskScoreDisplay({ score, level }) {
+function RiskScoreDisplay({ score, level, producerMatch, documentType }) {
   const riskInfo = RISK_LEVELS[level] || RISK_LEVELS.moderate;
   const RiskIcon = riskInfo.icon;
+  const docTypeInfo = DOCUMENT_TYPES[documentType] || DOCUMENT_TYPES.other;
   
   return (
     <div className={`rounded-xl p-6 ${riskInfo.bgLight} border border-slate-200`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-slate-800">Verification Risk Score</h3>
-        <RiskIcon className={`w-6 h-6 ${riskInfo.textColor}`} />
+        <div className="flex items-center gap-2">
+          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${docTypeInfo.bgLight} ${docTypeInfo.textColor}`}>
+            {docTypeInfo.name}
+          </span>
+          <RiskIcon className={`w-6 h-6 ${riskInfo.textColor}`} />
+        </div>
       </div>
       
       <div className="flex items-end gap-4 mb-4">
         <span className={`text-5xl font-bold ${riskInfo.textColor}`}>{score}</span>
         <span className="text-slate-500 text-lg mb-1">/100</span>
+        {score <= 25 && <TrendingDown className="w-8 h-8 text-green-500 mb-1" />}
+        {score > 50 && <TrendingUp className="w-8 h-8 text-red-500 mb-1" />}
       </div>
       
       {/* Progress bar */}
@@ -92,17 +147,77 @@ function RiskScoreDisplay({ score, level }) {
         />
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${riskInfo.color} text-white`}>
           {riskInfo.label}
         </span>
         <span className="text-sm text-slate-500">
-          {score <= 25 ? "Document appears well-formed" : 
-           score <= 50 ? "Some issues detected" :
-           score <= 75 ? "Multiple issues found" : 
-           "Critical issues detected"}
+          {score <= 25 ? "Document appears legitimate" : 
+           score <= 50 ? "Some issues detected - review findings" :
+           score <= 75 ? "Multiple red flags found" : 
+           "Critical issues - likely to fail verification"}
         </span>
       </div>
+      
+      {/* Producer Match Badge */}
+      {producerMatch && (
+        <div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
+          <div className="flex items-center gap-2">
+            <BadgeCheck className="w-5 h-5 text-green-600" />
+            <span className="font-medium text-green-800">Recognized Source: {producerMatch.name}</span>
+          </div>
+          {producerMatch.notes && (
+            <p className="text-sm text-green-600 mt-1">{producerMatch.notes}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Document Type Selector Component
+function DocumentTypeSelector({ value, onChange, disabled }) {
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-slate-700">
+        Document Type
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        {Object.entries(DOCUMENT_TYPES).map(([key, config]) => {
+          const Icon = config.icon;
+          const isSelected = value === key;
+          
+          return (
+            <button
+              key={key}
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange(key)}
+              className={`
+                p-3 rounded-lg border-2 transition-all text-left
+                ${isSelected 
+                  ? `${config.borderColor} ${config.bgLight} ring-2 ring-offset-1 ring-${config.color.replace('bg-', '')}`
+                  : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                }
+                ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              `}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`w-8 h-8 rounded-lg ${isSelected ? config.color : 'bg-slate-100'} flex items-center justify-center`}>
+                  <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-slate-500'}`} />
+                </div>
+                <span className={`font-medium text-sm ${isSelected ? config.textColor : 'text-slate-700'}`}>
+                  {config.name}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 ml-10">{config.description}</p>
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs text-slate-500">
+        Selecting the correct document type enables specialized verification patterns and risk scoring.
+      </p>
     </div>
   );
 }
@@ -144,12 +259,13 @@ export default function PDFEngine() {
   const fileInputRef = useRef(null);
   
   // State
-  const [hasAccess, setHasAccess] = useState(null); // null = loading
+  const [hasAccess, setHasAccess] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [normalizeEnabled, setNormalizeEnabled] = useState(false);
+  const [documentType, setDocumentType] = useState("paystub");
   const [user, setUser] = useState(null);
   
   // Check access on mount
@@ -165,7 +281,6 @@ export default function PDFEngine() {
     }
     
     try {
-      // Get user info
       const userResponse = await fetch(`${BACKEND_URL}/api/user/me`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -175,7 +290,6 @@ export default function PDFEngine() {
         setUser(userData.user);
       }
       
-      // Check PDF engine access
       const response = await fetch(`${BACKEND_URL}/api/pdf-engine/check-access`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -196,13 +310,11 @@ export default function PDFEngine() {
   const handleFileSelect = useCallback((file) => {
     if (!file) return;
     
-    // Validate file type
     if (!file.name.toLowerCase().endsWith('.pdf')) {
       toast.error("Only PDF files are supported");
       return;
     }
     
-    // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
       toast.error("File too large. Maximum size is 10MB");
       return;
@@ -236,15 +348,17 @@ export default function PDFEngine() {
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("normalize", normalizeEnabled.toString());
       
-      const response = await fetch(`${BACKEND_URL}/api/pdf-engine/analyze?normalize=${normalizeEnabled}`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: formData
-      });
+      const response = await fetch(
+        `${BACKEND_URL}/api/pdf-engine/analyze?normalize=${normalizeEnabled}&document_type=${documentType}`, 
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
       
       if (!response.ok) {
         const error = await response.json();
@@ -344,6 +458,8 @@ export default function PDFEngine() {
     );
   }
   
+  const docTypeInfo = DOCUMENT_TYPES[analysisResult?.analysis?.documentType] || DOCUMENT_TYPES.other;
+  
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header title="MintSlip" />
@@ -360,7 +476,7 @@ export default function PDFEngine() {
                 Metadata & Consistency Engine
               </h1>
               <p className="text-slate-500 text-sm">
-                Analyze, validate, and optimize PDF documents
+                Analyze, validate, and optimize PDF documents with document-type-specific risk scoring
               </p>
             </div>
             {hasAccess && (
@@ -382,6 +498,15 @@ export default function PDFEngine() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Upload & Controls */}
             <div className="lg:col-span-1 space-y-4">
+              {/* Document Type Selection */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <DocumentTypeSelector 
+                  value={documentType}
+                  onChange={setDocumentType}
+                  disabled={isAnalyzing}
+                />
+              </div>
+              
               {/* Upload Area */}
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -456,12 +581,12 @@ export default function PDFEngine() {
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Analyzing...
+                      Analyzing {DOCUMENT_TYPES[documentType]?.name}...
                     </>
                   ) : (
                     <>
                       <FileSearch className="w-5 h-5 mr-2" />
-                      Analyze PDF
+                      Analyze {DOCUMENT_TYPES[documentType]?.name}
                     </>
                   )}
                 </Button>
@@ -471,14 +596,14 @@ export default function PDFEngine() {
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
                 <h4 className="font-medium text-slate-800 mb-2 flex items-center gap-2">
                   <Info className="w-4 h-4 text-slate-500" />
-                  What We Analyze
+                  Document-Specific Analysis
                 </h4>
                 <ul className="text-sm text-slate-600 space-y-1">
-                  <li>• PDF metadata (producer, creator, dates)</li>
-                  <li>• Timestamp consistency</li>
-                  <li>• Font usage patterns</li>
-                  <li>• Document structure</li>
-                  <li>• Edit history traces</li>
+                  <li><strong>Pay Stub:</strong> ADP, Paychex, Gusto, QuickBooks, Workday...</li>
+                  <li><strong>Bank Statement:</strong> Chase, BofA, Wells Fargo, Citi...</li>
+                  <li><strong>Tax Form:</strong> IRS, TurboTax, H&R Block...</li>
+                  <li>• Matches against 50+ legitimate producer patterns</li>
+                  <li>• Detects known fake document generators</li>
                 </ul>
               </div>
               
@@ -496,7 +621,7 @@ export default function PDFEngine() {
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
                   <FileSearch className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-slate-700 mb-2">No Analysis Yet</h3>
-                  <p className="text-slate-500">Upload a PDF and click Analyze to see results</p>
+                  <p className="text-slate-500">Select document type, upload a PDF, and click Analyze to see results</p>
                 </div>
               ) : (
                 <>
@@ -504,6 +629,8 @@ export default function PDFEngine() {
                   <RiskScoreDisplay 
                     score={analysisResult.analysis.riskScore} 
                     level={analysisResult.analysis.riskLevel}
+                    producerMatch={analysisResult.analysis.producerMatch}
+                    documentType={analysisResult.analysis.documentType}
                   />
                   
                   {/* Results Sections */}
@@ -516,7 +643,7 @@ export default function PDFEngine() {
                     >
                       <div className="grid grid-cols-2 gap-4">
                         {Object.entries(analysisResult.analysis.metadata || {}).map(([key, value]) => {
-                          if (typeof value === 'object') return null;
+                          if (typeof value === 'object' || key === 'fontsUsed') return null;
                           return (
                             <div key={key} className="bg-slate-50 p-3 rounded-lg">
                               <p className="text-xs text-slate-500 uppercase tracking-wide">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
@@ -534,23 +661,73 @@ export default function PDFEngine() {
                       <CollapsibleSection
                         title="Risk Factors"
                         icon={AlertTriangle}
-                        badge={{ text: `${analysisResult.analysis.riskFactors.length} found`, className: "bg-red-100 text-red-700" }}
+                        badge={{ 
+                          text: `${analysisResult.analysis.riskFactors.filter(f => f.points > 0).length} issues`, 
+                          className: analysisResult.analysis.riskFactors.some(f => f.points > 0) ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                        }}
                         defaultOpen={true}
                       >
                         <div className="space-y-3">
-                          {analysisResult.analysis.riskFactors.map((factor, idx) => (
-                            <div key={idx} className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-100">
-                              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                              <div className="flex-1">
-                                <p className="font-medium text-red-800">{factor.factor.replace(/_/g, ' ')}</p>
-                                <p className="text-sm text-red-600">{factor.description}</p>
+                          {analysisResult.analysis.riskFactors.map((factor, idx) => {
+                            const isPositive = factor.points < 0;
+                            return (
+                              <div 
+                                key={idx} 
+                                className={`flex items-start gap-3 p-3 rounded-lg border ${
+                                  isPositive 
+                                    ? 'bg-green-50 border-green-100' 
+                                    : 'bg-red-50 border-red-100'
+                                }`}
+                              >
+                                {isPositive 
+                                  ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                  : <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                }
+                                <div className="flex-1">
+                                  <p className={`font-medium ${isPositive ? 'text-green-800' : 'text-red-800'}`}>
+                                    {factor.factor.replace(/_/g, ' ')}
+                                  </p>
+                                  <p className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                    {factor.description}
+                                  </p>
+                                </div>
+                                <span className={`px-2 py-1 rounded text-sm font-medium ${
+                                  isPositive 
+                                    ? 'bg-green-200 text-green-800' 
+                                    : 'bg-red-200 text-red-800'
+                                }`}>
+                                  {factor.points > 0 ? '+' : ''}{factor.points}
+                                </span>
                               </div>
-                              <span className="px-2 py-1 bg-red-200 text-red-800 rounded text-sm font-medium">
-                                +{factor.points}
-                              </span>
-                            </div>
+                            );
+                          })}
+                        </div>
+                      </CollapsibleSection>
+                    )}
+                    
+                    {/* Content Matches */}
+                    {analysisResult.analysis.contentMatches?.length > 0 && (
+                      <CollapsibleSection
+                        title="Content Verification"
+                        icon={Shield}
+                        badge={{ 
+                          text: `${analysisResult.analysis.contentMatches.length} patterns found`, 
+                          className: "bg-blue-100 text-blue-700" 
+                        }}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {analysisResult.analysis.contentMatches.map((pattern, idx) => (
+                            <span 
+                              key={idx}
+                              className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-200"
+                            >
+                              {pattern.replace(/\\s\*/g, ' ').replace(/\|/g, ' or ')}
+                            </span>
                           ))}
                         </div>
+                        <p className="text-sm text-slate-500 mt-3">
+                          These patterns are typically found in legitimate {DOCUMENT_TYPES[analysisResult.analysis.documentType]?.name || 'documents'}.
+                        </p>
                       </CollapsibleSection>
                     )}
                     

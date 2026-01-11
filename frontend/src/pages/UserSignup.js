@@ -62,8 +62,8 @@ export default function UserSignup() {
       localStorage.setItem("userToken", data.token);
       localStorage.setItem("userInfo", JSON.stringify(data.user));
       
-      toast.success("Account created successfully!");
-      navigate("/subscription/choose");
+      toast.success("Account created! Please verify your email.");
+      navigate("/verify-email");
     } catch (error) {
       console.error("Signup error:", error);
       toast.error(error.message || "Signup failed. Please try again.");

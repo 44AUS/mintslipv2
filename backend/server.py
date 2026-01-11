@@ -873,6 +873,70 @@ async def reset_password(data: ResetPasswordRequest, request: Request):
     return {"success": True, "message": "Password reset successfully. You can now log in with your new password."}
 
 
+# ========== DOWNLOAD EMAIL WITH PDF ATTACHMENT ENDPOINT ==========
+
+class SendDownloadEmailRequest(BaseModel):
+    email: str
+    userName: Optional[str] = ""
+    documentType: str
+    pdfBase64: str  # Base64 encoded PDF content
+    fileName: Optional[str] = None
+    isGuest: bool = False
+
+@app.post("/api/send-download-email")
+async def send_download_email_with_attachment(data: SendDownloadEmailRequest):
+    """
+    Send download confirmation email with PDF attached.
+    PDF is passed in memory and not stored - respects user privacy.
+    """
+    document_names = {
+        "paystub": "Pay Stub",
+        "canadian-paystub": "Canadian Pay Stub",
+        "w2": "W-2 Form",
+        "w9": "W-9 Form",
+        "1099-nec": "1099-NEC Form",
+        "1099-misc": "1099-MISC Form",
+        "bank-statement": "Bank Statement",
+        "ai-resume": "AI Resume",
+        "offer-letter": "Offer Letter",
+        "schedule-c": "Schedule C",
+        "utility-bill": "Utility Bill",
+        "vehicle-bill-of-sale": "Vehicle Bill of Sale"
+    }
+    
+    doc_name = document_names.get(data.documentType, data.documentType.replace("-", " ").title())
+    
+    # Generate filename if not provided
+    filename = data.fileName or f"MintSlip_{doc_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    
+    # Prepare attachment (Resend accepts base64 content directly)
+    pdf_attachment = {
+        "filename": filename,
+        "content": data.pdfBase64  # Already base64 encoded from frontend
+    }
+    
+    try:
+        result = await send_download_confirmation(
+            user_email=data.email,
+            user_name=data.userName or "",
+            document_type=data.documentType,
+            download_link=None,
+            is_guest=data.isGuest,
+            pdf_attachment=pdf_attachment
+        )
+        
+        if result.get("success"):
+            logger.info(f"Download email with PDF attachment sent to {data.email}")
+            return {"success": True, "message": "Email sent with PDF attachment"}
+        else:
+            logger.error(f"Failed to send download email: {result.get('error')}")
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {result.get('error')}")
+            
+    except Exception as e:
+        logger.error(f"Error sending download email with attachment: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+
 # ========== USER PREFERENCES ENDPOINTS ==========
 
 @app.put("/api/user/preferences")

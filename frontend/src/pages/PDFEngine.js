@@ -295,7 +295,7 @@ export default function PDFEngine() {
   const PRESETS = {
     adp: { name: "ADP", producer: "ADP, Inc.", creator: "ADP Workforce Now" },
     paychex: { name: "Paychex", producer: "Paychex, Inc.", creator: "Paychex Flex" },
-    gusto: { name: "Gusto", producer: "Gusto", creator: "Gusto Payroll" },
+    gusto: { name: "Gusto", producer: "Qt 4.8.7", creator: "wkhtmltopdf 0.12.6.1", title: "Gusto" },
     quickbooks: { name: "QuickBooks", producer: "Intuit Inc.", creator: "QuickBooks Payroll" },
     workday: { name: "Workday", producer: "Workday, Inc.", creator: "Workday HCM" },
     chase: { name: "Chase", producer: "JPMorgan Chase & Co.", creator: "Chase Online Banking" },

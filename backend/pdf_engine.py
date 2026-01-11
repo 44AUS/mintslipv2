@@ -1,13 +1,18 @@
 """
 PDF Metadata & Document Consistency Engine
 Business Plan Feature - Analyzes, normalizes, and validates PDF metadata
-with document-type-specific risk scoring
+with document-type-specific risk scoring and AI-powered analysis
 """
 
+import os
 import io
 import re
+import json
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, List, Tuple
+
+from dotenv import load_dotenv
+load_dotenv()
 
 from PyPDF2 import PdfReader
 import pikepdf
@@ -18,6 +23,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.units import inch
+
+# Import LLM for AI analysis
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 
 # ============================================

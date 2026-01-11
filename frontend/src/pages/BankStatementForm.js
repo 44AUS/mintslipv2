@@ -587,7 +587,7 @@ const createOrder = (data, actions) => {
         template: selectedTemplate,
         appliedDiscount,
         successPath: "/payment-success",
-        cancelPath: "/bank-statement-generator"
+        cancelPath: "/accounting-mockup-generator"
       });
       
       window.location.href = url;

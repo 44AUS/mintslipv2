@@ -877,21 +877,22 @@ async def reset_password(data: ResetPasswordRequest, request: Request):
     return {"success": True, "message": "Password reset successfully. You can now log in with your new password."}
 
 
-# ========== DOWNLOAD EMAIL WITH PDF ATTACHMENT ENDPOINT ==========
+# ========== DOWNLOAD EMAIL WITH FILE ATTACHMENT ENDPOINT ==========
 
 class SendDownloadEmailRequest(BaseModel):
     email: str
     userName: Optional[str] = ""
     documentType: str
-    pdfBase64: str  # Base64 encoded PDF content
+    pdfBase64: str  # Base64 encoded file content (PDF or ZIP)
     fileName: Optional[str] = None
     isGuest: bool = False
+    isZip: bool = False  # True if the file is a ZIP archive
 
 @app.post("/api/send-download-email")
 async def send_download_email_with_attachment(data: SendDownloadEmailRequest):
     """
-    Send download confirmation email with PDF attached.
-    PDF is passed in memory and not stored - respects user privacy.
+    Send download confirmation email with file attached (PDF or ZIP).
+    File is passed in memory and not stored - respects user privacy.
     """
     document_names = {
         "paystub": "Pay Stub",
@@ -910,11 +911,18 @@ async def send_download_email_with_attachment(data: SendDownloadEmailRequest):
     
     doc_name = document_names.get(data.documentType, data.documentType.replace("-", " ").title())
     
-    # Generate filename if not provided
-    filename = data.fileName or f"MintSlip_{doc_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+    # Generate filename if not provided - use .zip extension for ZIP files
+    file_ext = ".zip" if data.isZip else ".pdf"
+    filename = data.fileName or f"MintSlip_{doc_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}{file_ext}"
+    
+    # Ensure correct extension
+    if data.isZip and not filename.endswith('.zip'):
+        filename = filename.rsplit('.', 1)[0] + '.zip'
+    elif not data.isZip and not filename.endswith('.pdf'):
+        filename = filename.rsplit('.', 1)[0] + '.pdf'
     
     # Prepare attachment (Resend accepts base64 content directly)
-    pdf_attachment = {
+    file_attachment = {
         "filename": filename,
         "content": data.pdfBase64  # Already base64 encoded from frontend
     }
@@ -926,12 +934,12 @@ async def send_download_email_with_attachment(data: SendDownloadEmailRequest):
             document_type=data.documentType,
             download_link=None,
             is_guest=data.isGuest,
-            pdf_attachment=pdf_attachment
+            pdf_attachment=file_attachment
         )
         
         if result.get("success"):
-            logger.info(f"Download email with PDF attachment sent to {data.email}")
-            return {"success": True, "message": "Email sent with PDF attachment"}
+            logger.info(f"Download email with {'ZIP' if data.isZip else 'PDF'} attachment sent to {data.email}")
+            return {"success": True, "message": f"Email sent with {'ZIP' if data.isZip else 'PDF'} attachment"}
         else:
             logger.error(f"Failed to send download email: {result.get('error')}")
             raise HTTPException(status_code=500, detail=f"Failed to send email: {result.get('error')}")

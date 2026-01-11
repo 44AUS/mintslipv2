@@ -195,7 +195,6 @@ PAYSTUB_SUSPICIOUS_PRODUCERS = [
     "nitro",
     "foxit phantompdf",
     "pdfforge",
-    "mintslip",  # Our own generator
 ]
 
 # Expected paystub content patterns

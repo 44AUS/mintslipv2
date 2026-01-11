@@ -3205,14 +3205,23 @@ async def get_all_saved_documents(
     documents = await saved_documents_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
     total = await saved_documents_collection.count_documents(query)
     
-    # Enrich with user info
+    # Enrich with user info and file existence check
     enriched_documents = []
     for doc in documents:
         user = await users_collection.find_one({"id": doc.get("userId")}, {"_id": 0, "email": 1, "name": 1})
+        
+        # Check if file exists on disk
+        stored_filename = doc.get("storedFileName", "")
+        file_exists = False
+        if stored_filename:
+            file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
+            file_exists = os.path.exists(file_path)
+        
         enriched_documents.append({
             **doc,
             "userEmail": user.get("email", "Unknown") if user else "Deleted User",
-            "userName": user.get("name", "") if user else ""
+            "userName": user.get("name", "") if user else "",
+            "fileExists": file_exists
         })
     
     return {

@@ -346,7 +346,6 @@ BANK_STATEMENT_SUSPICIOUS_PRODUCERS = [
     "foxit phantompdf",
     "online editor",
     "edit pdf",
-    "mintslip",
 ]
 
 # Expected bank statement content patterns

@@ -55,7 +55,10 @@ from pdf_engine import (
     get_legitimate_producers,
     DOCUMENT_TYPES,
     analyze_document_with_ai,
-    apply_ai_analysis_to_result
+    apply_ai_analysis_to_result,
+    edit_and_regenerate_pdf,
+    get_metadata_presets,
+    METADATA_PRESETS
 )
 
 # Import Emergent Integrations for Gemini

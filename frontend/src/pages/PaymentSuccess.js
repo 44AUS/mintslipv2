@@ -37,6 +37,8 @@ export default function PaymentSuccess() {
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [error, setError] = useState(null);
   const [documentGenerated, setDocumentGenerated] = useState(false);
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
   
   // Ref to prevent double download (React StrictMode runs effects twice)
   const hasStartedRef = React.useRef(false);

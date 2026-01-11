@@ -170,6 +170,7 @@ function App() {
             <Route path="/signup" element={<UserSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/subscription/choose" element={<SubscriptionChoose />} />
             <Route path="/pricing" element={<SubscriptionPlans />} />
             <Route path="/subscription/success" element={<SubscriptionSuccess />} />

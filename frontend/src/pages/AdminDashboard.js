@@ -255,6 +255,14 @@ export default function AdminDashboard() {
   const [isImportingHistory, setIsImportingHistory] = useState(false);
   const [importResult, setImportResult] = useState(null);
 
+  // Saved documents state
+  const [savedDocuments, setSavedDocuments] = useState([]);
+  const [savedDocumentsTotal, setSavedDocumentsTotal] = useState(0);
+  const [savedDocumentsPage, setSavedDocumentsPage] = useState(0);
+  const [savedDocumentsTypeFilter, setSavedDocumentsTypeFilter] = useState("all");
+  const [savedDocumentsUserFilter, setSavedDocumentsUserFilter] = useState("");
+  const [isSavedDocumentsLoading, setIsSavedDocumentsLoading] = useState(false);
+
   // Debounce users search
   useEffect(() => {
     if (usersSearchTimeoutRef.current) {

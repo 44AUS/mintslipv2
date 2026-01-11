@@ -989,7 +989,7 @@ async def send_download_email_with_attachment(data: SendDownloadEmailRequest):
         "w9": "W-9 Form",
         "1099-nec": "1099-NEC Form",
         "1099-misc": "1099-MISC Form",
-        "bank-statement": "Bank Statement",
+        "bank-statement": "Accounting Mockup",
         "ai-resume": "AI Resume",
         "offer-letter": "Offer Letter",
         "schedule-c": "Schedule C",

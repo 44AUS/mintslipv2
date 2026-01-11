@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff, KeyRound, Mail, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -17,6 +18,7 @@ export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [useCode, setUseCode] = useState(!searchParams.get("token"));
@@ -82,19 +84,20 @@ export default function ResetPassword() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+          {/* Success Card */}
+          <div className="bg-white rounded-2xl p-8 shadow-xl border border-slate-100 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-6">
+              <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800 mb-2">Password Reset!</h1>
-            <p className="text-slate-600 mb-6">
+            <p className="text-slate-500 mb-6">
               Your password has been successfully reset. You can now log in with your new password.
             </p>
             <Button
               onClick={() => navigate("/login")}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg"
             >
               Go to Login
             </Button>
@@ -105,64 +108,66 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-block mb-6">
-              <span className="text-2xl font-bold text-green-600">💼 MintSlip</span>
-            </Link>
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">Reset Password</h1>
-            <p className="text-slate-600">
-              Enter your new password below.
-            </p>
+        {/* Logo/Brand */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-4">
+            <KeyRound className="w-8 h-8 text-white" />
           </div>
+          <h1 className="text-2xl font-bold text-slate-800">Reset Password</h1>
+          <p className="text-slate-500 mt-1">Enter your new password below</p>
+        </div>
 
-          {/* Form */}
+        {/* Reset Form */}
+        <div className="bg-white rounded-2xl p-8 shadow-xl border border-slate-100">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Email Address
-              </label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
 
             {/* Code (if no token) */}
             {useCode && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Reset Code
-                </label>
-                <Input
-                  type="text"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="Enter 6-digit code from email"
-                  maxLength={6}
-                  className="text-center text-lg tracking-widest font-mono"
-                />
-                <p className="text-xs text-slate-500 mt-1">
+              <div className="space-y-2">
+                <Label htmlFor="code">Reset Code</Label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id="code"
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.toUpperCase())}
+                    placeholder="Enter 6-digit code"
+                    maxLength={6}
+                    className="pl-10 text-center text-lg tracking-widest font-mono"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
                   Check your email for the reset code
                 </p>
               </div>
             )}
 
             {/* New Password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                New Password
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">New Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
+                  id="newPassword"
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -179,41 +184,50 @@ export default function ResetPassword() {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500">
                 Must be at least 8 characters
               </p>
             </div>
 
             {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Confirm Password
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
-                  type={showPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
-                  className="pl-10"
+                  className="pl-10 pr-10"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-6"
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Resetting...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Resetting Password...
                 </>
               ) : (
-                "Reset Password"
+                <>
+                  <KeyRound className="w-5 h-5" />
+                  Reset Password
+                </>
               )}
             </Button>
           </form>
@@ -222,7 +236,7 @@ export default function ResetPassword() {
           <div className="mt-6 text-center">
             <Link
               to="/login"
-              className="inline-flex items-center text-sm text-green-600 hover:text-green-700"
+              className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back to Login
@@ -244,6 +258,19 @@ export default function ResetPassword() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Security Note */}
+        <div className="mt-6 bg-white rounded-xl p-4 border border-slate-100">
+          <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+            <Lock className="w-4 h-4 text-green-600" />
+            Security Tips
+          </h3>
+          <ul className="text-sm text-slate-600 space-y-1">
+            <li>• Use a strong, unique password</li>
+            <li>• Don't reuse passwords from other sites</li>
+            <li>• Consider using a password manager</li>
+          </ul>
         </div>
       </div>
     </div>

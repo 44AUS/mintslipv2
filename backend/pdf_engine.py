@@ -1406,19 +1406,96 @@ def apply_ai_analysis_to_result(result: PDFAnalysisResult, ai_analysis: Dict) ->
     # Store AI analysis in result
     result.ai_analysis = ai_data
     
-    # Apply risk adjustment from AI
-    risk_adjustment = ai_data.get("riskAdjustment", 0)
-    if risk_adjustment != 0:
-        result.add_risk(
-            "ai_analysis_adjustment",
-            f"AI analysis {'detected concerns' if risk_adjustment > 0 else 'found positive indicators'}: {ai_data.get('summary', 'See detailed analysis')}",
-            risk_adjustment
-        )
-    
-    # Add AI findings
+    # Get overall assessment
     overall = ai_data.get("overallAssessment", "UNKNOWN")
     confidence = ai_data.get("confidenceScore", 0)
     
+    # Apply base risk adjustment based on overall assessment
+    if overall == "LIKELY_FABRICATED":
+        result.add_risk(
+            "ai_assessment_fabricated",
+            f"AI determined document is LIKELY FABRICATED (Confidence: {confidence}%)",
+            25
+        )
+    elif overall == "SUSPICIOUS":
+        result.add_risk(
+            "ai_assessment_suspicious",
+            f"AI found document SUSPICIOUS (Confidence: {confidence}%)",
+            15
+        )
+    elif overall == "LIKELY_LEGITIMATE":
+        result.add_risk(
+            "ai_assessment_legitimate",
+            f"AI verified document appears LEGITIMATE (Confidence: {confidence}%)",
+            -15
+        )
+    
+    # Apply risk adjustment for math/balance verification failures
+    math_verification = ai_data.get("mathVerification") or ai_data.get("balanceVerification")
+    if math_verification:
+        if not math_verification.get("passed", True):
+            issues = math_verification.get("issues", [])
+            result.add_risk(
+                "ai_math_failed",
+                f"AI detected calculation errors: {len(issues)} issue(s) found",
+                15
+            )
+        else:
+            result.add_risk(
+                "ai_math_passed",
+                "AI verified calculations are correct",
+                -10
+            )
+    
+    # Apply risk adjustment for date consistency
+    date_consistency = ai_data.get("dateConsistency")
+    if date_consistency:
+        if not date_consistency.get("passed", True):
+            result.add_risk(
+                "ai_date_inconsistent",
+                "AI detected date/timeline inconsistencies",
+                10
+            )
+        else:
+            result.add_risk(
+                "ai_date_consistent",
+                "AI verified dates are consistent",
+                -5
+            )
+    
+    # Apply risk adjustment for content anomalies
+    content_anomalies = ai_data.get("contentAnomalies")
+    if content_anomalies and content_anomalies.get("found"):
+        anomalies = content_anomalies.get("anomalies", [])
+        result.add_risk(
+            "ai_content_anomalies",
+            f"AI detected {len(anomalies)} content anomalie(s)",
+            10
+        )
+    
+    # Apply risk based on red flags (each red flag adds points)
+    red_flags = ai_data.get("redFlags", [])
+    if red_flags:
+        # Add 3 points per red flag, max 20 points
+        red_flag_points = min(len(red_flags) * 3, 20)
+        result.add_risk(
+            "ai_red_flags",
+            f"AI identified {len(red_flags)} red flag(s): {', '.join(red_flags[:3])}{'...' if len(red_flags) > 3 else ''}",
+            red_flag_points
+        )
+    
+    # Apply risk reduction for green flags (each green flag reduces points)
+    green_flags = ai_data.get("greenFlags", [])
+    if green_flags:
+        # Subtract 2 points per green flag, max -15 points
+        green_flag_points = max(len(green_flags) * -2, -15)
+        result.add_risk(
+            "ai_green_flags",
+            f"AI verified {len(green_flags)} positive indicator(s): {', '.join(green_flags[:3])}{'...' if len(green_flags) > 3 else ''}",
+            green_flag_points
+        )
+    
+    # Add overall AI finding
     severity = "info"
     if overall == "LIKELY_FABRICATED":
         severity = "error"
@@ -1432,10 +1509,10 @@ def apply_ai_analysis_to_result(result: PDFAnalysisResult, ai_analysis: Dict) ->
         ai_data.get("summary", "")
     )
     
-    # Add red flags from AI
-    for flag in ai_data.get("redFlags", []):
-        result.add_finding("ai_red_flag", "warning", f"AI Detected: {flag}", "")
+    # Add individual red flags as findings
+    for flag in red_flags:
+        result.add_finding("ai_red_flag", "warning", f"AI Red Flag: {flag}", "")
     
-    # Add green flags from AI
-    for flag in ai_data.get("greenFlags", []):
+    # Add individual green flags as findings
+    for flag in green_flags:
         result.add_finding("ai_green_flag", "info", f"AI Verified: {flag}", "")

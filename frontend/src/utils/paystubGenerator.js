@@ -93,19 +93,19 @@ const TEMPLATE_METADATA = {
     producer: 'Qt 4.8.7',
   },
   'template-b': {  // ADP template
-    title: 'ADP Earnings Statement',
-    creator: 'ADP Workforce Now',
-    producer: 'ADP, Inc.',
+    title: 'ADP',
+    creator: 'wkhtmltopdf 0.12.6.1',
+    producer: 'Qt 4.8.7',
   },
   'template-c': {  // Paychex template
-    title: 'Paychex Earnings Statement',
-    creator: 'Paychex Flex',
-    producer: 'Paychex, Inc.',
+    title: 'Paychex',
+    creator: 'wkhtmltopdf 0.12.6.1',
+    producer: 'Qt 4.8.7',
   },
   'template-h': {  // OnPay/QuickBooks style
     title: 'Pay Statement',
     creator: 'QuickBooks Payroll',
-    producer: 'Intuit Inc.',
+    producer: 'Qt 4.8.7',
   },
 };
 

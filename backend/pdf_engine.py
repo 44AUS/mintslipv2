@@ -1116,3 +1116,324 @@ def get_legitimate_producers(document_type: str) -> Dict:
     elif document_type == "tax_form":
         return TAX_FORM_LEGITIMATE_PRODUCERS
     return {}
+
+
+# ============================================
+# AI-POWERED DOCUMENT ANALYSIS
+# ============================================
+
+AI_ANALYSIS_PROMPTS = {
+    "paystub": """You are an expert forensic document analyst specializing in payroll documents. Analyze this pay stub text for authenticity and consistency.
+
+CHECK THE FOLLOWING:
+
+1. **MATH VERIFICATION**:
+   - Does Gross Pay - Total Deductions = Net Pay?
+   - Are YTD (Year-to-Date) totals mathematically consistent?
+   - Do tax withholdings appear reasonable for the gross pay amount?
+   - Are FICA/Social Security and Medicare calculated correctly (typically 6.2% and 1.45%)?
+
+2. **DATE CONSISTENCY**:
+   - Is the pay period logical (e.g., bi-weekly, semi-monthly, monthly)?
+   - Do dates make sense (pay date after period end date)?
+   - Are YTD figures consistent with the time of year?
+
+3. **CONTENT ANOMALIES**:
+   - Are there any spelling errors in standard fields (employer name, deduction types)?
+   - Is the formatting consistent throughout?
+   - Are there any copy-paste artifacts or misaligned text?
+   - Do employer details (name, address, EIN) appear legitimate?
+
+4. **NUMERICAL PATTERNS**:
+   - Are numbers formatted consistently (decimal places, thousands separators)?
+   - Do the amounts seem realistic for typical employment?
+   - Are there any suspiciously round numbers that might indicate fabrication?
+
+5. **PROFESSIONAL STANDARDS**:
+   - Does it contain all required pay stub elements?
+   - Is the layout professional and consistent with standard payroll software?
+
+Respond in this exact JSON format:
+{
+  "overallAssessment": "LIKELY_LEGITIMATE" | "SUSPICIOUS" | "LIKELY_FABRICATED",
+  "confidenceScore": <0-100>,
+  "mathVerification": {
+    "passed": true/false,
+    "issues": ["list of math issues found"],
+    "details": "explanation"
+  },
+  "dateConsistency": {
+    "passed": true/false,
+    "issues": ["list of date issues"],
+    "details": "explanation"
+  },
+  "contentAnomalies": {
+    "found": true/false,
+    "anomalies": ["list of anomalies"],
+    "details": "explanation"
+  },
+  "redFlags": ["list of major red flags"],
+  "greenFlags": ["list of positive indicators"],
+  "riskAdjustment": <-30 to +30>,
+  "summary": "2-3 sentence summary of findings"
+}""",
+
+    "bank_statement": """You are an expert forensic document analyst specializing in banking documents. Analyze this bank statement text for authenticity and consistency.
+
+CHECK THE FOLLOWING:
+
+1. **BALANCE VERIFICATION**:
+   - Does Beginning Balance + Deposits - Withdrawals = Ending Balance?
+   - Are running balances consistent throughout the statement?
+   - Do the totals match the sum of individual transactions?
+
+2. **DATE CONSISTENCY**:
+   - Are transaction dates within the statement period?
+   - Are dates in chronological order?
+   - Is the statement period logical (monthly)?
+
+3. **TRANSACTION PATTERNS**:
+   - Are transaction descriptions consistent with bank formatting?
+   - Do transaction amounts have appropriate decimal precision?
+   - Are there any suspicious patterns (identical amounts, round numbers)?
+
+4. **CONTENT ANOMALIES**:
+   - Are there spelling errors in bank name or standard fields?
+   - Is formatting consistent throughout?
+   - Are account numbers properly masked/formatted?
+   - Do routing numbers appear valid?
+
+5. **PROFESSIONAL STANDARDS**:
+   - Does it contain all standard bank statement elements?
+   - Does the layout match professional bank statement formats?
+   - Is the bank's branding/formatting consistent?
+
+Respond in this exact JSON format:
+{
+  "overallAssessment": "LIKELY_LEGITIMATE" | "SUSPICIOUS" | "LIKELY_FABRICATED",
+  "confidenceScore": <0-100>,
+  "balanceVerification": {
+    "passed": true/false,
+    "issues": ["list of balance issues"],
+    "details": "explanation"
+  },
+  "dateConsistency": {
+    "passed": true/false,
+    "issues": ["list of date issues"],
+    "details": "explanation"
+  },
+  "transactionPatterns": {
+    "normal": true/false,
+    "anomalies": ["list of pattern anomalies"],
+    "details": "explanation"
+  },
+  "redFlags": ["list of major red flags"],
+  "greenFlags": ["list of positive indicators"],
+  "riskAdjustment": <-30 to +30>,
+  "summary": "2-3 sentence summary of findings"
+}""",
+
+    "tax_form": """You are an expert forensic document analyst specializing in tax documents. Analyze this tax form text for authenticity and consistency.
+
+CHECK THE FOLLOWING:
+
+1. **MATH VERIFICATION**:
+   - Do box totals add up correctly?
+   - Are withholding amounts consistent with wages?
+   - Do federal, state, and local taxes appear reasonable?
+
+2. **FORMAT COMPLIANCE**:
+   - Does it follow official IRS form format?
+   - Are all required fields present?
+   - Are EIN/SSN formatted correctly (masked appropriately)?
+
+3. **CONTENT CONSISTENCY**:
+   - Are employer details consistent?
+   - Do dates align with the tax year?
+   - Are amounts formatted correctly?
+
+4. **ANOMALY DETECTION**:
+   - Any spelling errors in official fields?
+   - Inconsistent formatting?
+   - Suspicious patterns?
+
+Respond in this exact JSON format:
+{
+  "overallAssessment": "LIKELY_LEGITIMATE" | "SUSPICIOUS" | "LIKELY_FABRICATED",
+  "confidenceScore": <0-100>,
+  "mathVerification": {
+    "passed": true/false,
+    "issues": ["list of issues"],
+    "details": "explanation"
+  },
+  "formatCompliance": {
+    "passed": true/false,
+    "issues": ["list of issues"],
+    "details": "explanation"
+  },
+  "redFlags": ["list of major red flags"],
+  "greenFlags": ["list of positive indicators"],
+  "riskAdjustment": <-30 to +30>,
+  "summary": "2-3 sentence summary of findings"
+}""",
+
+    "other": """You are an expert forensic document analyst. Analyze this document text for authenticity and consistency.
+
+CHECK THE FOLLOWING:
+
+1. **CONTENT CONSISTENCY**:
+   - Is the formatting consistent throughout?
+   - Are there any obvious copy-paste artifacts?
+   - Do dates and numbers appear logical?
+
+2. **PROFESSIONAL QUALITY**:
+   - Does it appear professionally generated?
+   - Are there spelling or grammar errors?
+   - Is the layout consistent?
+
+3. **ANOMALY DETECTION**:
+   - Any suspicious patterns?
+   - Misaligned text or formatting issues?
+   - Inconsistent fonts or styles?
+
+Respond in this exact JSON format:
+{
+  "overallAssessment": "LIKELY_LEGITIMATE" | "SUSPICIOUS" | "LIKELY_FABRICATED",
+  "confidenceScore": <0-100>,
+  "contentConsistency": {
+    "passed": true/false,
+    "issues": ["list of issues"],
+    "details": "explanation"
+  },
+  "redFlags": ["list of major red flags"],
+  "greenFlags": ["list of positive indicators"],
+  "riskAdjustment": <-30 to +30>,
+  "summary": "2-3 sentence summary of findings"
+}"""
+}
+
+
+async def analyze_document_with_ai(text_content: str, document_type: str, metadata: Dict = None) -> Dict:
+    """
+    Use AI to analyze document content for authenticity and consistency.
+    Returns AI analysis results including risk adjustment.
+    """
+    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    
+    if not api_key:
+        return {
+            "success": False,
+            "error": "AI analysis unavailable - API key not configured",
+            "aiAnalysis": None
+        }
+    
+    # Get the appropriate prompt for document type
+    prompt = AI_ANALYSIS_PROMPTS.get(document_type, AI_ANALYSIS_PROMPTS["other"])
+    
+    # Prepare context with metadata
+    context = f"DOCUMENT TYPE: {DOCUMENT_TYPES.get(document_type, {}).get('name', 'Unknown')}\n"
+    if metadata:
+        context += f"PDF PRODUCER: {metadata.get('producer', 'Unknown')}\n"
+        context += f"PDF CREATOR: {metadata.get('creator', 'Unknown')}\n"
+        context += f"CREATION DATE: {metadata.get('creationDate', 'Unknown')}\n"
+    
+    # Truncate text if too long (keep first 8000 chars for analysis)
+    truncated_text = text_content[:8000] if len(text_content) > 8000 else text_content
+    
+    full_prompt = f"{prompt}\n\n{context}\n\nDOCUMENT TEXT CONTENT:\n```\n{truncated_text}\n```"
+    
+    try:
+        # Initialize LLM chat
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"pdf-analysis-{datetime.now().timestamp()}",
+            system_message="You are a forensic document analyst AI. Always respond with valid JSON only, no markdown formatting."
+        ).with_model("openai", "gpt-4.1")
+        
+        # Send message and get response
+        user_message = UserMessage(text=full_prompt)
+        response = await chat.send_message(user_message)
+        
+        # Parse JSON response
+        # Clean up response - remove markdown code blocks if present
+        clean_response = response.strip()
+        if clean_response.startswith("```json"):
+            clean_response = clean_response[7:]
+        if clean_response.startswith("```"):
+            clean_response = clean_response[3:]
+        if clean_response.endswith("```"):
+            clean_response = clean_response[:-3]
+        clean_response = clean_response.strip()
+        
+        try:
+            ai_result = json.loads(clean_response)
+            return {
+                "success": True,
+                "aiAnalysis": ai_result
+            }
+        except json.JSONDecodeError as e:
+            # If JSON parsing fails, return raw response
+            return {
+                "success": True,
+                "aiAnalysis": {
+                    "overallAssessment": "ANALYSIS_ERROR",
+                    "confidenceScore": 0,
+                    "summary": f"AI analysis completed but response parsing failed. Raw response available.",
+                    "rawResponse": response[:1000],
+                    "riskAdjustment": 0
+                }
+            }
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"AI analysis failed: {str(e)}",
+            "aiAnalysis": None
+        }
+
+
+def apply_ai_analysis_to_result(result: PDFAnalysisResult, ai_analysis: Dict) -> None:
+    """Apply AI analysis findings to the PDF analysis result."""
+    if not ai_analysis or not ai_analysis.get("success"):
+        return
+    
+    ai_data = ai_analysis.get("aiAnalysis", {})
+    if not ai_data:
+        return
+    
+    # Store AI analysis in result
+    result.ai_analysis = ai_data
+    
+    # Apply risk adjustment from AI
+    risk_adjustment = ai_data.get("riskAdjustment", 0)
+    if risk_adjustment != 0:
+        result.add_risk(
+            "ai_analysis_adjustment",
+            f"AI analysis {'detected concerns' if risk_adjustment > 0 else 'found positive indicators'}: {ai_data.get('summary', 'See detailed analysis')}",
+            risk_adjustment
+        )
+    
+    # Add AI findings
+    overall = ai_data.get("overallAssessment", "UNKNOWN")
+    confidence = ai_data.get("confidenceScore", 0)
+    
+    severity = "info"
+    if overall == "LIKELY_FABRICATED":
+        severity = "error"
+    elif overall == "SUSPICIOUS":
+        severity = "warning"
+    
+    result.add_finding(
+        "ai_analysis",
+        severity,
+        f"AI Assessment: {overall.replace('_', ' ').title()} (Confidence: {confidence}%)",
+        ai_data.get("summary", "")
+    )
+    
+    # Add red flags from AI
+    for flag in ai_data.get("redFlags", []):
+        result.add_finding("ai_red_flag", "warning", f"AI Detected: {flag}", "")
+    
+    # Add green flags from AI
+    for flag in ai_data.get("greenFlags", []):
+        result.add_finding("ai_green_flag", "info", f"AI Verified: {flag}", "")

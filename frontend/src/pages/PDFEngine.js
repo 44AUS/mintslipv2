@@ -753,6 +753,159 @@ export default function PDFEngine() {
                       </CollapsibleSection>
                     )}
                     
+                    {/* AI Analysis Results */}
+                    {analysisResult.analysis.aiAnalysis && (
+                      <CollapsibleSection
+                        title="AI Analysis"
+                        icon={Brain}
+                        badge={{ 
+                          text: analysisResult.analysis.aiAnalysis.overallAssessment?.replace(/_/g, ' ') || 'Complete',
+                          className: analysisResult.analysis.aiAnalysis.overallAssessment === 'LIKELY_LEGITIMATE' 
+                            ? "bg-green-100 text-green-700"
+                            : analysisResult.analysis.aiAnalysis.overallAssessment === 'SUSPICIOUS'
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }}
+                        defaultOpen={true}
+                      >
+                        <div className="space-y-4">
+                          {/* AI Assessment Header */}
+                          <div className={`p-4 rounded-lg border ${
+                            analysisResult.analysis.aiAnalysis.overallAssessment === 'LIKELY_LEGITIMATE'
+                              ? 'bg-green-50 border-green-200'
+                              : analysisResult.analysis.aiAnalysis.overallAssessment === 'SUSPICIOUS'
+                              ? 'bg-yellow-50 border-yellow-200'
+                              : 'bg-red-50 border-red-200'
+                          }`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <Sparkles className={`w-5 h-5 ${
+                                  analysisResult.analysis.aiAnalysis.overallAssessment === 'LIKELY_LEGITIMATE'
+                                    ? 'text-green-600'
+                                    : analysisResult.analysis.aiAnalysis.overallAssessment === 'SUSPICIOUS'
+                                    ? 'text-yellow-600'
+                                    : 'text-red-600'
+                                }`} />
+                                <span className="font-semibold">
+                                  {analysisResult.analysis.aiAnalysis.overallAssessment?.replace(/_/g, ' ')}
+                                </span>
+                              </div>
+                              <span className="text-sm font-medium">
+                                Confidence: {analysisResult.analysis.aiAnalysis.confidenceScore}%
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-700">{analysisResult.analysis.aiAnalysis.summary}</p>
+                          </div>
+                          
+                          {/* Math Verification */}
+                          {analysisResult.analysis.aiAnalysis.mathVerification && (
+                            <div className={`p-3 rounded-lg border ${
+                              analysisResult.analysis.aiAnalysis.mathVerification.passed 
+                                ? 'bg-green-50 border-green-200' 
+                                : 'bg-red-50 border-red-200'
+                            }`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Calculator className={`w-4 h-4 ${
+                                  analysisResult.analysis.aiAnalysis.mathVerification.passed ? 'text-green-600' : 'text-red-600'
+                                }`} />
+                                <span className="font-medium text-sm">Math Verification</span>
+                                {analysisResult.analysis.aiAnalysis.mathVerification.passed 
+                                  ? <CheckCircle className="w-4 h-4 text-green-600" />
+                                  : <XCircle className="w-4 h-4 text-red-600" />
+                                }
+                              </div>
+                              <p className="text-sm text-slate-600">{analysisResult.analysis.aiAnalysis.mathVerification.details}</p>
+                              {analysisResult.analysis.aiAnalysis.mathVerification.issues?.length > 0 && (
+                                <ul className="mt-2 text-sm text-red-600 list-disc list-inside">
+                                  {analysisResult.analysis.aiAnalysis.mathVerification.issues.map((issue, i) => (
+                                    <li key={i}>{issue}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Balance Verification (for bank statements) */}
+                          {analysisResult.analysis.aiAnalysis.balanceVerification && (
+                            <div className={`p-3 rounded-lg border ${
+                              analysisResult.analysis.aiAnalysis.balanceVerification.passed 
+                                ? 'bg-green-50 border-green-200' 
+                                : 'bg-red-50 border-red-200'
+                            }`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <Calculator className={`w-4 h-4 ${
+                                  analysisResult.analysis.aiAnalysis.balanceVerification.passed ? 'text-green-600' : 'text-red-600'
+                                }`} />
+                                <span className="font-medium text-sm">Balance Verification</span>
+                                {analysisResult.analysis.aiAnalysis.balanceVerification.passed 
+                                  ? <CheckCircle className="w-4 h-4 text-green-600" />
+                                  : <XCircle className="w-4 h-4 text-red-600" />
+                                }
+                              </div>
+                              <p className="text-sm text-slate-600">{analysisResult.analysis.aiAnalysis.balanceVerification.details}</p>
+                            </div>
+                          )}
+                          
+                          {/* Date Consistency */}
+                          {analysisResult.analysis.aiAnalysis.dateConsistency && (
+                            <div className={`p-3 rounded-lg border ${
+                              analysisResult.analysis.aiAnalysis.dateConsistency.passed 
+                                ? 'bg-green-50 border-green-200' 
+                                : 'bg-yellow-50 border-yellow-200'
+                            }`}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <CalendarCheck className={`w-4 h-4 ${
+                                  analysisResult.analysis.aiAnalysis.dateConsistency.passed ? 'text-green-600' : 'text-yellow-600'
+                                }`} />
+                                <span className="font-medium text-sm">Date Consistency</span>
+                                {analysisResult.analysis.aiAnalysis.dateConsistency.passed 
+                                  ? <CheckCircle className="w-4 h-4 text-green-600" />
+                                  : <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                                }
+                              </div>
+                              <p className="text-sm text-slate-600">{analysisResult.analysis.aiAnalysis.dateConsistency.details}</p>
+                            </div>
+                          )}
+                          
+                          {/* Red Flags */}
+                          {analysisResult.analysis.aiAnalysis.redFlags?.length > 0 && (
+                            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                              <p className="font-medium text-sm text-red-800 mb-2 flex items-center gap-1">
+                                <AlertCircle className="w-4 h-4" />
+                                AI-Detected Red Flags
+                              </p>
+                              <ul className="space-y-1">
+                                {analysisResult.analysis.aiAnalysis.redFlags.map((flag, i) => (
+                                  <li key={i} className="text-sm text-red-700 flex items-start gap-2">
+                                    <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                    {flag}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {/* Green Flags */}
+                          {analysisResult.analysis.aiAnalysis.greenFlags?.length > 0 && (
+                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                              <p className="font-medium text-sm text-green-800 mb-2 flex items-center gap-1">
+                                <BadgeCheck className="w-4 h-4" />
+                                AI-Verified Positive Indicators
+                              </p>
+                              <ul className="space-y-1">
+                                {analysisResult.analysis.aiAnalysis.greenFlags.map((flag, i) => (
+                                  <li key={i} className="text-sm text-green-700 flex items-start gap-2">
+                                    <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                                    {flag}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </CollapsibleSection>
+                    )}
+                    
                     {/* Consistency Findings */}
                     {analysisResult.analysis.consistencyFindings?.length > 0 && (
                       <CollapsibleSection

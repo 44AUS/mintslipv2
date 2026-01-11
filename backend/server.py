@@ -7,6 +7,7 @@ from typing import List, Optional
 import os
 import json
 import httpx
+import logging
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import uuid
@@ -21,6 +22,9 @@ from collections import defaultdict
 import time
 import base64
 import asyncio
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 

@@ -18,6 +18,9 @@ import { generateAndDownloadScheduleC } from '@/utils/scheduleCGenerator';
 import { generateAndDownloadUtilityBill } from '@/utils/utilityBillGenerator';
 import { generateAndDownloadVehicleBillOfSale } from '@/utils/vehicleBillOfSaleGenerator';
 
+// Import email utility for sending PDF attachments
+import { sendDownloadEmailWithPdf } from '@/utils/emailWithPdf';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 export default function PaymentSuccess() {

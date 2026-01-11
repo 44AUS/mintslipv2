@@ -1,13 +1,13 @@
 /**
- * Utility for sending download confirmation emails with PDF attachments
- * PDF is sent to backend in memory (not stored) - respects user privacy
+ * Utility for sending download confirmation emails with PDF/ZIP attachments
+ * Files are sent to backend in memory (not stored) - respects user privacy
  */
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 /**
  * Convert a Blob to base64 string
- * @param {Blob} blob - The PDF blob
+ * @param {Blob} blob - The file blob
  * @returns {Promise<string>} - Base64 encoded string (without data URI prefix)
  */
 const blobToBase64 = (blob) => {
@@ -24,32 +24,40 @@ const blobToBase64 = (blob) => {
 };
 
 /**
- * Send download confirmation email with PDF attached
+ * Send download confirmation email with file attached (PDF or ZIP)
  * @param {Object} options - Email options
  * @param {string} options.email - Recipient email address
  * @param {string} [options.userName] - User's name (optional)
  * @param {string} options.documentType - Type of document (paystub, w2, etc.)
- * @param {Blob} options.pdfBlob - The PDF blob to attach
+ * @param {Blob} options.fileBlob - The file blob to attach (PDF or ZIP)
  * @param {string} [options.fileName] - Custom filename (optional)
  * @param {boolean} [options.isGuest] - Whether user is a guest (default: false)
+ * @param {boolean} [options.isZip] - Whether the file is a ZIP (default: false)
  * @returns {Promise<{success: boolean, message?: string, error?: string}>}
  */
 export const sendDownloadEmailWithPdf = async ({
   email,
   userName = '',
   documentType,
-  pdfBlob,
+  pdfBlob,  // Keep old name for backward compatibility
+  fileBlob = null,  // New name
   fileName = null,
-  isGuest = false
+  isGuest = false,
+  isZip = false
 }) => {
-  if (!email || !pdfBlob) {
-    console.error('sendDownloadEmailWithPdf: email and pdfBlob are required');
-    return { success: false, error: 'Email and PDF are required' };
+  const blob = fileBlob || pdfBlob;
+  
+  if (!email || !blob) {
+    console.error('sendDownloadEmailWithPdf: email and file blob are required');
+    return { success: false, error: 'Email and file are required' };
   }
 
   try {
     // Convert blob to base64
-    const pdfBase64 = await blobToBase64(pdfBlob);
+    const fileBase64 = await blobToBase64(blob);
+    
+    // Auto-detect if it's a ZIP file based on blob type
+    const isZipFile = isZip || blob.type === 'application/zip' || blob.type === 'application/x-zip-compressed';
     
     const response = await fetch(`${BACKEND_URL}/api/send-download-email`, {
       method: 'POST',
@@ -60,9 +68,10 @@ export const sendDownloadEmailWithPdf = async ({
         email,
         userName,
         documentType,
-        pdfBase64,
+        pdfBase64: fileBase64,  // Keep field name for backend compatibility
         fileName,
-        isGuest
+        isGuest,
+        isZip: isZipFile
       })
     });
 
@@ -73,11 +82,11 @@ export const sendDownloadEmailWithPdf = async ({
       return { success: false, error: data.detail || 'Failed to send email' };
     }
 
-    console.log('Download email sent successfully with PDF attachment');
+    console.log('Download email sent successfully with attachment');
     return { success: true, message: data.message };
     
   } catch (error) {
-    console.error('Error sending download email with PDF:', error);
+    console.error('Error sending download email with attachment:', error);
     return { success: false, error: error.message };
   }
 };

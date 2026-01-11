@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { X, Tag, Sparkles, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,6 +9,10 @@ export default function PromoBanner() {
   const [banner, setBanner] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
   const [copied, setCopied] = useState(false);
+  const location = useLocation();
+
+  // Hide banner on admin pages
+  const isAdminPage = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     fetchBanner();
@@ -48,7 +53,8 @@ export default function PromoBanner() {
     }
   };
 
-  if (!banner || !isVisible) {
+  // Don't show on admin pages or if no banner/not visible
+  if (!banner || !isVisible || isAdminPage) {
     return null;
   }
 

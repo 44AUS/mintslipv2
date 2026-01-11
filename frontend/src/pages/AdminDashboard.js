@@ -1923,6 +1923,9 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-slate-800">Purchases Over Time</h2>
+                  <p className="text-sm text-slate-500">
+                    {chartTypeFilter === "all" ? "All purchases" : chartTypeFilter === "subscription" ? "Subscriptions only" : "Guest purchases only"}
+                  </p>
                 </div>
                 <div className="h-[300px]">
                   {revenueChartData.length > 0 ? (

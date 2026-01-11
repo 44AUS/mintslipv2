@@ -53,7 +53,9 @@ import {
   Shield,
   Globe,
   Menu,
-  X
+  X,
+  FolderArchive,
+  File
 } from "lucide-react";
 import {
   AreaChart,

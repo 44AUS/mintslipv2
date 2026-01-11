@@ -53,7 +53,9 @@ from pdf_engine import (
     PDFAnalysisResult,
     get_document_types,
     get_legitimate_producers,
-    DOCUMENT_TYPES
+    DOCUMENT_TYPES,
+    analyze_document_with_ai,
+    apply_ai_analysis_to_result
 )
 
 # Import Emergent Integrations for Gemini

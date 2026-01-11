@@ -2323,8 +2323,12 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
     ]
     purchases_by_type = await purchases_collection.aggregate(type_pipeline).to_list(100)
     
-    # Recent purchases (last 10)
-    recent_purchases = await purchases_collection.find({}, {"_id": 0}).sort("createdAt", -1).limit(10).to_list(10)
+    # Get purchases for the last year for chart data
+    one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
+    recent_purchases = await purchases_collection.find(
+        {"createdAt": {"$gte": one_year_ago.isoformat()}},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(5000)
     
     # Total users
     total_users = await users_collection.count_documents({})

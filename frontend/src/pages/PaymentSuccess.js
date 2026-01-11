@@ -172,9 +172,9 @@ export default function PaymentSuccess() {
           pdfBlob = await generateAndDownloadPaystub(formData, template, numStubs, true);
           generated = true;
           
-          // Send email with PDF attachment
+          // Send email with attachment (ZIP if multiple, PDF if single)
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'paystub', formData.name);
+            sendFileEmail(pdfBlob, emailToUse, 'paystub', formData.name, numStubs > 1);
           }
           
           toast.success(numStubs > 1 ? `Your ${numStubs} paystubs have been downloaded!` : 'Your paystub has been downloaded!');

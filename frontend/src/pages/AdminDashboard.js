@@ -166,6 +166,10 @@ export default function AdminDashboard() {
   const getTabFromPath = (pathname) => {
     if (pathname.includes("/admin/users")) return "users";
     if (pathname.includes("/admin/purchases")) return "purchases";
+    if (pathname.includes("/admin/saved-docs")) return "saved-docs";
+    if (pathname.includes("/admin/discounts")) return "discounts";
+    if (pathname.includes("/admin/banned-ips")) return "banned-ips";
+    if (pathname.includes("/admin/blog")) return "blog";
     return "overview";
   };
   

@@ -1471,6 +1471,7 @@ export default function AdminDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => {
+                    setActiveTab(tab.id);
                     navigate(tab.path);
                     setMobileMenuOpen(false);
                   }}

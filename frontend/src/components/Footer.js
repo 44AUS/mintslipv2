@@ -119,7 +119,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-slate-400">
                 <Phone className="w-4 h-4 text-green-400" />
-                <span>24/7 Support Available</span>
+                <a href="tel:+18556236746" className="hover:text-white transition-colors">(855) 623-6746</a>
               </div>
             </div>
           </div>

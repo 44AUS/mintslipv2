@@ -482,8 +482,16 @@ def template_password_reset(user_name: str, reset_link: str, reset_code: str) ->
 # EMAIL SENDING FUNCTIONS
 # ============================================================
 
-async def send_email(to_email: str, subject: str, html_content: str, email_type: str = "general") -> Dict[str, Any]:
-    """Send an email immediately using Resend"""
+async def send_email(to_email: str, subject: str, html_content: str, email_type: str = "general", attachments: Optional[list] = None) -> Dict[str, Any]:
+    """Send an email immediately using Resend
+    
+    Args:
+        to_email: Recipient email address
+        subject: Email subject
+        html_content: HTML body content
+        email_type: Type of email for logging
+        attachments: Optional list of attachments, each with 'filename' and 'content' (base64 encoded)
+    """
     if not resend.api_key:
         logger.error("Resend API key not configured")
         return {"success": False, "error": "Email service not configured"}
@@ -494,6 +502,10 @@ async def send_email(to_email: str, subject: str, html_content: str, email_type:
         "subject": subject,
         "html": html_content
     }
+    
+    # Add attachments if provided
+    if attachments:
+        params["attachments"] = attachments
     
     try:
         # Run sync SDK in thread to keep FastAPI non-blocking
@@ -506,6 +518,7 @@ async def send_email(to_email: str, subject: str, html_content: str, email_type:
             "email_type": email_type,
             "status": "sent",
             "resend_id": result.get("id"),
+            "has_attachment": attachments is not None and len(attachments) > 0,
             "sent_at": datetime.now(timezone.utc).isoformat()
         })
         

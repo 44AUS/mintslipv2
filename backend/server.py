@@ -45,6 +45,14 @@ from email_service import (
     process_scheduled_emails
 )
 
+# Import PDF Engine
+from pdf_engine import (
+    analyze_pdf_metadata,
+    normalize_pdf_metadata,
+    generate_analysis_report_pdf,
+    PDFAnalysisResult
+)
+
 # Import Emergent Integrations for Gemini
 from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
 

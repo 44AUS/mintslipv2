@@ -17,7 +17,9 @@ import {
   Plus,
   FolderArchive,
   Trash2,
-  Calendar
+  Calendar,
+  AlertTriangle,
+  Mail
 } from "lucide-react";
 
 // Document type labels for proper display

@@ -175,6 +175,67 @@ export default function UserSettings() {
     }
   };
 
+  const handleChangeEmail = async () => {
+    setEmailError("");
+    
+    // Validate
+    if (!emailData.newEmail) {
+      setEmailError("Please enter a new email address");
+      return;
+    }
+    if (!emailData.newEmail.includes("@")) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    if (!emailData.password) {
+      setEmailError("Please enter your password to confirm");
+      return;
+    }
+    if (emailData.newEmail.toLowerCase() === user?.email?.toLowerCase()) {
+      setEmailError("New email is the same as your current email");
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await fetch(`${BACKEND_URL}/api/user/change-email`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          newEmail: emailData.newEmail,
+          password: emailData.password
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to change email");
+      }
+      
+      // Update local storage with new user info
+      if (data.user) {
+        localStorage.setItem("userInfo", JSON.stringify(data.user));
+        setUser(data.user);
+      }
+      
+      toast.success("Email updated! Please check your inbox to verify your new email.");
+      setShowEmailDialog(false);
+      setEmailData({ newEmail: "", password: "", showPassword: false });
+      
+      // Redirect to verify email page
+      navigate("/verify-email");
+    } catch (error) {
+      setEmailError(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleCancelSubscription = async () => {
     setIsProcessing(true);
     try {

@@ -121,12 +121,41 @@ export default function PaymentSuccess() {
     }
   }, [sessionId]);
 
+  // Helper function to send PDF email after generation
+  const sendPdfEmail = async (pdfBlob, email, documentType, userName = '') => {
+    if (!email || !pdfBlob) {
+      console.log('Skipping email - no email or blob provided');
+      return;
+    }
+    
+    try {
+      const result = await sendDownloadEmailWithPdf({
+        email,
+        userName,
+        documentType,
+        pdfBlob,
+        isGuest: !localStorage.getItem('userToken')
+      });
+      
+      if (result.success) {
+        setEmailSent(true);
+        console.log('PDF email sent successfully');
+      } else {
+        console.error('Failed to send PDF email:', result.error);
+      }
+    } catch (err) {
+      console.error('Error sending PDF email:', err);
+    }
+  };
+
   // Generate document based on type
-  const generateDocument = async () => {
+  const generateDocument = async (email = null) => {
     setIsGenerating(true);
+    const emailToUse = email || customerEmail;
     
     try {
       let generated = false;
+      let pdfBlob = null;
       
       if (orderType === 'paystub') {
         const formDataStr = localStorage.getItem('pendingPaystubData');
@@ -137,12 +166,14 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           console.log('Generating paystub with stored data...', { template, numStubs });
           
-          // Generate paystub - pass numStubs for ZIP generation when multiple
-          await generateAndDownloadPaystub(formData, template, numStubs);
+          // Generate paystub - pass returnBlob=true to get the blob for email
+          pdfBlob = await generateAndDownloadPaystub(formData, template, numStubs, true);
           generated = true;
           
-          // DON'T clear form data yet - user may need to re-download
-          // Data will be cleared when they start a new payment flow
+          // Send email with PDF attachment
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'paystub', formData.name);
+          }
           
           toast.success(numStubs > 1 ? `Your ${numStubs} paystubs have been downloaded!` : 'Your paystub has been downloaded!');
         }
@@ -153,10 +184,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const taxYear = localStorage.getItem('pendingW2TaxYear') || '2024';
           
-          await generateAndDownloadW2(formData, taxYear);
+          pdfBlob = await generateAndDownloadW2(formData, taxYear, true);
           generated = true;
           
-          // DON'T clear form data yet - user may need to re-download
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'w2', formData.employeeName);
+          }
           
           toast.success('Your W-2 has been downloaded!');
         }
@@ -166,10 +199,12 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           
-          await generateAndDownloadW9(formData);
+          pdfBlob = await generateAndDownloadW9(formData, true);
           generated = true;
           
-          // DON'T clear form data yet - user may need to re-download
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'w9', formData.name);
+          }
           
           toast.success('Your W-9 has been downloaded!');
         }
@@ -180,10 +215,12 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const template = localStorage.getItem('pendingBankStatementTemplate') || 'chase';
           
-          await generateAndDownloadBankStatement(formData, template);
+          pdfBlob = await generateAndDownloadBankStatement(formData, template, true);
           generated = true;
           
-          // DON'T clear form data yet - user may need to re-download
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'bank-statement', formData.accountHolder);
+          }
           
           toast.success('Your bank statement has been downloaded!');
         }

@@ -7,6 +7,40 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Set up pdf.js worker using unpkg CDN with correct version
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
+// PDF metadata configuration per template (matching real document signatures)
+const TEMPLATE_METADATA = {
+  'template-a': {  // Gusto template
+    title: 'Gusto',
+    creator: 'wkhtmltopdf 0.12.6.1',
+    producer: 'Qt 4.8.7',
+  },
+  'template-b': {  // ADP template
+    title: 'ADP Earnings Statement',
+    creator: 'ADP Workforce Now',
+    producer: 'ADP, Inc.',
+  },
+  'template-c': {  // Paychex template
+    title: 'Paychex Earnings Statement',
+    creator: 'Paychex Flex',
+    producer: 'Paychex, Inc.',
+  },
+  'template-h': {  // OnPay/QuickBooks style
+    title: 'Pay Statement',
+    creator: 'QuickBooks Payroll',
+    producer: 'Intuit Inc.',
+  },
+};
+
+// Apply template-specific PDF metadata
+function applyPdfMetadata(doc, template) {
+  const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
+  doc.setProperties({
+    title: metadata.title,
+    creator: metadata.creator,
+    producer: metadata.producer,
+  });
+}
+
 // Convert PDF to image using pdf.js
 async function convertPdfToImage(pdfDataUrl) {
   // Convert base64 to ArrayBuffer

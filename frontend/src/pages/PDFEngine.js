@@ -1179,6 +1179,194 @@ export default function PDFEngine() {
                       Analyzed at: {new Date(analysisResult.analyzedAt).toLocaleString()}
                     </p>
                   </div>
+                  
+                  {/* Metadata Editor */}
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => setShowMetadataEditor(!showMetadataEditor)}
+                    >
+                      <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                        <Edit3 className="w-5 h-5 text-purple-600" />
+                        Metadata Editor
+                        <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">Advanced</span>
+                      </h3>
+                      {showMetadataEditor ? (
+                        <ChevronUp className="w-5 h-5 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-slate-400" />
+                      )}
+                    </div>
+                    
+                    {showMetadataEditor && (
+                      <div className="mt-4 space-y-4">
+                        <p className="text-sm text-slate-600">
+                          Edit metadata and regenerate as a clean PDF without edit traces.
+                        </p>
+                        
+                        {/* Presets */}
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Quick Presets
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(PRESETS).map(([key, preset]) => (
+                              <button
+                                key={key}
+                                onClick={() => applyPreset(key)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                  selectedPreset === key
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                }`}
+                              >
+                                {preset.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Prefill Button */}
+                        <button
+                          onClick={prefillFromAnalysis}
+                          className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          Prefill from current metadata
+                        </button>
+                        
+                        {/* Metadata Fields */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Producer</label>
+                            <input
+                              type="text"
+                              value={metadataFields.producer}
+                              onChange={(e) => setMetadataFields(prev => ({ ...prev, producer: e.target.value }))}
+                              placeholder="e.g., ADP, Inc."
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Creator</label>
+                            <input
+                              type="text"
+                              value={metadataFields.creator}
+                              onChange={(e) => setMetadataFields(prev => ({ ...prev, creator: e.target.value }))}
+                              placeholder="e.g., ADP Workforce Now"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Author</label>
+                            <input
+                              type="text"
+                              value={metadataFields.author}
+                              onChange={(e) => setMetadataFields(prev => ({ ...prev, author: e.target.value }))}
+                              placeholder="Optional"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                            <input
+                              type="text"
+                              value={metadataFields.title}
+                              onChange={(e) => setMetadataFields(prev => ({ ...prev, title: e.target.value }))}
+                              placeholder="Optional"
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Creation Date</label>
+                            <input
+                              type="date"
+                              value={metadataFields.creationDate}
+                              onChange={(e) => setMetadataFields(prev => ({ ...prev, creationDate: e.target.value }))}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Modification Date</label>
+                            <input
+                              type="date"
+                              value={metadataFields.modificationDate}
+                              onChange={(e) => setMetadataFields(prev => ({ ...prev, modificationDate: e.target.value }))}
+                              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Regenerate Button */}
+                        <Button
+                          onClick={regeneratePDF}
+                          disabled={isRegenerating || (!metadataFields.producer && !metadataFields.creator && !selectedPreset)}
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          {isRegenerating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Regenerating...
+                            </>
+                          ) : (
+                            <>
+                              <Wand2 className="w-4 h-4 mr-2" />
+                              Regenerate Clean PDF
+                            </>
+                          )}
+                        </Button>
+                        
+                        {/* Regeneration Result */}
+                        {regeneratedPdf && (
+                          <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                              <span className="font-medium text-green-800">PDF Regenerated Successfully</span>
+                            </div>
+                            
+                            {/* Changes made */}
+                            {regeneratedPdf.changes?.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-medium text-slate-700 mb-2">Changes Applied:</p>
+                                <div className="space-y-1">
+                                  {regeneratedPdf.changes.map((change, idx) => (
+                                    <div key={idx} className="text-xs bg-white p-2 rounded border border-green-100">
+                                      <span className="font-medium">{change.field}:</span>
+                                      <span className="text-slate-500"> {change.original || 'N/A'}</span>
+                                      <span className="text-green-600"> → {change.new}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <Button
+                              onClick={downloadRegeneratedPDF}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download Regenerated PDF
+                            </Button>
+                            
+                            <p className="text-xs text-green-700 mt-2">
+                              Edit history removed. PDF appears freshly generated.
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* Warning */}
+                        <p className="text-xs text-amber-600 flex items-start gap-1">
+                          <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                          Editing metadata does not modify document content. Use responsibly.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>

@@ -669,6 +669,95 @@ export default function UserSettings() {
         </DialogContent>
       </Dialog>
 
+      {/* Change Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={(open) => {
+        setShowEmailDialog(open);
+        if (!open) {
+          setEmailData({ newEmail: "", password: "", showPassword: false });
+          setEmailError("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-green-600" />
+              Change Email Address
+            </DialogTitle>
+            <DialogDescription>
+              Enter your new email address. You'll need to verify it before you can continue using your account.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {emailError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {emailError}
+              </div>
+            )}
+            
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-600">
+                <span className="font-medium">Current email:</span> {user?.email}
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="newEmail">New Email Address</Label>
+              <Input
+                id="newEmail"
+                type="email"
+                value={emailData.newEmail}
+                onChange={(e) => setEmailData(prev => ({ ...prev, newEmail: e.target.value }))}
+                placeholder="Enter your new email"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="emailPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="emailPassword"
+                  type={emailData.showPassword ? "text" : "password"}
+                  value={emailData.password}
+                  onChange={(e) => setEmailData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Enter your password to confirm"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setEmailData(prev => ({ ...prev, showPassword: !prev.showPassword }))}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {emailData.showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-700">
+                <AlertTriangle className="w-4 h-4 inline mr-1" />
+                After changing your email, you'll need to verify the new address before you can access protected features.
+              </p>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleChangeEmail}
+              disabled={isProcessing}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Update Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Cancel Subscription Dialog */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <DialogContent>

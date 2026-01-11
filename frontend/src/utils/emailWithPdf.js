@@ -3,7 +3,7 @@
  * PDF is sent to backend in memory (not stored) - respects user privacy
  */
 
-const BACKEND_URL = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 /**
  * Convert a Blob to base64 string

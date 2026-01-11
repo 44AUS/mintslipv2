@@ -1286,8 +1286,9 @@ METADATA_PRESETS = {
         "creator": "Paychex Flex",
     },
     "gusto": {
-        "producer": "Gusto",
-        "creator": "Gusto Payroll",
+        "producer": "Qt 4.8.7",
+        "creator": "wkhtmltopdf 0.12.6.1",
+        "title": "Gusto",
     },
     "quickbooks": {
         "producer": "Intuit Inc.",

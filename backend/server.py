@@ -5166,18 +5166,45 @@ class PDFEngineAnalyzeRequest(BaseModel):
     normalizeOptions: Optional[dict] = None
 
 
+@app.get("/api/pdf-engine/document-types")
+async def get_pdf_document_types(session: dict = Depends(get_current_user)):
+    """Get available document types for PDF analysis"""
+    return {
+        "documentTypes": DOCUMENT_TYPES,
+        "success": True
+    }
+
+
+@app.get("/api/pdf-engine/producers/{document_type}")
+async def get_pdf_producers(document_type: str, session: dict = Depends(get_current_user)):
+    """Get legitimate producers for a document type"""
+    producers = get_legitimate_producers(document_type)
+    return {
+        "documentType": document_type,
+        "producers": {k: {"name": v["names"][0], "notes": v.get("notes", "")} for k, v in producers.items()},
+        "success": True
+    }
+
+
 @app.post("/api/pdf-engine/analyze")
 async def analyze_pdf_endpoint(
     file: UploadFile = File(...),
     normalize: bool = False,
+    document_type: str = "other",
     session: dict = Depends(get_current_user)
 ):
     """
     Analyze PDF metadata and document consistency
     Business Plan feature only
+    
+    document_type options: paystub, bank_statement, tax_form, other
     """
     # Verify Business subscription
     user = await verify_business_subscription(session)
+    
+    # Validate document type
+    if document_type not in DOCUMENT_TYPES:
+        document_type = "other"
     
     # Validate file type
     if not file.filename.lower().endswith('.pdf'):
@@ -5214,8 +5241,8 @@ async def analyze_pdf_endpoint(
         )
     
     try:
-        # Analyze the PDF
-        analysis = analyze_pdf_metadata(pdf_bytes)
+        # Analyze the PDF with document type
+        analysis = analyze_pdf_metadata(pdf_bytes, document_type)
         
         result = {
             "success": True,

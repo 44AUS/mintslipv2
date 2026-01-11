@@ -559,6 +559,22 @@ export default function PDFEngine() {
                 
                 {/* Options */}
                 <div className="mt-4 space-y-3">
+                  <label className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 border border-purple-200">
+                    <input
+                      type="checkbox"
+                      checked={aiEnabled}
+                      onChange={(e) => setAiEnabled(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
+                    />
+                    <div>
+                      <p className="font-medium text-purple-800 text-sm flex items-center gap-1">
+                        <Zap className="w-4 h-4" />
+                        AI-Powered Analysis
+                      </p>
+                      <p className="text-xs text-purple-600">Verify calculations, detect anomalies, assess legitimacy</p>
+                    </div>
+                  </label>
+                  
                   <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100">
                     <input
                       type="checkbox"
@@ -582,12 +598,12 @@ export default function PDFEngine() {
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Analyzing {DOCUMENT_TYPES[documentType]?.name}...
+                      {aiEnabled ? "AI Analyzing" : "Analyzing"} {DOCUMENT_TYPES[documentType]?.name}...
                     </>
                   ) : (
                     <>
                       <FileSearch className="w-5 h-5 mr-2" />
-                      Analyze {DOCUMENT_TYPES[documentType]?.name}
+                      {aiEnabled ? "AI Analyze" : "Analyze"} {DOCUMENT_TYPES[documentType]?.name}
                     </>
                   )}
                 </Button>
@@ -605,6 +621,7 @@ export default function PDFEngine() {
                   <li><strong>Tax Form:</strong> IRS, TurboTax, H&R Block...</li>
                   <li>• Matches against 50+ legitimate producer patterns</li>
                   <li>• Detects known fake document generators</li>
+                  {aiEnabled && <li className="text-purple-600">• <strong>AI:</strong> Math verification, anomaly detection, legitimacy assessment</li>}
                 </ul>
               </div>
               

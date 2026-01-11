@@ -305,7 +305,7 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           
-          pdfBlob = await generateAndDownloadOfferLetter(formData, false, true);
+          pdfBlob = await generateAndDownloadOfferLetter(formData, true);
           generated = true;
           
           if (emailToUse && pdfBlob) {

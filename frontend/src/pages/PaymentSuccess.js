@@ -321,7 +321,7 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const taxYear = localStorage.getItem('pendingScheduleCTaxYear') || '2024';
           
-          pdfBlob = await generateAndDownloadScheduleC(formData, taxYear, false, true);
+          pdfBlob = await generateAndDownloadScheduleC(formData, taxYear, true);
           generated = true;
           
           if (emailToUse && pdfBlob) {

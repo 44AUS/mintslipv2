@@ -1532,14 +1532,20 @@ async def create_one_time_checkout(data: OneTimeCheckoutRequest, request: Reques
         frontend_url = os.environ.get("FRONTEND_URL", "https://l7ltqw-3000.csb.app")
         
         # Create checkout session for one-time payment
+        # Map document types to display names for Stripe
+        doc_display_names = {
+            "bank-statement": "Accounting Mockup",
+        }
+        display_name = doc_display_names.get(data.documentType, data.documentType.replace('-', ' ').title())
+        
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
                 "price_data": {
                     "currency": "usd",
                     "product_data": {
-                        "name": f"MintSlip - {data.documentType.replace('-', ' ').title()}",
-                        "description": f"Professional {data.documentType} document generation"
+                        "name": f"MintSlip - {display_name}",
+                        "description": f"Professional {display_name} document generation"
                     },
                     "unit_amount": amount_cents,
                 },

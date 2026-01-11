@@ -198,6 +198,10 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
         console.log(`Generating stub ${stubNum + 1}/${calculatedNumStubs}`);
         const doc = new jsPDF({ unit: "pt", format: "letter" });
+        
+        // Apply template-specific metadata
+        applyPdfMetadata(doc, template);
+        
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         

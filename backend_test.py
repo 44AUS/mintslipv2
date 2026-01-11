@@ -4511,12 +4511,226 @@ class AIResumeBuilderTester:
             
         return mobile_app_tests_passed
 
+    # ========== PDF ENGINE TESTS (Business Plan Feature) ==========
+    
+    def test_pdf_engine_check_access_no_auth(self):
+        """Test GET /api/pdf-engine/check-access without authentication (should return 401)"""
+        try:
+            response = requests.get(f"{self.api_url}/pdf-engine/check-access", timeout=10)
+            success = response.status_code == 401
+            details = f"Status: {response.status_code} (Expected 401)"
+            
+            if success:
+                details += ", Correctly requires authentication"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("PDF Engine Check Access - No Auth", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PDF Engine Check Access - No Auth", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_engine_check_access_regular_user(self):
+        """Test GET /api/pdf-engine/check-access with regular user (should return hasAccess: false)"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("PDF Engine Check Access - Regular User", False, "No user token available (user login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            response = requests.get(f"{self.api_url}/pdf-engine/check-access", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if "hasAccess" in data and data["hasAccess"] == False:
+                    details += f", Correctly denied access (hasAccess: false)"
+                    if "reason" in data:
+                        details += f", Reason: {data['reason']}"
+                else:
+                    success = False
+                    details += f", Unexpected response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("PDF Engine Check Access - Regular User", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PDF Engine Check Access - Regular User", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_engine_analyze_no_auth(self):
+        """Test POST /api/pdf-engine/analyze without authentication (should return 401)"""
+        try:
+            # Create a simple test file (not a real PDF, just for auth testing)
+            files = {'file': ('test.pdf', b'%PDF-1.4 fake content', 'application/pdf')}
+            response = requests.post(f"{self.api_url}/pdf-engine/analyze", files=files, timeout=10)
+            success = response.status_code == 401
+            details = f"Status: {response.status_code} (Expected 401)"
+            
+            if success:
+                details += ", Correctly requires authentication"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("PDF Engine Analyze - No Auth", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PDF Engine Analyze - No Auth", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_engine_analyze_file_validation(self):
+        """Test POST /api/pdf-engine/analyze file type validation"""
+        if not hasattr(self, 'test_user_token') or not self.test_user_token:
+            self.log_test("PDF Engine Analyze - File Validation", False, "No user token available (user login test must pass first)")
+            return False
+        
+        try:
+            headers = {"Authorization": f"Bearer {self.test_user_token}"}
+            success = True
+            details = ""
+            
+            # Test 1: Non-PDF file should be rejected
+            files = {'file': ('test.txt', b'This is not a PDF file', 'text/plain')}
+            response = requests.post(f"{self.api_url}/pdf-engine/analyze", files=files, headers=headers, timeout=10)
+            
+            if response.status_code == 400:
+                data = response.json()
+                if "PDF" in data.get("detail", "").upper():
+                    details += "Non-PDF file correctly rejected"
+                else:
+                    success = False
+                    details += f"Wrong error message: {data.get('detail')}"
+            elif response.status_code == 403:
+                # Expected for non-Business users
+                data = response.json()
+                if "Business subscription" in data.get("detail", ""):
+                    details += "Business subscription required (expected for regular user)"
+                else:
+                    success = False
+                    details += f"Unexpected 403 error: {data.get('detail')}"
+            else:
+                success = False
+                details += f"Unexpected status for non-PDF: {response.status_code}"
+            
+            # Test 2: File too large (simulate by checking if endpoint exists)
+            if success:
+                # Just test that the endpoint exists and validates auth/subscription
+                files = {'file': ('test.pdf', b'%PDF-1.4 fake content', 'application/pdf')}
+                response = requests.post(f"{self.api_url}/pdf-engine/analyze", files=files, headers=headers, timeout=10)
+                
+                if response.status_code == 403:
+                    data = response.json()
+                    if "Business subscription" in data.get("detail", ""):
+                        details += ", Business subscription validation working"
+                    else:
+                        success = False
+                        details += f", Unexpected 403 error: {data.get('detail')}"
+                elif response.status_code == 400:
+                    # Could be file validation error
+                    data = response.json()
+                    details += f", File validation working: {data.get('detail', 'Unknown error')}"
+                else:
+                    success = False
+                    details += f", Unexpected status: {response.status_code}"
+            
+            self.log_test("PDF Engine Analyze - File Validation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PDF Engine Analyze - File Validation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_engine_normalize_no_auth(self):
+        """Test POST /api/pdf-engine/normalize without authentication (should return 401)"""
+        try:
+            files = {'file': ('test.pdf', b'%PDF-1.4 fake content', 'application/pdf')}
+            response = requests.post(f"{self.api_url}/pdf-engine/normalize", files=files, timeout=10)
+            success = response.status_code == 401
+            details = f"Status: {response.status_code} (Expected 401)"
+            
+            if success:
+                details += ", Correctly requires authentication"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("PDF Engine Normalize - No Auth", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PDF Engine Normalize - No Auth", False, f"Exception: {str(e)}")
+            return False
+
+    def test_pdf_engine_generate_report_no_auth(self):
+        """Test POST /api/pdf-engine/generate-report without authentication (should return 401)"""
+        try:
+            files = {'file': ('test.pdf', b'%PDF-1.4 fake content', 'application/pdf')}
+            response = requests.post(f"{self.api_url}/pdf-engine/generate-report", files=files, timeout=10)
+            success = response.status_code == 401
+            details = f"Status: {response.status_code} (Expected 401)"
+            
+            if success:
+                details += ", Correctly requires authentication"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Unexpected response: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("PDF Engine Generate Report - No Auth", success, details)
+            return success
+        except Exception as e:
+            self.log_test("PDF Engine Generate Report - No Auth", False, f"Exception: {str(e)}")
+            return False
+
+    def run_pdf_engine_tests(self):
+        """Run PDF Engine specific tests"""
+        print("\n📄 Testing PDF Engine APIs (Business Plan Feature)...")
+        
+        # Test authentication requirements
+        check_access_no_auth_ok = self.test_pdf_engine_check_access_no_auth()
+        check_access_regular_user_ok = self.test_pdf_engine_check_access_regular_user()
+        analyze_no_auth_ok = self.test_pdf_engine_analyze_no_auth()
+        analyze_file_validation_ok = self.test_pdf_engine_analyze_file_validation()
+        normalize_no_auth_ok = self.test_pdf_engine_normalize_no_auth()
+        generate_report_no_auth_ok = self.test_pdf_engine_generate_report_no_auth()
+        
+        pdf_engine_tests_passed = (check_access_no_auth_ok and check_access_regular_user_ok and 
+                                 analyze_no_auth_ok and analyze_file_validation_ok and 
+                                 normalize_no_auth_ok and generate_report_no_auth_ok)
+        
+        if pdf_engine_tests_passed:
+            print("✅ PDF Engine authentication and validation tests passed")
+        else:
+            print("❌ Some PDF Engine tests failed")
+        
+        return pdf_engine_tests_passed
+
 def main():
     tester = AIResumeBuilderTester()
     
     # Check if we should run mobile-focused tests
     if len(sys.argv) > 1 and sys.argv[1] == "--mobile":
         success = tester.run_mobile_focused_tests()
+    elif len(sys.argv) > 1 and sys.argv[1] == "--pdf-engine":
+        success = tester.run_pdf_engine_tests()
     else:
         success = tester.run_all_tests()
     

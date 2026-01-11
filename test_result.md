@@ -174,17 +174,17 @@ backend:
         comment: "✅ PDF Engine Backend API test passed - All endpoints working correctly: 1) GET /api/pdf-engine/check-access requires authentication (401 without auth) ✓, 2) Regular users correctly denied access (hasAccess: false) ✓, 3) POST /api/pdf-engine/analyze requires authentication (401 without auth) ✓, 4) File type validation working (non-PDF files rejected with clear error message) ✓, 5) POST /api/pdf-engine/normalize requires authentication (401 without auth) ✓, 6) POST /api/pdf-engine/generate-report requires authentication (401 without auth) ✓, 7) All endpoints properly validate Business subscription requirement (403 error with message 'This feature requires an active Business subscription') ✓. Fixed null subscription handling bug in verify_business_subscription and check_pdf_engine_access functions."
 
 frontend:
-  - task: "PDF Metadata & Consistency Engine"
+  - task: "PDF Metadata & Consistency Engine with Document Types"
     implemented: true
     working: "NA"
-    file: "PDFEngine.js, UserNavTabs.js"
+    file: "PDFEngine.js, pdf_engine.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented PDF Engine feature for Business plan users - includes metadata analysis, consistency checking, risk scoring, normalization, and report generation. Tab only visible to Business users."
+        comment: "Enhanced PDF Engine with document-type-specific risk scoring. Added support for Pay Stub (ADP, Paychex, Gusto, QuickBooks, etc.), Bank Statement (Chase, BofA, Wells Fargo, etc.), Tax Form (IRS, TurboTax, etc.), and Other document types. Each type has its own legitimate producer patterns, suspicious patterns, and expected content patterns for accurate risk scoring."
 
   - task: "Bank Statement Checkout formData Fix"
     implemented: true

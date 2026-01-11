@@ -5417,6 +5417,131 @@ async def generate_analysis_report(
         raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
 
 
+@app.get("/api/pdf-engine/metadata-presets")
+async def get_metadata_presets_endpoint(session: dict = Depends(get_current_user)):
+    """Get available metadata presets for common legitimate sources"""
+    # Verify Business subscription
+    await verify_business_subscription(session)
+    
+    return {
+        "success": True,
+        "presets": METADATA_PRESETS
+    }
+
+
+class MetadataEditRequest(BaseModel):
+    producer: Optional[str] = None
+    creator: Optional[str] = None
+    author: Optional[str] = None
+    title: Optional[str] = None
+    subject: Optional[str] = None
+    creationDate: Optional[str] = None  # ISO format or 'now'
+    modificationDate: Optional[str] = None  # ISO format or 'now'
+
+
+@app.post("/api/pdf-engine/edit-metadata")
+async def edit_pdf_metadata_endpoint(
+    file: UploadFile = File(...),
+    producer: Optional[str] = None,
+    creator: Optional[str] = None,
+    author: Optional[str] = None,
+    title: Optional[str] = None,
+    subject: Optional[str] = None,
+    creation_date: Optional[str] = None,
+    modification_date: Optional[str] = None,
+    preset: Optional[str] = None,
+    session: dict = Depends(get_current_user)
+):
+    """
+    Edit PDF metadata and regenerate as a clean PDF without edit traces.
+    Business Plan feature only.
+    
+    You can either:
+    1. Use a preset (e.g., 'adp', 'paychex', 'chase') which sets producer/creator automatically
+    2. Provide custom values for each field
+    
+    Dates can be:
+    - ISO format string (e.g., '2024-01-15T10:30:00')
+    - Date only (e.g., '2024-01-15')
+    - 'now' for current timestamp
+    """
+    # Verify Business subscription
+    await verify_business_subscription(session)
+    
+    # Validate file type
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    # Read file
+    pdf_bytes = await file.read()
+    
+    # Check file size
+    if len(pdf_bytes) > PDF_ENGINE_MAX_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is {PDF_ENGINE_MAX_SIZE // (1024*1024)}MB"
+        )
+    
+    # Verify PDF
+    if not pdf_bytes.startswith(b'%PDF'):
+        raise HTTPException(status_code=400, detail="Invalid PDF file")
+    
+    try:
+        # Build metadata dict
+        new_metadata = {}
+        
+        # Apply preset if specified
+        if preset and preset in METADATA_PRESETS:
+            preset_data = METADATA_PRESETS[preset]
+            new_metadata.update(preset_data)
+        
+        # Override with custom values if provided
+        if producer:
+            new_metadata['producer'] = producer
+        if creator:
+            new_metadata['creator'] = creator
+        if author:
+            new_metadata['author'] = author
+        if title:
+            new_metadata['title'] = title
+        if subject:
+            new_metadata['subject'] = subject
+        if creation_date:
+            new_metadata['creationDate'] = creation_date
+        if modification_date:
+            new_metadata['modificationDate'] = modification_date
+        
+        if not new_metadata:
+            raise HTTPException(
+                status_code=400, 
+                detail="No metadata changes specified. Provide at least one field or use a preset."
+            )
+        
+        # Edit and regenerate PDF
+        regenerated_pdf, result = edit_and_regenerate_pdf(pdf_bytes, new_metadata)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to regenerate PDF: {result.get('error', 'Unknown error')}"
+            )
+        
+        return {
+            "success": True,
+            "filename": file.filename,
+            "changes": result.get("changes", []),
+            "message": result.get("message", "PDF regenerated successfully"),
+            "regeneratedPdfBase64": base64.b64encode(regenerated_pdf).decode('utf-8'),
+            "regeneratedAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Metadata edit error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to edit metadata: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

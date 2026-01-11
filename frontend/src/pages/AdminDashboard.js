@@ -339,6 +339,9 @@ export default function AdminDashboard() {
       // Load users
       await loadUsers();
       
+      // Load saved documents
+      await loadSavedDocuments();
+      
     } catch (error) {
       console.error("Error loading dashboard:", error);
       toast.error("Failed to load dashboard data");

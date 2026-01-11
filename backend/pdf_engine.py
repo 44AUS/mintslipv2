@@ -74,10 +74,10 @@ PAYSTUB_LEGITIMATE_PRODUCERS = {
     },
     "gusto": {
         "names": ["gusto", "zenpayroll"],
-        "expected_producers": ["gusto", "wkhtmltopdf", "chrome", "puppeteer"],
-        "expected_creators": ["gusto", "chrome"],
+        "expected_producers": ["qt 4.8", "qt 5", "wkhtmltopdf", "gusto"],
+        "expected_creators": ["wkhtmltopdf", "gusto"],
         "risk_reduction": 25,
-        "notes": "Popular SMB payroll provider"
+        "notes": "Popular SMB payroll provider - uses wkhtmltopdf/Qt for PDF generation"
     },
     "quickbooks": {
         "names": ["quickbooks", "intuit"],

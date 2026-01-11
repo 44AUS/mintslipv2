@@ -1553,7 +1553,8 @@ async def get_checkout_status(session_id: str):
                             if user:
                                 user_name = user.get("name", "")
                         is_guest = not bool(user_id)
-                        asyncio.create_task(send_download_confirmation(customer_email, user_name, document_type, None, is_guest))
+                        # NOTE: Download confirmation with PDF attachment is now sent from frontend
+                        # Only send review request and cancel abandoned checkout emails here
                         asyncio.create_task(send_review_request(customer_email, user_name, document_type, user_id if user_id else None))
                         asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
                     

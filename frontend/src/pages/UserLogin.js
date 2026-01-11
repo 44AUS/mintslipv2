@@ -50,6 +50,12 @@ export default function UserLogin() {
       
       toast.success("Welcome back!");
       
+      // Check if email needs verification (new users only)
+      if (data.user.emailVerified === false) {
+        navigate("/verify-email");
+        return;
+      }
+      
       // Redirect based on subscription status
       if (data.user.subscription) {
         navigate("/user/dashboard");

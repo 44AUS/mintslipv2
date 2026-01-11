@@ -569,7 +569,7 @@ export const generateResumeDOCX = async (data) => {
 };
 
 // Generate and download both formats
-export const generateAndDownloadResume = async (data) => {
+export const generateAndDownloadResume = async (data, returnBlob = false) => {
   const zip = new JSZip();
   
   // Generate PDF
@@ -585,4 +585,9 @@ export const generateAndDownloadResume = async (data) => {
   const zipBlob = await zip.generateAsync({ type: "blob" });
   const fileName = `${(data.personalInfo?.fullName || "resume").replace(/\s+/g, "_")}_Resume.zip`;
   saveAs(zipBlob, fileName);
+  
+  // Return blob if requested (for email attachment)
+  if (returnBlob) {
+    return zipBlob;
+  }
 };

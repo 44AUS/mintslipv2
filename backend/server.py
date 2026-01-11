@@ -5130,7 +5130,7 @@ async def verify_business_subscription(session: dict) -> dict:
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    subscription = user.get("subscription", {})
+    subscription = user.get("subscription") or {}
     if subscription.get("status") != "active" or subscription.get("tier") != "business":
         raise HTTPException(
             status_code=403, 

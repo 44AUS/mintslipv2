@@ -555,7 +555,7 @@ const createOrder = (data, actions) => {
     setIsProcessing(true);
     
     try {
-      const basePrice = 14.99;
+      const basePrice = 49.99;
       const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
       
       // Store form data for after payment
@@ -1225,7 +1225,7 @@ const createOrder = (data, actions) => {
                         ) : (
                           <>
                             <CreditCard className="w-5 h-5" />
-                            Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '14.99'}
+                            Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '49.99'}
                           </>
                         )}
                       </Button>

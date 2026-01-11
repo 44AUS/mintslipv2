@@ -30,7 +30,11 @@ import {
   FileQuestion,
   BadgeCheck,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
+  Brain,
+  Calculator,
+  CalendarCheck,
+  Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
 

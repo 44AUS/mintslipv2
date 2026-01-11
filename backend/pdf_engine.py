@@ -1,6 +1,7 @@
 """
 PDF Metadata & Document Consistency Engine
 Business Plan Feature - Analyzes, normalizes, and validates PDF metadata
+with document-type-specific risk scoring
 """
 
 import io
@@ -19,57 +20,417 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.units import inch
 
 
-# Risk score weights
-RISK_WEIGHTS = {
-    "missing_metadata": 5,
-    "suspicious_producer": 15,
-    "suspicious_creator": 10,
-    "date_mismatch": 20,
-    "future_date": 25,
-    "inconsistent_timestamps": 15,
-    "multiple_modifications": 10,
-    "xmp_mismatch": 10,
-    "font_inconsistency": 15,
-    "numeric_inconsistency": 20,
-    "text_date_metadata_mismatch": 20,
-    "copy_paste_artifacts": 10,
-    "page_structure_drift": 10,
-    "incremental_updates": 5,
+# ============================================
+# DOCUMENT TYPE CONFIGURATIONS
+# ============================================
+
+DOCUMENT_TYPES = {
+    "paystub": {
+        "name": "Pay Stub",
+        "description": "Paycheck stub or earnings statement",
+    },
+    "bank_statement": {
+        "name": "Bank Statement",
+        "description": "Bank account statement",
+    },
+    "tax_form": {
+        "name": "Tax Form",
+        "description": "W-2, 1099, or other tax documents",
+    },
+    "other": {
+        "name": "Other Document",
+        "description": "General PDF document",
+    }
 }
 
-# Suspicious PDF producers/creators
-SUSPICIOUS_GENERATORS = [
-    "online",
-    "converter",
-    "edit",
-    "modify",
-    "fake",
-    "generator",
-    "creator",
-    "free pdf",
+# ============================================
+# PAYSTUB PRODUCER CONFIGURATIONS
+# ============================================
+
+# Legitimate paystub producers with expected metadata patterns
+PAYSTUB_LEGITIMATE_PRODUCERS = {
+    # Major Payroll Providers
+    "adp": {
+        "names": ["adp", "automatic data processing"],
+        "expected_producers": ["adp", "oracle", "jasperreports"],
+        "expected_creators": ["adp", "workforce now", "run powered by adp"],
+        "risk_reduction": 25,
+        "notes": "Major payroll provider - serves 800k+ businesses"
+    },
+    "paychex": {
+        "names": ["paychex"],
+        "expected_producers": ["paychex", "oracle", "jasperreports", "microsoft"],
+        "expected_creators": ["paychex", "paychex flex"],
+        "risk_reduction": 25,
+        "notes": "Major payroll provider"
+    },
+    "gusto": {
+        "names": ["gusto", "zenpayroll"],
+        "expected_producers": ["gusto", "wkhtmltopdf", "chrome", "puppeteer"],
+        "expected_creators": ["gusto", "chrome"],
+        "risk_reduction": 25,
+        "notes": "Popular SMB payroll provider"
+    },
+    "quickbooks": {
+        "names": ["quickbooks", "intuit"],
+        "expected_producers": ["intuit", "quickbooks", "qt"],
+        "expected_creators": ["intuit", "quickbooks"],
+        "risk_reduction": 25,
+        "notes": "Intuit QuickBooks payroll"
+    },
+    "workday": {
+        "names": ["workday"],
+        "expected_producers": ["workday", "oracle", "birt"],
+        "expected_creators": ["workday"],
+        "risk_reduction": 25,
+        "notes": "Enterprise HR/payroll system"
+    },
+    "ceridian": {
+        "names": ["ceridian", "dayforce"],
+        "expected_producers": ["ceridian", "dayforce", "oracle"],
+        "expected_creators": ["ceridian", "dayforce"],
+        "risk_reduction": 25,
+        "notes": "Enterprise payroll provider"
+    },
+    "ukg": {
+        "names": ["ukg", "kronos", "ultimate software", "ultipro"],
+        "expected_producers": ["ukg", "kronos", "ultimate", "ultipro"],
+        "expected_creators": ["ukg", "kronos", "ultipro"],
+        "risk_reduction": 25,
+        "notes": "UKG (Ultimate Kronos Group)"
+    },
+    "paylocity": {
+        "names": ["paylocity"],
+        "expected_producers": ["paylocity", "oracle", "microsoft"],
+        "expected_creators": ["paylocity"],
+        "risk_reduction": 25,
+        "notes": "Cloud payroll provider"
+    },
+    "paycom": {
+        "names": ["paycom"],
+        "expected_producers": ["paycom", "oracle"],
+        "expected_creators": ["paycom"],
+        "risk_reduction": 25,
+        "notes": "HR and payroll technology"
+    },
+    "square": {
+        "names": ["square payroll", "square"],
+        "expected_producers": ["square", "chrome", "wkhtmltopdf"],
+        "expected_creators": ["square"],
+        "risk_reduction": 20,
+        "notes": "Square Payroll for small businesses"
+    },
+    "rippling": {
+        "names": ["rippling"],
+        "expected_producers": ["rippling", "chrome", "puppeteer"],
+        "expected_creators": ["rippling"],
+        "risk_reduction": 20,
+        "notes": "Modern HR platform"
+    },
+    "zenefits": {
+        "names": ["zenefits", "trinet zenefits"],
+        "expected_producers": ["zenefits", "chrome"],
+        "expected_creators": ["zenefits"],
+        "risk_reduction": 20,
+        "notes": "HR platform with payroll"
+    },
+    "namely": {
+        "names": ["namely"],
+        "expected_producers": ["namely", "oracle"],
+        "expected_creators": ["namely"],
+        "risk_reduction": 20,
+        "notes": "Mid-market HR platform"
+    },
+    "bamboohr": {
+        "names": ["bamboohr", "bamboo hr"],
+        "expected_producers": ["bamboohr", "chrome"],
+        "expected_creators": ["bamboohr"],
+        "risk_reduction": 20,
+        "notes": "HR software with payroll"
+    },
+    "sage": {
+        "names": ["sage", "sage payroll"],
+        "expected_producers": ["sage", "crystal reports", "microsoft"],
+        "expected_creators": ["sage"],
+        "risk_reduction": 20,
+        "notes": "Sage accounting/payroll"
+    },
+    "oracle": {
+        "names": ["oracle", "peoplesoft"],
+        "expected_producers": ["oracle", "bi publisher", "peoplesoft"],
+        "expected_creators": ["oracle", "peoplesoft"],
+        "risk_reduction": 25,
+        "notes": "Oracle HCM/PeopleSoft"
+    },
+    "sap": {
+        "names": ["sap", "successfactors"],
+        "expected_producers": ["sap", "successfactors", "crystal"],
+        "expected_creators": ["sap"],
+        "risk_reduction": 25,
+        "notes": "SAP SuccessFactors"
+    },
+}
+
+# Suspicious paystub producers (red flags)
+PAYSTUB_SUSPICIOUS_PRODUCERS = [
+    "paystub generator",
+    "stub creator",
+    "check stub maker",
+    "fake pay",
+    "instant paystub",
+    "online paystub",
+    "paystubcreator",
+    "thepaystubs",
+    "stubcreator",
+    "realcheckstubs",
+    "pay-stubs",
+    "123paystubs",
+    "formswift",
+    "wagepoint",  # Free tool often misused
+    "wave payroll",  # Free tool
+    "canva",
     "smallpdf",
     "ilovepdf",
-    "pdf24",
-    "sejda",
-    "pdf2go",
-    "canva",
+    "pdf editor",
+    "nitro",
+    "foxit phantompdf",
+    "pdfforge",
+    "mintslip",  # Our own generator
 ]
 
-# Expected professional producers
-PROFESSIONAL_PRODUCERS = [
-    "adobe",
-    "microsoft",
-    "libreoffice",
-    "openoffice",
-    "google",
-    "apple",
-    "docusign",
-    "intuit",
-    "quickbooks",
-    "adp",
-    "paychex",
-    "gusto",
+# Expected paystub content patterns
+PAYSTUB_EXPECTED_CONTENT = [
+    r"gross\s*pay",
+    r"net\s*pay",
+    r"federal\s*tax|fed\s*tax",
+    r"state\s*tax",
+    r"fica|social\s*security",
+    r"medicare",
+    r"ytd|year.to.date",
+    r"pay\s*period|period\s*ending",
+    r"employee\s*(name|id|number)",
+    r"employer|company",
 ]
+
+# ============================================
+# BANK STATEMENT PRODUCER CONFIGURATIONS
+# ============================================
+
+BANK_STATEMENT_LEGITIMATE_PRODUCERS = {
+    # Major US Banks
+    "chase": {
+        "names": ["chase", "jpmorgan", "jp morgan"],
+        "expected_producers": ["adobe", "chase", "jpmorgan", "documentum"],
+        "expected_creators": ["chase", "jpmorgan", "acrobat"],
+        "risk_reduction": 30,
+        "notes": "JPMorgan Chase - largest US bank"
+    },
+    "bank_of_america": {
+        "names": ["bank of america", "bofa", "boa", "bankofamerica"],
+        "expected_producers": ["adobe", "bank of america", "merrill"],
+        "expected_creators": ["bank of america", "acrobat"],
+        "risk_reduction": 30,
+        "notes": "Bank of America"
+    },
+    "wells_fargo": {
+        "names": ["wells fargo", "wellsfargo", "wf"],
+        "expected_producers": ["adobe", "wells fargo", "documentum"],
+        "expected_creators": ["wells fargo", "acrobat"],
+        "risk_reduction": 30,
+        "notes": "Wells Fargo"
+    },
+    "citibank": {
+        "names": ["citibank", "citi", "citigroup"],
+        "expected_producers": ["adobe", "citi", "citibank"],
+        "expected_creators": ["citi", "acrobat"],
+        "risk_reduction": 30,
+        "notes": "Citibank/Citigroup"
+    },
+    "us_bank": {
+        "names": ["us bank", "u.s. bank", "usbank"],
+        "expected_producers": ["adobe", "us bank", "oracle"],
+        "expected_creators": ["us bank", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "U.S. Bank"
+    },
+    "pnc": {
+        "names": ["pnc", "pnc bank"],
+        "expected_producers": ["adobe", "pnc", "oracle"],
+        "expected_creators": ["pnc", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "PNC Bank"
+    },
+    "capital_one": {
+        "names": ["capital one", "capitalone"],
+        "expected_producers": ["adobe", "capital one"],
+        "expected_creators": ["capital one", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "Capital One"
+    },
+    "td_bank": {
+        "names": ["td bank", "td", "toronto dominion"],
+        "expected_producers": ["adobe", "td bank", "td"],
+        "expected_creators": ["td bank", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "TD Bank"
+    },
+    "truist": {
+        "names": ["truist", "bb&t", "suntrust"],
+        "expected_producers": ["adobe", "truist", "suntrust", "bb&t"],
+        "expected_creators": ["truist", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "Truist (BB&T + SunTrust)"
+    },
+    "navy_federal": {
+        "names": ["navy federal", "nfcu"],
+        "expected_producers": ["adobe", "navy federal"],
+        "expected_creators": ["navy federal", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "Navy Federal Credit Union"
+    },
+    "usaa": {
+        "names": ["usaa"],
+        "expected_producers": ["adobe", "usaa"],
+        "expected_creators": ["usaa", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "USAA"
+    },
+    "schwab": {
+        "names": ["schwab", "charles schwab"],
+        "expected_producers": ["adobe", "schwab", "charles schwab"],
+        "expected_creators": ["schwab", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "Charles Schwab"
+    },
+    "ally": {
+        "names": ["ally", "ally bank"],
+        "expected_producers": ["adobe", "ally"],
+        "expected_creators": ["ally", "acrobat"],
+        "risk_reduction": 20,
+        "notes": "Ally Bank (online)"
+    },
+    "chime": {
+        "names": ["chime"],
+        "expected_producers": ["chime", "chrome", "puppeteer"],
+        "expected_creators": ["chime"],
+        "risk_reduction": 15,
+        "notes": "Chime (fintech) - web-generated statements"
+    },
+    "discover": {
+        "names": ["discover", "discover bank"],
+        "expected_producers": ["adobe", "discover"],
+        "expected_creators": ["discover", "acrobat"],
+        "risk_reduction": 20,
+        "notes": "Discover Bank"
+    },
+    "american_express": {
+        "names": ["american express", "amex"],
+        "expected_producers": ["adobe", "american express", "amex"],
+        "expected_creators": ["american express", "acrobat"],
+        "risk_reduction": 25,
+        "notes": "American Express"
+    },
+}
+
+# Suspicious bank statement producers
+BANK_STATEMENT_SUSPICIOUS_PRODUCERS = [
+    "bank statement generator",
+    "statement creator",
+    "fake bank",
+    "novelty statement",
+    "proof of funds",
+    "canva",
+    "smallpdf",
+    "ilovepdf",
+    "pdf editor",
+    "nitro",
+    "foxit phantompdf",
+    "online editor",
+    "edit pdf",
+    "mintslip",
+]
+
+# Expected bank statement content patterns
+BANK_STATEMENT_EXPECTED_CONTENT = [
+    r"account\s*(number|#)",
+    r"statement\s*period",
+    r"opening\s*balance|beginning\s*balance",
+    r"closing\s*balance|ending\s*balance",
+    r"total\s*deposits|deposits",
+    r"total\s*withdrawals|withdrawals",
+    r"routing\s*number",
+    r"fdic|federal\s*deposit",
+]
+
+# ============================================
+# TAX FORM PRODUCER CONFIGURATIONS
+# ============================================
+
+TAX_FORM_LEGITIMATE_PRODUCERS = {
+    "irs": {
+        "names": ["irs", "internal revenue service"],
+        "expected_producers": ["irs", "adobe", "government"],
+        "expected_creators": ["irs", "internal revenue"],
+        "risk_reduction": 30,
+        "notes": "IRS official forms"
+    },
+    "turbotax": {
+        "names": ["turbotax", "intuit"],
+        "expected_producers": ["intuit", "turbotax"],
+        "expected_creators": ["turbotax", "intuit"],
+        "risk_reduction": 25,
+        "notes": "TurboTax tax preparation"
+    },
+    "hrblock": {
+        "names": ["h&r block", "hrblock", "h r block"],
+        "expected_producers": ["h&r block", "hrblock"],
+        "expected_creators": ["h&r block"],
+        "risk_reduction": 25,
+        "notes": "H&R Block"
+    },
+    "taxact": {
+        "names": ["taxact"],
+        "expected_producers": ["taxact"],
+        "expected_creators": ["taxact"],
+        "risk_reduction": 20,
+        "notes": "TaxAct"
+    },
+    "adp_tax": {
+        "names": ["adp"],
+        "expected_producers": ["adp", "automatic data processing"],
+        "expected_creators": ["adp"],
+        "risk_reduction": 25,
+        "notes": "ADP W-2/tax forms"
+    },
+}
+
+# ============================================
+# RISK SCORE WEIGHTS
+# ============================================
+
+RISK_WEIGHTS = {
+    # General risks
+    "missing_metadata": 5,
+    "suspicious_producer": 20,
+    "suspicious_creator": 15,
+    "future_date": 30,
+    "inconsistent_timestamps": 20,
+    "font_inconsistency": 15,
+    "incremental_updates": 5,
+    
+    # Document-specific risks
+    "unknown_producer_for_type": 25,
+    "producer_mismatch": 30,
+    "missing_expected_content": 20,
+    "content_pattern_mismatch": 15,
+    "web_generator_detected": 35,
+    "known_fake_generator": 40,
+    
+    # Positive indicators (risk reduction)
+    "legitimate_producer_match": -25,
+    "expected_content_found": -10,
+    "consistent_formatting": -5,
+}
 
 
 class PDFAnalysisResult:
@@ -89,6 +450,10 @@ class PDFAnalysisResult:
         self.text_content = ""
         self.dates_in_text = []
         self.numbers_in_text = []
+        self.document_type = "other"
+        self.detected_producer = None
+        self.producer_match = None
+        self.content_matches = []
         
     def to_dict(self) -> Dict:
         return {
@@ -104,6 +469,10 @@ class PDFAnalysisResult:
             "hasXmp": self.has_xmp,
             "incrementalUpdates": self.incremental_updates,
             "datesInText": self.dates_in_text,
+            "documentType": self.document_type,
+            "detectedProducer": self.detected_producer,
+            "producerMatch": self.producer_match,
+            "contentMatches": self.content_matches,
         }
     
     def get_risk_level(self) -> str:
@@ -122,12 +491,12 @@ class PDFAnalysisResult:
             "description": description,
             "points": points
         })
-        self.risk_score = min(100, self.risk_score + points)
+        self.risk_score = max(0, min(100, self.risk_score + points))
     
     def add_finding(self, category: str, severity: str, message: str, details: str = ""):
         self.consistency_findings.append({
             "category": category,
-            "severity": severity,  # "info", "warning", "error"
+            "severity": severity,
             "message": message,
             "details": details
         })
@@ -136,7 +505,7 @@ class PDFAnalysisResult:
         self.recommendations.append({
             "title": title,
             "description": description,
-            "priority": priority  # "low", "medium", "high"
+            "priority": priority
         })
 
 
@@ -145,11 +514,9 @@ def parse_pdf_date(date_str: str) -> Optional[datetime]:
     if not date_str:
         return None
     
-    # Remove D: prefix if present
     if date_str.startswith("D:"):
         date_str = date_str[2:]
     
-    # Try various formats
     formats = [
         "%Y%m%d%H%M%S",
         "%Y%m%d%H%M",
@@ -158,7 +525,6 @@ def parse_pdf_date(date_str: str) -> Optional[datetime]:
         "%Y-%m-%dT%H:%M:%S",
     ]
     
-    # Clean the string
     date_str = re.sub(r"[+\-Z'].*", "", date_str)
     
     for fmt in formats:
@@ -173,11 +539,11 @@ def parse_pdf_date(date_str: str) -> Optional[datetime]:
 def extract_dates_from_text(text: str) -> List[str]:
     """Extract date patterns from text"""
     date_patterns = [
-        r'\d{1,2}/\d{1,2}/\d{2,4}',  # MM/DD/YYYY or M/D/YY
-        r'\d{1,2}-\d{1,2}-\d{2,4}',  # MM-DD-YYYY
-        r'\d{4}-\d{2}-\d{2}',  # YYYY-MM-DD
-        r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}',  # Month DD, YYYY
-        r'\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}',  # DD Month YYYY
+        r'\d{1,2}/\d{1,2}/\d{2,4}',
+        r'\d{1,2}-\d{1,2}-\d{2,4}',
+        r'\d{4}-\d{2}-\d{2}',
+        r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}',
+        r'\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}',
     ]
     
     dates = []
@@ -189,12 +555,10 @@ def extract_dates_from_text(text: str) -> List[str]:
 
 
 def extract_numbers_from_text(text: str) -> List[Dict]:
-    """Extract monetary values and numbers from text"""
-    # Currency patterns
+    """Extract monetary values from text"""
     currency_pattern = r'\$[\d,]+\.?\d{0,2}'
     amounts = re.findall(currency_pattern, text)
     
-    # Clean and parse
     numbers = []
     for amt in amounts:
         clean = amt.replace('$', '').replace(',', '')
@@ -207,10 +571,95 @@ def extract_numbers_from_text(text: str) -> List[Dict]:
     return numbers
 
 
-def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
-    """Analyze PDF metadata and document consistency"""
+def check_content_patterns(text: str, patterns: List[str]) -> List[str]:
+    """Check which expected content patterns are found in text"""
+    found = []
+    text_lower = text.lower()
+    for pattern in patterns:
+        if re.search(pattern, text_lower):
+            found.append(pattern)
+    return found
+
+
+def identify_producer_match(producer: str, creator: str, legitimate_producers: Dict) -> Optional[Dict]:
+    """Identify if producer/creator matches a legitimate source"""
+    producer_lower = producer.lower() if producer else ""
+    creator_lower = creator.lower() if creator else ""
+    
+    for key, config in legitimate_producers.items():
+        # Check if any name variant matches
+        for name in config["names"]:
+            if name in producer_lower or name in creator_lower:
+                return {
+                    "key": key,
+                    "name": config["names"][0],
+                    "risk_reduction": config["risk_reduction"],
+                    "notes": config.get("notes", ""),
+                    "match_type": "name_match"
+                }
+        
+        # Check expected producers
+        for expected in config["expected_producers"]:
+            if expected in producer_lower:
+                return {
+                    "key": key,
+                    "name": config["names"][0],
+                    "risk_reduction": config["risk_reduction"],
+                    "notes": config.get("notes", ""),
+                    "match_type": "producer_match"
+                }
+        
+        # Check expected creators
+        for expected in config["expected_creators"]:
+            if expected in creator_lower:
+                return {
+                    "key": key,
+                    "name": config["names"][0],
+                    "risk_reduction": config["risk_reduction"] - 5,  # Slightly less confidence
+                    "notes": config.get("notes", ""),
+                    "match_type": "creator_match"
+                }
+    
+    return None
+
+
+def check_suspicious_producers(producer: str, creator: str, suspicious_list: List[str]) -> Optional[str]:
+    """Check if producer/creator matches suspicious patterns"""
+    producer_lower = producer.lower() if producer else ""
+    creator_lower = creator.lower() if creator else ""
+    
+    for suspicious in suspicious_list:
+        if suspicious in producer_lower:
+            return f"Producer contains suspicious pattern: '{suspicious}'"
+        if suspicious in creator_lower:
+            return f"Creator contains suspicious pattern: '{suspicious}'"
+    
+    return None
+
+
+def analyze_pdf_metadata(pdf_bytes: bytes, document_type: str = "other") -> PDFAnalysisResult:
+    """Analyze PDF metadata with document-type-specific risk scoring"""
     result = PDFAnalysisResult()
     result.file_size = len(pdf_bytes)
+    result.document_type = document_type
+    
+    # Select appropriate producer lists based on document type
+    if document_type == "paystub":
+        legitimate_producers = PAYSTUB_LEGITIMATE_PRODUCERS
+        suspicious_producers = PAYSTUB_SUSPICIOUS_PRODUCERS
+        expected_content = PAYSTUB_EXPECTED_CONTENT
+    elif document_type == "bank_statement":
+        legitimate_producers = BANK_STATEMENT_LEGITIMATE_PRODUCERS
+        suspicious_producers = BANK_STATEMENT_SUSPICIOUS_PRODUCERS
+        expected_content = BANK_STATEMENT_EXPECTED_CONTENT
+    elif document_type == "tax_form":
+        legitimate_producers = TAX_FORM_LEGITIMATE_PRODUCERS
+        suspicious_producers = PAYSTUB_SUSPICIOUS_PRODUCERS  # Reuse
+        expected_content = []
+    else:
+        legitimate_producers = {}
+        suspicious_producers = PAYSTUB_SUSPICIOUS_PRODUCERS + BANK_STATEMENT_SUSPICIOUS_PRODUCERS
+        expected_content = []
     
     try:
         # Use PyPDF2 for basic metadata
@@ -233,16 +682,11 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
             }
         else:
             result.metadata = {
-                "producer": "",
-                "creator": "",
-                "creationDate": "",
-                "modificationDate": "",
-                "author": "",
-                "title": "",
-                "subject": "",
+                "producer": "", "creator": "", "creationDate": "",
+                "modificationDate": "", "author": "", "title": "", "subject": "",
             }
-            result.add_risk("missing_metadata", "PDF has no metadata - unusual for legitimate documents", RISK_WEIGHTS["missing_metadata"])
-            result.add_finding("metadata", "warning", "No metadata found", "Legitimate PDFs typically contain metadata")
+            result.add_risk("missing_metadata", "PDF has no metadata - unusual for legitimate documents", 10)
+            result.add_finding("metadata", "warning", "No metadata found", "Legitimate documents typically contain metadata")
         
         # Get PDF version
         try:
@@ -250,10 +694,77 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
             first_line = pdf_file.readline().decode('latin-1', errors='ignore')
             version_match = re.search(r'%PDF-(\d+\.\d+)', first_line)
             result.metadata["pdfVersion"] = version_match.group(1) if version_match else "Unknown"
-        except:
+        except Exception:
             result.metadata["pdfVersion"] = "Unknown"
         
-        # Check for XMP metadata using pikepdf
+        producer = result.metadata.get("producer", "")
+        creator = result.metadata.get("creator", "")
+        
+        # ============================================
+        # DOCUMENT-TYPE SPECIFIC ANALYSIS
+        # ============================================
+        
+        if document_type in ["paystub", "bank_statement", "tax_form"]:
+            # Check for legitimate producer match
+            producer_match = identify_producer_match(producer, creator, legitimate_producers)
+            
+            if producer_match:
+                result.producer_match = producer_match
+                result.detected_producer = producer_match["name"]
+                
+                # Apply risk reduction for legitimate source
+                result.add_risk(
+                    "legitimate_producer_match",
+                    f"Recognized legitimate {DOCUMENT_TYPES[document_type]['name']} source: {producer_match['name']}",
+                    -producer_match["risk_reduction"]
+                )
+                result.add_finding(
+                    "producer",
+                    "info",
+                    f"Legitimate producer detected: {producer_match['name']}",
+                    producer_match.get("notes", "")
+                )
+            else:
+                # No legitimate producer found - this is a risk
+                if producer or creator:
+                    result.add_risk(
+                        "unknown_producer_for_type",
+                        f"Producer/creator not recognized as legitimate {DOCUMENT_TYPES[document_type]['name']} source",
+                        RISK_WEIGHTS["unknown_producer_for_type"]
+                    )
+                    result.add_finding(
+                        "producer",
+                        "warning",
+                        f"Unknown producer for {DOCUMENT_TYPES[document_type]['name']}",
+                        f"Producer: {producer or 'N/A'}, Creator: {creator or 'N/A'}"
+                    )
+                    result.add_recommendation(
+                        "Verify Document Source",
+                        f"This document's producer ({producer or creator}) is not recognized as a standard {DOCUMENT_TYPES[document_type]['name']} generator. Verify the source.",
+                        "high"
+                    )
+            
+            # Check for suspicious producers
+            suspicious_match = check_suspicious_producers(producer, creator, suspicious_producers)
+            if suspicious_match:
+                result.add_risk(
+                    "known_fake_generator",
+                    suspicious_match,
+                    RISK_WEIGHTS["known_fake_generator"]
+                )
+                result.add_finding(
+                    "producer",
+                    "error",
+                    "Suspicious document generator detected",
+                    suspicious_match
+                )
+                result.add_recommendation(
+                    "Document May Be Fabricated",
+                    "This document appears to be created by a known fake document generator. It will likely fail verification.",
+                    "high"
+                )
+        
+        # Check for XMP metadata
         try:
             pdf_file.seek(0)
             with pikepdf.open(pdf_file) as pdf:
@@ -263,8 +774,7 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
                 else:
                     result.metadata["hasXmp"] = False
                 
-                # Check for incremental updates (multiple xref tables)
-                # This is a simplified check
+                # Check for incremental updates
                 pdf_file.seek(0)
                 content = pdf_file.read()
                 xref_count = content.count(b'startxref')
@@ -272,31 +782,20 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
                 result.metadata["incrementalUpdates"] = result.incremental_updates
                 
                 if result.incremental_updates > 2:
-                    result.add_risk("incremental_updates", f"Document has {result.incremental_updates} incremental updates - may indicate multiple edits", RISK_WEIGHTS["incremental_updates"])
-                    result.add_finding("structure", "info", f"Multiple incremental updates detected ({result.incremental_updates})", "This may indicate the document was edited multiple times")
+                    result.add_risk(
+                        "incremental_updates",
+                        f"Document has {result.incremental_updates} incremental updates - indicates multiple edits",
+                        RISK_WEIGHTS["incremental_updates"] * min(result.incremental_updates, 3)
+                    )
+                    result.add_finding(
+                        "structure",
+                        "warning",
+                        f"Multiple edit traces detected ({result.incremental_updates})",
+                        "Document has been modified multiple times"
+                    )
         except Exception:
             result.metadata["hasXmp"] = False
             result.metadata["incrementalUpdates"] = 0
-        
-        # Analyze producer/creator for suspicious patterns
-        producer = result.metadata.get("producer", "").lower()
-        creator = result.metadata.get("creator", "").lower()
-        
-        # Check for suspicious generators
-        for suspicious in SUSPICIOUS_GENERATORS:
-            if suspicious in producer:
-                result.add_risk("suspicious_producer", f"PDF producer '{result.metadata['producer']}' suggests document may have been modified or recreated", RISK_WEIGHTS["suspicious_producer"])
-                result.add_finding("metadata", "warning", "Suspicious PDF producer detected", f"Producer: {result.metadata['producer']}")
-                break
-            if suspicious in creator:
-                result.add_risk("suspicious_creator", f"PDF creator '{result.metadata['creator']}' suggests document may have been recreated", RISK_WEIGHTS["suspicious_creator"])
-                result.add_finding("metadata", "warning", "Suspicious PDF creator detected", f"Creator: {result.metadata['creator']}")
-                break
-        
-        # Check if from professional source
-        is_professional = any(prof in producer or prof in creator for prof in PROFESSIONAL_PRODUCERS)
-        if is_professional:
-            result.add_finding("metadata", "info", "Professional PDF generator detected", f"Producer: {result.metadata['producer']}")
         
         # Analyze dates
         creation_date = parse_pdf_date(result.metadata.get("creationDate", ""))
@@ -305,41 +804,58 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
         
         if creation_date:
             result.metadata["creationDateParsed"] = creation_date.isoformat()
-            
-            # Check for future dates
             if creation_date > now:
-                result.add_risk("future_date", "Creation date is in the future - clear sign of manipulation", RISK_WEIGHTS["future_date"])
+                result.add_risk("future_date", "Creation date is in the future", RISK_WEIGHTS["future_date"])
                 result.add_finding("metadata", "error", "Creation date is in the future", f"Date: {creation_date.isoformat()}")
         
         if mod_date:
             result.metadata["modificationDateParsed"] = mod_date.isoformat()
-            
             if mod_date > now:
-                result.add_risk("future_date", "Modification date is in the future - clear sign of manipulation", RISK_WEIGHTS["future_date"])
+                result.add_risk("future_date", "Modification date is in the future", RISK_WEIGHTS["future_date"])
                 result.add_finding("metadata", "error", "Modification date is in the future", f"Date: {mod_date.isoformat()}")
         
-        # Check date consistency
-        if creation_date and mod_date:
-            if mod_date < creation_date:
-                result.add_risk("inconsistent_timestamps", "Modification date is before creation date - impossible scenario", RISK_WEIGHTS["inconsistent_timestamps"])
-                result.add_finding("metadata", "error", "Inconsistent timestamps", "Modification date cannot be before creation date")
-            
-            # Check if dates are suspiciously close to each other but document appears complex
-            time_diff = abs((mod_date - creation_date).total_seconds())
-            if time_diff < 60 and result.page_count > 5:
-                result.add_finding("metadata", "info", "Creation and modification dates are very close", "Multi-page document created and modified within a minute")
+        if creation_date and mod_date and mod_date < creation_date:
+            result.add_risk("inconsistent_timestamps", "Modification date before creation date", RISK_WEIGHTS["inconsistent_timestamps"])
+            result.add_finding("metadata", "error", "Inconsistent timestamps", "Modification date cannot be before creation date")
         
-        # Extract text content for consistency analysis
+        # Extract and analyze text content
         try:
             pdf_file.seek(0)
             result.text_content = extract_text(pdf_file)
-            
-            # Extract dates from text
             result.dates_in_text = extract_dates_from_text(result.text_content)
-            
-            # Extract numbers from text
             result.numbers_in_text = extract_numbers_from_text(result.text_content)
             
+            # Check for expected content patterns
+            if expected_content:
+                found_patterns = check_content_patterns(result.text_content, expected_content)
+                result.content_matches = found_patterns
+                
+                match_ratio = len(found_patterns) / len(expected_content)
+                
+                if match_ratio >= 0.5:
+                    result.add_risk(
+                        "expected_content_found",
+                        f"Found {len(found_patterns)}/{len(expected_content)} expected content patterns",
+                        RISK_WEIGHTS["expected_content_found"]
+                    )
+                    result.add_finding(
+                        "content",
+                        "info",
+                        f"Document contains expected {DOCUMENT_TYPES[document_type]['name']} content",
+                        f"Matched patterns: {len(found_patterns)}/{len(expected_content)}"
+                    )
+                elif match_ratio < 0.3 and document_type != "other":
+                    result.add_risk(
+                        "missing_expected_content",
+                        f"Missing most expected {DOCUMENT_TYPES[document_type]['name']} content patterns",
+                        RISK_WEIGHTS["missing_expected_content"]
+                    )
+                    result.add_finding(
+                        "content",
+                        "warning",
+                        f"Document missing expected {DOCUMENT_TYPES[document_type]['name']} content",
+                        f"Only {len(found_patterns)}/{len(expected_content)} patterns found"
+                    )
         except Exception as e:
             result.add_finding("content", "warning", "Could not extract text content", str(e))
         
@@ -359,50 +875,43 @@ def analyze_pdf_metadata(pdf_bytes: bytes) -> PDFAnalysisResult:
             result.fonts_used = list(fonts)
             result.metadata["fontsUsed"] = result.fonts_used
             
-            # Check for too many different fonts (potential copy-paste)
             if len(fonts) > 10:
-                result.add_risk("font_inconsistency", f"Document uses {len(fonts)} different fonts - may indicate copy-paste from multiple sources", RISK_WEIGHTS["font_inconsistency"])
-                result.add_finding("consistency", "warning", f"High font variety detected ({len(fonts)} fonts)", "This may indicate content was combined from multiple sources")
-            
-        except Exception as e:
-            result.add_finding("fonts", "info", "Could not analyze fonts", str(e))
+                result.add_risk(
+                    "font_inconsistency",
+                    f"Document uses {len(fonts)} different fonts - may indicate copy-paste",
+                    RISK_WEIGHTS["font_inconsistency"]
+                )
+                result.add_finding(
+                    "consistency",
+                    "warning",
+                    f"High font variety ({len(fonts)} fonts)",
+                    "May indicate content combined from multiple sources"
+                )
+        except Exception:
+            pass
         
-        # Numeric consistency check
-        if result.numbers_in_text:
-            # Look for common paystub/financial document patterns
-            values = [n["value"] for n in result.numbers_in_text]
-            
-            # Check if numbers add up (gross - deductions = net pattern)
-            # This is a simplified check
-            if len(values) >= 3:
-                sorted_values = sorted(values, reverse=True)
-                # Check if largest value roughly equals sum of some smaller values
-                largest = sorted_values[0]
-                potential_components = sorted_values[1:]
-                
-                # Simple check: does any combination of smaller values approximately equal the largest?
-                # This helps detect if gross/net/deductions are internally consistent
-                pass  # Would need more context about document type for accurate check
+        # Generate recommendations based on risk level
+        if result.risk_score >= 75:
+            result.add_recommendation(
+                "High Risk Document",
+                "This document has multiple red flags and will likely fail third-party verification. Consider obtaining the document directly from the source.",
+                "high"
+            )
+        elif result.risk_score >= 50:
+            result.add_recommendation(
+                "Moderate Risk",
+                "This document has some concerning patterns. Review the flagged issues before using.",
+                "medium"
+            )
         
-        # Generate recommendations based on findings
-        if not result.metadata.get("producer"):
-            result.add_recommendation("Add Producer Metadata", "Document lacks producer information. Consider regenerating with proper PDF software.", "medium")
-        
-        if result.incremental_updates > 2:
-            result.add_recommendation("Flatten Document", "Multiple edit traces detected. Consider recreating document to remove edit history.", "high")
-        
-        if any(f["severity"] == "error" for f in result.consistency_findings):
-            result.add_recommendation("Address Critical Issues", "Document has critical metadata issues that will likely trigger verification failures.", "high")
-        
-        # Final risk assessment
-        if result.risk_score == 0:
-            result.add_finding("overall", "info", "No significant issues detected", "Document appears well-formed")
+        # Ensure score is within bounds
+        result.risk_score = max(0, min(100, result.risk_score))
         
         return result
         
     except Exception as e:
         result.add_finding("error", "error", f"Analysis failed: {str(e)}", "")
-        result.risk_score = 50  # Unknown state
+        result.risk_score = 50
         return result
 
 
@@ -412,32 +921,24 @@ def normalize_pdf_metadata(pdf_bytes: bytes, options: Dict = None) -> Tuple[byte
     changes = []
     
     try:
-        # Use pikepdf for modification
         pdf_file = io.BytesIO(pdf_bytes)
         
         with pikepdf.open(pdf_file) as pdf:
-            # Get current metadata
             with pdf.open_metadata() as meta:
                 original_meta = dict(meta)
             
-            # Determine new metadata values
             now = datetime.now(timezone.utc)
             
-            # Standardize producer if requested
             if options.get("standardize_producer", True):
                 current_producer = original_meta.get('pdf:Producer', '')
                 if current_producer:
-                    # Keep professional producers, standardize others
-                    is_professional = any(prof in current_producer.lower() for prof in PROFESSIONAL_PRODUCERS)
-                    if not is_professional:
-                        changes.append({
-                            "field": "Producer",
-                            "original": current_producer,
-                            "new": "Document Generator",
-                            "reason": "Standardized producer field"
-                        })
+                    changes.append({
+                        "field": "Producer",
+                        "original": current_producer,
+                        "new": "Document Generator",
+                        "reason": "Standardized producer field"
+                    })
             
-            # Fix future dates
             if options.get("fix_dates", True):
                 with pdf.open_metadata() as meta:
                     creation_str = meta.get('xmp:CreateDate', '')
@@ -445,7 +946,6 @@ def normalize_pdf_metadata(pdf_bytes: bytes, options: Dict = None) -> Tuple[byte
                         try:
                             creation_date = datetime.fromisoformat(creation_str.replace('Z', '+00:00'))
                             if creation_date > now:
-                                # Set to reasonable past date
                                 new_date = now - timedelta(days=30)
                                 meta['xmp:CreateDate'] = new_date.isoformat()
                                 changes.append({
@@ -454,10 +954,9 @@ def normalize_pdf_metadata(pdf_bytes: bytes, options: Dict = None) -> Tuple[byte
                                     "new": new_date.isoformat(),
                                     "reason": "Fixed future date"
                                 })
-                        except:
+                        except Exception:
                             pass
             
-            # Remove incremental updates by saving fresh
             if options.get("flatten_document", True):
                 changes.append({
                     "field": "Document Structure",
@@ -466,9 +965,8 @@ def normalize_pdf_metadata(pdf_bytes: bytes, options: Dict = None) -> Tuple[byte
                     "reason": "Flattened document to remove edit history"
                 })
             
-            # Save normalized PDF
             output = io.BytesIO()
-            pdf.save(output, linearize=True)  # Linearize for clean structure
+            pdf.save(output, linearize=True)
             
             return output.getvalue(), {
                 "success": True,
@@ -491,7 +989,6 @@ def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "a
     
     styles = getSampleStyleSheet()
     
-    # Custom styles
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
@@ -515,20 +1012,25 @@ def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "a
     
     # Title
     story.append(Paragraph("PDF Metadata & Consistency Analysis Report", title_style))
+    story.append(Paragraph(f"Document Type: {DOCUMENT_TYPES.get(analysis.document_type, {}).get('name', 'Unknown')}", normal_style))
     story.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", normal_style))
     story.append(Spacer(1, 20))
     
     # Risk Score
-    risk_color = {
+    risk_colors = {
         "low": "#22c55e",
         "moderate": "#eab308",
         "high": "#f97316",
         "very_high": "#ef4444"
-    }.get(analysis.get_risk_level(), "#6b7280")
+    }
     
     story.append(Paragraph("Risk Assessment", heading_style))
     story.append(Paragraph(f"<b>Risk Score:</b> {analysis.risk_score}/100", normal_style))
     story.append(Paragraph(f"<b>Risk Level:</b> {analysis.get_risk_level().replace('_', ' ').title()}", normal_style))
+    
+    if analysis.producer_match:
+        story.append(Paragraph(f"<b>Detected Source:</b> {analysis.producer_match['name']}", normal_style))
+    
     story.append(Spacer(1, 10))
     
     # Metadata Summary
@@ -541,7 +1043,6 @@ def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "a
         ["Modification Date", analysis.metadata.get("modificationDateParsed", analysis.metadata.get("modificationDate", "N/A")) or "N/A"],
         ["PDF Version", analysis.metadata.get("pdfVersion", "N/A")],
         ["Page Count", str(analysis.page_count)],
-        ["Has XMP", "Yes" if analysis.has_xmp else "No"],
         ["Incremental Updates", str(analysis.incremental_updates)],
     ]
     
@@ -566,7 +1067,8 @@ def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "a
     if analysis.risk_factors:
         story.append(Paragraph("Risk Factors", heading_style))
         for factor in analysis.risk_factors:
-            story.append(Paragraph(f"• <b>{factor['factor']}:</b> {factor['description']} (+{factor['points']} points)", normal_style))
+            points_str = f"+{factor['points']}" if factor['points'] > 0 else str(factor['points'])
+            story.append(Paragraph(f"• <b>{factor['factor']}:</b> {factor['description']} ({points_str} points)", normal_style))
         story.append(Spacer(1, 10))
     
     # Findings
@@ -583,7 +1085,6 @@ def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "a
     if analysis.recommendations:
         story.append(Paragraph("Recommendations", heading_style))
         for rec in analysis.recommendations:
-            priority_color = {"high": "#ef4444", "medium": "#f97316", "low": "#22c55e"}.get(rec["priority"], "#6b7280")
             story.append(Paragraph(f"• <b>{rec['title']}</b> [{rec['priority'].upper()}]", normal_style))
             story.append(Paragraph(f"   {rec['description']}", normal_style))
     
@@ -593,3 +1094,19 @@ def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "a
     
     doc.build(story)
     return buffer.getvalue()
+
+
+def get_document_types() -> Dict:
+    """Return available document types for frontend"""
+    return DOCUMENT_TYPES
+
+
+def get_legitimate_producers(document_type: str) -> Dict:
+    """Return legitimate producers for a document type"""
+    if document_type == "paystub":
+        return PAYSTUB_LEGITIMATE_PRODUCERS
+    elif document_type == "bank_statement":
+        return BANK_STATEMENT_LEGITIMATE_PRODUCERS
+    elif document_type == "tax_form":
+        return TAX_FORM_LEGITIMATE_PRODUCERS
+    return {}

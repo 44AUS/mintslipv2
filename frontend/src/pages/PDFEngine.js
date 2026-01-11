@@ -496,7 +496,7 @@ export default function PDFEngine() {
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
                   <FileSearch className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-slate-700 mb-2">No Analysis Yet</h3>
-                  <p className="text-slate-500">Upload a PDF and click "Analyze" to see results</p>
+                  <p className="text-slate-500">Upload a PDF and click Analyze to see results</p>
                 </div>
               ) : (
                 <>

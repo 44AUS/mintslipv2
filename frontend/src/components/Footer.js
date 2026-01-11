@@ -84,7 +84,7 @@ export default function Footer() {
                 <img 
                   src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/ekke591i_685b07d537802a80992e4b58_Group-1538236230.svg" 
                   alt="Download on the App Store" 
-                  className="h-10"
+                  className="h-7"
                 />
               </a>
               <a 
@@ -96,7 +96,7 @@ export default function Footer() {
                 <img 
                   src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/g56lcgcv_685b07d5f3fb1a2291ebea9b_Group-1538236231.svg" 
                   alt="Get it on Google Play" 
-                  className="h-10"
+                  className="h-7"
                 />
               </a>
             </div>

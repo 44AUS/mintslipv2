@@ -122,9 +122,9 @@ export default function PaymentSuccess() {
     }
   }, [sessionId]);
 
-  // Helper function to send PDF email after generation
-  const sendPdfEmail = async (pdfBlob, email, documentType, userName = '') => {
-    if (!email || !pdfBlob) {
+  // Helper function to send file email after generation (PDF or ZIP)
+  const sendFileEmail = async (fileBlob, email, documentType, userName = '', isZip = false) => {
+    if (!email || !fileBlob) {
       console.log('Skipping email - no email or blob provided');
       return;
     }
@@ -134,18 +134,19 @@ export default function PaymentSuccess() {
         email,
         userName,
         documentType,
-        pdfBlob,
-        isGuest: !localStorage.getItem('userToken')
+        pdfBlob: fileBlob,
+        isGuest: !localStorage.getItem('userToken'),
+        isZip
       });
       
       if (result.success) {
         setEmailSent(true);
-        console.log('PDF email sent successfully');
+        console.log('Email with attachment sent successfully');
       } else {
-        console.error('Failed to send PDF email:', result.error);
+        console.error('Failed to send email with attachment:', result.error);
       }
     } catch (err) {
-      console.error('Error sending PDF email:', err);
+      console.error('Error sending email with attachment:', err);
     }
   };
 

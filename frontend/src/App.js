@@ -56,6 +56,7 @@ import ComparisonPage from "@/pages/ComparisonPage";
 import DocumentDirectory from "@/pages/DocumentDirectory";
 import AIResumeBuilder from "@/pages/AIResumeBuilder";
 import AIResumeLanding from "@/pages/AIResumeLanding";
+import PDFEngine from "@/pages/PDFEngine";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useState, useEffect } from "react";

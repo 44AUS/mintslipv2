@@ -4119,6 +4119,132 @@ class AIResumeBuilderTester:
             self.log_test("Send Download Email with PDF Attachment", False, f"Exception: {str(e)}")
             return False
 
+    def test_email_change_duplicate_protection(self):
+        """Test PUT /api/user/change-email endpoint for duplicate email protection"""
+        try:
+            # Step 1: Create a test user with specific email
+            test_email = "test_emailcheck@test.com"
+            test_password = "TestPassword123"
+            
+            # First, try to create the test user
+            signup_payload = {
+                "email": test_email,
+                "password": test_password,
+                "name": "Test Email Check User"
+            }
+            
+            signup_response = requests.post(f"{self.api_url}/user/signup", json=signup_payload, timeout=10)
+            
+            # Get user token (either from signup or login if user exists)
+            user_token = None
+            if signup_response.status_code == 200:
+                signup_data = signup_response.json()
+                if signup_data.get("success") and signup_data.get("token"):
+                    user_token = signup_data["token"]
+            elif signup_response.status_code == 400:
+                # User might already exist, try to login
+                login_payload = {
+                    "email": test_email,
+                    "password": test_password
+                }
+                login_response = requests.post(f"{self.api_url}/user/login", json=login_payload, timeout=10)
+                if login_response.status_code == 200:
+                    login_data = login_response.json()
+                    if login_data.get("success") and login_data.get("token"):
+                        user_token = login_data["token"]
+            
+            if not user_token:
+                self.log_test("Email Change Duplicate Protection", False, "Could not create or login test user")
+                return False
+            
+            headers = {"Authorization": f"Bearer {user_token}"}
+            success = True
+            details = f"Test user created/logged in: {test_email}"
+            
+            # Step 2: Try to change email to an existing email (austindflatt@gmail.com)
+            existing_email = "austindflatt@gmail.com"
+            change_payload = {
+                "newEmail": existing_email,
+                "password": test_password
+            }
+            
+            response = requests.put(f"{self.api_url}/user/change-email", json=change_payload, headers=headers, timeout=10)
+            
+            if response.status_code == 400:
+                data = response.json()
+                expected_message = "This email is already registered to another account"
+                if data.get("detail") == expected_message:
+                    details += f" -> ✓ Duplicate email blocked: {existing_email}"
+                else:
+                    success = False
+                    details += f" -> ✗ Wrong error message: {data.get('detail')} (expected: {expected_message})"
+            else:
+                success = False
+                details += f" -> ✗ Expected 400 error, got {response.status_code}"
+            
+            # Step 3: Test case insensitivity with uppercase email
+            if success:
+                uppercase_email = "AUSTINDFLATT@GMAIL.COM"
+                change_payload["newEmail"] = uppercase_email
+                
+                response = requests.put(f"{self.api_url}/user/change-email", json=change_payload, headers=headers, timeout=10)
+                
+                if response.status_code == 400:
+                    data = response.json()
+                    expected_message = "This email is already registered to another account"
+                    if data.get("detail") == expected_message:
+                        details += f" -> ✓ Case insensitive check works: {uppercase_email}"
+                    else:
+                        success = False
+                        details += f" -> ✗ Case insensitive failed - wrong error: {data.get('detail')}"
+                else:
+                    success = False
+                    details += f" -> ✗ Case insensitive failed - expected 400, got {response.status_code}"
+            
+            # Step 4: Test with another existing email (support@mintslip.com)
+            if success:
+                another_existing_email = "support@mintslip.com"
+                change_payload["newEmail"] = another_existing_email
+                
+                response = requests.put(f"{self.api_url}/user/change-email", json=change_payload, headers=headers, timeout=10)
+                
+                if response.status_code == 400:
+                    data = response.json()
+                    expected_message = "This email is already registered to another account"
+                    if data.get("detail") == expected_message:
+                        details += f" -> ✓ Another existing email blocked: {another_existing_email}"
+                    else:
+                        success = False
+                        details += f" -> ✗ Wrong error for second email: {data.get('detail')}"
+                else:
+                    success = False
+                    details += f" -> ✗ Second email test failed - expected 400, got {response.status_code}"
+            
+            # Step 5: Test with a valid new email (should work)
+            if success:
+                valid_new_email = f"newemail_{int(datetime.now().timestamp())}@test.com"
+                change_payload["newEmail"] = valid_new_email
+                
+                response = requests.put(f"{self.api_url}/user/change-email", json=change_payload, headers=headers, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("user", {}).get("email") == valid_new_email.lower():
+                        details += f" -> ✓ Valid email change works: {valid_new_email}"
+                    else:
+                        success = False
+                        details += f" -> ✗ Valid email change failed - response: {data}"
+                else:
+                    success = False
+                    details += f" -> ✗ Valid email change failed - status: {response.status_code}"
+            
+            self.log_test("Email Change Duplicate Protection", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("Email Change Duplicate Protection", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

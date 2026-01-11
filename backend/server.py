@@ -1573,7 +1573,8 @@ async def get_checkout_status(session_id: str):
             "payment_status": session.payment_status,
             "amount_total": session.amount_total,
             "currency": session.currency,
-            "metadata": dict(session.metadata) if session.metadata else {}
+            "metadata": dict(session.metadata) if session.metadata else {},
+            "customer_email": getattr(session.customer_details, 'email', "") if hasattr(session, 'customer_details') and session.customer_details else ""
         }
         
     except stripe.error.StripeError as e:

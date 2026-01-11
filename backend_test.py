@@ -4704,6 +4704,14 @@ class AIResumeBuilderTester:
         """Run PDF Engine specific tests"""
         print("\n📄 Testing PDF Engine APIs (Business Plan Feature)...")
         
+        # First ensure we have a user token for authenticated tests
+        print("Setting up test user for PDF Engine tests...")
+        user_setup_ok = self.test_user_registration() or self.test_user_login()
+        
+        if not user_setup_ok:
+            print("❌ Could not set up test user for PDF Engine tests")
+            return False
+        
         # Test authentication requirements
         check_access_no_auth_ok = self.test_pdf_engine_check_access_no_auth()
         check_access_regular_user_ok = self.test_pdf_engine_check_access_regular_user()
@@ -4718,6 +4726,9 @@ class AIResumeBuilderTester:
         
         if pdf_engine_tests_passed:
             print("✅ PDF Engine authentication and validation tests passed")
+            print("✅ All endpoints correctly require authentication")
+            print("✅ Regular users correctly denied access (Business subscription required)")
+            print("✅ File type validation working correctly")
         else:
             print("❌ Some PDF Engine tests failed")
         

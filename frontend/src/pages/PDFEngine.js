@@ -482,6 +482,112 @@ export default function PDFEngine() {
     }
   };
   
+  // Apply preset to metadata fields
+  const applyPreset = (presetKey) => {
+    setSelectedPreset(presetKey);
+    if (presetKey && PRESETS[presetKey]) {
+      const preset = PRESETS[presetKey];
+      setMetadataFields(prev => ({
+        ...prev,
+        producer: preset.producer || '',
+        creator: preset.creator || ''
+      }));
+    }
+  };
+  
+  // Prefill metadata from analysis result
+  const prefillFromAnalysis = () => {
+    if (analysisResult?.analysis?.metadata) {
+      const meta = analysisResult.analysis.metadata;
+      setMetadataFields({
+        producer: meta.producer || '',
+        creator: meta.creator || '',
+        author: meta.author || '',
+        title: meta.title || '',
+        subject: meta.subject || '',
+        creationDate: meta.creationDateParsed ? meta.creationDateParsed.split('T')[0] : '',
+        modificationDate: meta.modificationDateParsed ? meta.modificationDateParsed.split('T')[0] : ''
+      });
+    }
+  };
+  
+  // Regenerate PDF with new metadata
+  const regeneratePDF = async () => {
+    if (!selectedFile) return;
+    
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    
+    setIsRegenerating(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      
+      // Build query params
+      const params = new URLSearchParams();
+      if (metadataFields.producer) params.append('producer', metadataFields.producer);
+      if (metadataFields.creator) params.append('creator', metadataFields.creator);
+      if (metadataFields.author) params.append('author', metadataFields.author);
+      if (metadataFields.title) params.append('title', metadataFields.title);
+      if (metadataFields.subject) params.append('subject', metadataFields.subject);
+      if (metadataFields.creationDate) params.append('creation_date', metadataFields.creationDate);
+      if (metadataFields.modificationDate) params.append('modification_date', metadataFields.modificationDate);
+      if (selectedPreset) params.append('preset', selectedPreset);
+      
+      const response = await fetch(
+        `${BACKEND_URL}/api/pdf-engine/edit-metadata?${params.toString()}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Regeneration failed");
+      }
+      
+      const result = await response.json();
+      setRegeneratedPdf(result);
+      toast.success("PDF regenerated successfully!");
+      
+    } catch (error) {
+      console.error("Regeneration error:", error);
+      toast.error(error.message || "Failed to regenerate PDF");
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+  
+  // Download regenerated PDF
+  const downloadRegeneratedPDF = () => {
+    if (!regeneratedPdf?.regeneratedPdfBase64) return;
+    
+    const byteCharacters = atob(regeneratedPdf.regeneratedPdfBase64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `regenerated_${selectedFile?.name || 'document.pdf'}`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    toast.success("Regenerated PDF downloaded!");
+  };
+  
   // Loading state
   if (hasAccess === null) {
     return (

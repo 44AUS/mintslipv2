@@ -509,6 +509,84 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadSavedDocuments = async () => {
+    const token = localStorage.getItem("adminToken");
+    setIsSavedDocumentsLoading(true);
+    
+    try {
+      const params = new URLSearchParams({
+        skip: (savedDocumentsPage * pageSize).toString(),
+        limit: pageSize.toString()
+      });
+      
+      if (savedDocumentsTypeFilter !== "all") {
+        params.append("documentType", savedDocumentsTypeFilter);
+      }
+      
+      if (savedDocumentsUserFilter.trim()) {
+        params.append("userId", savedDocumentsUserFilter.trim());
+      }
+      
+      const response = await fetch(
+        `${BACKEND_URL}/api/admin/saved-documents?${params.toString()}`,
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setSavedDocuments(data.documents);
+        setSavedDocumentsTotal(data.total);
+      }
+    } catch (error) {
+      console.error("Error loading saved documents:", error);
+    } finally {
+      setIsSavedDocumentsLoading(false);
+    }
+  };
+
+  const deleteSavedDocument = async (docId) => {
+    if (!window.confirm("Are you sure you want to delete this saved document? This action cannot be undone.")) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/saved-documents/${docId}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast.success("Document deleted");
+        loadSavedDocuments();
+      } else {
+        toast.error("Failed to delete document");
+      }
+    } catch (error) {
+      toast.error("Error deleting document");
+    }
+  };
+
+  const deleteAllUserSavedDocuments = async (userId, userEmail) => {
+    if (!window.confirm(`Are you sure you want to delete ALL saved documents for ${userEmail}? This action cannot be undone.`)) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/saved-documents`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(data.message);
+        loadSavedDocuments();
+      } else {
+        toast.error("Failed to delete documents");
+      }
+    } catch (error) {
+      toast.error("Error deleting documents");
+    }
+  };
+
   const deletePurchase = async (purchaseId) => {
     if (!window.confirm("Are you sure you want to delete this purchase record?")) return;
     

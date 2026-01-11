@@ -190,7 +190,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'w2', formData.employeeName);
+            sendFileEmail(pdfBlob, emailToUse, 'w2', formData.employeeName);
           }
           
           toast.success('Your W-2 has been downloaded!');
@@ -205,7 +205,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'w9', formData.name);
+            sendFileEmail(pdfBlob, emailToUse, 'w9', formData.name);
           }
           
           toast.success('Your W-9 has been downloaded!');
@@ -221,7 +221,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'bank-statement', formData.accountHolder);
+            sendFileEmail(pdfBlob, emailToUse, 'bank-statement', formData.accountHolder);
           }
           
           toast.success('Your bank statement has been downloaded!');
@@ -263,7 +263,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, '1099-nec', formData.recipientName);
+            sendFileEmail(pdfBlob, emailToUse, '1099-nec', formData.recipientName);
           }
           
           toast.success('Your 1099-NEC has been downloaded!');
@@ -279,7 +279,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, '1099-misc', formData.recipientName);
+            sendFileEmail(pdfBlob, emailToUse, '1099-misc', formData.recipientName);
           }
           
           toast.success('Your 1099-MISC has been downloaded!');
@@ -313,7 +313,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'offer-letter', formData.recipientName);
+            sendFileEmail(pdfBlob, emailToUse, 'offer-letter', formData.recipientName);
           }
           
           toast.success('Your offer letter has been downloaded!');
@@ -329,7 +329,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'schedule-c', formData.businessName);
+            sendFileEmail(pdfBlob, emailToUse, 'schedule-c', formData.businessName);
           }
           
           toast.success('Your Schedule C has been downloaded!');
@@ -345,7 +345,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'utility-bill', formData.customerName);
+            sendFileEmail(pdfBlob, emailToUse, 'utility-bill', formData.customerName);
           }
           
           toast.success('Your utility bill has been downloaded!');
@@ -360,7 +360,7 @@ export default function PaymentSuccess() {
           generated = true;
           
           if (emailToUse && pdfBlob) {
-            sendPdfEmail(pdfBlob, emailToUse, 'vehicle-bill-of-sale', formData.buyerName);
+            sendFileEmail(pdfBlob, emailToUse, 'vehicle-bill-of-sale', formData.buyerName);
           }
           
           toast.success('Your vehicle bill of sale has been downloaded!');

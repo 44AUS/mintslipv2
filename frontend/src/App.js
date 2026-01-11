@@ -180,6 +180,7 @@ function App() {
             <Route path="/subscription/upgrade/success" element={<SubscriptionUpgradeSuccess />} />
             <Route path="/user/dashboard" element={<UserDashboard />} />
             <Route path="/user/downloads" element={<UserDownloads />} />
+            <Route path="/user/pdf-engine" element={<PDFEngine />} />
             <Route path="/user/settings" element={<UserSettings />} />
             <Route path="/mintslip-vs-other-paystub-generators" element={<ComparisonPage />} />
             <Route path="/mintslip-vs-thepaystubs" element={<MintSlipVsThePayStubs />} />

@@ -4240,6 +4240,10 @@ class AIResumeBuilderTester:
         ip_ban_after_unban_ok = self.test_admin_banned_ips_after_unban()
         ip_ban_full_flow_ok = self.test_ip_ban_management_full_flow()
         
+        # Test Email with PDF Attachment Feature
+        print("\n📧 Testing Email with PDF Attachment Feature...")
+        email_pdf_ok = self.test_send_download_email_with_pdf()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

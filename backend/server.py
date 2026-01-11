@@ -50,7 +50,10 @@ from pdf_engine import (
     analyze_pdf_metadata,
     normalize_pdf_metadata,
     generate_analysis_report_pdf,
-    PDFAnalysisResult
+    PDFAnalysisResult,
+    get_document_types,
+    get_legitimate_producers,
+    DOCUMENT_TYPES
 )
 
 # Import Emergent Integrations for Gemini

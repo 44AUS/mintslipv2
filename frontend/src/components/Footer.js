@@ -67,12 +67,40 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <button 
               onClick={() => navigate("/")}
-              className="text-2xl font-black tracking-tight mb-4 block"
+              className="text-2xl font-black tracking-tight mb-4 block text-white"
               style={{ fontFamily: 'Outfit, sans-serif' }}
             >
-              <span className="text-green-400">mint</span>
-              <span className="text-white">slip</span>
+              MintSlip
             </button>
+            
+            {/* App Store Badges */}
+            <div className="flex items-center gap-3 mb-6">
+              <a 
+                href="https://apps.apple.com/us/iphone/today" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/ekke591i_685b07d537802a80992e4b58_Group-1538236230.svg" 
+                  alt="Download on the App Store" 
+                  className="h-10"
+                />
+              </a>
+              <a 
+                href="https://play.google.com/store/apps/details?id=com.mintslip.app&hl=en_US" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/g56lcgcv_685b07d5f3fb1a2291ebea9b_Group-1538236231.svg" 
+                  alt="Get it on Google Play" 
+                  className="h-10"
+                />
+              </a>
+            </div>
+            
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
               Maximize your personal & business potential with our SaaS technology
             </p>

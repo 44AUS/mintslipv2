@@ -356,7 +356,7 @@ export default function AdminDashboard() {
   }, []);
 
   // Process purchases data for charts
-  const processChartData = (purchases, period = chartPeriod) => {
+  const processChartData = (purchases, period = chartPeriod, typeFilter = chartTypeFilter) => {
     if (!purchases || purchases.length === 0) {
       setRevenueChartData([]);
       return;
@@ -365,6 +365,7 @@ export default function AdminDashboard() {
     const now = new Date();
     let startDate;
     let groupBy;
+    let dateFormat;
     
     switch (period) {
       case "7days":
@@ -389,11 +390,45 @@ export default function AdminDashboard() {
     }
     
     // Filter purchases within the period
-    const filteredPurchases = purchases.filter(p => new Date(p.createdAt) >= startDate);
+    let filteredPurchases = purchases.filter(p => new Date(p.createdAt) >= startDate);
     
-    // Group by time period
-    const grouped = {};
+    // Apply type filter
+    if (typeFilter === "subscription") {
+      filteredPurchases = filteredPurchases.filter(p => 
+        p.type === "subscription" || 
+        p.documentType === "subscription" || 
+        (p.userId && !p.isGuest)
+      );
+    } else if (typeFilter === "guest") {
+      filteredPurchases = filteredPurchases.filter(p => 
+        p.type === "guest" || 
+        p.isGuest === true || 
+        !p.userId
+      );
+    }
     
+    // Generate all date keys for the period (to show empty dates too)
+    const allDates = {};
+    const tempDate = new Date(startDate);
+    
+    while (tempDate <= now) {
+      let key;
+      if (groupBy === "day") {
+        key = tempDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        tempDate.setDate(tempDate.getDate() + 1);
+      } else if (groupBy === "week") {
+        const weekStart = new Date(tempDate);
+        weekStart.setDate(tempDate.getDate() - tempDate.getDay());
+        key = weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        tempDate.setDate(tempDate.getDate() + 7);
+      } else {
+        key = tempDate.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+        tempDate.setMonth(tempDate.getMonth() + 1);
+      }
+      allDates[key] = { name: key, revenue: 0, purchases: 0, date: new Date(tempDate) };
+    }
+    
+    // Group purchases by time period
     filteredPurchases.forEach(purchase => {
       const date = new Date(purchase.createdAt);
       let key;
@@ -408,21 +443,31 @@ export default function AdminDashboard() {
         key = date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
       }
       
-      if (!grouped[key]) {
-        grouped[key] = { name: key, revenue: 0, purchases: 0 };
+      if (allDates[key]) {
+        allDates[key].revenue += purchase.amount || 0;
+        allDates[key].purchases += 1;
       }
-      grouped[key].revenue += purchase.amount || 0;
-      grouped[key].purchases += 1;
     });
     
     // Convert to array and sort by date
-    const chartData = Object.values(grouped).sort((a, b) => {
-      const dateA = new Date(a.name + ", 2024");
-      const dateB = new Date(b.name + ", 2024");
-      return dateA - dateB;
+    const chartData = Object.values(allDates).sort((a, b) => {
+      // Parse dates more reliably
+      const parseDate = (name) => {
+        const parts = name.split(" ");
+        const monthMap = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+        const month = monthMap[parts[0]] || 0;
+        const day = parseInt(parts[1]) || 1;
+        const year = parts[2] ? 2000 + parseInt(parts[2]) : new Date().getFullYear();
+        return new Date(year, month, day);
+      };
+      return parseDate(a.name) - parseDate(b.name);
     });
     
-    setRevenueChartData(chartData);
+    // Limit to reasonable number of data points
+    const maxPoints = groupBy === "day" ? 30 : groupBy === "week" ? 13 : 12;
+    const limitedData = chartData.slice(-maxPoints);
+    
+    setRevenueChartData(limitedData);
   };
   
   // Update chart when period changes

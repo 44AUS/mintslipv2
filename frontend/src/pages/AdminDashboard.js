@@ -1818,19 +1818,55 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Revenue Over Time Chart */}
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                   <h2 className="text-lg font-semibold text-slate-800">Revenue Over Time</h2>
-                  <Select value={chartPeriod} onValueChange={setChartPeriod}>
-                    <SelectTrigger className="w-[130px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7days">Last 7 Days</SelectItem>
-                      <SelectItem value="30days">Last 30 Days</SelectItem>
-                      <SelectItem value="90days">Last 90 Days</SelectItem>
-                      <SelectItem value="year">Last Year</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Type Filter */}
+                    <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                      <button
+                        onClick={() => setChartTypeFilter("all")}
+                        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                          chartTypeFilter === "all" 
+                            ? "bg-white text-green-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => setChartTypeFilter("subscription")}
+                        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                          chartTypeFilter === "subscription" 
+                            ? "bg-white text-green-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Subscriptions
+                      </button>
+                      <button
+                        onClick={() => setChartTypeFilter("guest")}
+                        className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                          chartTypeFilter === "guest" 
+                            ? "bg-white text-green-600 shadow-sm font-medium" 
+                            : "text-slate-500 hover:text-slate-700"
+                        }`}
+                      >
+                        Guest
+                      </button>
+                    </div>
+                    {/* Period Filter */}
+                    <Select value={chartPeriod} onValueChange={setChartPeriod}>
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7days">Last 7 Days</SelectItem>
+                        <SelectItem value="30days">Last 30 Days</SelectItem>
+                        <SelectItem value="90days">Last 90 Days</SelectItem>
+                        <SelectItem value="year">Last Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="h-[300px]">
                   {revenueChartData.length > 0 ? (

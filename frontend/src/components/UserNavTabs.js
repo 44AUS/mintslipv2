@@ -31,7 +31,9 @@ export default function UserNavTabs() {
             setIsBusinessUser(true);
             return;
           }
-        } catch (e) {}
+        } catch (e) {
+          // Ignore JSON parse errors
+        }
       }
       
       // Fallback: check with API
@@ -44,7 +46,9 @@ export default function UserNavTabs() {
             const data = await response.json();
             setIsBusinessUser(data.hasAccess);
           }
-        } catch (e) {}
+        } catch (e) {
+          // Ignore network errors
+        }
       }
     };
     

@@ -5147,7 +5147,7 @@ async def check_pdf_engine_access(session: dict = Depends(get_current_user)):
     if not user:
         return {"hasAccess": False, "reason": "User not found"}
     
-    subscription = user.get("subscription", {})
+    subscription = user.get("subscription") or {}
     has_access = subscription.get("status") == "active" and subscription.get("tier") == "business"
     
     return {

@@ -3060,34 +3060,42 @@ export default function AdminDashboard() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <button
-                              onClick={async () => {
-                                const token = localStorage.getItem("adminToken");
-                                const downloadUrl = `${BACKEND_URL}/api/admin/saved-documents/${doc.id}/download`;
-                                try {
-                                  const response = await fetch(downloadUrl, {
-                                    headers: { "Authorization": `Bearer ${token}` }
-                                  });
-                                  
-                                  if (!response.ok) {
-                                    const errorData = await response.json().catch(() => ({}));
-                                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                            {doc.fileExists === false ? (
+                              <span className="text-sm text-red-500 truncate max-w-[200px] block flex items-center gap-1" title="File missing from server">
+                                <X className="w-3 h-3 flex-shrink-0" />
+                                {doc.fileName}
+                                <span className="text-xs text-red-400">(missing)</span>
+                              </span>
+                            ) : (
+                              <button
+                                onClick={async () => {
+                                  const token = localStorage.getItem("adminToken");
+                                  const downloadUrl = `${BACKEND_URL}/api/admin/saved-documents/${doc.id}/download`;
+                                  try {
+                                    const response = await fetch(downloadUrl, {
+                                      headers: { "Authorization": `Bearer ${token}` }
+                                    });
+                                    
+                                    if (!response.ok) {
+                                      const errorData = await response.json().catch(() => ({}));
+                                      throw new Error(errorData.detail || `HTTP ${response.status}`);
+                                    }
+                                    
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    window.open(url, '_blank');
+                                  } catch (err) {
+                                    console.error("Error viewing document:", err);
+                                    toast.error(`Failed to open document: ${err.message}`);
                                   }
-                                  
-                                  const blob = await response.blob();
-                                  const url = window.URL.createObjectURL(blob);
-                                  window.open(url, '_blank');
-                                } catch (err) {
-                                  console.error("Error viewing document:", err);
-                                  toast.error(`Failed to open document: ${err.message}`);
-                                }
-                              }}
-                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px] block cursor-pointer flex items-center gap-1"
-                              title="Click to view PDF"
-                            >
-                              <Eye className="w-3 h-3 flex-shrink-0" />
-                              {doc.fileName}
-                            </button>
+                                }}
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px] block cursor-pointer flex items-center gap-1"
+                                title="Click to view PDF"
+                              >
+                                <Eye className="w-3 h-3 flex-shrink-0" />
+                                {doc.fileName}
+                              </button>
+                            )}
                           </TableCell>
                           <TableCell>
                             <span className="text-sm text-slate-500">

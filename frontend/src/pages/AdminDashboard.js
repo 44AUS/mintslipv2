@@ -3060,9 +3060,33 @@ export default function AdminDashboard() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm text-slate-600 truncate max-w-[200px] block">
+                            <button
+                              onClick={() => {
+                                const token = localStorage.getItem("adminToken");
+                                const downloadUrl = `${BACKEND_URL}/api/admin/saved-documents/${doc.id}/download`;
+                                // Open in new tab with auth
+                                fetch(downloadUrl, {
+                                  headers: { "Authorization": `Bearer ${token}` }
+                                })
+                                .then(response => {
+                                  if (!response.ok) throw new Error("Failed to fetch document");
+                                  return response.blob();
+                                })
+                                .then(blob => {
+                                  const url = window.URL.createObjectURL(blob);
+                                  window.open(url, '_blank');
+                                })
+                                .catch(err => {
+                                  console.error("Error viewing document:", err);
+                                  toast.error("Failed to open document");
+                                });
+                              }}
+                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px] block cursor-pointer flex items-center gap-1"
+                              title="Click to view PDF"
+                            >
+                              <Eye className="w-3 h-3 flex-shrink-0" />
                               {doc.fileName}
-                            </span>
+                            </button>
                           </TableCell>
                           <TableCell>
                             <span className="text-sm text-slate-500">

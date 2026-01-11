@@ -207,6 +207,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [revenueChartData, setRevenueChartData] = useState([]);
   const [chartPeriod, setChartPeriod] = useState("30days");
+  const [chartTypeFilter, setChartTypeFilter] = useState("all"); // "all", "subscription", "guest"
   const pageSize = 20;
   
   // Subscription change modal state

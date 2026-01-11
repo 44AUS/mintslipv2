@@ -337,7 +337,7 @@ export default function PaymentSuccess() {
           const formData = JSON.parse(formDataStr);
           const template = localStorage.getItem('pendingUtilityBillTemplate') || 'electric';
           
-          pdfBlob = await generateAndDownloadUtilityBill(formData, template, false, true);
+          pdfBlob = await generateAndDownloadUtilityBill(formData, template, true);
           generated = true;
           
           if (emailToUse && pdfBlob) {

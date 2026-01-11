@@ -555,23 +555,36 @@ const createOrder = (data, actions) => {
     setIsProcessing(true);
     
     try {
-      const basePrice = 49.99;
+      const basePrice = getStatementPrice();
       const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
+      
+      // Build form data object with all form field values
+      const formDataToStore = {
+        accountName,
+        accountAddress1,
+        accountAddress2,
+        accountNumber,
+        selectedMonth,
+        beginningBalance,
+        transactions,
+        bankName: selectedBank?.name || '',
+        bankLogo: uploadedLogo
+      };
       
       // Store form data for after payment
       localStorage.setItem("pendingBankStatementData", JSON.stringify({
-        formData,
+        formData: formDataToStore,
         transactions,
-        bankLogo,
+        bankLogo: uploadedLogo,
         beginningBalance,
-        statementPeriod
+        statementPeriod: selectedMonth
       }));
-      localStorage.setItem("pendingBankStatementTemplate", selectedBank);
+      localStorage.setItem("pendingBankStatementTemplate", selectedTemplate);
       
       const { url } = await createStripeCheckout({
         amount: finalAmount,
         documentType: "bank-statement",
-        template: selectedBank,
+        template: selectedTemplate,
         appliedDiscount,
         successPath: "/payment-success",
         cancelPath: "/bank-statement-generator"

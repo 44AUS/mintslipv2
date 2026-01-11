@@ -5116,6 +5116,256 @@ async def refresh_sitemap_info():
         return {"success": False, "error": str(e)}
 
 
+# ============================================
+# PDF METADATA & CONSISTENCY ENGINE
+# Business Plan Feature Only
+# ============================================
+
+# Max file size for PDF analysis (10MB default)
+PDF_ENGINE_MAX_SIZE = int(os.environ.get("PDF_ENGINE_MAX_SIZE", 10 * 1024 * 1024))
+
+async def verify_business_subscription(session: dict) -> dict:
+    """Verify user has an active Business subscription"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    subscription = user.get("subscription", {})
+    if subscription.get("status") != "active" or subscription.get("tier") != "business":
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature requires an active Business subscription"
+        )
+    
+    return user
+
+
+@app.get("/api/pdf-engine/check-access")
+async def check_pdf_engine_access(session: dict = Depends(get_current_user)):
+    """Check if user has access to PDF Engine (Business plan only)"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    if not user:
+        return {"hasAccess": False, "reason": "User not found"}
+    
+    subscription = user.get("subscription", {})
+    has_access = subscription.get("status") == "active" and subscription.get("tier") == "business"
+    
+    return {
+        "hasAccess": has_access,
+        "currentTier": subscription.get("tier", "none"),
+        "subscriptionStatus": subscription.get("status", "none"),
+        "reason": "Active Business subscription required" if not has_access else None
+    }
+
+
+class PDFEngineAnalyzeRequest(BaseModel):
+    normalize: bool = False  # Whether to also normalize the PDF
+    normalizeOptions: Optional[dict] = None
+
+
+@app.post("/api/pdf-engine/analyze")
+async def analyze_pdf_endpoint(
+    file: UploadFile = File(...),
+    normalize: bool = False,
+    session: dict = Depends(get_current_user)
+):
+    """
+    Analyze PDF metadata and document consistency
+    Business Plan feature only
+    """
+    # Verify Business subscription
+    user = await verify_business_subscription(session)
+    
+    # Validate file type
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(
+            status_code=400, 
+            detail="Only PDF files are supported. Please upload a .pdf file."
+        )
+    
+    # Validate content type
+    if file.content_type and 'pdf' not in file.content_type.lower():
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Only PDF files are accepted."
+        )
+    
+    # Read file content
+    try:
+        pdf_bytes = await file.read()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to read file: {str(e)}")
+    
+    # Check file size
+    if len(pdf_bytes) > PDF_ENGINE_MAX_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is {PDF_ENGINE_MAX_SIZE // (1024*1024)}MB"
+        )
+    
+    # Verify it's a valid PDF
+    if not pdf_bytes.startswith(b'%PDF'):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid PDF file. The file does not appear to be a valid PDF."
+        )
+    
+    try:
+        # Analyze the PDF
+        analysis = analyze_pdf_metadata(pdf_bytes)
+        
+        result = {
+            "success": True,
+            "filename": file.filename,
+            "analysis": analysis.to_dict(),
+            "analyzedAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # If normalize requested, also normalize
+        if normalize:
+            normalized_bytes, normalize_result = normalize_pdf_metadata(pdf_bytes)
+            result["normalization"] = normalize_result
+            
+            if normalize_result.get("success"):
+                # Encode normalized PDF as base64 for download
+                result["normalizedPdfBase64"] = base64.b64encode(normalized_bytes).decode('utf-8')
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"PDF analysis error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Analysis failed: {str(e)}"
+        )
+
+
+@app.post("/api/pdf-engine/normalize")
+async def normalize_pdf_endpoint(
+    file: UploadFile = File(...),
+    standardize_producer: bool = True,
+    fix_dates: bool = True,
+    flatten_document: bool = True,
+    session: dict = Depends(get_current_user)
+):
+    """
+    Normalize PDF metadata to reduce verification red flags
+    Business Plan feature only
+    """
+    # Verify Business subscription
+    user = await verify_business_subscription(session)
+    
+    # Validate file type
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    # Read file
+    pdf_bytes = await file.read()
+    
+    # Check file size
+    if len(pdf_bytes) > PDF_ENGINE_MAX_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is {PDF_ENGINE_MAX_SIZE // (1024*1024)}MB"
+        )
+    
+    # Verify PDF
+    if not pdf_bytes.startswith(b'%PDF'):
+        raise HTTPException(status_code=400, detail="Invalid PDF file")
+    
+    try:
+        # Normalize options
+        options = {
+            "standardize_producer": standardize_producer,
+            "fix_dates": fix_dates,
+            "flatten_document": flatten_document
+        }
+        
+        # Perform normalization
+        normalized_bytes, result = normalize_pdf_metadata(pdf_bytes, options)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=500,
+                detail=f"Normalization failed: {result.get('error', 'Unknown error')}"
+            )
+        
+        return {
+            "success": True,
+            "filename": file.filename,
+            "changes": result.get("changes", []),
+            "normalizedPdfBase64": base64.b64encode(normalized_bytes).decode('utf-8'),
+            "normalizedAt": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"PDF normalization error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Normalization failed: {str(e)}")
+
+
+@app.post("/api/pdf-engine/generate-report")
+async def generate_analysis_report(
+    file: UploadFile = File(...),
+    format: str = "pdf",  # "pdf" or "json"
+    session: dict = Depends(get_current_user)
+):
+    """
+    Generate a detailed analysis report
+    Business Plan feature only
+    """
+    from fastapi.responses import Response
+    
+    # Verify Business subscription
+    user = await verify_business_subscription(session)
+    
+    # Validate file type
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    # Read file
+    pdf_bytes = await file.read()
+    
+    # Check file size
+    if len(pdf_bytes) > PDF_ENGINE_MAX_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is {PDF_ENGINE_MAX_SIZE // (1024*1024)}MB"
+        )
+    
+    # Verify PDF
+    if not pdf_bytes.startswith(b'%PDF'):
+        raise HTTPException(status_code=400, detail="Invalid PDF file")
+    
+    try:
+        # Analyze
+        analysis = analyze_pdf_metadata(pdf_bytes)
+        
+        if format == "json":
+            return {
+                "success": True,
+                "filename": file.filename,
+                "report": analysis.to_dict(),
+                "generatedAt": datetime.now(timezone.utc).isoformat()
+            }
+        else:
+            # Generate PDF report
+            report_pdf = generate_analysis_report_pdf(analysis, file.filename)
+            
+            return Response(
+                content=report_pdf,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f'attachment; filename="analysis_report_{file.filename}"'
+                }
+            )
+            
+    except Exception as e:
+        logger.error(f"Report generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

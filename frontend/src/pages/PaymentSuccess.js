@@ -78,13 +78,18 @@ export default function PaymentSuccess() {
       }
       
       const data = await response.json();
+      
+      // Extract customer email from metadata if available
+      if (data.metadata?.userEmail) {
+        setCustomerEmail(data.metadata.userEmail);
+      }
 
       if (data.payment_status === 'paid' || data.status === 'complete') {
         setPaymentVerified(true);
         setIsVerifying(false);
         
         // Step 2: Generate document if we have pending data
-        await generateDocument();
+        await generateDocument(data.metadata?.userEmail);
       } else if (data.status === 'expired') {
         setError('Payment session expired. Please try again.');
         setIsVerifying(false);

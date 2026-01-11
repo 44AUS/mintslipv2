@@ -639,7 +639,8 @@ async def user_login(data: UserLogin, request: Request):
             "id": user["id"],
             "email": user["email"],
             "name": user["name"],
-            "subscription": user.get("subscription")
+            "subscription": user.get("subscription"),
+            "emailVerified": user.get("emailVerified", True)  # Default True for existing users
         }
     }
 

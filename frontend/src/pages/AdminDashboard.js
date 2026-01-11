@@ -1539,6 +1539,7 @@ export default function AdminDashboard() {
                 case "overview": return "/admin/overview";
                 case "purchases": return "/admin/purchases";
                 case "users": return "/admin/users";
+                case "saved-docs": return "/admin/saved-docs";
                 case "discounts": return "/admin/discounts";
                 case "banned-ips": return "/admin/banned-ips";
                 case "blog": return "/admin/blog";
@@ -1550,7 +1551,10 @@ export default function AdminDashboard() {
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
-                onClick={() => navigate(getTabRoute(tab.id))}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  navigate(getTabRoute(tab.id));
+                }}
                 className={`gap-2 ${activeTab === tab.id ? "bg-green-600 hover:bg-green-700" : ""}`}
               >
                 <tab.icon className="w-4 h-4" />

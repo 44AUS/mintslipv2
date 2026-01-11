@@ -265,6 +265,7 @@ export default function PDFEngine() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [normalizeEnabled, setNormalizeEnabled] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(true);
   const [documentType, setDocumentType] = useState("paystub");
   const [user, setUser] = useState(null);
   

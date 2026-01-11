@@ -701,6 +701,85 @@ async def change_user_password(data: ChangeUserPassword, request: Request, sessi
     return {"success": True, "message": "Password changed successfully"}
 
 
+# ========== CHANGE EMAIL ENDPOINT ==========
+
+class ChangeEmailRequest(BaseModel):
+    newEmail: str
+    password: str
+
+@app.put("/api/user/change-email")
+async def change_email(data: ChangeEmailRequest, session: dict = Depends(get_current_user)):
+    """Change user's email address - requires password verification and email re-verification"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify password
+    if not verify_password(data.password, user["password"]):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+    
+    # Validate new email format
+    new_email = data.newEmail.lower().strip()
+    if not new_email or "@" not in new_email:
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    
+    # Check if new email is same as current
+    if new_email == user["email"].lower():
+        raise HTTPException(status_code=400, detail="New email is the same as current email")
+    
+    # Check if new email is already in use
+    existing_user = await users_collection.find_one({"email": new_email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="This email is already registered")
+    
+    # Generate new verification code
+    verification_code = secrets.token_hex(3).upper()
+    old_email = user["email"]
+    
+    # Update user's email and set as unverified
+    await users_collection.update_one(
+        {"id": session["userId"]},
+        {"$set": {
+            "email": new_email,
+            "emailVerified": False,
+            "verificationCode": verification_code,
+            "previousEmail": old_email,
+            "emailChangedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Update session with new email
+    await sessions_collection.update_many(
+        {"userId": session["userId"]},
+        {"$set": {"email": new_email}}
+    )
+    
+    # Send verification email to new address
+    asyncio.create_task(send_verification_email(
+        new_email,
+        user.get("name", ""),
+        verification_code,
+        f"{os.environ.get('SITE_URL', 'https://mintslip.com')}/verify-email?code={verification_code}&email={new_email}"
+    ))
+    
+    # Return updated user info
+    updated_user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0, "password": 0})
+    
+    return {
+        "success": True, 
+        "message": "Email updated. Please verify your new email address.",
+        "user": {
+            "id": updated_user["id"],
+            "email": updated_user["email"],
+            "name": updated_user.get("name", ""),
+            "subscription": updated_user.get("subscription"),
+            "preferences": updated_user.get("preferences", {}),
+            "emailVerified": False
+        }
+    }
+
+
 # ========== EMAIL VERIFICATION ENDPOINTS ==========
 
 class VerifyEmailRequest(BaseModel):

@@ -470,12 +470,12 @@ export default function AdminDashboard() {
     setRevenueChartData(limitedData);
   };
   
-  // Update chart when period changes
+  // Update chart when period or type filter changes
   useEffect(() => {
     if (dashboardStats?.recentPurchases) {
-      processChartData(dashboardStats.recentPurchases, chartPeriod);
+      processChartData(dashboardStats.recentPurchases, chartPeriod, chartTypeFilter);
     }
-  }, [chartPeriod, dashboardStats]);
+  }, [chartPeriod, chartTypeFilter, dashboardStats]);
 
   const loadPurchases = async () => {
     const token = localStorage.getItem("adminToken");

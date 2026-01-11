@@ -352,8 +352,12 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           
-          await generateAndDownloadVehicleBillOfSale(formData);
+          pdfBlob = await generateAndDownloadVehicleBillOfSale(formData, true);
           generated = true;
+          
+          if (emailToUse && pdfBlob) {
+            sendPdfEmail(pdfBlob, emailToUse, 'vehicle-bill-of-sale', formData.buyerName);
+          }
           
           toast.success('Your vehicle bill of sale has been downloaded!');
         }

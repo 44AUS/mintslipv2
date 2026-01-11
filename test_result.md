@@ -197,6 +197,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Email with PDF Attachment Endpoint"
     - "Gusto Paystub YTD Net Pay Calculation Fix"
     - "Stripe Config Endpoint"
     - "Stripe One-Time Checkout"

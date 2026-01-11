@@ -721,17 +721,25 @@ async def change_email(data: ChangeEmailRequest, session: dict = Depends(get_cur
     
     # Validate new email format
     new_email = data.newEmail.lower().strip()
-    if not new_email or "@" not in new_email:
+    if not new_email or "@" not in new_email or "." not in new_email.split("@")[-1]:
         raise HTTPException(status_code=400, detail="Invalid email address")
     
     # Check if new email is same as current
     if new_email == user["email"].lower():
         raise HTTPException(status_code=400, detail="New email is the same as current email")
     
-    # Check if new email is already in use
-    existing_user = await users_collection.find_one({"email": new_email})
+    # Check if new email is already in use by another user (case-insensitive)
+    existing_user = await users_collection.find_one({
+        "email": {"$regex": f"^{re.escape(new_email)}$", "$options": "i"},
+        "id": {"$ne": session["userId"]}  # Exclude current user
+    })
     if existing_user:
-        raise HTTPException(status_code=400, detail="This email is already registered")
+        raise HTTPException(status_code=400, detail="This email is already registered to another account")
+    
+    # Double-check with exact match as well
+    exact_match = await users_collection.find_one({"email": new_email})
+    if exact_match and exact_match.get("id") != session["userId"]:
+        raise HTTPException(status_code=400, detail="This email is already registered to another account")
     
     # Generate new verification code
     verification_code = secrets.token_hex(3).upper()

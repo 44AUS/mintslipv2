@@ -1120,6 +1120,211 @@ def get_legitimate_producers(document_type: str) -> Dict:
     return {}
 
 
+def edit_and_regenerate_pdf(pdf_bytes: bytes, new_metadata: Dict) -> Tuple[bytes, Dict]:
+    """
+    Edit PDF metadata and regenerate as a clean PDF without edit traces.
+    
+    new_metadata can include:
+    - producer: PDF producer software
+    - creator: PDF creator application  
+    - author: Document author
+    - title: Document title
+    - subject: Document subject
+    - creationDate: Creation date (ISO format or 'now')
+    - modificationDate: Modification date (ISO format or 'now')
+    """
+    changes = []
+    
+    try:
+        pdf_file = io.BytesIO(pdf_bytes)
+        
+        with pikepdf.open(pdf_file) as pdf:
+            # Get original metadata for comparison
+            original_info = {}
+            if pdf.docinfo:
+                for key in ['/Producer', '/Creator', '/Author', '/Title', '/Subject', '/CreationDate', '/ModDate']:
+                    if key in pdf.docinfo:
+                        original_info[key] = str(pdf.docinfo[key])
+            
+            # Create new document info dictionary
+            new_docinfo = pikepdf.Dictionary()
+            
+            # Helper to format date for PDF
+            def format_pdf_date(date_value):
+                if date_value == 'now':
+                    dt = datetime.now(timezone.utc)
+                elif isinstance(date_value, str):
+                    try:
+                        # Try parsing ISO format
+                        dt = datetime.fromisoformat(date_value.replace('Z', '+00:00'))
+                    except:
+                        # Try parsing as date only
+                        try:
+                            dt = datetime.strptime(date_value, '%Y-%m-%d')
+                            dt = dt.replace(tzinfo=timezone.utc)
+                        except:
+                            dt = datetime.now(timezone.utc)
+                else:
+                    dt = datetime.now(timezone.utc)
+                
+                # Format as PDF date string: D:YYYYMMDDHHmmSS+00'00'
+                return f"D:{dt.strftime('%Y%m%d%H%M%S')}+00'00'"
+            
+            # Apply new metadata
+            if 'producer' in new_metadata and new_metadata['producer']:
+                new_val = new_metadata['producer']
+                new_docinfo[pikepdf.Name('/Producer')] = new_val
+                changes.append({
+                    "field": "Producer",
+                    "original": original_info.get('/Producer', 'N/A'),
+                    "new": new_val
+                })
+            
+            if 'creator' in new_metadata and new_metadata['creator']:
+                new_val = new_metadata['creator']
+                new_docinfo[pikepdf.Name('/Creator')] = new_val
+                changes.append({
+                    "field": "Creator",
+                    "original": original_info.get('/Creator', 'N/A'),
+                    "new": new_val
+                })
+            
+            if 'author' in new_metadata and new_metadata['author']:
+                new_val = new_metadata['author']
+                new_docinfo[pikepdf.Name('/Author')] = new_val
+                changes.append({
+                    "field": "Author",
+                    "original": original_info.get('/Author', 'N/A'),
+                    "new": new_val
+                })
+            
+            if 'title' in new_metadata and new_metadata['title']:
+                new_val = new_metadata['title']
+                new_docinfo[pikepdf.Name('/Title')] = new_val
+                changes.append({
+                    "field": "Title",
+                    "original": original_info.get('/Title', 'N/A'),
+                    "new": new_val
+                })
+            
+            if 'subject' in new_metadata and new_metadata['subject']:
+                new_val = new_metadata['subject']
+                new_docinfo[pikepdf.Name('/Subject')] = new_val
+                changes.append({
+                    "field": "Subject",
+                    "original": original_info.get('/Subject', 'N/A'),
+                    "new": new_val
+                })
+            
+            if 'creationDate' in new_metadata and new_metadata['creationDate']:
+                new_val = format_pdf_date(new_metadata['creationDate'])
+                new_docinfo[pikepdf.Name('/CreationDate')] = new_val
+                changes.append({
+                    "field": "Creation Date",
+                    "original": original_info.get('/CreationDate', 'N/A'),
+                    "new": new_val
+                })
+            
+            if 'modificationDate' in new_metadata and new_metadata['modificationDate']:
+                new_val = format_pdf_date(new_metadata['modificationDate'])
+                new_docinfo[pikepdf.Name('/ModDate')] = new_val
+                changes.append({
+                    "field": "Modification Date",
+                    "original": original_info.get('/ModDate', 'N/A'),
+                    "new": new_val
+                })
+            
+            # Set the new document info
+            pdf.docinfo = new_docinfo
+            
+            # Remove XMP metadata to avoid conflicts
+            if '/Metadata' in pdf.Root:
+                del pdf.Root['/Metadata']
+                changes.append({
+                    "field": "XMP Metadata",
+                    "original": "Present",
+                    "new": "Removed (to ensure consistency)"
+                })
+            
+            # Save as a completely new PDF (linearized, no incremental updates)
+            output = io.BytesIO()
+            pdf.save(
+                output, 
+                linearize=True,  # Optimize for web viewing
+                object_stream_mode=pikepdf.ObjectStreamMode.generate  # Clean object streams
+            )
+            
+            changes.append({
+                "field": "Document Structure",
+                "original": "Original structure with potential edit traces",
+                "new": "Regenerated clean structure (no incremental updates)"
+            })
+            
+            return output.getvalue(), {
+                "success": True,
+                "changes": changes,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "message": "PDF regenerated with new metadata. Edit history removed."
+            }
+            
+    except Exception as e:
+        return pdf_bytes, {
+            "success": False,
+            "error": str(e),
+            "changes": []
+        }
+
+
+# Preset metadata profiles for common legitimate sources
+METADATA_PRESETS = {
+    "adp": {
+        "producer": "ADP, Inc.",
+        "creator": "ADP Workforce Now",
+    },
+    "paychex": {
+        "producer": "Paychex, Inc.",
+        "creator": "Paychex Flex",
+    },
+    "gusto": {
+        "producer": "Gusto",
+        "creator": "Gusto Payroll",
+    },
+    "quickbooks": {
+        "producer": "Intuit Inc.",
+        "creator": "QuickBooks Payroll",
+    },
+    "workday": {
+        "producer": "Workday, Inc.",
+        "creator": "Workday HCM",
+    },
+    "chase": {
+        "producer": "JPMorgan Chase & Co.",
+        "creator": "Chase Online Banking",
+    },
+    "bankofamerica": {
+        "producer": "Bank of America Corporation",
+        "creator": "Bank of America Online",
+    },
+    "wellsfargo": {
+        "producer": "Wells Fargo & Company",
+        "creator": "Wells Fargo Online",
+    },
+    "generic_adobe": {
+        "producer": "Adobe PDF Library 15.0",
+        "creator": "Adobe Acrobat Pro DC",
+    },
+    "generic_microsoft": {
+        "producer": "Microsoft: Print To PDF",
+        "creator": "Microsoft Word",
+    },
+}
+
+
+def get_metadata_presets() -> Dict:
+    """Return available metadata presets"""
+    return METADATA_PRESETS
+
+
 # ============================================
 # AI-POWERED DOCUMENT ANALYSIS
 # ============================================

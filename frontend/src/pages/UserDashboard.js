@@ -178,6 +178,47 @@ export default function UserDashboard() {
       <Header title="MintSlip" />
 
       <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+        {/* Email Verification Warning */}
+        {user && user.emailVerified === false && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-amber-800">Email Not Verified</h3>
+              <p className="text-sm text-amber-700 mt-1">
+                Your email address ({user.email}) has not been verified. Please check your inbox for the verification email.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3 border-amber-300 text-amber-700 hover:bg-amber-100"
+                onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("userToken");
+                    const response = await fetch(`${BACKEND_URL}/api/user/resend-verification`, {
+                      method: "POST",
+                      headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                      }
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                      alert("Verification email sent! Please check your inbox.");
+                    } else {
+                      alert(data.detail || "Failed to send verification email");
+                    }
+                  } catch (error) {
+                    alert("Failed to send verification email. Please try again.");
+                  }
+                }}
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Resend Verification Email
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Welcome Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">

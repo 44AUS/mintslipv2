@@ -4338,6 +4338,10 @@ class AIResumeBuilderTester:
         downloads_decrement_ok = self.test_downloads_decrement_properly()
         subscription_download_zero_ok = self.test_subscription_download_zero_remaining()
         
+        # Test Email Change Feature
+        print("\n📧 Testing Email Change Feature...")
+        email_change_ok = self.test_email_change_duplicate_protection()
+        
         # Test Subscription Upgrade System
         print("\n⬆️ Testing Subscription Upgrade System...")
         upgrade_calculate_ok = self.test_subscription_upgrade_calculate()

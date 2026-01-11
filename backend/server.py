@@ -3252,6 +3252,38 @@ async def admin_delete_saved_document(doc_id: str, session: dict = Depends(get_c
     return {"success": True, "message": "Document deleted successfully"}
 
 
+@app.get("/api/admin/saved-documents/{doc_id}/download")
+async def admin_download_saved_document(doc_id: str, session: dict = Depends(get_current_admin)):
+    """Download/view a saved document (admin only)"""
+    from fastapi.responses import FileResponse
+    
+    # Find document
+    document = await saved_documents_collection.find_one({"id": doc_id})
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Get file path
+    file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Document file not found on server")
+    
+    # Determine media type
+    file_ext = os.path.splitext(document["fileName"])[1].lower()
+    media_types = {
+        ".pdf": "application/pdf",
+        ".zip": "application/zip"
+    }
+    media_type = media_types.get(file_ext, "application/octet-stream")
+    
+    return FileResponse(
+        path=file_path,
+        filename=document["fileName"],
+        media_type=media_type
+    )
+
+
 @app.delete("/api/admin/users/{user_id}/saved-documents")
 async def admin_delete_user_saved_documents(user_id: str, session: dict = Depends(get_current_admin)):
     """Delete all saved documents for a user (admin only)"""

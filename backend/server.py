@@ -3225,7 +3225,7 @@ async def admin_delete_saved_document(doc_id: str, session: dict = Depends(get_c
     # Delete the actual file if it exists
     stored_filename = document.get("storedFileName")
     if stored_filename:
-        file_path = os.path.join(UPLOAD_DIR, stored_filename)
+        file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
@@ -3253,7 +3253,7 @@ async def admin_delete_user_saved_documents(user_id: str, session: dict = Depend
         # Delete the actual file if it exists
         stored_filename = doc.get("storedFileName")
         if stored_filename:
-            file_path = os.path.join(UPLOAD_DIR, stored_filename)
+            file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)

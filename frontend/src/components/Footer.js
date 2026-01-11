@@ -79,7 +79,7 @@ export default function Footer() {
                 href="https://apps.apple.com/us/iphone/today" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity border border-white rounded-lg p-2.5"
+                className="hover:opacity-80 transition-opacity border border-white rounded-xl p-2.5"
               >
                 <img 
                   src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/ekke591i_685b07d537802a80992e4b58_Group-1538236230.svg" 
@@ -91,7 +91,7 @@ export default function Footer() {
                 href="https://play.google.com/store/apps/details?id=com.mintslip.app&hl=en_US" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity border border-white rounded-lg p-2.5"
+                className="hover:opacity-80 transition-opacity border border-white rounded-xl p-2.5"
               >
                 <img 
                   src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/g56lcgcv_685b07d5f3fb1a2291ebea9b_Group-1538236231.svg" 

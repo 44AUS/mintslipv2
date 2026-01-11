@@ -131,3 +131,7 @@ websockets==15.0.1
 yarl==1.22.0
 zipp==3.23.0
 resend>=2.0.0
+PyPDF2>=3.0.0
+pdfminer.six>=20221105
+reportlab>=4.0.0
+pikepdf>=8.0.0

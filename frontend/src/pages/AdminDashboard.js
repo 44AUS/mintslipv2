@@ -2892,6 +2892,139 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Saved Documents Tab */}
+        {activeTab === "saved-docs" && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <FolderArchive className="w-5 h-5" />
+                Saved Documents ({savedDocumentsTotal})
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                <Select value={savedDocumentsTypeFilter} onValueChange={(v) => { setSavedDocumentsTypeFilter(v); setSavedDocumentsPage(0); }}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Document Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  placeholder="Filter by User ID..."
+                  value={savedDocumentsUserFilter}
+                  onChange={(e) => { setSavedDocumentsUserFilter(e.target.value); setSavedDocumentsPage(0); }}
+                  className="w-[200px]"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadSavedDocuments}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {isSavedDocumentsLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+              </div>
+            ) : savedDocuments.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <FolderArchive className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No saved documents found</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Document Type</TableHead>
+                        <TableHead>File Name</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {savedDocuments.map((doc) => (
+                        <TableRow key={doc.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium text-slate-800">{doc.userEmail}</p>
+                              {doc.userName && <p className="text-xs text-slate-500">{doc.userName}</p>}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-sm">
+                              {DOCUMENT_TYPES[doc.documentType] || doc.documentType}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-slate-600 truncate max-w-[200px] block">
+                              {doc.fileName}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-slate-500">
+                              {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : '-'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-sm text-slate-500">
+                              {new Date(doc.createdAt).toLocaleDateString()}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteSavedDocument(doc.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <p className="text-sm text-slate-500">
+                    Showing {savedDocumentsPage * pageSize + 1} - {Math.min((savedDocumentsPage + 1) * pageSize, savedDocumentsTotal)} of {savedDocumentsTotal}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={savedDocumentsPage === 0}
+                      onClick={() => setSavedDocumentsPage(p => p - 1)}
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={(savedDocumentsPage + 1) * pageSize >= savedDocumentsTotal}
+                      onClick={() => setSavedDocumentsPage(p => p + 1)}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Discounts Tab - Link to existing page */}
         {activeTab === "discounts" && (
           <div className="bg-white rounded-xl shadow-sm p-6">

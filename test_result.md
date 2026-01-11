@@ -174,17 +174,17 @@ backend:
         comment: "✅ PDF Engine Backend API test passed - All endpoints working correctly: 1) GET /api/pdf-engine/check-access requires authentication (401 without auth) ✓, 2) Regular users correctly denied access (hasAccess: false) ✓, 3) POST /api/pdf-engine/analyze requires authentication (401 without auth) ✓, 4) File type validation working (non-PDF files rejected with clear error message) ✓, 5) POST /api/pdf-engine/normalize requires authentication (401 without auth) ✓, 6) POST /api/pdf-engine/generate-report requires authentication (401 without auth) ✓, 7) All endpoints properly validate Business subscription requirement (403 error with message 'This feature requires an active Business subscription') ✓. Fixed null subscription handling bug in verify_business_subscription and check_pdf_engine_access functions."
 
 frontend:
-  - task: "PDF Metadata & Consistency Engine with Document Types"
+  - task: "PDF Metadata & Consistency Engine with AI Analysis"
     implemented: true
     working: "NA"
-    file: "PDFEngine.js, pdf_engine.py"
+    file: "PDFEngine.js, pdf_engine.py, server.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Enhanced PDF Engine with document-type-specific risk scoring. Added support for Pay Stub (ADP, Paychex, Gusto, QuickBooks, etc.), Bank Statement (Chase, BofA, Wells Fargo, etc.), Tax Form (IRS, TurboTax, etc.), and Other document types. Each type has its own legitimate producer patterns, suspicious patterns, and expected content patterns for accurate risk scoring."
+        comment: "Enhanced PDF Engine with AI-powered analysis using GPT-4.1 via Emergent LLM Key. AI verifies math calculations (gross-deductions=net), checks date consistency, detects anomalies, and provides legitimacy assessment with confidence score. Added document type selection for Pay Stub, Bank Statement, Tax Form with type-specific AI prompts."
 
   - task: "Bank Statement Checkout formData Fix"
     implemented: true

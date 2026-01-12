@@ -2675,30 +2675,172 @@ async def import_historical_subscriptions(
         error_count = 0
         already_exists_count = 0
         
-        # Fetch paid invoices from Stripe (subscription-related only)
-        # starting_after is used for pagination
+        # First, get all subscriptions from Stripe and import their invoices
         has_more = True
         starting_after = None
         total_processed = 0
+        processed_invoice_ids = set()  # Track to avoid duplicates
         
-        while has_more and total_processed < limit:
-            # Fetch invoices from Stripe
-            params = {
+        logger.info("Starting historical subscription import...")
+        
+        # Method 1: Get all subscriptions and their invoices
+        subscriptions_has_more = True
+        sub_starting_after = None
+        
+        while subscriptions_has_more and total_processed < limit:
+            sub_params = {"limit": 100, "status": "all"}
+            if sub_starting_after:
+                sub_params["starting_after"] = sub_starting_after
+            
+            subscriptions = stripe.Subscription.list(**sub_params)
+            logger.info(f"Fetched {len(subscriptions.data)} subscriptions from Stripe")
+            
+            for subscription in subscriptions.data:
+                # Get all invoices for this subscription
+                invoice_params = {
+                    "subscription": subscription.id,
+                    "status": "paid",
+                    "limit": 100
+                }
+                
+                try:
+                    sub_invoices = stripe.Invoice.list(**invoice_params)
+                    logger.info(f"Subscription {subscription.id}: found {len(sub_invoices.data)} paid invoices")
+                    
+                    for invoice in sub_invoices.data:
+                        if invoice.id in processed_invoice_ids:
+                            continue
+                        processed_invoice_ids.add(invoice.id)
+                        total_processed += 1
+                        
+                        if total_processed > limit:
+                            break
+                        
+                        try:
+                            # Check if this payment already exists
+                            existing = await subscription_payments_collection.find_one({
+                                "stripeInvoiceId": invoice.id
+                            })
+                            if existing:
+                                logger.info(f"Invoice {invoice.id} already exists in DB")
+                                already_exists_count += 1
+                                continue
+                            
+                            # Get subscription ID
+                            subscription_id = subscription.id
+                            
+                            # Get customer ID
+                            customer_id = invoice.customer if isinstance(invoice.customer, str) else (invoice.customer.id if hasattr(invoice.customer, 'id') else None)
+                            
+                            # Try to find the user by Stripe customer ID or subscription ID
+                            user = None
+                            if subscription_id or customer_id:
+                                query_conditions = []
+                                if subscription_id:
+                                    query_conditions.append({"subscription.stripeSubscriptionId": subscription_id})
+                                if customer_id:
+                                    query_conditions.append({"subscription.stripeCustomerId": customer_id})
+                                    query_conditions.append({"stripeCustomerId": customer_id})
+                                
+                                if query_conditions:
+                                    user = await users_collection.find_one({"$or": query_conditions})
+                            
+                            # Determine the tier from the subscription or invoice
+                            tier = "unknown"
+                            
+                            # Try to get tier from subscription items
+                            if hasattr(subscription, 'items') and subscription.items and hasattr(subscription.items, 'data'):
+                                for item in subscription.items.data:
+                                    if hasattr(item, 'price') and item.price:
+                                        amount = item.price.unit_amount if hasattr(item.price, 'unit_amount') else 0
+                                        # Map amount to tier
+                                        if amount == 1999:
+                                            tier = "starter"
+                                        elif amount == 2999:
+                                            tier = "professional"
+                                        elif amount == 4999:
+                                            tier = "business"
+                                        
+                                        # Also try to match by price ID
+                                        if tier == "unknown" and hasattr(item.price, 'id'):
+                                            for t, pid in stripe_price_ids.items():
+                                                if pid == item.price.id:
+                                                    tier = t
+                                                    break
+                            
+                            # If we couldn't determine tier, try from user
+                            if tier == "unknown" and user and user.get("subscription", {}).get("tier"):
+                                tier = user["subscription"]["tier"]
+                            
+                            # Create the payment record
+                            payment_amount = (invoice.amount_paid or 0) / 100  # Convert from cents
+                            
+                            # Convert Stripe timestamp to ISO format
+                            created_at = datetime.fromtimestamp(invoice.created, tz=timezone.utc).isoformat()
+                            
+                            # Get customer email safely
+                            customer_email = ""
+                            if user:
+                                customer_email = user.get("email", "")
+                            elif hasattr(invoice, 'customer_email') and invoice.customer_email:
+                                customer_email = invoice.customer_email
+                            
+                            subscription_payment = {
+                                "id": str(uuid.uuid4()),
+                                "userId": user["id"] if user else None,
+                                "userEmail": customer_email,
+                                "tier": tier,
+                                "amount": payment_amount,
+                                "stripeInvoiceId": invoice.id,
+                                "stripeSubscriptionId": subscription_id,
+                                "stripeCustomerId": customer_id,
+                                "billingReason": getattr(invoice, 'billing_reason', None) or "unknown",
+                                "createdAt": created_at,
+                                "importedAt": datetime.now(timezone.utc).isoformat(),
+                                "isHistoricalImport": True
+                            }
+                            
+                            await subscription_payments_collection.insert_one(subscription_payment)
+                            imported_count += 1
+                            logger.info(f"Imported invoice {invoice.id} for subscription {subscription_id} - ${payment_amount}")
+                            
+                        except Exception as e:
+                            logger.error(f"Error processing invoice {invoice.id}: {str(e)}")
+                            error_count += 1
+                            continue
+                
+                except Exception as e:
+                    logger.error(f"Error fetching invoices for subscription {subscription.id}: {str(e)}")
+                    error_count += 1
+            
+            # Check if there are more subscriptions
+            subscriptions_has_more = subscriptions.has_more
+            if subscriptions.data:
+                sub_starting_after = subscriptions.data[-1].id
+        
+        # Method 2: Also check for any paid invoices that might have been missed
+        # (e.g., invoices with subscription field set but subscription deleted)
+        logger.info("Checking for additional paid invoices...")
+        inv_has_more = True
+        inv_starting_after = None
+        
+        while inv_has_more and total_processed < limit:
+            inv_params = {
                 "status": "paid",
                 "limit": min(100, limit - total_processed)
             }
-            if starting_after:
-                params["starting_after"] = starting_after
+            if inv_starting_after:
+                inv_params["starting_after"] = inv_starting_after
             
-            invoices = stripe.Invoice.list(**params)
+            invoices = stripe.Invoice.list(**inv_params)
             
             for invoice in invoices.data:
+                if invoice.id in processed_invoice_ids:
+                    continue
+                processed_invoice_ids.add(invoice.id)
                 total_processed += 1
                 
                 try:
-                    # Debug: Log invoice info
-                    print(f"Processing invoice {invoice.id}: subscription={invoice.subscription}, amount={invoice.amount_paid}")
-                    
                     # Get subscription ID - handle both string and None cases
                     subscription_id = None
                     if hasattr(invoice, 'subscription') and invoice.subscription:
@@ -2709,11 +2851,11 @@ async def import_historical_subscriptions(
                     
                     # Skip non-subscription invoices
                     if not subscription_id:
-                        print(f"  -> Skipping invoice {invoice.id}: no subscription ID")
+                        logger.debug(f"Skipping invoice {invoice.id}: no subscription ID (one-time payment)")
                         skipped_count += 1
                         continue
                     
-                    print(f"  -> Found subscription ID: {subscription_id}")
+                    logger.info(f"Found additional subscription invoice: {invoice.id} with subscription {subscription_id}")
                     
                     # Check if this payment already exists
                     existing = await subscription_payments_collection.find_one({

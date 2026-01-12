@@ -626,7 +626,7 @@ export default function Header({ title }) {
                         <Download className="w-4 h-4" />
                         <span>My Downloads</span>
                       </button>
-                      {user.subscription?.tier === 'business' && (
+                      {(user.subscription?.tier === 'business' && ['active', 'cancelling'].includes(user.subscription?.status)) && (
                         <button
                           onClick={() => handleNavigation("/user/pdf-engine")}
                           className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-purple-50 transition-colors text-purple-600"

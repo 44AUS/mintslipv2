@@ -195,13 +195,27 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
 
   const pdfFileName = `Chime-Statement-${accountName || "statement"}.pdf`;
   
+  // Get PDF blob and clean it via backend
+  let pdfBlob = doc.output('blob');
+  
+  // Map template to backend template name
+  const templateMap = {
+    'template-a': 'chime',
+    'template-b': 'bank-of-america',
+    'template-c': 'chase'
+  };
+  const backendTemplate = templateMap[template] || 'chime';
+  
+  // Clean PDF with proper metadata (creation date = last day of statement month)
+  pdfBlob = await cleanBankStatementPdfViaBackend(pdfBlob, backendTemplate, selectedMonth, accountName);
+  
   // Store download info for payment success page
-  const pdfBlob = doc.output('blob');
   const blobUrl = URL.createObjectURL(pdfBlob);
   sessionStorage.setItem('lastDownloadUrl', blobUrl);
   sessionStorage.setItem('lastDownloadFileName', pdfFileName);
   
-  doc.save(pdfFileName);
+  // Save the cleaned PDF
+  saveAs(pdfBlob, pdfFileName);
   
   if (returnBlob) {
     return pdfBlob;

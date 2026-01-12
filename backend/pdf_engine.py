@@ -88,8 +88,8 @@ PAYSTUB_LEGITIMATE_PRODUCERS = {
     },
     "workday": {
         "names": ["workday"],
-        "expected_producers": ["workday", "oracle", "birt"],
-        "expected_creators": ["workday"],
+        "expected_producers": ["workday", "workday pdf engine", "oracle", "birt"],
+        "expected_creators": ["workday", "workday hcm"],
         "risk_reduction": 25,
         "notes": "Enterprise HR/payroll system"
     },

@@ -452,11 +452,41 @@ export default function UserSettings() {
                         </p>
                       </div>
                     </div>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Active
-                    </span>
+                    {user?.subscription?.status === 'cancelling' ? (
+                      <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                        Cancelling
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                        Active
+                      </span>
+                    )}
                   </div>
                 </div>
+
+                {/* Cancellation Notice */}
+                {user?.subscription?.status === 'cancelling' && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-amber-800">Subscription Cancelling</h4>
+                        <p className="text-sm text-amber-700 mt-1">
+                          Your subscription will end at the end of your current billing period. You'll retain access until then.
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleReactivateSubscription}
+                          disabled={isProcessing}
+                          className="mt-3 text-amber-700 border-amber-300 hover:bg-amber-100"
+                        >
+                          {isProcessing ? "Processing..." : "Reactivate Subscription"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Usage */}
                 <div className="p-4 bg-slate-50 rounded-xl">
@@ -490,14 +520,16 @@ export default function UserSettings() {
                     <ArrowUp className="w-4 h-4" />
                     Change Plan
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCancelDialog(true)}
-                    className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                    Cancel Subscription
-                  </Button>
+                  {user?.subscription?.status !== 'cancelling' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCancelDialog(true)}
+                      className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                      Cancel Subscription
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : (

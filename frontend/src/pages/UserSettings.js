@@ -289,6 +289,46 @@ export default function UserSettings() {
     }
   };
 
+  const handleReactivateSubscription = async () => {
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem("userToken");
+      
+      const response = await fetch(`${BACKEND_URL}/api/stripe/reactivate-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to reactivate subscription");
+      }
+      
+      toast.success("Subscription reactivated successfully!");
+      
+      // Refresh user data from backend
+      const userResponse = await fetch(`${BACKEND_URL}/api/user/me`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.user) {
+          localStorage.setItem("userInfo", JSON.stringify(userData.user));
+          setUser(userData.user);
+        }
+      }
+    } catch (error) {
+      console.error("Reactivate subscription error:", error);
+      toast.error(error.message || "Failed to reactivate subscription. Please contact support.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleChangePlan = async () => {
     if (!selectedNewTier) {
       toast.error("Please select a plan");

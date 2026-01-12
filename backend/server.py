@@ -59,7 +59,8 @@ from pdf_engine import (
     edit_and_regenerate_pdf,
     get_metadata_presets,
     METADATA_PRESETS,
-    clean_paystub_pdf
+    clean_paystub_pdf,
+    clean_bank_statement_pdf
 )
 
 # Import Emergent Integrations for Gemini

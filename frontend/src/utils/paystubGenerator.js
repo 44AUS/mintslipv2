@@ -249,9 +249,6 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       console.log("Generating single PDF...");
       const doc = new jsPDF({ unit: "pt", format: "letter" });
       
-      // Apply template-specific metadata
-      applyPdfMetadata(doc, template);
-      
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       
@@ -265,6 +262,9 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       
       // Template-specific filename with pay date
       const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
+      
+      // Apply template-specific metadata right before output
+      applyPdfMetadata(doc, template);
       
       // Store download info for payment success page (use localStorage for persistence)
       const pdfBlob = doc.output('blob');

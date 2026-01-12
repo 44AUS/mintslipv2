@@ -235,6 +235,9 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       // Template-specific filename with pay date (same as US)
       const pdfFileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
       
+      // Apply metadata before output
+      applyPdfMetadata(doc, template);
+      
       // Store download info for payment success page
       const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);

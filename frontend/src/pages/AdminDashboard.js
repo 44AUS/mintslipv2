@@ -356,8 +356,37 @@ export default function AdminDashboard() {
   }, []);
 
   // Process purchases data for charts
-  const processChartData = (purchases, period = chartPeriod, typeFilter = chartTypeFilter) => {
-    if (!purchases || purchases.length === 0) {
+  const processChartData = (purchases, subscriptionPayments = [], period = chartPeriod, typeFilter = chartTypeFilter) => {
+    // Combine purchases and subscription payments if no specific filter
+    let allTransactions = [];
+    
+    if (typeFilter === "subscription") {
+      // Only include subscription payments
+      allTransactions = (subscriptionPayments || []).map(p => ({
+        ...p,
+        type: "subscription"
+      }));
+    } else if (typeFilter === "guest") {
+      // Only include guest purchases (one-time payments)
+      allTransactions = (purchases || []).filter(p => 
+        p.type === "guest" || 
+        p.isGuest === true || 
+        !p.userId
+      );
+    } else {
+      // Include all - both purchases and subscription payments
+      const guestPurchases = (purchases || []).map(p => ({
+        ...p,
+        type: p.type || "guest"
+      }));
+      const subPayments = (subscriptionPayments || []).map(p => ({
+        ...p,
+        type: "subscription"
+      }));
+      allTransactions = [...guestPurchases, ...subPayments];
+    }
+    
+    if (allTransactions.length === 0) {
       setRevenueChartData([]);
       return;
     }
@@ -389,23 +418,8 @@ export default function AdminDashboard() {
         groupBy = "day";
     }
     
-    // Filter purchases within the period
-    let filteredPurchases = purchases.filter(p => new Date(p.createdAt) >= startDate);
-    
-    // Apply type filter
-    if (typeFilter === "subscription") {
-      filteredPurchases = filteredPurchases.filter(p => 
-        p.type === "subscription" || 
-        p.documentType === "subscription" || 
-        (p.userId && !p.isGuest)
-      );
-    } else if (typeFilter === "guest") {
-      filteredPurchases = filteredPurchases.filter(p => 
-        p.type === "guest" || 
-        p.isGuest === true || 
-        !p.userId
-      );
-    }
+    // Filter transactions within the period
+    let filteredTransactions = allTransactions.filter(p => new Date(p.createdAt) >= startDate);
     
     // Generate all date keys for the period (to show empty dates too)
     const allDates = {};
@@ -425,12 +439,12 @@ export default function AdminDashboard() {
         key = tempDate.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
         tempDate.setMonth(tempDate.getMonth() + 1);
       }
-      allDates[key] = { name: key, revenue: 0, purchases: 0, date: new Date(tempDate) };
+      allDates[key] = { name: key, revenue: 0, purchases: 0, subscriptions: 0, guestRevenue: 0, subscriptionRevenue: 0, date: new Date(tempDate) };
     }
     
-    // Group purchases by time period
-    filteredPurchases.forEach(purchase => {
-      const date = new Date(purchase.createdAt);
+    // Group transactions by time period
+    filteredTransactions.forEach(transaction => {
+      const date = new Date(transaction.createdAt);
       let key;
       
       if (groupBy === "day") {
@@ -444,8 +458,16 @@ export default function AdminDashboard() {
       }
       
       if (allDates[key]) {
-        allDates[key].revenue += purchase.amount || 0;
-        allDates[key].purchases += 1;
+        const amount = transaction.amount || 0;
+        allDates[key].revenue += amount;
+        
+        if (transaction.type === "subscription") {
+          allDates[key].subscriptions += 1;
+          allDates[key].subscriptionRevenue += amount;
+        } else {
+          allDates[key].purchases += 1;
+          allDates[key].guestRevenue += amount;
+        }
       }
     });
     
@@ -472,8 +494,13 @@ export default function AdminDashboard() {
   
   // Update chart when period or type filter changes
   useEffect(() => {
-    if (dashboardStats?.recentPurchases) {
-      processChartData(dashboardStats.recentPurchases, chartPeriod, chartTypeFilter);
+    if (dashboardStats?.recentPurchases || dashboardStats?.recentSubscriptionPayments) {
+      processChartData(
+        dashboardStats.recentPurchases || [], 
+        dashboardStats.recentSubscriptionPayments || [],
+        chartPeriod, 
+        chartTypeFilter
+      );
     }
   }, [chartPeriod, chartTypeFilter, dashboardStats]);
 

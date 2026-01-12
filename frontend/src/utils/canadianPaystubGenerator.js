@@ -6,10 +6,10 @@ import { calculateCanadianTaxes } from "./canadianTaxRates";
 
 // PDF metadata configuration per template (matching real document signatures)
 const TEMPLATE_METADATA = {
-  'template-a': { title: 'Gusto', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
-  'template-b': { title: 'ADP', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
-  'template-c': { title: 'Paychex', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
-  'template-h': { title: 'Pay Statement', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
+  'template-a': { title: 'Gusto', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-b': { title: 'ADP', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-c': { title: 'Paychex', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-h': { title: 'Pay Statement', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
 };
 
 // Apply template-specific PDF metadata

@@ -536,6 +536,9 @@ async function generateSingleCanadianStubPreview(formData, template, stubIndex, 
   // Add watermark
   addWatermarkToAllPages(doc, pageWidth, pageHeight);
 
+  // Apply metadata before output
+  applyPdfMetadata(doc, template);
+
   // Convert to image
   const pdfDataUrl = doc.output('dataurlstring');
   const imageDataUrl = await convertPdfToImage(pdfDataUrl);

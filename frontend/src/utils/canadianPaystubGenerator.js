@@ -279,13 +279,17 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       // Apply metadata before output
       applyPdfMetadata(doc, template);
       
+      // Get PDF blob and clean it via backend
+      let pdfBlob = doc.output('blob');
+      pdfBlob = await cleanPdfViaBackend(pdfBlob, template);
+      
       // Store download info for payment success page
-      const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
       sessionStorage.setItem('lastDownloadUrl', blobUrl);
       sessionStorage.setItem('lastDownloadFileName', pdfFileName);
       
-      doc.save(pdfFileName);
+      // Save the cleaned PDF
+      saveAs(pdfBlob, pdfFileName);
       console.log("PDF downloaded successfully");
       
       if (returnBlob) {

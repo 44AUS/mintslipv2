@@ -5603,6 +5603,64 @@ async def clean_paystub_pdf_endpoint(
         raise HTTPException(status_code=500, detail=f"Failed to clean PDF: {str(e)}")
 
 
+@app.post("/api/clean-bank-statement-pdf")
+async def clean_bank_statement_pdf_endpoint(
+    file: UploadFile = File(...),
+    template: str = Form("chime"),
+    statement_month: Optional[str] = Form(None),
+    account_name: Optional[str] = Form(None)
+):
+    """
+    Clean a bank statement PDF to remove all traces of editing and apply proper metadata.
+    
+    Args:
+        file: The PDF file to clean
+        template: The template type ('chime', 'bank-of-america', 'chase')
+        statement_month: The statement month (YYYY-MM) - creation date will be last day of month
+        account_name: Account holder's name for title generation
+    """
+    # Validate file type
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    # Read file
+    pdf_bytes = await file.read()
+    
+    # Check file size (max 10MB)
+    max_size = 10 * 1024 * 1024
+    if len(pdf_bytes) > max_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File too large. Maximum size is {max_size // (1024*1024)}MB"
+        )
+    
+    # Verify PDF
+    if not pdf_bytes.startswith(b'%PDF'):
+        raise HTTPException(status_code=400, detail="Invalid PDF file")
+    
+    try:
+        # Clean the PDF
+        cleaned_pdf, result = clean_bank_statement_pdf(pdf_bytes, template, statement_month, account_name)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to clean PDF: {result.get('error', 'Unknown error')}"
+            )
+        
+        return {
+            "success": True,
+            "cleanedPdfBase64": base64.b64encode(cleaned_pdf).decode('utf-8'),
+            "metadata": result.get("metadata_applied", {})
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Bank statement PDF cleaning error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to clean PDF: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

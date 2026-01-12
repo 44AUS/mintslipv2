@@ -633,7 +633,7 @@ export default function Header({ title }) {
                         >
                           <ShieldCheck className="w-4 h-4" />
                           <span>PDF Engine</span>
-                          <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">PRO</span>
+                          <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">Business</span>
                         </button>
                       )}
                       <button

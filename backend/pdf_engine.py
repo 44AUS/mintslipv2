@@ -1628,35 +1628,56 @@ def get_metadata_presets() -> Dict:
 # ============================================
 
 AI_ANALYSIS_PROMPTS = {
-    "paystub": """You are an expert forensic document analyst specializing in payroll documents. Analyze this pay stub text for authenticity and consistency.
+    "paystub": """You are an expert forensic document analyst specializing in payroll documents, similar to systems used by Snappt, Truework, and Nova Credit. Analyze this pay stub text for authenticity and consistency using industry-standard fraud detection methods.
 
-CHECK THE FOLLOWING:
+PERFORM THE FOLLOWING COMPREHENSIVE CHECKS:
 
-1. **MATH VERIFICATION**:
-   - Does Gross Pay - Total Deductions = Net Pay?
-   - Are YTD (Year-to-Date) totals mathematically consistent?
-   - Do tax withholdings appear reasonable for the gross pay amount?
-   - Are FICA/Social Security and Medicare calculated correctly (typically 6.2% and 1.45%)?
+1. **MATHEMATICAL VERIFICATION (Critical)**:
+   - Verify: Gross Pay - Total Deductions = Net Pay (MUST match exactly)
+   - Verify YTD calculations: Current Period amounts × Pay Periods = YTD totals
+   - FICA/Social Security: Should be exactly 6.2% of gross (up to $168,600 in 2024)
+   - Medicare: Should be exactly 1.45% of gross (no limit)
+   - Federal tax withholding: Should be reasonable for the income bracket
+   - State tax: Should match state tax rates for the income level
+   - If ANY calculation is off by more than $1, flag as MAJOR RED FLAG
 
-2. **DATE CONSISTENCY**:
-   - Is the pay period logical (e.g., bi-weekly, semi-monthly, monthly)?
-   - Do dates make sense (pay date after period end date)?
-   - Are YTD figures consistent with the time of year?
+2. **YTD CONSISTENCY ANALYSIS (Critical)**:
+   - Calculate: (Annual Salary / Pay Periods per Year) should equal Current Gross
+   - YTD Gross ÷ Pay Period Number should approximately equal Current Gross
+   - YTD taxes should be proportional to YTD gross
+   - Check if YTD values are realistic for the pay date (e.g., January shouldn't show high YTD)
 
-3. **CONTENT ANOMALIES**:
-   - Are there any spelling errors in standard fields (employer name, deduction types)?
-   - Is the formatting consistent throughout?
-   - Are there any copy-paste artifacts or misaligned text?
-   - Do employer details (name, address, EIN) appear legitimate?
+3. **DATE AND TIMELINE VERIFICATION**:
+   - Pay period length should match frequency (biweekly=14 days, semi-monthly=~15 days, monthly=~30 days)
+   - Pay date should be 3-7 days after period end (not same day, not weeks later)
+   - Check date for hire date (if visible) - YTD should align with employment start
+   - Dates should not be in the future
 
-4. **NUMERICAL PATTERNS**:
-   - Are numbers formatted consistently (decimal places, thousands separators)?
-   - Do the amounts seem realistic for typical employment?
-   - Are there any suspiciously round numbers that might indicate fabrication?
+4. **EMPLOYER VERIFICATION SIGNALS**:
+   - Company name should be properly formatted (not ALL CAPS unless standard)
+   - Address should be complete with valid format
+   - EIN format: XX-XXXXXXX (9 digits with dash after 2)
+   - Check for generic/suspicious employer names
 
-5. **PROFESSIONAL STANDARDS**:
-   - Does it contain all required pay stub elements?
-   - Is the layout professional and consistent with standard payroll software?
+5. **FONT AND FORMATTING ANALYSIS**:
+   - All numbers should use consistent decimal places (typically 2)
+   - Currency formatting should be consistent ($X,XXX.XX)
+   - Look for inconsistent spacing, alignment issues
+   - Check for different fonts in edited areas (FONT FAIL indicator)
+   - Look for text that appears inserted or overlaid
+
+6. **CONTENT ANOMALIES (Snappt-style checks)**:
+   - Check for template-style placeholder text
+   - Look for copy-paste artifacts
+   - Spelling errors in standard payroll terms
+   - Missing required fields (employee name, SSN last 4, employer info)
+   - Suspicious round numbers (exactly $5,000.00 salary is suspicious)
+
+7. **FAKE GENERATOR DETECTION**:
+   - Check for patterns common in online fake paystub generators
+   - Generic layouts without company branding
+   - Missing or fake check numbers
+   - Unrealistic deduction categories
 
 Respond in this exact JSON format:
 {
@@ -1664,54 +1685,97 @@ Respond in this exact JSON format:
   "confidenceScore": <0-100>,
   "mathVerification": {
     "passed": true/false,
-    "issues": ["list of math issues found"],
-    "details": "explanation"
+    "grossToNetCheck": "PASS/FAIL with details",
+    "ytdConsistencyCheck": "PASS/FAIL with details",
+    "taxCalculationCheck": "PASS/FAIL with details",
+    "issues": ["list of specific math discrepancies with amounts"],
+    "details": "detailed explanation of calculations checked"
   },
   "dateConsistency": {
     "passed": true/false,
-    "issues": ["list of date issues"],
+    "payPeriodValid": true/false,
+    "payDateLogical": true/false,
+    "ytdTimelineValid": true/false,
+    "issues": ["list of date/timeline issues"],
     "details": "explanation"
+  },
+  "employerVerification": {
+    "passed": true/false,
+    "companyNameValid": true/false,
+    "addressComplete": true/false,
+    "einFormatValid": true/false,
+    "issues": ["list of employer-related issues"]
   },
   "contentAnomalies": {
     "found": true/false,
-    "anomalies": ["list of anomalies"],
+    "fontInconsistencies": true/false,
+    "formattingIssues": true/false,
+    "suspiciousPatterns": true/false,
+    "anomalies": ["list of anomalies found"],
     "details": "explanation"
   },
-  "redFlags": ["list of major red flags"],
-  "greenFlags": ["list of positive indicators"],
+  "fakeGeneratorIndicators": {
+    "detected": true/false,
+    "indicators": ["list of fake generator signs"],
+    "generatorType": "suspected generator name if identifiable"
+  },
+  "redFlags": ["list of CRITICAL red flags that indicate fraud"],
+  "yellowFlags": ["list of moderate concerns requiring review"],
+  "greenFlags": ["list of positive authenticity indicators"],
   "riskAdjustment": <-30 to +30>,
-  "summary": "2-3 sentence summary of findings"
+  "summary": "2-3 sentence professional summary of findings",
+  "recommendedAction": "APPROVE" | "MANUAL_REVIEW" | "REJECT" | "REQUEST_ADDITIONAL_DOCS"
 }""",
 
-    "bank_statement": """You are an expert forensic document analyst specializing in banking documents. Analyze this bank statement text for authenticity and consistency.
+    "bank_statement": """You are an expert forensic document analyst specializing in banking documents, similar to systems used by Plaid, Nova Credit, and Argyle. Analyze this bank statement text for authenticity using industry-standard fraud detection methods.
 
-CHECK THE FOLLOWING:
+PERFORM THE FOLLOWING COMPREHENSIVE CHECKS:
 
-1. **BALANCE VERIFICATION**:
-   - Does Beginning Balance + Deposits - Withdrawals = Ending Balance?
-   - Are running balances consistent throughout the statement?
-   - Do the totals match the sum of individual transactions?
+1. **BALANCE VERIFICATION (Critical)**:
+   - Beginning Balance + Total Deposits - Total Withdrawals = Ending Balance (MUST be exact)
+   - Verify running balance after each transaction
+   - Check that daily ending balances are mathematically correct
+   - Flag ANY balance discrepancy, even by $0.01
 
-2. **DATE CONSISTENCY**:
-   - Are transaction dates within the statement period?
-   - Are dates in chronological order?
-   - Is the statement period logical (monthly)?
+2. **TRANSACTION ANALYSIS**:
+   - Transactions should be in chronological order
+   - All dates must be within statement period
+   - Transaction amounts should have exactly 2 decimal places
+   - Check for suspicious patterns:
+     * Multiple identical amounts
+     * Perfectly round numbers (exactly $1,000.00, $5,000.00)
+     * Transactions on holidays/weekends for ACH
+     * Deposits that exactly match common fake income amounts
 
-3. **TRANSACTION PATTERNS**:
-   - Are transaction descriptions consistent with bank formatting?
-   - Do transaction amounts have appropriate decimal precision?
-   - Are there any suspicious patterns (identical amounts, round numbers)?
+3. **ACCOUNT INFORMATION VERIFICATION**:
+   - Account number format should match bank standards
+   - Routing number should be valid (can verify first digits match bank)
+   - Account holder name should be consistent throughout
+   - Address formatting should be complete and valid
 
-4. **CONTENT ANOMALIES**:
-   - Are there spelling errors in bank name or standard fields?
-   - Is formatting consistent throughout?
-   - Are account numbers properly masked/formatted?
-   - Do routing numbers appear valid?
+4. **BANK BRANDING AND FORMAT**:
+   - Logo and header should match official bank formatting
+   - Statement format should match known legitimate templates
+   - Font consistency throughout document
+   - Professional formatting and alignment
+   - Check for watermarks or security features mentioned
 
-5. **PROFESSIONAL STANDARDS**:
-   - Does it contain all standard bank statement elements?
-   - Does the layout match professional bank statement formats?
-   - Is the bank's branding/formatting consistent?
+5. **INCOME PATTERN ANALYSIS**:
+   - Regular deposits should follow consistent schedule (weekly, biweekly, monthly)
+   - Direct deposit descriptions should match employer naming conventions
+   - Income amounts should be consistent (not wildly varying)
+   - Check for deposits that match common fake paystub generators
+
+6. **ANOMALY DETECTION (Nova Credit-style)**:
+   - Look for pixel-level editing signs in amounts
+   - Check for inconsistent spacing around edited numbers
+   - Font changes within transaction descriptions
+   - Alignment issues in columns
+   - Missing or altered transaction reference numbers
+
+7. **METADATA CORRELATION**:
+   - Statement date should correlate with creation date metadata
+   - Check if statement period matches typical bank cycles (1st-31st or statement date cycles)
 
 Respond in this exact JSON format:
 {
@@ -1719,48 +1783,81 @@ Respond in this exact JSON format:
   "confidenceScore": <0-100>,
   "balanceVerification": {
     "passed": true/false,
-    "issues": ["list of balance issues"],
-    "details": "explanation"
+    "beginningToEndingCheck": "PASS/FAIL with details",
+    "runningBalanceCheck": "PASS/FAIL with details",
+    "transactionSumsCheck": "PASS/FAIL with details",
+    "issues": ["list of specific balance discrepancies"],
+    "details": "detailed explanation"
   },
-  "dateConsistency": {
+  "transactionAnalysis": {
     "passed": true/false,
-    "issues": ["list of date issues"],
+    "chronologicalOrder": true/false,
+    "amountFormatting": true/false,
+    "suspiciousPatterns": ["list of suspicious transaction patterns"],
     "details": "explanation"
   },
-  "transactionPatterns": {
-    "normal": true/false,
-    "anomalies": ["list of pattern anomalies"],
+  "accountInfoVerification": {
+    "passed": true/false,
+    "accountFormatValid": true/false,
+    "routingNumberValid": true/false,
+    "nameConsistent": true/false,
+    "issues": ["list of account info issues"]
+  },
+  "bankFormatAuthenticity": {
+    "passed": true/false,
+    "matchesKnownFormat": true/false,
+    "brandingConsistent": true/false,
+    "issues": ["list of format/branding issues"]
+  },
+  "incomePatternAnalysis": {
+    "regularDepositsFound": true/false,
+    "depositScheduleConsistent": true/false,
+    "incomeAmountsReasonable": true/false,
+    "suspiciousIncomePatterns": ["list of suspicious income patterns"]
+  },
+  "contentAnomalies": {
+    "found": true/false,
+    "editingIndicators": ["list of potential editing signs"],
+    "fontInconsistencies": true/false,
+    "alignmentIssues": true/false,
     "details": "explanation"
   },
-  "redFlags": ["list of major red flags"],
+  "redFlags": ["list of CRITICAL red flags"],
+  "yellowFlags": ["list of moderate concerns"],
   "greenFlags": ["list of positive indicators"],
   "riskAdjustment": <-30 to +30>,
-  "summary": "2-3 sentence summary of findings"
+  "summary": "2-3 sentence professional summary",
+  "recommendedAction": "APPROVE" | "MANUAL_REVIEW" | "REJECT" | "REQUEST_ADDITIONAL_DOCS"
 }""",
 
-    "tax_form": """You are an expert forensic document analyst specializing in tax documents. Analyze this tax form text for authenticity and consistency.
+    "tax_form": """You are an expert forensic document analyst specializing in tax documents. Analyze this tax form text for authenticity and consistency using IRS compliance standards.
 
-CHECK THE FOLLOWING:
+PERFORM THE FOLLOWING COMPREHENSIVE CHECKS:
 
 1. **MATH VERIFICATION**:
-   - Do box totals add up correctly?
-   - Are withholding amounts consistent with wages?
-   - Do federal, state, and local taxes appear reasonable?
+   - Box totals must add up correctly
+   - Federal withholding should be reasonable for wages (check against tax brackets)
+   - Social Security wages should not exceed annual limit
+   - Medicare wages typically equal or exceed Social Security wages
+   - State/local withholding should be proportional
 
 2. **FORMAT COMPLIANCE**:
-   - Does it follow official IRS form format?
-   - Are all required fields present?
-   - Are EIN/SSN formatted correctly (masked appropriately)?
+   - W-2 boxes should be numbered correctly (1-20)
+   - EIN format: XX-XXXXXXX
+   - SSN format: XXX-XX-XXXX (last 4 may be shown)
+   - All required boxes must be present
+   - Control number format should be valid
 
-3. **CONTENT CONSISTENCY**:
-   - Are employer details consistent?
-   - Do dates align with the tax year?
-   - Are amounts formatted correctly?
+3. **EMPLOYER VERIFICATION**:
+   - Employer name and address should be complete
+   - EIN should be valid format
+   - State employer ID should match state format
 
-4. **ANOMALY DETECTION**:
-   - Any spelling errors in official fields?
-   - Inconsistent formatting?
-   - Suspicious patterns?
+4. **CONTENT CONSISTENCY**:
+   - Tax year should match dates
+   - Amounts should use proper formatting
+   - No spelling errors in official field labels
+   - Box descriptions should match IRS standards
 
 Respond in this exact JSON format:
 {
@@ -1776,30 +1873,44 @@ Respond in this exact JSON format:
     "issues": ["list of issues"],
     "details": "explanation"
   },
+  "employerVerification": {
+    "passed": true/false,
+    "issues": ["list of issues"]
+  },
   "redFlags": ["list of major red flags"],
+  "yellowFlags": ["list of moderate concerns"],
   "greenFlags": ["list of positive indicators"],
   "riskAdjustment": <-30 to +30>,
-  "summary": "2-3 sentence summary of findings"
+  "summary": "2-3 sentence summary of findings",
+  "recommendedAction": "APPROVE" | "MANUAL_REVIEW" | "REJECT" | "REQUEST_ADDITIONAL_DOCS"
 }""",
 
-    "other": """You are an expert forensic document analyst. Analyze this document text for authenticity and consistency.
+    "other": """You are an expert forensic document analyst. Analyze this document text for authenticity and consistency using professional fraud detection standards.
 
-CHECK THE FOLLOWING:
+PERFORM THE FOLLOWING CHECKS:
 
 1. **CONTENT CONSISTENCY**:
    - Is the formatting consistent throughout?
    - Are there any obvious copy-paste artifacts?
    - Do dates and numbers appear logical?
+   - Check for placeholder text or template markers
 
 2. **PROFESSIONAL QUALITY**:
    - Does it appear professionally generated?
    - Are there spelling or grammar errors?
    - Is the layout consistent?
+   - Check font consistency
 
 3. **ANOMALY DETECTION**:
    - Any suspicious patterns?
    - Misaligned text or formatting issues?
    - Inconsistent fonts or styles?
+   - Signs of digital manipulation?
+
+4. **MATHEMATICAL CHECKS**:
+   - If document contains numbers, verify any calculations
+   - Check for unrealistic or round numbers
+   - Verify totals match line items
 
 Respond in this exact JSON format:
 {
@@ -1810,10 +1921,20 @@ Respond in this exact JSON format:
     "issues": ["list of issues"],
     "details": "explanation"
   },
+  "professionalQuality": {
+    "passed": true/false,
+    "issues": ["list of issues"]
+  },
+  "anomalyDetection": {
+    "found": true/false,
+    "anomalies": ["list of anomalies"]
+  },
   "redFlags": ["list of major red flags"],
+  "yellowFlags": ["list of moderate concerns"],
   "greenFlags": ["list of positive indicators"],
   "riskAdjustment": <-30 to +30>,
-  "summary": "2-3 sentence summary of findings"
+  "summary": "2-3 sentence summary of findings",
+  "recommendedAction": "APPROVE" | "MANUAL_REVIEW" | "REJECT" | "REQUEST_ADDITIONAL_DOCS"
 }"""
 }
 

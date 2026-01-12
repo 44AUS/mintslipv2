@@ -2895,9 +2895,9 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Check if user has active subscription
+    # Check if user has active or cancelling subscription (access continues until period ends)
     subscription = user.get("subscription")
-    if not subscription or subscription.get("status") != "active":
+    if not subscription or subscription.get("status") not in ["active", "cancelling"]:
         raise HTTPException(status_code=403, detail="No active subscription found. Please subscribe to download.")
     
     # Get subscription tier config

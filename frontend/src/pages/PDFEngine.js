@@ -698,19 +698,6 @@ export default function PDFEngine() {
                       <p className="text-xs text-purple-600">Verify calculations, detect anomalies, assess legitimacy</p>
                     </div>
                   </label>
-                  
-                  <label className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100">
-                    <input
-                      type="checkbox"
-                      checked={normalizeEnabled}
-                      onChange={(e) => setNormalizeEnabled(e.target.checked)}
-                      className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500"
-                    />
-                    <div>
-                      <p className="font-medium text-slate-800 text-sm">Enable Normalization</p>
-                      <p className="text-xs text-slate-500">Also optimize metadata after analysis</p>
-                    </div>
-                  </label>
                 </div>
                 
                 {/* Analyze Button */}

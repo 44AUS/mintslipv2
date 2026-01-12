@@ -256,8 +256,11 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
         // Apply template-specific metadata right before output
         applyPdfMetadata(doc, template);
         
-        // Add PDF directly to zip root
-        const pdfBlob = doc.output('blob');
+        // Get PDF blob and clean it via backend
+        let pdfBlob = doc.output('blob');
+        pdfBlob = await cleanPdfViaBackend(pdfBlob, template);
+        
+        // Add cleaned PDF to zip
         zip.file(fileName, pdfBlob);
         
         currentStartDate.setDate(currentStartDate.getDate() + periodLength);

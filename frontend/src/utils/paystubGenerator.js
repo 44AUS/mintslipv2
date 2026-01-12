@@ -144,13 +144,11 @@ const TEMPLATE_METADATA = {
     creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },
-  'template-c': {  // Workday template
-    title: 'Paychex',
+  'template-c': {  // Workday template - no title
     creator: 'Workday HCM',
     producer: 'Workday PDF Engine',
   },
-  'template-h': {  // OnPay/QuickBooks style
-    title: 'Pay Statement',
+  'template-h': {  // OnPay template - no title (same metadata as Gusto)
     creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },

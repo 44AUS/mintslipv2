@@ -3464,19 +3464,13 @@ async def admin_delete_saved_document(doc_id: str, session: dict = Depends(get_c
 @app.get("/api/admin/saved-documents/{doc_id}/download")
 async def admin_download_saved_document(doc_id: str, session: dict = Depends(get_current_admin)):
     """Download/view a saved document (admin only)"""
-    from fastapi.responses import FileResponse
+    from fastapi.responses import FileResponse, Response
     
     # Find document
     document = await saved_documents_collection.find_one({"id": doc_id})
     
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
-    
-    # Get file path
-    file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Document file not found on server")
     
     # Determine media type
     file_ext = os.path.splitext(document["fileName"])[1].lower()
@@ -3486,11 +3480,37 @@ async def admin_download_saved_document(doc_id: str, session: dict = Depends(get
     }
     media_type = media_types.get(file_ext, "application/octet-stream")
     
-    return FileResponse(
-        path=file_path,
-        filename=document["fileName"],
-        media_type=media_type
-    )
+    # Get file path
+    file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
+    
+    if os.path.exists(file_path):
+        return FileResponse(
+            path=file_path,
+            filename=document["fileName"],
+            media_type=media_type
+        )
+    
+    # If file not on disk, try to restore from MongoDB content
+    if document.get("fileContent"):
+        try:
+            file_content = base64.b64decode(document["fileContent"])
+            # Restore file to disk for future access
+            try:
+                with open(file_path, "wb") as f:
+                    f.write(file_content)
+                logger.info(f"Admin restored file from MongoDB: {file_path}")
+            except Exception as e:
+                logger.warning(f"Could not restore file to disk: {e}")
+            
+            return Response(
+                content=file_content,
+                media_type=media_type,
+                headers={"Content-Disposition": f'attachment; filename="{document["fileName"]}"'}
+            )
+        except Exception as e:
+            logger.error(f"Failed to decode file content from MongoDB: {e}")
+    
+    raise HTTPException(status_code=404, detail="Document file not found on server")
 
 
 @app.delete("/api/admin/users/{user_id}/saved-documents")

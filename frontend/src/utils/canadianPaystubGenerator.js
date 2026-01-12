@@ -191,6 +191,9 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         const fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
         console.log(`Adding ${fileName} to ZIP`);
         
+        // Apply metadata before output
+        applyPdfMetadata(doc, template);
+        
         // Add PDF directly to zip root
         const pdfBlob = doc.output('blob');
         zip.file(fileName, pdfBlob);

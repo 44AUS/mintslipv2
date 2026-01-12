@@ -628,7 +628,7 @@ export default function Header({ title }) {
                       </button>
                       {user.subscription?.tier === 'business' && (
                         <button
-                          onClick={() => handleNavigation("/pdf-engine")}
+                          onClick={() => handleNavigation("/user/pdf-engine")}
                           className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-purple-50 transition-colors text-purple-600"
                         >
                           <ShieldCheck className="w-4 h-4" />

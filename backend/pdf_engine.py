@@ -1017,16 +1017,14 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             'title': 'ADP',
             'pdf_version': '1.4',
         },
-        'template-c': {  # Workday
+        'template-c': {  # Workday - no title
             'producer': 'Workday PDF Engine',
             'creator': 'Workday HCM',
-            'title': 'Paychex',
             'pdf_version': '1.7',
         },
-        'template-h': {  # OnPay/QuickBooks
+        'template-h': {  # OnPay - same as Gusto, no title
             'producer': 'Qt 4.8.7',
             'creator': 'wkhtmltopdf 0.12.6.1',
-            'title': 'Pay Statement',
             'pdf_version': '1.4',
         },
         'gusto': {

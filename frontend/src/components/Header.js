@@ -273,6 +273,19 @@ function UserAccountDropdown({ user, onNavigate, onLogout }) {
           <Settings className="w-4 h-4" />
           <span>Settings</span>
         </DropdownMenuItem>
+        {user.subscription === 'business' && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => onNavigate("/pdf-engine")}
+              className="flex items-center gap-2 cursor-pointer text-purple-600 hover:text-purple-700"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>PDF Engine</span>
+              <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">PRO</span>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={onLogout}

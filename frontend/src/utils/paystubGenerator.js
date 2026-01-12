@@ -10,6 +10,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 // Helper to clean PDF via backend to remove edit traces
 async function cleanPdfViaBackend(pdfBlob, template, payDate) {
   try {
+    console.log('Cleaning PDF via backend...', { template, payDate });
     const formData = new FormData();
     formData.append('file', pdfBlob, 'paystub.pdf');
     formData.append('template', template);
@@ -21,6 +22,7 @@ async function cleanPdfViaBackend(pdfBlob, template, payDate) {
         ? payDate.toISOString().split('T')[0]
         : payDate;
       formData.append('pay_date', dateStr);
+      console.log('Pay date for cleaning:', dateStr);
     }
     
     const response = await fetch(`${BACKEND_URL}/api/clean-paystub-pdf`, {
@@ -29,11 +31,14 @@ async function cleanPdfViaBackend(pdfBlob, template, payDate) {
     });
     
     if (!response.ok) {
-      console.warn('PDF cleaning failed, using original PDF');
+      const errorText = await response.text();
+      console.warn('PDF cleaning failed:', response.status, errorText);
       return pdfBlob;
     }
     
     const result = await response.json();
+    console.log('PDF cleaning result:', result);
+    
     if (result.success && result.cleanedPdfBase64) {
       // Convert base64 to blob
       const byteCharacters = atob(result.cleanedPdfBase64);
@@ -42,12 +47,14 @@ async function cleanPdfViaBackend(pdfBlob, template, payDate) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
+      console.log('PDF cleaned successfully, new size:', byteArray.length);
       return new Blob([byteArray], { type: 'application/pdf' });
     }
     
+    console.warn('PDF cleaning returned no data');
     return pdfBlob;
   } catch (error) {
-    console.warn('PDF cleaning error, using original PDF:', error);
+    console.error('PDF cleaning error:', error);
     return pdfBlob;
   }
 }

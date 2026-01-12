@@ -2354,6 +2354,12 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
         {"_id": 0}
     ).sort("createdAt", -1).to_list(5000)
     
+    # Get subscription payments for the last year for chart data
+    recent_subscription_payments = await subscription_payments_collection.find(
+        {"createdAt": {"$gte": one_year_ago.isoformat()}},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(5000)
+    
     # Total users
     total_users = await users_collection.count_documents({})
     

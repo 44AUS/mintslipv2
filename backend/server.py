@@ -2982,7 +2982,8 @@ async def get_downloads_remaining(session: dict = Depends(get_current_user)):
         return {"success": True, "hasSubscription": False, "downloadsRemaining": 0}
     
     subscription = user.get("subscription")
-    if subscription.get("status") != "active":
+    # Allow both active and cancelling subscriptions (access continues until period ends)
+    if subscription.get("status") not in ["active", "cancelling"]:
         return {"success": True, "hasSubscription": False, "downloadsRemaining": 0}
     
     # Get downloads_remaining directly from user's subscription

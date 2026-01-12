@@ -325,10 +325,10 @@ BANK_STATEMENT_LEGITIMATE_PRODUCERS = {
     },
     "chime": {
         "names": ["chime"],
-        "expected_producers": ["chime", "chrome", "puppeteer"],
-        "expected_creators": ["chime"],
-        "risk_reduction": 15,
-        "notes": "Chime (fintech) - web-generated statements"
+        "expected_producers": ["chime", "chrome", "puppeteer", "qt 4.8", "qt 5", "wkhtmltopdf"],
+        "expected_creators": ["chime", "wkhtmltopdf"],
+        "risk_reduction": 20,
+        "notes": "Chime (fintech) - uses wkhtmltopdf/Qt for PDF generation"
     },
     "discover": {
         "names": ["discover", "discover bank"],

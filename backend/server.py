@@ -5580,8 +5580,8 @@ async def clean_paystub_pdf_endpoint(
         raise HTTPException(status_code=400, detail="Invalid PDF file")
     
     try:
-        # Clean the PDF
-        cleaned_pdf, result = clean_paystub_pdf(pdf_bytes, template)
+        # Clean the PDF with pay_date for creation date calculation
+        cleaned_pdf, result = clean_paystub_pdf(pdf_bytes, template, pay_date)
         
         if not result.get("success"):
             raise HTTPException(

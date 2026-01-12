@@ -63,15 +63,6 @@ const DOCUMENT_TYPES = {
     borderColor: "border-emerald-200",
     textColor: "text-emerald-700"
   },
-  tax_form: {
-    name: "Tax Form",
-    description: "W-2, 1099, or other tax documents",
-    icon: Building2,
-    color: "bg-purple-500",
-    bgLight: "bg-purple-50",
-    borderColor: "border-purple-200",
-    textColor: "text-purple-700"
-  },
   other: {
     name: "Other Document",
     description: "General PDF document",

@@ -239,16 +239,51 @@ export default function UserSettings() {
   const handleCancelSubscription = async () => {
     setIsProcessing(true);
     try {
-      // TODO: Implement actual PayPal subscription cancellation
-      toast.info("Subscription cancellation will be processed. You'll receive a confirmation email.");
+      const token = localStorage.getItem("userToken");
+      
+      // Call the backend API to cancel subscription
+      const response = await fetch(`${BACKEND_URL}/api/stripe/cancel-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to cancel subscription");
+      }
+      
+      toast.success("Subscription cancellation scheduled. Your access will continue until the end of your billing period.");
       setShowCancelDialog(false);
       
-      // Update local user state
-      const updatedUser = { ...user, subscription: null };
+      // Update local user state with cancelling status
+      const updatedUser = { 
+        ...user, 
+        subscription: { 
+          ...user.subscription, 
+          status: 'cancelling' 
+        } 
+      };
       localStorage.setItem("userInfo", JSON.stringify(updatedUser));
       setUser(updatedUser);
+      
+      // Refresh user data from backend to ensure sync
+      const userResponse = await fetch(`${BACKEND_URL}/api/user/me`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.user) {
+          localStorage.setItem("userInfo", JSON.stringify(userData.user));
+          setUser(userData.user);
+        }
+      }
     } catch (error) {
-      toast.error("Failed to cancel subscription. Please contact support.");
+      console.error("Cancel subscription error:", error);
+      toast.error(error.message || "Failed to cancel subscription. Please contact support.");
     } finally {
       setIsProcessing(false);
     }

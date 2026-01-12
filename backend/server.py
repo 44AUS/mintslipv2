@@ -1174,19 +1174,20 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid file data")
     
-    # Generate unique filename
+    # Generate unique filename (for reference only)
     file_ext = os.path.splitext(data.fileName)[1] or ".pdf"
     stored_filename = f"{user_id}_{uuid.uuid4()}{file_ext}"
-    file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
     
-    # Save file
+    # Store file content as base64 in MongoDB for persistence
+    # Also save to disk as backup/cache
+    file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
     try:
         with open(file_path, "wb") as f:
             f.write(file_content)
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to save document")
+        logger.warning(f"Failed to save file to disk (will use MongoDB): {e}")
     
-    # Create document record
+    # Create document record with file content stored in MongoDB
     doc_id = str(uuid.uuid4())
     document = {
         "id": doc_id,
@@ -1196,6 +1197,7 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
         "storedFileName": stored_filename,
         "fileSize": len(file_content),
         "template": data.template,
+        "fileContent": data.fileData,  # Store base64 content in MongoDB for persistence
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
     

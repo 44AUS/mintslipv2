@@ -241,9 +241,9 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         // Apply metadata before output
         applyPdfMetadata(doc, template);
         
-        // Get PDF blob and clean it via backend
+        // Get PDF blob and clean it via backend (pass payDate for creation date calculation)
         let pdfBlob = doc.output('blob');
-        pdfBlob = await cleanPdfViaBackend(pdfBlob, template);
+        pdfBlob = await cleanPdfViaBackend(pdfBlob, template, stubData.payDate);
         
         // Add cleaned PDF to zip
         zip.file(fileName, pdfBlob);

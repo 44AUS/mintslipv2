@@ -3399,8 +3399,8 @@ async def get_all_saved_documents(
     if documentType and documentType != "all":
         query["documentType"] = documentType
     
-    # Get documents with pagination
-    documents = await saved_documents_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    # Get documents with pagination (exclude fileContent from response for performance)
+    documents = await saved_documents_collection.find(query, {"_id": 0, "fileContent": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
     total = await saved_documents_collection.count_documents(query)
     
     # Enrich with user info and file existence check
@@ -3411,17 +3411,38 @@ async def get_all_saved_documents(
         # Check if file exists on disk
         stored_filename = doc.get("storedFileName", "")
         file_exists = False
+        has_content_backup = False
+        
         if stored_filename:
             file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
             file_exists = os.path.exists(file_path)
+            
+            # If file not on disk, check if we have content in MongoDB
             if not file_exists:
-                logger.warning(f"File not found for doc {doc.get('id')}: {file_path}")
+                # Check if fileContent exists (just check existence, don't load it)
+                doc_with_content = await saved_documents_collection.find_one(
+                    {"id": doc.get("id")},
+                    {"fileContent": 1}
+                )
+                has_content_backup = bool(doc_with_content and doc_with_content.get("fileContent"))
+                
+                # If we have content backup, try to restore the file
+                if has_content_backup:
+                    try:
+                        file_content = base64.b64decode(doc_with_content["fileContent"])
+                        with open(file_path, "wb") as f:
+                            f.write(file_content)
+                        file_exists = True
+                        logger.info(f"Auto-restored file from MongoDB: {file_path}")
+                    except Exception as e:
+                        logger.warning(f"Could not auto-restore file: {e}")
         
         enriched_documents.append({
             **doc,
             "userEmail": user.get("email", "Unknown") if user else "Deleted User",
             "userName": user.get("name", "") if user else "",
-            "fileExists": file_exists
+            "fileExists": file_exists,
+            "hasBackup": has_content_backup if not file_exists else True
         })
     
     return {

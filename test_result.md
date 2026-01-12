@@ -173,6 +173,18 @@ backend:
         agent: "testing"
         comment: "✅ PDF Engine Backend API test passed - All endpoints working correctly: 1) GET /api/pdf-engine/check-access requires authentication (401 without auth) ✓, 2) Regular users correctly denied access (hasAccess: false) ✓, 3) POST /api/pdf-engine/analyze requires authentication (401 without auth) ✓, 4) File type validation working (non-PDF files rejected with clear error message) ✓, 5) POST /api/pdf-engine/normalize requires authentication (401 without auth) ✓, 6) POST /api/pdf-engine/generate-report requires authentication (401 without auth) ✓, 7) All endpoints properly validate Business subscription requirement (403 error with message 'This feature requires an active Business subscription') ✓. Fixed null subscription handling bug in verify_business_subscription and check_pdf_engine_access functions."
 
+  - task: "PDF Cleaning Endpoint"
+    implemented: true
+    working: true
+    file: "server.py, pdf_engine.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PDF Cleaning Endpoint test passed - POST /api/clean-paystub-pdf endpoint working correctly: 1) Accepts PDF file upload and template parameter ✓, 2) Supports all templates: 'template-a' (Gusto), 'template-b' (ADP), 'template-c' (Paychex), 'template-h' (Pay Statement) ✓, 3) Returns success=true and cleanedPdfBase64 field ✓, 4) Metadata correctly applied with producer='Qt 4.8.7' and creator='wkhtmltopdf 0.12.6.1' ✓, 5) Template-specific titles working: template-a='Gusto', template-b='ADP', template-c='Paychex', template-h='Pay Statement' ✓, 6) Base64 encoded cleaned PDF is valid ✓. Fixed Form parameter handling issue for template parameter in multipart form data. All PDF cleaning functionality working as expected."
+
 frontend:
   - task: "PDF Metadata & Consistency Engine with AI Analysis"
     implemented: true

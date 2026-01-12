@@ -306,3 +306,28 @@ agent_communication:
     message: "✅ PDF ENGINE BACKEND API TEST PASSED! Successfully tested all PDF Metadata & Consistency Engine endpoints for Business plan users: 1) GET /api/pdf-engine/check-access correctly requires authentication (401 without token) and returns hasAccess: false for regular users ✓, 2) POST /api/pdf-engine/analyze requires authentication (401 without token) and validates file types (rejects non-PDF files) ✓, 3) POST /api/pdf-engine/normalize requires authentication (401 without token) ✓, 4) POST /api/pdf-engine/generate-report requires authentication (401 without token) ✓, 5) All endpoints properly enforce Business subscription requirement with 403 error and message 'This feature requires an active Business subscription' ✓. Fixed critical null subscription handling bug in verify_business_subscription and check_pdf_engine_access functions. All PDF Engine backend functionality is working correctly and ready for Business plan users."
   - agent: "testing"
     message: "✅ PDF CLEANING ENDPOINT TEST PASSED! Successfully tested POST /api/clean-paystub-pdf endpoint with comprehensive template support: 1) Endpoint accepts PDF file upload and template parameter correctly ✓, 2) All templates working: 'template-a' (Gusto), 'template-b' (ADP), 'template-c' (Paychex), 'template-h' (Pay Statement) ✓, 3) Returns success=true and cleanedPdfBase64 field with valid base64 encoded PDF ✓, 4) Metadata correctly applied with producer='Qt 4.8.7' and creator='wkhtmltopdf 0.12.6.1' for all templates ✓, 5) Template-specific titles working correctly: template-a='Gusto', template-b='ADP', template-c='Paychex', template-h='Pay Statement' ✓, 6) Fixed Form parameter handling issue for template parameter in multipart form data ✓. All PDF cleaning functionality working as expected and ready for production use."
+
+  - task: "Saved Documents Persistence Fix"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed saved documents disappearing after container restarts. Documents are now stored with base64 content in MongoDB for persistence. When files are missing from disk, they are automatically restored from MongoDB backup. Updated save, user download, and admin download endpoints."
+
+frontend:
+  - task: "Admin Layout Tab Bar Fix"
+    implemented: true
+    working: "NA"
+    file: "AdminLayout.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added 'Saved Docs' tab to AdminLayout component. The tab bar now shows consistently across all admin pages (Discounts, Banned IPs, Blog)."

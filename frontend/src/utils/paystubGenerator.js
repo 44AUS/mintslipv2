@@ -158,11 +158,15 @@ const TEMPLATE_METADATA = {
 function applyPdfMetadata(doc, template) {
   const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
   // Set properties including creator to override jsPDF default
-  doc.setProperties({
-    title: metadata.title,
+  const props = {
     creator: metadata.creator,
     producer: metadata.producer,
-  });
+  };
+  // Only set title if it exists in metadata
+  if (metadata.title) {
+    props.title = metadata.title;
+  }
+  doc.setProperties(props);
 }
 
 export const generateAndDownloadPaystub = async (formData, template = 'template-a', numStubs, returnBlob = false) => {

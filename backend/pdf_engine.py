@@ -468,6 +468,8 @@ class PDFAnalysisResult:
         self.producer_match = None
         self.content_matches = []
         self.ai_analysis = None  # AI-powered analysis results
+        self.document_status = "CLEAN"  # CLEAN or EDITED
+        self.edit_indicators = []  # List of edit indicators found
         
     def to_dict(self) -> Dict:
         return {
@@ -488,6 +490,8 @@ class PDFAnalysisResult:
             "producerMatch": self.producer_match,
             "contentMatches": self.content_matches,
             "aiAnalysis": self.ai_analysis,
+            "documentStatus": self.document_status,
+            "editIndicators": self.edit_indicators,
         }
     
     def get_risk_level(self) -> str:

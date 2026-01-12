@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone } from "lucide-react";
+import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone, ShieldCheck } from "lucide-react";
 import {
   Sheet,
   SheetContent,

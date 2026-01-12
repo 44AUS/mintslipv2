@@ -144,10 +144,10 @@ const TEMPLATE_METADATA = {
     creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },
-  'template-c': {  // Paychex template
+  'template-c': {  // Workday template
     title: 'Paychex',
-    creator: 'wkhtmltopdf 0.12.6.1',
-    producer: 'Qt 4.8.7',
+    creator: 'Workday HCM',
+    producer: 'Workday PDF Engine',
   },
   'template-h': {  // OnPay/QuickBooks style
     title: 'Pay Statement',

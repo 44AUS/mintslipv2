@@ -1086,6 +1086,15 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             if '/Metadata' in pdf.Root:
                 del pdf.Root['/Metadata']
             
+            # Set PDF version based on template
+            pdf_version = metadata.get('pdf_version', '1.4')
+            if pdf_version == '1.7':
+                pdf.pdf_version = (1, 7)
+            elif pdf_version == '1.6':
+                pdf.pdf_version = (1, 6)
+            else:
+                pdf.pdf_version = (1, 4)
+            
             # Remove any incremental updates by saving as new PDF
             output = io.BytesIO()
             pdf.save(

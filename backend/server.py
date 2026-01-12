@@ -2487,6 +2487,7 @@ async def get_admin_dashboard(session: dict = Depends(get_current_admin)):
         },
         "purchasesByType": purchases_by_type,
         "recentPurchases": recent_purchases,
+        "recentSubscriptionPayments": recent_subscription_payments,
         "userRegistrations": user_registrations
     }
 

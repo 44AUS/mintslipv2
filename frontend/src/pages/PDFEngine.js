@@ -1084,7 +1084,7 @@ export default function PDFEngine() {
                       Download Options
                     </h3>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <Button
                         variant="outline"
                         onClick={() => downloadReport('pdf')}
@@ -1102,16 +1102,6 @@ export default function PDFEngine() {
                         <File className="w-4 h-4" />
                         Report (JSON)
                       </Button>
-                      
-                      {analysisResult.normalizedPdfBase64 && (
-                        <Button
-                          onClick={downloadNormalizedPDF}
-                          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white"
-                        >
-                          <Download className="w-4 h-4" />
-                          Normalized PDF
-                        </Button>
-                      )}
                     </div>
                     
                     <p className="text-xs text-slate-500 mt-4 flex items-center gap-1">

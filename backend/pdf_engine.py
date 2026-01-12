@@ -1164,6 +1164,129 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
         }
 
 
+def clean_bank_statement_pdf(pdf_bytes: bytes, template: str = 'chime', statement_month: str = None, account_name: str = None) -> Tuple[bytes, Dict]:
+    """
+    Clean a bank statement PDF to remove all traces of editing and apply proper metadata.
+    
+    Args:
+        pdf_bytes: The raw PDF bytes
+        template: The template type ('chime', 'bank-of-america', 'chase')
+        statement_month: The statement month (YYYY-MM format) - creation date will be last day of month
+        account_name: Account holder's first name for title
+    
+    Returns:
+        Tuple of (cleaned_pdf_bytes, result_dict)
+    """
+    # Template metadata mapping for bank statements
+    TEMPLATE_METADATA = {
+        'chime': {
+            'producer': 'Qt 4.8.7',
+            'creator': 'wkhtmltopdf 0.12.6.1',
+            'pdf_version': '1.4',
+            'title_format': '{name}_{month}_{year}_Statement | Chime',
+        },
+        'bank-of-america': {
+            'producer': 'Qt 4.8.7',
+            'creator': 'wkhtmltopdf 0.12.6.1',
+            'pdf_version': '1.4',
+            'title_format': 'Bank of America Statement',
+        },
+        'chase': {
+            'producer': 'Qt 4.8.7',
+            'creator': 'wkhtmltopdf 0.12.6.1',
+            'pdf_version': '1.4',
+            'title_format': 'Chase Statement',
+        },
+    }
+    
+    metadata = TEMPLATE_METADATA.get(template, TEMPLATE_METADATA['chime'])
+    
+    try:
+        pdf_file = io.BytesIO(pdf_bytes)
+        
+        with pikepdf.open(pdf_file) as pdf:
+            # Create fresh document info
+            new_docinfo = pikepdf.Dictionary()
+            
+            # Set the metadata
+            new_docinfo[pikepdf.Name('/Producer')] = metadata['producer']
+            new_docinfo[pikepdf.Name('/Creator')] = metadata['creator']
+            
+            # Calculate creation date as last day of the statement month
+            if statement_month:
+                try:
+                    year, month = statement_month.split('-')
+                    year = int(year)
+                    month = int(month)
+                    # Get last day of the month
+                    if month == 12:
+                        creation_dt = datetime(year + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+                    else:
+                        creation_dt = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
+                    
+                    # Generate title with name, month, year
+                    month_name = creation_dt.strftime('%B')
+                    if template == 'chime' and account_name:
+                        # Extract first name
+                        first_name = account_name.split()[0] if account_name else 'Account'
+                        title = f"{first_name}_{month_name}_{year}_Statement | Chime"
+                    else:
+                        title = metadata.get('title_format', 'Statement')
+                except:
+                    creation_dt = datetime.now(timezone.utc)
+                    title = metadata.get('title_format', 'Statement')
+            else:
+                creation_dt = datetime.now(timezone.utc)
+                title = metadata.get('title_format', 'Statement')
+            
+            # Set title
+            new_docinfo[pikepdf.Name('/Title')] = title
+            
+            # Format as PDF date string: D:YYYYMMDDHHmmSS+00'00'
+            pdf_date = f"D:{creation_dt.strftime('%Y%m%d%H%M%S')}+00'00'"
+            new_docinfo[pikepdf.Name('/CreationDate')] = pdf_date
+            # Don't set ModDate - fresh documents shouldn't have modification date
+            
+            # Store creation date in metadata for response
+            metadata_with_date = metadata.copy()
+            metadata_with_date['creationDate'] = creation_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+            metadata_with_date['title'] = title
+            
+            # Apply new docinfo as indirect object
+            pdf.trailer[pikepdf.Name('/Info')] = pdf.make_indirect(new_docinfo)
+            
+            # Remove XMP metadata (removes edit traces)
+            if '/Metadata' in pdf.Root:
+                del pdf.Root['/Metadata']
+            
+            # Get PDF version for saving
+            pdf_version = metadata.get('pdf_version', '1.4')
+            min_ver = pdf_version
+            
+            # Remove any incremental updates by saving as new PDF
+            output = io.BytesIO()
+            pdf.save(
+                output,
+                linearize=True,
+                object_stream_mode=pikepdf.ObjectStreamMode.generate,
+                compress_streams=True,
+                preserve_pdfa=False,
+                min_version=min_ver,
+            )
+            
+            return output.getvalue(), {
+                "success": True,
+                "message": "PDF cleaned successfully",
+                "metadata_applied": metadata_with_date
+            }
+            
+    except Exception as e:
+        return pdf_bytes, {
+            "success": False,
+            "error": str(e)
+        }
+
+
 def generate_analysis_report_pdf(analysis: PDFAnalysisResult, filename: str = "analysis") -> bytes:
     """Generate a PDF report of the analysis"""
     buffer = io.BytesIO()

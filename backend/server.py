@@ -2930,14 +2930,14 @@ async def import_historical_subscriptions(
                     imported_count += 1
                     
                 except Exception as e:
-                    print(f"Error processing invoice {invoice.id}: {str(e)}")
+                    logger.error(f"Error processing invoice {invoice.id}: {str(e)}")
                     error_count += 1
                     continue
             
             # Check if there are more invoices
-            has_more = invoices.has_more
+            inv_has_more = invoices.has_more
             if invoices.data:
-                starting_after = invoices.data[-1].id
+                inv_starting_after = invoices.data[-1].id
         
         # Calculate total imported revenue
         total_revenue_pipeline = [

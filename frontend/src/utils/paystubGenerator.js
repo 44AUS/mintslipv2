@@ -5,6 +5,44 @@ import { generateTemplateA, generateTemplateB, generateTemplateC, generateTempla
 import { getLocalTaxRate, getSUTARate } from "./taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+
+// Helper to clean PDF via backend to remove edit traces
+async function cleanPdfViaBackend(pdfBlob, template) {
+  try {
+    const formData = new FormData();
+    formData.append('file', pdfBlob, 'paystub.pdf');
+    formData.append('template', template);
+    
+    const response = await fetch(`${BACKEND_URL}/api/clean-paystub-pdf`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      console.warn('PDF cleaning failed, using original PDF');
+      return pdfBlob;
+    }
+    
+    const result = await response.json();
+    if (result.success && result.cleanedPdfBase64) {
+      // Convert base64 to blob
+      const byteCharacters = atob(result.cleanedPdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: 'application/pdf' });
+    }
+    
+    return pdfBlob;
+  } catch (error) {
+    console.warn('PDF cleaning error, using original PDF:', error);
+    return pdfBlob;
+  }
+}
+
 // Helper to calculate next weekday
 const DAY_MAP = {
   Sunday: 0,

@@ -4,6 +4,20 @@ import { saveAs } from "file-saver";
 import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
 
+// PDF metadata configuration per template (matching real document signatures)
+const TEMPLATE_METADATA = {
+  'template-a': { title: 'Gusto', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
+  'template-b': { title: 'ADP', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
+  'template-c': { title: 'Paychex', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
+  'template-h': { title: 'Pay Statement', creator: 'Qt 4.8.7', producer: 'Qt 4.8.7' },
+};
+
+// Apply template-specific PDF metadata
+function applyPdfMetadata(doc, template) {
+  const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
+  doc.setProperties({ title: metadata.title, creator: metadata.creator, producer: metadata.producer });
+}
+
 // Helper to format name for filenames (firstName-lastName format)
 function formatNameForFilename(name) {
   if (!name) return 'Employee';

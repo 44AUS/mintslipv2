@@ -1091,23 +1091,27 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             if '/Metadata' in pdf.Root:
                 del pdf.Root['/Metadata']
             
-            # Set PDF version based on template
+            # Get PDF version for saving
             pdf_version = metadata.get('pdf_version', '1.4')
-            if pdf_version == '1.7':
-                pdf.pdf_version = (1, 7)
-            elif pdf_version == '1.6':
-                pdf.pdf_version = (1, 6)
-            else:
-                pdf.pdf_version = (1, 4)
             
             # Remove any incremental updates by saving as new PDF
             output = io.BytesIO()
+            
+            # Set min_version based on template to control PDF version in output
+            if pdf_version == '1.7':
+                min_ver = '1.7'
+            elif pdf_version == '1.6':
+                min_ver = '1.6'
+            else:
+                min_ver = '1.4'
+            
             pdf.save(
                 output,
                 linearize=True,  # Web optimized
                 object_stream_mode=pikepdf.ObjectStreamMode.generate,  # Clean streams
                 compress_streams=True,  # Compress
                 preserve_pdfa=False,  # Don't preserve PDF/A markers
+                min_version=min_ver,  # Set minimum PDF version
             )
             
             return output.getvalue(), {

@@ -4476,6 +4476,10 @@ class AIResumeBuilderTester:
         print("\n📧 Testing Email with PDF Attachment Feature...")
         email_pdf_ok = self.test_send_download_email_with_pdf()
         
+        # Test PDF Cleaning Endpoint
+        print("\n🧹 Testing PDF Cleaning Endpoint...")
+        pdf_cleaning_ok = self.test_pdf_cleaning_endpoint()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

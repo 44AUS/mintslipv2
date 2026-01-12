@@ -89,22 +89,22 @@ function getMultiplePaystubsZipFilename(template, name) {
 const TEMPLATE_METADATA = {
   'template-a': {  // Gusto template
     title: 'Gusto',
-    creator: 'Qt 4.8.7',
+    creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },
   'template-b': {  // ADP template
     title: 'ADP',
-    creator: 'Qt 4.8.7',
+    creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },
   'template-c': {  // Paychex template
     title: 'Paychex',
-    creator: 'Qt 4.8.7',
+    creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },
   'template-h': {  // OnPay/QuickBooks style
     title: 'Pay Statement',
-    creator: 'Qt 4.8.7',
+    creator: 'wkhtmltopdf 0.12.6.1',
     producer: 'Qt 4.8.7',
   },
 };

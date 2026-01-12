@@ -369,7 +369,7 @@ export default function PDFEngine() {
       formData.append("file", selectedFile);
       
       const response = await fetch(
-        `${BACKEND_URL}/api/pdf-engine/analyze?normalize=${normalizeEnabled}&document_type=${documentType}&enable_ai=${aiEnabled}`, 
+        `${BACKEND_URL}/api/pdf-engine/analyze?document_type=${documentType}&enable_ai=${aiEnabled}`, 
         {
           method: "POST",
           headers: {

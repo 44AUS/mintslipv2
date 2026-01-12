@@ -1079,10 +1079,7 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             # Format as PDF date string: D:YYYYMMDDHHmmSS+00'00'
             pdf_date = f"D:{creation_dt.strftime('%Y%m%d%H%M%S')}+00'00'"
             new_docinfo[pikepdf.Name('/CreationDate')] = pdf_date
-            
-            # For Workday (template-c), ModDate should equal CreationDate
-            if template == 'template-c':
-                new_docinfo[pikepdf.Name('/ModDate')] = pdf_date
+            # Don't set ModDate - fresh documents shouldn't have modification date
             
             # Store creation date in metadata for response
             metadata_with_date = metadata.copy()
@@ -1093,7 +1090,7 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             
             # Handle XMP metadata based on template
             if template == 'template-c':
-                # Workday embeds XMP metadata - create proper XMP packet
+                # Workday embeds XMP metadata - create proper XMP packet (no ModifyDate)
                 xmp_date = creation_dt.strftime('%Y-%m-%dT%H:%M:%S+00:00')
                 xmp_packet = f'''<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
@@ -1104,7 +1101,6 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
         xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
         xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
       <xmp:CreateDate>{xmp_date}</xmp:CreateDate>
-      <xmp:ModifyDate>{xmp_date}</xmp:ModifyDate>
       <xmp:CreatorTool>Workday</xmp:CreatorTool>
       <pdf:Producer>Workday</pdf:Producer>
       <pdfaid:part>1</pdfaid:part>
@@ -1122,7 +1118,6 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
                 
                 metadata_with_date['xmp'] = {
                     'createDate': xmp_date,
-                    'modifyDate': xmp_date,
                     'creatorTool': 'Workday',
                     'producer': 'Workday',
                     'pdfaid_part': '1',

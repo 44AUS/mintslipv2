@@ -4245,6 +4245,108 @@ class AIResumeBuilderTester:
             self.log_test("Email Change Duplicate Protection", False, f"Exception: {str(e)}")
             return False
 
+    def test_pdf_cleaning_endpoint(self):
+        """Test POST /api/clean-paystub-pdf endpoint"""
+        try:
+            # Create a simple test PDF using reportlab
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            import io
+            
+            # Create a simple PDF in memory
+            pdf_buffer = io.BytesIO()
+            c = canvas.Canvas(pdf_buffer, pagesize=letter)
+            c.drawString(100, 750, "Test Paystub Document")
+            c.drawString(100, 730, "Employee: John Doe")
+            c.drawString(100, 710, "Pay Period: 01/01/2024 - 01/15/2024")
+            c.drawString(100, 690, "Gross Pay: $2,500.00")
+            c.drawString(100, 670, "Net Pay: $1,850.00")
+            c.save()
+            
+            pdf_bytes = pdf_buffer.getvalue()
+            pdf_buffer.close()
+            
+            # Test the endpoint with template-a
+            files = {
+                'file': ('test_paystub.pdf', pdf_bytes, 'application/pdf')
+            }
+            data = {
+                'template': 'template-a'
+            }
+            
+            response = requests.post(
+                f"{self.api_url}/clean-paystub-pdf",
+                files=files,
+                data=data,
+                timeout=30
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                response_data = response.json()
+                
+                # Check required fields
+                required_fields = ["success", "cleanedPdfBase64", "metadata"]
+                missing_fields = [field for field in required_fields if field not in response_data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif not response_data.get("success"):
+                    success = False
+                    details += f", API returned success=false"
+                else:
+                    # Verify metadata contains expected values
+                    metadata = response_data.get("metadata", {})
+                    expected_producer = "Qt 4.8.7"
+                    expected_creator = "wkhtmltopdf 0.12.6.1"
+                    
+                    actual_producer = metadata.get("producer", "")
+                    actual_creator = metadata.get("creator", "")
+                    
+                    if actual_producer != expected_producer:
+                        success = False
+                        details += f", Wrong producer: expected '{expected_producer}', got '{actual_producer}'"
+                    elif actual_creator != expected_creator:
+                        success = False
+                        details += f", Wrong creator: expected '{expected_creator}', got '{actual_creator}'"
+                    else:
+                        # Verify base64 PDF is valid
+                        cleaned_pdf_b64 = response_data.get("cleanedPdfBase64", "")
+                        if not cleaned_pdf_b64:
+                            success = False
+                            details += ", Empty cleanedPdfBase64"
+                        else:
+                            try:
+                                import base64
+                                cleaned_pdf_bytes = base64.b64decode(cleaned_pdf_b64)
+                                if not cleaned_pdf_bytes.startswith(b'%PDF'):
+                                    success = False
+                                    details += ", Invalid PDF in cleanedPdfBase64"
+                                else:
+                                    details += f", ✅ PDF cleaned successfully"
+                                    details += f", Producer: {actual_producer}"
+                                    details += f", Creator: {actual_creator}"
+                                    details += f", Cleaned PDF size: {len(cleaned_pdf_bytes)} bytes"
+                            except Exception as e:
+                                success = False
+                                details += f", Failed to decode base64 PDF: {str(e)}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("PDF Cleaning Endpoint", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("PDF Cleaning Endpoint", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all AI Resume Builder backend API tests"""
         print("🚀 Starting AI Resume Builder Backend API Tests")

@@ -54,6 +54,32 @@ import { Input } from "@/components/ui/input";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
+// Template name mapping
+const TEMPLATE_NAMES = {
+  // Paystub templates
+  "template-a": "Gusto",
+  "template-b": "ADP",
+  "template-c": "Workday",
+  "template-h": "OnPay",
+  // Bank statement templates
+  "chime": "Chime",
+  "bank-of-america": "Bank of America",
+  "chase": "Chase",
+  // Vehicle bill of sale templates
+  "standard": "Standard",
+  "detailed": "Detailed",
+  // Resume templates
+  "modern": "Modern",
+  "classic": "Classic",
+  "minimal": "Minimal"
+};
+
+// Helper function to get template display name
+const getTemplateName = (templateId) => {
+  if (!templateId) return "-";
+  return TEMPLATE_NAMES[templateId] || templateId;
+};
+
 // Document type labels (excluding bank-statement and utility-bill)
 const DOCUMENT_TYPES = {
   "paystub": "Pay Stub",

@@ -1075,33 +1075,6 @@ export default function PDFEngine() {
                       </CollapsibleSection>
                     )}
                     
-                    {/* Normalization Changes */}
-                    {analysisResult.normalization?.changes?.length > 0 && (
-                      <CollapsibleSection
-                        title="Normalization Changes"
-                        icon={RefreshCw}
-                        badge={{ text: `${analysisResult.normalization.changes.length} changes`, className: "bg-purple-100 text-purple-700" }}
-                      >
-                        <div className="space-y-2">
-                          {analysisResult.normalization.changes.map((change, idx) => (
-                            <div key={idx} className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                              <p className="font-medium text-purple-800">{change.field}</p>
-                              <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                                <div>
-                                  <span className="text-slate-500">Original:</span>
-                                  <p className="text-slate-700 truncate">{change.original || 'N/A'}</p>
-                                </div>
-                                <div>
-                                  <span className="text-slate-500">New:</span>
-                                  <p className="text-purple-700 truncate">{change.new || 'N/A'}</p>
-                                </div>
-                              </div>
-                              <p className="text-xs text-purple-600 mt-2">{change.reason}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </CollapsibleSection>
-                    )}
                   </div>
                   
                   {/* Download Options */}

@@ -5546,7 +5546,8 @@ async def edit_pdf_metadata_endpoint(
 @app.post("/api/clean-paystub-pdf")
 async def clean_paystub_pdf_endpoint(
     file: UploadFile = File(...),
-    template: str = Form("template-a")
+    template: str = Form("template-a"),
+    pay_date: Optional[str] = Form(None)
 ):
     """
     Clean a paystub PDF to remove all traces of editing and apply proper metadata.
@@ -5557,6 +5558,7 @@ async def clean_paystub_pdf_endpoint(
     Args:
         file: The PDF file to clean
         template: The template type ('template-a', 'template-b', 'template-c', 'template-h')
+        pay_date: The pay date (ISO format) - creation date will be set to 2 days before this
     """
     # Validate file type
     if not file.filename.lower().endswith('.pdf'):

@@ -173,6 +173,65 @@ function RiskScoreDisplay({ score, level, producerMatch, documentType }) {
   );
 }
 
+// Document Status Display Component (CLEAN/EDITED)
+function DocumentStatusDisplay({ status, editIndicators }) {
+  const isClean = status === "CLEAN";
+  
+  return (
+    <div className={`rounded-xl p-4 border-2 ${
+      isClean 
+        ? 'bg-emerald-50 border-emerald-300' 
+        : 'bg-amber-50 border-amber-300'
+    }`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {isClean ? (
+            <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center">
+              <BadgeCheck className="w-7 h-7 text-white" />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center">
+              <AlertTriangle className="w-7 h-7 text-white" />
+            </div>
+          )}
+          <div>
+            <h3 className={`text-xl font-bold ${isClean ? 'text-emerald-700' : 'text-amber-700'}`}>
+              Document Status: {status}
+            </h3>
+            <p className={`text-sm ${isClean ? 'text-emerald-600' : 'text-amber-600'}`}>
+              {isClean 
+                ? 'No edit indicators detected - document appears to be original'
+                : `${editIndicators?.length || 0} edit indicator(s) found`
+              }
+            </p>
+          </div>
+        </div>
+        <div className={`px-4 py-2 rounded-lg text-lg font-bold ${
+          isClean 
+            ? 'bg-emerald-500 text-white' 
+            : 'bg-amber-500 text-white'
+        }`}>
+          {isClean ? '✓ CLEAN' : '⚠ EDITED'}
+        </div>
+      </div>
+      
+      {!isClean && editIndicators && editIndicators.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-amber-200">
+          <p className="text-sm font-medium text-amber-700 mb-2">Edit Indicators Found:</p>
+          <ul className="space-y-1">
+            {editIndicators.map((indicator, idx) => (
+              <li key={idx} className="text-sm text-amber-600 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                {indicator}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Document Type Selector Component
 function DocumentTypeSelector({ value, onChange, disabled }) {
   return (

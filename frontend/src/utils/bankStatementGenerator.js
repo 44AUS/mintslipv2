@@ -1,5 +1,55 @@
 import { jsPDF } from "jspdf";
+import { saveAs } from "file-saver";
 import { generateBankTemplateA, generateBankTemplateB, generateBankTemplateC } from "./bankStatementTemplates";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+
+// Helper to clean bank statement PDF via backend
+async function cleanBankStatementPdfViaBackend(pdfBlob, template, statementMonth, accountName) {
+  try {
+    console.log('Cleaning bank statement PDF via backend...', { template, statementMonth, accountName });
+    const formData = new FormData();
+    formData.append('file', pdfBlob, 'statement.pdf');
+    formData.append('template', template);
+    
+    if (statementMonth) {
+      formData.append('statement_month', statementMonth);
+    }
+    if (accountName) {
+      formData.append('account_name', accountName);
+    }
+    
+    const response = await fetch(`${BACKEND_URL}/api/clean-bank-statement-pdf`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn('PDF cleaning failed:', response.status, errorText);
+      return pdfBlob;
+    }
+    
+    const result = await response.json();
+    console.log('PDF cleaning result:', result);
+    
+    if (result.success && result.cleanedPdfBase64) {
+      const byteCharacters = atob(result.cleanedPdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      console.log('PDF cleaned successfully, new size:', byteArray.length);
+      return new Blob([byteArray], { type: 'application/pdf' });
+    }
+    
+    return pdfBlob;
+  } catch (error) {
+    console.error('PDF cleaning error:', error);
+    return pdfBlob;
+  }
+}
 
 function parseCurrency(s) {
   const cleaned = String(s || "").replace(/[^0-9.-]/g, "");

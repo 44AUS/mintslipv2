@@ -729,7 +729,6 @@ export default function PDFEngine() {
                 <ul className="text-sm text-slate-600 space-y-1">
                   <li><strong>Pay Stub:</strong> ADP, Paychex, Gusto, QuickBooks, Workday...</li>
                   <li><strong>Bank Statement:</strong> Chase, BofA, Wells Fargo, Citi...</li>
-                  <li><strong>Tax Form:</strong> IRS, TurboTax, H&R Block...</li>
                   <li>• Matches against 50+ legitimate producer patterns</li>
                   <li>• Detects known fake document generators</li>
                   {aiEnabled && <li className="text-purple-600">• <strong>AI:</strong> Math verification, anomaly detection, legitimacy assessment</li>}

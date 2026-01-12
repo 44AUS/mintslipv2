@@ -2100,24 +2100,100 @@ def apply_ai_analysis_to_result(result: PDFAnalysisResult, ai_analysis: Dict) ->
     # Apply risk based on red flags (each red flag adds points)
     red_flags = ai_data.get("redFlags", [])
     if red_flags:
-        # Add 3 points per red flag, max 20 points
-        red_flag_points = min(len(red_flags) * 3, 20)
+        # Add 5 points per red flag, max 30 points
+        red_flag_points = min(len(red_flags) * 5, 30)
         result.add_risk(
             "ai_red_flags",
-            f"AI identified {len(red_flags)} red flag(s): {', '.join(red_flags[:3])}{'...' if len(red_flags) > 3 else ''}",
+            f"AI identified {len(red_flags)} CRITICAL red flag(s): {', '.join(red_flags[:3])}{'...' if len(red_flags) > 3 else ''}",
             red_flag_points
+        )
+    
+    # Apply risk for yellow flags (moderate concerns)
+    yellow_flags = ai_data.get("yellowFlags", [])
+    if yellow_flags:
+        # Add 2 points per yellow flag, max 15 points
+        yellow_flag_points = min(len(yellow_flags) * 2, 15)
+        result.add_risk(
+            "ai_yellow_flags",
+            f"AI identified {len(yellow_flags)} concern(s) requiring review",
+            yellow_flag_points
         )
     
     # Apply risk reduction for green flags (each green flag reduces points)
     green_flags = ai_data.get("greenFlags", [])
     if green_flags:
-        # Subtract 2 points per green flag, max -15 points
-        green_flag_points = max(len(green_flags) * -2, -15)
+        # Subtract 3 points per green flag, max -20 points
+        green_flag_points = max(len(green_flags) * -3, -20)
         result.add_risk(
             "ai_green_flags",
             f"AI verified {len(green_flags)} positive indicator(s): {', '.join(green_flags[:3])}{'...' if len(green_flags) > 3 else ''}",
             green_flag_points
         )
+    
+    # Check for fake generator indicators (Snappt-style detection)
+    fake_generator = ai_data.get("fakeGeneratorIndicators")
+    if fake_generator and fake_generator.get("detected"):
+        indicators = fake_generator.get("indicators", [])
+        generator_type = fake_generator.get("generatorType", "Unknown")
+        result.add_risk(
+            "ai_fake_generator_detected",
+            f"AI detected potential fake document generator ({generator_type}): {', '.join(indicators[:2])}",
+            25
+        )
+        result.add_finding(
+            "fake_generator",
+            "error",
+            f"Fake Generator Detected: {generator_type}",
+            f"Indicators: {', '.join(indicators)}"
+        )
+    
+    # Check employer verification (for paystubs)
+    employer_verification = ai_data.get("employerVerification")
+    if employer_verification:
+        if not employer_verification.get("passed", True):
+            issues = employer_verification.get("issues", [])
+            result.add_risk(
+                "ai_employer_verification_failed",
+                f"AI detected employer information issues: {len(issues)} problem(s)",
+                10
+            )
+        else:
+            result.add_risk(
+                "ai_employer_verified",
+                "AI verified employer information appears valid",
+                -5
+            )
+    
+    # Check transaction analysis (for bank statements)
+    transaction_analysis = ai_data.get("transactionAnalysis")
+    if transaction_analysis:
+        if not transaction_analysis.get("passed", True):
+            patterns = transaction_analysis.get("suspiciousPatterns", [])
+            result.add_risk(
+                "ai_suspicious_transactions",
+                f"AI detected suspicious transaction patterns",
+                15
+            )
+    
+    # Check income pattern analysis (for bank statements - Plaid/Argyle style)
+    income_analysis = ai_data.get("incomePatternAnalysis")
+    if income_analysis:
+        suspicious_patterns = income_analysis.get("suspiciousIncomePatterns", [])
+        if suspicious_patterns:
+            result.add_risk(
+                "ai_suspicious_income",
+                f"AI detected suspicious income patterns: {', '.join(suspicious_patterns[:2])}",
+                12
+            )
+        elif income_analysis.get("depositScheduleConsistent") and income_analysis.get("incomeAmountsReasonable"):
+            result.add_risk(
+                "ai_income_verified",
+                "AI verified income deposits appear consistent and reasonable",
+                -8
+            )
+    
+    # Get recommended action
+    recommended_action = ai_data.get("recommendedAction", "MANUAL_REVIEW")
     
     # Add overall AI finding
     severity = "info"
@@ -2133,10 +2209,28 @@ def apply_ai_analysis_to_result(result: PDFAnalysisResult, ai_analysis: Dict) ->
         ai_data.get("summary", "")
     )
     
+    # Add recommended action as finding
+    action_severity = "info"
+    if recommended_action == "REJECT":
+        action_severity = "error"
+    elif recommended_action == "MANUAL_REVIEW" or recommended_action == "REQUEST_ADDITIONAL_DOCS":
+        action_severity = "warning"
+    
+    result.add_finding(
+        "ai_recommendation",
+        action_severity,
+        f"AI Recommendation: {recommended_action.replace('_', ' ').title()}",
+        "Based on comprehensive document analysis"
+    )
+    
     # Add individual red flags as findings
     for flag in red_flags:
-        result.add_finding("ai_red_flag", "warning", f"AI Red Flag: {flag}", "")
+        result.add_finding("ai_red_flag", "error", f"🚨 Critical: {flag}", "")
+    
+    # Add individual yellow flags as findings
+    for flag in yellow_flags:
+        result.add_finding("ai_yellow_flag", "warning", f"⚠️ Concern: {flag}", "")
     
     # Add individual green flags as findings
     for flag in green_flags:
-        result.add_finding("ai_green_flag", "info", f"AI Verified: {flag}", "")
+        result.add_finding("ai_green_flag", "info", f"✓ Verified: {flag}", "")

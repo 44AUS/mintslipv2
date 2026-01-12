@@ -6,6 +6,20 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Set up pdf.js worker using unpkg CDN with correct version
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
+// PDF metadata configuration per template (matching real document signatures)
+const TEMPLATE_METADATA = {
+  'template-a': { title: 'Gusto', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-b': { title: 'ADP', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-c': { title: 'Paychex', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-h': { title: 'Pay Statement', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+};
+
+// Apply template-specific PDF metadata
+function applyPdfMetadata(doc, template) {
+  const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
+  doc.setProperties({ title: metadata.title, creator: metadata.creator, producer: metadata.producer });
+}
+
 // Convert PDF to image using pdf.js
 async function convertPdfToImage(pdfDataUrl) {
   const base64Data = pdfDataUrl.split(',')[1];

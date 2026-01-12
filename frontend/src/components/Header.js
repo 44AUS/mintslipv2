@@ -277,7 +277,7 @@ function UserAccountDropdown({ user, onNavigate, onLogout }) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => onNavigate("/pdf-engine")}
+              onClick={() => onNavigate("/user/pdf-engine")}
               className="flex items-center gap-2 cursor-pointer text-purple-600 hover:text-purple-700"
             >
               <ShieldCheck className="w-4 h-4" />

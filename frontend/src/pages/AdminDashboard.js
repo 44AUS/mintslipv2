@@ -334,8 +334,8 @@ export default function AdminDashboard() {
         const statsData = await statsResponse.json();
         setDashboardStats(statsData);
         
-        // Process data for charts
-        processChartData(statsData.recentPurchases);
+        // Process data for charts (include subscription payments)
+        processChartData(statsData.recentPurchases || [], statsData.recentSubscriptionPayments || []);
       }
       
       // Load purchases

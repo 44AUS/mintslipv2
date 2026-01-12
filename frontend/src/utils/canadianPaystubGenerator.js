@@ -55,14 +55,18 @@ async function cleanPdfViaBackend(pdfBlob, template, payDate) {
 const TEMPLATE_METADATA = {
   'template-a': { title: 'Gusto', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
   'template-b': { title: 'ADP', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
-  'template-c': { title: 'Paychex', creator: 'Workday HCM', producer: 'Workday PDF Engine' },
-  'template-h': { title: 'Pay Statement', creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },
+  'template-c': { creator: 'Workday HCM', producer: 'Workday PDF Engine' },  // No title
+  'template-h': { creator: 'wkhtmltopdf 0.12.6.1', producer: 'Qt 4.8.7' },  // No title (OnPay)
 };
 
 // Apply template-specific PDF metadata
 function applyPdfMetadata(doc, template) {
   const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
-  doc.setProperties({ title: metadata.title, creator: metadata.creator, producer: metadata.producer });
+  const props = { creator: metadata.creator, producer: metadata.producer };
+  if (metadata.title) {
+    props.title = metadata.title;
+  }
+  doc.setProperties(props);
 }
 
 // Helper to format name for filenames (firstName-lastName format)

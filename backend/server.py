@@ -2862,7 +2862,7 @@ async def import_historical_subscriptions(
                         "stripeInvoiceId": invoice.id
                     })
                     if existing:
-                        print(f"  -> Already exists in DB")
+                        logger.info(f"Invoice {invoice.id} already exists in DB")
                         already_exists_count += 1
                         continue
                     
@@ -2877,7 +2877,7 @@ async def import_historical_subscriptions(
                             query_conditions.append({"subscription.stripeSubscriptionId": subscription_id})
                         if customer_id:
                             query_conditions.append({"subscription.stripeCustomerId": customer_id})
-                            query_conditions.append({"subscription.stripeCustomerId": customer_id})
+                            query_conditions.append({"stripeCustomerId": customer_id})
                         
                         if query_conditions:
                             user = await users_collection.find_one({"$or": query_conditions})
@@ -2886,13 +2886,22 @@ async def import_historical_subscriptions(
                     tier = "unknown"
                     if hasattr(invoice, 'lines') and invoice.lines and hasattr(invoice.lines, 'data'):
                         for line in invoice.lines.data:
-                            if hasattr(line, 'price') and line.price and hasattr(line.price, 'id'):
-                                price_id = line.price.id
-                                # Match price ID to tier
-                                for t, pid in stripe_price_ids.items():
-                                    if pid == price_id:
-                                        tier = t
-                                        break
+                            if hasattr(line, 'price') and line.price:
+                                # Try to get amount to determine tier
+                                amount = line.price.unit_amount if hasattr(line.price, 'unit_amount') else 0
+                                if amount == 1999:
+                                    tier = "starter"
+                                elif amount == 2999:
+                                    tier = "professional"
+                                elif amount == 4999:
+                                    tier = "business"
+                                
+                                # Also try to match by price ID
+                                if tier == "unknown" and hasattr(line.price, 'id'):
+                                    for t, pid in stripe_price_ids.items():
+                                        if pid == line.price.id:
+                                            tier = t
+                                            break
                     
                     # If we couldn't determine tier from price, try to get from user
                     if tier == "unknown" and user and user.get("subscription", {}).get("tier"):

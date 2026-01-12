@@ -1234,8 +1234,8 @@ def edit_and_regenerate_pdf(pdf_bytes: bytes, new_metadata: Dict) -> Tuple[bytes
                     "new": new_val
                 })
             
-            # Set the new document info
-            pdf.docinfo = new_docinfo
+            # Set the new document info - must be an indirect object
+            pdf.trailer[pikepdf.Name('/Info')] = pdf.make_indirect(new_docinfo)
             
             # Remove XMP metadata to avoid conflicts
             if '/Metadata' in pdf.Root:

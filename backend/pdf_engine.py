@@ -816,6 +816,72 @@ def analyze_pdf_metadata(pdf_bytes: bytes, document_type: str = "other") -> PDFA
             result.metadata["hasXmp"] = False
             result.metadata["incrementalUpdates"] = 0
         
+        # Determine CLEAN or EDITED status
+        edit_indicators = []
+        
+        # Check 1: Incremental updates (more than 1 indicates editing)
+        if result.incremental_updates > 0:
+            edit_indicators.append(f"Incremental updates detected ({result.incremental_updates})")
+        
+        # Check 2: Modification date differs from creation date
+        creation_date_raw = result.metadata.get("creationDate", "")
+        mod_date_raw = result.metadata.get("modificationDate", "")
+        if mod_date_raw and creation_date_raw and mod_date_raw != creation_date_raw:
+            edit_indicators.append("Modification date differs from creation date")
+        
+        # Check 3: Known PDF editor in producer/creator
+        producer_lower = result.metadata.get("producer", "").lower()
+        creator_lower = result.metadata.get("creator", "").lower()
+        editor_keywords = ["editor", "edit", "acrobat pro", "foxit", "nitro", "pdfelement", "pdfescape", "sejda", "smallpdf", "ilovepdf"]
+        for keyword in editor_keywords:
+            if keyword in producer_lower or keyword in creator_lower:
+                edit_indicators.append(f"PDF editor detected in metadata: {keyword}")
+                break
+        
+        # Check 4: XMP metadata with modification history (for most document types)
+        # Note: Workday documents legitimately have XMP, so this is contextual
+        if result.has_xmp:
+            # Check if XMP contains modification history
+            try:
+                pdf_file.seek(0)
+                with pikepdf.open(pdf_file) as pdf:
+                    if pdf.Root.get("/Metadata"):
+                        xmp_stream = pdf.Root["/Metadata"]
+                        xmp_data = xmp_stream.read_bytes().decode('utf-8', errors='ignore')
+                        if 'xmp:ModifyDate' in xmp_data or 'ModifyDate' in xmp_data:
+                            # Check if it's different from CreateDate
+                            if 'xmp:CreateDate' in xmp_data:
+                                import re
+                                create_match = re.search(r'CreateDate[>"]([^<"]+)', xmp_data)
+                                modify_match = re.search(r'ModifyDate[>"]([^<"]+)', xmp_data)
+                                if create_match and modify_match:
+                                    if create_match.group(1) != modify_match.group(1):
+                                        edit_indicators.append("XMP metadata shows different modification date")
+            except:
+                pass
+        
+        # Check 5: Multiple fonts (can indicate editing, but not always)
+        # This is a weaker indicator, so only flag if there are many unusual fonts
+        
+        # Determine final status
+        result.edit_indicators = edit_indicators
+        if len(edit_indicators) > 0:
+            result.document_status = "EDITED"
+            result.add_finding(
+                "document_status",
+                "warning" if len(edit_indicators) > 1 else "info",
+                f"Document Status: EDITED ({len(edit_indicators)} indicator(s))",
+                "; ".join(edit_indicators)
+            )
+        else:
+            result.document_status = "CLEAN"
+            result.add_finding(
+                "document_status",
+                "info",
+                "Document Status: CLEAN",
+                "No edit indicators detected - document appears to be original"
+            )
+        
         # Analyze dates
         creation_date = parse_pdf_date(result.metadata.get("creationDate", ""))
         mod_date = parse_pdf_date(result.metadata.get("modificationDate", ""))

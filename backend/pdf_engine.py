@@ -1039,6 +1039,7 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             'creator': 'wkhtmltopdf 0.12.6.1',
             'title': 'Gusto',
             'pdf_version': '1.4',
+            'has_xmp': False,
         },
     }
     
@@ -1078,7 +1079,10 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             # Format as PDF date string: D:YYYYMMDDHHmmSS+00'00'
             pdf_date = f"D:{creation_dt.strftime('%Y%m%d%H%M%S')}+00'00'"
             new_docinfo[pikepdf.Name('/CreationDate')] = pdf_date
-            # Don't set ModDate - a fresh document shouldn't have a modification date
+            
+            # For Workday (template-c), ModDate should equal CreationDate
+            if template == 'template-c':
+                new_docinfo[pikepdf.Name('/ModDate')] = pdf_date
             
             # Store creation date in metadata for response
             metadata_with_date = metadata.copy()
@@ -1087,9 +1091,47 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto', pay_date: str =
             # Apply new docinfo as indirect object
             pdf.trailer[pikepdf.Name('/Info')] = pdf.make_indirect(new_docinfo)
             
-            # Remove XMP metadata completely (this often contains edit traces)
-            if '/Metadata' in pdf.Root:
-                del pdf.Root['/Metadata']
+            # Handle XMP metadata based on template
+            if template == 'template-c':
+                # Workday embeds XMP metadata - create proper XMP packet
+                xmp_date = creation_dt.strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                xmp_packet = f'''<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+        xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
+        xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
+      <xmp:CreateDate>{xmp_date}</xmp:CreateDate>
+      <xmp:ModifyDate>{xmp_date}</xmp:ModifyDate>
+      <xmp:CreatorTool>Workday</xmp:CreatorTool>
+      <pdf:Producer>Workday</pdf:Producer>
+      <pdfaid:part>1</pdfaid:part>
+      <pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>'''
+                
+                # Create XMP metadata stream
+                xmp_stream = pikepdf.Stream(pdf, xmp_packet.encode('utf-8'))
+                xmp_stream[pikepdf.Name('/Type')] = pikepdf.Name('/Metadata')
+                xmp_stream[pikepdf.Name('/Subtype')] = pikepdf.Name('/XML')
+                pdf.Root[pikepdf.Name('/Metadata')] = pdf.make_indirect(xmp_stream)
+                
+                metadata_with_date['xmp'] = {
+                    'createDate': xmp_date,
+                    'modifyDate': xmp_date,
+                    'creatorTool': 'Workday',
+                    'producer': 'Workday',
+                    'pdfaid_part': '1',
+                    'pdfaid_conformance': 'B'
+                }
+            else:
+                # Remove XMP metadata for non-Workday templates (removes edit traces)
+                if '/Metadata' in pdf.Root:
+                    del pdf.Root['/Metadata']
             
             # Get PDF version for saving
             pdf_version = metadata.get('pdf_version', '1.4')

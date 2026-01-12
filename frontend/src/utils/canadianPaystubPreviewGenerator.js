@@ -319,6 +319,9 @@ export async function generateCanadianPreviewPDF(formData, template) {
     // Add watermark
     addWatermarkToAllPages(doc, pageWidth, pageHeight);
 
+    // Apply metadata before output
+    applyPdfMetadata(doc, template);
+
     // Convert to image for preview
     const pdfDataUrl = doc.output('dataurlstring');
     const imageDataUrl = await convertPdfToImage(pdfDataUrl);

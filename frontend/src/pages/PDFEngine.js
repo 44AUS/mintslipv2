@@ -293,16 +293,7 @@ export default function PDFEngine() {
   
   // Metadata presets
   const PRESETS = {
-    adp: { name: "ADP", producer: "ADP, Inc.", creator: "ADP Workforce Now" },
-    paychex: { name: "Paychex", producer: "Paychex, Inc.", creator: "Paychex Flex" },
     gusto: { name: "Gusto", producer: "Qt 4.8.7", creator: "wkhtmltopdf 0.12.6.1", title: "Gusto" },
-    quickbooks: { name: "QuickBooks", producer: "Intuit Inc.", creator: "QuickBooks Payroll" },
-    workday: { name: "Workday", producer: "Workday, Inc.", creator: "Workday HCM" },
-    chase: { name: "Chase", producer: "JPMorgan Chase & Co.", creator: "Chase Online Banking" },
-    bankofamerica: { name: "Bank of America", producer: "Bank of America Corporation", creator: "Bank of America Online" },
-    wellsfargo: { name: "Wells Fargo", producer: "Wells Fargo & Company", creator: "Wells Fargo Online" },
-    generic_adobe: { name: "Adobe PDF", producer: "Adobe PDF Library 15.0", creator: "Adobe Acrobat Pro DC" },
-    generic_microsoft: { name: "Microsoft", producer: "Microsoft: Print To PDF", creator: "Microsoft Word" },
   };
   
   // Check access on mount

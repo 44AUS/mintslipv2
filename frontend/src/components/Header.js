@@ -626,6 +626,16 @@ export default function Header({ title }) {
                         <Download className="w-4 h-4" />
                         <span>My Downloads</span>
                       </button>
+                      {user.subscription === 'business' && (
+                        <button
+                          onClick={() => handleNavigation("/pdf-engine")}
+                          className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-purple-50 transition-colors text-purple-600"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          <span>PDF Engine</span>
+                          <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">PRO</span>
+                        </button>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-red-50 transition-colors text-red-600"

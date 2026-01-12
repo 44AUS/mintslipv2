@@ -5158,13 +5158,25 @@ async def check_pdf_engine_access(session: dict = Depends(get_current_user)):
         return {"hasAccess": False, "reason": "User not found"}
     
     subscription = user.get("subscription") or {}
-    has_access = subscription.get("status") == "active" and subscription.get("tier") == "business"
+    status = subscription.get("status")
+    tier = subscription.get("tier")
+    
+    # Allow access for both active and cancelling subscriptions (until period ends)
+    has_valid_status = status in ["active", "cancelling"]
+    has_access = has_valid_status and tier == "business"
+    
+    reason = None
+    if not has_access:
+        if tier != "business":
+            reason = "Business subscription required"
+        elif status not in ["active", "cancelling"]:
+            reason = "Active subscription required"
     
     return {
         "hasAccess": has_access,
-        "currentTier": subscription.get("tier", "none"),
-        "subscriptionStatus": subscription.get("status", "none"),
-        "reason": "Active Business subscription required" if not has_access else None
+        "currentTier": tier or "none",
+        "subscriptionStatus": status or "none",
+        "reason": reason
     }
 
 

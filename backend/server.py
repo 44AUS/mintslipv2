@@ -3393,6 +3393,8 @@ async def get_all_saved_documents(
         if stored_filename:
             file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
             file_exists = os.path.exists(file_path)
+            if not file_exists:
+                logger.warning(f"File not found for doc {doc.get('id')}: {file_path}")
         
         enriched_documents.append({
             **doc,

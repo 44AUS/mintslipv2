@@ -8,11 +8,20 @@ import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./feder
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 // Helper to clean PDF via backend to remove edit traces
-async function cleanPdfViaBackend(pdfBlob, template) {
+async function cleanPdfViaBackend(pdfBlob, template, payDate) {
   try {
     const formData = new FormData();
     formData.append('file', pdfBlob, 'paystub.pdf');
     formData.append('template', template);
+    
+    // Pass pay date so creation date can be set to 2 days before
+    if (payDate) {
+      // Format date as ISO string
+      const dateStr = payDate instanceof Date 
+        ? payDate.toISOString().split('T')[0]
+        : payDate;
+      formData.append('pay_date', dateStr);
+    }
     
     const response = await fetch(`${BACKEND_URL}/api/clean-paystub-pdf`, {
       method: 'POST',

@@ -1031,7 +1031,12 @@ def clean_paystub_pdf(pdf_bytes: bytes, template: str = 'gusto') -> Tuple[bytes,
         },
     }
     
+    # Debug: Print the template being used
+    print(f"DEBUG: clean_paystub_pdf called with template: '{template}'")
+    print(f"DEBUG: Available templates: {list(TEMPLATE_METADATA.keys())}")
+    
     metadata = TEMPLATE_METADATA.get(template, TEMPLATE_METADATA['gusto'])
+    print(f"DEBUG: Selected metadata: {metadata}")
     
     try:
         pdf_file = io.BytesIO(pdf_bytes)

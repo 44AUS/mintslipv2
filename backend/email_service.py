@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 resend.api_key = os.environ.get("RESEND_API_KEY")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
 TRUSTPILOT_URL = os.environ.get("TRUSTPILOT_URL", "https://www.trustpilot.com/review/mintslip.com")
+TRUSTPILOT_BCC = "mintslip.com+bafd4c313e@invite.trustpilot.com"
 SITE_URL = os.environ.get("SITE_URL", "https://mintslip.com")
 
 # MongoDB connection for scheduled emails
@@ -482,7 +483,7 @@ def template_password_reset(user_name: str, reset_link: str, reset_code: str) ->
 # EMAIL SENDING FUNCTIONS
 # ============================================================
 
-async def send_email(to_email: str, subject: str, html_content: str, email_type: str = "general", attachments: Optional[list] = None) -> Dict[str, Any]:
+async def send_email(to_email: str, subject: str, html_content: str, email_type: str = "general", attachments: Optional[list] = None, bcc: Optional[list] = None) -> Dict[str, Any]:
     """Send an email immediately using Resend
     
     Args:
@@ -502,6 +503,9 @@ async def send_email(to_email: str, subject: str, html_content: str, email_type:
         "subject": subject,
         "html": html_content
     }
+
+    if bcc:
+        params["bcc"] = bcc
     
     # Add attachments if provided
     if attachments:
@@ -702,8 +706,10 @@ async def send_download_confirmation(user_email: str, user_name: str, document_t
             "filename": pdf_attachment.get("filename", f"{document_type}.pdf"),
             "content": pdf_attachment.get("content")  # base64 encoded
         }]
+
+    bcc = [TRUSTPILOT_BCC] if is_guest else None
     
-    return await send_email(user_email, template["subject"], template["html"], "download_confirmation", attachments)
+    return await send_email(user_email, template["subject"], template["html"], "download_confirmation", attachments, bcc=bcc)
 
 
 async def schedule_signup_no_purchase_reminder(user_email: str, user_name: str, user_id: str):

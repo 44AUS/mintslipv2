@@ -815,6 +815,12 @@ export default function PDFEngine() {
                 </div>
               ) : (
                 <>
+                  {/* Document Status (CLEAN/EDITED) */}
+                  <DocumentStatusDisplay 
+                    status={analysisResult.analysis.documentStatus}
+                    editIndicators={analysisResult.analysis.editIndicators}
+                  />
+                  
                   {/* Risk Score */}
                   <RiskScoreDisplay 
                     score={analysisResult.analysis.riskScore} 

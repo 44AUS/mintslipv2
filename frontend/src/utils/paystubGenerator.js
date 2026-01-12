@@ -307,13 +307,17 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       // Apply template-specific metadata right before output
       applyPdfMetadata(doc, template);
       
+      // Get PDF blob and clean it via backend
+      let pdfBlob = doc.output('blob');
+      pdfBlob = await cleanPdfViaBackend(pdfBlob, template);
+      
       // Store download info for payment success page (use localStorage for persistence)
-      const pdfBlob = doc.output('blob');
       const blobUrl = URL.createObjectURL(pdfBlob);
       localStorage.setItem('lastDownloadUrl', blobUrl);
       localStorage.setItem('lastDownloadFileName', pdfFileName);
       
-      doc.save(pdfFileName);
+      // Save the cleaned PDF
+      saveAs(pdfBlob, pdfFileName);
       console.log("PDF downloaded successfully");
       
       // Return blob if requested for saving (with small delay to ensure download initiates)

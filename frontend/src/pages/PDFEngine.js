@@ -286,6 +286,8 @@ export default function PDFEngine() {
   // Metadata presets
   const PRESETS = {
     gusto: { name: "Gusto", producer: "Qt 4.8.7", creator: "wkhtmltopdf 0.12.6.1", title: "Gusto" },
+    workday: { name: "Workday", producer: "Workday PDF Engine", creator: "Workday HCM" },
+    onpay: { name: "OnPay", producer: "Qt 4.8.7", creator: "wkhtmltopdf 0.12.6.1" },
   };
   
   // Check access on mount

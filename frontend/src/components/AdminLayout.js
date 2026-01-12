@@ -28,6 +28,7 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
     const path = location.pathname;
     if (path.includes("/admin/users")) return "users";
     if (path.includes("/admin/purchases")) return "purchases";
+    if (path.includes("/admin/saved-docs")) return "saved-docs";
     if (path.includes("/admin/discounts")) return "discounts";
     if (path.includes("/admin/banned-ips")) return "banned-ips";
     if (path.includes("/admin/blog")) return "blog";

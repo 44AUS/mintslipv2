@@ -10,7 +10,7 @@ import sys
 
 def test_admin_flow():
     """Test the complete admin flow as specified in the review request"""
-    base_url = "https://fixed-pdf-author.preview.emergentagent.com"
+    base_url = "https://metascan.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔐 Testing Admin Authentication and Dashboard Flow")

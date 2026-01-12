@@ -79,6 +79,13 @@ PAYSTUB_LEGITIMATE_PRODUCERS = {
         "risk_reduction": 25,
         "notes": "Popular SMB payroll provider - uses wkhtmltopdf/Qt for PDF generation"
     },
+    "onpay": {
+        "names": ["onpay"],
+        "expected_producers": ["qt 4.8", "qt 5", "wkhtmltopdf", "onpay"],
+        "expected_creators": ["wkhtmltopdf", "onpay"],
+        "risk_reduction": 25,
+        "notes": "SMB payroll provider - uses wkhtmltopdf/Qt for PDF generation (similar to Gusto)"
+    },
     "quickbooks": {
         "names": ["quickbooks", "intuit"],
         "expected_producers": ["intuit", "quickbooks", "qt"],

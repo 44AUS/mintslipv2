@@ -592,7 +592,7 @@ export default function Header({ title }) {
                     <Menu className="w-6 h-6" style={{ color: '#1a4731' }} />
                   </button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+                <SheetContent side="right" className="w-[280px] sm:w-[320px] overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle 
                       className="text-xl font-black tracking-tight text-left"
@@ -601,7 +601,7 @@ export default function Header({ title }) {
                       MintSlip
                     </SheetTitle>
                   </SheetHeader>
-                  <nav className="flex flex-col gap-2 mt-6">
+                  <nav className="flex flex-col gap-2 mt-6 pb-20">
                     <MobileNavLinks location={location} onNavigate={handleNavigation} />
                   </nav>
                   

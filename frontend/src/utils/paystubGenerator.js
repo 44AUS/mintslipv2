@@ -89,29 +89,30 @@ function getMultiplePaystubsZipFilename(template, name) {
 const TEMPLATE_METADATA = {
   'template-a': {  // Gusto template
     title: 'Gusto',
-    creator: 'wkhtmltopdf 0.12.6.1',
+    creator: 'Qt 4.8.7',
     producer: 'Qt 4.8.7',
   },
   'template-b': {  // ADP template
     title: 'ADP',
-    creator: 'wkhtmltopdf 0.12.6.1',
+    creator: 'Qt 4.8.7',
     producer: 'Qt 4.8.7',
   },
   'template-c': {  // Paychex template
     title: 'Paychex',
-    creator: 'wkhtmltopdf 0.12.6.1',
+    creator: 'Qt 4.8.7',
     producer: 'Qt 4.8.7',
   },
   'template-h': {  // OnPay/QuickBooks style
     title: 'Pay Statement',
-    creator: 'QuickBooks Payroll',
+    creator: 'Qt 4.8.7',
     producer: 'Qt 4.8.7',
   },
 };
 
-// Apply template-specific PDF metadata
+// Apply template-specific PDF metadata - must be called right before output/save
 function applyPdfMetadata(doc, template) {
   const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
+  // Set properties including creator to override jsPDF default
   doc.setProperties({
     title: metadata.title,
     creator: metadata.creator,

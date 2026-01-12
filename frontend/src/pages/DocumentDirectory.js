@@ -110,7 +110,7 @@ const generators = [
     description: "Generate W-9 Request for Taxpayer Identification Number and Certification forms with all required fields.",
     path: "/w9-generator",
     icon: FileText,
-    price: "$9.99",
+    price: "$14.99",
     category: "Tax Forms",
     tags: ["w9", "w-9", "tin", "taxpayer", "certification", "contractor", "vendor"],
     isNew: true
@@ -121,7 +121,7 @@ const generators = [
     description: "Generate 1099-NEC forms for nonemployee compensation. Perfect for contractor and freelancer payments.",
     path: "/1099-nec-generator",
     icon: Users,
-    price: "$9.99",
+    price: "$14.99",
     category: "Tax Forms",
     tags: ["1099", "nec", "contractor", "freelancer", "nonemployee", "compensation", "independent"],
     isNew: true
@@ -132,7 +132,7 @@ const generators = [
     description: "Create 1099-MISC forms for miscellaneous income including rents, royalties, and other payments.",
     path: "/1099-misc-generator",
     icon: Landmark,
-    price: "$9.99",
+    price: "$14.99",
     category: "Tax Forms",
     tags: ["1099", "misc", "miscellaneous", "rent", "royalties", "prizes", "awards"],
     isNew: true
@@ -143,7 +143,7 @@ const generators = [
     description: "Generate Schedule C forms for sole proprietors with complete income, expenses, and profit/loss calculations.",
     path: "/schedule-c-generator",
     icon: FileBarChart,
-    price: "$9.99",
+    price: "$14.99",
     category: "Tax Forms",
     tags: ["schedule c", "sole proprietor", "business", "profit", "loss", "self-employed", "irs"],
     isNew: true

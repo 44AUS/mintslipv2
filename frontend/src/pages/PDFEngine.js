@@ -180,7 +180,7 @@ function DocumentTypeSelector({ value, onChange, disabled }) {
       <label className="block text-sm font-medium text-slate-700">
         Document Type
       </label>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
         {Object.entries(DOCUMENT_TYPES).map(([key, config]) => {
           const Icon = config.icon;
           const isSelected = value === key;
@@ -200,15 +200,17 @@ function DocumentTypeSelector({ value, onChange, disabled }) {
                 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-lg ${isSelected ? config.color : 'bg-slate-100'} flex items-center justify-center`}>
                   <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-slate-500'}`} />
                 </div>
-                <span className={`font-medium text-sm ${isSelected ? config.textColor : 'text-slate-700'}`}>
-                  {config.name}
-                </span>
+                <div>
+                  <span className={`font-medium text-sm ${isSelected ? config.textColor : 'text-slate-700'}`}>
+                    {config.name}
+                  </span>
+                  <p className="text-xs text-slate-500">{config.description}</p>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 ml-10">{config.description}</p>
             </button>
           );
         })}

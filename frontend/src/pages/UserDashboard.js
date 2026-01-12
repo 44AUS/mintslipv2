@@ -241,8 +241,12 @@ export default function UserDashboard() {
           } text-white`}>
             <div className="flex items-center justify-between mb-4">
               <CurrentTierIcon className="w-8 h-8" />
-              <span className="px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
-                {currentTier ? "Active" : "No Plan"}
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                user?.subscription?.status === 'cancelling' 
+                  ? 'bg-amber-400/30 text-amber-100' 
+                  : 'bg-white/20'
+              }`}>
+                {!currentTier ? "No Plan" : user?.subscription?.status === 'cancelling' ? "Cancelling" : "Active"}
               </span>
             </div>
             <h3 className="text-lg font-semibold mb-1">
@@ -251,6 +255,11 @@ export default function UserDashboard() {
             <p className="text-white/80 text-sm">
               {currentTier ? `$${currentTier.price}/month` : "Upgrade for more features"}
             </p>
+            {user?.subscription?.status === 'cancelling' && (
+              <p className="text-amber-200 text-xs mt-2">
+                Access until billing period ends
+              </p>
+            )}
             {!currentTier && (
               <Button 
                 onClick={() => navigate("/subscription/choose")}

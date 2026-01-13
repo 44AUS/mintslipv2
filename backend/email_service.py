@@ -483,8 +483,15 @@ def template_password_reset(user_name: str, reset_link: str, reset_code: str) ->
 # EMAIL SENDING FUNCTIONS
 # ============================================================
 
-async def send_email(to_email: str, subject: str, html_content: str, email_type: str = "general", attachments: Optional[list] = None, bcc: Optional[list] = None) -> Dict[str, Any]:
-    """Send an email immediately using Resend
+# Rate limiting: Resend allows 2 requests per second
+# Use a semaphore to limit concurrent email sends
+import threading
+_email_semaphore = asyncio.Semaphore(1)  # Only 1 email at a time
+_last_email_time = 0
+_email_lock = threading.Lock()
+
+async def send_email(to_email: str, subject: str, html_content: str, email_type: str = "general", attachments: Optional[list] = None, bcc: Optional[list] = None, max_retries: int = 3) -> Dict[str, Any]:
+    """Send an email immediately using Resend with rate limiting and retry logic
     
     Args:
         to_email: Recipient email address
@@ -492,7 +499,11 @@ async def send_email(to_email: str, subject: str, html_content: str, email_type:
         html_content: HTML body content
         email_type: Type of email for logging
         attachments: Optional list of attachments, each with 'filename' and 'content' (base64 encoded)
+        bcc: Optional BCC recipients
+        max_retries: Maximum retry attempts for rate-limited requests
     """
+    global _last_email_time
+    
     if not resend.api_key:
         logger.error("Resend API key not configured")
         return {"success": False, "error": "Email service not configured"}
@@ -511,38 +522,63 @@ async def send_email(to_email: str, subject: str, html_content: str, email_type:
     if attachments:
         params["attachments"] = attachments
     
-    try:
-        # Run sync SDK in thread to keep FastAPI non-blocking
-        result = await asyncio.to_thread(resend.Emails.send, params)
-        
-        # Log the email
-        await email_logs_collection.insert_one({
-            "to": to_email,
-            "subject": subject,
-            "email_type": email_type,
-            "status": "sent",
-            "resend_id": result.get("id"),
-            "has_attachment": attachments is not None and len(attachments) > 0,
-            "sent_at": datetime.now(timezone.utc).isoformat()
-        })
-        
-        logger.info(f"Email sent successfully to {to_email}: {subject}")
-        return {"success": True, "email_id": result.get("id")}
-        
-    except Exception as e:
-        logger.error(f"Failed to send email to {to_email}: {str(e)}")
-        
-        # Log the failure
-        await email_logs_collection.insert_one({
-            "to": to_email,
-            "subject": subject,
-            "email_type": email_type,
-            "status": "failed",
-            "error": str(e),
-            "attempted_at": datetime.now(timezone.utc).isoformat()
-        })
-        
-        return {"success": False, "error": str(e)}
+    # Use semaphore to ensure only one email is sent at a time
+    async with _email_semaphore:
+        for attempt in range(max_retries):
+            try:
+                # Rate limiting: ensure at least 600ms between emails (safe margin for 2/sec limit)
+                import time
+                with _email_lock:
+                    current_time = time.time()
+                    time_since_last = current_time - _last_email_time
+                    if time_since_last < 0.6:
+                        await asyncio.sleep(0.6 - time_since_last)
+                    _last_email_time = time.time()
+                
+                # Run sync SDK in thread to keep FastAPI non-blocking
+                result = await asyncio.to_thread(resend.Emails.send, params)
+                
+                # Log the email
+                await email_logs_collection.insert_one({
+                    "to": to_email,
+                    "subject": subject,
+                    "email_type": email_type,
+                    "status": "sent",
+                    "resend_id": result.get("id"),
+                    "has_attachment": attachments is not None and len(attachments) > 0,
+                    "sent_at": datetime.now(timezone.utc).isoformat()
+                })
+                
+                logger.info(f"Email sent successfully to {to_email}: {subject}")
+                return {"success": True, "email_id": result.get("id")}
+                
+            except Exception as e:
+                error_str = str(e)
+                is_rate_limit = "Too many requests" in error_str or "rate limit" in error_str.lower()
+                
+                if is_rate_limit and attempt < max_retries - 1:
+                    # Exponential backoff for rate limits
+                    wait_time = (attempt + 1) * 1.0  # 1s, 2s, 3s
+                    logger.warning(f"Rate limited, retrying in {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    await asyncio.sleep(wait_time)
+                    continue
+                
+                logger.error(f"Failed to send email to {to_email}: {error_str}")
+                
+                # Log the failure
+                await email_logs_collection.insert_one({
+                    "to": to_email,
+                    "subject": subject,
+                    "email_type": email_type,
+                    "status": "failed",
+                    "error": error_str,
+                    "retry_attempts": attempt + 1,
+                    "attempted_at": datetime.now(timezone.utc).isoformat()
+                })
+                
+                return {"success": False, "error": error_str}
+    
+    return {"success": False, "error": "Max retries exceeded"}
 
 
 async def schedule_email(

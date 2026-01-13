@@ -4784,6 +4784,10 @@ class AIResumeBuilderTester:
         admin_update_subscription_ok = self.test_admin_update_user_subscription()
         admin_revenue_ok = self.test_admin_revenue_by_period()
         
+        # Test Admin Confirm User Email Feature
+        print("\n✅ Testing Admin Confirm User Email Feature...")
+        admin_confirm_email_ok = self.test_admin_confirm_user_email()
+        
         print("\n🔄 Testing Full Admin Flow...")
         full_admin_flow_ok = self.test_full_admin_flow()
         

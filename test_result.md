@@ -317,6 +317,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "AI Bank Transaction Generator"
     - "Email Change Duplicate Protection"
     - "Email with PDF Attachment Endpoint"
     - "Gusto Paystub YTD Net Pay Calculation Fix"

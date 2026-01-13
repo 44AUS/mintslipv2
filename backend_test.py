@@ -1194,6 +1194,247 @@ class AIResumeBuilderTester:
             self.log_test("Full Admin Flow", False, f"Exception: {str(e)}")
             return False
 
+    # ========== EMAIL SERVICE TESTS ==========
+
+    def test_email_service_user_registration(self):
+        """Test user registration email service functionality"""
+        try:
+            # Use timestamp to create unique email
+            import time
+            timestamp = int(time.time())
+            test_email = f"emailtest{timestamp}@mintslip.com"
+            
+            payload = {
+                "email": test_email,
+                "password": "TestPassword123!",
+                "name": "Email Test User"
+            }
+            
+            response = requests.post(f"{self.api_url}/user/signup", json=payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("token") and data.get("user"):
+                    user_info = data["user"]
+                    details += f", User created: {user_info.get('email')}"
+                    
+                    # Wait a moment for emails to be processed
+                    import time
+                    time.sleep(2)
+                    
+                    # Check MongoDB for email logs
+                    import pymongo
+                    mongo_client = pymongo.MongoClient("mongodb://localhost:27017")
+                    db = mongo_client["mintslip_db"]
+                    
+                    # Check for welcome email
+                    welcome_email = db.email_logs.find_one({
+                        "to": test_email,
+                        "email_type": "welcome",
+                        "status": "sent"
+                    })
+                    
+                    # Check for verification email
+                    verification_email = db.email_logs.find_one({
+                        "to": test_email,
+                        "email_type": "verification",
+                        "status": "sent"
+                    })
+                    
+                    # Check for scheduled emails
+                    getting_started_scheduled = db.scheduled_emails.find_one({
+                        "to_email": test_email,
+                        "email_type": "getting_started",
+                        "status": "pending"
+                    })
+                    
+                    signup_reminder_scheduled = db.scheduled_emails.find_one({
+                        "to_email": test_email,
+                        "email_type": "signup_no_purchase",
+                        "status": "pending"
+                    })
+                    
+                    # Verify all emails are logged/scheduled
+                    email_checks = []
+                    if welcome_email:
+                        email_checks.append("Welcome email sent ✓")
+                    else:
+                        success = False
+                        email_checks.append("Welcome email NOT sent ✗")
+                    
+                    if verification_email:
+                        email_checks.append("Verification email sent ✓")
+                    else:
+                        success = False
+                        email_checks.append("Verification email NOT sent ✗")
+                    
+                    if getting_started_scheduled:
+                        email_checks.append("Getting started email scheduled ✓")
+                    else:
+                        success = False
+                        email_checks.append("Getting started email NOT scheduled ✗")
+                    
+                    if signup_reminder_scheduled:
+                        email_checks.append("Signup reminder scheduled ✓")
+                    else:
+                        success = False
+                        email_checks.append("Signup reminder NOT scheduled ✗")
+                    
+                    details += f", Email checks: {', '.join(email_checks)}"
+                    
+                    mongo_client.close()
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Email Service - User Registration", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Email Service - User Registration", False, f"Exception: {str(e)}")
+            return False
+
+    def test_email_service_download_with_attachment(self):
+        """Test send download email with PDF attachment"""
+        try:
+            # Create a simple base64 encoded PDF content for testing
+            import base64
+            test_pdf_content = base64.b64encode(b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000074 00000 n \n0000000120 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n179\n%%EOF").decode('utf-8')
+            
+            payload = {
+                "email": "test@example.com",
+                "userName": "Test User",
+                "documentType": "paystub",
+                "pdfBase64": test_pdf_content,
+                "isGuest": True
+            }
+            
+            response = requests.post(f"{self.api_url}/send-download-email", json=payload, timeout=15)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    details += f", Response: {data.get('message', 'Email sent')}"
+                    
+                    # Wait a moment for email to be processed
+                    import time
+                    time.sleep(2)
+                    
+                    # Check MongoDB for email log with attachment
+                    import pymongo
+                    mongo_client = pymongo.MongoClient("mongodb://localhost:27017")
+                    db = mongo_client["mintslip_db"]
+                    
+                    email_log = db.email_logs.find_one({
+                        "to": "test@example.com",
+                        "email_type": "download_confirmation",
+                        "status": "sent",
+                        "has_attachment": True
+                    })
+                    
+                    if email_log:
+                        details += ", Email logged with attachment ✓"
+                    else:
+                        success = False
+                        details += ", Email NOT logged with attachment ✗"
+                    
+                    mongo_client.close()
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Email Service - Download with PDF Attachment", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Email Service - Download with PDF Attachment", False, f"Exception: {str(e)}")
+            return False
+
+    def test_email_service_password_reset(self):
+        """Test password reset email functionality"""
+        try:
+            # First create a test user
+            import time
+            timestamp = int(time.time())
+            test_email = f"resettest{timestamp}@mintslip.com"
+            
+            # Create user first
+            signup_payload = {
+                "email": test_email,
+                "password": "TestPassword123!",
+                "name": "Reset Test User"
+            }
+            
+            signup_response = requests.post(f"{self.api_url}/user/signup", json=signup_payload, timeout=10)
+            if signup_response.status_code != 200:
+                self.log_test("Email Service - Password Reset", False, "Could not create test user for password reset")
+                return False
+            
+            # Now test password reset
+            reset_payload = {
+                "email": test_email
+            }
+            
+            response = requests.post(f"{self.api_url}/user/forgot-password", json=reset_payload, timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    details += f", Response: {data.get('message', 'Reset email sent')}"
+                    
+                    # Wait a moment for email to be processed
+                    time.sleep(2)
+                    
+                    # Check MongoDB for password reset email log
+                    import pymongo
+                    mongo_client = pymongo.MongoClient("mongodb://localhost:27017")
+                    db = mongo_client["mintslip_db"]
+                    
+                    reset_email_log = db.email_logs.find_one({
+                        "to": test_email,
+                        "email_type": "password_reset",
+                        "status": "sent"
+                    })
+                    
+                    if reset_email_log:
+                        details += ", Password reset email logged ✓"
+                    else:
+                        success = False
+                        details += ", Password reset email NOT logged ✗"
+                    
+                    mongo_client.close()
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Email Service - Password Reset", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Email Service - Password Reset", False, f"Exception: {str(e)}")
+            return False
+
     # ========== SUBSCRIPTION DOWNLOAD TESTS ==========
 
     def test_user_registration(self):

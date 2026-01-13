@@ -3403,6 +3403,19 @@ export default function PaystubForm() {
                     </div>
                   </>
                 )}
+                
+                {/* Clear Form Button */}
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearForm}
+                    className="w-full text-slate-500 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Clear Form & Start Over
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

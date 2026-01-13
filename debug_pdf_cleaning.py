@@ -23,7 +23,7 @@ def create_test_pdf():
 
 def test_template_debug(template_name):
     """Debug test for a specific template"""
-    api_url = "https://admin-fix-33.preview.emergentagent.com/api"
+    api_url = "https://email-service-down.preview.emergentagent.com/api"
     
     print(f"\n🔍 Debug test for template: {template_name}")
     

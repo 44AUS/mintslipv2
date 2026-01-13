@@ -804,8 +804,8 @@ async def generate_bank_transactions(data: GenerateTransactionsRequest):
                         "category": category
                     })
     
-    # Sort transactions by date
-    transactions.sort(key=lambda x: x["date"])
+    # Sort transactions by date (newest first)
+    transactions.sort(key=lambda x: x["date"], reverse=True)
     
     return {
         "success": True,

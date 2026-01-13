@@ -4920,6 +4920,19 @@ The image should be:
         with open(filepath, "wb") as f:
             f.write(image_bytes)
         
+        # Also store in MongoDB for persistence
+        image_data = {
+            "id": str(uuid.uuid4()),
+            "filename": filename,
+            "contentType": "image/png",
+            "content": img['data'],  # Already base64 encoded
+            "originalFilename": f"AI Generated - {data.title[:50]}",
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "uploadedBy": session.get("adminId"),
+            "aiGenerated": True
+        }
+        await blog_images_collection.insert_one(image_data)
+        
         # Return URL
         image_url = f"/api/uploads/blog/{filename}"
         

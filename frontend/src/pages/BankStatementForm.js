@@ -1355,7 +1355,7 @@ const createOrder = (data, actions) => {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">{selectedTemplate === "template-a" ? "Store Name" : "Statement Descriptor"}</Label>
+                          <Label className="text-xs">Statement Descriptor</Label>
                           <Input
                             data-testid={`transaction-${idx}-description`}
                             value={tx.description}

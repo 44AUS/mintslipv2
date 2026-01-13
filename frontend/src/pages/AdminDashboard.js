@@ -2904,6 +2904,8 @@ export default function AdminDashboard() {
                             <TableCell>
                               {user.isBanned ? (
                                 <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">Banned</span>
+                              ) : user.emailVerified === false ? (
+                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-md text-sm">Unverified</span>
                               ) : (
                                 <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">Active</span>
                               )}

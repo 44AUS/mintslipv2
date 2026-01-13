@@ -410,6 +410,400 @@ def get_llm_chat():
 async def health_check():
     return {"status": "healthy"}
 
+
+# ========== BANK STATEMENT TRANSACTION GENERATOR ==========
+
+# US States with major cities
+US_STATES_CITIES = {
+    "AL": ["Birmingham", "Montgomery", "Huntsville", "Mobile", "Tuscaloosa"],
+    "AK": ["Anchorage", "Fairbanks", "Juneau", "Sitka", "Ketchikan"],
+    "AZ": ["Phoenix", "Tucson", "Mesa", "Chandler", "Scottsdale", "Gilbert", "Glendale", "Tempe"],
+    "AR": ["Little Rock", "Fort Smith", "Fayetteville", "Springdale", "Jonesboro"],
+    "CA": ["Los Angeles", "San Francisco", "San Diego", "San Jose", "Sacramento", "Fresno", "Oakland", "Long Beach", "Anaheim", "Bakersfield"],
+    "CO": ["Denver", "Colorado Springs", "Aurora", "Fort Collins", "Lakewood", "Boulder"],
+    "CT": ["Bridgeport", "New Haven", "Hartford", "Stamford", "Waterbury"],
+    "DE": ["Wilmington", "Dover", "Newark", "Middletown", "Smyrna"],
+    "FL": ["Miami", "Orlando", "Tampa", "Jacksonville", "Fort Lauderdale", "St Petersburg", "Hialeah", "Tallahassee"],
+    "GA": ["Atlanta", "Augusta", "Columbus", "Macon", "Savannah", "Athens", "Sandy Springs", "Roswell", "Marietta", "Johns Creek"],
+    "HI": ["Honolulu", "Pearl City", "Hilo", "Kailua", "Waipahu"],
+    "ID": ["Boise", "Meridian", "Nampa", "Idaho Falls", "Pocatello"],
+    "IL": ["Chicago", "Aurora", "Naperville", "Joliet", "Rockford", "Springfield", "Peoria"],
+    "IN": ["Indianapolis", "Fort Wayne", "Evansville", "South Bend", "Carmel"],
+    "IA": ["Des Moines", "Cedar Rapids", "Davenport", "Sioux City", "Iowa City"],
+    "KS": ["Wichita", "Overland Park", "Kansas City", "Olathe", "Topeka"],
+    "KY": ["Louisville", "Lexington", "Bowling Green", "Owensboro", "Covington"],
+    "LA": ["New Orleans", "Baton Rouge", "Shreveport", "Lafayette", "Lake Charles"],
+    "ME": ["Portland", "Lewiston", "Bangor", "South Portland", "Auburn"],
+    "MD": ["Baltimore", "Frederick", "Rockville", "Gaithersburg", "Bowie"],
+    "MA": ["Boston", "Worcester", "Springfield", "Cambridge", "Lowell"],
+    "MI": ["Detroit", "Grand Rapids", "Warren", "Sterling Heights", "Ann Arbor", "Lansing"],
+    "MN": ["Minneapolis", "Saint Paul", "Rochester", "Duluth", "Bloomington"],
+    "MS": ["Jackson", "Gulfport", "Southaven", "Hattiesburg", "Biloxi"],
+    "MO": ["Kansas City", "Saint Louis", "Springfield", "Columbia", "Independence"],
+    "MT": ["Billings", "Missoula", "Great Falls", "Bozeman", "Butte"],
+    "NE": ["Omaha", "Lincoln", "Bellevue", "Grand Island", "Kearney"],
+    "NV": ["Las Vegas", "Henderson", "Reno", "North Las Vegas", "Sparks"],
+    "NH": ["Manchester", "Nashua", "Concord", "Derry", "Dover"],
+    "NJ": ["Newark", "Jersey City", "Paterson", "Elizabeth", "Edison", "Trenton"],
+    "NM": ["Albuquerque", "Las Cruces", "Rio Rancho", "Santa Fe", "Roswell"],
+    "NY": ["New York", "Buffalo", "Rochester", "Yonkers", "Syracuse", "Albany"],
+    "NC": ["Charlotte", "Raleigh", "Greensboro", "Durham", "Winston Salem", "Fayetteville"],
+    "ND": ["Fargo", "Bismarck", "Grand Forks", "Minot", "West Fargo"],
+    "OH": ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Akron", "Dayton"],
+    "OK": ["Oklahoma City", "Tulsa", "Norman", "Broken Arrow", "Lawton"],
+    "OR": ["Portland", "Salem", "Eugene", "Gresham", "Hillsboro", "Beaverton"],
+    "PA": ["Philadelphia", "Pittsburgh", "Allentown", "Reading", "Erie", "Scranton"],
+    "RI": ["Providence", "Warwick", "Cranston", "Pawtucket", "East Providence"],
+    "SC": ["Charleston", "Columbia", "North Charleston", "Mount Pleasant", "Rock Hill", "Greenville"],
+    "SD": ["Sioux Falls", "Rapid City", "Aberdeen", "Brookings", "Watertown"],
+    "TN": ["Nashville", "Memphis", "Knoxville", "Chattanooga", "Clarksville", "Murfreesboro"],
+    "TX": ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso", "Arlington", "Plano", "Irving", "Frisco"],
+    "UT": ["Salt Lake City", "West Valley City", "Provo", "West Jordan", "Orem"],
+    "VT": ["Burlington", "South Burlington", "Rutland", "Barre", "Montpelier"],
+    "VA": ["Virginia Beach", "Norfolk", "Chesapeake", "Richmond", "Newport News", "Alexandria", "Arlington"],
+    "WA": ["Seattle", "Spokane", "Tacoma", "Vancouver", "Bellevue", "Kent", "Everett"],
+    "WV": ["Charleston", "Huntington", "Morgantown", "Parkersburg", "Wheeling"],
+    "WI": ["Milwaukee", "Madison", "Green Bay", "Kenosha", "Racine"],
+    "WY": ["Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs"],
+    "DC": ["Washington"]
+}
+
+# Merchants by category with store number ranges
+MERCHANTS_BY_CATEGORY = {
+    "groceries": [
+        {"name": "WAL-MART", "prefix": "#", "numRange": (100, 9999)},
+        {"name": "KROGER", "prefix": "#", "numRange": (100, 999)},
+        {"name": "PUBLIX", "prefix": "#", "numRange": (100, 1999)},
+        {"name": "ALDI", "prefix": "#", "numRange": (10, 999)},
+        {"name": "WHOLE FOODS MKT", "prefix": "#", "numRange": (100, 999)},
+        {"name": "TRADER JOES", "prefix": "#", "numRange": (100, 999)},
+        {"name": "COSTCO WHSE", "prefix": "#", "numRange": (100, 999)},
+        {"name": "SAMS CLUB", "prefix": "#", "numRange": (4000, 8999)},
+        {"name": "TARGET", "prefix": "T-", "numRange": (1000, 3999)},
+        {"name": "SAFEWAY", "prefix": "#", "numRange": (100, 4999)},
+        {"name": "FOOD LION", "prefix": "#", "numRange": (100, 2999)},
+        {"name": "WINN DIXIE", "prefix": "#", "numRange": (100, 999)},
+        {"name": "HEB GROCERY", "prefix": "#", "numRange": (100, 999)},
+        {"name": "SPROUTS FARMERS", "prefix": "#", "numRange": (100, 499)},
+    ],
+    "gas_auto": [
+        {"name": "SHELL OIL", "prefix": "", "numRange": (10000, 99999)},
+        {"name": "CHEVRON", "prefix": "", "numRange": (10000, 99999)},
+        {"name": "EXXONMOBIL", "prefix": "", "numRange": (10000, 99999)},
+        {"name": "BP", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "CIRCLE K", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "SPEEDWAY", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "QUIKTRIP", "prefix": "QT ", "numRange": (100, 999)},
+        {"name": "RACETRAC", "prefix": "#", "numRange": (100, 999)},
+        {"name": "WAWA", "prefix": "#", "numRange": (100, 9999)},
+        {"name": "AUTOZONE", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "ADVANCE AUTO", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "OREILLY AUTO", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "JIFFY LUBE", "prefix": "#", "numRange": (100, 9999)},
+    ],
+    "dining": [
+        {"name": "MCDONALDS", "prefix": "F", "numRange": (10000, 99999)},
+        {"name": "CHICK-FIL-A", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "WENDYS", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "STARBUCKS", "prefix": "", "numRange": (10000, 99999)},
+        {"name": "CHIPOTLE", "prefix": "", "numRange": (1000, 9999)},
+        {"name": "TACO BELL", "prefix": "#", "numRange": (1000, 99999)},
+        {"name": "BURGER KING", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "SUBWAY", "prefix": "#", "numRange": (10000, 99999)},
+        {"name": "DUNKIN", "prefix": "#", "numRange": (100000, 999999)},
+        {"name": "DOMINOS PIZZA", "prefix": "", "numRange": (1000, 9999)},
+        {"name": "PIZZA HUT", "prefix": "", "numRange": (1000, 99999)},
+        {"name": "PAPA JOHNS", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "PANERA BREAD", "prefix": "", "numRange": (100000, 999999)},
+        {"name": "APPLEBEES", "prefix": "", "numRange": (100, 9999)},
+        {"name": "OLIVE GARDEN", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "DENNYS", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "IHOP", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "CRACKER BARREL", "prefix": "#", "numRange": (100, 999)},
+    ],
+    "retail": [
+        {"name": "TARGET", "prefix": "T-", "numRange": (1000, 3999)},
+        {"name": "AMAZON MKTPLACE", "prefix": "", "numRange": None},
+        {"name": "AMAZON.COM", "prefix": "", "numRange": None},
+        {"name": "KOHLS", "prefix": "#", "numRange": (100, 1999)},
+        {"name": "ROSS STORES", "prefix": "#", "numRange": (100, 1999)},
+        {"name": "TJ MAXX", "prefix": "#", "numRange": (100, 1999)},
+        {"name": "MARSHALLS", "prefix": "#", "numRange": (100, 1999)},
+        {"name": "BED BATH BEYOND", "prefix": "#", "numRange": (100, 999)},
+        {"name": "BEST BUY", "prefix": "#", "numRange": (100, 1999)},
+        {"name": "HOME DEPOT", "prefix": "#", "numRange": (100, 9999)},
+        {"name": "LOWES", "prefix": "#", "numRange": (100, 9999)},
+        {"name": "CVS PHARMACY", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "WALGREENS", "prefix": "#", "numRange": (1000, 19999)},
+        {"name": "DOLLAR GENERAL", "prefix": "#", "numRange": (1000, 19999)},
+        {"name": "DOLLAR TREE", "prefix": "#", "numRange": (1000, 9999)},
+        {"name": "FIVE BELOW", "prefix": "#", "numRange": (100, 999)},
+        {"name": "OLD NAVY", "prefix": "#", "numRange": (100, 999)},
+        {"name": "GAP", "prefix": "#", "numRange": (100, 999)},
+        {"name": "NIKE", "prefix": "", "numRange": None},
+        {"name": "FOOT LOCKER", "prefix": "#", "numRange": (100, 9999)},
+    ],
+    "utilities": [
+        {"name": "CITY WATER DEPT", "prefix": "", "numRange": None},
+        {"name": "POWER COMPANY", "prefix": "", "numRange": None},
+        {"name": "GAS COMPANY", "prefix": "", "numRange": None},
+        {"name": "AT&T WIRELESS", "prefix": "", "numRange": None},
+        {"name": "VERIZON WIRELESS", "prefix": "", "numRange": None},
+        {"name": "T-MOBILE", "prefix": "", "numRange": None},
+        {"name": "XFINITY COMCAST", "prefix": "", "numRange": None},
+        {"name": "SPECTRUM", "prefix": "", "numRange": None},
+        {"name": "COX COMMUNICATIONS", "prefix": "", "numRange": None},
+    ],
+    "subscriptions": [
+        {"name": "NETFLIX.COM", "prefix": "", "numRange": None},
+        {"name": "SPOTIFY USA", "prefix": "", "numRange": None},
+        {"name": "HULU", "prefix": "", "numRange": None},
+        {"name": "APPLE.COM/BILL", "prefix": "", "numRange": None},
+        {"name": "AMAZON PRIME", "prefix": "", "numRange": None},
+        {"name": "DISNEY PLUS", "prefix": "", "numRange": None},
+        {"name": "HBO MAX", "prefix": "", "numRange": None},
+        {"name": "YOUTUBE PREMIUM", "prefix": "", "numRange": None},
+        {"name": "PARAMOUNT PLUS", "prefix": "", "numRange": None},
+        {"name": "ADOBE SYSTEMS", "prefix": "", "numRange": None},
+        {"name": "MICROSOFT", "prefix": "", "numRange": None},
+        {"name": "GOOGLE STORAGE", "prefix": "", "numRange": None},
+        {"name": "PLANET FITNESS", "prefix": "", "numRange": None},
+        {"name": "LA FITNESS", "prefix": "", "numRange": None},
+    ],
+    "atm_withdrawal": [
+        {"name": "ATM WITHDRAWAL", "prefix": "", "numRange": None},
+        {"name": "ATM CASH WITHDRAWAL", "prefix": "", "numRange": None},
+        {"name": "CASH BACK", "prefix": "", "numRange": None},
+        {"name": "ALLPOINT ATM", "prefix": "", "numRange": None},
+        {"name": "MONEYPASS ATM", "prefix": "", "numRange": None},
+    ],
+    "fees": [
+        {"name": "MONTHLY SERVICE FEE", "prefix": "", "numRange": None},
+        {"name": "OVERDRAFT FEE", "prefix": "", "numRange": None},
+        {"name": "NSF FEE", "prefix": "", "numRange": None},
+        {"name": "WIRE TRANSFER FEE", "prefix": "", "numRange": None},
+        {"name": "FOREIGN TXN FEE", "prefix": "", "numRange": None},
+    ],
+    "misc": [
+        {"name": "UBER TRIP", "prefix": "", "numRange": None},
+        {"name": "LYFT RIDE", "prefix": "", "numRange": None},
+        {"name": "DOORDASH", "prefix": "", "numRange": None},
+        {"name": "UBER EATS", "prefix": "", "numRange": None},
+        {"name": "GRUBHUB", "prefix": "", "numRange": None},
+        {"name": "INSTACART", "prefix": "", "numRange": None},
+        {"name": "AIRBNB", "prefix": "", "numRange": None},
+        {"name": "TICKETMASTER", "prefix": "", "numRange": None},
+        {"name": "STUBHUB", "prefix": "", "numRange": None},
+        {"name": "AMC THEATRES", "prefix": "#", "numRange": (100, 999)},
+        {"name": "REGAL CINEMAS", "prefix": "#", "numRange": (100, 999)},
+    ],
+    "credits_deposit": [
+        {"name": "DIRECT DEPOSIT", "prefix": "", "numRange": None, "employers": [
+            "PAYROLL", "EMPLOYER", "COMPANY PAYROLL", "HR DEPT", "WORKFORCE", "STAFFING"
+        ]},
+    ],
+    "credits_p2p": [
+        {"name": "ZELLE FROM", "prefix": "", "numRange": None},
+        {"name": "VENMO CASHOUT", "prefix": "", "numRange": None},
+        {"name": "CASH APP", "prefix": "", "numRange": None},
+        {"name": "PAYPAL TRANSFER", "prefix": "", "numRange": None},
+    ],
+    "credits_refunds": [
+        {"name": "REFUND FROM", "prefix": "", "numRange": None},
+        {"name": "CREDIT FROM", "prefix": "", "numRange": None},
+        {"name": "RETURN CREDIT", "prefix": "", "numRange": None},
+    ],
+}
+
+# Price ranges by category (min, max)
+PRICE_RANGES = {
+    "groceries": (15.00, 250.00),
+    "gas_auto": (20.00, 85.00),
+    "dining": (8.00, 75.00),
+    "retail": (10.00, 200.00),
+    "utilities": (50.00, 250.00),
+    "subscriptions": (5.99, 19.99),
+    "atm_withdrawal": (20.00, 400.00),
+    "fees": (5.00, 35.00),
+    "misc": (10.00, 150.00),
+    "credits_deposit": (500.00, 5000.00),
+    "credits_p2p": (20.00, 500.00),
+    "credits_refunds": (10.00, 150.00),
+}
+
+class GenerateTransactionsRequest(BaseModel):
+    state: str
+    cities: List[str]
+    volume: str  # light, moderate, heavy
+    categories: List[str]
+    statementMonth: str  # YYYY-MM format
+    employerName: Optional[str] = None
+    payFrequency: Optional[str] = "biweekly"  # weekly, biweekly, monthly
+    depositAmount: Optional[float] = None
+
+@app.post("/api/generate-bank-transactions")
+async def generate_bank_transactions(data: GenerateTransactionsRequest):
+    """Generate realistic bank transactions for statement"""
+    import random
+    from calendar import monthrange
+    
+    # Validate inputs
+    if data.state not in US_STATES_CITIES:
+        raise HTTPException(status_code=400, detail=f"Invalid state code: {data.state}")
+    
+    # Get volume range
+    volume_ranges = {
+        "light": (10, 15),
+        "moderate": (18, 25),
+        "heavy": (28, 40)
+    }
+    min_tx, max_tx = volume_ranges.get(data.volume, (15, 25))
+    num_transactions = random.randint(min_tx, max_tx)
+    
+    # Parse statement month
+    try:
+        year, month = map(int, data.statementMonth.split("-"))
+        _, days_in_month = monthrange(year, month)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid statement month format. Use YYYY-MM")
+    
+    # Filter valid categories
+    valid_categories = [c for c in data.categories if c in MERCHANTS_BY_CATEGORY]
+    if not valid_categories:
+        raise HTTPException(status_code=400, detail="No valid categories selected")
+    
+    # Separate debit and credit categories
+    credit_categories = ["credits_deposit", "credits_p2p", "credits_refunds"]
+    debit_categories = [c for c in valid_categories if c not in credit_categories]
+    selected_credit_categories = [c for c in valid_categories if c in credit_categories]
+    
+    transactions = []
+    cities_to_use = data.cities if data.cities else US_STATES_CITIES.get(data.state, [""])
+    
+    # Generate debit transactions (purchases, withdrawals, etc.)
+    num_debits = num_transactions - len(selected_credit_categories) * 2  # Reserve space for credits
+    if num_debits < 1:
+        num_debits = num_transactions
+    
+    for _ in range(max(num_debits, 5)):
+        category = random.choice(debit_categories) if debit_categories else random.choice(valid_categories)
+        merchants = MERCHANTS_BY_CATEGORY.get(category, [])
+        if not merchants:
+            continue
+            
+        merchant = random.choice(merchants)
+        city = random.choice(cities_to_use).upper()
+        
+        # Build descriptor
+        store_num = ""
+        if merchant.get("numRange"):
+            num = random.randint(merchant["numRange"][0], merchant["numRange"][1])
+            store_num = f"{merchant['prefix']}{num:04d}" if merchant['prefix'] else f"#{num:04d}"
+        
+        # Format: "MERCHANT_NAME #XXXX CITY STATE" or "MERCHANT_NAME CITY STATE"
+        if store_num:
+            descriptor = f"{merchant['name']} {store_num} {city} {data.state}"
+        else:
+            descriptor = f"{merchant['name']} {city} {data.state}"
+        
+        # Generate realistic price
+        price_range = PRICE_RANGES.get(category, (10.00, 100.00))
+        amount = round(random.uniform(price_range[0], price_range[1]), 2)
+        
+        # Determine transaction type
+        if category == "atm_withdrawal":
+            tx_type = "ATM"
+            amount = round(amount / 20) * 20  # ATM withdrawals in $20 increments
+        elif category == "fees":
+            tx_type = "Fee"
+        else:
+            tx_type = "Purchase"
+        
+        # Generate random date within the month
+        day = random.randint(1, days_in_month)
+        date_str = f"{year}-{month:02d}-{day:02d}"
+        
+        transactions.append({
+            "date": date_str,
+            "description": descriptor,
+            "type": tx_type,
+            "amount": str(amount),
+            "category": category
+        })
+    
+    # Generate credit transactions (deposits, refunds, p2p)
+    for category in selected_credit_categories:
+        if category == "credits_deposit" and data.employerName:
+            # Generate payroll deposits based on frequency
+            deposit_amount = data.depositAmount or random.uniform(1000, 3500)
+            
+            if data.payFrequency == "weekly":
+                pay_days = [7, 14, 21, 28]
+            elif data.payFrequency == "biweekly":
+                pay_days = [15, days_in_month] if days_in_month >= 28 else [14, 28]
+            else:  # monthly
+                pay_days = [days_in_month]
+            
+            for day in pay_days:
+                if day <= days_in_month:
+                    date_str = f"{year}-{month:02d}-{day:02d}"
+                    transactions.append({
+                        "date": date_str,
+                        "description": f"DIRECT DEP {data.employerName.upper()}",
+                        "type": "Deposit",
+                        "amount": str(round(deposit_amount, 2)),
+                        "category": category
+                    })
+        elif category == "credits_p2p":
+            # Generate 1-3 P2P credits
+            for _ in range(random.randint(1, 3)):
+                merchants = MERCHANTS_BY_CATEGORY.get(category, [])
+                merchant = random.choice(merchants)
+                amount = round(random.uniform(20, 300), 2)
+                day = random.randint(1, days_in_month)
+                date_str = f"{year}-{month:02d}-{day:02d}"
+                
+                # Add a random person's initials or name
+                initials = ''.join(random.choices('ABCDEFGHJKLMNPRSTUVWXYZ', k=2))
+                
+                transactions.append({
+                    "date": date_str,
+                    "description": f"{merchant['name']} {initials}",
+                    "type": "Deposit",
+                    "amount": str(amount),
+                    "category": category
+                })
+        elif category == "credits_refunds":
+            # Generate 1-2 refunds
+            for _ in range(random.randint(1, 2)):
+                # Pick a random retail/dining merchant for the refund
+                refund_categories = ["retail", "dining", "groceries"]
+                refund_cat = random.choice(refund_categories)
+                merchants = MERCHANTS_BY_CATEGORY.get(refund_cat, [])
+                if merchants:
+                    merchant = random.choice(merchants)
+                    amount = round(random.uniform(10, 100), 2)
+                    day = random.randint(1, days_in_month)
+                    date_str = f"{year}-{month:02d}-{day:02d}"
+                    
+                    transactions.append({
+                        "date": date_str,
+                        "description": f"REFUND {merchant['name']}",
+                        "type": "Refund",
+                        "amount": str(amount),
+                        "category": category
+                    })
+    
+    # Sort transactions by date
+    transactions.sort(key=lambda x: x["date"])
+    
+    return {
+        "success": True,
+        "transactions": transactions,
+        "count": len(transactions)
+    }
+
+
 # ========== AUTHENTICATION HELPERS ==========
 
 async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):

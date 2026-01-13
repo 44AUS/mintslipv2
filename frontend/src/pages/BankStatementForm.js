@@ -1257,18 +1257,31 @@ const createOrder = (data, actions) => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    Transactions
+                    Transactions {transactions.length > 0 && `(${transactions.filter(t => t.date && t.amount).length})`}
                   </h2>
-                  <Button
-                    data-testid="add-transaction-button"
-                    type="button"
-                    onClick={addTransaction}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Plus className="w-4 h-4" /> Add Transaction
-                  </Button>
+                  <div className="flex gap-2">
+                    {transactions.length > 1 && (
+                      <Button
+                        type="button"
+                        onClick={() => setTransactions([{ date: "", description: "", type: "Purchase", amount: "" }])}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" /> Clear All
+                      </Button>
+                    )}
+                    <Button
+                      data-testid="add-transaction-button"
+                      type="button"
+                      onClick={addTransaction}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Add Transaction
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-4">
                   {transactions.map((tx, idx) => (

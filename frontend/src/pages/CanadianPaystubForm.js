@@ -844,6 +844,20 @@ export default function CanadianPaystubForm() {
     return Math.ceil(diffDays / periodLength);
   }, [formData.startDate, formData.endDate, formData.payFrequency]);
 
+  // Check if form has minimum required information to proceed
+  const isFormValid = useMemo(() => {
+    // Required fields: name, company, dates, and pay rate
+    const hasName = formData.name && formData.name.trim().length > 0;
+    const hasCompany = formData.company && formData.company.trim().length > 0;
+    const hasDates = formData.startDate && formData.endDate;
+    const hasPayRate = formData.payType === "salary" 
+      ? parseFloat(formData.annualSalary) > 0
+      : parseFloat(formData.rate) > 0;
+    const hasStubs = calculateNumStubs > 0;
+    
+    return hasName && hasCompany && hasDates && hasPayRate && hasStubs;
+  }, [formData.name, formData.company, formData.startDate, formData.endDate, formData.payType, formData.annualSalary, formData.rate, calculateNumStubs]);
+
   // Calculate pay periods with start/end dates for hours editing
   const payPeriods = useMemo(() => {
     if (!formData.startDate || !formData.endDate || calculateNumStubs === 0) return [];

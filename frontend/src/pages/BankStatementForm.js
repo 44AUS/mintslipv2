@@ -1303,7 +1303,32 @@ const createOrder = (data, actions) => {
                   {transactions.map((tx, idx) => (
                     <div key={idx} className="p-4 border-2 border-slate-200 rounded-md space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-slate-600">Transaction {idx + 1}</span>
+                        <div className="flex items-center gap-2">
+                          {/* Move buttons */}
+                          <div className="flex flex-col">
+                            <Button
+                              type="button"
+                              onClick={() => moveTransactionUp(idx)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 text-slate-400 hover:text-slate-600"
+                              disabled={idx === 0}
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => moveTransactionDown(idx)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 text-slate-400 hover:text-slate-600"
+                              disabled={idx === transactions.length - 1}
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <span className="text-sm font-medium text-slate-600">Transaction {idx + 1}</span>
+                        </div>
                         {transactions.length > 1 && (
                           <Button
                             data-testid={`remove-transaction-${idx}-button`}
@@ -1329,12 +1354,12 @@ const createOrder = (data, actions) => {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Statement Descriptior</Label>
+                          <Label className="text-xs">{selectedTemplate === "template-a" ? "Store Name" : "Statement Descriptor"}</Label>
                           <Input
                             data-testid={`transaction-${idx}-description`}
                             value={tx.description}
                             onChange={(e) => updateTransaction(idx, "description", e.target.value)}
-                            placeholder="e.g., Amazon Purchase"
+                            placeholder={selectedTemplate === "template-a" ? "e.g., WAL-MART #1234" : "e.g., Amazon Purchase"}
                             required
                           />
                         </div>

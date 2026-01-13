@@ -640,6 +640,7 @@ class GenerateTransactionsRequest(BaseModel):
     employerName: Optional[str] = None
     payFrequency: Optional[str] = "biweekly"  # weekly, biweekly, monthly
     depositAmount: Optional[float] = None
+    includeLocation: Optional[bool] = False  # If True, include city/state in descriptor
 
 @app.post("/api/generate-bank-transactions")
 async def generate_bank_transactions(data: GenerateTransactionsRequest):

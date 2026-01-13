@@ -701,11 +701,20 @@ async def generate_bank_transactions(data: GenerateTransactionsRequest):
             num = random.randint(merchant["numRange"][0], merchant["numRange"][1])
             store_num = f"{merchant['prefix']}{num:04d}" if merchant['prefix'] else f"#{num:04d}"
         
-        # Format: "MERCHANT_NAME #XXXX CITY STATE" or "MERCHANT_NAME CITY STATE"
-        if store_num:
-            descriptor = f"{merchant['name']} {store_num} {city} {data.state}"
+        # Format descriptor based on includeLocation flag
+        # If includeLocation is True: "MERCHANT_NAME #XXXX CITY STATE"
+        # If includeLocation is False (default for Chime): "MERCHANT_NAME #XXXX" (store name only)
+        if data.includeLocation:
+            if store_num:
+                descriptor = f"{merchant['name']} {store_num} {city} {data.state}"
+            else:
+                descriptor = f"{merchant['name']} {city} {data.state}"
         else:
-            descriptor = f"{merchant['name']} {city} {data.state}"
+            # Store name only (for Chime template)
+            if store_num:
+                descriptor = f"{merchant['name']} {store_num}"
+            else:
+                descriptor = merchant['name']
         
         # Generate realistic price
         price_range = PRICE_RANGES.get(category, (10.00, 100.00))

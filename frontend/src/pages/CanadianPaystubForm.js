@@ -63,7 +63,25 @@ export default function CanadianPaystubForm() {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState("template-a");
+  
+  // Load saved template from localStorage
+  const [selectedTemplate, setSelectedTemplate] = useState(() => {
+    try {
+      return localStorage.getItem('canadianPaystubTemplate') || "template-a";
+    } catch {
+      return "template-a";
+    }
+  });
+  
+  // Save template selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('canadianPaystubTemplate', selectedTemplate);
+    } catch (e) {
+      console.error('Error saving template:', e);
+    }
+  }, [selectedTemplate]);
+
   const [pdfPreviews, setPdfPreviews] = useState([]); // Array of preview images
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);

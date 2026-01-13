@@ -528,11 +528,11 @@ async function generateSingleStub(
   
   // Use user-provided pay date if available, otherwise calculate next weekday after end date
   const payDate = payDateArray[stubNum] 
-    ? new Date(payDateArray[stubNum]) 
+    ? (parseLocalDate(payDateArray[stubNum]) || nextWeekday(new Date(endDate), payDay))
     : nextWeekday(new Date(endDate), payDay);
 
   // Calculate YTD values based on pay periods from hire date
-  const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date(actualStartDate);
+  const hireDate = formData.hireDate ? (parseLocalDate(formData.hireDate) || new Date(actualStartDate)) : new Date(actualStartDate);
   const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
   
   // Calculate YTD values

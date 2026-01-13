@@ -4830,6 +4830,8 @@ async def delete_blog_post(post_id: str, session: dict = Depends(get_current_adm
 @app.post("/api/admin/blog/upload-image")
 async def upload_blog_image(file: UploadFile = File(...), session: dict = Depends(get_current_admin)):
     """Upload an image for blog posts (admin)"""
+    import base64
+    
     # Validate file type
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
     if file.content_type not in allowed_types:
@@ -4840,9 +4842,24 @@ async def upload_blog_image(file: UploadFile = File(...), session: dict = Depend
     filename = f"{uuid.uuid4()}.{ext}"
     filepath = os.path.join(UPLOAD_DIR, filename)
     
-    # Save file
+    # Read file content
+    file_content = await file.read()
+    
+    # Save file to disk
     with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(file_content)
+    
+    # Also store in MongoDB for persistence
+    image_data = {
+        "id": str(uuid.uuid4()),
+        "filename": filename,
+        "contentType": file.content_type,
+        "content": base64.b64encode(file_content).decode("utf-8"),
+        "originalFilename": file.filename,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "uploadedBy": session.get("adminId")
+    }
+    await blog_images_collection.insert_one(image_data)
     
     # Return URL
     image_url = f"/api/uploads/blog/{filename}"

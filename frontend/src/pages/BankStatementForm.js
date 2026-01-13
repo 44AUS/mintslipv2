@@ -431,7 +431,7 @@ export default function BankStatementForm() {
           employerName: aiGenEmployerName || null,
           payFrequency: aiGenPayFrequency,
           depositAmount: aiGenDepositAmount ? parseFloat(aiGenDepositAmount) : null,
-          includeLocation: selectedTemplate !== "template-a"  // For Chime (template-a), don't include city/state
+          includeLocation: true  // Always include city/state in descriptor
         })
       });
 

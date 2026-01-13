@@ -397,9 +397,21 @@ async function generateSingleStub(
   const periodCheckNumber = checkNumberArray[stubNum] || "";
   const periodMemo = memoArray[stubNum] || "";
   
+  // Helper to parse dates without timezone issues
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const d = new Date(dateStr + 'T12:00:00');
+    return isNaN(d.getTime()) ? null : d;
+  };
+  
   // Use user-provided dates if available, otherwise use calculated dates
-  const actualStartDate = startDateArray[stubNum] ? new Date(startDateArray[stubNum]) : new Date(startDate);
-  const actualEndDate = endDateArray[stubNum] ? new Date(endDateArray[stubNum]) : (() => {
+  const actualStartDate = startDateArray[stubNum] ? parseLocalDate(startDateArray[stubNum]) || new Date(startDate) : new Date(startDate);
+  const actualEndDate = endDateArray[stubNum] ? parseLocalDate(endDateArray[stubNum]) || (() => {
+    const end = new Date(actualStartDate);
+    end.setDate(actualStartDate.getDate() + periodLength - 1);
+    return end;
+  })() : (() => {
     const end = new Date(actualStartDate);
     end.setDate(actualStartDate.getDate() + periodLength - 1);
     return end;

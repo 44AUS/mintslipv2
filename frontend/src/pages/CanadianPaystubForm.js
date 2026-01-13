@@ -337,6 +337,26 @@ export default function CanadianPaystubForm() {
     }
   }, [formData]);
 
+  // Clear form and reset to defaults
+  const clearForm = () => {
+    if (window.confirm('Are you sure you want to clear the form? All entered data will be lost.')) {
+      setFormData(defaultFormData);
+      setDeductions([]);
+      setContributions([]);
+      setAbsencePlans([]);
+      setEmployerBenefits([]);
+      setHoursPerPeriod([]);
+      setCompanyLogo(null);
+      setLogoPreview(null);
+      setSelectedPayrollCompany(null);
+      setCompanySearchQuery("");
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('canadianPaystubTemplate');
+      localStorage.removeItem('canadianPaystubCompanyLogo');
+      toast.success('Form cleared successfully');
+    }
+  };
+
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState({
     sin: '',

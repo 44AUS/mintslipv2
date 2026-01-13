@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 , CreditCard, Lock, Loader2, Sparkles, MapPin, Briefcase, DollarSign } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 , CreditCard, Lock, Loader2, Sparkles, MapPin, Briefcase, DollarSign, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";

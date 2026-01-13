@@ -2975,6 +2975,15 @@ export default function AdminDashboard() {
                                       Add Bonus Downloads
                                     </DropdownMenuItem>
                                   )}
+                                  {user.emailVerified === false && (
+                                    <DropdownMenuItem 
+                                      onClick={() => confirmUserEmail(user.id)}
+                                      className="text-emerald-600"
+                                    >
+                                      <MailCheck className="w-4 h-4 mr-2" />
+                                      Confirm Email
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem 
                                     onClick={() => toggleBanUser(user.id, user.isBanned)}

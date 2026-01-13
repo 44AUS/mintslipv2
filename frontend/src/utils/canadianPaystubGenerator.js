@@ -280,8 +280,8 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       
       // Store download info for payment success page
       const blobUrl = URL.createObjectURL(zipBlob);
-      sessionStorage.setItem('lastDownloadUrl', blobUrl);
-      sessionStorage.setItem('lastDownloadFileName', zipFileName);
+      localStorage.setItem('lastDownloadUrl', blobUrl);
+      localStorage.setItem('lastDownloadFileName', zipFileName);
       
       saveAs(zipBlob, zipFileName);
       console.log("ZIP downloaded successfully");
@@ -316,8 +316,8 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       
       // Store download info for payment success page
       const blobUrl = URL.createObjectURL(pdfBlob);
-      sessionStorage.setItem('lastDownloadUrl', blobUrl);
-      sessionStorage.setItem('lastDownloadFileName', pdfFileName);
+      localStorage.setItem('lastDownloadUrl', blobUrl);
+      localStorage.setItem('lastDownloadFileName', pdfFileName);
       
       // Save the cleaned PDF
       saveAs(pdfBlob, pdfFileName);

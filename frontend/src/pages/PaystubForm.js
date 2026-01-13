@@ -18,7 +18,7 @@ import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate }
 import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import CouponInput from "@/components/CouponInput";
-import { Upload, X, Search, Building2, ChevronLeft, ChevronRight, CreditCard, Lock, Loader2 } from "lucide-react";
+import { Upload, X, Search, Building2, ChevronLeft, ChevronRight, CreditCard, Lock, Loader2, Trash2 } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
   formatZipCode, validateZipCode,

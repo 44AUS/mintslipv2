@@ -72,11 +72,30 @@ export default function PaystubForm() {
   const [showLocationAlert, setShowLocationAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(
-    templateFromUrl && ['template-a', 'template-b', 'template-c', 'template-h'].includes(templateFromUrl) 
-      ? templateFromUrl 
-      : "template-a"
-  );
+  
+  // Load saved template from localStorage (URL param takes priority)
+  const [selectedTemplate, setSelectedTemplate] = useState(() => {
+    if (templateFromUrl && ['template-a', 'template-b', 'template-c', 'template-h'].includes(templateFromUrl)) {
+      return templateFromUrl;
+    }
+    try {
+      const saved = localStorage.getItem('usPaystubTemplate');
+      if (saved && ['template-a', 'template-b', 'template-c', 'template-h'].includes(saved)) {
+        return saved;
+      }
+    } catch {}
+    return "template-a";
+  });
+  
+  // Save template selection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('usPaystubTemplate', selectedTemplate);
+    } catch (e) {
+      console.error('Error saving template:', e);
+    }
+  }, [selectedTemplate]);
+
   const [pdfPreviews, setPdfPreviews] = useState([]); // Array of preview images
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);

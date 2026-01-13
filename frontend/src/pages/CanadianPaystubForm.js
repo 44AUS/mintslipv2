@@ -3026,8 +3026,8 @@ export default function CanadianPaystubForm() {
                     </div>
                     <Button
                       onClick={handleSubscriptionDownload}
-                      disabled={isProcessing || calculateNumStubs === 0}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      disabled={isProcessing || !isFormValid}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isProcessing ? (
                         <>
@@ -3046,10 +3046,15 @@ export default function CanadianPaystubForm() {
                         </>
                       )}
                     </Button>
+                    {!isFormValid && (
+                      <p className="text-sm text-amber-600 mt-2 text-center">
+                        Please fill in required fields: Name, Company, Dates, and Pay Rate
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <>
-                    {calculateNumStubs > 0 && (
+                    {isFormValid && (
                       <>
                         <CouponInput
                           generatorType="canadian-paystub"
@@ -3066,8 +3071,8 @@ export default function CanadianPaystubForm() {
                     <div data-testid="paypal-button-container">
                       <Button
                         onClick={handleStripeCheckout}
-                        disabled={isProcessing}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                        disabled={isProcessing || !isFormValid}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isProcessing ? (
                           <>

@@ -363,6 +363,14 @@ async function generateSingleCanadianStub(
   const periodCheckNumber = checkNumberArray[stubNum] || "";
   const periodMemo = memoArray[stubNum] || "";
   
+  // Helper to parse dates without timezone issues
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const d = new Date(dateStr + 'T12:00:00');
+    return isNaN(d.getTime()) ? null : d;
+  };
+  
   // Calculate period dates
   const periodStart = new Date(startDate);
   const periodEnd = new Date(startDate);
@@ -370,7 +378,7 @@ async function generateSingleCanadianStub(
   const payDate = nextWeekday(periodEnd, payDay);
   
   // Get hire date for YTD calculations
-  const hireDate = formData.hireDate ? new Date(formData.hireDate) : periodStart;
+  const hireDate = formData.hireDate ? (parseLocalDate(formData.hireDate) || periodStart) : periodStart;
   
   // Calculate number of pay periods from hire/year start to current period for accurate YTD
   const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, periodEnd, periodLength);

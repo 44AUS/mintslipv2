@@ -17,7 +17,7 @@ import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import { generateCanadianPreviewPDF, generateAllCanadianPreviewPDFs } from "@/utils/canadianPaystubPreviewGenerator";
 import { CANADIAN_PROVINCES, calculateCanadianTaxes, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
-import { Upload, X, Search, Building2, ChevronLeft, ChevronRight , CreditCard, Lock, Loader2 } from "lucide-react";
+import { Upload, X, Search, Building2, ChevronLeft, ChevronRight , CreditCard, Lock, Loader2, Trash2 } from "lucide-react";
 import { 
   formatPhoneNumber, validatePhoneNumber,
   formatBankLast4, validateBankLast4

@@ -430,7 +430,8 @@ export default function BankStatementForm() {
           statementMonth: selectedMonth,
           employerName: aiGenEmployerName || null,
           payFrequency: aiGenPayFrequency,
-          depositAmount: aiGenDepositAmount ? parseFloat(aiGenDepositAmount) : null
+          depositAmount: aiGenDepositAmount ? parseFloat(aiGenDepositAmount) : null,
+          includeLocation: selectedTemplate !== "template-a"  // For Chime (template-a), don't include city/state
         })
       });
 

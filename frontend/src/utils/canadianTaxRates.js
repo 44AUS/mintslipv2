@@ -48,121 +48,125 @@ export const QPIP_RATE = 0.00494; // 0.494% employee contribution
 export const QPIP_MAX_INSURABLE_EARNINGS = 98000; // 2025
 export const QPIP_MAX_CONTRIBUTION = QPIP_MAX_INSURABLE_EARNINGS * QPIP_RATE; // $484.12
 
-// Federal Tax Brackets 2024
+// Federal Tax Brackets 2025
 export const FEDERAL_TAX_BRACKETS = [
-  { min: 0, max: 55867, rate: 0.15 },
-  { min: 55867, max: 111733, rate: 0.205 },
-  { min: 111733, max: 173205, rate: 0.26 },
-  { min: 173205, max: 246752, rate: 0.29 },
-  { min: 246752, max: Infinity, rate: 0.33 },
+  { min: 0, max: 57375, rate: 0.15 },
+  { min: 57375, max: 114750, rate: 0.205 },
+  { min: 114750, max: 177882, rate: 0.26 },
+  { min: 177882, max: 253414, rate: 0.29 },
+  { min: 253414, max: Infinity, rate: 0.33 },
 ];
 
-// Federal Basic Personal Amount 2024
-export const FEDERAL_BASIC_PERSONAL_AMOUNT = 15705;
+// Federal Basic Personal Amount 2025
+export const FEDERAL_BASIC_PERSONAL_AMOUNT = 16129;
 
-// Provincial Tax Brackets 2024
+// Provincial Tax Brackets 2025
 export const PROVINCIAL_TAX_BRACKETS = {
-  AB: [ // Alberta - flat tax
-    { min: 0, max: Infinity, rate: 0.10 },
+  AB: [ // Alberta 2025
+    { min: 0, max: 151234, rate: 0.10 },
+    { min: 151234, max: 181481, rate: 0.12 },
+    { min: 181481, max: 241974, rate: 0.13 },
+    { min: 241974, max: 362961, rate: 0.14 },
+    { min: 362961, max: Infinity, rate: 0.15 },
   ],
-  BC: [ // British Columbia
-    { min: 0, max: 47937, rate: 0.0506 },
-    { min: 47937, max: 95875, rate: 0.077 },
-    { min: 95875, max: 110076, rate: 0.105 },
-    { min: 110076, max: 133664, rate: 0.1229 },
-    { min: 133664, max: 181232, rate: 0.147 },
-    { min: 181232, max: 252752, rate: 0.168 },
-    { min: 252752, max: Infinity, rate: 0.205 },
+  BC: [ // British Columbia 2025
+    { min: 0, max: 49279, rate: 0.0506 },
+    { min: 49279, max: 98560, rate: 0.077 },
+    { min: 98560, max: 113158, rate: 0.105 },
+    { min: 113158, max: 137407, rate: 0.1229 },
+    { min: 137407, max: 186306, rate: 0.147 },
+    { min: 186306, max: 259829, rate: 0.168 },
+    { min: 259829, max: Infinity, rate: 0.205 },
   ],
-  MB: [ // Manitoba
-    { min: 0, max: 47000, rate: 0.108 },
-    { min: 47000, max: 100000, rate: 0.1275 },
-    { min: 100000, max: Infinity, rate: 0.174 },
+  MB: [ // Manitoba 2025
+    { min: 0, max: 47564, rate: 0.108 },
+    { min: 47564, max: 101200, rate: 0.1275 },
+    { min: 101200, max: Infinity, rate: 0.174 },
   ],
-  NB: [ // New Brunswick
-    { min: 0, max: 49958, rate: 0.094 },
-    { min: 49958, max: 99916, rate: 0.14 },
-    { min: 99916, max: 185064, rate: 0.16 },
-    { min: 185064, max: Infinity, rate: 0.195 },
+  NB: [ // New Brunswick 2025
+    { min: 0, max: 51306, rate: 0.094 },
+    { min: 51306, max: 102614, rate: 0.14 },
+    { min: 102614, max: 190060, rate: 0.16 },
+    { min: 190060, max: Infinity, rate: 0.195 },
   ],
-  NL: [ // Newfoundland and Labrador
-    { min: 0, max: 43198, rate: 0.087 },
-    { min: 43198, max: 86395, rate: 0.145 },
-    { min: 86395, max: 154244, rate: 0.158 },
-    { min: 154244, max: 215943, rate: 0.178 },
-    { min: 215943, max: 275870, rate: 0.198 },
-    { min: 275870, max: 551739, rate: 0.208 },
-    { min: 551739, max: 1103478, rate: 0.213 },
-    { min: 1103478, max: Infinity, rate: 0.218 },
+  NL: [ // Newfoundland and Labrador 2025
+    { min: 0, max: 44192, rate: 0.087 },
+    { min: 44192, max: 88382, rate: 0.145 },
+    { min: 88382, max: 157792, rate: 0.158 },
+    { min: 157792, max: 220910, rate: 0.178 },
+    { min: 220910, max: 282214, rate: 0.198 },
+    { min: 282214, max: 564429, rate: 0.208 },
+    { min: 564429, max: 1128858, rate: 0.213 },
+    { min: 1128858, max: Infinity, rate: 0.218 },
   ],
-  NS: [ // Nova Scotia
-    { min: 0, max: 29590, rate: 0.0879 },
-    { min: 29590, max: 59180, rate: 0.1495 },
-    { min: 59180, max: 93000, rate: 0.1667 },
-    { min: 93000, max: 150000, rate: 0.175 },
-    { min: 150000, max: Infinity, rate: 0.21 },
+  NS: [ // Nova Scotia 2025 (indexed 3.1%)
+    { min: 0, max: 30507, rate: 0.0879 },
+    { min: 30507, max: 61014, rate: 0.1495 },
+    { min: 61014, max: 95883, rate: 0.1667 },
+    { min: 95883, max: 154650, rate: 0.175 },
+    { min: 154650, max: Infinity, rate: 0.21 },
   ],
-  NT: [ // Northwest Territories
-    { min: 0, max: 50597, rate: 0.059 },
-    { min: 50597, max: 101198, rate: 0.086 },
-    { min: 101198, max: 164525, rate: 0.122 },
-    { min: 164525, max: Infinity, rate: 0.1405 },
+  NT: [ // Northwest Territories 2025
+    { min: 0, max: 51964, rate: 0.059 },
+    { min: 51964, max: 103930, rate: 0.086 },
+    { min: 103930, max: 168967, rate: 0.122 },
+    { min: 168967, max: Infinity, rate: 0.1405 },
   ],
-  NU: [ // Nunavut
-    { min: 0, max: 53268, rate: 0.04 },
-    { min: 53268, max: 106537, rate: 0.07 },
-    { min: 106537, max: 173205, rate: 0.09 },
-    { min: 173205, max: Infinity, rate: 0.115 },
+  NU: [ // Nunavut 2025
+    { min: 0, max: 54707, rate: 0.04 },
+    { min: 54707, max: 109413, rate: 0.07 },
+    { min: 109413, max: 177882, rate: 0.09 },
+    { min: 177882, max: Infinity, rate: 0.115 },
   ],
-  ON: [ // Ontario
-    { min: 0, max: 51446, rate: 0.0505 },
-    { min: 51446, max: 102894, rate: 0.0915 },
-    { min: 102894, max: 150000, rate: 0.1116 },
+  ON: [ // Ontario 2025
+    { min: 0, max: 52886, rate: 0.0505 },
+    { min: 52886, max: 105775, rate: 0.0915 },
+    { min: 105775, max: 150000, rate: 0.1116 },
     { min: 150000, max: 220000, rate: 0.1216 },
     { min: 220000, max: Infinity, rate: 0.1316 },
   ],
-  PE: [ // Prince Edward Island
-    { min: 0, max: 32656, rate: 0.098 },
-    { min: 32656, max: 64313, rate: 0.138 },
-    { min: 64313, max: 105000, rate: 0.167 },
+  PE: [ // Prince Edward Island 2025
+    { min: 0, max: 33328, rate: 0.098 },
+    { min: 33328, max: 64656, rate: 0.138 },
+    { min: 64656, max: 105000, rate: 0.167 },
     { min: 105000, max: 140000, rate: 0.1775 },
     { min: 140000, max: Infinity, rate: 0.19 },
   ],
-  QC: [ // Quebec
-    { min: 0, max: 51780, rate: 0.14 },
-    { min: 51780, max: 103545, rate: 0.19 },
-    { min: 103545, max: 126000, rate: 0.24 },
-    { min: 126000, max: Infinity, rate: 0.2575 },
+  QC: [ // Quebec 2025
+    { min: 0, max: 53255, rate: 0.14 },
+    { min: 53255, max: 106495, rate: 0.19 },
+    { min: 106495, max: 129590, rate: 0.24 },
+    { min: 129590, max: Infinity, rate: 0.2575 },
   ],
-  SK: [ // Saskatchewan
-    { min: 0, max: 52057, rate: 0.105 },
-    { min: 52057, max: 148734, rate: 0.125 },
-    { min: 148734, max: Infinity, rate: 0.145 },
+  SK: [ // Saskatchewan 2025
+    { min: 0, max: 52886, rate: 0.105 },
+    { min: 52886, max: 151127, rate: 0.125 },
+    { min: 151127, max: Infinity, rate: 0.145 },
   ],
-  YT: [ // Yukon
-    { min: 0, max: 55867, rate: 0.064 },
-    { min: 55867, max: 111733, rate: 0.09 },
-    { min: 111733, max: 173205, rate: 0.109 },
-    { min: 173205, max: 500000, rate: 0.128 },
+  YT: [ // Yukon 2025
+    { min: 0, max: 57375, rate: 0.064 },
+    { min: 57375, max: 114750, rate: 0.09 },
+    { min: 114750, max: 177882, rate: 0.109 },
+    { min: 177882, max: 500000, rate: 0.128 },
     { min: 500000, max: Infinity, rate: 0.15 },
   ],
 };
 
-// Provincial Basic Personal Amounts 2024
+// Provincial Basic Personal Amounts 2025
 export const PROVINCIAL_BASIC_PERSONAL_AMOUNTS = {
-  AB: 21003,
-  BC: 12580,
-  MB: 15780,
-  NB: 13044,
-  NL: 10818,
-  NS: 8481,
-  NT: 17373,
-  NU: 18767,
-  ON: 12399,
-  PE: 13500,
-  QC: 18056, // Quebec uses different system
-  SK: 18491,
-  YT: 15705,
+  AB: 22323,   // Alberta 2025
+  BC: 12932,   // British Columbia 2025
+  MB: 15969,   // Manitoba 2025
+  NB: 13396,   // New Brunswick 2025
+  NL: 10818,   // Newfoundland and Labrador 2025
+  NS: 8744,    // Nova Scotia 2025 (base amount)
+  NT: 17842,   // Northwest Territories 2025
+  NU: 19274,   // Nunavut 2025
+  ON: 12747,   // Ontario 2025
+  PE: 13500,   // Prince Edward Island 2025
+  QC: 18571,   // Quebec 2025
+  SK: 18991,   // Saskatchewan 2025
+  YT: 16129,   // Yukon 2025 (follows federal)
 };
 
 // Calculate CPP contribution for a pay period

@@ -4985,6 +4985,17 @@ class AIResumeBuilderTester:
         print("\n🧹 Testing PDF Cleaning Endpoint...")
         pdf_cleaning_ok = self.test_pdf_cleaning_endpoint()
         
+        # Test AI Bank Transaction Generator
+        print("\n🏦 Testing AI Bank Transaction Generator...")
+        bank_tx_basic_ok = self.test_generate_bank_transactions_basic()
+        bank_tx_volume_ok = self.test_generate_bank_transactions_volume_levels()
+        bank_tx_employer_ok = self.test_generate_bank_transactions_employer_deposits()
+        bank_tx_p2p_ok = self.test_generate_bank_transactions_p2p_credits()
+        bank_tx_refunds_ok = self.test_generate_bank_transactions_refunds()
+        bank_tx_dates_ok = self.test_generate_bank_transactions_date_validation()
+        bank_tx_states_ok = self.test_generate_bank_transactions_state_city_validation()
+        bank_tx_errors_ok = self.test_generate_bank_transactions_error_handling()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

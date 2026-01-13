@@ -3387,6 +3387,22 @@ async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     return {"success": True, "isBanned": new_status}
 
 
+@app.put("/api/admin/users/{user_id}/verify")
+async def admin_verify_user_email(user_id: str, session: dict = Depends(get_current_admin)):
+    """Verify/confirm a user's email address (admin only)"""
+    user = await users_collection.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Set emailVerified to True and remove any verification code
+    await users_collection.update_one(
+        {"id": user_id},
+        {"$set": {"emailVerified": True}, "$unset": {"verificationCode": ""}}
+    )
+    
+    return {"success": True, "message": "User email verified successfully", "emailVerified": True}
+
+
 # ========== ADMIN SAVED DOCUMENTS MANAGEMENT ==========
 
 @app.get("/api/admin/saved-documents")

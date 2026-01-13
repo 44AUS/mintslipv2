@@ -4660,6 +4660,78 @@ async def serve_blog_image(filename: str):
     raise HTTPException(status_code=404, detail="Image not found")
 
 
+@app.post("/api/admin/blog/migrate-images")
+async def migrate_blog_images_to_mongodb(session: dict = Depends(get_current_admin)):
+    """Migrate existing blog images from disk to MongoDB for persistence (admin)"""
+    import base64
+    
+    migrated = 0
+    skipped = 0
+    errors = []
+    
+    # Get all files in the blog uploads directory
+    if not os.path.exists(UPLOAD_DIR):
+        return {"success": True, "migrated": 0, "message": "No upload directory found"}
+    
+    for filename in os.listdir(UPLOAD_DIR):
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        
+        # Skip if not a file
+        if not os.path.isfile(filepath):
+            continue
+        
+        # Skip if already in MongoDB
+        existing = await blog_images_collection.find_one({"filename": filename})
+        if existing:
+            skipped += 1
+            continue
+        
+        try:
+            # Read file content
+            with open(filepath, "rb") as f:
+                content = f.read()
+            
+            # Skip if file is too small (likely corrupt/placeholder)
+            if len(content) < 100:
+                errors.append(f"{filename}: File too small ({len(content)} bytes)")
+                continue
+            
+            # Determine content type
+            ext = filename.split(".")[-1].lower() if "." in filename else "png"
+            content_types = {
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "png": "image/png",
+                "webp": "image/webp",
+                "gif": "image/gif"
+            }
+            content_type = content_types.get(ext, "image/png")
+            
+            # Store in MongoDB
+            image_data = {
+                "id": str(uuid.uuid4()),
+                "filename": filename,
+                "contentType": content_type,
+                "content": base64.b64encode(content).decode("utf-8"),
+                "originalFilename": filename,
+                "createdAt": datetime.now(timezone.utc).isoformat(),
+                "migratedFromDisk": True
+            }
+            await blog_images_collection.insert_one(image_data)
+            migrated += 1
+            
+        except Exception as e:
+            errors.append(f"{filename}: {str(e)}")
+    
+    return {
+        "success": True,
+        "migrated": migrated,
+        "skipped": skipped,
+        "errors": errors,
+        "message": f"Migrated {migrated} images, skipped {skipped} (already in DB)"
+    }
+
+
 # ===== PUBLIC BLOG ENDPOINTS =====
 
 @app.get("/api/blog/posts")

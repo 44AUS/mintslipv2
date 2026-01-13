@@ -4607,6 +4607,59 @@ async def start_email_scheduler():
     asyncio.create_task(email_scheduler_task())
     print("Email scheduler started")
 
+# ===== BLOG IMAGE SERVING (Dynamic with MongoDB fallback) =====
+
+@app.get("/api/uploads/blog/{filename}")
+async def serve_blog_image(filename: str):
+    """Serve blog images with MongoDB fallback for container persistence"""
+    import base64
+    from fastapi.responses import Response
+    
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    
+    # First, try to serve from disk
+    if os.path.exists(filepath):
+        # Check if file is valid (not empty/corrupt)
+        file_size = os.path.getsize(filepath)
+        if file_size > 100:  # Valid image files are larger than 100 bytes
+            with open(filepath, "rb") as f:
+                content = f.read()
+            
+            # Determine content type
+            ext = filename.split(".")[-1].lower() if "." in filename else "png"
+            content_types = {
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg", 
+                "png": "image/png",
+                "webp": "image/webp",
+                "gif": "image/gif"
+            }
+            content_type = content_types.get(ext, "image/png")
+            
+            return Response(content=content, media_type=content_type)
+    
+    # If not on disk or file is invalid, try MongoDB
+    image_doc = await blog_images_collection.find_one({"filename": filename})
+    
+    if image_doc and image_doc.get("content"):
+        # Decode base64 content
+        content = base64.b64decode(image_doc["content"])
+        content_type = image_doc.get("contentType", "image/png")
+        
+        # Restore file to disk for future requests
+        try:
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            with open(filepath, "wb") as f:
+                f.write(content)
+        except Exception as e:
+            print(f"Warning: Could not restore blog image to disk: {e}")
+        
+        return Response(content=content, media_type=content_type)
+    
+    # Image not found anywhere
+    raise HTTPException(status_code=404, detail="Image not found")
+
+
 # ===== PUBLIC BLOG ENDPOINTS =====
 
 @app.get("/api/blog/posts")

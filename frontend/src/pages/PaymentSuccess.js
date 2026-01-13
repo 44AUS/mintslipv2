@@ -43,7 +43,8 @@ export default function PaymentSuccess() {
   // Ref to prevent double download (React StrictMode runs effects twice)
   const hasStartedRef = React.useRef(false);
   
-  const isZipFile = fileCount > 1;
+  // Determine if it's a ZIP file based on count OR filename extension
+  const isZipFile = fileCount > 1 || fileName.endsWith('.zip');
 
   // Clear any stale download data at the start of a new payment verification
   useEffect(() => {

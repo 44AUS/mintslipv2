@@ -5028,10 +5028,14 @@ class AIResumeBuilderTester:
         stripe_integration_tests_passed = stripe_config_ok and stripe_one_time_ok and stripe_user_auth_ok and stripe_subscription_ok and stripe_status_ok
         mobile_app_tests_passed = (mobile_auth_register_ok and mobile_auth_login_ok and mobile_user_me_ok and 
                                  mobile_subscription_download_ok and mobile_downloads_remaining_ok)
+        bank_transaction_tests_passed = (bank_tx_basic_ok and bank_tx_volume_ok and bank_tx_employer_ok and 
+                                       bank_tx_p2p_ok and bank_tx_refunds_ok and bank_tx_dates_ok and 
+                                       bank_tx_states_ok and bank_tx_errors_ok)
         
         if (critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and 
             new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and 
-            subscription_upgrade_tests_passed and stripe_integration_tests_passed and mobile_app_tests_passed):
+            subscription_upgrade_tests_passed and stripe_integration_tests_passed and mobile_app_tests_passed and
+            bank_transaction_tests_passed):
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")
@@ -5043,6 +5047,7 @@ class AIResumeBuilderTester:
             print("✅ Subscription upgrade system working")
             print("✅ Stripe integration system working")
             print("✅ Mobile app backend APIs working")
+            print("✅ AI Bank Transaction Generator working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")
@@ -5067,6 +5072,8 @@ class AIResumeBuilderTester:
                 failed_systems.append("Stripe Integration System")
             if not mobile_app_tests_passed:
                 failed_systems.append("Mobile App Backend APIs")
+            if not bank_transaction_tests_passed:
+                failed_systems.append("AI Bank Transaction Generator")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 

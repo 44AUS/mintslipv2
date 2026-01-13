@@ -52,6 +52,8 @@ export default function PaymentSuccess() {
     if (sessionId) {
       localStorage.removeItem('lastDownloadUrl');
       localStorage.removeItem('lastDownloadFileName');
+      sessionStorage.removeItem('lastDownloadUrl');
+      sessionStorage.removeItem('lastDownloadFileName');
     }
   }, [sessionId]);
 

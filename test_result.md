@@ -316,6 +316,7 @@ test_plan:
     - "Admin Dashboard Subscription Stats"
     - "Admin User Edit Endpoint"
     - "Admin Confirm User Email Endpoint"
+    - "Saved Documents Persistence Fix"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

@@ -272,19 +272,21 @@ export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight
     // Federal Income Tax
     empTaxRows.push([`Federal Income Tax`, `$${fmt(federalTax || 0)}`, `$${fmt(ytdFederalTax || 0)}`]);
     
-    // CPP/QPP
+    // CPP/QPP - 2025 rates
     const cppRate = isQuebec ? "6.40" : "5.95";
     empTaxRows.push([`${cppLabel || 'CPP'} (${cppRate}%)`, `$${fmt(cpp)}`, `$${fmt(ytdCpp)}`]);
     erTaxRows.push([`${cppLabel || 'CPP'} (${cppRate}%)`, `$${fmt(cpp)}`, `$${fmt(ytdCpp)}`]);
 
-    // EI
-    const eiRate = isQuebec ? "1.32" : "1.66";
+    // EI - 2025 rates: 1.64% (non-Quebec), 1.30% (Quebec)
+    const eiRate = isQuebec ? "1.30" : "1.64";
     empTaxRows.push([`EI (${eiRate}%)`, `$${fmt(ei)}`, `$${fmt(ytdEi)}`]);
-    erTaxRows.push([`EI (${isQuebec ? '1.85' : '2.32'}%)`, `$${fmt(ei * 1.4)}`, `$${fmt(ytdEi * 1.4)}`]);
+    // Employer EI rate is 1.4x employee rate
+    erTaxRows.push([`EI (${isQuebec ? '1.82' : '2.30'}%)`, `$${fmt(ei * 1.4)}`, `$${fmt(ytdEi * 1.4)}`]);
 
-    // QPIP (Quebec only)
+    // QPIP (Quebec only) - 2025 rate: 0.494%
     if (isQuebec && qpip > 0) {
       empTaxRows.push([`QPIP (0.494%)`, `$${fmt(qpip)}`, `$${fmt(ytdQpip)}`]);
+      // Employer QPIP rate is 0.692%
       erTaxRows.push([`QPIP (0.692%)`, `$${fmt(qpip * 1.4)}`, `$${fmt(ytdQpip * 1.4)}`]);
     }
 

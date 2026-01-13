@@ -432,15 +432,24 @@ async function generateSingleCanadianStub(
   const basePay = regularPay + overtimePay;
   const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
   
-  // YTD Taxes should be calculated on YTD Gross Pay for accuracy
-  // CPP/QPP, EI, QPIP are flat percentages, so calculate directly on ytdGrossPay
-  const ytdCpp = Math.round(ytdGrossPay * (isQuebec ? 0.064 : 0.0595) * 100) / 100;
-  const ytdEi = Math.round(ytdGrossPay * (isQuebec ? 0.0127 : 0.0163) * 100) / 100;
-  const ytdQpip = isQuebec ? Math.round(ytdGrossPay * 0.00494 * 100) / 100 : 0;
+  // YTD Taxes - Use the SAME rates as current period for consistency
+  // CPP/QPP 2025: 5.95% (non-Quebec) or 6.40% (Quebec)
+  // EI 2025: 1.64% (non-Quebec) or 1.30% (Quebec)
+  // QPIP 2025: 0.494% (Quebec only)
+  const cppRate = isQuebec ? 0.064 : 0.0595;
+  const eiRate = isQuebec ? 0.0130 : 0.0164;
+  const qpipRate = 0.00494;
   
-  // For federal and provincial taxes, use ytdGrossPay with approximate rates
-  const ytdFederalTax = Math.round(ytdGrossPay * 0.15 * 100) / 100; // Federal base rate approximation
-  const ytdProvincialTax = Math.round(ytdGrossPay * (getProvincialTaxRate(province) || 0.05) * 100) / 100;
+  // YTD CPP/QPP - multiply current period amount by number of periods
+  const ytdCpp = Math.round(cpp * ytdPayPeriods * 100) / 100;
+  // YTD EI - multiply current period amount by number of periods
+  const ytdEi = Math.round(ei * ytdPayPeriods * 100) / 100;
+  // YTD QPIP - multiply current period amount by number of periods
+  const ytdQpip = isQuebec ? Math.round(qpip * ytdPayPeriods * 100) / 100 : 0;
+  
+  // YTD Federal and Provincial taxes - multiply current period by number of periods
+  const ytdFederalTax = Math.round(federalTax * ytdPayPeriods * 100) / 100;
+  const ytdProvincialTax = Math.round(provincialTax * ytdPayPeriods * 100) / 100;
   const ytdTotalTax = Math.round((ytdCpp + ytdEi + ytdQpip + ytdFederalTax + ytdProvincialTax) * 100) / 100;
   
   const ytdDeductions = Math.round(totalDeductions * ytdPayPeriods * 100) / 100;

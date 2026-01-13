@@ -3090,6 +3090,11 @@ export default function CanadianPaystubForm() {
                         <Lock className="w-3 h-3" />
                         <span>Secured by Stripe</span>
                       </div>
+                      {!isFormValid && (
+                        <p className="text-sm text-amber-600 mt-2 text-center">
+                          Please fill in required fields: Name, Company, Dates, and Pay Rate
+                        </p>
+                      )}
                     </div>
                     
                     {/* Subscription upsell */}

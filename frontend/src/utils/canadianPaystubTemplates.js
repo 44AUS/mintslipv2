@@ -194,7 +194,9 @@ export async function generateCanadianTemplateA(doc, data, pageWidth, pageHeight
   doc.text(`${formData.companyCity || ""}, ${formData.companyState || ""} ${formData.companyZip || ""}`, rightStartX + 8, boxTop + 52);
   doc.text(formData.companyPhone || "", rightStartX + 8, boxTop + 64);
   doc.text(formData.name || "", rightStartX + boxWidth + 18, boxTop + 28);
-  doc.text(isContractor ? `SIN: ***-**-${formData.sin || "0000"}` : `***-***-${formData.sin || "0000"}`, rightStartX + boxWidth + 18, boxTop + 40);
+  // Show masked SIN with only last 3 digits visible
+  const sinLast3 = formData.sin ? formData.sin.replace(/\D/g, '').slice(-3) : "XXX";
+  doc.text(isContractor ? `SIN: ***-***-${sinLast3}` : `***-***-${sinLast3}`, rightStartX + boxWidth + 18, boxTop + 40);
   doc.text(formData.address || "", rightStartX + boxWidth + 18, boxTop + 52);
   doc.text(`${formData.city || ""}, ${formData.province || ""} ${formData.postalCode || ""}`, rightStartX + boxWidth + 18, boxTop + 64);
 

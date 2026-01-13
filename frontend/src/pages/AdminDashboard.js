@@ -910,6 +910,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const confirmUserEmail = async (userId) => {
+    if (!window.confirm("Are you sure you want to confirm this user's email address?")) return;
+    
+    const token = localStorage.getItem("adminToken");
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/verify`, {
+        method: "PUT",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (response.ok) {
+        toast.success("User email confirmed successfully");
+        fetchUsers();
+      } else {
+        const data = await response.json();
+        toast.error(data.detail || "Failed to confirm user email");
+      }
+    } catch (error) {
+      toast.error("Error confirming user email");
+    }
+  };
+
   const openSubscriptionModal = (user) => {
     setSelectedUser(user);
     setSelectedTier(user.subscription?.tier || "");

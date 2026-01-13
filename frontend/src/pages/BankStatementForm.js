@@ -526,6 +526,22 @@ export default function BankStatementForm() {
     setTransactions(updated);
   };
 
+  // Move transaction up in the list
+  const moveTransactionUp = (idx) => {
+    if (idx === 0) return;
+    const updated = [...transactions];
+    [updated[idx - 1], updated[idx]] = [updated[idx], updated[idx - 1]];
+    setTransactions(updated);
+  };
+
+  // Move transaction down in the list
+  const moveTransactionDown = (idx) => {
+    if (idx === transactions.length - 1) return;
+    const updated = [...transactions];
+    [updated[idx], updated[idx + 1]] = [updated[idx + 1], updated[idx]];
+    setTransactions(updated);
+  };
+
 // Get price based on selected template
 const getStatementPrice = () => {
   // BOA (template-b) and Chase (template-c) are $70

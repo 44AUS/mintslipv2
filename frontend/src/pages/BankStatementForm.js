@@ -1085,6 +1085,174 @@ const createOrder = (data, actions) => {
                 </div>
               </div>
 
+              {/* AI Generate Transactions Section */}
+              {selectedTemplate === "template-a" && (
+                <div className="space-y-4 p-6 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Sparkles className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-purple-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                        AI Generate Transactions
+                      </h2>
+                      <p className="text-sm text-purple-600">Automatically generate realistic transactions</p>
+                    </div>
+                  </div>
+
+                  {/* Location Selection */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-purple-800">
+                        <MapPin className="w-4 h-4" /> State *
+                      </Label>
+                      <Select value={aiGenState} onValueChange={(val) => { setAiGenState(val); setAiGenCities([]); }}>
+                        <SelectTrigger className="border-purple-200 focus:border-purple-400">
+                          <SelectValue placeholder="Select state" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {Object.entries(US_STATES).map(([code, name]) => (
+                            <SelectItem key={code} value={code}>{name} ({code})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-purple-800">Volume</Label>
+                      <Select value={aiGenVolume} onValueChange={setAiGenVolume}>
+                        <SelectTrigger className="border-purple-200 focus:border-purple-400">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Light (10-15 transactions)</SelectItem>
+                          <SelectItem value="moderate">Moderate (18-25 transactions)</SelectItem>
+                          <SelectItem value="heavy">Heavy (28-40 transactions)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* City Selection */}
+                  {aiGenState && (
+                    <div className="space-y-2">
+                      <Label className="text-purple-800">Cities (select one or more) *</Label>
+                      <div className="flex flex-wrap gap-2 p-3 bg-white rounded-lg border border-purple-200 max-h-32 overflow-y-auto">
+                        {(US_CITIES_BY_STATE[aiGenState] || []).map((city) => (
+                          <button
+                            key={city}
+                            type="button"
+                            onClick={() => toggleCity(city)}
+                            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                              aiGenCities.includes(city)
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                            }`}
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Categories */}
+                  <div className="space-y-2">
+                    <Label className="text-purple-800">Categories</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {TRANSACTION_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => toggleCategory(cat.id)}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                            aiGenCategories.includes(cat.id)
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-white text-purple-700 border border-purple-200 hover:border-purple-400'
+                          }`}
+                        >
+                          <span>{cat.icon}</span>
+                          <span className="truncate">{cat.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Employer/Deposit Settings (only if credits_deposit is selected) */}
+                  {aiGenCategories.includes("credits_deposit") && (
+                    <div className="p-4 bg-white rounded-lg border border-purple-200 space-y-4">
+                      <div className="flex items-center gap-2 text-purple-800 font-medium">
+                        <Briefcase className="w-4 h-4" />
+                        Direct Deposit Settings
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm text-purple-700">Employer Name</Label>
+                          <Input
+                            value={aiGenEmployerName}
+                            onChange={(e) => setAiGenEmployerName(e.target.value)}
+                            placeholder="e.g., ACME CORP"
+                            className="border-purple-200"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm text-purple-700">Pay Frequency</Label>
+                          <Select value={aiGenPayFrequency} onValueChange={setAiGenPayFrequency}>
+                            <SelectTrigger className="border-purple-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="weekly">Weekly</SelectItem>
+                              <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                              <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm text-purple-700 flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" /> Deposit Amount
+                          </Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={aiGenDepositAmount}
+                            onChange={(e) => setAiGenDepositAmount(e.target.value)}
+                            placeholder="e.g., 2500.00"
+                            className="border-purple-200"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Generate Button */}
+                  <Button
+                    type="button"
+                    onClick={generateAITransactions}
+                    disabled={isGeneratingTransactions || !selectedMonth}
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3"
+                  >
+                    {isGeneratingTransactions ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Generating Transactions...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Generate Transactions
+                      </>
+                    )}
+                  </Button>
+                  
+                  {!selectedMonth && (
+                    <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded text-center">
+                      Please select a statement month above before generating transactions
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Transactions */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">

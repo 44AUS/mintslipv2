@@ -5122,6 +5122,466 @@ class AIResumeBuilderTester:
             
         return mobile_app_tests_passed
 
+    # ========== AI BANK TRANSACTION GENERATOR TESTS ==========
+
+    def test_generate_bank_transactions_basic(self):
+        """Test POST /api/generate-bank-transactions with basic parameters"""
+        try:
+            payload = {
+                "state": "GA",
+                "cities": ["Atlanta", "Marietta"],
+                "volume": "moderate",
+                "categories": ["groceries", "gas_auto", "dining", "retail"],
+                "statementMonth": "2024-12"
+            }
+            
+            response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                required_fields = ["success", "transactions", "count"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success") and isinstance(data.get("transactions"), list):
+                    transactions = data["transactions"]
+                    count = data.get("count", 0)
+                    
+                    # Verify transaction count is within moderate range (18-25)
+                    if 18 <= count <= 25:
+                        details += f", Transaction count: {count} (within moderate range) ✓"
+                    else:
+                        success = False
+                        details += f", Transaction count: {count} (outside moderate range 18-25)"
+                    
+                    # Verify each transaction has required fields
+                    if transactions and success:
+                        sample_tx = transactions[0]
+                        required_tx_fields = ["date", "description", "type", "amount", "category"]
+                        missing_tx_fields = [field for field in required_tx_fields if field not in sample_tx]
+                        
+                        if missing_tx_fields:
+                            success = False
+                            details += f", Missing transaction fields: {missing_tx_fields}"
+                        else:
+                            details += f", Transaction structure valid ✓"
+                            
+                            # Verify transaction format "MERCHANT_NAME #XXXX CITY STATE"
+                            format_valid = True
+                            for tx in transactions[:3]:  # Check first 3 transactions
+                                desc = tx.get("description", "")
+                                if " GA" not in desc or not any(city in desc for city in ["ATLANTA", "MARIETTA"]):
+                                    format_valid = False
+                                    break
+                            
+                            if format_valid:
+                                details += f", Transaction format valid ✓"
+                            else:
+                                success = False
+                                details += f", Transaction format invalid"
+                else:
+                    success = False
+                    details += f", Invalid response structure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Bank Transactions - Basic", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - Basic", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_volume_levels(self):
+        """Test different volume levels: light, moderate, heavy"""
+        try:
+            volume_tests = [
+                ("light", 10, 15),
+                ("moderate", 18, 25),
+                ("heavy", 28, 40)
+            ]
+            
+            success = True
+            details = ""
+            
+            for volume, min_count, max_count in volume_tests:
+                payload = {
+                    "state": "CA",
+                    "cities": ["Los Angeles", "San Francisco"],
+                    "volume": volume,
+                    "categories": ["groceries", "dining"],
+                    "statementMonth": "2024-11"
+                }
+                
+                response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success"):
+                        count = data.get("count", 0)
+                        if min_count <= count <= max_count:
+                            details += f"{volume}: {count} txns ✓, "
+                        else:
+                            success = False
+                            details += f"{volume}: {count} txns ✗ (expected {min_count}-{max_count}), "
+                    else:
+                        success = False
+                        details += f"{volume}: invalid response, "
+                else:
+                    success = False
+                    details += f"{volume}: status {response.status_code}, "
+            
+            details = details.rstrip(", ")
+            self.log_test("Generate Bank Transactions - Volume Levels", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - Volume Levels", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_employer_deposits(self):
+        """Test employer deposits with credits_deposit category"""
+        try:
+            payload = {
+                "state": "TX",
+                "cities": ["Houston", "Dallas"],
+                "volume": "light",
+                "categories": ["groceries", "credits_deposit"],
+                "statementMonth": "2024-10",
+                "employerName": "ACME CORP",
+                "depositAmount": 2500.00,
+                "payFrequency": "biweekly"
+            }
+            
+            response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and isinstance(data.get("transactions"), list):
+                    transactions = data["transactions"]
+                    
+                    # Find deposit transactions
+                    deposits = [tx for tx in transactions if tx.get("type") == "Deposit" and "ACME CORP" in tx.get("description", "")]
+                    
+                    if deposits:
+                        details += f", Found {len(deposits)} employer deposits ✓"
+                        
+                        # Verify deposit amount
+                        deposit_amounts = [float(tx.get("amount", 0)) for tx in deposits]
+                        if all(amount == 2500.0 for amount in deposit_amounts):
+                            details += f", Deposit amounts correct ($2500) ✓"
+                        else:
+                            success = False
+                            details += f", Deposit amounts incorrect: {deposit_amounts}"
+                        
+                        # Verify deposit description format
+                        sample_deposit = deposits[0]
+                        if "DIRECT DEP ACME CORP" in sample_deposit.get("description", ""):
+                            details += f", Deposit format correct ✓"
+                        else:
+                            success = False
+                            details += f", Deposit format incorrect: {sample_deposit.get('description')}"
+                    else:
+                        success = False
+                        details += f", No employer deposits found in {len(transactions)} transactions"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Bank Transactions - Employer Deposits", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - Employer Deposits", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_p2p_credits(self):
+        """Test P2P credits with credits_p2p category"""
+        try:
+            payload = {
+                "state": "NY",
+                "cities": ["New York", "Buffalo"],
+                "volume": "light",
+                "categories": ["dining", "credits_p2p"],
+                "statementMonth": "2024-09"
+            }
+            
+            response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and isinstance(data.get("transactions"), list):
+                    transactions = data["transactions"]
+                    
+                    # Find P2P credit transactions
+                    p2p_credits = [tx for tx in transactions if tx.get("category") == "credits_p2p" and tx.get("type") == "Deposit"]
+                    
+                    if p2p_credits:
+                        details += f", Found {len(p2p_credits)} P2P credits ✓"
+                        
+                        # Verify P2P transaction descriptions contain expected patterns
+                        p2p_patterns = ["ZELLE FROM", "VENMO CASHOUT", "CASH APP", "PAYPAL TRANSFER"]
+                        pattern_found = False
+                        for tx in p2p_credits:
+                            desc = tx.get("description", "")
+                            if any(pattern in desc for pattern in p2p_patterns):
+                                pattern_found = True
+                                break
+                        
+                        if pattern_found:
+                            details += f", P2P format correct ✓"
+                        else:
+                            success = False
+                            details += f", P2P format incorrect: {[tx.get('description') for tx in p2p_credits[:2]]}"
+                    else:
+                        success = False
+                        details += f", No P2P credits found in {len(transactions)} transactions"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Bank Transactions - P2P Credits", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - P2P Credits", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_refunds(self):
+        """Test refunds with credits_refunds category"""
+        try:
+            payload = {
+                "state": "FL",
+                "cities": ["Miami", "Orlando"],
+                "volume": "light",
+                "categories": ["retail", "credits_refunds"],
+                "statementMonth": "2024-08"
+            }
+            
+            response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and isinstance(data.get("transactions"), list):
+                    transactions = data["transactions"]
+                    
+                    # Find refund transactions
+                    refunds = [tx for tx in transactions if tx.get("category") == "credits_refunds" and tx.get("type") == "Refund"]
+                    
+                    if refunds:
+                        details += f", Found {len(refunds)} refunds ✓"
+                        
+                        # Verify refund description format
+                        sample_refund = refunds[0]
+                        desc = sample_refund.get("description", "")
+                        if "REFUND" in desc:
+                            details += f", Refund format correct ✓"
+                        else:
+                            success = False
+                            details += f", Refund format incorrect: {desc}"
+                    else:
+                        success = False
+                        details += f", No refunds found in {len(transactions)} transactions"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Bank Transactions - Refunds", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - Refunds", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_date_validation(self):
+        """Test that all dates are within the specified statement month"""
+        try:
+            payload = {
+                "state": "WA",
+                "cities": ["Seattle", "Spokane"],
+                "volume": "moderate",
+                "categories": ["groceries", "gas_auto", "dining"],
+                "statementMonth": "2024-07"
+            }
+            
+            response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and isinstance(data.get("transactions"), list):
+                    transactions = data["transactions"]
+                    
+                    # Verify all dates are in July 2024
+                    date_valid = True
+                    invalid_dates = []
+                    
+                    for tx in transactions:
+                        date_str = tx.get("date", "")
+                        if not date_str.startswith("2024-07-"):
+                            date_valid = False
+                            invalid_dates.append(date_str)
+                    
+                    if date_valid:
+                        details += f", All {len(transactions)} dates in July 2024 ✓"
+                    else:
+                        success = False
+                        details += f", Invalid dates found: {invalid_dates[:3]}"
+                    
+                    # Verify dates are sorted chronologically
+                    dates = [tx.get("date", "") for tx in transactions]
+                    sorted_dates = sorted(dates)
+                    
+                    if dates == sorted_dates:
+                        details += f", Dates sorted chronologically ✓"
+                    else:
+                        success = False
+                        details += f", Dates not sorted properly"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Generate Bank Transactions - Date Validation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - Date Validation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_state_city_validation(self):
+        """Test different states and cities work correctly"""
+        try:
+            test_cases = [
+                {"state": "CA", "cities": ["Los Angeles", "San Diego"], "expected_state": "CA"},
+                {"state": "TX", "cities": ["Houston", "Austin"], "expected_state": "TX"},
+                {"state": "IL", "cities": ["Chicago"], "expected_state": "IL"}
+            ]
+            
+            success = True
+            details = ""
+            
+            for case in test_cases:
+                payload = {
+                    "state": case["state"],
+                    "cities": case["cities"],
+                    "volume": "light",
+                    "categories": ["groceries"],
+                    "statementMonth": "2024-06"
+                }
+                
+                response = requests.post(f"{self.api_url}/generate-bank-transactions", json=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("transactions"):
+                        transactions = data["transactions"]
+                        
+                        # Verify state appears in transaction descriptions
+                        state_found = False
+                        city_found = False
+                        
+                        for tx in transactions:
+                            desc = tx.get("description", "")
+                            if f" {case['expected_state']}" in desc:
+                                state_found = True
+                            
+                            for city in case["cities"]:
+                                if city.upper() in desc:
+                                    city_found = True
+                                    break
+                        
+                        if state_found and city_found:
+                            details += f"{case['state']}: ✓, "
+                        else:
+                            success = False
+                            details += f"{case['state']}: ✗ (state:{state_found}, city:{city_found}), "
+                    else:
+                        success = False
+                        details += f"{case['state']}: invalid response, "
+                else:
+                    success = False
+                    details += f"{case['state']}: status {response.status_code}, "
+            
+            details = details.rstrip(", ")
+            self.log_test("Generate Bank Transactions - State/City Validation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - State/City Validation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_generate_bank_transactions_error_handling(self):
+        """Test error handling for invalid inputs"""
+        try:
+            test_cases = [
+                {
+                    "payload": {"state": "INVALID", "cities": ["Test"], "volume": "moderate", "categories": ["groceries"], "statementMonth": "2024-12"},
+                    "expected_status": 400,
+                    "description": "Invalid state code"
+                },
+                {
+                    "payload": {"state": "CA", "cities": ["Test"], "volume": "moderate", "categories": ["groceries"], "statementMonth": "invalid-date"},
+                    "expected_status": 400,
+                    "description": "Invalid date format"
+                },
+                {
+                    "payload": {"state": "CA", "cities": ["Test"], "volume": "moderate", "categories": [], "statementMonth": "2024-12"},
+                    "expected_status": 400,
+                    "description": "Empty categories"
+                }
+            ]
+            
+            success = True
+            details = ""
+            
+            for case in test_cases:
+                response = requests.post(f"{self.api_url}/generate-bank-transactions", json=case["payload"], timeout=30)
+                
+                if response.status_code == case["expected_status"]:
+                    details += f"{case['description']}: ✓, "
+                else:
+                    success = False
+                    details += f"{case['description']}: ✗ (got {response.status_code}), "
+            
+            details = details.rstrip(", ")
+            self.log_test("Generate Bank Transactions - Error Handling", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Generate Bank Transactions - Error Handling", False, f"Exception: {str(e)}")
+            return False
+
     # ========== PDF ENGINE TESTS (Business Plan Feature) ==========
     
     def test_pdf_engine_check_access_no_auth(self):

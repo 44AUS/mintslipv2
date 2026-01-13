@@ -315,6 +315,7 @@ test_plan:
     - "User Authentication"
     - "Admin Dashboard Subscription Stats"
     - "Admin User Edit Endpoint"
+    - "Admin Confirm User Email Endpoint"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

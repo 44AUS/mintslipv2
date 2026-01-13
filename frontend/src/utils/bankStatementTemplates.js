@@ -285,7 +285,7 @@ export async function generateBankTemplateA(doc, data, pageWidth, pageHeight, ma
     const formattedDate = formatShortDate(tx.date);
     const formattedSettlementDate = getAutoSettlementDate(tx);
 
-    // Logic for splitting description into two lines if it's long
+    // Logic for splitting description into two lines
     const fullDesc = (tx.description || "").trim();
     let firstLine = "";
     let secondLine = "";
@@ -295,10 +295,27 @@ export async function generateBankTemplateA(doc, data, pageWidth, pageHeight, ma
       firstLine = fullDesc;
       secondLine = "";
     } else {
-      // Other types get a two-line description format
-      firstLine =
-        fullDesc.length > 22 ? fullDesc.substring(0, 22).trim() + "" : fullDesc;
-      secondLine = fullDesc.toUpperCase();
+      // For Chime template: 
+      // First line = Clean store name (no numbers, Title Case)
+      // Second line = Full descriptor (as-is, not uppercase)
+      
+      // Extract just the store name (remove #numbers, store numbers, etc.)
+      let storeName = fullDesc
+        .replace(/\s*#\d+/g, '')           // Remove #1234 patterns
+        .replace(/\s*\d{4,}/g, '')          // Remove 4+ digit numbers
+        .replace(/\s+[A-Z]{2}$/g, '')       // Remove state codes at end
+        .replace(/\s+/g, ' ')               // Normalize spaces
+        .trim();
+      
+      // Convert to Title Case (first letter of each word capitalized)
+      storeName = storeName
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      firstLine = storeName;
+      secondLine = fullDesc; // Keep original format, not uppercase
     }
 
     doc.setFont("helvetica", "normal");

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 , CreditCard, Lock, Loader2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Upload, X, Search, Building2 , CreditCard, Lock, Loader2, Sparkles, MapPin, Briefcase, DollarSign } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,91 @@ import BoA from '../assests/boa2.png';
 import ChaseLogo from '../assests/chase-logo-black-transparent.png';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// US States with major cities for AI transaction generator
+const US_STATES = {
+  "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+  "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "FL": "Florida", "GA": "Georgia",
+  "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+  "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+  "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri",
+  "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey",
+  "NM": "New Mexico", "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+  "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+  "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont",
+  "VA": "Virginia", "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+  "DC": "District of Columbia"
+};
+
+const US_CITIES_BY_STATE = {
+  "AL": ["Birmingham", "Montgomery", "Huntsville", "Mobile", "Tuscaloosa"],
+  "AK": ["Anchorage", "Fairbanks", "Juneau", "Sitka"],
+  "AZ": ["Phoenix", "Tucson", "Mesa", "Chandler", "Scottsdale", "Gilbert", "Glendale", "Tempe"],
+  "AR": ["Little Rock", "Fort Smith", "Fayetteville", "Springdale"],
+  "CA": ["Los Angeles", "San Francisco", "San Diego", "San Jose", "Sacramento", "Fresno", "Oakland", "Long Beach"],
+  "CO": ["Denver", "Colorado Springs", "Aurora", "Fort Collins", "Boulder"],
+  "CT": ["Bridgeport", "New Haven", "Hartford", "Stamford"],
+  "DE": ["Wilmington", "Dover", "Newark", "Middletown"],
+  "FL": ["Miami", "Orlando", "Tampa", "Jacksonville", "Fort Lauderdale", "St Petersburg", "Tallahassee"],
+  "GA": ["Atlanta", "Augusta", "Columbus", "Macon", "Savannah", "Athens", "Marietta", "Roswell"],
+  "HI": ["Honolulu", "Pearl City", "Hilo", "Kailua"],
+  "ID": ["Boise", "Meridian", "Nampa", "Idaho Falls"],
+  "IL": ["Chicago", "Aurora", "Naperville", "Joliet", "Rockford", "Springfield"],
+  "IN": ["Indianapolis", "Fort Wayne", "Evansville", "South Bend"],
+  "IA": ["Des Moines", "Cedar Rapids", "Davenport", "Sioux City"],
+  "KS": ["Wichita", "Overland Park", "Kansas City", "Olathe", "Topeka"],
+  "KY": ["Louisville", "Lexington", "Bowling Green", "Owensboro"],
+  "LA": ["New Orleans", "Baton Rouge", "Shreveport", "Lafayette"],
+  "ME": ["Portland", "Lewiston", "Bangor", "Auburn"],
+  "MD": ["Baltimore", "Frederick", "Rockville", "Gaithersburg"],
+  "MA": ["Boston", "Worcester", "Springfield", "Cambridge"],
+  "MI": ["Detroit", "Grand Rapids", "Warren", "Ann Arbor", "Lansing"],
+  "MN": ["Minneapolis", "Saint Paul", "Rochester", "Duluth"],
+  "MS": ["Jackson", "Gulfport", "Southaven", "Hattiesburg"],
+  "MO": ["Kansas City", "Saint Louis", "Springfield", "Columbia"],
+  "MT": ["Billings", "Missoula", "Great Falls", "Bozeman"],
+  "NE": ["Omaha", "Lincoln", "Bellevue", "Grand Island"],
+  "NV": ["Las Vegas", "Henderson", "Reno", "North Las Vegas"],
+  "NH": ["Manchester", "Nashua", "Concord", "Dover"],
+  "NJ": ["Newark", "Jersey City", "Paterson", "Elizabeth", "Trenton"],
+  "NM": ["Albuquerque", "Las Cruces", "Rio Rancho", "Santa Fe"],
+  "NY": ["New York", "Buffalo", "Rochester", "Yonkers", "Syracuse", "Albany"],
+  "NC": ["Charlotte", "Raleigh", "Greensboro", "Durham", "Fayetteville"],
+  "ND": ["Fargo", "Bismarck", "Grand Forks", "Minot"],
+  "OH": ["Columbus", "Cleveland", "Cincinnati", "Toledo", "Akron", "Dayton"],
+  "OK": ["Oklahoma City", "Tulsa", "Norman", "Broken Arrow"],
+  "OR": ["Portland", "Salem", "Eugene", "Gresham", "Hillsboro"],
+  "PA": ["Philadelphia", "Pittsburgh", "Allentown", "Reading", "Erie"],
+  "RI": ["Providence", "Warwick", "Cranston", "Pawtucket"],
+  "SC": ["Charleston", "Columbia", "North Charleston", "Greenville"],
+  "SD": ["Sioux Falls", "Rapid City", "Aberdeen", "Brookings"],
+  "TN": ["Nashville", "Memphis", "Knoxville", "Chattanooga", "Murfreesboro"],
+  "TX": ["Houston", "San Antonio", "Dallas", "Austin", "Fort Worth", "El Paso", "Arlington", "Plano"],
+  "UT": ["Salt Lake City", "West Valley City", "Provo", "West Jordan"],
+  "VT": ["Burlington", "South Burlington", "Rutland", "Montpelier"],
+  "VA": ["Virginia Beach", "Norfolk", "Chesapeake", "Richmond", "Arlington"],
+  "WA": ["Seattle", "Spokane", "Tacoma", "Vancouver", "Bellevue"],
+  "WV": ["Charleston", "Huntington", "Morgantown", "Parkersburg"],
+  "WI": ["Milwaukee", "Madison", "Green Bay", "Kenosha"],
+  "WY": ["Cheyenne", "Casper", "Laramie", "Gillette"],
+  "DC": ["Washington"]
+};
+
+// Transaction categories for AI generator
+const TRANSACTION_CATEGORIES = [
+  { id: "groceries", label: "Groceries", icon: "🛒" },
+  { id: "gas_auto", label: "Gas & Auto", icon: "⛽" },
+  { id: "dining", label: "Dining", icon: "🍔" },
+  { id: "retail", label: "Retail", icon: "🛍️" },
+  { id: "utilities", label: "Utilities", icon: "💡" },
+  { id: "subscriptions", label: "Subscriptions", icon: "📺" },
+  { id: "atm_withdrawal", label: "ATM Withdrawal", icon: "🏧" },
+  { id: "fees", label: "Fees", icon: "💳" },
+  { id: "misc", label: "Misc", icon: "📦" },
+  { id: "credits_deposit", label: "Direct Deposit", icon: "💰" },
+  { id: "credits_p2p", label: "P2P Credits", icon: "📲" },
+  { id: "credits_refunds", label: "Refunds", icon: "↩️" },
+];
 
 // Check if running on localhost for development features
 const isLocalhost = typeof window !== 'undefined' && 

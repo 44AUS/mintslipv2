@@ -1,4 +1,4 @@
-// Canadian Tax Rates for 2024/2025
+// Canadian Tax Rates for 2025
 // All rates are based on CRA guidelines
 
 // Canadian Provinces and Territories
@@ -18,29 +18,35 @@ export const CANADIAN_PROVINCES = [
   { code: 'YT', name: 'Yukon' },
 ];
 
-// CPP (Canada Pension Plan) - 2024 rates
-export const CPP_RATE = 0.0595; // 5.95% employee contribution
-export const CPP_MAX_PENSIONABLE_EARNINGS = 68500;
+// CPP (Canada Pension Plan) - 2025 rates
+export const CPP_RATE = 0.0595; // 5.95% employee contribution (base)
+export const CPP2_RATE = 0.04; // 4% additional CPP2 on earnings above first ceiling
+export const CPP_MAX_PENSIONABLE_EARNINGS = 71300; // First earnings ceiling 2025
+export const CPP2_MAX_PENSIONABLE_EARNINGS = 81200; // Second earnings ceiling 2025 (for CPP2)
 export const CPP_BASIC_EXEMPTION = 3500;
-export const CPP_MAX_CONTRIBUTION = (CPP_MAX_PENSIONABLE_EARNINGS - CPP_BASIC_EXEMPTION) * CPP_RATE; // $3,867.50
+export const CPP_MAX_CONTRIBUTION = 4034.10; // Max base CPP contribution 2025
+export const CPP2_MAX_CONTRIBUTION = 396.00; // Max additional CPP2 contribution 2025
 
-// QPP (Quebec Pension Plan) - 2024 rates (Quebec uses QPP instead of CPP)
-export const QPP_RATE = 0.064; // 6.40% employee contribution
-export const QPP_MAX_PENSIONABLE_EARNINGS = 68500;
+// QPP (Quebec Pension Plan) - 2025 rates (Quebec uses QPP instead of CPP)
+export const QPP_RATE = 0.064; // 6.40% employee contribution (base)
+export const QPP2_RATE = 0.04; // 4% additional QPP2 on earnings above first ceiling
+export const QPP_MAX_PENSIONABLE_EARNINGS = 71300;
+export const QPP2_MAX_PENSIONABLE_EARNINGS = 81200;
 export const QPP_BASIC_EXEMPTION = 3500;
-export const QPP_MAX_CONTRIBUTION = (QPP_MAX_PENSIONABLE_EARNINGS - QPP_BASIC_EXEMPTION) * QPP_RATE; // $4,160
+export const QPP_MAX_CONTRIBUTION = 4348.32; // Max base QPP contribution 2025
+export const QPP2_MAX_CONTRIBUTION = 396.00; // Max additional QPP2 contribution 2025
 
-// EI (Employment Insurance) - 2024 rates
-export const EI_RATE = 0.0166; // 1.66% for most provinces
-export const EI_RATE_QUEBEC = 0.0132; // 1.32% for Quebec (reduced due to QPIP)
-export const EI_MAX_INSURABLE_EARNINGS = 63200;
-export const EI_MAX_CONTRIBUTION = EI_MAX_INSURABLE_EARNINGS * EI_RATE; // $1,049.12
-export const EI_MAX_CONTRIBUTION_QUEBEC = EI_MAX_INSURABLE_EARNINGS * EI_RATE_QUEBEC; // $834.24
+// EI (Employment Insurance) - 2025 rates
+export const EI_RATE = 0.0164; // 1.64% for most provinces (2025)
+export const EI_RATE_QUEBEC = 0.0130; // 1.30% for Quebec (reduced due to QPIP)
+export const EI_MAX_INSURABLE_EARNINGS = 65700; // 2025
+export const EI_MAX_CONTRIBUTION = EI_MAX_INSURABLE_EARNINGS * EI_RATE; // $1,077.48
+export const EI_MAX_CONTRIBUTION_QUEBEC = EI_MAX_INSURABLE_EARNINGS * EI_RATE_QUEBEC; // $854.10
 
-// QPIP (Quebec Parental Insurance Plan) - 2024 rates (Quebec only)
+// QPIP (Quebec Parental Insurance Plan) - 2025 rates (Quebec only)
 export const QPIP_RATE = 0.00494; // 0.494% employee contribution
-export const QPIP_MAX_INSURABLE_EARNINGS = 94000;
-export const QPIP_MAX_CONTRIBUTION = QPIP_MAX_INSURABLE_EARNINGS * QPIP_RATE; // $464.36
+export const QPIP_MAX_INSURABLE_EARNINGS = 98000; // 2025
+export const QPIP_MAX_CONTRIBUTION = QPIP_MAX_INSURABLE_EARNINGS * QPIP_RATE; // $484.12
 
 // Federal Tax Brackets 2024
 export const FEDERAL_TAX_BRACKETS = [

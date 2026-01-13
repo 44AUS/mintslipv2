@@ -273,8 +273,12 @@ export default function PaystubForm() {
   const formatCurrency = (num) => {
     return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
-  
-  const [formData, setFormData] = useState({
+
+  // Storage key for form persistence
+  const STORAGE_KEY = 'usPaystubFormData';
+
+  // Default form data
+  const defaultFormData = {
     name: "",
     ssn: "",
     bank: "",
@@ -297,24 +301,47 @@ export default function PaystubForm() {
     payDay: "Friday",
     hoursList: "",
     overtimeList: "",
-    commissionList: "", // Commission amounts per pay period
-    startDateList: "", // Pay period start dates per check
-    endDateList: "", // Pay period end dates per check
-    payDateList: "", // Pay dates per check
+    commissionList: "",
+    startDateList: "",
+    endDateList: "",
+    payDateList: "",
     includeLocalTax: true,
-    workerType: "employee", // "employee" or "contractor"
-    payType: "hourly", // "hourly" or "salary"
-    annualSalary: "", // for salary pay type
-    federalFilingStatus: "", // optional: single, married_jointly, head_of_household (no more allowances per 2020 W-4)
-    stateAllowances: "0", // number of state allowances (only for states that use them)
-    employeeId: "", // Employee ID for Workday template
-    // ADP Template B specific fields
-    companyCode: "", // Company Code for ADP template
-    locDept: "", // Loc/Dept for ADP template
-    checkNumber: "", // Check Number for ADP template
-    // OnPay Template H specific fields
-    memo: "", // Memo for OnPay template
-  });
+    workerType: "employee",
+    payType: "hourly",
+    annualSalary: "",
+    federalFilingStatus: "",
+    stateAllowances: "0",
+    employeeId: "",
+    companyCode: "",
+    locDept: "",
+    checkNumber: "",
+    memo: "",
+  };
+
+  // Load saved form data from localStorage
+  const loadSavedFormData = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...defaultFormData, ...parsed };
+      }
+    } catch (e) {
+      console.error('Error loading saved form data:', e);
+    }
+    return defaultFormData;
+  };
+
+  const [formData, setFormData] = useState(loadSavedFormData);
+
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    } catch (e) {
+      console.error('Error saving form data:', e);
+    }
+  }, [formData]);
 
   // Validation errors state
   const [validationErrors, setValidationErrors] = useState({

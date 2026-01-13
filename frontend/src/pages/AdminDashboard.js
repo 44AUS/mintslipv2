@@ -55,7 +55,8 @@ import {
   Menu,
   X,
   FolderArchive,
-  File
+  File,
+  MailCheck
 } from "lucide-react";
 import {
   AreaChart,

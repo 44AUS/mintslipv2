@@ -3063,7 +3063,7 @@ export default function CanadianPaystubForm() {
                         ) : (
                           <>
                             <CreditCard className="w-5 h-5" />
-                            Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}
+                            Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : (calculateNumStubs * 9.99).toFixed(2)}
                           </>
                         )}
                       </Button>

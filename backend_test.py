@@ -4749,6 +4749,21 @@ class AIResumeBuilderTester:
             success = True
             details = ""
             
+            # Step 0: Create a proper test image (larger than 100 bytes minimum)
+            import base64
+            import os
+            # This is a 10x10 red square PNG (225 bytes)
+            test_png_base64 = '''iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABYSURBVBiVY/z//z8DJQAggBhJVQgQQIykKgQIIEZSFQIEECOpCgECiJFUhQABxEiqQoAAYiRVIUAAMZKqECCAGElVCBBAjKQqBAggRlIVAgQQI6kKAQKIkVSFAAEEAFm8D/HCjd1DAAAAAElFTkSuQmCC'''
+            
+            test_image_data = base64.b64decode(test_png_base64)
+            test_filename = 'test-blog-persistence.png'
+            test_path = f'/app/backend/uploads/blog/{test_filename}'
+            
+            with open(test_path, 'wb') as f:
+                f.write(test_image_data)
+            
+            details += f"Created test image ({len(test_image_data)} bytes)"
+            
             # Step 1: Call the migration endpoint POST /api/admin/blog/migrate-images
             migrate_response = requests.post(f"{self.api_url}/admin/blog/migrate-images", headers=headers, timeout=30)
             
@@ -4761,14 +4776,11 @@ class AIResumeBuilderTester:
                 self.log_test("Blog Image Persistence Fix", False, f"Migration failed: {migrate_data}")
                 return False
             
-            migrated_count = migrate_data.get("migratedCount", 0)
-            skipped_count = migrate_data.get("skippedCount", 0)
-            details += f"Migration: {migrated_count} migrated, {skipped_count} skipped"
+            migrated_count = migrate_data.get("migrated", 0)
+            skipped_count = migrate_data.get("skipped", 0)
+            details += f", Migration: {migrated_count} migrated, {skipped_count} skipped"
             
             # Step 2: Test the dynamic image serving endpoint GET /api/uploads/blog/{filename}
-            # Use one of the existing filenames from the uploads folder
-            test_filename = "d4ca5f08-e465-4bc6-886c-07ab425fe7e8.png"  # This exists in the directory
-            
             image_response = requests.get(f"{self.api_url}/uploads/blog/{test_filename}", timeout=10)
             
             if image_response.status_code != 200:
@@ -4786,18 +4798,17 @@ class AIResumeBuilderTester:
                     details += f", Image served: {content_length} bytes, content-type: {content_type}"
             
             # Step 3: Check if the blog_images collection was populated in MongoDB
-            # We can't directly query MongoDB from here, but we can test by calling the migration again
-            # If images were properly stored, the second migration should skip them
+            # Call migration again - if images were properly stored, it should skip them
             migrate_response2 = requests.post(f"{self.api_url}/admin/blog/migrate-images", headers=headers, timeout=30)
             
             if migrate_response2.status_code == 200:
                 migrate_data2 = migrate_response2.json()
                 if migrate_data2.get("success"):
-                    skipped_count2 = migrate_data2.get("skippedCount", 0)
-                    migrated_count2 = migrate_data2.get("migratedCount", 0)
+                    skipped_count2 = migrate_data2.get("skipped", 0)
+                    migrated_count2 = migrate_data2.get("migrated", 0)
                     
-                    # If images were properly stored in MongoDB, second migration should skip more files
-                    if skipped_count2 >= migrated_count or migrated_count2 == 0:
+                    # If images were properly stored in MongoDB, second migration should skip our test image
+                    if skipped_count2 >= 1 and migrated_count2 == 0:
                         details += f", MongoDB storage verified (2nd migration: {migrated_count2} migrated, {skipped_count2} skipped)"
                     else:
                         success = False
@@ -4809,17 +4820,20 @@ class AIResumeBuilderTester:
                 success = False
                 details += f", Second migration request failed: {migrate_response2.status_code}"
             
-            # Step 4: Test image serving for a file that might not exist on disk but exists in MongoDB
-            # This tests the MongoDB fallback functionality
-            test_filename2 = "20392817-642c-46da-9ff5-9aa6db03fa57.png"  # Another existing file
-            image_response2 = requests.get(f"{self.api_url}/uploads/blog/{test_filename2}", timeout=10)
-            
-            if image_response2.status_code == 200:
-                content_length2 = len(image_response2.content)
-                details += f", Fallback test: {content_length2} bytes served"
-            else:
-                # This might be acceptable if the file doesn't exist
-                details += f", Fallback test: {image_response2.status_code} (acceptable if file doesn't exist)"
+            # Step 4: Test MongoDB fallback - remove file from disk and verify it still serves
+            if success and os.path.exists(test_path):
+                os.remove(test_path)
+                details += ", Removed from disk"
+                
+                # Test image serving from MongoDB
+                fallback_response = requests.get(f"{self.api_url}/uploads/blog/{test_filename}", timeout=10)
+                
+                if fallback_response.status_code == 200:
+                    content_length = len(fallback_response.content)
+                    details += f", MongoDB fallback working: {content_length} bytes served"
+                else:
+                    success = False
+                    details += f", MongoDB fallback failed: {fallback_response.status_code}"
             
             self.log_test("Blog Image Persistence Fix", success, details)
             return success

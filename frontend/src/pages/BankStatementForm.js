@@ -208,6 +208,16 @@ export default function BankStatementForm() {
     { date: "", description: "", type: "Purchase", amount: "" },
   ]);
 
+  // AI Transaction Generator state
+  const [aiGenState, setAiGenState] = useState("");
+  const [aiGenCities, setAiGenCities] = useState([]);
+  const [aiGenVolume, setAiGenVolume] = useState("moderate");
+  const [aiGenCategories, setAiGenCategories] = useState(["groceries", "gas_auto", "dining", "retail"]);
+  const [aiGenEmployerName, setAiGenEmployerName] = useState("");
+  const [aiGenPayFrequency, setAiGenPayFrequency] = useState("biweekly");
+  const [aiGenDepositAmount, setAiGenDepositAmount] = useState("");
+  const [isGeneratingTransactions, setIsGeneratingTransactions] = useState(false);
+
   // For parsed address components
   const [addressCity, setAddressCity] = useState("");
   const [addressState, setAddressState] = useState("");

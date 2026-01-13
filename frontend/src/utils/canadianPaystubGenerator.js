@@ -221,8 +221,19 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       .map((c) => parseFloat(c.trim()) || 0)
       .slice(0, calculatedNumStubs);
 
-    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
-    let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
+    // Parse dates carefully to avoid timezone issues
+    // When parsing YYYY-MM-DD, add T12:00:00 to ensure it stays on the correct day
+    const parseLocalDate = (dateStr) => {
+      if (!dateStr) return new Date();
+      // If it's already a Date object, return it
+      if (dateStr instanceof Date) return dateStr;
+      // Add noon time to prevent timezone shifting
+      const d = new Date(dateStr + 'T12:00:00');
+      return isNaN(d.getTime()) ? new Date() : d;
+    };
+
+    const hireDate = parseLocalDate(formData.hireDate);
+    let startDate = formData.startDate ? parseLocalDate(formData.startDate) : new Date(hireDate);
 
     console.log("Calculated values:", { calculatedNumStubs, rate, payFrequency, payType, workerType, isContractor, province });
 

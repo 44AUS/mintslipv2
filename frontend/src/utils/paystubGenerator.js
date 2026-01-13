@@ -237,8 +237,17 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       .filter(d => d)
       .slice(0, calculatedNumStubs);
 
-    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
-    let startDate = formData.startDate ? new Date(formData.startDate) : new Date(hireDate);
+    // Parse dates carefully to avoid timezone issues
+    // When parsing YYYY-MM-DD, add T12:00:00 to ensure it stays on the correct day
+    const parseLocalDate = (dateStr) => {
+      if (!dateStr) return new Date();
+      if (dateStr instanceof Date) return dateStr;
+      const d = new Date(dateStr + 'T12:00:00');
+      return isNaN(d.getTime()) ? new Date() : d;
+    };
+
+    const hireDate = parseLocalDate(formData.hireDate);
+    let startDate = formData.startDate ? parseLocalDate(formData.startDate) : new Date(hireDate);
 
     // Get state tax rate from centralized tax calculator
     const state = formData.state?.toUpperCase() || "";

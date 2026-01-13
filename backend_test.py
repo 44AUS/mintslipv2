@@ -1194,6 +1194,130 @@ class AIResumeBuilderTester:
             self.log_test("Full Admin Flow", False, f"Exception: {str(e)}")
             return False
 
+    # ========== ADMIN CONFIRM USER EMAIL TESTS ==========
+
+    def test_admin_confirm_user_email(self):
+        """Test PUT /api/admin/users/{user_id}/verify endpoint"""
+        try:
+            import time
+            timestamp = int(time.time())
+            
+            # Step 1: Create a test user with emailVerified=false (sign up a new user)
+            test_email = f"emailverify_test_{timestamp}@test.com"
+            signup_payload = {
+                "email": test_email,
+                "password": "TestPassword123!",
+                "name": "Email Verify Test User"
+            }
+            
+            signup_response = requests.post(f"{self.api_url}/user/signup", json=signup_payload, timeout=10)
+            if signup_response.status_code != 200:
+                self.log_test("Admin Confirm User Email", False, f"Failed to create test user: {signup_response.status_code}")
+                return False
+            
+            signup_data = signup_response.json()
+            if not signup_data.get("success") or not signup_data.get("user"):
+                self.log_test("Admin Confirm User Email", False, f"Invalid signup response: {signup_data}")
+                return False
+            
+            test_user_id = signup_data["user"]["id"]
+            details = f"Test user created: {test_email}"
+            
+            # Verify user has emailVerified=false initially
+            if signup_data["user"].get("emailVerified") != False:
+                self.log_test("Admin Confirm User Email", False, f"Test user should have emailVerified=false initially, got: {signup_data['user'].get('emailVerified')}")
+                return False
+            
+            details += ", emailVerified=false initially ✓"
+            
+            # Step 2: Test endpoint requires admin authentication (should return 401 without token)
+            verify_url = f"{self.api_url}/admin/users/{test_user_id}/verify"
+            unauth_response = requests.put(verify_url, timeout=10)
+            
+            if unauth_response.status_code != 401:
+                self.log_test("Admin Confirm User Email", False, f"Expected 401 without auth, got: {unauth_response.status_code}")
+                return False
+            
+            details += ", 401 without auth ✓"
+            
+            # Step 3: Login as admin with specified credentials
+            admin_login_payload = {
+                "email": "austindflatt@gmail.com",
+                "password": "Summer3024$$"
+            }
+            
+            admin_response = requests.post(f"{self.api_url}/admin/login", json=admin_login_payload, timeout=10)
+            if admin_response.status_code != 200:
+                self.log_test("Admin Confirm User Email", False, f"Admin login failed: {admin_response.status_code}")
+                return False
+            
+            admin_data = admin_response.json()
+            if not admin_data.get("success") or not admin_data.get("token"):
+                self.log_test("Admin Confirm User Email", False, f"Invalid admin login response: {admin_data}")
+                return False
+            
+            admin_token = admin_data["token"]
+            details += ", Admin login successful ✓"
+            
+            # Step 4: Use admin token to call PUT /api/admin/users/{user_id}/verify
+            headers = {"Authorization": f"Bearer {admin_token}"}
+            verify_response = requests.put(verify_url, headers=headers, timeout=10)
+            
+            if verify_response.status_code != 200:
+                self.log_test("Admin Confirm User Email", False, f"Admin verify failed: {verify_response.status_code}")
+                return False
+            
+            verify_data = verify_response.json()
+            
+            # Step 5: Verify the response contains success=true, emailVerified=true
+            if not verify_data.get("success"):
+                self.log_test("Admin Confirm User Email", False, f"Response success=false: {verify_data}")
+                return False
+            
+            if verify_data.get("emailVerified") != True:
+                self.log_test("Admin Confirm User Email", False, f"Response emailVerified should be true, got: {verify_data.get('emailVerified')}")
+                return False
+            
+            details += ", Admin verify response correct ✓"
+            
+            # Step 6: Verify the user in database now has emailVerified=true
+            # Check via GET /api/admin/users with search on test user email
+            search_params = {"search": test_email}
+            users_response = requests.get(f"{self.api_url}/admin/users", headers=headers, params=search_params, timeout=10)
+            
+            if users_response.status_code != 200:
+                self.log_test("Admin Confirm User Email", False, f"Failed to search users: {users_response.status_code}")
+                return False
+            
+            users_data = users_response.json()
+            if not users_data.get("success") or not users_data.get("users"):
+                self.log_test("Admin Confirm User Email", False, f"Invalid users search response: {users_data}")
+                return False
+            
+            # Find the test user in the results
+            test_user = None
+            for user in users_data["users"]:
+                if user.get("email") == test_email:
+                    test_user = user
+                    break
+            
+            if not test_user:
+                self.log_test("Admin Confirm User Email", False, f"Test user not found in search results")
+                return False
+            
+            if test_user.get("emailVerified") != True:
+                self.log_test("Admin Confirm User Email", False, f"User emailVerified should be true in database, got: {test_user.get('emailVerified')}")
+                return False
+            
+            details += ", Database emailVerified=true ✓"
+            
+            self.log_test("Admin Confirm User Email", True, details)
+            return True
+            
+        except Exception as e:
+            self.log_test("Admin Confirm User Email", False, f"Exception: {str(e)}")
+            return False
+
     # ========== EMAIL SERVICE TESTS ==========
 
     def test_email_service_user_registration(self):

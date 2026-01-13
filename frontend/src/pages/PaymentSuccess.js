@@ -372,9 +372,9 @@ export default function PaymentSuccess() {
       if (generated) {
         setDocumentGenerated(true);
         
-        // Check for stored download URL from the generator
-        const storedUrl = localStorage.getItem('lastDownloadUrl');
-        const storedName = localStorage.getItem('lastDownloadFileName');
+        // Check for stored download URL from the generator (check both localStorage and sessionStorage)
+        const storedUrl = localStorage.getItem('lastDownloadUrl') || sessionStorage.getItem('lastDownloadUrl');
+        const storedName = localStorage.getItem('lastDownloadFileName') || sessionStorage.getItem('lastDownloadFileName');
         if (storedUrl) {
           setDownloadUrl(storedUrl);
           setFileName(storedName || getDefaultFileName(orderType, fileCount));

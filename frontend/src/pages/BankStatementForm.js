@@ -398,6 +398,86 @@ export default function BankStatementForm() {
     setAccountAddress2(`${addressData.city}, ${addressData.state} ${addressData.zip}`);
   }, []);
 
+  // AI Transaction Generator function
+  const generateAITransactions = async () => {
+    if (!aiGenState) {
+      toast.error("Please select a state");
+      return;
+    }
+    if (aiGenCities.length === 0) {
+      toast.error("Please select at least one city");
+      return;
+    }
+    if (aiGenCategories.length === 0) {
+      toast.error("Please select at least one category");
+      return;
+    }
+    if (!selectedMonth) {
+      toast.error("Please select a statement month first");
+      return;
+    }
+
+    setIsGeneratingTransactions(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/generate-bank-transactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          state: aiGenState,
+          cities: aiGenCities,
+          volume: aiGenVolume,
+          categories: aiGenCategories,
+          statementMonth: selectedMonth,
+          employerName: aiGenEmployerName || null,
+          payFrequency: aiGenPayFrequency,
+          depositAmount: aiGenDepositAmount ? parseFloat(aiGenDepositAmount) : null
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Failed to generate transactions");
+      }
+
+      const data = await response.json();
+      if (data.success && data.transactions) {
+        // Append generated transactions to existing ones (or replace empty ones)
+        const hasEmptyTransactions = transactions.length === 1 && 
+          !transactions[0].date && !transactions[0].description && !transactions[0].amount;
+        
+        if (hasEmptyTransactions) {
+          setTransactions(data.transactions);
+        } else {
+          setTransactions([...transactions, ...data.transactions]);
+        }
+        toast.success(`Generated ${data.count} transactions!`);
+      }
+    } catch (error) {
+      console.error("Transaction generation error:", error);
+      toast.error(error.message || "Failed to generate transactions");
+    } finally {
+      setIsGeneratingTransactions(false);
+    }
+  };
+
+  // Toggle category selection
+  const toggleCategory = (categoryId) => {
+    setAiGenCategories(prev => 
+      prev.includes(categoryId) 
+        ? prev.filter(c => c !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  // Toggle city selection
+  const toggleCity = (city) => {
+    setAiGenCities(prev => 
+      prev.includes(city) 
+        ? prev.filter(c => c !== city)
+        : [...prev, city]
+    );
+  };
+
   // Generate PDF preview when form data changes (debounced)
   // Only generate when a bank/template is selected
   useEffect(() => {

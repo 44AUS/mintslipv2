@@ -668,7 +668,9 @@ export function generateCanadianTemplateB(doc, data, pageWidth, pageHeight, marg
   
   y += 10;
   doc.text("SOCIAL INSURANCE NO:", m + 20, y);
-  const sinDisplay = formData.sin ? `XXX-XXX-${formData.sin}` : "XXX-XXX-XXX";
+  // Show masked SIN with only last 3 digits visible
+  const sinLast3Digits = formData.sin ? formData.sin.replace(/\D/g, '').slice(-3) : "XXX";
+  const sinDisplay = `***-***-${sinLast3Digits}`;
   doc.text(sinDisplay, m + 75, y);
 
   // ==================== EARNINGS STATEMENT TITLE & LOGO (RIGHT COLUMN) ====================

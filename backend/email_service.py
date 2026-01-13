@@ -21,6 +21,11 @@ TRUSTPILOT_URL = os.environ.get("TRUSTPILOT_URL", "https://www.trustpilot.com/re
 TRUSTPILOT_BCC = "mintslip.com+bafd4c313e@invite.trustpilot.com"
 SITE_URL = os.environ.get("SITE_URL", "https://mintslip.com")
 
+# Log configuration on startup
+logger.info(f"Email Service initialized - API Key set: {bool(resend.api_key)}, Sender: {SENDER_EMAIL}")
+if not resend.api_key:
+    logger.error("WARNING: RESEND_API_KEY is not set! Emails will not be sent.")
+
 # MongoDB connection for scheduled emails
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "mintslip_db")

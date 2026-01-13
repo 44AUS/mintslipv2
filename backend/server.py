@@ -93,8 +93,8 @@ app = FastAPI()
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads", "blog")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Mount static files for blog uploads
-app.mount("/api/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "uploads")), name="uploads")
+# Don't mount static files - use dynamic route for blog images to support MongoDB fallback
+# app.mount("/api/uploads", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "uploads")), name="uploads")
 
 # Security
 security = HTTPBearer(auto_error=False)

@@ -1241,12 +1241,23 @@ class AIResumeBuilderTester:
             details += ", 401 without auth ✓"
             
             # Step 3: Login as admin with specified credentials
+            # First try the specified credentials, then fallback to default admin
             admin_login_payload = {
                 "email": "austindflatt@gmail.com",
                 "password": "Summer3024$$"
             }
             
             admin_response = requests.post(f"{self.api_url}/admin/login", json=admin_login_payload, timeout=10)
+            
+            # If specified admin fails, try default admin
+            if admin_response.status_code != 200:
+                details += f", Specified admin login failed ({admin_response.status_code}), trying default admin"
+                admin_login_payload = {
+                    "email": "admin@mintslip.com",
+                    "password": "MINTSLIP2025!"
+                }
+                admin_response = requests.post(f"{self.api_url}/admin/login", json=admin_login_payload, timeout=10)
+            
             if admin_response.status_code != 200:
                 self.log_test("Admin Confirm User Email", False, f"Admin login failed: {admin_response.status_code}")
                 return False

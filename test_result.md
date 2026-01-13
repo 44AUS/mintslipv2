@@ -17,7 +17,19 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
+    needs_retesting: true
+
+  - task: "Email Service - User Registration Emails"
+    implemented: true
+    working: true
+    file: "email_service.py, server.py"
+    stuck_count: 0
+    priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed email service - 'resend' package was not installed. After installing, welcome emails and verification emails are sent successfully on user registration. Scheduled emails (getting_started, signup_no_purchase) are properly scheduled."
     status_history:
       - working: true
         agent: "testing"

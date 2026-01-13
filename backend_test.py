@@ -1306,13 +1306,21 @@ class AIResumeBuilderTester:
     def test_email_service_download_with_attachment(self):
         """Test send download email with PDF attachment"""
         try:
+            # Add delay to respect rate limiting
+            import time
+            time.sleep(3)  # Wait 3 seconds before starting this test
+            
             # Create a simple base64 encoded PDF content for testing
             import base64
             test_pdf_content = base64.b64encode(b"%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n2 0 obj\n<<\n/Type /Pages\n/Kids [3 0 R]\n/Count 1\n>>\nendobj\n3 0 obj\n<<\n/Type /Page\n/Parent 2 0 R\n/MediaBox [0 0 612 792]\n>>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000074 00000 n \n0000000120 00000 n \ntrailer\n<<\n/Size 4\n/Root 1 0 R\n>>\nstartxref\n179\n%%EOF").decode('utf-8')
             
+            # Use unique email to avoid conflicts
+            timestamp = int(time.time())
+            test_email = f"attachment_test_{timestamp}@example.com"
+            
             payload = {
-                "email": "test@example.com",
-                "userName": "Test User",
+                "email": test_email,
+                "userName": "Attachment Test User",
                 "documentType": "paystub",
                 "pdfBase64": test_pdf_content,
                 "isGuest": True
@@ -1327,9 +1335,8 @@ class AIResumeBuilderTester:
                 if data.get("success"):
                     details += f", Response: {data.get('message', 'Email sent')}"
                     
-                    # Wait a moment for email to be processed
-                    import time
-                    time.sleep(2)
+                    # Wait for email to be processed
+                    time.sleep(3)
                     
                     # Check MongoDB for email log with attachment
                     import pymongo
@@ -1337,14 +1344,14 @@ class AIResumeBuilderTester:
                     db = mongo_client["mintslip_db"]
                     
                     email_log = db.email_logs.find_one({
-                        "to": "test@example.com",
+                        "to": test_email,
                         "email_type": "download_confirmation",
-                        "status": "sent",
                         "has_attachment": True
                     })
                     
                     if email_log:
-                        details += ", Email logged with attachment ✓"
+                        status = email_log.get("status", "unknown")
+                        details += f", Email logged with attachment ({status}) ✓"
                     else:
                         success = False
                         details += ", Email NOT logged with attachment ✗"

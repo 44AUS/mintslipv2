@@ -592,16 +592,22 @@ async def user_signup(data: UserSignup, request: Request):
     }
     await sessions_collection.insert_one(session)
     
-    # Send emails asynchronously (don't wait for them)
-    asyncio.create_task(send_welcome_email(user["email"], user["name"]))
-    asyncio.create_task(send_verification_email(
-        user["email"], 
-        user["name"], 
-        user["verificationCode"],
-        f"{os.environ.get('SITE_URL', 'https://mintslip.com')}/verify-email?code={user['verificationCode']}&email={user['email']}"
-    ))
-    asyncio.create_task(schedule_getting_started_email(user["email"], user["name"], user["id"]))
-    asyncio.create_task(schedule_signup_no_purchase_reminder(user["email"], user["name"], user["id"]))
+    # Send emails asynchronously with error handling
+    async def send_signup_emails():
+        try:
+            await send_welcome_email(user["email"], user["name"])
+            await send_verification_email(
+                user["email"], 
+                user["name"], 
+                user["verificationCode"],
+                f"{os.environ.get('SITE_URL', 'https://mintslip.com')}/verify-email?code={user['verificationCode']}&email={user['email']}"
+            )
+            await schedule_getting_started_email(user["email"], user["name"], user["id"])
+            await schedule_signup_no_purchase_reminder(user["email"], user["name"], user["id"])
+        except Exception as e:
+            print(f"Error sending signup emails to {user['email']}: {str(e)}")
+    
+    asyncio.create_task(send_signup_emails())
     
     return {
         "success": True,

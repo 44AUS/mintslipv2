@@ -168,7 +168,13 @@ export default function AIResumeBuilder() {
       
       // Generate and download resume
       if (generatedResume) {
-        await generateAndDownloadZip(generatedResume, formData.template, formData.font);
+        await generateAndDownloadResume({
+          ...generatedResume,
+          template: formData.template,
+          font: formData.font,
+          sectionLayout: formData.sectionLayout,
+          onePage: formData.onePage
+        });
       }
       
       if (data.downloadsRemaining !== undefined) {

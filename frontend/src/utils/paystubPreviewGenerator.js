@@ -160,7 +160,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const {
     rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
     payType, workerType, isContractor, periodsPerYear, hoursArray, overtimeArray,
-    commissionArray, tipsArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
+    commissionArray, tipsArray, tipsCashArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
   } = commonData;
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });

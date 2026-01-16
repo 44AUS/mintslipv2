@@ -2245,6 +2245,18 @@ export default function PaystubForm() {
                                       step="0.01"
                                       placeholder="0.00"
                                     />
+                                    {(hoursPerPeriod[index]?.tips > 0) && (
+                                      <div className="flex items-center space-x-2 mt-1">
+                                        <Checkbox
+                                          id={`tipsCash-contractor-${index}`}
+                                          checked={hoursPerPeriod[index]?.tipsCash ?? false}
+                                          onCheckedChange={(checked) => handlePeriodHoursChange(index, 'tipsCash', checked)}
+                                        />
+                                        <Label htmlFor={`tipsCash-contractor-${index}`} className="text-xs text-slate-500 cursor-pointer">
+                                          Cash (not in check)
+                                        </Label>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               ) : (
@@ -2294,6 +2306,18 @@ export default function PaystubForm() {
                                       step="0.01"
                                       placeholder="0.00"
                                     />
+                                    {(hoursPerPeriod[index]?.tips > 0) && (
+                                      <div className="flex items-center space-x-2 mt-1">
+                                        <Checkbox
+                                          id={`tipsCash-employee-${index}`}
+                                          checked={hoursPerPeriod[index]?.tipsCash ?? false}
+                                          onCheckedChange={(checked) => handlePeriodHoursChange(index, 'tipsCash', checked)}
+                                        />
+                                        <Label htmlFor={`tipsCash-employee-${index}`} className="text-xs text-slate-500 cursor-pointer">
+                                          Cash (not in check)
+                                        </Label>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}

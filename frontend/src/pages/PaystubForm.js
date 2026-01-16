@@ -1019,12 +1019,13 @@ export default function PaystubForm() {
     }
   }, [payPeriods.length, formData.payFrequency]);
 
-  // Update formData hoursList, overtimeList, commissionList, and date lists when hoursPerPeriod changes
+  // Update formData hoursList, overtimeList, commissionList, tipsList, and date lists when hoursPerPeriod changes
   useEffect(() => {
     if (hoursPerPeriod.length > 0) {
       const hoursList = hoursPerPeriod.map(p => p.hours).join(', ');
       const overtimeList = hoursPerPeriod.map(p => p.overtime).join(', ');
       const commissionList = hoursPerPeriod.map(p => p.commission).join(', ');
+      const tipsList = hoursPerPeriod.map(p => p.tips).join(', ');
       const startDateList = hoursPerPeriod.map(p => p.startDate || '').join(', ');
       const endDateList = hoursPerPeriod.map(p => p.endDate || '').join(', ');
       const payDateList = hoursPerPeriod.map(p => p.payDate || '').join(', ');
@@ -1036,6 +1037,7 @@ export default function PaystubForm() {
         hoursList,
         overtimeList,
         commissionList,
+        tipsList,
         startDateList,
         endDateList,
         payDateList,

@@ -803,7 +803,8 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // Tips row (if applicable)
   if (tips > 0) {
     y += 9;
-    doc.text("Tips", m, y);
+    const tipsLabel = tipsCash ? "Cash Tips*" : "Tips";
+    doc.text(tipsLabel, m, y);
     doc.text(fmtCurrency(tips), ePeriodCol, y);
     doc.text(fmtCurrency(ytdTips), eYtdCol, y);
   }
@@ -818,6 +819,16 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   doc.text("Gross Pay", m + 3, y);
   doc.text(`$${fmtCurrency(grossPay)}`, ePeriodCol, y);
   doc.text(fmtCurrency(ytdGrossPay), eYtdCol, y);
+  
+  // Add cash tips footnote if applicable
+  if (tips > 0 && tipsCash) {
+    y += 10;
+    doc.setFontSize(5);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(100);
+    doc.text("*Cash tips - not in check/taxes", m, y);
+    doc.setTextColor(0);
+  }
 
   // ==================== OTHER BENEFITS SECTION (RIGHT COLUMN) ====================
   rightY += 15;

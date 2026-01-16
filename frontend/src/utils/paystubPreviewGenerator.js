@@ -482,6 +482,9 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const commissionArray = (formData.commissionList || "")
       .split(",")
       .map((c) => parseFloat(c.trim()) || 0);
+    const tipsArray = (formData.tipsList || "")
+      .split(",")
+      .map((t) => parseFloat(t.trim()) || 0);
     const startDateArray = (formData.startDateList || "")
       .split(",")
       .map((d) => d.trim())
@@ -517,10 +520,11 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     let regularPay = 0;
     let overtimePay = 0;
     let commission = commissionArray[0] || 0;
+    let tips = tipsArray[0] || 0;
     let grossPay = 0;
 
     if (payType === "salary") {
-      grossPay = annualSalary / periodsPerYear + commission;
+      grossPay = annualSalary / periodsPerYear + commission + tips;
       regularPay = annualSalary / periodsPerYear;
       hours = defaultHours;
       overtime = 0;
@@ -530,7 +534,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       overtime = overtimeArray[0] || 0;
       regularPay = rate * hours;
       overtimePay = rate * 1.5 * overtime;
-      grossPay = regularPay + overtimePay + commission;
+      grossPay = regularPay + overtimePay + commission + tips;
     }
 
     const ssTax = isContractor ? 0 : grossPay * 0.062;

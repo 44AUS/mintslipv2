@@ -220,6 +220,12 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       .map((c) => parseFloat(c.trim()) || 0)
       .slice(0, calculatedNumStubs);
     
+    // Parse tips array
+    const tipsArray = (formData.tipsList || "")
+      .split(",")
+      .map((t) => parseFloat(t.trim()) || 0)
+      .slice(0, calculatedNumStubs);
+    
     // Parse per-period dates (start, end, pay dates)
     const startDateArray = (formData.startDateList || "")
       .split(",")

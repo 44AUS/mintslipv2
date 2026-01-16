@@ -322,6 +322,7 @@ export default function PaystubForm() {
     overtimeList: "",
     commissionList: "",
     tipsList: "",
+    tipsCashList: "",
     startDateList: "",
     endDateList: "",
     payDateList: "",

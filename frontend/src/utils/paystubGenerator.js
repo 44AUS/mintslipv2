@@ -439,8 +439,8 @@ async function generateSingleStub(
   let tips = tipsArray[stubNum] || 0;
   let tipsCash = tipsCashArray[stubNum] || false;
   
-  // Cash tips are shown on paystub but NOT included in gross pay or taxes
-  // (employee already received them in cash and is responsible for their own taxes)
+  // Cash tips are NOT included in gross pay (check amount)
+  // But cash tips ARE included in taxable income for tax withholding purposes
   const tipsForPay = tipsCash ? 0 : tips;
   
   if (payType === "salary") {
@@ -459,28 +459,32 @@ async function generateSingleStub(
     grossPay = regularPay + overtimePay + commission + tipsForPay;
   }
 
+  // Taxable income includes ALL tips (cash and non-cash) for tax calculation purposes
+  // Even though cash tips aren't in the check, they must be taxed
+  const taxableIncome = grossPay + (tipsCash ? tips : 0);
+
   // Get actual local tax rate
   const localTaxRate = getLocalTaxRate(formData.state, formData.city);
   
   // Get actual SUTA rate for employer taxes
   const sutaRate = getSUTARate(formData.state);
 
-  // Contractors don't have taxes withheld
-  const ssTax = isContractor ? 0 : grossPay * 0.062;
-  const medTax = isContractor ? 0 : grossPay * 0.0145;
+  // Contractors don't have taxes withheld - taxes calculated on taxableIncome (includes cash tips)
+  const ssTax = isContractor ? 0 : taxableIncome * 0.062;
+  const medTax = isContractor ? 0 : taxableIncome * 0.0145;
   
   // Calculate federal income tax based on filing status (no allowances per 2020+ W-4)
   let federalTax = 0;
   if (!isContractor) {
     if (formData.federalFilingStatus) {
       federalTax = calculateFederalTax(
-        grossPay,
+        taxableIncome,
         payFrequency,
         formData.federalFilingStatus
       );
     } else {
       // Default flat rate if no filing status selected
-      federalTax = grossPay * 0.22;
+      federalTax = taxableIncome * 0.22;
     }
   }
   
@@ -488,7 +492,7 @@ async function generateSingleStub(
   let stateTax = 0;
   if (!isContractor) {
     stateTax = calculateStateTax(
-      grossPay,
+      taxableIncome,
       formData.state,
       payFrequency,
       formData.stateAllowances || 0,
@@ -496,7 +500,7 @@ async function generateSingleStub(
     );
   }
   
-  const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? grossPay * localTaxRate : 0);
+  const localTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? taxableIncome * localTaxRate : 0);
   const totalTax = ssTax + medTax + federalTax + stateTax + localTax;
 
   // Pre-tax deduction types

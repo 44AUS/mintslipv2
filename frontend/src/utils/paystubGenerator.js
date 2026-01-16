@@ -567,10 +567,16 @@ async function generateSingleStub(
   // YTD Tips should be cumulative sum of all tips up to and including current stub
   const ytdTips = tipsArray.slice(0, stubNum + 1).reduce((sum, t) => sum + (t || 0), 0);
   
-  // YTD Tips for pay calculation - only non-cash tips count toward gross pay
+  // YTD Tips for pay calculation - only non-cash tips count toward gross pay (check amount)
   const ytdTipsForPay = tipsArray.slice(0, stubNum + 1).reduce((sum, t, i) => {
     const isCash = tipsCashArray[i] || false;
     return sum + (isCash ? 0 : (t || 0));
+  }, 0);
+  
+  // YTD Cash Tips - for taxable income calculation
+  const ytdCashTips = tipsArray.slice(0, stubNum + 1).reduce((sum, t, i) => {
+    const isCash = tipsCashArray[i] || false;
+    return sum + (isCash ? (t || 0) : 0);
   }, 0);
   
   // YTD Gross Pay = (base pay * periods) + cumulative commission + cumulative non-cash tips
@@ -578,31 +584,34 @@ async function generateSingleStub(
   const basePay = regularPay + overtimePay;
   const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission + ytdTipsForPay;
   
-  // YTD Taxes should be calculated on YTD Gross Pay for accuracy
-  // SS and Medicare are flat percentages, so calculate directly on ytdGrossPay
-  const ytdSsTax = isContractor ? 0 : Math.round(ytdGrossPay * 0.062 * 100) / 100;
-  const ytdMedTax = isContractor ? 0 : Math.round(ytdGrossPay * 0.0145 * 100) / 100;
+  // YTD Taxable Income = YTD Gross Pay + YTD Cash Tips (cash tips are taxed even though not in check)
+  const ytdTaxableIncome = ytdGrossPay + ytdCashTips;
   
-  // For federal and state taxes, we approximate by using the average gross pay per period
-  // This accounts for varying commissions across periods
-  const avgGrossPayPerPeriod = ytdGrossPay / ytdPayPeriods;
+  // YTD Taxes should be calculated on YTD Taxable Income (includes cash tips)
+  // SS and Medicare are flat percentages, so calculate directly on ytdTaxableIncome
+  const ytdSsTax = isContractor ? 0 : Math.round(ytdTaxableIncome * 0.062 * 100) / 100;
+  const ytdMedTax = isContractor ? 0 : Math.round(ytdTaxableIncome * 0.0145 * 100) / 100;
+  
+  // For federal and state taxes, we approximate by using the average taxable income per period
+  // This accounts for varying commissions and tips across periods
+  const avgTaxableIncomePerPeriod = ytdTaxableIncome / ytdPayPeriods;
   let ytdFederalTax = 0;
   if (!isContractor) {
     if (formData.federalFilingStatus) {
-      const avgFederalTax = calculateFederalTax(avgGrossPayPerPeriod, payFrequency, formData.federalFilingStatus);
+      const avgFederalTax = calculateFederalTax(avgTaxableIncomePerPeriod, payFrequency, formData.federalFilingStatus);
       ytdFederalTax = Math.round(avgFederalTax * ytdPayPeriods * 100) / 100;
     } else {
-      ytdFederalTax = Math.round(ytdGrossPay * 0.22 * 100) / 100;
+      ytdFederalTax = Math.round(ytdTaxableIncome * 0.22 * 100) / 100;
     }
   }
   
   let ytdStateTax = 0;
   if (!isContractor) {
-    const avgStateTax = calculateStateTax(avgGrossPayPerPeriod, formData.state, payFrequency, formData.stateAllowances || 0, stateRate);
+    const avgStateTax = calculateStateTax(avgTaxableIncomePerPeriod, formData.state, payFrequency, formData.stateAllowances || 0, stateRate);
     ytdStateTax = Math.round(avgStateTax * ytdPayPeriods * 100) / 100;
   }
   
-  const ytdLocalTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? Math.round(ytdGrossPay * localTaxRate * 100) / 100 : 0);
+  const ytdLocalTax = isContractor ? 0 : (formData.includeLocalTax && localTaxRate > 0 ? Math.round(ytdTaxableIncome * localTaxRate * 100) / 100 : 0);
   const ytdTotalTax = Math.round((ytdSsTax + ytdMedTax + ytdFederalTax + ytdStateTax + ytdLocalTax) * 100) / 100;
   
   const ytdDeductions = Math.round(totalDeductions * ytdPayPeriods * 100) / 100;

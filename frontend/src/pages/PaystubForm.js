@@ -1094,11 +1094,12 @@ export default function PaystubForm() {
       const hours = hoursArray[i] || defaultHours;
       const overtime = overtimeArray[i] || 0;
       const commission = commissionArray[i] || 0;
+      const tips = tipsArray[i] || 0;
       
       if (formData.payType === "salary") {
-        grossPay = (annualSalary / periodsPerYear) + commission;
+        grossPay = (annualSalary / periodsPerYear) + commission + tips;
       } else {
-        grossPay = (rate * hours) + (rate * 1.5 * overtime) + commission;
+        grossPay = (rate * hours) + (rate * 1.5 * overtime) + commission + tips;
       }
 
       const ssTax = isContractor ? 0 : grossPay * 0.062;

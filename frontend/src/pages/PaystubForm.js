@@ -1007,6 +1007,7 @@ export default function PaystubForm() {
           overtime: prev[i]?.overtime ?? 0,
           commission: prev[i]?.commission ?? 0,
           tips: prev[i]?.tips ?? 0,
+          tipsCash: prev[i]?.tipsCash ?? false,
           startDate: prev[i]?.startDate ?? period.start,
           endDate: prev[i]?.endDate ?? period.end,
           payDate: prev[i]?.payDate ?? period.pay,

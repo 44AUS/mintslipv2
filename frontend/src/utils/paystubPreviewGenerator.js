@@ -188,10 +188,14 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   let overtimePay = 0;
   let commission = commissionArray[stubIndex] || 0;
   let tips = tipsArray[stubIndex] || 0;
+  let tipsCash = tipsCashArray[stubIndex] || false;
   let grossPay = 0;
+  
+  // Cash tips are shown but NOT included in gross pay (employee already received them)
+  const tipsForPay = tipsCash ? 0 : tips;
 
   if (payType === "salary") {
-    grossPay = annualSalary / periodsPerYear + commission + tips;
+    grossPay = annualSalary / periodsPerYear + commission + tipsForPay;
     regularPay = annualSalary / periodsPerYear;
     hours = defaultHours;
     overtime = 0;
@@ -201,7 +205,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
     overtime = overtimeArray[stubIndex] || 0;
     regularPay = rate * hours;
     overtimePay = rate * 1.5 * overtime;
-    grossPay = regularPay + overtimePay + commission + tips;
+    grossPay = regularPay + overtimePay + commission + tipsForPay;
   }
 
   const ssTax = isContractor ? 0 : grossPay * 0.062;

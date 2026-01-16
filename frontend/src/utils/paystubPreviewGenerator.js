@@ -535,10 +535,14 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     let overtimePay = 0;
     let commission = commissionArray[0] || 0;
     let tips = tipsArray[0] || 0;
+    let tipsCash = tipsCashArray[0] || false;
     let grossPay = 0;
+    
+    // Cash tips are shown but NOT included in gross pay (employee already received them)
+    const tipsForPay = tipsCash ? 0 : tips;
 
     if (payType === "salary") {
-      grossPay = annualSalary / periodsPerYear + commission + tips;
+      grossPay = annualSalary / periodsPerYear + commission + tipsForPay;
       regularPay = annualSalary / periodsPerYear;
       hours = defaultHours;
       overtime = 0;
@@ -548,7 +552,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       overtime = overtimeArray[0] || 0;
       regularPay = rate * hours;
       overtimePay = rate * 1.5 * overtime;
-      grossPay = regularPay + overtimePay + commission + tips;
+      grossPay = regularPay + overtimePay + commission + tipsForPay;
     }
 
     const ssTax = isContractor ? 0 : grossPay * 0.062;

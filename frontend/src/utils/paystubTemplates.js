@@ -1943,34 +1943,28 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   tableY += subHeaderHeight;
   
-  // Gross Wages data - 25 rows
-  const earningsRows = [
+  // Gross Wages data - build dynamically, then pad to 25 rows
+  const earningsRowsData = [
     ["Regular", hours > 0 ? hours.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate) : "0.00", fmtCurrency(regularPay), fmtCurrency(ytdRegularPay)],
     ["Overtime", overtime > 0 ? overtime.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate * 1.5) : "0.00", fmtCurrency(overtimePay), fmtCurrency(ytdOvertimePay)],
-    ["Commission", "0.000", "0.00", commission > 0 ? fmtCurrency(commission) : "0.00", commission > 0 ? fmtCurrency(ytdCommission) : "0.00"],
-    ["Tips", "0.000", "0.00", tips > 0 ? fmtCurrency(tips) : "0.00", tips > 0 ? fmtCurrency(ytdTips) : "0.00"],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
   ];
+  
+  // Only add Commission row if commission > 0
+  if (commission > 0) {
+    earningsRowsData.push(["Commission", "0.000", "0.00", fmtCurrency(commission), fmtCurrency(ytdCommission)]);
+  }
+  
+  // Only add Tips row if tips > 0
+  if (tips > 0) {
+    earningsRowsData.push(["Tips", "0.000", "0.00", fmtCurrency(tips), fmtCurrency(ytdTips)]);
+  }
+  
+  // Pad with empty rows to reach 25 total rows
+  while (earningsRowsData.length < 25) {
+    earningsRowsData.push(["", "", "", "", ""]);
+  }
+  
+  const earningsRows = earningsRowsData;
   
   doc.setFont("courier", "normal");
   doc.setFontSize(6);

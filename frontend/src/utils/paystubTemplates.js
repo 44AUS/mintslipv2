@@ -1948,7 +1948,7 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
     ["Regular", hours > 0 ? hours.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate) : "0.00", fmtCurrency(regularPay), fmtCurrency(ytdRegularPay)],
     ["Overtime", overtime > 0 ? overtime.toFixed(3) : "0.000", rate > 0 ? fmtCurrency(rate * 1.5) : "0.00", fmtCurrency(overtimePay), fmtCurrency(ytdOvertimePay)],
     ["Commission", "0.000", "0.00", commission > 0 ? fmtCurrency(commission) : "0.00", commission > 0 ? fmtCurrency(ytdCommission) : "0.00"],
-    ["", "", "", "", ""],
+    ["Tips", "0.000", "0.00", tips > 0 ? fmtCurrency(tips) : "0.00", tips > 0 ? fmtCurrency(ytdTips) : "0.00"],
     ["", "", "", "", ""],
     ["", "", "", "", ""],
     ["", "", "", "", ""],

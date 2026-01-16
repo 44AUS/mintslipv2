@@ -1711,12 +1711,12 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
 // Exact match to the provided screenshot design
 export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const { 
-    formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
+    formData, hours, overtime, commission = 0, tips = 0, regularPay, overtimePay, grossPay, 
     ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, 
     startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdGrossPay = grossPay, ytdSsTax = ssTax, ytdMedTax = medTax, 
     ytdFederalTax = federalTax, ytdStateTax = stateTax, ytdLocalTax = localTax,
-    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
+    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0, ytdTips = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     ytdDeductions = 0, ytdContributions = 0, ytdPayPeriods = 1,
     logoDataUrl,

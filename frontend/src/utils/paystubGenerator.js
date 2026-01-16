@@ -397,7 +397,7 @@ async function generateSingleStub(
   payDay, pageWidth, pageHeight, totalStubs, payFrequency,
   checkNumberArray = [], memoArray = [],
   startDateArray = [], endDateArray = [], payDateArray = [],
-  commissionArray = [], tipsArray = []
+  commissionArray = [], tipsArray = [], tipsCashArray = []
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";
@@ -437,10 +437,15 @@ async function generateSingleStub(
   let grossPay = 0;
   let commission = commissionArray[stubNum] || 0;
   let tips = tipsArray[stubNum] || 0;
+  let tipsCash = tipsCashArray[stubNum] || false;
+  
+  // Cash tips are shown on paystub but NOT included in gross pay or taxes
+  // (employee already received them in cash and is responsible for their own taxes)
+  const tipsForPay = tipsCash ? 0 : tips;
   
   if (payType === "salary") {
-    // Salary calculation - fixed amount per period plus commission and tips
-    grossPay = (annualSalary / periodsPerYear) + commission + tips;
+    // Salary calculation - fixed amount per period plus commission and non-cash tips
+    grossPay = (annualSalary / periodsPerYear) + commission + tipsForPay;
     regularPay = annualSalary / periodsPerYear;
     hours = defaultHours; // Standard hours for display purposes
     overtime = 0;
@@ -451,7 +456,7 @@ async function generateSingleStub(
     overtime = overtimeArray[stubNum] || 0;
     regularPay = rate * hours;
     overtimePay = rate * 1.5 * overtime;
-    grossPay = regularPay + overtimePay + commission + tips;
+    grossPay = regularPay + overtimePay + commission + tipsForPay;
   }
 
   // Get actual local tax rate

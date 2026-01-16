@@ -788,6 +788,14 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
     doc.text(fmtCurrency(ytdCommission), eYtdCol, y);
   }
 
+  // Tips row (if applicable)
+  if (tips > 0) {
+    y += 9;
+    doc.text("Tips", m, y);
+    doc.text(fmtCurrency(tips), ePeriodCol, y);
+    doc.text(fmtCurrency(ytdTips), eYtdCol, y);
+  }
+
   // ==================== GROSS PAY BAR ====================
   y += 12;
   const barHeight = 10;

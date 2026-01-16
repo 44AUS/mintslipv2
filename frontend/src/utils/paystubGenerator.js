@@ -391,7 +391,7 @@ async function generateSingleStub(
   payDay, pageWidth, pageHeight, totalStubs, payFrequency,
   checkNumberArray = [], memoArray = [],
   startDateArray = [], endDateArray = [], payDateArray = [],
-  commissionArray = []
+  commissionArray = [], tipsArray = []
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";
@@ -430,10 +430,11 @@ async function generateSingleStub(
   let overtimePay = 0;
   let grossPay = 0;
   let commission = commissionArray[stubNum] || 0;
+  let tips = tipsArray[stubNum] || 0;
   
   if (payType === "salary") {
-    // Salary calculation - fixed amount per period plus commission
-    grossPay = (annualSalary / periodsPerYear) + commission;
+    // Salary calculation - fixed amount per period plus commission and tips
+    grossPay = (annualSalary / periodsPerYear) + commission + tips;
     regularPay = annualSalary / periodsPerYear;
     hours = defaultHours; // Standard hours for display purposes
     overtime = 0;
@@ -444,7 +445,7 @@ async function generateSingleStub(
     overtime = overtimeArray[stubNum] || 0;
     regularPay = rate * hours;
     overtimePay = rate * 1.5 * overtime;
-    grossPay = regularPay + overtimePay + commission;
+    grossPay = regularPay + overtimePay + commission + tips;
   }
 
   // Get actual local tax rate

@@ -1079,6 +1079,9 @@ export default function PaystubForm() {
     const commissionArray = formData.commissionList
       ? formData.commissionList.split(",").map((c) => parseFloat(c.trim()) || 0).slice(0, numStubs)
       : [];
+    const tipsArray = formData.tipsList
+      ? formData.tipsList.split(",").map((t) => parseFloat(t.trim()) || 0).slice(0, numStubs)
+      : [];
 
     const isContractor = formData.workerType === "contractor";
     const stateRate = getStateTaxRate(formData.state);

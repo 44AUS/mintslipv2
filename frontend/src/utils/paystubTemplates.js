@@ -1960,13 +1960,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   
   // Only add Tips row if tips > 0
   if (tips > 0) {
-    const tipsLabel = tipsCash ? "Cash Tips*" : "Tips";
+    const tipsLabel = tipsCash ? "Cash Tips" : "Tips";
     earningsRowsData.push([tipsLabel, "0.000", "0.00", fmtCurrency(tips), fmtCurrency(ytdTips)]);
-  }
-  
-  // Add cash tips footnote if applicable
-  if (tips > 0 && tipsCash) {
-    earningsRowsData.push(["*Not in check/taxes", "", "", "", ""]);
   }
   
   // Pad with empty rows to reach 25 total rows

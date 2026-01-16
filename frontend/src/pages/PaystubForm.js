@@ -1055,9 +1055,19 @@ export default function PaystubForm() {
   const handlePeriodHoursChange = (index, field, value) => {
     setHoursPerPeriod(prev => {
       const updated = [...prev];
-      // For date fields and string fields (checkNumber, memo), keep the string value; for numeric fields, parse as float
+      // For date fields and string fields (checkNumber, memo), keep the string value
+      // For boolean fields (tipsCash), keep as boolean
+      // For numeric fields, parse as float
       const stringFields = ['startDate', 'endDate', 'payDate', 'checkNumber', 'memo'];
-      const processedValue = stringFields.includes(field) ? value : (parseFloat(value) || 0);
+      const booleanFields = ['tipsCash'];
+      let processedValue;
+      if (booleanFields.includes(field)) {
+        processedValue = value;
+      } else if (stringFields.includes(field)) {
+        processedValue = value;
+      } else {
+        processedValue = parseFloat(value) || 0;
+      }
       updated[index] = {
         ...updated[index],
         [field]: processedValue

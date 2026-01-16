@@ -553,12 +553,12 @@ function drawTable(
 // Exact layout matching ADP format with two-column design
 export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   const { 
-    formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
+    formData, hours, overtime, commission = 0, tips = 0, regularPay, overtimePay, grossPay, 
     ssTax, medTax, federalTax, stateTax, localTax, totalTax, netPay, rate, 
     startDate, endDate, payDate, payFrequency, stubNum, totalStubs,
     ytdGrossPay = grossPay, ytdSsTax = ssTax, ytdMedTax = medTax, 
     ytdFederalTax = federalTax, ytdStateTax = stateTax, ytdLocalTax = localTax,
-    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0,
+    ytdRegularPay = regularPay, ytdOvertimePay = overtimePay, ytdCommission = 0, ytdTips = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     preTaxDeductions = 0, postTaxDeductions = 0, preTaxContributions = 0, postTaxContributions = 0,
     totalPreTax = 0, totalPostTax = 0,

@@ -252,6 +252,16 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
     ]);
   }
 
+  if (tips > 0) {
+    earningsRows.push([
+      "Tips",
+      "-",
+      "-",
+      `$${fmt(tips)}`,
+      `$${fmt(ytdTips)}`,
+    ]);
+  }
+
   drawEarningsTableWithUnderline(doc, left, y, earningsRows, 16, usableWidth);
   // Calculate y based on actual table height + consistent gap
   const actualTableHeight = earningsRows.length * 16;

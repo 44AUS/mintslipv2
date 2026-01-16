@@ -1086,6 +1086,9 @@ export default function PaystubForm() {
     const tipsArray = formData.tipsList
       ? formData.tipsList.split(",").map((t) => parseFloat(t.trim()) || 0).slice(0, numStubs)
       : [];
+    const tipsCashArray = formData.tipsCashList
+      ? formData.tipsCashList.split(",").map((t) => t.trim() === '1').slice(0, numStubs)
+      : [];
 
     const isContractor = formData.workerType === "contractor";
     const stateRate = getStateTaxRate(formData.state);
@@ -1099,11 +1102,16 @@ export default function PaystubForm() {
       const overtime = overtimeArray[i] || 0;
       const commission = commissionArray[i] || 0;
       const tips = tipsArray[i] || 0;
+      const tipsCash = tipsCashArray[i] || false;
+      
+      // Cash tips are shown but NOT included in gross pay (employee already received them)
+      // Only non-cash tips are added to gross pay
+      const tipsForPay = tipsCash ? 0 : tips;
       
       if (formData.payType === "salary") {
-        grossPay = (annualSalary / periodsPerYear) + commission + tips;
+        grossPay = (annualSalary / periodsPerYear) + commission + tipsForPay;
       } else {
-        grossPay = (rate * hours) + (rate * 1.5 * overtime) + commission + tips;
+        grossPay = (rate * hours) + (rate * 1.5 * overtime) + commission + tipsForPay;
       }
 
       const ssTax = isContractor ? 0 : grossPay * 0.062;

@@ -549,10 +549,13 @@ async function generateSingleStub(
   // YTD Commission should be cumulative sum of all commissions up to and including current stub
   const ytdCommission = commissionArray.slice(0, stubNum + 1).reduce((sum, c) => sum + (c || 0), 0);
   
-  // YTD Gross Pay = (base pay * periods) + cumulative commission
-  // Base pay is regularPay + overtimePay (without commission)
+  // YTD Tips should be cumulative sum of all tips up to and including current stub
+  const ytdTips = tipsArray.slice(0, stubNum + 1).reduce((sum, t) => sum + (t || 0), 0);
+  
+  // YTD Gross Pay = (base pay * periods) + cumulative commission + cumulative tips
+  // Base pay is regularPay + overtimePay (without commission and tips)
   const basePay = regularPay + overtimePay;
-  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission;
+  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission + ytdTips;
   
   // YTD Taxes should be calculated on YTD Gross Pay for accuracy
   // SS and Medicare are flat percentages, so calculate directly on ytdGrossPay

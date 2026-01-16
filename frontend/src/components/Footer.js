@@ -121,6 +121,21 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-green-400" />
                 <a href="tel:+18556236746" className="hover:text-white transition-colors">(855) 623-6746</a>
               </div>
+              
+              {/* Findly Tools Badge */}
+              <div className="mt-4">
+                <a 
+                  href="https://findly.tools/mintslip-paystub-generator-ai-resume-builder?utm_source=mintslip-paystub-generator-ai-resume-builder" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img 
+                    src="https://findly.tools/badges/findly-tools-badge-light.svg" 
+                    alt="Featured on findly.tools" 
+                    width="150" 
+                  />
+                </a>
+              </div>
             </div>
           </div>
 

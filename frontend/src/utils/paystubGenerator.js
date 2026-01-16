@@ -655,6 +655,7 @@ async function generateSingleStub(
     overtime,
     commission,
     tips,
+    tipsCash,
     regularPay,
     overtimePay,
     grossPay,

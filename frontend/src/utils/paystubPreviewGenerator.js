@@ -286,10 +286,16 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   // YTD Tips should be cumulative sum of all tips up to and including current stub
   const ytdTips = tipsArray.slice(0, stubIndex + 1).reduce((sum, t) => sum + (t || 0), 0);
   
-  // YTD Gross Pay = (base pay * periods) + cumulative commission + cumulative tips
+  // YTD Tips for pay calculation - only non-cash tips count toward gross pay
+  const ytdTipsForPay = tipsArray.slice(0, stubIndex + 1).reduce((sum, t, i) => {
+    const isCash = tipsCashArray[i] || false;
+    return sum + (isCash ? 0 : (t || 0));
+  }, 0);
+  
+  // YTD Gross Pay = (base pay * periods) + cumulative commission + cumulative non-cash tips
   // Base pay is regularPay + overtimePay (without commission and tips)
   const basePay = regularPay + overtimePay;
-  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission + ytdTips;
+  const ytdGrossPay = (basePay * ytdPayPeriods) + ytdCommission + ytdTipsForPay;
   
   // YTD Taxes should be calculated on YTD Gross Pay for accuracy
   // SS and Medicare are flat percentages, so calculate directly on ytdGrossPay

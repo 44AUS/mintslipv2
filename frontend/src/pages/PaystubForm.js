@@ -1141,6 +1141,7 @@ export default function PaystubForm() {
         hours,
         overtime,
         commission,
+        tips,
         ssTax,
         medTax,
         federalTax,

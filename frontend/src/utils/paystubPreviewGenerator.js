@@ -652,6 +652,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       overtime,
       commission,
       tips,
+      tipsCash,
       regularPay,
       overtimePay,
       grossPay,

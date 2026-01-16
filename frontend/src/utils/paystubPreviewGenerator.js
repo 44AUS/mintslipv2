@@ -335,7 +335,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const ytdHours = (hours + overtime) * ytdPayPeriods;
 
   const templateData = {
-    formData, hours, overtime, commission, tips, regularPay, overtimePay, grossPay,
+    formData, hours, overtime, commission, tips, tipsCash, regularPay, overtimePay, grossPay,
     ssTax, medTax, federalTax, stateTax, localTax, localTaxRate, totalTax, netPay,
     rate, stateRate, startDate, endDate, payDate, payFrequency,
     stubNum: stubIndex, totalStubs,

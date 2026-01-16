@@ -254,7 +254,7 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
 
   if (tips > 0) {
     // Show "Cash Tips" label if paid in cash (not included in check/taxes)
-    const tipsLabel = tipsCash ? "Cash Tips*" : "Tips";
+    const tipsLabel = tipsCash ? "Cash Tips" : "Tips";
     earningsRows.push([
       tipsLabel,
       "-",
@@ -268,16 +268,6 @@ export async function generateTemplateA(doc, data, pageWidth, pageHeight, margin
   // Calculate y based on actual table height + consistent gap
   const actualTableHeight = earningsRows.length * 16;
   y += actualTableHeight + 12; // Consistent 12px gap after the table ends
-  
-  // Add cash tips footnote if applicable
-  if (tips > 0 && tipsCash) {
-    doc.setFontSize(6);
-    doc.setFont("helvetica", "italic");
-    doc.setTextColor(100);
-    doc.text("*Cash tips received - not included in check amount or tax withholdings", left, y);
-    doc.setTextColor(0);
-    y += 10;
-  }
 
   // ========== TAXES SECTION (Two Columns) - Only for Employees ==========
   if (!isContractor) {

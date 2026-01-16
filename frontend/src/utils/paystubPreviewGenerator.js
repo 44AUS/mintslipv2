@@ -449,7 +449,7 @@ export const generateAllPreviewPDFs = async (formData, template = 'template-a', 
     const commonData = {
       rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
       payType, workerType, isContractor, periodsPerYear, hoursArray, overtimeArray,
-      commissionArray, tipsArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
+      commissionArray, tipsArray, tipsCashArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
     };
 
     // Generate previews for all stubs

@@ -438,6 +438,7 @@ export const generateAllPreviewPDFs = async (formData, template = 'template-a', 
     const overtimeArray = (formData.overtimeList || "").split(",").map((h) => parseFloat(h.trim()) || 0);
     const commissionArray = (formData.commissionList || "").split(",").map((c) => parseFloat(c.trim()) || 0);
     const tipsArray = (formData.tipsList || "").split(",").map((t) => parseFloat(t.trim()) || 0);
+    const tipsCashArray = (formData.tipsCashList || "").split(",").map((t) => t.trim() === '1');
     const startDateArray = (formData.startDateList || "").split(",").map((d) => d.trim()).filter(d => d);
     const endDateArray = (formData.endDateList || "").split(",").map((d) => d.trim()).filter(d => d);
     const payDateArray = (formData.payDateList || "").split(",").map((d) => d.trim()).filter(d => d);

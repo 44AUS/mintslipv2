@@ -2196,9 +2196,9 @@ export default function PaystubForm() {
                                   </div>
                                 </div>
                               </div>
-                              {/* Show only hours for contractors, hours + overtime + commission for hourly employees */}
+                              {/* Show only hours for contractors, hours + overtime + commission + tips for hourly employees */}
                               {formData.workerType === 'contractor' ? (
-                                <div className="grid grid-cols-2 gap-3 sm:ml-32">
+                                <div className="grid grid-cols-3 gap-3 sm:ml-32">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Hours Worked</Label>
                                     <Input
@@ -2222,9 +2222,21 @@ export default function PaystubForm() {
                                       placeholder="0.00"
                                     />
                                   </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Tips ($)</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.tips ?? 0}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'tips', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                    />
+                                  </div>
                                 </div>
                               ) : (
-                                <div className="grid grid-cols-3 gap-3 sm:ml-32">
+                                <div className="grid grid-cols-4 gap-3 sm:ml-32">
                                   <div className="space-y-1">
                                     <Label className="text-xs text-slate-600">Regular Hours</Label>
                                     <Input
@@ -2253,6 +2265,18 @@ export default function PaystubForm() {
                                       type="number"
                                       value={hoursPerPeriod[index]?.commission ?? 0}
                                       onChange={(e) => handlePeriodHoursChange(index, 'commission', e.target.value)}
+                                      className="h-9"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Tips ($)</Label>
+                                    <Input
+                                      type="number"
+                                      value={hoursPerPeriod[index]?.tips ?? 0}
+                                      onChange={(e) => handlePeriodHoursChange(index, 'tips', e.target.value)}
                                       className="h-9"
                                       min="0"
                                       step="0.01"

@@ -1322,8 +1322,9 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
     ]);
   }
   if (tips > 0) {
+    const tipsLabel = tipsCash ? "Cash Tips*" : "Tips";
     earnRows.push([
-      "Tips", 
+      tipsLabel, 
       `${formatDateMDY(startDate)} – ${formatDateMDY(endDate)}`, 
       "", 
       "", 
@@ -1335,8 +1336,14 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
   earnRows.push(["", "", "", "", "", ""]);
   earnRows.push(["", "", "", "", "", ""]);
   earnRows.push(["", "", "", "", "", ""]);
-  earnRows.push(["", "", "", "", "", ""]);
-  earnRows.push(["", "", "", "", "", ""]);
+  // Add cash tips footnote row if applicable
+  if (tips > 0 && tipsCash) {
+    earnRows.push(["*Cash tips - not included in check or taxes", "", "", "", "", ""]);
+    earnRows.push(["", "", "", "", "", ""]);
+  } else {
+    earnRows.push(["", "", "", "", "", ""]);
+    earnRows.push(["", "", "", "", "", ""]);
+  }
   earnRows.push(["Earning", "", "", "", fmt(grossPay), fmt(ytdGrossPay || grossPay)]);
   drawWorkdayTable("Earning", earnCols, earnWidths, earnRows, { rightAlignFrom: 2, isBoldLastRow: true, whiteHeader: true, borderAboveLastRow: true, noVerticalDividers: true });
 

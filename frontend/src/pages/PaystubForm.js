@@ -1047,7 +1047,7 @@ export default function PaystubForm() {
     }
   }, [hoursPerPeriod]);
 
-  // Handler for updating individual period data (hours, overtime, commission, dates)
+  // Handler for updating individual period data (hours, overtime, commission, tips, dates)
   const handlePeriodHoursChange = (index, field, value) => {
     setHoursPerPeriod(prev => {
       const updated = [...prev];

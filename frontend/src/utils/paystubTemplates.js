@@ -1041,7 +1041,7 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
 // Template C: Workday Style Professional Payslip - MasterBrand/Workday Layout
 export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin) {
   try {
-  const { formData, hours = 0, overtime = 0, commission = 0, tips = 0, regularPay = 0, overtimePay = 0, grossPay = 0, ssTax = 0, medTax = 0, federalTax = 0, stateTax = 0, localTax = 0, localTaxRate = 0, totalTax = 0, netPay = 0, rate = 0, stateRate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
+  const { formData, hours = 0, overtime = 0, commission = 0, tips = 0, tipsCash = false, regularPay = 0, overtimePay = 0, grossPay = 0, ssTax = 0, medTax = 0, federalTax = 0, stateTax = 0, localTax = 0, localTaxRate = 0, totalTax = 0, netPay = 0, rate = 0, stateRate = 0, startDate, endDate, payDate, payFrequency = 'biweekly', stubNum = 0, totalStubs = 1,
     ytdRegularPay = 0, ytdOvertimePay = 0, ytdCommission = 0, ytdTips = 0, ytdGrossPay = 0, ytdSsTax = 0, ytdMedTax = 0, ytdFederalTax = 0, ytdStateTax = 0, ytdLocalTax = 0, ytdTotalTax = 0, ytdNetPay = 0, ytdHours = 0,
     deductionsData = [], totalDeductions = 0, contributionsData = [], totalContributions = 0,
     preTaxDeductions = 0, postTaxDeductions = 0, preTaxContributions = 0, postTaxContributions = 0,

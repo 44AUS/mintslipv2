@@ -7,7 +7,7 @@ import base64
 from datetime import datetime
 
 class SavedDocumentsPersistenceTester:
-    def __init__(self, base_url="https://tips-paystub-gen.preview.emergentagent.com"):
+    def __init__(self, base_url="https://tip-tax-tracker.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.user_token = None

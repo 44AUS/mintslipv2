@@ -108,7 +108,7 @@ def test_pdf_cleaning_template(template_name, api_url):
         return False
 
 def main():
-    api_url = "https://tips-paystub-gen.preview.emergentagent.com/api"
+    api_url = "https://tip-tax-tracker.preview.emergentagent.com/api"
     
     print("🧹 Comprehensive PDF Cleaning Endpoint Test")
     print("=" * 50)

@@ -615,6 +615,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const ytdRegularPay = regularPay * ytdPayPeriods;
     const ytdOvertimePay = overtimePay * ytdPayPeriods;
     const ytdCommission = commission * ytdPayPeriods;
+    const ytdTips = tips * ytdPayPeriods;
     const ytdGrossPay = grossPay * ytdPayPeriods;
     const ytdSsTax = ssTax * ytdPayPeriods;
     const ytdMedTax = medTax * ytdPayPeriods;
@@ -632,6 +633,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       hours,
       overtime,
       commission,
+      tips,
       regularPay,
       overtimePay,
       grossPay,
@@ -655,6 +657,7 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       ytdRegularPay,
       ytdOvertimePay,
       ytdCommission,
+      ytdTips,
       ytdGrossPay,
       ytdSsTax,
       ytdMedTax,

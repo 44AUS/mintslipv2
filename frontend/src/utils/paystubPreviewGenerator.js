@@ -496,6 +496,9 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     const tipsArray = (formData.tipsList || "")
       .split(",")
       .map((t) => parseFloat(t.trim()) || 0);
+    const tipsCashArray = (formData.tipsCashList || "")
+      .split(",")
+      .map((t) => t.trim() === '1');
     const startDateArray = (formData.startDateList || "")
       .split(",")
       .map((d) => d.trim())

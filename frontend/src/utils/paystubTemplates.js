@@ -1298,6 +1298,16 @@ export async function generateTemplateC(doc, data, pageWidth, pageHeight, margin
       fmt(ytdCommission || commission)
     ]);
   }
+  if (tips > 0) {
+    earnRows.push([
+      "Tips", 
+      `${formatDateMDY(startDate)} – ${formatDateMDY(endDate)}`, 
+      "", 
+      "", 
+      fmt(tips), 
+      fmt(ytdTips || tips)
+    ]);
+  }
   // Add blank rows for spacing like the reference
   earnRows.push(["", "", "", "", "", ""]);
   earnRows.push(["", "", "", "", "", ""]);

@@ -160,7 +160,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   const {
     rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,
     payType, workerType, isContractor, periodsPerYear, hoursArray, overtimeArray,
-    commissionArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
+    commissionArray, tipsArray, startDateArray, endDateArray, payDateArray, hireDate, stateRate, state
   } = commonData;
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });
@@ -187,10 +187,11 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   let regularPay = 0;
   let overtimePay = 0;
   let commission = commissionArray[stubIndex] || 0;
+  let tips = tipsArray[stubIndex] || 0;
   let grossPay = 0;
 
   if (payType === "salary") {
-    grossPay = annualSalary / periodsPerYear + commission;
+    grossPay = annualSalary / periodsPerYear + commission + tips;
     regularPay = annualSalary / periodsPerYear;
     hours = defaultHours;
     overtime = 0;
@@ -200,7 +201,7 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
     overtime = overtimeArray[stubIndex] || 0;
     regularPay = rate * hours;
     overtimePay = rate * 1.5 * overtime;
-    grossPay = regularPay + overtimePay + commission;
+    grossPay = regularPay + overtimePay + commission + tips;
   }
 
   const ssTax = isContractor ? 0 : grossPay * 0.062;

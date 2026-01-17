@@ -119,44 +119,6 @@ export default function PaystubGeneratorScreen({ navigation }) {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Calculate preview values
-  const preview = useMemo(() => {
-    const hours = parseFloat(formData.hours) || 0;
-    const overtime = parseFloat(formData.overtime) || 0;
-    const rate = parseFloat(formData.rate) || 0;
-    const annualSalary = parseFloat(formData.annualSalary) || 0;
-
-    let grossPay = 0;
-    if (formData.payType === 'hourly') {
-      grossPay = (hours * rate) + (overtime * rate * 1.5);
-    } else {
-      // Salary based on frequency
-      const frequencies = { weekly: 52, biweekly: 26, semimonthly: 24, monthly: 12 };
-      grossPay = annualSalary / (frequencies[formData.payFrequency] || 26);
-    }
-
-    const socialSecurity = grossPay * TAX_RATES.socialSecurity;
-    const medicare = grossPay * TAX_RATES.medicare;
-    const federal = grossPay * TAX_RATES.federal;
-    const stateTax = grossPay * 0.05; // Simplified state tax
-    const totalTaxes = socialSecurity + medicare + federal + stateTax;
-    const netPay = grossPay - totalTaxes;
-
-    return {
-      grossPay,
-      socialSecurity,
-      medicare,
-      federal,
-      stateTax,
-      totalTaxes,
-      netPay,
-    };
-  }, [formData]);
-
-  const formatCurrency = (num) => {
-    return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
   const toggleSection = (section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };

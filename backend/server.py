@@ -5449,12 +5449,12 @@ The image should be:
         with open(filepath, "wb") as f:
             f.write(image_bytes)
         
-        # Also store in MongoDB for persistence
+        # Also store in MongoDB for persistence (convert bytes to base64 for storage)
         image_data = {
             "id": str(uuid.uuid4()),
             "filename": filename,
             "contentType": "image/png",
-            "content": img['data'],  # Already base64 encoded
+            "content": base64.b64encode(image_bytes).decode('utf-8'),  # Convert bytes to base64
             "originalFilename": f"AI Generated - {data.title[:50]}",
             "createdAt": datetime.now(timezone.utc).isoformat(),
             "uploadedBy": session.get("adminId"),

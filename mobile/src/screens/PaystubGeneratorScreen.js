@@ -176,7 +176,7 @@ export default function PaystubGeneratorScreen({ navigation }) {
               <Ionicons name="document-text" size={20} color={colors.primary.light} />
               <Text style={styles.previewSectionTitle}>Live Document Preview</Text>
             </View>
-            <PaystubPreview data={formData} type="us" />
+            <PaystubPreview data={formData} type="us" template={formData.selectedTemplate} />
           </View>
 
           {/* Page Title */}

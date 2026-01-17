@@ -5,7 +5,7 @@ import json
 
 def test_specific_user_login():
     """Test login with testsubscriber@test.com / Test123! as mentioned in review request"""
-    base_url = "https://resume-bug-fix.preview.emergentagent.com"
+    base_url = "https://mobile-mint-app.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔐 Testing specific user login: testsubscriber@test.com")

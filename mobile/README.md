@@ -102,7 +102,7 @@ eas build --platform ios
 ## API Integration
 
 The app connects to the MintSlip backend at:
-- Production: https://native-paystubs.preview.emergentagent.com/api
+- Production: https://ai-blog-image-fix.preview.emergentagent.com/api
 
 All API calls are handled through `/src/services/api.js`
 

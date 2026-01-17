@@ -15,7 +15,7 @@ const linking = {
   prefixes: [
     Linking.createURL('/'),
     'mintslip://',
-    'https://native-paystubs.preview.emergentagent.com'
+    'https://ai-blog-image-fix.preview.emergentagent.com'
   ],
   config: {
     screens: {

@@ -22,7 +22,7 @@ import { showToast } from '../components/Toast';
 import apiService from '../services/api';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
 
-const API_BASE_URL = 'https://native-paystubs.preview.emergentagent.com/api';
+const API_BASE_URL = 'https://ai-blog-image-fix.preview.emergentagent.com/api';
 
 // US States
 const US_STATES = [

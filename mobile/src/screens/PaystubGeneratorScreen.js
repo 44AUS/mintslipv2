@@ -69,13 +69,6 @@ const TEMPLATES = [
   { label: 'OnPay Style', value: 'template-h' },
 ];
 
-// Tax rates (simplified for preview)
-const TAX_RATES = {
-  socialSecurity: 0.062,
-  medicare: 0.0145,
-  federal: 0.12, // Simplified flat rate for preview
-};
-
 export default function PaystubGeneratorScreen({ navigation }) {
   const { user, isAuthenticated, hasActiveSubscription } = useAuth();
   const scrollViewRef = useRef(null);

@@ -153,61 +153,13 @@ export default function CanadianPaystubGeneratorScreen({ navigation }) {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView ref={scrollViewRef} style={styles.content} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           
-          {/* Live Preview Card */}
-          <View style={styles.previewCard}>
-            <View style={styles.previewHeader}>
-              <Ionicons name="document-text" size={24} color={colors.primary.light} />
-              <Text style={styles.previewTitle}>Live Preview 🍁</Text>
+          {/* Document Preview */}
+          <View style={styles.previewSection}>
+            <View style={styles.previewLabelRow}>
+              <Ionicons name="document-text" size={20} color={colors.primary.light} />
+              <Text style={styles.previewSectionTitle}>Live Document Preview 🍁</Text>
             </View>
-            
-            <View style={styles.previewContent}>
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Employee</Text>
-                <Text style={styles.previewValue}>{formData.name || 'Your Name'}</Text>
-              </View>
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Company</Text>
-                <Text style={styles.previewValue}>{formData.company || 'Company Name'}</Text>
-              </View>
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Province</Text>
-                <Text style={styles.previewValue}>{formData.province}</Text>
-              </View>
-              
-              <View style={styles.previewDivider} />
-              
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Gross Pay</Text>
-                <Text style={styles.previewValueBold}>{formatCurrency(preview.grossPay)} CAD</Text>
-              </View>
-              
-              <View style={styles.previewSubSection}>
-                <Text style={styles.previewSubTitle}>Deductions</Text>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>CPP</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.cpp)}</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>EI</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.ei)}</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>Federal Tax</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.federal)}</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>Provincial Tax</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.provincial)}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.previewDivider} />
-              
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabelNet}>Net Pay</Text>
-                <Text style={styles.previewValueNet}>{formatCurrency(preview.netPay)}</Text>
-              </View>
-            </View>
+            <PaystubPreview data={formData} type="canadian" />
           </View>
 
           <View style={styles.pageHeader}>

@@ -123,18 +123,60 @@ export default function CanadianPaystubGeneratorScreen({ navigation }) {
   };
 
   const calculatePrice = () => 9.99;
+  const numStubs = 1;
 
   const handleGenerate = async () => {
     if (!formData.name || !formData.company || (!formData.rate && !formData.annualSalary)) {
       showToast('Please fill in required fields', 'error');
       return;
     }
+    
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsProcessing(true);
+    
     try {
-      showToast('Canadian pay stub generation coming soon!', 'info');
+      if (hasActiveSubscription()) {
+        showToast('Generating with subscription...', 'info');
+        showToast('Subscription download feature coming soon!', 'info');
+      } else {
+        const finalAmount = calculatePrice() * numStubs;
+        
+        const response = await fetch(`${API_BASE_URL}/stripe/create-one-time-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: finalAmount,
+            documentType: 'canadian-paystub',
+            template: formData.selectedTemplate,
+            discountCode: null,
+            discountAmount: 0,
+            successUrl: `${API_BASE_URL.replace('/api', '')}/payment-success?type=canadian-paystub&count=${numStubs}&session_id={CHECKOUT_SESSION_ID}`,
+            cancelUrl: `${API_BASE_URL.replace('/api', '')}/canadian-paystub-generator`,
+            quantity: numStubs,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Failed to create checkout session');
+        }
+
+        if (data.url) {
+          const canOpen = await Linking.canOpenURL(data.url);
+          if (canOpen) {
+            await Linking.openURL(data.url);
+            showToast('Opening payment page...', 'info');
+          } else {
+            throw new Error('Cannot open payment URL');
+          }
+        } else {
+          throw new Error('No checkout URL received');
+        }
+      }
     } catch (error) {
-      showToast(error.message || 'Failed to generate', 'error');
+      console.error('Payment error:', error);
+      showToast(error.message || 'Payment failed. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
     }

@@ -55,13 +55,6 @@ const TEMPLATES = [
   { label: 'OnPay Style', value: 'template-h' },
 ];
 
-// Canadian tax rates (simplified)
-const TAX_RATES = {
-  cpp: 0.0595,
-  ei: 0.0163,
-  federal: 0.15,
-};
-
 export default function CanadianPaystubGeneratorScreen({ navigation }) {
   const { user, isAuthenticated, hasActiveSubscription } = useAuth();
   const scrollViewRef = useRef(null);
@@ -102,32 +95,6 @@ export default function CanadianPaystubGeneratorScreen({ navigation }) {
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const preview = useMemo(() => {
-    const hours = parseFloat(formData.hours) || 0;
-    const overtime = parseFloat(formData.overtime) || 0;
-    const rate = parseFloat(formData.rate) || 0;
-    const annualSalary = parseFloat(formData.annualSalary) || 0;
-
-    let grossPay = 0;
-    if (formData.payType === 'hourly') {
-      grossPay = (hours * rate) + (overtime * rate * 1.5);
-    } else {
-      const frequencies = { weekly: 52, biweekly: 26, semimonthly: 24, monthly: 12 };
-      grossPay = annualSalary / (frequencies[formData.payFrequency] || 26);
-    }
-
-    const cpp = grossPay * TAX_RATES.cpp;
-    const ei = grossPay * TAX_RATES.ei;
-    const federal = grossPay * TAX_RATES.federal;
-    const provincial = grossPay * 0.05;
-    const totalTaxes = cpp + ei + federal + provincial;
-    const netPay = grossPay - totalTaxes;
-
-    return { grossPay, cpp, ei, federal, provincial, totalTaxes, netPay };
-  }, [formData]);
-
-  const formatCurrency = (num) => '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));

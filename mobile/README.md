@@ -1,120 +1,122 @@
 # MintSlip Mobile App
 
-A React Native mobile app for MintSlip with a native welcome screen and WebView integration.
+A true native mobile application for MintSlip document generation, built with React Native and Expo.
 
 ## Features
 
-- **Native Welcome Screen** - Beautiful onboarding with Sign In, Create Account, and Continue as Guest options
-- **Seamless WebView Integration** - Full access to mintslip.com within a native wrapper
-- **Consistent UI** - Matches the MintSlip web design system (green theme, similar styling)
-- **Smart Navigation** - Remembers if user has seen the welcome screen
-- **Android Back Button Support** - Native back navigation handling
-- **Pull-to-Refresh** - Easy page refresh on mobile
-
-## App Flow
-
-1. **First Launch** → Welcome Screen with options:
-   - Sign In → Opens login page
-   - Create Account → Opens signup page
-   - Continue as Guest → Opens main website
-
-2. **Subsequent Launches** → Goes directly to main website (remembers preference)
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js (v18 or higher)
-- npm or yarn
-- Expo CLI (`npm install -g expo-cli`)
-- Expo Go app on your mobile device (for testing)
-
-### Installation
-
-```bash
-cd mobile
-yarn install
-```
-
-### Run the App
-
-```bash
-# Start the development server
-yarn start
-
-# Run on Android
-yarn android
-
-# Run on iOS
-yarn ios
-```
-
-### Testing on Device
-
-1. Install **Expo Go** app on your phone
-2. Run `yarn start` in the mobile directory
-3. Scan the QR code with your phone's camera (iOS) or Expo Go app (Android)
+- ✅ Native UI components (no WebView)
+- ✅ MintSlip design system (colors, typography, spacing)
+- ✅ Bottom tab navigation
+- ✅ Native authentication flow (Login, Signup, Guest mode)
+- ✅ US Pay Stub Generator
+- ✅ Canadian Pay Stub Generator
+- ✅ Haptic feedback
+- ✅ Native toast notifications
+- ✅ Keyboard-aware forms
+- ✅ Pull-to-refresh ready
+- ✅ iOS & Android safe area handling
 
 ## Project Structure
 
 ```
-mobile/
-├── App.js                      # Main app - navigation logic
-├── src/
-│   └── screens/
-│       ├── WelcomeScreen.js    # Native welcome/onboarding screen
-│       └── WebViewScreen.js    # WebView wrapper for mintslip.com
-├── app.json                    # Expo configuration
-├── package.json                # Dependencies
-├── assets/                     # App icons and splash screen
-└── README.md
+/mobile
+  /src
+    /components      # Reusable UI components
+      - Button.js
+      - Input.js
+      - Select.js
+      - Card.js
+      - SectionHeader.js
+      - Toast.js
+    /context         # React Context providers
+      - AuthContext.js
+    /navigation      # Navigation configuration
+      - AuthNavigator.js
+      - MainNavigator.js
+      - RootNavigator.js
+    /screens         # Screen components
+      - SplashScreen.js
+      - WelcomeScreen.js
+      - LoginScreen.js
+      - SignupScreen.js
+      - HomeScreen.js
+      - PaystubGeneratorScreen.js
+      - CanadianPaystubGeneratorScreen.js
+      - SettingsScreen.js
+    /services        # API and backend services
+      - api.js
+    /styles          # Theme and styling
+      - theme.js
+  App.js             # Main entry point
+  app.json           # Expo configuration
+  package.json       # Dependencies
+```
+
+## Design System
+
+The app preserves MintSlip's web design system:
+
+### Colors
+- **Primary**: #1a4731 (Deep Forest Green)
+- **Primary Light**: #16a34a
+- **Secondary**: #f0fdf4 (Pale Mint)
+- **Accent**: #ccff00 (Electric Lime)
+- **Background**: #ffffff
+- **Foreground**: #1a1a1a
+
+### Typography
+- Headings: System font (bold)
+- Body: System font (regular)
+- Font sizes: xs(12), sm(14), base(16), lg(18), xl(20), 2xl(24), 3xl(30), 4xl(36)
+
+### Spacing Scale
+- xs: 4, sm: 8, md: 12, base: 16, lg: 20, xl: 24, 2xl: 32, 3xl: 40, 4xl: 48
+
+## Running the App
+
+```bash
+# Install dependencies
+cd mobile
+yarn install
+
+# Start Expo development server
+yarn start
+
+# Run on iOS simulator
+yarn ios
+
+# Run on Android emulator
+yarn android
 ```
 
 ## Building for Production
 
-### Using EAS Build (Recommended)
-
 ```bash
-npm install -g eas-cli
-eas login
-eas build:configure
-eas build --platform android  # For Android APK
-eas build --platform ios      # For iOS IPA
+# Build for Android
+eas build --platform android
+
+# Build for iOS
+eas build --platform ios
 ```
 
-## Customization
+## API Integration
 
-### Reset Welcome Screen (for testing)
+The app connects to the MintSlip backend at:
+- Production: https://mobile-mint-app.preview.emergentagent.com/api
 
-To show the welcome screen again, clear AsyncStorage:
-```javascript
-import AsyncStorage from '@react-native-async-storage/async-storage';
-await AsyncStorage.removeItem('@mintslip_has_launched');
-```
+All API calls are handled through `/src/services/api.js`
 
-### Change App Colors
+## Authentication Flow
 
-Edit the color values in `WelcomeScreen.js`:
-- Primary Green: `#16a34a`
-- Background: `#f0fdf4`
-- Text Dark: `#1e293b`
-- Text Light: `#64748b`
+1. **First Launch**: Shows WelcomeScreen with Sign In, Create Account, and Continue as Guest options
+2. **Returning User**: Shows animated splash, then navigates to main app
+3. **Auth State**: Managed by AuthContext, persisted in AsyncStorage
 
-### Change App Icon/Splash
+## Key Dependencies
 
-Replace files in `assets/` folder:
-- `icon.png` (1024x1024px)
-- `splash.png`
-- `adaptive-icon.png`
-
-## Tech Stack
-
-- React Native 0.81.5
-- Expo SDK 54
-- expo-linear-gradient
-- react-native-webview
-- @react-native-async-storage/async-storage
-
-## Support
-
-For issues, contact support@mintslip.com
+- `expo` - Expo SDK
+- `@react-navigation/*` - Navigation
+- `@react-native-async-storage/async-storage` - Local storage
+- `expo-haptics` - Haptic feedback
+- `expo-linear-gradient` - Gradient backgrounds
+- `@expo/vector-icons` - Icons (Ionicons)

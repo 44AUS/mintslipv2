@@ -32,6 +32,13 @@ const features = [
 ];
 
 export default function WelcomeScreen({ navigation }) {
+  const { continueAsGuest } = useAuth();
+
+  const handleGuestAccess = async () => {
+    await continueAsGuest();
+    // Navigation will automatically happen via RootNavigator when isGuest becomes true
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.secondary.default} />

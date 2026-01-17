@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,6 @@ import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Select from '../components/Select';
-import Card from '../components/Card';
 import SectionHeader from '../components/SectionHeader';
 import { showToast } from '../components/Toast';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
@@ -69,75 +68,103 @@ const TEMPLATES = [
   { label: 'OnPay Style', value: 'template-h' },
 ];
 
+// Tax rates (simplified for preview)
+const TAX_RATES = {
+  socialSecurity: 0.062,
+  medicare: 0.0145,
+  federal: 0.12, // Simplified flat rate for preview
+};
+
 export default function PaystubGeneratorScreen({ navigation }) {
   const { user, isAuthenticated, hasActiveSubscription } = useAuth();
   const scrollViewRef = useRef(null);
 
-  // Section expansion states
   const [expandedSections, setExpandedSections] = useState({
     template: true,
     employee: true,
     company: true,
     payInfo: true,
-    payPeriod: false,
     taxes: false,
   });
 
-  // Form data
   const [formData, setFormData] = useState({
-    // Template
     selectedTemplate: 'template-a',
-    // Employee Info
     name: '',
     ssn: '',
     address: '',
     city: '',
     state: '',
     zip: '',
-    // Company Info
     company: '',
     companyAddress: '',
     companyCity: '',
     companyState: '',
     companyZip: '',
     companyPhone: '',
-    // Pay Info
     payType: 'hourly',
     rate: '',
     annualSalary: '',
     payFrequency: 'biweekly',
     hours: '80',
     overtime: '',
-    // Bank Info
     bankName: '',
     bank: '',
-    // Pay Period
     startDate: '',
     endDate: '',
     payDate: '',
-    // Tax Info
     federalFilingStatus: 'single',
     stateAllowances: '0',
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Calculate preview values
+  const preview = useMemo(() => {
+    const hours = parseFloat(formData.hours) || 0;
+    const overtime = parseFloat(formData.overtime) || 0;
+    const rate = parseFloat(formData.rate) || 0;
+    const annualSalary = parseFloat(formData.annualSalary) || 0;
+
+    let grossPay = 0;
+    if (formData.payType === 'hourly') {
+      grossPay = (hours * rate) + (overtime * rate * 1.5);
+    } else {
+      // Salary based on frequency
+      const frequencies = { weekly: 52, biweekly: 26, semimonthly: 24, monthly: 12 };
+      grossPay = annualSalary / (frequencies[formData.payFrequency] || 26);
+    }
+
+    const socialSecurity = grossPay * TAX_RATES.socialSecurity;
+    const medicare = grossPay * TAX_RATES.medicare;
+    const federal = grossPay * TAX_RATES.federal;
+    const stateTax = grossPay * 0.05; // Simplified state tax
+    const totalTaxes = socialSecurity + medicare + federal + stateTax;
+    const netPay = grossPay - totalTaxes;
+
+    return {
+      grossPay,
+      socialSecurity,
+      medicare,
+      federal,
+      stateTax,
+      totalTaxes,
+      netPay,
+    };
+  }, [formData]);
+
+  const formatCurrency = (num) => {
+    return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const formatSSN = (text) => {
-    const cleaned = text.replace(/\D/g, '').slice(0, 4);
-    return cleaned;
-  };
-
+  const formatSSN = (text) => text.replace(/\D/g, '').slice(0, 4);
   const formatPhone = (text) => {
     const cleaned = text.replace(/\D/g, '');
     let formatted = '';
@@ -146,27 +173,18 @@ export default function PaystubGeneratorScreen({ navigation }) {
     if (cleaned.length >= 6) formatted += '-' + cleaned.substring(6, 10);
     return formatted;
   };
+  const formatZip = (text) => text.replace(/\D/g, '').slice(0, 5);
 
-  const formatZip = (text) => {
-    return text.replace(/\D/g, '').slice(0, 5);
-  };
-
-  const calculatePrice = () => {
-    return 9.99;
-  };
+  const calculatePrice = () => 9.99;
 
   const handleGenerate = async () => {
-    // Validation
-    if (!formData.name || !formData.company || !formData.rate) {
+    if (!formData.name || !formData.company || (!formData.rate && !formData.annualSalary)) {
       showToast('Please fill in required fields (Name, Company, Pay Rate)', 'error');
       return;
     }
-
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setIsProcessing(true);
-
     try {
-      // TODO: Implement actual PDF generation/payment flow
       showToast('Pay stub generation coming soon!', 'info');
     } catch (error) {
       showToast(error.message || 'Failed to generate pay stub', 'error');
@@ -177,12 +195,8 @@ export default function PaystubGeneratorScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.slate[600]} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
@@ -192,10 +206,7 @@ export default function PaystubGeneratorScreen({ navigation }) {
         <View style={{ width: 44 }} />
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.keyboardView}>
         <ScrollView
           ref={scrollViewRef}
           style={styles.content}
@@ -203,171 +214,117 @@ export default function PaystubGeneratorScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Live Preview Card */}
+          <View style={styles.previewCard}>
+            <View style={styles.previewHeader}>
+              <Ionicons name="document-text" size={24} color={colors.primary.light} />
+              <Text style={styles.previewTitle}>Live Preview</Text>
+            </View>
+            
+            <View style={styles.previewContent}>
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>Employee</Text>
+                <Text style={styles.previewValue}>{formData.name || 'Your Name'}</Text>
+              </View>
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>Company</Text>
+                <Text style={styles.previewValue}>{formData.company || 'Company Name'}</Text>
+              </View>
+              
+              <View style={styles.previewDivider} />
+              
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>Gross Pay</Text>
+                <Text style={styles.previewValueBold}>{formatCurrency(preview.grossPay)}</Text>
+              </View>
+              
+              <View style={styles.previewSubSection}>
+                <Text style={styles.previewSubTitle}>Taxes & Deductions</Text>
+                <View style={styles.previewRow}>
+                  <Text style={styles.previewLabelSmall}>Social Security</Text>
+                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.socialSecurity)}</Text>
+                </View>
+                <View style={styles.previewRow}>
+                  <Text style={styles.previewLabelSmall}>Medicare</Text>
+                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.medicare)}</Text>
+                </View>
+                <View style={styles.previewRow}>
+                  <Text style={styles.previewLabelSmall}>Federal Tax</Text>
+                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.federal)}</Text>
+                </View>
+                <View style={styles.previewRow}>
+                  <Text style={styles.previewLabelSmall}>State Tax</Text>
+                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.stateTax)}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.previewDivider} />
+              
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabelNet}>Net Pay</Text>
+                <Text style={styles.previewValueNet}>{formatCurrency(preview.netPay)}</Text>
+              </View>
+            </View>
+          </View>
+
           {/* Page Title */}
           <View style={styles.pageHeader}>
             <Text style={styles.pageTitle}>Instant Paystub Generator</Text>
-            <Text style={styles.pageSubtitle}>
-              Generate professional pay stubs with accurate tax calculations
-            </Text>
+            <Text style={styles.pageSubtitle}>Generate professional pay stubs with accurate tax calculations</Text>
           </View>
 
           {/* Template Selection */}
           <View style={styles.section}>
-            <SectionHeader
-              title="Template"
-              collapsible
-              isExpanded={expandedSections.template}
-              onToggle={() => toggleSection('template')}
-            />
+            <SectionHeader title="Template" collapsible isExpanded={expandedSections.template} onToggle={() => toggleSection('template')} />
             {expandedSections.template && (
               <View style={styles.sectionContent}>
-                <Select
-                  label="Payroll Provider Style"
-                  value={formData.selectedTemplate}
-                  onValueChange={(v) => updateField('selectedTemplate', v)}
-                  options={TEMPLATES}
-                  required
-                />
+                <Select label="Payroll Provider Style" value={formData.selectedTemplate} onValueChange={(v) => updateField('selectedTemplate', v)} options={TEMPLATES} required />
               </View>
             )}
           </View>
 
           {/* Employee Information */}
           <View style={styles.section}>
-            <SectionHeader
-              title="Employee Information"
-              collapsible
-              isExpanded={expandedSections.employee}
-              onToggle={() => toggleSection('employee')}
-            />
+            <SectionHeader title="Employee Information" collapsible isExpanded={expandedSections.employee} onToggle={() => toggleSection('employee')} />
             {expandedSections.employee && (
               <View style={styles.sectionContent}>
-                <Input
-                  label="Full Name"
-                  value={formData.name}
-                  onChangeText={(v) => updateField('name', v)}
-                  placeholder="John Doe"
-                  autoCapitalize="words"
-                  required
-                  icon={<Ionicons name="person-outline" size={18} color={colors.slate[400]} />}
-                />
-
-                <Input
-                  label="SSN (Last 4 digits)"
-                  value={formData.ssn}
-                  onChangeText={(v) => updateField('ssn', formatSSN(v))}
-                  placeholder="1234"
-                  keyboardType="number-pad"
-                  maxLength={4}
-                  icon={<Ionicons name="shield-outline" size={18} color={colors.slate[400]} />}
-                />
-
-                <Input
-                  label="Street Address"
-                  value={formData.address}
-                  onChangeText={(v) => updateField('address', v)}
-                  placeholder="123 Main St"
-                  icon={<Ionicons name="location-outline" size={18} color={colors.slate[400]} />}
-                />
-
+                <Input label="Full Name" value={formData.name} onChangeText={(v) => updateField('name', v)} placeholder="John Doe" autoCapitalize="words" required icon={<Ionicons name="person-outline" size={18} color={colors.slate[400]} />} />
+                <Input label="SSN (Last 4 digits)" value={formData.ssn} onChangeText={(v) => updateField('ssn', formatSSN(v))} placeholder="1234" keyboardType="number-pad" maxLength={4} icon={<Ionicons name="shield-outline" size={18} color={colors.slate[400]} />} />
+                <Input label="Street Address" value={formData.address} onChangeText={(v) => updateField('address', v)} placeholder="123 Main St" icon={<Ionicons name="location-outline" size={18} color={colors.slate[400]} />} />
                 <View style={styles.row}>
                   <View style={styles.flex2}>
-                    <Input
-                      label="City"
-                      value={formData.city}
-                      onChangeText={(v) => updateField('city', v)}
-                      placeholder="New York"
-                    />
+                    <Input label="City" value={formData.city} onChangeText={(v) => updateField('city', v)} placeholder="New York" />
                   </View>
                   <View style={[styles.flex1, { marginLeft: spacing.md }]}>
-                    <Select
-                      label="State"
-                      value={formData.state}
-                      onValueChange={(v) => updateField('state', v)}
-                      options={US_STATES}
-                      placeholder="Select"
-                    />
+                    <Select label="State" value={formData.state} onValueChange={(v) => updateField('state', v)} options={US_STATES} placeholder="Select" />
                   </View>
                 </View>
-
-                <Input
-                  label="ZIP Code"
-                  value={formData.zip}
-                  onChangeText={(v) => updateField('zip', formatZip(v))}
-                  placeholder="10001"
-                  keyboardType="number-pad"
-                  maxLength={5}
-                />
+                <Input label="ZIP Code" value={formData.zip} onChangeText={(v) => updateField('zip', formatZip(v))} placeholder="10001" keyboardType="number-pad" maxLength={5} />
               </View>
             )}
           </View>
 
           {/* Company Information */}
           <View style={styles.section}>
-            <SectionHeader
-              title="Company Information"
-              collapsible
-              isExpanded={expandedSections.company}
-              onToggle={() => toggleSection('company')}
-            />
+            <SectionHeader title="Company Information" collapsible isExpanded={expandedSections.company} onToggle={() => toggleSection('company')} />
             {expandedSections.company && (
               <View style={styles.sectionContent}>
-                <Input
-                  label="Company Name"
-                  value={formData.company}
-                  onChangeText={(v) => updateField('company', v)}
-                  placeholder="Acme Corporation"
-                  required
-                  icon={<Ionicons name="business-outline" size={18} color={colors.slate[400]} />}
-                />
-
-                <Input
-                  label="Company Address"
-                  value={formData.companyAddress}
-                  onChangeText={(v) => updateField('companyAddress', v)}
-                  placeholder="456 Corporate Blvd"
-                  icon={<Ionicons name="location-outline" size={18} color={colors.slate[400]} />}
-                />
-
+                <Input label="Company Name" value={formData.company} onChangeText={(v) => updateField('company', v)} placeholder="Acme Corporation" required icon={<Ionicons name="business-outline" size={18} color={colors.slate[400]} />} />
+                <Input label="Company Address" value={formData.companyAddress} onChangeText={(v) => updateField('companyAddress', v)} placeholder="456 Corporate Blvd" icon={<Ionicons name="location-outline" size={18} color={colors.slate[400]} />} />
                 <View style={styles.row}>
                   <View style={styles.flex2}>
-                    <Input
-                      label="City"
-                      value={formData.companyCity}
-                      onChangeText={(v) => updateField('companyCity', v)}
-                      placeholder="San Francisco"
-                    />
+                    <Input label="City" value={formData.companyCity} onChangeText={(v) => updateField('companyCity', v)} placeholder="San Francisco" />
                   </View>
                   <View style={[styles.flex1, { marginLeft: spacing.md }]}>
-                    <Select
-                      label="State"
-                      value={formData.companyState}
-                      onValueChange={(v) => updateField('companyState', v)}
-                      options={US_STATES}
-                      placeholder="Select"
-                    />
+                    <Select label="State" value={formData.companyState} onValueChange={(v) => updateField('companyState', v)} options={US_STATES} placeholder="Select" />
                   </View>
                 </View>
-
                 <View style={styles.row}>
                   <View style={styles.flex1}>
-                    <Input
-                      label="ZIP Code"
-                      value={formData.companyZip}
-                      onChangeText={(v) => updateField('companyZip', formatZip(v))}
-                      placeholder="94102"
-                      keyboardType="number-pad"
-                      maxLength={5}
-                    />
+                    <Input label="ZIP Code" value={formData.companyZip} onChangeText={(v) => updateField('companyZip', formatZip(v))} placeholder="94102" keyboardType="number-pad" maxLength={5} />
                   </View>
                   <View style={[styles.flex1, { marginLeft: spacing.md }]}>
-                    <Input
-                      label="Phone"
-                      value={formData.companyPhone}
-                      onChangeText={(v) => updateField('companyPhone', formatPhone(v))}
-                      placeholder="(555) 123-4567"
-                      keyboardType="phone-pad"
-                    />
+                    <Input label="Phone" value={formData.companyPhone} onChangeText={(v) => updateField('companyPhone', formatPhone(v))} placeholder="(555) 123-4567" keyboardType="phone-pad" />
                   </View>
                 </View>
               </View>
@@ -376,147 +333,49 @@ export default function PaystubGeneratorScreen({ navigation }) {
 
           {/* Pay Information */}
           <View style={styles.section}>
-            <SectionHeader
-              title="Pay Information"
-              collapsible
-              isExpanded={expandedSections.payInfo}
-              onToggle={() => toggleSection('payInfo')}
-            />
+            <SectionHeader title="Pay Information" collapsible isExpanded={expandedSections.payInfo} onToggle={() => toggleSection('payInfo')} />
             {expandedSections.payInfo && (
               <View style={styles.sectionContent}>
-                {/* Pay Type Toggle */}
                 <Text style={styles.label}>Pay Type</Text>
                 <View style={styles.toggleContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      formData.payType === 'hourly' && styles.toggleButtonActive,
-                    ]}
-                    onPress={() => updateField('payType', 'hourly')}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        formData.payType === 'hourly' && styles.toggleTextActive,
-                      ]}
-                    >
-                      Hourly
-                    </Text>
+                  <TouchableOpacity style={[styles.toggleButton, formData.payType === 'hourly' && styles.toggleButtonActive]} onPress={() => updateField('payType', 'hourly')}>
+                    <Text style={[styles.toggleText, formData.payType === 'hourly' && styles.toggleTextActive]}>Hourly</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      formData.payType === 'salary' && styles.toggleButtonActive,
-                    ]}
-                    onPress={() => updateField('payType', 'salary')}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        formData.payType === 'salary' && styles.toggleTextActive,
-                      ]}
-                    >
-                      Salary
-                    </Text>
+                  <TouchableOpacity style={[styles.toggleButton, formData.payType === 'salary' && styles.toggleButtonActive]} onPress={() => updateField('payType', 'salary')}>
+                    <Text style={[styles.toggleText, formData.payType === 'salary' && styles.toggleTextActive]}>Salary</Text>
                   </TouchableOpacity>
                 </View>
 
                 {formData.payType === 'hourly' ? (
                   <>
-                    <Input
-                      label="Hourly Rate ($)"
-                      value={formData.rate}
-                      onChangeText={(v) => updateField('rate', v)}
-                      placeholder="25.00"
-                      keyboardType="decimal-pad"
-                      required
-                      icon={<Ionicons name="cash-outline" size={18} color={colors.slate[400]} />}
-                    />
+                    <Input label="Hourly Rate ($)" value={formData.rate} onChangeText={(v) => updateField('rate', v)} placeholder="25.00" keyboardType="decimal-pad" required icon={<Ionicons name="cash-outline" size={18} color={colors.slate[400]} />} />
                     <View style={styles.row}>
                       <View style={styles.flex1}>
-                        <Input
-                          label="Regular Hours"
-                          value={formData.hours}
-                          onChangeText={(v) => updateField('hours', v)}
-                          placeholder="80"
-                          keyboardType="number-pad"
-                        />
+                        <Input label="Regular Hours" value={formData.hours} onChangeText={(v) => updateField('hours', v)} placeholder="80" keyboardType="number-pad" />
                       </View>
                       <View style={[styles.flex1, { marginLeft: spacing.md }]}>
-                        <Input
-                          label="Overtime Hours"
-                          value={formData.overtime}
-                          onChangeText={(v) => updateField('overtime', v)}
-                          placeholder="0"
-                          keyboardType="number-pad"
-                        />
+                        <Input label="Overtime Hours" value={formData.overtime} onChangeText={(v) => updateField('overtime', v)} placeholder="0" keyboardType="number-pad" />
                       </View>
                     </View>
                   </>
                 ) : (
-                  <Input
-                    label="Annual Salary ($)"
-                    value={formData.annualSalary}
-                    onChangeText={(v) => updateField('annualSalary', v)}
-                    placeholder="65000"
-                    keyboardType="decimal-pad"
-                    required
-                    icon={<Ionicons name="cash-outline" size={18} color={colors.slate[400]} />}
-                  />
+                  <Input label="Annual Salary ($)" value={formData.annualSalary} onChangeText={(v) => updateField('annualSalary', v)} placeholder="65000" keyboardType="decimal-pad" required icon={<Ionicons name="cash-outline" size={18} color={colors.slate[400]} />} />
                 )}
 
-                <Select
-                  label="Pay Frequency"
-                  value={formData.payFrequency}
-                  onValueChange={(v) => updateField('payFrequency', v)}
-                  options={PAY_FREQUENCIES}
-                />
-
-                <Input
-                  label="Bank Name"
-                  value={formData.bankName}
-                  onChangeText={(v) => updateField('bankName', v)}
-                  placeholder="Chase Bank"
-                  icon={<Ionicons name="card-outline" size={18} color={colors.slate[400]} />}
-                />
-
-                <Input
-                  label="Account (Last 4 digits)"
-                  value={formData.bank}
-                  onChangeText={(v) => updateField('bank', v.replace(/\D/g, '').slice(0, 4))}
-                  placeholder="1234"
-                  keyboardType="number-pad"
-                  maxLength={4}
-                />
+                <Select label="Pay Frequency" value={formData.payFrequency} onValueChange={(v) => updateField('payFrequency', v)} options={PAY_FREQUENCIES} />
+                <Input label="Bank Name" value={formData.bankName} onChangeText={(v) => updateField('bankName', v)} placeholder="Chase Bank" icon={<Ionicons name="card-outline" size={18} color={colors.slate[400]} />} />
+                <Input label="Account (Last 4 digits)" value={formData.bank} onChangeText={(v) => updateField('bank', v.replace(/\D/g, '').slice(0, 4))} placeholder="1234" keyboardType="number-pad" maxLength={4} />
               </View>
             )}
           </View>
 
           {/* Tax Information */}
           <View style={styles.section}>
-            <SectionHeader
-              title="Tax Information"
-              subtitle="Optional - For accurate tax calculations"
-              collapsible
-              isExpanded={expandedSections.taxes}
-              onToggle={() => toggleSection('taxes')}
-            />
+            <SectionHeader title="Tax Information" subtitle="Optional - For accurate calculations" collapsible isExpanded={expandedSections.taxes} onToggle={() => toggleSection('taxes')} />
             {expandedSections.taxes && (
               <View style={styles.sectionContent}>
-                <Select
-                  label="Federal Filing Status"
-                  value={formData.federalFilingStatus}
-                  onValueChange={(v) => updateField('federalFilingStatus', v)}
-                  options={FILING_STATUSES}
-                />
-
-                <Input
-                  label="State Allowances"
-                  value={formData.stateAllowances}
-                  onChangeText={(v) => updateField('stateAllowances', v.replace(/\D/g, ''))}
-                  placeholder="0"
-                  keyboardType="number-pad"
-                />
+                <Select label="Federal Filing Status" value={formData.federalFilingStatus} onValueChange={(v) => updateField('federalFilingStatus', v)} options={FILING_STATUSES} />
+                <Input label="State Allowances" value={formData.stateAllowances} onChangeText={(v) => updateField('stateAllowances', v.replace(/\D/g, ''))} placeholder="0" keyboardType="number-pad" />
               </View>
             )}
           </View>
@@ -536,25 +395,11 @@ export default function PaystubGeneratorScreen({ navigation }) {
           {/* Generate Button */}
           <View style={styles.generateContainer}>
             {hasActiveSubscription() ? (
-              <Button
-                variant="accent"
-                size="lg"
-                onPress={handleGenerate}
-                loading={isProcessing}
-                icon={<Ionicons name="download-outline" size={20} color={colors.accent.foreground} />}
-                iconPosition="left"
-              >
+              <Button variant="accent" size="lg" onPress={handleGenerate} loading={isProcessing} icon={<Ionicons name="download-outline" size={20} color={colors.accent.foreground} />} iconPosition="left">
                 Download with Subscription
               </Button>
             ) : (
-              <Button
-                variant="primary"
-                size="lg"
-                onPress={handleGenerate}
-                loading={isProcessing}
-                icon={<Ionicons name="card-outline" size={20} color={colors.primary.foreground} />}
-                iconPosition="left"
-              >
+              <Button variant="primary" size="lg" onPress={handleGenerate} loading={isProcessing} icon={<Ionicons name="card-outline" size={20} color={colors.primary.foreground} />} iconPosition="left">
                 Pay ${calculatePrice().toFixed(2)} & Generate
               </Button>
             )}
@@ -572,160 +417,52 @@ export default function PaystubGeneratorScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.paper,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.base,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.background,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.foreground,
-  },
-  headerFlag: {
-    fontSize: 20,
-    marginLeft: spacing.sm,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: spacing.base,
-  },
-  pageHeader: {
-    marginBottom: spacing.xl,
-  },
-  pageTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary.default,
-    marginBottom: spacing.xs,
-  },
-  pageSubtitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.muted.foreground,
-  },
-  section: {
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.xl,
-    padding: spacing.base,
-    marginBottom: spacing.base,
-    ...shadows.sm,
-  },
-  sectionContent: {
-    marginTop: spacing.md,
-  },
-  label: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.slate[700],
-    marginBottom: spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-  },
-  flex1: {
-    flex: 1,
-  },
-  flex2: {
-    flex: 2,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.muted.default,
-    borderRadius: borderRadius.base,
-    padding: 4,
-    marginBottom: spacing.base,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    borderRadius: borderRadius.base - 2,
-  },
-  toggleButtonActive: {
-    backgroundColor: colors.background,
-    ...shadows.sm,
-  },
-  toggleText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.muted.foreground,
-  },
-  toggleTextActive: {
-    color: colors.primary.default,
-  },
-  priceSummary: {
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.xl,
-    padding: spacing.base,
-    marginBottom: spacing.base,
-    ...shadows.sm,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sm,
-  },
-  priceLabel: {
-    fontSize: typography.fontSize.base,
-    color: colors.muted.foreground,
-  },
-  priceValue: {
-    fontSize: typography.fontSize.base,
-    color: colors.foreground,
-  },
-  priceTotal: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.sm,
-    marginTop: spacing.sm,
-    marginBottom: 0,
-  },
-  priceTotalLabel: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.foreground,
-  },
-  priceTotalValue: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary.default,
-  },
-  generateContainer: {
-    marginTop: spacing.base,
-  },
-  secureNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.md,
-  },
-  secureText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.muted.foreground,
-    marginLeft: spacing.xs,
-  },
+  container: { flex: 1, backgroundColor: colors.paper },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.base, paddingVertical: spacing.md, backgroundColor: colors.background, borderBottomWidth: 1, borderBottomColor: colors.border },
+  backButton: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  headerCenter: { flexDirection: 'row', alignItems: 'center' },
+  headerTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: colors.foreground },
+  headerFlag: { fontSize: 20, marginLeft: spacing.sm },
+  keyboardView: { flex: 1 },
+  content: { flex: 1 },
+  contentContainer: { padding: spacing.base },
+  previewCard: { backgroundColor: colors.background, borderRadius: borderRadius.xl, padding: spacing.base, marginBottom: spacing.base, borderWidth: 2, borderColor: colors.primary.light, ...shadows.md },
+  previewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border },
+  previewTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.bold, color: colors.primary.default, marginLeft: spacing.sm },
+  previewContent: {},
+  previewRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs },
+  previewLabel: { fontSize: typography.fontSize.sm, color: colors.muted.foreground },
+  previewValue: { fontSize: typography.fontSize.sm, color: colors.foreground, fontWeight: typography.fontWeight.medium },
+  previewValueBold: { fontSize: typography.fontSize.lg, color: colors.foreground, fontWeight: typography.fontWeight.bold },
+  previewDivider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.sm },
+  previewSubSection: { backgroundColor: colors.muted.default, borderRadius: borderRadius.base, padding: spacing.sm, marginVertical: spacing.xs },
+  previewSubTitle: { fontSize: typography.fontSize.xs, color: colors.muted.foreground, fontWeight: typography.fontWeight.semibold, marginBottom: spacing.xs, textTransform: 'uppercase' },
+  previewLabelSmall: { fontSize: typography.fontSize.xs, color: colors.muted.foreground },
+  previewValueSmall: { fontSize: typography.fontSize.xs, color: colors.red[500] },
+  previewLabelNet: { fontSize: typography.fontSize.base, color: colors.foreground, fontWeight: typography.fontWeight.semibold },
+  previewValueNet: { fontSize: typography.fontSize.xl, color: colors.primary.light, fontWeight: typography.fontWeight.bold },
+  pageHeader: { marginBottom: spacing.xl },
+  pageTitle: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: colors.primary.default, marginBottom: spacing.xs },
+  pageSubtitle: { fontSize: typography.fontSize.base, color: colors.muted.foreground },
+  section: { backgroundColor: colors.background, borderRadius: borderRadius.xl, padding: spacing.base, marginBottom: spacing.base, ...shadows.sm },
+  sectionContent: { marginTop: spacing.md },
+  label: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.slate[700], marginBottom: spacing.sm },
+  row: { flexDirection: 'row' },
+  flex1: { flex: 1 },
+  flex2: { flex: 2 },
+  toggleContainer: { flexDirection: 'row', backgroundColor: colors.muted.default, borderRadius: borderRadius.base, padding: 4, marginBottom: spacing.base },
+  toggleButton: { flex: 1, paddingVertical: spacing.sm, alignItems: 'center', borderRadius: borderRadius.base - 2 },
+  toggleButtonActive: { backgroundColor: colors.background, ...shadows.sm },
+  toggleText: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.muted.foreground },
+  toggleTextActive: { color: colors.primary.default },
+  priceSummary: { backgroundColor: colors.background, borderRadius: borderRadius.xl, padding: spacing.base, marginBottom: spacing.base, ...shadows.sm },
+  priceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
+  priceLabel: { fontSize: typography.fontSize.base, color: colors.muted.foreground },
+  priceValue: { fontSize: typography.fontSize.base, color: colors.foreground },
+  priceTotal: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginTop: spacing.sm, marginBottom: 0 },
+  priceTotalLabel: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: colors.foreground },
+  priceTotalValue: { fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold, color: colors.primary.default },
+  generateContainer: { marginTop: spacing.base },
+  secureNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: spacing.md },
+  secureText: { fontSize: typography.fontSize.sm, color: colors.muted.foreground, marginLeft: spacing.xs },
 });

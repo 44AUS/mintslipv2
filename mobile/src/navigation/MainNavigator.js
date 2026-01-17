@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import HomeScreen from '../screens/HomeScreen';
 import PaystubGeneratorScreen from '../screens/PaystubGeneratorScreen';
 import CanadianPaystubGeneratorScreen from '../screens/CanadianPaystubGeneratorScreen';
+import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';

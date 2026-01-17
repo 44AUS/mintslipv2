@@ -7,7 +7,7 @@ import base64
 from datetime import datetime
 
 class SavedDocumentsPersistenceTester:
-    def __init__(self, base_url="https://mobile-mint-app.preview.emergentagent.com"):
+    def __init__(self, base_url="https://native-paystubs.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.user_token = None

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '../styles/theme';
 
+// Accurate template preview matching frontend PDF templates
 export default function PaystubPreview({ data, type = 'us', template = 'template-a' }) {
   const formatCurrency = (num) => {
     const value = parseFloat(num) || 0;
@@ -11,7 +12,8 @@ export default function PaystubPreview({ data, type = 'us', template = 'template
   const formatDate = (dateStr) => {
     if (!dateStr) {
       const now = new Date();
-      return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
     }
     return dateStr;
   };
@@ -22,9 +24,7 @@ export default function PaystubPreview({ data, type = 'us', template = 'template
   const rate = parseFloat(data.rate) || 0;
   const annualSalary = parseFloat(data.annualSalary) || 0;
 
-  let grossPay = 0;
-  let regularPay = 0;
-  let overtimePay = 0;
+  let grossPay = 0, regularPay = 0, overtimePay = 0;
 
   if (data.payType === 'hourly') {
     regularPay = hours * rate;
@@ -37,196 +37,376 @@ export default function PaystubPreview({ data, type = 'us', template = 'template
   }
 
   // Tax calculations
-  const socialSecurity = grossPay * 0.062;
-  const medicare = grossPay * 0.0145;
-  const federal = grossPay * 0.12;
+  const ssTax = grossPay * 0.062;
+  const medTax = grossPay * 0.0145;
+  const federalTax = grossPay * 0.12;
   const stateTax = grossPay * 0.05;
-  
-  // Canadian specific
   const cpp = grossPay * 0.0595;
   const ei = grossPay * 0.0163;
   const provincial = grossPay * 0.05;
 
-  const totalDeductions = type === 'us' 
-    ? socialSecurity + medicare + federal + stateTax
-    : cpp + ei + federal + provincial;
-  
-  const netPay = grossPay - totalDeductions;
+  const totalTax = type === 'us' ? (ssTax + medTax + federalTax + stateTax) : (cpp + ei + federalTax + provincial);
+  const netPay = grossPay - totalTax;
+
+  const calculations = { grossPay, regularPay, overtimePay, ssTax, medTax, federalTax, stateTax, cpp, ei, provincial, totalTax, netPay, hours, overtime, rate };
 
   // Render based on template
   if (template === 'template-c') {
-    return <WorkdayTemplate data={data} type={type} calculations={{ grossPay, regularPay, overtimePay, socialSecurity, medicare, federal, stateTax, cpp, ei, provincial, totalDeductions, netPay, hours, overtime, rate }} formatCurrency={formatCurrency} formatDate={formatDate} />;
+    return <WorkdayTemplate data={data} type={type} calc={calculations} fmt={formatCurrency} fmtDate={formatDate} />;
   } else if (template === 'template-h') {
-    return <OnPayTemplate data={data} type={type} calculations={{ grossPay, regularPay, overtimePay, socialSecurity, medicare, federal, stateTax, cpp, ei, provincial, totalDeductions, netPay, hours, overtime, rate }} formatCurrency={formatCurrency} formatDate={formatDate} />;
+    return <OnPayTemplate data={data} type={type} calc={calculations} fmt={formatCurrency} fmtDate={formatDate} />;
   }
-  
-  // Default: Template A (Gusto)
-  return <GustoTemplate data={data} type={type} calculations={{ grossPay, regularPay, overtimePay, socialSecurity, medicare, federal, stateTax, cpp, ei, provincial, totalDeductions, netPay, hours, overtime, rate }} formatCurrency={formatCurrency} formatDate={formatDate} />;
+  return <GustoTemplate data={data} type={type} calc={calculations} fmt={formatCurrency} fmtDate={formatDate} />;
 }
 
-// Template A: Gusto Style - Clean professional look with green accents
-function GustoTemplate({ data, type, calculations, formatCurrency, formatDate }) {
-  const { grossPay, regularPay, overtimePay, socialSecurity, medicare, federal, stateTax, cpp, ei, provincial, totalDeductions, netPay, hours, overtime, rate } = calculations;
+// ============ TEMPLATE A: GUSTO STYLE ============
+// Matches: Green "gusto" logo, gray info boxes, section headers with green underline
+function GustoTemplate({ data, type, calc, fmt, fmtDate }) {
+  const { grossPay, regularPay, overtimePay, ssTax, medTax, federalTax, stateTax, cpp, ei, provincial, totalTax, netPay, hours, overtime, rate } = calc;
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.previewScroll} contentContainerStyle={styles.previewContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-        <View style={[styles.paper, styles.gustoPaper]}>
-          {/* Gusto Header */}
-          <View style={styles.gustoHeader}>
-            <View style={styles.gustoLogoSection}>
-              <View style={styles.gustoLogo}>
-                <Text style={styles.gustoLogoText}>gusto</Text>
-              </View>
-              <View>
-                <Text style={styles.gustoCompanyName}>{data.company || 'COMPANY NAME'}</Text>
-                <Text style={styles.gustoCompanyDetail}>{data.companyAddress || '123 Business Ave'}</Text>
-                <Text style={styles.gustoCompanyDetail}>{data.companyCity || 'City'}, {type === 'us' ? data.companyState : data.companyProvince || 'ST'} {type === 'us' ? data.companyZip : data.companyPostalCode || '00000'}</Text>
-              </View>
-            </View>
-            <View style={styles.gustoPayStubLabel}>
-              <Text style={styles.gustoTitle}>Earnings Statement</Text>
-              <Text style={styles.gustoPayPeriod}>Pay Period: {formatDate(data.startDate)} - {formatDate(data.endDate)}</Text>
+    <View style={gustoStyles.container}>
+      <ScrollView style={gustoStyles.scroll} contentContainerStyle={gustoStyles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+        <View style={gustoStyles.paper}>
+          {/* HEADER: Logo + Company/Employee boxes */}
+          <View style={gustoStyles.header}>
+            <View style={gustoStyles.logoArea}>
+              <Text style={gustoStyles.logo}>gusto</Text>
             </View>
           </View>
 
-          <View style={styles.gustoDivider} />
+          {/* Earnings Statement Title + Pay Period */}
+          <Text style={gustoStyles.title}>Earnings Statement</Text>
+          <Text style={gustoStyles.payPeriod}>
+            Pay period: {fmtDate(data.startDate)} – {fmtDate(data.endDate)}   Pay Day: {fmtDate(data.payDate)}
+          </Text>
+          <Text style={gustoStyles.employeeDeposit}>{data.name || 'Employee Name'} (...******{data.bank || '0000'})</Text>
 
-          {/* Employee Info */}
-          <View style={styles.gustoEmployeeSection}>
-            <View style={styles.gustoEmployeeLeft}>
-              <Text style={styles.gustoLabel}>EMPLOYEE</Text>
-              <Text style={styles.gustoEmployeeName}>{data.name || 'Employee Name'}</Text>
-              <Text style={styles.gustoEmployeeDetail}>{data.address || '456 Home Street'}</Text>
-              <Text style={styles.gustoEmployeeDetail}>{data.city || 'City'}, {type === 'us' ? data.state : data.province || 'ST'} {type === 'us' ? data.zip : data.postalCode || '00000'}</Text>
+          {/* Gray Info Boxes */}
+          <View style={gustoStyles.infoBoxes}>
+            <View style={gustoStyles.infoBox}>
+              <Text style={gustoStyles.infoBoxTitle}>Company</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.company || 'Company Name'}</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.companyAddress || ''}</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.companyCity || ''}, {type === 'us' ? data.companyState : data.companyProvince || ''} {type === 'us' ? data.companyZip : data.companyPostalCode || ''}</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.companyPhone || ''}</Text>
             </View>
-            <View style={styles.gustoEmployeeRight}>
-              <View style={styles.gustoInfoRow}>
-                <Text style={styles.gustoInfoLabel}>{type === 'us' ? 'SSN:' : 'SIN:'}</Text>
-                <Text style={styles.gustoInfoValue}>***-**-{type === 'us' ? (data.ssn || '0000') : (data.sin || '000')}</Text>
-              </View>
-              <View style={styles.gustoInfoRow}>
-                <Text style={styles.gustoInfoLabel}>Pay Rate:</Text>
-                <Text style={styles.gustoInfoValue}>{data.payType === 'hourly' ? `${formatCurrency(rate)}/hr` : 'Salary'}</Text>
-              </View>
-              <View style={styles.gustoInfoRow}>
-                <Text style={styles.gustoInfoLabel}>Pay Date:</Text>
-                <Text style={styles.gustoInfoValue}>{formatDate(data.payDate)}</Text>
-              </View>
+            <View style={gustoStyles.infoBox}>
+              <Text style={gustoStyles.infoBoxTitle}>Employee</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.name || 'Employee Name'}</Text>
+              <Text style={gustoStyles.infoBoxText}>XXX-XX-{type === 'us' ? (data.ssn || '0000') : (data.sin || '000')}</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.address || ''}</Text>
+              <Text style={gustoStyles.infoBoxText}>{data.city || ''}, {type === 'us' ? data.state : data.province || ''} {type === 'us' ? data.zip : data.postalCode || ''}</Text>
             </View>
           </View>
 
-          {/* Earnings Table */}
-          <View style={styles.gustoTableSection}>
-            <View style={styles.gustoTableHeader}>
-              <Text style={[styles.gustoTableHeaderText, { flex: 2 }]}>EARNINGS</Text>
-              <Text style={[styles.gustoTableHeaderText, { flex: 1, textAlign: 'center' }]}>HOURS</Text>
-              <Text style={[styles.gustoTableHeaderText, { flex: 1, textAlign: 'right' }]}>RATE</Text>
-              <Text style={[styles.gustoTableHeaderText, { flex: 1.2, textAlign: 'right' }]}>CURRENT</Text>
-              <Text style={[styles.gustoTableHeaderText, { flex: 1.2, textAlign: 'right' }]}>YTD</Text>
+          {/* EARNINGS SECTION */}
+          <View style={gustoStyles.sectionHeader}>
+            <Text style={gustoStyles.sectionTitle}>Employee Gross Earnings</Text>
+          </View>
+          <View style={gustoStyles.table}>
+            <View style={gustoStyles.tableHeaderRow}>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 2.5 }]}>Description</Text>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>Rate</Text>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>Hours</Text>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 1.2 }]}>Current</Text>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 1.2 }]}>Year-To-Date</Text>
             </View>
-            
-            <View style={styles.gustoTableRow}>
-              <Text style={[styles.gustoTableCell, { flex: 2 }]}>Regular Pay</Text>
-              <Text style={[styles.gustoTableCell, { flex: 1, textAlign: 'center' }]}>{data.payType === 'hourly' ? hours.toFixed(2) : '-'}</Text>
-              <Text style={[styles.gustoTableCell, { flex: 1, textAlign: 'right' }]}>{data.payType === 'hourly' ? formatCurrency(rate) : '-'}</Text>
-              <Text style={[styles.gustoTableCell, { flex: 1.2, textAlign: 'right' }]}>{formatCurrency(regularPay)}</Text>
-              <Text style={[styles.gustoTableCell, { flex: 1.2, textAlign: 'right' }]}>{formatCurrency(regularPay)}</Text>
+            <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+              <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2.5 }]}>
+                {data.payType === 'salary' ? 'Salary | Per Period' : 'Regular Hours | Hourly'}
+              </Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{data.payType === 'salary' ? `${fmt(data.annualSalary)}/yr` : fmt(rate)}</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{data.payType === 'salary' ? '-' : hours.toString()}</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1.2 }]}>{fmt(regularPay)}</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1.2 }]}>{fmt(regularPay)}</Text>
             </View>
-
-            {overtime > 0 && (
-              <View style={styles.gustoTableRow}>
-                <Text style={[styles.gustoTableCell, { flex: 2 }]}>Overtime</Text>
-                <Text style={[styles.gustoTableCell, { flex: 1, textAlign: 'center' }]}>{overtime.toFixed(2)}</Text>
-                <Text style={[styles.gustoTableCell, { flex: 1, textAlign: 'right' }]}>{formatCurrency(rate * 1.5)}</Text>
-                <Text style={[styles.gustoTableCell, { flex: 1.2, textAlign: 'right' }]}>{formatCurrency(overtimePay)}</Text>
-                <Text style={[styles.gustoTableCell, { flex: 1.2, textAlign: 'right' }]}>{formatCurrency(overtimePay)}</Text>
+            {overtime > 0 && data.payType === 'hourly' && (
+              <View style={gustoStyles.tableRow}>
+                <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2.5 }]}>Overtime Hours | 1.5x</Text>
+                <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(rate * 1.5)}</Text>
+                <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{overtime.toString()}</Text>
+                <Text style={[gustoStyles.tableCell, { flex: 1.2 }]}>{fmt(overtimePay)}</Text>
+                <Text style={[gustoStyles.tableCell, { flex: 1.2 }]}>{fmt(overtimePay)}</Text>
               </View>
             )}
+          </View>
 
-            <View style={styles.gustoTableRowTotal}>
-              <Text style={[styles.gustoTableCellBold, { flex: 2 }]}>Gross Pay</Text>
-              <Text style={[styles.gustoTableCellBold, { flex: 1 }]}></Text>
-              <Text style={[styles.gustoTableCellBold, { flex: 1 }]}></Text>
-              <Text style={[styles.gustoTableCellBold, { flex: 1.2, textAlign: 'right' }]}>{formatCurrency(grossPay)}</Text>
-              <Text style={[styles.gustoTableCellBold, { flex: 1.2, textAlign: 'right' }]}>{formatCurrency(grossPay)}</Text>
+          {/* TAXES SECTION - Two Columns */}
+          <View style={gustoStyles.taxColumns}>
+            <View style={gustoStyles.taxColumn}>
+              <View style={gustoStyles.sectionHeader}>
+                <Text style={gustoStyles.sectionTitle}>Employee Taxes Withheld</Text>
+              </View>
+              <View style={gustoStyles.table}>
+                <View style={gustoStyles.tableHeaderRow}>
+                  <Text style={[gustoStyles.tableHeaderCell, { flex: 2 }]}>Description</Text>
+                  <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>Current</Text>
+                  <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>YTD</Text>
+                </View>
+                {type === 'us' ? (
+                  <>
+                    <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Federal Income Tax</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(federalTax)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(federalTax)}</Text>
+                    </View>
+                    <View style={gustoStyles.tableRow}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Social Security (6.2%)</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(ssTax)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(ssTax)}</Text>
+                    </View>
+                    <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Medicare (1.45%)</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(medTax)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(medTax)}</Text>
+                    </View>
+                    <View style={gustoStyles.tableRow}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>{data.state?.toUpperCase() || 'State'} Tax</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(stateTax)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(stateTax)}</Text>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Federal Income Tax</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(federalTax)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(federalTax)}</Text>
+                    </View>
+                    <View style={gustoStyles.tableRow}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>CPP (5.95%)</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(cpp)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(cpp)}</Text>
+                    </View>
+                    <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>EI (1.63%)</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(ei)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(ei)}</Text>
+                    </View>
+                    <View style={gustoStyles.tableRow}>
+                      <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>{data.province?.toUpperCase() || 'Prov'} Tax</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(provincial)}</Text>
+                      <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(provincial)}</Text>
+                    </View>
+                  </>
+                )}
+              </View>
+            </View>
+            <View style={gustoStyles.taxColumn}>
+              <View style={gustoStyles.sectionHeader}>
+                <Text style={gustoStyles.sectionTitle}>Employer Tax</Text>
+              </View>
+              <View style={gustoStyles.table}>
+                <View style={gustoStyles.tableHeaderRow}>
+                  <Text style={[gustoStyles.tableHeaderCell, { flex: 2 }]}>Company Tax</Text>
+                  <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>Current</Text>
+                  <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>YTD</Text>
+                </View>
+                <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                  <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Social Security (6.2%)</Text>
+                  <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay * 0.062)}</Text>
+                  <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay * 0.062)}</Text>
+                </View>
+                <View style={gustoStyles.tableRow}>
+                  <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Medicare (1.45%)</Text>
+                  <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay * 0.0145)}</Text>
+                  <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay * 0.0145)}</Text>
+                </View>
+                <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+                  <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>FUTA (0.6%)</Text>
+                  <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay * 0.006)}</Text>
+                  <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay * 0.006)}</Text>
+                </View>
+              </View>
             </View>
           </View>
 
-          {/* Deductions Table */}
-          <View style={styles.gustoTableSection}>
-            <View style={styles.gustoTableHeader}>
-              <Text style={[styles.gustoTableHeaderText, { flex: 3 }]}>DEDUCTIONS</Text>
-              <Text style={[styles.gustoTableHeaderText, { flex: 1.5, textAlign: 'right' }]}>CURRENT</Text>
-              <Text style={[styles.gustoTableHeaderText, { flex: 1.5, textAlign: 'right' }]}>YTD</Text>
+          {/* SUMMARY SECTION */}
+          <View style={gustoStyles.sectionHeader}>
+            <Text style={gustoStyles.sectionTitle}>Summary</Text>
+          </View>
+          <View style={gustoStyles.table}>
+            <View style={gustoStyles.tableHeaderRow}>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 2 }]}>Description</Text>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>Current</Text>
+              <Text style={[gustoStyles.tableHeaderCell, { flex: 1 }]}>Year-To-Date</Text>
             </View>
+            <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+              <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Gross Earnings</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay)}</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(grossPay)}</Text>
+            </View>
+            <View style={gustoStyles.tableRow}>
+              <Text style={[gustoStyles.tableCell, gustoStyles.tableCellUnderline, { flex: 2 }]}>Taxes</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(totalTax)}</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1 }]}>{fmt(totalTax)}</Text>
+            </View>
+            <View style={[gustoStyles.tableRow, { backgroundColor: '#f5f5f5' }]}>
+              <Text style={[gustoStyles.tableCell, { flex: 2, fontWeight: '700' }]}>Net Pay</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1, fontWeight: '700' }]}>{fmt(netPay)}</Text>
+              <Text style={[gustoStyles.tableCell, { flex: 1, fontWeight: '700' }]}>{fmt(netPay)}</Text>
+            </View>
+          </View>
 
+          {/* NET PAY BOX */}
+          <View style={gustoStyles.netPayBox}>
+            <Text style={gustoStyles.netPayLabel}>Net Pay</Text>
+            <Text style={gustoStyles.netPayAmount}>{fmt(netPay)}</Text>
+            {data.bankName && <Text style={gustoStyles.netPayDeposit}>Direct Deposit to {data.bankName} (...{data.bank || '0000'})</Text>}
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+// ============ TEMPLATE C: WORKDAY STYLE ============
+// Matches: Blue header bar, "Payslip" title, blue section headers, clean corporate look
+function WorkdayTemplate({ data, type, calc, fmt, fmtDate }) {
+  const { grossPay, regularPay, overtimePay, ssTax, medTax, federalTax, stateTax, cpp, ei, provincial, totalTax, netPay, hours, overtime, rate } = calc;
+
+  return (
+    <View style={workdayStyles.container}>
+      <ScrollView style={workdayStyles.scroll} contentContainerStyle={workdayStyles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+        <View style={workdayStyles.paper}>
+          {/* Blue Header Bar */}
+          <View style={workdayStyles.headerBar}>
+            <Text style={workdayStyles.logo}>workday</Text>
+            <Text style={workdayStyles.title}>Payslip</Text>
+          </View>
+
+          {/* Employee & Company Info Row */}
+          <View style={workdayStyles.infoRow}>
+            <View style={workdayStyles.infoCol}>
+              <Text style={workdayStyles.infoLabel}>Employee Name</Text>
+              <Text style={workdayStyles.infoValue}>{data.name || 'Employee Name'}</Text>
+              <Text style={workdayStyles.infoLabel}>Employee ID</Text>
+              <Text style={workdayStyles.infoValue}>XXX-XX-{type === 'us' ? (data.ssn || '0000') : (data.sin || '000')}</Text>
+            </View>
+            <View style={workdayStyles.infoCol}>
+              <Text style={workdayStyles.infoLabel}>Company</Text>
+              <Text style={workdayStyles.infoValue}>{data.company || 'Company Name'}</Text>
+              <Text style={workdayStyles.infoLabel}>Pay Period</Text>
+              <Text style={workdayStyles.infoValue}>{fmtDate(data.startDate)} - {fmtDate(data.endDate)}</Text>
+            </View>
+            <View style={workdayStyles.infoCol}>
+              <Text style={workdayStyles.infoLabel}>Pay Date</Text>
+              <Text style={workdayStyles.infoValue}>{fmtDate(data.payDate)}</Text>
+              <Text style={workdayStyles.infoLabel}>Pay Frequency</Text>
+              <Text style={workdayStyles.infoValue}>{(data.payFrequency || 'Biweekly').charAt(0).toUpperCase() + (data.payFrequency || 'biweekly').slice(1)}</Text>
+            </View>
+          </View>
+
+          {/* Earnings Section */}
+          <View style={workdayStyles.sectionHeader}>
+            <Text style={workdayStyles.sectionTitle}>Earnings</Text>
+          </View>
+          <View style={workdayStyles.table}>
+            <View style={workdayStyles.tableHeaderRow}>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 2 }]}>Description</Text>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>Hours</Text>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>Rate</Text>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>Current</Text>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>YTD</Text>
+            </View>
+            <View style={workdayStyles.tableRow}>
+              <Text style={[workdayStyles.tableCell, { flex: 2 }]}>{data.payType === 'salary' ? 'Salary' : 'Regular'}</Text>
+              <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{data.payType === 'salary' ? '-' : hours}</Text>
+              <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{data.payType === 'salary' ? '-' : fmt(rate)}</Text>
+              <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(regularPay)}</Text>
+              <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(regularPay)}</Text>
+            </View>
+            {overtime > 0 && data.payType === 'hourly' && (
+              <View style={workdayStyles.tableRow}>
+                <Text style={[workdayStyles.tableCell, { flex: 2 }]}>Overtime</Text>
+                <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{overtime}</Text>
+                <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(rate * 1.5)}</Text>
+                <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(overtimePay)}</Text>
+                <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(overtimePay)}</Text>
+              </View>
+            )}
+            <View style={workdayStyles.tableTotalRow}>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 2 }]}>Gross Pay</Text>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 1 }]}></Text>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 1 }]}></Text>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 1, textAlign: 'right' }]}>{fmt(grossPay)}</Text>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 1, textAlign: 'right' }]}>{fmt(grossPay)}</Text>
+            </View>
+          </View>
+
+          {/* Taxes Section */}
+          <View style={workdayStyles.sectionHeader}>
+            <Text style={workdayStyles.sectionTitle}>Taxes</Text>
+          </View>
+          <View style={workdayStyles.table}>
+            <View style={workdayStyles.tableHeaderRow}>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 2 }]}>Description</Text>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>Current</Text>
+              <Text style={[workdayStyles.tableHeaderCell, { flex: 1, textAlign: 'right' }]}>YTD</Text>
+            </View>
             {type === 'us' ? (
               <>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>Federal Income Tax</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(federal)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(federal)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>Federal Income Tax</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(federalTax)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(federalTax)}</Text>
                 </View>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>Social Security (FICA)</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(socialSecurity)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(socialSecurity)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>Social Security</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(ssTax)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(ssTax)}</Text>
                 </View>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>Medicare</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(medicare)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(medicare)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>Medicare</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(medTax)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(medTax)}</Text>
                 </View>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>State Income Tax ({data.state || 'ST'})</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(stateTax)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(stateTax)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>{data.state?.toUpperCase() || 'State'} Income Tax</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(stateTax)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(stateTax)}</Text>
                 </View>
               </>
             ) : (
               <>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>Federal Income Tax</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(federal)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(federal)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>Federal Tax</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(federalTax)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(federalTax)}</Text>
                 </View>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>CPP Contributions</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(cpp)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(cpp)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>CPP</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(cpp)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(cpp)}</Text>
                 </View>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>EI Premiums</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(ei)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(ei)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>EI</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(ei)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(ei)}</Text>
                 </View>
-                <View style={styles.gustoTableRow}>
-                  <Text style={[styles.gustoTableCell, { flex: 3 }]}>Provincial Tax ({data.province || 'ON'})</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(provincial)}</Text>
-                  <Text style={[styles.gustoTableCell, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(provincial)}</Text>
+                <View style={workdayStyles.tableRow}>
+                  <Text style={[workdayStyles.tableCell, { flex: 2 }]}>{data.province?.toUpperCase() || 'Provincial'} Tax</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(provincial)}</Text>
+                  <Text style={[workdayStyles.tableCell, { flex: 1, textAlign: 'right' }]}>{fmt(provincial)}</Text>
                 </View>
               </>
             )}
-
-            <View style={styles.gustoTableRowTotal}>
-              <Text style={[styles.gustoTableCellBold, { flex: 3 }]}>Total Deductions</Text>
-              <Text style={[styles.gustoTableCellBold, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(totalDeductions)}</Text>
-              <Text style={[styles.gustoTableCellBold, { flex: 1.5, textAlign: 'right' }]}>{formatCurrency(totalDeductions)}</Text>
+            <View style={workdayStyles.tableTotalRow}>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 2 }]}>Total Taxes</Text>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 1, textAlign: 'right' }]}>{fmt(totalTax)}</Text>
+              <Text style={[workdayStyles.tableTotalCell, { flex: 1, textAlign: 'right' }]}>{fmt(totalTax)}</Text>
             </View>
           </View>
 
-          {/* Net Pay */}
-          <View style={styles.gustoNetPaySection}>
-            <View style={styles.gustoNetPayBox}>
-              <Text style={styles.gustoNetPayLabel}>NET PAY</Text>
-              <Text style={styles.gustoNetPayAmount}>{formatCurrency(netPay)}</Text>
+          {/* Net Pay Box */}
+          <View style={workdayStyles.netPayBox}>
+            <View style={workdayStyles.netPayRow}>
+              <Text style={workdayStyles.netPayLabel}>Net Pay</Text>
+              <Text style={workdayStyles.netPayAmount}>{fmt(netPay)}</Text>
             </View>
             {data.bankName && (
-              <View style={styles.gustoDepositInfo}>
-                <Text style={styles.gustoDepositLabel}>Direct Deposit to {data.bankName}</Text>
-                <Text style={styles.gustoDepositAccount}>Account ending in {data.bank || '****'}</Text>
-              </View>
+              <Text style={workdayStyles.netPayDeposit}>Direct Deposit: {data.bankName} ****{data.bank || '0000'}</Text>
             )}
           </View>
         </View>
@@ -235,215 +415,97 @@ function GustoTemplate({ data, type, calculations, formatCurrency, formatDate })
   );
 }
 
-// Template C: Workday Style - Corporate blue design
-function WorkdayTemplate({ data, type, calculations, formatCurrency, formatDate }) {
-  const { grossPay, regularPay, overtimePay, socialSecurity, medicare, federal, stateTax, cpp, ei, provincial, totalDeductions, netPay, hours, overtime, rate } = calculations;
+// ============ TEMPLATE H: ONPAY STYLE ============
+// Matches: Purple accents, "OnPay" branding, modern card-based layout
+function OnPayTemplate({ data, type, calc, fmt, fmtDate }) {
+  const { grossPay, regularPay, overtimePay, ssTax, medTax, federalTax, stateTax, cpp, ei, provincial, totalTax, netPay, hours, overtime, rate } = calc;
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.previewScroll} contentContainerStyle={styles.previewContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-        <View style={[styles.paper, styles.workdayPaper]}>
-          {/* Workday Header */}
-          <View style={styles.workdayHeader}>
-            <View style={styles.workdayLogoSection}>
-              <View style={styles.workdayLogo}>
-                <Text style={styles.workdayLogoText}>workday</Text>
-              </View>
-            </View>
-            <Text style={styles.workdayTitle}>Payslip</Text>
-          </View>
-
-          {/* Blue accent bar */}
-          <View style={styles.workdayAccent} />
-
-          {/* Two column layout */}
-          <View style={styles.workdayColumns}>
-            <View style={styles.workdayColLeft}>
-              <Text style={styles.workdayLabel}>Employee</Text>
-              <Text style={styles.workdayValue}>{data.name || 'Employee Name'}</Text>
-              <Text style={styles.workdaySmall}>{type === 'us' ? `SSN: ***-**-${data.ssn || '0000'}` : `SIN: ***-***-${data.sin || '000'}`}</Text>
-              
-              <Text style={[styles.workdayLabel, { marginTop: 8 }]}>Company</Text>
-              <Text style={styles.workdayValue}>{data.company || 'Company Name'}</Text>
-            </View>
-            <View style={styles.workdayColRight}>
-              <Text style={styles.workdayLabel}>Pay Period</Text>
-              <Text style={styles.workdayValue}>{formatDate(data.startDate)} - {formatDate(data.endDate)}</Text>
-              
-              <Text style={[styles.workdayLabel, { marginTop: 8 }]}>Pay Date</Text>
-              <Text style={styles.workdayValue}>{formatDate(data.payDate)}</Text>
-            </View>
-          </View>
-
-          {/* Summary boxes */}
-          <View style={styles.workdaySummaryRow}>
-            <View style={styles.workdaySummaryBox}>
-              <Text style={styles.workdaySummaryLabel}>Gross Earnings</Text>
-              <Text style={styles.workdaySummaryValue}>{formatCurrency(grossPay)}</Text>
-            </View>
-            <View style={styles.workdaySummaryBox}>
-              <Text style={styles.workdaySummaryLabel}>Deductions</Text>
-              <Text style={[styles.workdaySummaryValue, { color: '#dc2626' }]}>-{formatCurrency(totalDeductions)}</Text>
-            </View>
-            <View style={[styles.workdaySummaryBox, styles.workdayNetBox]}>
-              <Text style={styles.workdaySummaryLabel}>Net Pay</Text>
-              <Text style={[styles.workdaySummaryValue, { color: '#fff' }]}>{formatCurrency(netPay)}</Text>
-            </View>
-          </View>
-
-          {/* Earnings Details */}
-          <View style={styles.workdaySection}>
-            <Text style={styles.workdaySectionTitle}>Earnings</Text>
-            <View style={styles.workdayDetailRow}>
-              <Text style={styles.workdayDetailLabel}>Regular Pay</Text>
-              <Text style={styles.workdayDetailValue}>{formatCurrency(regularPay)}</Text>
-            </View>
-            {overtime > 0 && (
-              <View style={styles.workdayDetailRow}>
-                <Text style={styles.workdayDetailLabel}>Overtime Pay</Text>
-                <Text style={styles.workdayDetailValue}>{formatCurrency(overtimePay)}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Deductions Details */}
-          <View style={styles.workdaySection}>
-            <Text style={styles.workdaySectionTitle}>Deductions</Text>
-            {type === 'us' ? (
-              <>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>Federal Tax</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(federal)}</Text>
-                </View>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>Social Security</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(socialSecurity)}</Text>
-                </View>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>Medicare</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(medicare)}</Text>
-                </View>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>State Tax</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(stateTax)}</Text>
-                </View>
-              </>
-            ) : (
-              <>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>Federal Tax</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(federal)}</Text>
-                </View>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>CPP</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(cpp)}</Text>
-                </View>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>EI</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(ei)}</Text>
-                </View>
-                <View style={styles.workdayDetailRow}>
-                  <Text style={styles.workdayDetailLabel}>Provincial Tax</Text>
-                  <Text style={styles.workdayDetailValue}>{formatCurrency(provincial)}</Text>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
-
-// Template H: OnPay Style - Modern minimal design
-function OnPayTemplate({ data, type, calculations, formatCurrency, formatDate }) {
-  const { grossPay, regularPay, overtimePay, socialSecurity, medicare, federal, stateTax, cpp, ei, provincial, totalDeductions, netPay, hours, overtime, rate } = calculations;
-
-  return (
-    <View style={styles.container}>
-      <ScrollView style={styles.previewScroll} contentContainerStyle={styles.previewContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-        <View style={[styles.paper, styles.onpayPaper]}>
-          {/* OnPay Header */}
-          <View style={styles.onpayHeader}>
+    <View style={onpayStyles.container}>
+      <ScrollView style={onpayStyles.scroll} contentContainerStyle={onpayStyles.scrollContent} showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
+        <View style={onpayStyles.paper}>
+          {/* Header */}
+          <View style={onpayStyles.header}>
             <View>
-              <Text style={styles.onpayCompany}>{data.company || 'COMPANY NAME'}</Text>
-              <Text style={styles.onpayCompanyDetail}>{data.companyAddress || '123 Business Ave'}</Text>
-              <Text style={styles.onpayCompanyDetail}>{data.companyCity || 'City'}, {type === 'us' ? data.companyState : data.companyProvince || 'ST'}</Text>
+              <Text style={onpayStyles.companyName}>{data.company || 'Company Name'}</Text>
+              <Text style={onpayStyles.companyDetail}>{data.companyAddress || ''}</Text>
+              <Text style={onpayStyles.companyDetail}>{data.companyCity || ''}, {type === 'us' ? data.companyState : data.companyProvince || ''}</Text>
             </View>
-            <View style={styles.onpayBadge}>
-              <Text style={styles.onpayBadgeText}>OnPay</Text>
+            <View style={onpayStyles.logoBadge}>
+              <Text style={onpayStyles.logoText}>OnPay</Text>
             </View>
           </View>
 
-          <View style={styles.onpayTitleSection}>
-            <Text style={styles.onpayTitle}>Pay Stub</Text>
-            <Text style={styles.onpayPeriod}>{formatDate(data.startDate)} through {formatDate(data.endDate)}</Text>
+          {/* Title Section */}
+          <View style={onpayStyles.titleSection}>
+            <Text style={onpayStyles.title}>Pay Stub</Text>
+            <Text style={onpayStyles.period}>{fmtDate(data.startDate)} through {fmtDate(data.endDate)}</Text>
           </View>
 
           {/* Employee Card */}
-          <View style={styles.onpayCard}>
-            <Text style={styles.onpayCardTitle}>Employee Information</Text>
-            <View style={styles.onpayCardRow}>
-              <Text style={styles.onpayCardLabel}>Name:</Text>
-              <Text style={styles.onpayCardValue}>{data.name || 'Employee Name'}</Text>
+          <View style={onpayStyles.card}>
+            <Text style={onpayStyles.cardTitle}>Employee</Text>
+            <View style={onpayStyles.cardRow}>
+              <Text style={onpayStyles.cardLabel}>Name:</Text>
+              <Text style={onpayStyles.cardValue}>{data.name || 'Employee Name'}</Text>
             </View>
-            <View style={styles.onpayCardRow}>
-              <Text style={styles.onpayCardLabel}>{type === 'us' ? 'SSN:' : 'SIN:'}</Text>
-              <Text style={styles.onpayCardValue}>***-**-{type === 'us' ? (data.ssn || '0000') : (data.sin || '000')}</Text>
+            <View style={onpayStyles.cardRow}>
+              <Text style={onpayStyles.cardLabel}>{type === 'us' ? 'SSN:' : 'SIN:'}</Text>
+              <Text style={onpayStyles.cardValue}>***-**-{type === 'us' ? (data.ssn || '0000') : (data.sin || '000')}</Text>
             </View>
-            <View style={styles.onpayCardRow}>
-              <Text style={styles.onpayCardLabel}>Pay Date:</Text>
-              <Text style={styles.onpayCardValue}>{formatDate(data.payDate)}</Text>
+            <View style={onpayStyles.cardRow}>
+              <Text style={onpayStyles.cardLabel}>Pay Date:</Text>
+              <Text style={onpayStyles.cardValue}>{fmtDate(data.payDate)}</Text>
             </View>
           </View>
 
           {/* Earnings Card */}
-          <View style={styles.onpayCard}>
-            <Text style={styles.onpayCardTitle}>Earnings</Text>
-            <View style={styles.onpayCardRow}>
-              <Text style={styles.onpayCardLabel}>Regular Pay</Text>
-              <Text style={styles.onpayCardValue}>{formatCurrency(regularPay)}</Text>
+          <View style={onpayStyles.card}>
+            <Text style={onpayStyles.cardTitle}>Earnings</Text>
+            <View style={onpayStyles.cardRow}>
+              <Text style={onpayStyles.cardLabel}>{data.payType === 'salary' ? 'Salary' : 'Regular Pay'}</Text>
+              <Text style={onpayStyles.cardValue}>{fmt(regularPay)}</Text>
             </View>
-            {overtime > 0 && (
-              <View style={styles.onpayCardRow}>
-                <Text style={styles.onpayCardLabel}>Overtime Pay</Text>
-                <Text style={styles.onpayCardValue}>{formatCurrency(overtimePay)}</Text>
+            {overtime > 0 && data.payType === 'hourly' && (
+              <View style={onpayStyles.cardRow}>
+                <Text style={onpayStyles.cardLabel}>Overtime</Text>
+                <Text style={onpayStyles.cardValue}>{fmt(overtimePay)}</Text>
               </View>
             )}
-            <View style={[styles.onpayCardRow, styles.onpayCardTotal]}>
-              <Text style={styles.onpayCardTotalLabel}>Gross Pay</Text>
-              <Text style={styles.onpayCardTotalValue}>{formatCurrency(grossPay)}</Text>
+            <View style={onpayStyles.cardTotalRow}>
+              <Text style={onpayStyles.cardTotalLabel}>Gross Pay</Text>
+              <Text style={onpayStyles.cardTotalValue}>{fmt(grossPay)}</Text>
             </View>
           </View>
 
-          {/* Deductions Card */}
-          <View style={styles.onpayCard}>
-            <Text style={styles.onpayCardTitle}>Deductions</Text>
+          {/* Taxes Card */}
+          <View style={onpayStyles.card}>
+            <Text style={onpayStyles.cardTitle}>Taxes</Text>
             {type === 'us' ? (
               <>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>Federal Tax</Text><Text style={styles.onpayCardValue}>{formatCurrency(federal)}</Text></View>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>Social Security</Text><Text style={styles.onpayCardValue}>{formatCurrency(socialSecurity)}</Text></View>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>Medicare</Text><Text style={styles.onpayCardValue}>{formatCurrency(medicare)}</Text></View>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>State Tax</Text><Text style={styles.onpayCardValue}>{formatCurrency(stateTax)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>Federal Tax</Text><Text style={onpayStyles.cardValue}>{fmt(federalTax)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>Social Security</Text><Text style={onpayStyles.cardValue}>{fmt(ssTax)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>Medicare</Text><Text style={onpayStyles.cardValue}>{fmt(medTax)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>{data.state?.toUpperCase() || 'State'} Tax</Text><Text style={onpayStyles.cardValue}>{fmt(stateTax)}</Text></View>
               </>
             ) : (
               <>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>Federal Tax</Text><Text style={styles.onpayCardValue}>{formatCurrency(federal)}</Text></View>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>CPP</Text><Text style={styles.onpayCardValue}>{formatCurrency(cpp)}</Text></View>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>EI</Text><Text style={styles.onpayCardValue}>{formatCurrency(ei)}</Text></View>
-                <View style={styles.onpayCardRow}><Text style={styles.onpayCardLabel}>Provincial Tax</Text><Text style={styles.onpayCardValue}>{formatCurrency(provincial)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>Federal Tax</Text><Text style={onpayStyles.cardValue}>{fmt(federalTax)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>CPP</Text><Text style={onpayStyles.cardValue}>{fmt(cpp)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>EI</Text><Text style={onpayStyles.cardValue}>{fmt(ei)}</Text></View>
+                <View style={onpayStyles.cardRow}><Text style={onpayStyles.cardLabel}>{data.province?.toUpperCase() || 'Provincial'} Tax</Text><Text style={onpayStyles.cardValue}>{fmt(provincial)}</Text></View>
               </>
             )}
-            <View style={[styles.onpayCardRow, styles.onpayCardTotal]}>
-              <Text style={styles.onpayCardTotalLabel}>Total Deductions</Text>
-              <Text style={[styles.onpayCardTotalValue, { color: '#dc2626' }]}>-{formatCurrency(totalDeductions)}</Text>
+            <View style={onpayStyles.cardTotalRow}>
+              <Text style={onpayStyles.cardTotalLabel}>Total Taxes</Text>
+              <Text style={[onpayStyles.cardTotalValue, { color: '#dc2626' }]}>-{fmt(totalTax)}</Text>
             </View>
           </View>
 
           {/* Net Pay Banner */}
-          <View style={styles.onpayNetBanner}>
-            <Text style={styles.onpayNetLabel}>NET PAY</Text>
-            <Text style={styles.onpayNetAmount}>{formatCurrency(netPay)}</Text>
+          <View style={onpayStyles.netPayBanner}>
+            <Text style={onpayStyles.netPayLabel}>NET PAY</Text>
+            <Text style={onpayStyles.netPayAmount}>{fmt(netPay)}</Text>
           </View>
         </View>
       </ScrollView>
@@ -451,107 +513,90 @@ function OnPayTemplate({ data, type, calculations, formatCurrency, formatDate })
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.slate[200],
-    borderRadius: borderRadius.xl,
-    padding: spacing.sm,
-    marginBottom: spacing.base,
-    height: 420,
-  },
-  previewScroll: { flex: 1 },
-  previewContent: { paddingBottom: spacing.sm },
-  paper: {
-    backgroundColor: '#ffffff',
-    borderRadius: borderRadius.base,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+// ============ GUSTO STYLES ============
+const gustoStyles = StyleSheet.create({
+  container: { backgroundColor: '#e5e5e5', borderRadius: 8, padding: 6, marginBottom: 12, height: 450 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: 8 },
+  paper: { backgroundColor: '#fff', padding: 12, borderRadius: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  header: { marginBottom: 8 },
+  logoArea: { marginBottom: 8 },
+  logo: { fontSize: 16, fontWeight: '700', color: '#00a8a1' },
+  title: { fontSize: 12, fontWeight: '700', color: '#000', marginBottom: 4 },
+  payPeriod: { fontSize: 7, color: '#000', marginBottom: 2 },
+  employeeDeposit: { fontSize: 7, color: '#000', marginBottom: 8 },
+  infoBoxes: { flexDirection: 'row', marginBottom: 10 },
+  infoBox: { flex: 1, backgroundColor: '#f8f8f8', padding: 8, marginRight: 4, borderRadius: 2 },
+  infoBoxTitle: { fontSize: 7, fontWeight: '700', color: '#000', marginBottom: 4 },
+  infoBoxText: { fontSize: 6, color: '#000', marginBottom: 1 },
+  sectionHeader: { borderBottomWidth: 2, borderBottomColor: '#00a8a1', marginBottom: 6, paddingBottom: 2 },
+  sectionTitle: { fontSize: 8, fontWeight: '700', color: '#000' },
+  table: { marginBottom: 8 },
+  tableHeaderRow: { flexDirection: 'row', marginBottom: 2 },
+  tableHeaderCell: { fontSize: 6, fontWeight: '700', color: '#000' },
+  tableRow: { flexDirection: 'row', paddingVertical: 3, borderBottomWidth: 0.5, borderBottomColor: '#e0e0e0' },
+  tableCell: { fontSize: 6, color: '#000' },
+  tableCellUnderline: { textDecorationLine: 'underline' },
+  taxColumns: { flexDirection: 'row', marginBottom: 8 },
+  taxColumn: { flex: 1, marginRight: 4 },
+  netPayBox: { backgroundColor: '#f8f8f8', padding: 10, borderRadius: 4, marginTop: 8 },
+  netPayLabel: { fontSize: 8, fontWeight: '700', color: '#000' },
+  netPayAmount: { fontSize: 14, fontWeight: '700', color: '#00a8a1', marginTop: 2 },
+  netPayDeposit: { fontSize: 6, color: '#666', marginTop: 4 },
+});
 
-  // ========== GUSTO TEMPLATE STYLES ==========
-  gustoPaper: { borderTopWidth: 3, borderTopColor: '#10b981' },
-  gustoHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
-  gustoLogoSection: { flexDirection: 'row', alignItems: 'flex-start' },
-  gustoLogo: { backgroundColor: '#10b981', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 4, marginRight: 8 },
-  gustoLogoText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  gustoCompanyName: { fontSize: 10, fontWeight: '700', color: colors.slate[800] },
-  gustoCompanyDetail: { fontSize: 6, color: colors.slate[600] },
-  gustoPayStubLabel: { alignItems: 'flex-end' },
-  gustoTitle: { fontSize: 11, fontWeight: '700', color: colors.slate[800] },
-  gustoPayPeriod: { fontSize: 6, color: colors.slate[600] },
-  gustoDivider: { height: 1, backgroundColor: '#10b981', marginVertical: spacing.sm },
-  gustoEmployeeSection: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm, paddingBottom: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.slate[200] },
-  gustoEmployeeLeft: { flex: 1 },
-  gustoEmployeeRight: { alignItems: 'flex-end' },
-  gustoLabel: { fontSize: 5, fontWeight: '600', color: '#10b981', marginBottom: 2, letterSpacing: 0.5 },
-  gustoEmployeeName: { fontSize: 9, fontWeight: '600', color: colors.slate[800] },
-  gustoEmployeeDetail: { fontSize: 6, color: colors.slate[600] },
-  gustoInfoRow: { flexDirection: 'row', marginBottom: 2 },
-  gustoInfoLabel: { fontSize: 6, color: colors.slate[500], marginRight: 4 },
-  gustoInfoValue: { fontSize: 6, fontWeight: '600', color: colors.slate[800] },
-  gustoTableSection: { marginBottom: spacing.sm },
-  gustoTableHeader: { flexDirection: 'row', backgroundColor: '#10b981', paddingVertical: 4, paddingHorizontal: 4, borderRadius: 2 },
-  gustoTableHeaderText: { fontSize: 5, fontWeight: '700', color: '#ffffff', textTransform: 'uppercase' },
-  gustoTableRow: { flexDirection: 'row', paddingVertical: 3, paddingHorizontal: 4, borderBottomWidth: 1, borderBottomColor: colors.slate[100] },
-  gustoTableRowTotal: { flexDirection: 'row', paddingVertical: 4, paddingHorizontal: 4, backgroundColor: colors.slate[50], borderRadius: 2 },
-  gustoTableCell: { fontSize: 6, color: colors.slate[700] },
-  gustoTableCellBold: { fontSize: 6, fontWeight: '700', color: colors.slate[800] },
-  gustoNetPaySection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm, paddingTop: spacing.sm, borderTopWidth: 2, borderTopColor: '#10b981' },
-  gustoNetPayBox: { backgroundColor: '#10b981', paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: borderRadius.base },
-  gustoNetPayLabel: { fontSize: 6, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
-  gustoNetPayAmount: { fontSize: 14, fontWeight: '800', color: '#ffffff' },
-  gustoDepositInfo: { alignItems: 'flex-end' },
-  gustoDepositLabel: { fontSize: 6, color: colors.slate[500] },
-  gustoDepositAccount: { fontSize: 6, color: colors.slate[600] },
+// ============ WORKDAY STYLES ============
+const workdayStyles = StyleSheet.create({
+  container: { backgroundColor: '#e5e5e5', borderRadius: 8, padding: 6, marginBottom: 12, height: 450 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: 8 },
+  paper: { backgroundColor: '#fff', borderRadius: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2, overflow: 'hidden' },
+  headerBar: { backgroundColor: '#0066cc', paddingVertical: 10, paddingHorizontal: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  logo: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  title: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  infoRow: { flexDirection: 'row', padding: 10, borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
+  infoCol: { flex: 1 },
+  infoLabel: { fontSize: 5, color: '#666', textTransform: 'uppercase', marginBottom: 1 },
+  infoValue: { fontSize: 7, color: '#000', fontWeight: '500', marginBottom: 4 },
+  sectionHeader: { backgroundColor: '#0066cc', paddingVertical: 4, paddingHorizontal: 10 },
+  sectionTitle: { fontSize: 8, fontWeight: '700', color: '#fff' },
+  table: { paddingHorizontal: 10, paddingVertical: 4 },
+  tableHeaderRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#0066cc', paddingBottom: 2, marginBottom: 2 },
+  tableHeaderCell: { fontSize: 6, fontWeight: '700', color: '#0066cc' },
+  tableRow: { flexDirection: 'row', paddingVertical: 2, borderBottomWidth: 0.5, borderBottomColor: '#e0e0e0' },
+  tableCell: { fontSize: 6, color: '#333' },
+  tableTotalRow: { flexDirection: 'row', paddingVertical: 4, backgroundColor: '#f0f4f8', marginTop: 4 },
+  tableTotalCell: { fontSize: 6, fontWeight: '700', color: '#000' },
+  netPayBox: { backgroundColor: '#0066cc', padding: 12, margin: 10, borderRadius: 4 },
+  netPayRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  netPayLabel: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
+  netPayAmount: { fontSize: 18, fontWeight: '700', color: '#fff' },
+  netPayDeposit: { fontSize: 6, color: 'rgba(255,255,255,0.7)', marginTop: 4 },
+});
 
-  // ========== WORKDAY TEMPLATE STYLES ==========
-  workdayPaper: {},
-  workdayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  workdayLogoSection: {},
-  workdayLogo: { backgroundColor: '#0066cc', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
-  workdayLogoText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  workdayTitle: { fontSize: 14, fontWeight: '700', color: '#0066cc' },
-  workdayAccent: { height: 3, backgroundColor: '#0066cc', marginBottom: spacing.sm },
-  workdayColumns: { flexDirection: 'row', marginBottom: spacing.sm },
-  workdayColLeft: { flex: 1 },
-  workdayColRight: { flex: 1, alignItems: 'flex-end' },
-  workdayLabel: { fontSize: 5, fontWeight: '600', color: '#0066cc', textTransform: 'uppercase' },
-  workdayValue: { fontSize: 8, fontWeight: '600', color: colors.slate[800] },
-  workdaySmall: { fontSize: 6, color: colors.slate[500] },
-  workdaySummaryRow: { flexDirection: 'row', marginBottom: spacing.sm },
-  workdaySummaryBox: { flex: 1, backgroundColor: colors.slate[50], padding: spacing.xs, marginRight: 4, borderRadius: 4, alignItems: 'center' },
-  workdayNetBox: { backgroundColor: '#0066cc', marginRight: 0 },
-  workdaySummaryLabel: { fontSize: 5, color: colors.slate[500], textTransform: 'uppercase' },
-  workdaySummaryValue: { fontSize: 10, fontWeight: '700', color: colors.slate[800] },
-  workdaySection: { marginBottom: spacing.sm },
-  workdaySectionTitle: { fontSize: 7, fontWeight: '700', color: '#0066cc', marginBottom: 4, textTransform: 'uppercase' },
-  workdayDetailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 2, borderBottomWidth: 1, borderBottomColor: colors.slate[100] },
-  workdayDetailLabel: { fontSize: 6, color: colors.slate[600] },
-  workdayDetailValue: { fontSize: 6, fontWeight: '600', color: colors.slate[800] },
-
-  // ========== ONPAY TEMPLATE STYLES ==========
-  onpayPaper: { backgroundColor: '#fafafa' },
-  onpayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
-  onpayCompany: { fontSize: 11, fontWeight: '700', color: colors.slate[800] },
-  onpayCompanyDetail: { fontSize: 6, color: colors.slate[500] },
-  onpayBadge: { backgroundColor: '#7c3aed', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
-  onpayBadgeText: { color: '#fff', fontSize: 8, fontWeight: '700' },
-  onpayTitleSection: { marginBottom: spacing.sm, paddingBottom: spacing.sm, borderBottomWidth: 2, borderBottomColor: '#7c3aed' },
-  onpayTitle: { fontSize: 14, fontWeight: '800', color: '#7c3aed' },
-  onpayPeriod: { fontSize: 7, color: colors.slate[500] },
-  onpayCard: { backgroundColor: '#fff', borderRadius: 6, padding: spacing.sm, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.slate[200] },
-  onpayCardTitle: { fontSize: 7, fontWeight: '700', color: '#7c3aed', marginBottom: 6, textTransform: 'uppercase' },
-  onpayCardRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 2 },
-  onpayCardLabel: { fontSize: 6, color: colors.slate[600] },
-  onpayCardValue: { fontSize: 6, fontWeight: '600', color: colors.slate[800] },
-  onpayCardTotal: { borderTopWidth: 1, borderTopColor: colors.slate[200], marginTop: 4, paddingTop: 4 },
-  onpayCardTotalLabel: { fontSize: 7, fontWeight: '700', color: colors.slate[800] },
-  onpayCardTotalValue: { fontSize: 8, fontWeight: '700', color: colors.slate[800] },
-  onpayNetBanner: { backgroundColor: '#7c3aed', borderRadius: 8, padding: spacing.md, alignItems: 'center' },
-  onpayNetLabel: { fontSize: 7, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
-  onpayNetAmount: { fontSize: 18, fontWeight: '800', color: '#fff' },
+// ============ ONPAY STYLES ============
+const onpayStyles = StyleSheet.create({
+  container: { backgroundColor: '#e5e5e5', borderRadius: 8, padding: 6, marginBottom: 12, height: 450 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: 8 },
+  paper: { backgroundColor: '#fafafa', padding: 12, borderRadius: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  companyName: { fontSize: 10, fontWeight: '700', color: '#000' },
+  companyDetail: { fontSize: 6, color: '#666' },
+  logoBadge: { backgroundColor: '#7c3aed', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  logoText: { fontSize: 8, fontWeight: '700', color: '#fff' },
+  titleSection: { borderBottomWidth: 2, borderBottomColor: '#7c3aed', paddingBottom: 6, marginBottom: 10 },
+  title: { fontSize: 14, fontWeight: '800', color: '#7c3aed' },
+  period: { fontSize: 7, color: '#666' },
+  card: { backgroundColor: '#fff', borderRadius: 6, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: '#e0e0e0' },
+  cardTitle: { fontSize: 7, fontWeight: '700', color: '#7c3aed', marginBottom: 6, textTransform: 'uppercase' },
+  cardRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 2 },
+  cardLabel: { fontSize: 6, color: '#666' },
+  cardValue: { fontSize: 6, fontWeight: '600', color: '#000' },
+  cardTotalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderTopWidth: 1, borderTopColor: '#e0e0e0', marginTop: 4 },
+  cardTotalLabel: { fontSize: 7, fontWeight: '700', color: '#000' },
+  cardTotalValue: { fontSize: 8, fontWeight: '700', color: '#000' },
+  netPayBanner: { backgroundColor: '#7c3aed', borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 4 },
+  netPayLabel: { fontSize: 7, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
+  netPayAmount: { fontSize: 20, fontWeight: '800', color: '#fff' },
 });

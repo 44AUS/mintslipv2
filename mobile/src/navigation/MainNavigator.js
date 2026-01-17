@@ -29,6 +29,7 @@ function HomeStack() {
       <Stack.Screen name="HomeMain" component={HomeScreen} />
       <Stack.Screen name="PaystubGenerator" component={PaystubGeneratorScreen} />
       <Stack.Screen name="CanadianPaystubGenerator" component={CanadianPaystubGeneratorScreen} />
+      <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );

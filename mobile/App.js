@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
 
 import { AuthProvider } from './src/context/AuthContext';
 import { ToastProvider } from './src/components/Toast';
@@ -12,6 +13,28 @@ import SplashScreen from './src/screens/SplashScreen';
 import { colors } from './src/styles/theme';
 
 const STORAGE_KEY = '@mintslip_has_launched';
+
+// Deep link prefix for the app
+const linking = {
+  prefixes: [
+    Linking.createURL('/'),
+    'mintslip://',
+    'https://native-paystubs.preview.emergentagent.com'
+  ],
+  config: {
+    screens: {
+      Main: {
+        screens: {
+          Home: {
+            screens: {
+              PaymentSuccess: 'payment-success',
+            }
+          }
+        }
+      }
+    }
+  }
+};
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);

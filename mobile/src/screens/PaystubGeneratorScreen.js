@@ -155,6 +155,15 @@ export default function PaystubGeneratorScreen({ navigation }) {
         // TODO: Implement subscription download
         showToast('Subscription download feature coming soon!', 'info');
       } else {
+        // Create deep link URL for success callback
+        const successUrl = Linking.createURL('payment-success', {
+          queryParams: {
+            type: 'paystub',
+            count: numStubs.toString(),
+            template: formData.selectedTemplate,
+          }
+        });
+        
         // Create Stripe checkout session
         const finalAmount = calculatePrice() * numStubs;
         

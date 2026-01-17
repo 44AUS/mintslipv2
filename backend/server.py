@@ -5404,6 +5404,7 @@ class AIImageGenerateRequest(BaseModel):
 async def generate_blog_image(data: AIImageGenerateRequest, session: dict = Depends(get_current_admin)):
     """Generate a blog featured image using AI (admin)"""
     import base64
+    from emergentintegrations.llm.openai.image_generation import OpenAIImageGeneration
     
     api_key = os.environ.get("EMERGENT_LLM_KEY")
     if not api_key:
@@ -5424,23 +5425,22 @@ The image should be:
 - Visually appealing with good color contrast
 - 16:9 aspect ratio composition"""
 
-        # Initialize LLM Chat with image generation capabilities
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=str(uuid.uuid4()),
-            system_message="You are an expert at generating professional blog featured images."
-        ).with_model("gemini", "gemini-2.5-flash-image-preview").with_params(modalities=["image", "text"])
+        # Use OpenAI image generation (gpt-image-1) which works with Emergent LLM key
+        img_gen = OpenAIImageGeneration(api_key=api_key)
         
         # Generate image
-        msg = UserMessage(text=prompt)
-        text_response, images = await chat.send_message_multimodal_response(msg)
+        generated_images = await img_gen.generate_images(
+            prompt=prompt,
+            model="gpt-image-1",
+            number_of_images=1,
+            quality="medium"  # Balance between quality and speed
+        )
         
-        if not images or len(images) == 0:
+        if not generated_images or len(generated_images) == 0:
             raise HTTPException(status_code=500, detail="Failed to generate image - no image returned")
         
-        # Get the first generated image
-        img = images[0]
-        image_bytes = base64.b64decode(img['data'])
+        # Get the first generated image (already bytes)
+        image_bytes = generated_images[0]
         
         # Save the generated image
         filename = f"ai_{uuid.uuid4()}.png"

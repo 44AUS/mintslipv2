@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Select from '../components/Select';
 import SectionHeader from '../components/SectionHeader';
+import PaystubPreview from '../components/PaystubPreview';
 import { showToast } from '../components/Toast';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
 

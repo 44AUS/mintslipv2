@@ -102,7 +102,7 @@ export default function WelcomeScreen({ navigation }) {
 
             <Button
               variant="ghost"
-              onPress={() => navigation.navigate('Guest')}
+              onPress={handleGuestAccess}
             >
               Continue as Guest
             </Button>

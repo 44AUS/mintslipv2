@@ -3,4 +3,5 @@ export { default as Input } from './Input';
 export { default as Select } from './Select';
 export { default as Card } from './Card';
 export { default as SectionHeader } from './SectionHeader';
+export { default as PaystubPreview } from './PaystubPreview';
 export { ToastProvider, showToast } from './Toast';

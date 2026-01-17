@@ -204,7 +204,7 @@ export default function CanadianPaystubGeneratorScreen({ navigation }) {
               <Ionicons name="document-text" size={20} color={colors.primary.light} />
               <Text style={styles.previewSectionTitle}>Live Document Preview 🍁</Text>
             </View>
-            <PaystubPreview data={formData} type="canadian" />
+            <PaystubPreview data={formData} type="canadian" template={formData.selectedTemplate} />
           </View>
 
           <View style={styles.pageHeader}>

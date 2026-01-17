@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -18,7 +19,10 @@ import Select from '../components/Select';
 import SectionHeader from '../components/SectionHeader';
 import PaystubPreview from '../components/PaystubPreview';
 import { showToast } from '../components/Toast';
+import apiService from '../services/api';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
+
+const API_BASE_URL = 'https://mobile-mint-app.preview.emergentagent.com/api';
 
 // US States
 const US_STATES = [

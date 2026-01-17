@@ -10,6 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
+import { useAuth } from '../context/AuthContext';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
 
 const features = [

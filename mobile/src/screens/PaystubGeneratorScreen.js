@@ -215,57 +215,13 @@ export default function PaystubGeneratorScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Live Preview Card */}
-          <View style={styles.previewCard}>
-            <View style={styles.previewHeader}>
-              <Ionicons name="document-text" size={24} color={colors.primary.light} />
-              <Text style={styles.previewTitle}>Live Preview</Text>
+          {/* Document Preview */}
+          <View style={styles.previewSection}>
+            <View style={styles.previewLabelRow}>
+              <Ionicons name="document-text" size={20} color={colors.primary.light} />
+              <Text style={styles.previewSectionTitle}>Live Document Preview</Text>
             </View>
-            
-            <View style={styles.previewContent}>
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Employee</Text>
-                <Text style={styles.previewValue}>{formData.name || 'Your Name'}</Text>
-              </View>
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Company</Text>
-                <Text style={styles.previewValue}>{formData.company || 'Company Name'}</Text>
-              </View>
-              
-              <View style={styles.previewDivider} />
-              
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabel}>Gross Pay</Text>
-                <Text style={styles.previewValueBold}>{formatCurrency(preview.grossPay)}</Text>
-              </View>
-              
-              <View style={styles.previewSubSection}>
-                <Text style={styles.previewSubTitle}>Taxes & Deductions</Text>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>Social Security</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.socialSecurity)}</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>Medicare</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.medicare)}</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>Federal Tax</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.federal)}</Text>
-                </View>
-                <View style={styles.previewRow}>
-                  <Text style={styles.previewLabelSmall}>State Tax</Text>
-                  <Text style={styles.previewValueSmall}>-{formatCurrency(preview.stateTax)}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.previewDivider} />
-              
-              <View style={styles.previewRow}>
-                <Text style={styles.previewLabelNet}>Net Pay</Text>
-                <Text style={styles.previewValueNet}>{formatCurrency(preview.netPay)}</Text>
-              </View>
-            </View>
+            <PaystubPreview data={formData} type="us" />
           </View>
 
           {/* Page Title */}

@@ -165,7 +165,7 @@ const generators = [
     path: "/vehicle-bill-of-sale-generator",
     icon: Car,
     price: "$9.99",
-    category: "Legal Documents",
+    category: "Business Documents",
     tags: ["vehicle", "bill of sale", "car", "auto", "seller", "buyer", "notary", "vin"],
     isNew: true
   },

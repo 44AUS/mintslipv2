@@ -62,9 +62,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-linking"
-    ],
+    "plugins": [],
     "owner": "austinflatt",
     "extra": {
       "eas": {

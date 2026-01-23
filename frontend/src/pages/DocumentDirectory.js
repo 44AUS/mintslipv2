@@ -113,7 +113,6 @@ const generators = [
     price: "$14.99",
     category: "Tax Forms",
     tags: ["w9", "w-9", "tin", "taxpayer", "certification", "contractor", "vendor"],
-    isNew: true
   },
   {
     id: "1099-nec",
@@ -124,7 +123,6 @@ const generators = [
     price: "$14.99",
     category: "Tax Forms",
     tags: ["1099", "nec", "contractor", "freelancer", "nonemployee", "compensation", "independent"],
-    isNew: true
   },
   {
     id: "1099-misc",
@@ -135,7 +133,6 @@ const generators = [
     price: "$14.99",
     category: "Tax Forms",
     tags: ["1099", "misc", "miscellaneous", "rent", "royalties", "prizes", "awards"],
-    isNew: true
   },
   {
     id: "schedule-c",
@@ -146,7 +143,6 @@ const generators = [
     price: "$14.99",
     category: "Tax Forms",
     tags: ["schedule c", "sole proprietor", "business", "profit", "loss", "self-employed", "irs"],
-    isNew: true
   },
   {
     id: "offer-letter",
@@ -167,7 +163,6 @@ const generators = [
     price: "$9.99",
     category: "Business Documents",
     tags: ["vehicle", "bill of sale", "car", "auto", "seller", "buyer", "notary", "vin"],
-    isNew: true
   },
   // {
   //   id: "service-expense",

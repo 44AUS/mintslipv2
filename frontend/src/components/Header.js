@@ -20,6 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import MintSlip from '../assests/mintslip-logo.png';
 
 // Tax Forms dropdown items
 const TAX_FORMS = [
@@ -559,13 +560,12 @@ export default function Header({ title }) {
           <div className="flex items-center justify-between">
             {/* Left: Logo */}
             <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-              <h1 
+              <img 
+                src={MintSlip}
                 className="text-xl sm:text-2xl font-black tracking-tight cursor-pointer" 
-                style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
+                style={{ fontFamily: 'Outfit, sans-serif', height: '40px', width: 'auto' }}
                 onClick={() => navigate("/")}
-              >
-                MintSlip
-              </h1>
+              />
             </div>
             
             {/* Center: Desktop Navigation Links */}

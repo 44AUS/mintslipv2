@@ -1191,9 +1191,11 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
             <Sparkles className="w-4 h-4 text-green-600" />
             <span className="text-sm font-medium text-green-800">Trusted by 10,000+ users</span>
-            <div className="flex -space-x-1">
+            <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                <svg key={i} xmlns="http://www.w3.org/2000/svg" width="14" height="13" viewBox="0 0 27.39 25.547">
+                  <path d="M88.4,376.72l3.246,9.758H102.1l-8.476,6.031,3.226,9.758L88.4,396.236l-8.456,6.031,3.226-9.758-8.456-6.031H85.169Z" transform="translate(-74.71 -376.72)" fill="#ffb600"/>
+                </svg>
               ))}
             </div>
           </div>

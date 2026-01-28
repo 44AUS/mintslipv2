@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import AuthHeader from "@/components/AuthHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -71,7 +72,9 @@ export default function UserLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex flex-col">
+      <AuthHeader />
+      <div className="flex-1 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
@@ -161,6 +164,7 @@ export default function UserLogin() {
             <li>• Download history</li>
           </ul>
         </div>
+      </div>
       </div>
     </div>
   );

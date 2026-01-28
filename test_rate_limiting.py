@@ -13,7 +13,7 @@ def test_email_rate_limiting_fix():
     """Test email service rate limiting fix with 3 rapid user signups"""
     
     # Configuration
-    base_url = "https://login-system-68.preview.emergentagent.com"
+    base_url = "https://star-layout.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔄 Testing Email Service Rate Limiting Fix")

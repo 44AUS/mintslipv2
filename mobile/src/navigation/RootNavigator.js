@@ -15,7 +15,7 @@ const linking = {
   prefixes: [
     Linking.createURL('/'),
     'mintslip://',
-    'https://login-system-68.preview.emergentagent.com'
+    'https://star-layout.preview.emergentagent.com'
   ],
   config: {
     screens: {

@@ -102,7 +102,7 @@ eas build --platform ios
 ## API Integration
 
 The app connects to the MintSlip backend at:
-- Production: https://login-system-68.preview.emergentagent.com/api
+- Production: https://star-layout.preview.emergentagent.com/api
 
 All API calls are handled through `/src/services/api.js`
 

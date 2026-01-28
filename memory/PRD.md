@@ -95,7 +95,7 @@ Transform the existing `/mobile` folder from a simple WebView wrapper into a tru
 ## Deep Linking
 - **Scheme:** `mintslip://`
 - **Success URL:** `mintslip://payment-success?session_id=xxx&type=paystub`
-- **Web fallback:** `https://ai-blog-image-fix.preview.emergentagent.com/payment-success`
+- **Web fallback:** `https://login-system-68.preview.emergentagent.com/payment-success`
 
 ## Known Limitations
 1. PDF generation happens on web frontend (jsPDF), not mobile

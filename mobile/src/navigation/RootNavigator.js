@@ -15,7 +15,7 @@ const linking = {
   prefixes: [
     Linking.createURL('/'),
     'mintslip://',
-    'https://ai-blog-image-fix.preview.emergentagent.com'
+    'https://login-system-68.preview.emergentagent.com'
   ],
   config: {
     screens: {

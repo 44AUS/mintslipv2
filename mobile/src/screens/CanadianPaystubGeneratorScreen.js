@@ -21,7 +21,7 @@ import PaystubPreview from '../components/PaystubPreview';
 import { showToast } from '../components/Toast';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
 
-const API_BASE_URL = 'https://ai-blog-image-fix.preview.emergentagent.com/api';
+const API_BASE_URL = 'https://login-system-68.preview.emergentagent.com/api';
 
 const CANADIAN_PROVINCES = [
   { label: 'Alberta', value: 'AB' },

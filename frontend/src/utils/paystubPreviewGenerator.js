@@ -540,9 +540,17 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       .filter(d => d);
 
     // Use consistent hire date - fall back to startDate (first stub's date) if hireDate not provided
-    const hireDate = formData.hireDate 
-      ? new Date(formData.hireDate + 'T12:00:00') 
-      : (formData.startDate ? new Date(formData.startDate + 'T12:00:00') : new Date());
+    // Priority: formData.hireDate > startDateArray[0] > formData.startDate > today (last resort)
+    let hireDate;
+    if (formData.hireDate) {
+      hireDate = new Date(formData.hireDate + 'T12:00:00');
+    } else if (startDateArray[0]) {
+      hireDate = new Date(startDateArray[0] + 'T12:00:00');
+    } else if (formData.startDate) {
+      hireDate = new Date(formData.startDate + 'T12:00:00');
+    } else {
+      hireDate = new Date(); // Last resort fallback
+    }
     // Use custom start date from first period if available, otherwise use formData.startDate
     const startDate = startDateArray[0] 
       ? new Date(startDateArray[0] + 'T12:00:00') 

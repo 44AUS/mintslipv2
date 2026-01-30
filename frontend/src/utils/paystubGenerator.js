@@ -572,7 +572,11 @@ async function generateSingleStub(
   // Use consistent hire date passed from parent function to ensure YTD calculations are correct across all stubs
   // If not provided, fall back to formData.hireDate or the FIRST stub's start date (not current stub's start date)
   const hireDate = consistentHireDate || (formData.hireDate ? parseLocalDate(formData.hireDate) : null) || new Date(startDate);
-  const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
+  
+  // Debug: log actualStartDate, actualEndDate, and endDate for each stub
+  console.log(`[Stub ${stubNum}] actualStartDate=${actualStartDate?.toISOString()}, actualEndDate=${actualEndDate?.toISOString()}, endDate=${endDate?.toISOString()}`);
+  
+  const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength, stubNum);
   
   // Calculate YTD values
   const ytdRegularPay = regularPay * ytdPayPeriods;

@@ -397,7 +397,8 @@ async function generateSingleStub(
   payDay, pageWidth, pageHeight, totalStubs, payFrequency,
   checkNumberArray = [], memoArray = [],
   startDateArray = [], endDateArray = [], payDateArray = [],
-  commissionArray = [], tipsArray = [], tipsCashArray = []
+  commissionArray = [], tipsArray = [], tipsCashArray = [],
+  consistentHireDate = null  // Pass consistent hire date from parent function
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";

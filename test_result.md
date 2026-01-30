@@ -294,6 +294,18 @@ frontend:
         agent: "testing"
         comment: "✅ YTD Net Pay calculation fix verified - Code review confirms ytdContributions now correctly SUBTRACTED in both paystubGenerator.js (line 454) and paystubPreviewGenerator.js (line 285). Formula now correct: YTD Net Pay = YTD Gross Pay - YTD Taxes - YTD Deductions - YTD Contributions. Paystub generator page loads and functions properly."
 
+  - task: "Multiple Paystubs YTD Tax Calculation Fix"
+    implemented: true
+    working: "NA"
+    file: "paystubGenerator.js, paystubPreviewGenerator.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed bug where YTD taxes were DECREASING instead of INCREASING on newer paystubs when generating multiple stubs. Root cause: when formData.hireDate was not set, each stub was using its own actualStartDate as the hire date fallback, causing newer stubs to calculate YTD from a later date. Fix: Added consistentHireDate parameter to generateSingleStub() to ensure same hire date is used across all stubs. Also fixed fallback in preview generator to use startDate instead of current date."
+
   - task: "Paystub Generator Payment UI"
     implemented: true
     working: true

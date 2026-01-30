@@ -531,11 +531,14 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
       .map((d) => d.trim())
       .filter(d => d);
 
-    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
+    // Use consistent hire date - fall back to startDate (first stub's date) if hireDate not provided
+    const hireDate = formData.hireDate 
+      ? new Date(formData.hireDate + 'T12:00:00') 
+      : (formData.startDate ? new Date(formData.startDate + 'T12:00:00') : new Date());
     // Use custom start date from first period if available, otherwise use formData.startDate
     const startDate = startDateArray[0] 
-      ? new Date(startDateArray[0]) 
-      : (formData.startDate ? new Date(formData.startDate) : new Date(hireDate));
+      ? new Date(startDateArray[0] + 'T12:00:00') 
+      : (formData.startDate ? new Date(formData.startDate + 'T12:00:00') : new Date(hireDate));
 
     // Get state tax rate from centralized tax calculator
     const state = formData.state?.toUpperCase() || "";

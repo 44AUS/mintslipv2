@@ -389,7 +389,15 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
   const startOfYear = new Date(payPeriodYear, 0, 1);
   
   // YTD starts from either January 1 of the pay period year OR hire date (whichever is later)
-  const ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
+  let ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
+  
+  // IMPORTANT FIX: If ytdStartDate is AFTER the current period end, it means the hire date
+  // is set incorrectly (after the pay periods). In this case, use start of year instead
+  // to ensure YTD calculations make sense and accumulate properly.
+  if (ytdStartDate > currentPeriodEnd) {
+    console.log(`[YTD Fix] Stub ${stubNum}: ytdStartDate (${ytdStartDate.toISOString()}) is after currentPeriodEnd (${currentPeriodEnd.toISOString()}). Using startOfYear instead.`);
+    ytdStartDate = startOfYear;
+  }
   
   // Calculate number of days from YTD start to current period end
   const diffTime = currentPeriodEnd.getTime() - ytdStartDate.getTime();

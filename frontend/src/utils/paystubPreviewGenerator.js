@@ -458,7 +458,11 @@ export const generateAllPreviewPDFs = async (formData, template = 'template-a', 
     const endDateArray = (formData.endDateList || "").split(",").map((d) => d.trim()).filter(d => d);
     const payDateArray = (formData.payDateList || "").split(",").map((d) => d.trim()).filter(d => d);
 
-    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
+    // Use consistent hire date - fall back to startDate (first stub's date) if hireDate not provided
+    // This ensures YTD calculations are consistent across all stubs
+    const hireDate = formData.hireDate 
+      ? new Date(formData.hireDate + 'T12:00:00') 
+      : (formData.startDate ? new Date(formData.startDate + 'T12:00:00') : new Date());
     const state = formData.state?.toUpperCase() || "";
     const stateRate = isContractor ? 0 : getStateTaxRate(state);
 

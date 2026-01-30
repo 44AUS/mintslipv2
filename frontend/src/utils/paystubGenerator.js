@@ -252,14 +252,23 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
     // Parse dates carefully to avoid timezone issues
     // When parsing YYYY-MM-DD, add T12:00:00 to ensure it stays on the correct day
     const parseLocalDate = (dateStr) => {
-      if (!dateStr) return new Date();
+      if (!dateStr) return null;  // Return null for empty dates, handle fallback separately
       if (dateStr instanceof Date) return dateStr;
       const d = new Date(dateStr + 'T12:00:00');
-      return isNaN(d.getTime()) ? new Date() : d;
+      return isNaN(d.getTime()) ? null : d;
     };
 
-    const hireDate = parseLocalDate(formData.hireDate);
-    let startDate = formData.startDate ? parseLocalDate(formData.startDate) : new Date(hireDate);
+    // Parse startDate first since hireDate may fall back to it
+    let startDate = formData.startDate ? parseLocalDate(formData.startDate) : null;
+    
+    // For hire date: use provided hireDate, or fall back to startDate (first paystub date)
+    // NEVER use current date as fallback - it breaks YTD calculations for past dates
+    const hireDate = parseLocalDate(formData.hireDate) || startDate || new Date();
+    
+    // If startDate wasn't provided, use hireDate
+    if (!startDate) {
+      startDate = new Date(hireDate);
+    }
 
     // Get state tax rate from centralized tax calculator
     const state = formData.state?.toUpperCase() || "";

@@ -1,7 +1,7 @@
 // API Service for MintSlip Mobile
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'https://star-layout.preview.emergentagent.com/api';
+const BASE_URL = 'https://payroll-tax-solver.preview.emergentagent.com/api';
 
 class ApiService {
   async getAuthToken() {

@@ -15,7 +15,7 @@ const linking = {
   prefixes: [
     Linking.createURL('/'),
     'mintslip://',
-    'https://star-layout.preview.emergentagent.com'
+    'https://payroll-tax-solver.preview.emergentagent.com'
   ],
   config: {
     screens: {

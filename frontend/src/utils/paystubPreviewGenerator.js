@@ -106,7 +106,15 @@ function nextWeekday(date, weekday) {
 function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLength) {
   const payPeriodYear = currentPeriodEnd.getFullYear();
   const startOfYear = new Date(payPeriodYear, 0, 1);
-  const ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
+  let ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
+  
+  // IMPORTANT FIX: If ytdStartDate is AFTER the current period end, it means the hire date
+  // is set incorrectly (after the pay periods). In this case, use start of year instead
+  // to ensure YTD calculations make sense and accumulate properly.
+  if (ytdStartDate > currentPeriodEnd) {
+    ytdStartDate = startOfYear;
+  }
+  
   const diffTime = currentPeriodEnd.getTime() - ytdStartDate.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const numPeriods = Math.max(1, Math.ceil(diffDays / periodLength));

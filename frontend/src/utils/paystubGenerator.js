@@ -555,7 +555,9 @@ async function generateSingleStub(
     : nextWeekday(new Date(endDate), payDay);
 
   // Calculate YTD values based on pay periods from hire date
-  const hireDate = formData.hireDate ? (parseLocalDate(formData.hireDate) || new Date(actualStartDate)) : new Date(actualStartDate);
+  // Use consistent hire date passed from parent function to ensure YTD calculations are correct across all stubs
+  // If not provided, fall back to formData.hireDate or the FIRST stub's start date (not current stub's start date)
+  const hireDate = consistentHireDate || (formData.hireDate ? parseLocalDate(formData.hireDate) : null) || new Date(startDate);
   const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, endDate, periodLength);
   
   // Calculate YTD values

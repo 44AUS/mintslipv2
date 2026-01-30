@@ -383,7 +383,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
 };
 
 // Helper function to calculate number of pay periods from hire date to current pay period end
-function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLength) {
+function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLength, stubNum = -1) {
   // Use the start of the year of the current pay period OR hire date, whichever is later
   const payPeriodYear = currentPeriodEnd.getFullYear();
   const startOfYear = new Date(payPeriodYear, 0, 1);
@@ -397,6 +397,9 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
   
   // Calculate number of complete pay periods (at least 1)
   const numPeriods = Math.max(1, Math.ceil(diffDays / periodLength));
+  
+  // Debug logging
+  console.log(`[YTD Debug] Stub ${stubNum}: hireDate=${hireDate?.toISOString()}, endDate=${currentPeriodEnd?.toISOString()}, ytdStartDate=${ytdStartDate?.toISOString()}, diffDays=${diffDays}, numPeriods=${numPeriods}`);
   
   return numPeriods;
 }

@@ -103,6 +103,7 @@ async def fix_quantities(apply_changes=False):
     
     await client.close()
 
+
 def main():
     parser = argparse.ArgumentParser(description='Fix purchase quantities based on payment amounts')
     parser.add_argument('--preview', action='store_true', default=True, help='Preview changes without applying (default)')

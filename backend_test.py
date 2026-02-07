@@ -5801,6 +5801,8 @@ class AIResumeBuilderTester:
                 failed_systems.append("Mobile App Backend APIs")
             if not bank_transaction_tests_passed:
                 failed_systems.append("AI Bank Transaction Generator")
+            if not maintenance_mode_tests_passed:
+                failed_systems.append("Maintenance Mode API")
             print(f"❌ Failed systems: {', '.join(failed_systems)}")
             return False
 

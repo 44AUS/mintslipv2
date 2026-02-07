@@ -5109,6 +5109,12 @@ class AIResumeBuilderTester:
         print("\n🔄 Testing Regenerate Section API...")
         regenerate_ok = self.test_regenerate_section()
         
+        # Test User Count Endpoint
+        print("\n👥 Testing User Count Endpoint...")
+        user_count_ok = self.test_user_count_endpoint()
+        user_count_no_auth_ok = self.test_user_count_no_auth_required()
+        user_count_formatting_ok = self.test_user_count_formatting_edge_cases()
+        
         # Test additional functionality
         print("\n🌐 Testing CORS Headers...")
         cors_ok = self.test_cors_headers()

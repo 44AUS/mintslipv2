@@ -1329,6 +1329,246 @@ class AIResumeBuilderTester:
             self.log_test("Admin Confirm User Email", False, f"Exception: {str(e)}")
             return False
 
+    # ========== USER COUNT ENDPOINT TESTS ==========
+
+    def test_user_count_endpoint(self):
+        """Test GET /api/user-count endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/user-count", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                # Verify response is valid JSON
+                try:
+                    data = response.json()
+                except json.JSONDecodeError:
+                    self.log_test("User Count Endpoint", False, "Response is not valid JSON")
+                    return False
+                
+                # Check required fields
+                required_fields = ["success", "count", "formattedCount", "breakdown"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif not data.get("success"):
+                    success = False
+                    details += f", success=false in response: {data}"
+                else:
+                    # Validate field types
+                    validation_errors = []
+                    
+                    count = data.get("count")
+                    if not isinstance(count, int) or count < 0:
+                        validation_errors.append("count should be a non-negative integer")
+                    
+                    formatted_count = data.get("formattedCount")
+                    if not isinstance(formatted_count, str):
+                        validation_errors.append("formattedCount should be a string")
+                    
+                    breakdown = data.get("breakdown")
+                    if not isinstance(breakdown, dict):
+                        validation_errors.append("breakdown should be an object")
+                    else:
+                        # Check breakdown structure
+                        if "registeredUsers" not in breakdown:
+                            validation_errors.append("breakdown.registeredUsers missing")
+                        elif not isinstance(breakdown["registeredUsers"], int) or breakdown["registeredUsers"] < 0:
+                            validation_errors.append("breakdown.registeredUsers should be a non-negative integer")
+                        
+                        if "uniqueGuestPurchasers" not in breakdown:
+                            validation_errors.append("breakdown.uniqueGuestPurchasers missing")
+                        elif not isinstance(breakdown["uniqueGuestPurchasers"], int) or breakdown["uniqueGuestPurchasers"] < 0:
+                            validation_errors.append("breakdown.uniqueGuestPurchasers should be a non-negative integer")
+                    
+                    if validation_errors:
+                        success = False
+                        details += f", Validation errors: {validation_errors}"
+                    else:
+                        # Test formattedCount formatting rules
+                        count = data["count"]
+                        formatted_count = data["formattedCount"]
+                        
+                        # Verify formatting logic
+                        format_valid = True
+                        expected_format = ""
+                        
+                        if count >= 10000:
+                            thousands = count // 1000
+                            if thousands >= 50:
+                                expected_format = f"{(thousands // 10) * 10}K+"
+                            elif thousands >= 10:
+                                expected_format = f"{thousands}K+"
+                        elif count >= 5000:
+                            expected_format = "5K+"
+                        elif count >= 1000:
+                            expected_format = "1K+"
+                        elif count >= 500:
+                            expected_format = "500+"
+                        elif count >= 100:
+                            expected_format = "100+"
+                        elif count >= 50:
+                            expected_format = "50+"
+                        else:
+                            expected_format = str(count)
+                        
+                        if formatted_count != expected_format:
+                            format_valid = False
+                            details += f", Format mismatch: expected '{expected_format}', got '{formatted_count}'"
+                        
+                        if format_valid:
+                            # Verify breakdown adds up to total count
+                            registered = breakdown["registeredUsers"]
+                            guests = breakdown["uniqueGuestPurchasers"]
+                            total_breakdown = registered + guests
+                            
+                            if total_breakdown != count:
+                                success = False
+                                details += f", Breakdown sum mismatch: {registered} + {guests} = {total_breakdown}, but count = {count}"
+                            else:
+                                details += f", ✅ All validations passed"
+                                details += f", Count: {count}, Formatted: '{formatted_count}'"
+                                details += f", Registered: {registered}, Guests: {guests}"
+                        else:
+                            success = False
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("User Count Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Count Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_user_count_no_auth_required(self):
+        """Test that GET /api/user-count endpoint is publicly accessible (no auth required)"""
+        try:
+            # Test without any authentication headers
+            response = requests.get(f"{self.api_url}/user-count", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code} (no auth headers)"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    details += ", ✅ Endpoint is publicly accessible"
+                else:
+                    success = False
+                    details += f", Response indicates failure: {data}"
+            else:
+                # If it returns 401, that means auth is required (which would be wrong)
+                if response.status_code == 401:
+                    details += ", ❌ Endpoint requires authentication (should be public)"
+                else:
+                    try:
+                        error_data = response.json()
+                        details += f", Error: {error_data}"
+                    except:
+                        details += f", Response: {response.text}"
+            
+            self.log_test("User Count No Auth Required", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Count No Auth Required", False, f"Exception: {str(e)}")
+            return False
+
+    def test_user_count_formatting_edge_cases(self):
+        """Test user count formatting with various scenarios"""
+        try:
+            response = requests.get(f"{self.api_url}/user-count", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success"):
+                    count = data.get("count", 0)
+                    formatted_count = data.get("formattedCount", "")
+                    
+                    # Test the formatting logic against known rules
+                    test_cases = [
+                        (0, "0"),
+                        (25, "25"),
+                        (49, "49"),
+                        (50, "50+"),
+                        (75, "50+"),
+                        (99, "50+"),
+                        (100, "100+"),
+                        (250, "100+"),
+                        (499, "100+"),
+                        (500, "500+"),
+                        (750, "500+"),
+                        (999, "500+"),
+                        (1000, "1K+"),
+                        (2500, "1K+"),
+                        (4999, "1K+"),
+                        (5000, "5K+"),
+                        (7500, "5K+"),
+                        (9999, "5K+"),
+                        (10000, "10K+"),
+                        (15000, "15K+"),
+                        (25000, "25K+"),
+                        (50000, "50K+"),
+                        (100000, "100K+")
+                    ]
+                    
+                    # Find the test case that matches our current count
+                    expected_format = None
+                    for test_count, expected in test_cases:
+                        if count == test_count:
+                            expected_format = expected
+                            break
+                    
+                    if expected_format and formatted_count != expected_format:
+                        success = False
+                        details += f", Format error for count {count}: expected '{expected_format}', got '{formatted_count}'"
+                    else:
+                        details += f", ✅ Format correct for count {count}: '{formatted_count}'"
+                        
+                        # Additional validation: check if format makes sense for the count range
+                        format_makes_sense = True
+                        if count < 50 and formatted_count != str(count):
+                            format_makes_sense = False
+                        elif 50 <= count < 100 and formatted_count != "50+":
+                            format_makes_sense = False
+                        elif 100 <= count < 500 and formatted_count != "100+":
+                            format_makes_sense = False
+                        elif 500 <= count < 1000 and formatted_count != "500+":
+                            format_makes_sense = False
+                        elif 1000 <= count < 5000 and formatted_count != "1K+":
+                            format_makes_sense = False
+                        elif 5000 <= count < 10000 and formatted_count != "5K+":
+                            format_makes_sense = False
+                        elif count >= 10000 and not formatted_count.endswith("K+"):
+                            format_makes_sense = False
+                        
+                        if not format_makes_sense:
+                            success = False
+                            details += f", Format doesn't match expected range for count {count}"
+                        else:
+                            details += f", Format logic validated ✓"
+                else:
+                    success = False
+                    details += f", Response indicates failure: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("User Count Formatting Edge Cases", success, details)
+            return success
+        except Exception as e:
+            self.log_test("User Count Formatting Edge Cases", False, f"Exception: {str(e)}")
+            return False
+
     # ========== EMAIL SERVICE TESTS ==========
 
     def test_email_service_user_registration(self):

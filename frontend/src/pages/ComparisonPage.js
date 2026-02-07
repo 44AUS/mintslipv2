@@ -735,7 +735,7 @@ export default function ComparisonPage() {
                     <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                   ))}
                 </div>
-                <span className="text-sm text-slate-600">Trusted by 10,000+ users</span>
+                <span className="text-sm text-slate-600">Trusted by {userCount} users</span>
               </div>
             </div>
 

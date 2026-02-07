@@ -408,6 +408,26 @@ export default function HowToMakePaystub() {
   const [isVisible] = useState(true);
   const [previews, setPreviews] = useState({});
   const [loading, setLoading] = useState({});
+  const [userCount, setUserCount] = useState("10K+");
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+  // Fetch hero stats
+  useEffect(() => {
+    const fetchHeroStats = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/hero-stats`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.users?.formatted) {
+            setUserCount(data.users.formatted);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching hero stats:", error);
+      }
+    };
+    fetchHeroStats();
+  }, [BACKEND_URL]);
   
   // Generate previews on mount
   useEffect(() => {

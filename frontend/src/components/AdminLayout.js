@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   FolderArchive,
+  Wrench,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -22,6 +23,58 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+
+  // Fetch maintenance status on mount
+  useEffect(() => {
+    const fetchMaintenanceStatus = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const response = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setMaintenanceMode(data.maintenance?.isActive || false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching maintenance status:", error);
+      }
+    };
+    fetchMaintenanceStatus();
+  }, []);
+
+  const toggleMaintenanceMode = async () => {
+    setMaintenanceLoading(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const newStatus = !maintenanceMode;
+      
+      const response = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          isActive: newStatus,
+          message: "We're currently performing scheduled maintenance. We'll be back shortly!",
+          estimatedTime: ""
+        })
+      });
+
+      if (response.ok) {
+        setMaintenanceMode(newStatus);
+      }
+    } catch (error) {
+      console.error("Error toggling maintenance mode:", error);
+    } finally {
+      setMaintenanceLoading(false);
+    }
+  };
   
   // Determine active tab from URL path
   const getActiveTab = () => {

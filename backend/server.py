@@ -2188,6 +2188,7 @@ async def get_checkout_status(session_id: str):
                     discount_amount = float(session.metadata.get("discountAmount", 0))
                     user_id = session.metadata.get("userId", "")
                     user_email = session.metadata.get("userEmail", "")
+                    quantity = int(session.metadata.get("quantity", 1))
                     
                     # Get customer email from session if not in metadata
                     customer_email = user_email
@@ -2205,11 +2206,12 @@ async def get_checkout_status(session_id: str):
                         "discountCode": discount_code if discount_code else None,
                         "discountAmount": discount_amount,
                         "template": template if template else None,
+                        "quantity": quantity,
                         "isGuest": not bool(user_id),
                         "createdAt": datetime.now(timezone.utc).isoformat()
                     }
                     await purchases_collection.insert_one(purchase)
-                    print(f"Tracked purchase via status check: {document_type} - ${purchase['amount']} - userId: {user_id or 'guest'}")
+                    print(f"Tracked purchase via status check: {document_type} x{quantity} - ${purchase['amount']} - userId: {user_id or 'guest'}")
                     
                     # Send download confirmation and review request emails
                     if customer_email:

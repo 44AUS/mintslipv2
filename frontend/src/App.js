@@ -147,14 +147,15 @@ function App() {
   return (
     <HelmetProvider>
       <Elements stripe={stripePromise}>
-        <IPBanCheck>
-          <div className="App">
-            <Toaster position="top-center" richColors />
-            <BrowserRouter>
-              <PromoBanner />
-              <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Home />} />
+        <MaintenanceCheck>
+          <IPBanCheck>
+            <div className="App">
+              <Toaster position="top-center" richColors />
+              <BrowserRouter>
+                <PromoBanner />
+                <ScrollToTop />
+                <Routes>
+                  <Route path="/" element={<Home />} />
               <Route path="/paystub-generator" element={<PaystubForm />} />
               <Route path="/paystub-samples" element={<PaystubSamples />} />
               <Route path="/instant-paystub-generator" element={<PaystubForm />} />

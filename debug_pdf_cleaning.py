@@ -23,7 +23,7 @@ def create_test_pdf():
 
 def test_template_debug(template_name):
     """Debug test for a specific template"""
-    api_url = "https://payroll-tax-solver.preview.emergentagent.com/api"
+    api_url = "https://user-counter-update.preview.emergentagent.com/api"
     
     print(f"\n🔍 Debug test for template: {template_name}")
     

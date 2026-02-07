@@ -13,7 +13,7 @@ def test_email_rate_limiting_fix():
     """Test email service rate limiting fix with 3 rapid user signups"""
     
     # Configuration
-    base_url = "https://payroll-tax-solver.preview.emergentagent.com"
+    base_url = "https://user-counter-update.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔄 Testing Email Service Rate Limiting Fix")

@@ -10,7 +10,7 @@ import sys
 
 def test_admin_flow():
     """Test the complete admin flow as specified in the review request"""
-    base_url = "https://payroll-tax-solver.preview.emergentagent.com"
+    base_url = "https://user-counter-update.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔐 Testing Admin Authentication and Dashboard Flow")

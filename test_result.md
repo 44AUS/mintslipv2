@@ -460,6 +460,18 @@ agent_communication:
         agent: "testing"
         comment: "✅ Hero Stats Endpoint test passed - GET /api/hero-stats endpoint working correctly: 1) Returns success=true with users and documents objects ✓, 2) Users object has count, formatted, breakdown (registeredUsers, uniqueGuestPurchasers) ✓, 3) Documents object has count, formatted, breakdown (purchased, saved) ✓, 4) Formatted values follow correct rules: <50=actual number, 50-99='50+', 100-499='100+', 500-999='500+', 1000-4999='1K+', 5000-9999='5K+', 10000+='10K+' etc. ✓, 5) Endpoint is publicly accessible (no auth required) ✓, 6) All field types validated (counts=integer, formatted=string, breakdown=object with integer values) ✓, 7) Breakdown totals match overall counts ✓. Current stats: Users: 20 (20), Registered: 20, Guests: 0, Documents: 2 (2), Purchased: 2, Saved: 0. All hero stats functionality working correctly and ready for production use."
 
+  - task: "Maintenance Mode API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Maintenance Mode API test passed - All maintenance mode endpoints working correctly: 1) GET /api/maintenance-status (public endpoint) returns success=true with maintenance object containing isActive, message, estimatedTime fields ✓, 2) GET /api/admin/maintenance requires admin authentication (401 without token) and returns maintenance settings when authenticated ✓, 3) PUT /api/admin/maintenance requires admin authentication and accepts isActive, message, estimatedTime in request body ✓, 4) Toggle maintenance mode on/off works correctly - enabled maintenance with custom message and estimated time ✓, 5) Disabled maintenance mode successfully ✓, 6) Public endpoint reflects changes immediately after admin updates ✓, 7) Complete maintenance mode toggle flow tested and working ✓. All maintenance mode functionality is working as expected and ready for production use."
+
 frontend:
   - task: "Admin Layout Tab Bar Fix"
     implemented: true

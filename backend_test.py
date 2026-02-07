@@ -5755,6 +5755,8 @@ class AIResumeBuilderTester:
         bank_transaction_tests_passed = (bank_tx_basic_ok and bank_tx_volume_ok and bank_tx_employer_ok and 
                                        bank_tx_p2p_ok and bank_tx_refunds_ok and bank_tx_dates_ok and 
                                        bank_tx_states_ok and bank_tx_errors_ok)
+        maintenance_mode_tests_passed = (maintenance_public_ok and maintenance_admin_get_ok and 
+                                       maintenance_admin_put_ok and maintenance_toggle_flow_ok)
         
         if (critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and 
             new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and 

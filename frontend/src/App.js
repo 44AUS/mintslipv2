@@ -231,6 +231,7 @@ function App() {
         </BrowserRouter>
       </div>
     </IPBanCheck>
+    </MaintenanceCheck>
     </Elements>
   </HelmetProvider>
   );

@@ -1303,7 +1303,7 @@ export default function Home() {
         {/* Quick Stats Bar */}
         <div className={`mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           {[
-            { number: "50K+", label: "Documents Created" },
+            { number: docsCount, label: "Documents Created" },
             { number: userCount, label: "Happy Users" },
             { number: "99.9%", label: "Uptime" },
             { number: "24/7", label: "Support" },

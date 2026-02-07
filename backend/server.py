@@ -411,10 +411,10 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# ========== USER COUNT FOR HERO SECTION ==========
+# ========== HERO SECTION STATS ==========
 
-def format_user_count(count: int) -> str:
-    """Format user count with appropriate suffix like 50+, 100+, 500+, 1K+, 5K+, 10K+, etc."""
+def format_stat_count(count: int) -> str:
+    """Format count with appropriate suffix like 50+, 100+, 500+, 1K+, 5K+, 10K+, etc."""
     if count >= 10000:
         # 10K+, 15K+, 20K+, etc.
         thousands = count // 1000
@@ -436,10 +436,11 @@ def format_user_count(count: int) -> str:
     return str(count) if count > 0 else "0"
 
 
-@app.get("/api/user-count")
-async def get_user_count():
-    """Get the total unique user count (registered users + unique guest purchasers)"""
+@app.get("/api/hero-stats")
+async def get_hero_stats():
+    """Get hero section stats: unique users and total documents created"""
     try:
+        # === USER COUNT ===
         # Get all registered user emails (lowercase for comparison)
         registered_users_cursor = users_collection.find({}, {"email": 1})
         registered_emails = set()
@@ -459,30 +460,70 @@ async def get_user_count():
                 guest_emails.add(doc["_id"])
         
         # Combine: registered users + guest-only emails (not registered)
-        # This ensures no double counting
         unique_guest_only_emails = guest_emails - registered_emails
         total_unique_users = len(registered_emails) + len(unique_guest_only_emails)
         
-        # Format the count
-        formatted_count = format_user_count(total_unique_users)
+        # === DOCUMENTS COUNT ===
+        # Count total documents from purchases (considering quantity field)
+        docs_pipeline = [
+            {"$group": {
+                "_id": None,
+                "totalDocs": {"$sum": {"$ifNull": ["$quantity", 1]}}
+            }}
+        ]
+        docs_result = await purchases_collection.aggregate(docs_pipeline).to_list(1)
+        total_documents = docs_result[0]["totalDocs"] if docs_result else 0
+        
+        # Also count saved documents (subscription users who saved documents)
+        saved_docs_count = await saved_documents_collection.count_documents({})
+        total_documents += saved_docs_count
         
         return {
             "success": True,
-            "count": total_unique_users,
-            "formattedCount": formatted_count,
-            "breakdown": {
-                "registeredUsers": len(registered_emails),
-                "uniqueGuestPurchasers": len(unique_guest_only_emails)
+            "users": {
+                "count": total_unique_users,
+                "formatted": format_stat_count(total_unique_users),
+                "breakdown": {
+                    "registeredUsers": len(registered_emails),
+                    "uniqueGuestPurchasers": len(unique_guest_only_emails)
+                }
+            },
+            "documents": {
+                "count": total_documents,
+                "formatted": format_stat_count(total_documents),
+                "breakdown": {
+                    "purchased": total_documents - saved_docs_count,
+                    "saved": saved_docs_count
+                }
             }
         }
     except Exception as e:
-        print(f"Error getting user count: {e}")
+        print(f"Error getting hero stats: {e}")
         return {
             "success": False,
-            "count": 0,
-            "formattedCount": "0",
+            "users": {"count": 0, "formatted": "0"},
+            "documents": {"count": 0, "formatted": "0"},
             "error": str(e)
         }
+
+
+@app.get("/api/user-count")
+async def get_user_count():
+    """Get the total unique user count (registered users + unique guest purchasers) - Legacy endpoint"""
+    stats = await get_hero_stats()
+    if stats.get("success"):
+        return {
+            "success": True,
+            "count": stats["users"]["count"],
+            "formattedCount": stats["users"]["formatted"],
+            "breakdown": stats["users"]["breakdown"]
+        }
+    return {
+        "success": False,
+        "count": 0,
+        "formattedCount": "0",
+        "error": stats.get("error", "Unknown error")
+    }
 
 
 # ========== BANK STATEMENT TRANSACTION GENERATOR ==========

@@ -5271,6 +5271,10 @@ class AIResumeBuilderTester:
         user_count_no_auth_ok = self.test_user_count_no_auth_required()
         user_count_formatting_ok = self.test_user_count_formatting_edge_cases()
         
+        # Test Hero Stats Endpoint
+        print("\n🏆 Testing Hero Stats Endpoint...")
+        hero_stats_ok = self.test_hero_stats_endpoint()
+        
         # Test additional functionality
         print("\n🌐 Testing CORS Headers...")
         cors_ok = self.test_cors_headers()

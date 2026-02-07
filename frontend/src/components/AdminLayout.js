@@ -145,6 +145,26 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
           
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Maintenance Mode Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
+              <Wrench className={`w-4 h-4 ${maintenanceMode ? 'text-orange-500' : 'text-slate-400'}`} />
+              <span className="text-sm font-medium text-slate-600 hidden lg:inline">Maintenance</span>
+              <button
+                onClick={toggleMaintenanceMode}
+                disabled={maintenanceLoading}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
+                  maintenanceMode ? 'bg-orange-500' : 'bg-slate-300'
+                } ${maintenanceLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                title={maintenanceMode ? 'Disable maintenance mode' : 'Enable maintenance mode'}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    maintenanceMode ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
             {onRefresh && (
               <Button
                 variant="outline"

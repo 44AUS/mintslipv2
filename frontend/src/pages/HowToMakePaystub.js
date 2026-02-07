@@ -1200,7 +1200,7 @@ export default function HowToMakePaystub() {
             Ready to Create Your Professional Paystub?
           </h2>
           <p className="text-lg text-green-100 mb-8 max-w-2xl mx-auto">
-            Join over 10,000 satisfied users who trust MintSlip for accurate, professional pay stubs. Create yours in under 5 minutes with our easy-to-use generator.
+            Join over {userCount} satisfied users who trust MintSlip for accurate, professional pay stubs. Create yours in under 5 minutes with our easy-to-use generator.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

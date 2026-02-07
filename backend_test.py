@@ -1329,6 +1329,317 @@ class AIResumeBuilderTester:
             self.log_test("Admin Confirm User Email", False, f"Exception: {str(e)}")
             return False
 
+    # ========== MAINTENANCE MODE API TESTS ==========
+
+    def test_maintenance_status_public(self):
+        """Test GET /api/maintenance-status endpoint (public endpoint)"""
+        try:
+            response = requests.get(f"{self.api_url}/maintenance-status", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                
+                # Check required fields
+                required_fields = ["success", "maintenance"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    maintenance = data.get("maintenance", {})
+                    
+                    # Check maintenance object structure
+                    required_maintenance_fields = ["isActive", "message", "estimatedTime"]
+                    missing_maintenance_fields = [field for field in required_maintenance_fields if field not in maintenance]
+                    
+                    if missing_maintenance_fields:
+                        success = False
+                        details += f", Missing maintenance fields: {missing_maintenance_fields}"
+                    else:
+                        # Validate field types
+                        if not isinstance(maintenance.get("isActive"), bool):
+                            success = False
+                            details += ", isActive should be boolean"
+                        elif not isinstance(maintenance.get("message"), str):
+                            success = False
+                            details += ", message should be string"
+                        elif maintenance.get("estimatedTime") is not None and not isinstance(maintenance.get("estimatedTime"), str):
+                            success = False
+                            details += ", estimatedTime should be string or null"
+                        else:
+                            details += f", Maintenance: isActive={maintenance['isActive']}, message='{maintenance['message'][:50]}...'"
+                            if maintenance.get("estimatedTime"):
+                                details += f", estimatedTime='{maintenance['estimatedTime']}'"
+                else:
+                    success = False
+                    details += f", success=false in response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Maintenance Status Public Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Maintenance Status Public Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_maintenance_get(self):
+        """Test GET /api/admin/maintenance endpoint (admin only)"""
+        try:
+            # Test 1: Should require authentication (401 without token)
+            response = requests.get(f"{self.api_url}/admin/maintenance", timeout=10)
+            if response.status_code != 401:
+                self.log_test("Admin Maintenance GET", False, f"Expected 401 without auth, got: {response.status_code}")
+                return False
+            
+            details = "401 without auth ✓"
+            
+            # Test 2: Should work with admin authentication
+            if not self.admin_token:
+                self.log_test("Admin Maintenance GET", False, "No admin token available (login test must pass first)")
+                return False
+            
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.api_url}/admin/maintenance", headers=headers, timeout=10)
+            success = response.status_code == 200
+            details += f", Authenticated - Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                
+                # Check required fields
+                required_fields = ["success", "maintenance"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                elif data.get("success"):
+                    maintenance = data.get("maintenance", {})
+                    
+                    # Check maintenance object structure
+                    required_maintenance_fields = ["isActive", "message", "estimatedTime"]
+                    missing_maintenance_fields = [field for field in required_maintenance_fields if field not in maintenance]
+                    
+                    if missing_maintenance_fields:
+                        success = False
+                        details += f", Missing maintenance fields: {missing_maintenance_fields}"
+                    else:
+                        details += f", Settings retrieved: isActive={maintenance.get('isActive')}"
+                else:
+                    success = False
+                    details += f", success=false in response: {data}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Admin Maintenance GET", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Maintenance GET", False, f"Exception: {str(e)}")
+            return False
+
+    def test_admin_maintenance_put(self):
+        """Test PUT /api/admin/maintenance endpoint (admin only)"""
+        try:
+            # Test 1: Should require authentication (401 without token)
+            test_payload = {
+                "isActive": True,
+                "message": "Test maintenance message",
+                "estimatedTime": "2 hours"
+            }
+            
+            response = requests.put(f"{self.api_url}/admin/maintenance", json=test_payload, timeout=10)
+            if response.status_code != 401:
+                self.log_test("Admin Maintenance PUT", False, f"Expected 401 without auth, got: {response.status_code}")
+                return False
+            
+            details = "401 without auth ✓"
+            
+            # Test 2: Should work with admin authentication
+            if not self.admin_token:
+                self.log_test("Admin Maintenance PUT", False, "No admin token available (login test must pass first)")
+                return False
+            
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Test 3: Enable maintenance mode
+            enable_payload = {
+                "isActive": True,
+                "message": "We're performing scheduled maintenance. We'll be back shortly!",
+                "estimatedTime": "30 minutes"
+            }
+            
+            response = requests.put(f"{self.api_url}/admin/maintenance", json=enable_payload, headers=headers, timeout=10)
+            success = response.status_code == 200
+            details += f", Enable maintenance - Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                if data.get("success") and data.get("maintenance"):
+                    maintenance = data["maintenance"]
+                    if (maintenance.get("isActive") == True and 
+                        maintenance.get("message") == enable_payload["message"] and
+                        maintenance.get("estimatedTime") == enable_payload["estimatedTime"]):
+                        details += ", Maintenance enabled ✓"
+                    else:
+                        success = False
+                        details += f", Invalid maintenance data: {maintenance}"
+                else:
+                    success = False
+                    details += f", Invalid response: {data}"
+            
+            # Test 4: Disable maintenance mode
+            if success:
+                disable_payload = {
+                    "isActive": False,
+                    "message": "Maintenance completed",
+                    "estimatedTime": None
+                }
+                
+                response = requests.put(f"{self.api_url}/admin/maintenance", json=disable_payload, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success") and data.get("maintenance"):
+                        maintenance = data["maintenance"]
+                        if (maintenance.get("isActive") == False and
+                            maintenance.get("message") == disable_payload["message"]):
+                            details += ", Maintenance disabled ✓"
+                        else:
+                            success = False
+                            details += f", Invalid disable data: {maintenance}"
+                    else:
+                        success = False
+                        details += f", Invalid disable response: {data}"
+                else:
+                    success = False
+                    details += f", Disable failed with status: {response.status_code}"
+            
+            # Test 5: Verify public endpoint reflects the changes
+            if success:
+                public_response = requests.get(f"{self.api_url}/maintenance-status", timeout=10)
+                if public_response.status_code == 200:
+                    public_data = public_response.json()
+                    if public_data.get("success") and public_data.get("maintenance"):
+                        public_maintenance = public_data["maintenance"]
+                        if public_maintenance.get("isActive") == False:
+                            details += ", Public endpoint reflects changes ✓"
+                        else:
+                            success = False
+                            details += f", Public endpoint not updated: {public_maintenance}"
+                    else:
+                        success = False
+                        details += f", Invalid public response: {public_data}"
+                else:
+                    success = False
+                    details += f", Public endpoint check failed: {public_response.status_code}"
+            
+            self.log_test("Admin Maintenance PUT", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Admin Maintenance PUT", False, f"Exception: {str(e)}")
+            return False
+
+    def test_maintenance_mode_toggle_flow(self):
+        """Test complete maintenance mode toggle flow"""
+        try:
+            if not self.admin_token:
+                self.log_test("Maintenance Mode Toggle Flow", False, "No admin token available (login test must pass first)")
+                return False
+            
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            details = ""
+            
+            # Step 1: Get current maintenance status
+            response = requests.get(f"{self.api_url}/admin/maintenance", headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Failed to get current status: {response.status_code}")
+                return False
+            
+            current_data = response.json()
+            current_status = current_data.get("maintenance", {}).get("isActive", False)
+            details += f"Current status: {'ON' if current_status else 'OFF'}"
+            
+            # Step 2: Toggle maintenance mode ON
+            enable_payload = {
+                "isActive": True,
+                "message": "System maintenance in progress. Expected completion in 1 hour.",
+                "estimatedTime": "1 hour"
+            }
+            
+            response = requests.put(f"{self.api_url}/admin/maintenance", json=enable_payload, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Failed to enable maintenance: {response.status_code}")
+                return False
+            
+            enable_data = response.json()
+            if not enable_data.get("success") or enable_data.get("maintenance", {}).get("isActive") != True:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Maintenance not enabled properly: {enable_data}")
+                return False
+            
+            details += " -> Enabled ✓"
+            
+            # Step 3: Verify public endpoint shows maintenance mode is ON
+            public_response = requests.get(f"{self.api_url}/maintenance-status", timeout=10)
+            if public_response.status_code != 200:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Public endpoint failed: {public_response.status_code}")
+                return False
+            
+            public_data = public_response.json()
+            if public_data.get("maintenance", {}).get("isActive") != True:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Public endpoint doesn't show maintenance ON: {public_data}")
+                return False
+            
+            details += " -> Public shows ON ✓"
+            
+            # Step 4: Toggle maintenance mode OFF
+            disable_payload = {
+                "isActive": False,
+                "message": "Maintenance completed. All systems operational.",
+                "estimatedTime": None
+            }
+            
+            response = requests.put(f"{self.api_url}/admin/maintenance", json=disable_payload, headers=headers, timeout=10)
+            if response.status_code != 200:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Failed to disable maintenance: {response.status_code}")
+                return False
+            
+            disable_data = response.json()
+            if not disable_data.get("success") or disable_data.get("maintenance", {}).get("isActive") != False:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Maintenance not disabled properly: {disable_data}")
+                return False
+            
+            details += " -> Disabled ✓"
+            
+            # Step 5: Verify public endpoint shows maintenance mode is OFF
+            public_response = requests.get(f"{self.api_url}/maintenance-status", timeout=10)
+            if public_response.status_code != 200:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Final public endpoint check failed: {public_response.status_code}")
+                return False
+            
+            public_data = public_response.json()
+            if public_data.get("maintenance", {}).get("isActive") != False:
+                self.log_test("Maintenance Mode Toggle Flow", False, f"Public endpoint doesn't show maintenance OFF: {public_data}")
+                return False
+            
+            details += " -> Public shows OFF ✓"
+            
+            self.log_test("Maintenance Mode Toggle Flow", True, details)
+            return True
+            
+        except Exception as e:
+            self.log_test("Maintenance Mode Toggle Flow", False, f"Exception: {str(e)}")
+            return False
+
     # ========== HERO STATS ENDPOINT TESTS ==========
 
     def test_hero_stats_endpoint(self):

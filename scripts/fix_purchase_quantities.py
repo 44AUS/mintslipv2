@@ -101,7 +101,7 @@ async def fix_quantities(apply_changes=False):
     else:
         print('All records have correct quantities. No updates needed.')
     
-    await client.close()
+    client.close()
 
 
 def main():

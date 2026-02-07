@@ -369,6 +369,7 @@ test_plan:
     - "Admin User Edit Endpoint"
     - "Admin Confirm User Email Endpoint"
     - "Saved Documents Persistence Fix"
+    - "Maintenance Mode API"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

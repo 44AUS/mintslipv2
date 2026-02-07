@@ -1329,6 +1329,162 @@ class AIResumeBuilderTester:
             self.log_test("Admin Confirm User Email", False, f"Exception: {str(e)}")
             return False
 
+    # ========== HERO STATS ENDPOINT TESTS ==========
+
+    def test_hero_stats_endpoint(self):
+        """Test GET /api/hero-stats endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/hero-stats", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                # Verify response is valid JSON
+                try:
+                    data = response.json()
+                except json.JSONDecodeError:
+                    self.log_test("Hero Stats Endpoint", False, "Response is not valid JSON")
+                    return False
+                
+                # Check required top-level fields
+                required_fields = ["success", "users", "documents"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing top-level fields: {missing_fields}"
+                elif not data.get("success"):
+                    success = False
+                    details += f", success=false in response: {data}"
+                else:
+                    # Validate users object structure
+                    users = data.get("users", {})
+                    users_required = ["count", "formatted", "breakdown"]
+                    users_missing = [field for field in users_required if field not in users]
+                    
+                    if users_missing:
+                        success = False
+                        details += f", Missing users fields: {users_missing}"
+                    else:
+                        # Validate users.breakdown structure
+                        breakdown = users.get("breakdown", {})
+                        breakdown_required = ["registeredUsers", "uniqueGuestPurchasers"]
+                        breakdown_missing = [field for field in breakdown_required if field not in breakdown]
+                        
+                        if breakdown_missing:
+                            success = False
+                            details += f", Missing users.breakdown fields: {breakdown_missing}"
+                        else:
+                            # Validate documents object structure
+                            documents = data.get("documents", {})
+                            docs_required = ["count", "formatted", "breakdown"]
+                            docs_missing = [field for field in docs_required if field not in documents]
+                            
+                            if docs_missing:
+                                success = False
+                                details += f", Missing documents fields: {docs_missing}"
+                            else:
+                                # Validate documents.breakdown structure
+                                docs_breakdown = documents.get("breakdown", {})
+                                docs_breakdown_required = ["purchased", "saved"]
+                                docs_breakdown_missing = [field for field in docs_breakdown_required if field not in docs_breakdown]
+                                
+                                if docs_breakdown_missing:
+                                    success = False
+                                    details += f", Missing documents.breakdown fields: {docs_breakdown_missing}"
+                                else:
+                                    # Validate data types
+                                    validation_errors = []
+                                    
+                                    # Users validation
+                                    if not isinstance(users.get("count"), int):
+                                        validation_errors.append("users.count should be integer")
+                                    if not isinstance(users.get("formatted"), str):
+                                        validation_errors.append("users.formatted should be string")
+                                    if not isinstance(breakdown.get("registeredUsers"), int):
+                                        validation_errors.append("users.breakdown.registeredUsers should be integer")
+                                    if not isinstance(breakdown.get("uniqueGuestPurchasers"), int):
+                                        validation_errors.append("users.breakdown.uniqueGuestPurchasers should be integer")
+                                    
+                                    # Documents validation
+                                    if not isinstance(documents.get("count"), int):
+                                        validation_errors.append("documents.count should be integer")
+                                    if not isinstance(documents.get("formatted"), str):
+                                        validation_errors.append("documents.formatted should be string")
+                                    if not isinstance(docs_breakdown.get("purchased"), int):
+                                        validation_errors.append("documents.breakdown.purchased should be integer")
+                                    if not isinstance(docs_breakdown.get("saved"), int):
+                                        validation_errors.append("documents.breakdown.saved should be integer")
+                                    
+                                    if validation_errors:
+                                        success = False
+                                        details += f", Validation errors: {validation_errors}"
+                                    else:
+                                        # Validate breakdown totals match overall counts
+                                        users_total = breakdown.get("registeredUsers", 0) + breakdown.get("uniqueGuestPurchasers", 0)
+                                        docs_total = docs_breakdown.get("purchased", 0) + docs_breakdown.get("saved", 0)
+                                        
+                                        if users_total != users.get("count", 0):
+                                            success = False
+                                            details += f", Users breakdown total ({users_total}) doesn't match count ({users.get('count')})"
+                                        elif docs_total != documents.get("count", 0):
+                                            success = False
+                                            details += f", Documents breakdown total ({docs_total}) doesn't match count ({documents.get('count')})"
+                                        else:
+                                            # Test formatting rules
+                                            users_count = users.get("count", 0)
+                                            users_formatted = users.get("formatted", "")
+                                            docs_count = documents.get("count", 0)
+                                            docs_formatted = documents.get("formatted", "")
+                                            
+                                            # Validate formatting follows the rules
+                                            expected_users_format = self.validate_stat_formatting(users_count)
+                                            expected_docs_format = self.validate_stat_formatting(docs_count)
+                                            
+                                            if users_formatted != expected_users_format:
+                                                success = False
+                                                details += f", Users formatting incorrect: got '{users_formatted}', expected '{expected_users_format}' for count {users_count}"
+                                            elif docs_formatted != expected_docs_format:
+                                                success = False
+                                                details += f", Documents formatting incorrect: got '{docs_formatted}', expected '{expected_docs_format}' for count {docs_count}"
+                                            else:
+                                                # All validations passed
+                                                details += f", ✅ All structure and validation checks passed"
+                                                details += f", Users: {users_count} ({users_formatted}), Registered: {breakdown.get('registeredUsers')}, Guests: {breakdown.get('uniqueGuestPurchasers')}"
+                                                details += f", Documents: {docs_count} ({docs_formatted}), Purchased: {docs_breakdown.get('purchased')}, Saved: {docs_breakdown.get('saved')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text}"
+            
+            self.log_test("Hero Stats Endpoint", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Hero Stats Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def validate_stat_formatting(self, count):
+        """Validate stat count formatting follows the specified rules"""
+        if count >= 10000:
+            thousands = count // 1000
+            if thousands >= 50:
+                return f"{(thousands // 10) * 10}K+"
+            elif thousands >= 10:
+                return f"{thousands}K+"
+        if count >= 5000:
+            return "5K+"
+        if count >= 1000:
+            return "1K+"
+        if count >= 500:
+            return "500+"
+        if count >= 100:
+            return "100+"
+        if count >= 50:
+            return "50+"
+        return str(count) if count > 0 else "0"
+
     # ========== USER COUNT ENDPOINT TESTS ==========
 
     def test_user_count_endpoint(self):

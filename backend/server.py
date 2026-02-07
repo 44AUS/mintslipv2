@@ -4497,6 +4497,76 @@ async def update_banner_settings(request: dict, session: dict = Depends(get_curr
     
     return {"success": True, "banner": banner_settings}
 
+
+# ========== MAINTENANCE MODE ==========
+
+@app.get("/api/maintenance-status")
+async def get_maintenance_status():
+    """Get current maintenance mode status (public endpoint)"""
+    settings = await site_settings_collection.find_one({"key": "maintenance_mode"})
+    
+    if not settings:
+        return {
+            "success": True,
+            "maintenance": {
+                "isActive": False,
+                "message": "We're currently performing scheduled maintenance. We'll be back shortly!",
+                "estimatedTime": ""
+            }
+        }
+    
+    return {
+        "success": True,
+        "maintenance": {
+            "isActive": settings.get("isActive", False),
+            "message": settings.get("message", "We're currently performing scheduled maintenance. We'll be back shortly!"),
+            "estimatedTime": settings.get("estimatedTime", "")
+        }
+    }
+
+
+@app.get("/api/admin/maintenance")
+async def get_maintenance_settings(session: dict = Depends(get_current_admin)):
+    """Get maintenance mode settings (admin only)"""
+    settings = await site_settings_collection.find_one({"key": "maintenance_mode"}, {"_id": 0})
+    
+    if not settings:
+        return {
+            "success": True,
+            "maintenance": {
+                "isActive": False,
+                "message": "We're currently performing scheduled maintenance. We'll be back shortly!",
+                "estimatedTime": ""
+            }
+        }
+    
+    return {"success": True, "maintenance": settings}
+
+
+@app.put("/api/admin/maintenance")
+async def update_maintenance_settings(request: dict, session: dict = Depends(get_current_admin)):
+    """Update maintenance mode settings (admin only)"""
+    maintenance_settings = {
+        "key": "maintenance_mode",
+        "isActive": request.get("isActive", False),
+        "message": request.get("message", "We're currently performing scheduled maintenance. We'll be back shortly!"),
+        "estimatedTime": request.get("estimatedTime", ""),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "updatedBy": session.get("adminId", "")
+    }
+    
+    await site_settings_collection.update_one(
+        {"key": "maintenance_mode"},
+        {"$set": maintenance_settings},
+        upsert=True
+    )
+    
+    status = "enabled" if maintenance_settings["isActive"] else "disabled"
+    print(f"Maintenance mode {status} by admin {session.get('adminId', 'unknown')}")
+    
+    return {"success": True, "maintenance": maintenance_settings}
+
+
 @app.post("/api/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     """Parse an uploaded resume (PDF or DOCX) and extract structured data"""

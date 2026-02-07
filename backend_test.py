@@ -5713,6 +5713,13 @@ class AIResumeBuilderTester:
         bank_tx_states_ok = self.test_generate_bank_transactions_state_city_validation()
         bank_tx_errors_ok = self.test_generate_bank_transactions_error_handling()
         
+        # Test Maintenance Mode API
+        print("\n🔧 Testing Maintenance Mode API...")
+        maintenance_public_ok = self.test_maintenance_status_public()
+        maintenance_admin_get_ok = self.test_admin_maintenance_get()
+        maintenance_admin_put_ok = self.test_admin_maintenance_put()
+        maintenance_toggle_flow_ok = self.test_maintenance_mode_toggle_flow()
+        
         # Print summary
         print("\n" + "=" * 60)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")

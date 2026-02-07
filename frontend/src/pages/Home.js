@@ -1217,7 +1217,7 @@ export default function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
             <Sparkles className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">Trusted by 10,000+ users</span>
+            <span className="text-sm font-medium text-green-800">Trusted by {userCount} users</span>
             <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (
                 <svg key={i} xmlns="http://www.w3.org/2000/svg" width="14" height="13" viewBox="0 0 27.39 25.547">

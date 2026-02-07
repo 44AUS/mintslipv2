@@ -60,11 +60,51 @@ import PDFEngine from "@/pages/PDFEngine";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useState, useEffect } from "react";
+import MaintenancePage from "@/pages/MaintenancePage";
 
 // Stripe Configuration - Use environment variable
 const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM";
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// Maintenance Mode Check Wrapper
+function MaintenanceCheck({ children }) {
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkMaintenance = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/maintenance-status`);
+        if (response.ok) {
+          const data = await response.json();
+          setIsMaintenanceMode(data.maintenance?.isActive || false);
+        }
+      } catch (error) {
+        console.error("Error checking maintenance status:", error);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    
+    checkMaintenance();
+  }, []);
+
+  // Don't block while checking
+  if (isChecking) {
+    return children;
+  }
+
+  // Allow admin routes even during maintenance
+  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  
+  // Show maintenance page if in maintenance mode (except for admin routes)
+  if (isMaintenanceMode && !isAdminRoute) {
+    return <MaintenancePage />;
+  }
+
+  return children;
+}
 
 // IP Ban Check Wrapper
 function IPBanCheck({ children }) {

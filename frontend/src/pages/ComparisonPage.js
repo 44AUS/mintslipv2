@@ -610,6 +610,26 @@ export default function ComparisonPage() {
   const [tableRef, tableInView] = useInView();
   const [cardsRef, cardsInView] = useInView();
   const [featuresRef, featuresInView] = useInView();
+  const [userCount, setUserCount] = useState("10K+");
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+  // Fetch hero stats
+  useEffect(() => {
+    const fetchHeroStats = async () => {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/hero-stats`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.users?.formatted) {
+            setUserCount(data.users.formatted);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching hero stats:", error);
+      }
+    };
+    fetchHeroStats();
+  }, [BACKEND_URL]);
 
   const comparisonFeatures = [
     { name: "Instant PDF Download", icon: Download, mintslip: true, others: "Sometimes" },

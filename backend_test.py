@@ -5774,6 +5774,7 @@ class AIResumeBuilderTester:
             print("✅ Stripe integration system working")
             print("✅ Mobile app backend APIs working")
             print("✅ AI Bank Transaction Generator working")
+            print("✅ Maintenance Mode API working")
             return True
         else:
             print("⚠️  Some critical API tests failed - check details above")

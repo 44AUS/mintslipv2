@@ -446,6 +446,18 @@ agent_communication:
         agent: "testing"
         comment: "✅ Blog Image Persistence Fix test passed - All blog image persistence functionality working correctly: 1) Admin login with credentials 'admin@mintslip.com' and 'MINTSLIP2025!' successful ✓, 2) Migration endpoint POST /api/admin/blog/migrate-images successfully migrated test image (225 bytes) to MongoDB ✓, 3) Dynamic image serving endpoint GET /api/uploads/blog/{filename} serves images with proper content-type (image/png) ✓, 4) MongoDB storage verified - second migration correctly skipped already stored images ✓, 5) MongoDB fallback functionality working - images serve from database even when disk files are removed ✓. The persistence fix ensures blog images are stored in MongoDB and persist across container restarts. All image migration and serving functionality is working correctly and ready for production use."
 
+  - task: "Hero Stats Endpoint"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ Hero Stats Endpoint test passed - GET /api/hero-stats endpoint working correctly: 1) Returns success=true with users and documents objects ✓, 2) Users object has count, formatted, breakdown (registeredUsers, uniqueGuestPurchasers) ✓, 3) Documents object has count, formatted, breakdown (purchased, saved) ✓, 4) Formatted values follow correct rules: <50=actual number, 50-99='50+', 100-499='100+', 500-999='500+', 1000-4999='1K+', 5000-9999='5K+', 10000+='10K+' etc. ✓, 5) Endpoint is publicly accessible (no auth required) ✓, 6) All field types validated (counts=integer, formatted=string, breakdown=object with integer values) ✓, 7) Breakdown totals match overall counts ✓. Current stats: Users: 20 (20), Registered: 20, Guests: 0, Documents: 2 (2), Purchased: 2, Saved: 0. All hero stats functionality working correctly and ready for production use."
+
 frontend:
   - task: "Admin Layout Tab Bar Fix"
     implemented: true

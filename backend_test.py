@@ -5761,7 +5761,7 @@ class AIResumeBuilderTester:
         if (critical_tests_passed and admin_tests_passed and purchase_tests_passed and subscription_tests_passed and 
             new_admin_features_passed and blog_tests_passed and subscription_download_tests_passed and 
             subscription_upgrade_tests_passed and stripe_integration_tests_passed and mobile_app_tests_passed and
-            bank_transaction_tests_passed):
+            bank_transaction_tests_passed and maintenance_mode_tests_passed):
             print("🎉 All critical AI Resume Builder API tests passed!")
             print("✅ Backend APIs are working correctly")
             print("✅ Admin authentication and dashboard system working")

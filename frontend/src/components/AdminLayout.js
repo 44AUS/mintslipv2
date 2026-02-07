@@ -235,6 +235,27 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
               {/* Mobile Actions Divider */}
               <div className="border-t border-slate-200 my-3"></div>
               
+              {/* Mobile Maintenance Toggle */}
+              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <Wrench className={`w-5 h-5 ${maintenanceMode ? 'text-orange-500' : 'text-slate-400'}`} />
+                  <span className="font-medium text-slate-700">Maintenance Mode</span>
+                </div>
+                <button
+                  onClick={toggleMaintenanceMode}
+                  disabled={maintenanceLoading}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                    maintenanceMode ? 'bg-orange-500' : 'bg-slate-300'
+                  } ${maintenanceLoading ? 'opacity-50' : ''}`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      maintenanceMode ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
               {/* Mobile Actions */}
               {onRefresh && (
                 <button

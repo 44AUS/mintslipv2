@@ -411,6 +411,80 @@ async def health_check():
     return {"status": "healthy"}
 
 
+# ========== USER COUNT FOR HERO SECTION ==========
+
+def format_user_count(count: int) -> str:
+    """Format user count with appropriate suffix like 50+, 100+, 500+, 1K+, 5K+, 10K+, etc."""
+    if count >= 10000:
+        # 10K+, 15K+, 20K+, etc.
+        thousands = count // 1000
+        if thousands >= 50:
+            return f"{(thousands // 10) * 10}K+"
+        elif thousands >= 10:
+            return f"{thousands}K+"
+    if count >= 5000:
+        return "5K+"
+    if count >= 1000:
+        return "1K+"
+    if count >= 500:
+        return "500+"
+    if count >= 100:
+        return "100+"
+    if count >= 50:
+        return "50+"
+    # If less than 50, return the actual count or a minimum display
+    return str(count) if count > 0 else "0"
+
+
+@app.get("/api/user-count")
+async def get_user_count():
+    """Get the total unique user count (registered users + unique guest purchasers)"""
+    try:
+        # Get all registered user emails (lowercase for comparison)
+        registered_users_cursor = users_collection.find({}, {"email": 1})
+        registered_emails = set()
+        async for user in registered_users_cursor:
+            if user.get("email"):
+                registered_emails.add(user["email"].lower())
+        
+        # Get unique guest purchase emails (where isGuest: True and email exists)
+        guest_purchases_cursor = purchases_collection.aggregate([
+            {"$match": {"isGuest": True, "email": {"$exists": True, "$ne": ""}}},
+            {"$group": {"_id": {"$toLower": "$email"}}}
+        ])
+        
+        guest_emails = set()
+        async for doc in guest_purchases_cursor:
+            if doc.get("_id"):
+                guest_emails.add(doc["_id"])
+        
+        # Combine: registered users + guest-only emails (not registered)
+        # This ensures no double counting
+        unique_guest_only_emails = guest_emails - registered_emails
+        total_unique_users = len(registered_emails) + len(unique_guest_only_emails)
+        
+        # Format the count
+        formatted_count = format_user_count(total_unique_users)
+        
+        return {
+            "success": True,
+            "count": total_unique_users,
+            "formattedCount": formatted_count,
+            "breakdown": {
+                "registeredUsers": len(registered_emails),
+                "uniqueGuestPurchasers": len(unique_guest_only_emails)
+            }
+        }
+    except Exception as e:
+        print(f"Error getting user count: {e}")
+        return {
+            "success": False,
+            "count": 0,
+            "formattedCount": "0",
+            "error": str(e)
+        }
+
+
 # ========== BANK STATEMENT TRANSACTION GENERATOR ==========
 
 # US States with major cities

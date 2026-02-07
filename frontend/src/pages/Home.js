@@ -1141,25 +1141,31 @@ export default function Home() {
   const [activeFeature, setActiveFeature] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [userCount, setUserCount] = useState("10K+"); // Default fallback
+  const [docsCount, setDocsCount] = useState("50K+"); // Default fallback
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-  // Fetch user count from API
+  // Fetch hero stats from API
   useEffect(() => {
-    const fetchUserCount = async () => {
+    const fetchHeroStats = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/user-count`);
+        const response = await fetch(`${BACKEND_URL}/api/hero-stats`);
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.formattedCount) {
-            setUserCount(data.formattedCount);
+          if (data.success) {
+            if (data.users?.formatted) {
+              setUserCount(data.users.formatted);
+            }
+            if (data.documents?.formatted) {
+              setDocsCount(data.documents.formatted);
+            }
           }
         }
       } catch (error) {
-        console.error("Error fetching user count:", error);
+        console.error("Error fetching hero stats:", error);
         // Keep default fallback on error
       }
     };
-    fetchUserCount();
+    fetchHeroStats();
   }, [BACKEND_URL]);
 
   // Animation on mount

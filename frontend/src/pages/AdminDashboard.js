@@ -178,6 +178,8 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [adminInfo, setAdminInfo] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   
   // Sync activeTab with URL changes
   useEffect(() => {

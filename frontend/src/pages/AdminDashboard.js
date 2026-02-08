@@ -303,7 +303,57 @@ export default function AdminDashboard() {
     }
     
     verifySession(token);
+    fetchMaintenanceStatus(token);
   }, [navigate]);
+
+  // Fetch maintenance status
+  const fetchMaintenanceStatus = async (token) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setMaintenanceMode(data.maintenance?.isActive || false);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching maintenance status:", error);
+    }
+  };
+
+  // Toggle maintenance mode
+  const toggleMaintenanceMode = async () => {
+    setMaintenanceLoading(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const newStatus = !maintenanceMode;
+      
+      const response = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          isActive: newStatus,
+          message: "We're currently performing scheduled maintenance. We'll be back shortly!",
+          estimatedTime: ""
+        })
+      });
+
+      if (response.ok) {
+        setMaintenanceMode(newStatus);
+        toast.success(`Maintenance mode ${newStatus ? 'enabled' : 'disabled'}`);
+      }
+    } catch (error) {
+      console.error("Error toggling maintenance mode:", error);
+      toast.error("Failed to toggle maintenance mode");
+    } finally {
+      setMaintenanceLoading(false);
+    }
+  };
 
   const verifySession = async (token) => {
     try {

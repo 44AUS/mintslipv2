@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/collapsible";
 import MintSlip from '../assests/mintslip-logo.png';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
 // Tax Forms dropdown items
 const TAX_FORMS = [
   { name: "W-2 Generator", path: "/w2-generator", icon: FileSpreadsheet },
@@ -212,9 +214,10 @@ function DesktopNavLinks({ location, onNavigate }) {
 }
 
 // User account dropdown component for desktop
-function UserAccountDropdown({ user, onNavigate, onLogout }) {
-  // Show Login/Register buttons if user is not logged in
+function UserAccountDropdown({ user, onNavigate, onLogout, authEnabled }) {
+  // Show Login/Register buttons if user is not logged in and auth is enabled
   if (!user) {
+    if (!authEnabled) return null;
     return (
       <div className="flex items-center gap-2">
         <button
@@ -507,6 +510,7 @@ export default function Header({ title }) {
   const isHome = location.pathname === "/";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [authEnabled, setAuthEnabled] = useState(true);
 
   // Check for logged in user
   useEffect(() => {
@@ -518,6 +522,16 @@ export default function Header({ title }) {
         setUser(null);
       }
     }
+  }, []);
+
+  // Fetch auth status
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/auth-status`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setAuthEnabled(data.authEnabled !== false);
+      })
+      .catch(() => {});
   }, []);
 
   const handleNavigation = (path) => {
@@ -577,7 +591,7 @@ export default function Header({ title }) {
             <div className="flex items-center gap-3">
               {/* User Account - Desktop Only */}
               <div className="hidden lg:block">
-                <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} />
+                <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} authEnabled={authEnabled} />
             </div>
 
             {/* Mobile/Tablet Hamburger Menu */}
@@ -644,7 +658,7 @@ export default function Header({ title }) {
                         <span>Log Out</span>
                       </button>
                     </div>
-                  ) : (
+                  ) : authEnabled ? (
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <button
                         onClick={() => handleNavigation("/login")}
@@ -660,7 +674,7 @@ export default function Header({ title }) {
                         <span className="font-medium">Register</span>
                       </button>
                     </div>
-                  )}
+                  ) : null}
                   
                   {/* Home link in mobile menu */}
                   <div className="mt-4 pt-4 border-t border-gray-200">

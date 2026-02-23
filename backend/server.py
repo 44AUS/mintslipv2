@@ -4567,6 +4567,52 @@ async def update_maintenance_settings(request: dict, session: dict = Depends(get
     return {"success": True, "maintenance": maintenance_settings}
 
 
+# ========== AUTH SETTINGS ==========
+
+@app.get("/api/auth-status")
+async def get_auth_status():
+    """Get whether user signup/login is enabled (public endpoint)"""
+    settings = await site_settings_collection.find_one({"key": "auth_enabled"})
+
+    if not settings:
+        return {"success": True, "authEnabled": True}
+
+    return {"success": True, "authEnabled": settings.get("isEnabled", True)}
+
+
+@app.get("/api/admin/auth-settings")
+async def get_auth_settings(session: dict = Depends(get_current_admin)):
+    """Get auth enabled settings (admin only)"""
+    settings = await site_settings_collection.find_one({"key": "auth_enabled"}, {"_id": 0})
+
+    if not settings:
+        return {"success": True, "authEnabled": True}
+
+    return {"success": True, "authEnabled": settings.get("isEnabled", True)}
+
+
+@app.put("/api/admin/auth-settings")
+async def update_auth_settings(request: dict, session: dict = Depends(get_current_admin)):
+    """Update auth enabled setting (admin only)"""
+    auth_settings = {
+        "key": "auth_enabled",
+        "isEnabled": request.get("isEnabled", True),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "updatedBy": session.get("adminId", "")
+    }
+
+    await site_settings_collection.update_one(
+        {"key": "auth_enabled"},
+        {"$set": auth_settings},
+        upsert=True
+    )
+
+    status = "enabled" if auth_settings["isEnabled"] else "disabled"
+    print(f"User auth {status} by admin {session.get('adminId', 'unknown')}")
+
+    return {"success": True, "authEnabled": auth_settings["isEnabled"]}
+
+
 @app.post("/api/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     """Parse an uploaded resume (PDF or DOCX) and extract structured data"""

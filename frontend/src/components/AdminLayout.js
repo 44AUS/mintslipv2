@@ -15,6 +15,7 @@ import {
   X,
   FolderArchive,
   Wrench,
+  UserX,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -25,6 +26,8 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceLoading, setMaintenanceLoading] = useState(false);
+  const [authEnabled, setAuthEnabled] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
 
   // Fetch maintenance status on mount
   useEffect(() => {
@@ -44,7 +47,26 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
         console.error("Error fetching maintenance status:", error);
       }
     };
+
+    const fetchAuthSettings = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const response = await fetch(`${BACKEND_URL}/api/admin/auth-settings`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setAuthEnabled(data.authEnabled !== false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching auth settings:", error);
+      }
+    };
+
     fetchMaintenanceStatus();
+    fetchAuthSettings();
   }, []);
 
   const toggleMaintenanceMode = async () => {
@@ -76,6 +98,31 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
     }
   };
   
+  const toggleAuthEnabled = async () => {
+    setAuthLoading(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const newStatus = !authEnabled;
+
+      const response = await fetch(`${BACKEND_URL}/api/admin/auth-settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ isEnabled: newStatus })
+      });
+
+      if (response.ok) {
+        setAuthEnabled(newStatus);
+      }
+    } catch (error) {
+      console.error("Error toggling auth settings:", error);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   // Determine active tab from URL path
   const getActiveTab = () => {
     const path = location.pathname;
@@ -160,6 +207,26 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
                 <span
                   className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
                     maintenanceMode ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Auth Enabled Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
+              <UserX className={`w-4 h-4 ${!authEnabled ? 'text-red-500' : 'text-slate-400'}`} />
+              <span className="text-sm font-medium text-slate-600 hidden lg:inline">User Auth</span>
+              <button
+                onClick={toggleAuthEnabled}
+                disabled={authLoading}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
+                  authEnabled ? 'bg-green-500' : 'bg-red-400'
+                } ${authLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                title={authEnabled ? 'Disable user signup/login' : 'Enable user signup/login'}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    authEnabled ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
@@ -251,6 +318,27 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
                   <span
                     className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
                       maintenanceMode ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Mobile Auth Toggle */}
+              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-3">
+                  <UserX className={`w-5 h-5 ${!authEnabled ? 'text-red-500' : 'text-slate-400'}`} />
+                  <span className="font-medium text-slate-700">User Signup/Login</span>
+                </div>
+                <button
+                  onClick={toggleAuthEnabled}
+                  disabled={authLoading}
+                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                    authEnabled ? 'bg-green-500' : 'bg-red-400'
+                  } ${authLoading ? 'opacity-50' : ''}`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      authEnabled ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </button>

@@ -215,25 +215,9 @@ function DesktopNavLinks({ location, onNavigate }) {
 
 // User account dropdown component for desktop
 function UserAccountDropdown({ user, onNavigate, onLogout, authEnabled }) {
-  // Show Login/Register buttons if user is not logged in and auth is enabled
+  // Hide Login/Register buttons when user is not logged in
   if (!user) {
-    if (!authEnabled) return null;
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => onNavigate("/login")}
-          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-green-700 transition-colors"
-        >
-          Login
-        </button>
-        <button
-          onClick={() => onNavigate("/signup")}
-          className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-        >
-          Register
-        </button>
-      </div>
-    );
+    return null;
   }
   
   return (
@@ -656,22 +640,6 @@ export default function Header({ title }) {
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Log Out</span>
-                      </button>
-                    </div>
-                  ) : authEnabled ? (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <button
-                        onClick={() => handleNavigation("/login")}
-                        className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md hover:bg-green-50 transition-colors text-slate-600"
-                      >
-                        <User className="w-4 h-4" />
-                        <span className="font-medium">Login</span>
-                      </button>
-                      <button
-                        onClick={() => handleNavigation("/signup")}
-                        className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md bg-green-600 hover:bg-green-700 transition-colors text-white mt-2"
-                      >
-                        <span className="font-medium">Register</span>
                       </button>
                     </div>
                   ) : null}

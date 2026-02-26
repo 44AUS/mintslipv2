@@ -169,7 +169,7 @@ export default function AdminLayout({ children }) {
       {/* Desktop Sidebar — full height, above everything */}
       <aside className="hidden md:flex flex-col w-56 bg-white border-r border-slate-200 flex-shrink-0 z-50">
         {/* Logo */}
-        <div className="px-4 py-5 border-b border-slate-100 flex-shrink-0">
+        <div className="px-4 py-5 border-b border-slate-100 flex-shrink-0 flex justify-center">
           <button onClick={() => navigate("/admin/overview")} className="hover:opacity-80 transition-opacity">
             <img src={MintSlipLogo} alt="MintSlip" style={{ height: "32px", width: "auto" }} />
           </button>

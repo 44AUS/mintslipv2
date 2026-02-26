@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Save, RotateCcw, Eye, Code2, ChevronRight } from "lucide-react";
+import { Save, RotateCcw, Eye, Code2, ChevronRight, Lock, Clock } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -198,16 +198,16 @@ const DEFAULT_BODIES = {
 };
 
 const TEMPLATE_META = {
-  welcome:               { variables: ["user_name", "user_email", "SITE_URL"],                                     defaultSubject: "Welcome to MintSlip! 🎉",                                            defaultHtmlBody: DEFAULT_BODIES.welcome },
-  email_verification:    { variables: ["user_name", "verification_code", "verification_link"],                     defaultSubject: "Verify your email address - MintSlip",                               defaultHtmlBody: DEFAULT_BODIES.email_verification },
-  getting_started:       { variables: ["user_name", "SITE_URL"],                                                   defaultSubject: "Getting Started with MintSlip - Quick Guide",                        defaultHtmlBody: DEFAULT_BODIES.getting_started },
-  subscription_thank_you:{ variables: ["user_name", "plan_name", "plan_price", "downloads_per_month", "SITE_URL"], defaultSubject: "Welcome to {plan_name}! Your MintSlip subscription is active",        defaultHtmlBody: DEFAULT_BODIES.subscription_thank_you },
-  download_confirmation: { variables: ["user_name", "doc_name", "SITE_URL"],                                      defaultSubject: "Your {doc_name} is Ready - MintSlip",                                defaultHtmlBody: DEFAULT_BODIES.download_confirmation },
-  signup_no_purchase:    { variables: ["user_name", "SITE_URL"],                                                   defaultSubject: "Your MintSlip documents are waiting for you",                        defaultHtmlBody: DEFAULT_BODIES.signup_no_purchase },
-  abandoned_checkout:    { variables: ["user_name", "doc_name", "SITE_URL"],                                      defaultSubject: "Complete your {doc_name} purchase - MintSlip",                       defaultHtmlBody: DEFAULT_BODIES.abandoned_checkout },
-  review_request:        { variables: ["user_name", "doc_name", "TRUSTPILOT_URL"],                                defaultSubject: "How was your MintSlip experience? ⭐",                                defaultHtmlBody: DEFAULT_BODIES.review_request },
-  password_changed:      { variables: ["user_name", "SITE_URL"],                                                   defaultSubject: "Your password has been changed - MintSlip",                          defaultHtmlBody: DEFAULT_BODIES.password_changed },
-  password_reset:        { variables: ["user_name", "reset_link", "reset_code"],                                   defaultSubject: "Reset your password - MintSlip",                                     defaultHtmlBody: DEFAULT_BODIES.password_reset },
+  welcome:               { variables: ["user_name", "user_email", "SITE_URL"],                                     defaultSubject: "Welcome to MintSlip! 🎉",                                            defaultHtmlBody: DEFAULT_BODIES.welcome,               defaultDelayMinutes: null },
+  email_verification:    { variables: ["user_name", "verification_code", "verification_link"],                     defaultSubject: "Verify your email address - MintSlip",                               defaultHtmlBody: DEFAULT_BODIES.email_verification,    defaultDelayMinutes: null },
+  getting_started:       { variables: ["user_name", "SITE_URL"],                                                   defaultSubject: "Getting Started with MintSlip - Quick Guide",                        defaultHtmlBody: DEFAULT_BODIES.getting_started,       defaultDelayMinutes: 15 },
+  subscription_thank_you:{ variables: ["user_name", "plan_name", "plan_price", "downloads_per_month", "SITE_URL"], defaultSubject: "Welcome to {plan_name}! Your MintSlip subscription is active",        defaultHtmlBody: DEFAULT_BODIES.subscription_thank_you,defaultDelayMinutes: 15 },
+  download_confirmation: { variables: ["user_name", "doc_name", "SITE_URL"],                                      defaultSubject: "Your {doc_name} is Ready - MintSlip",                                defaultHtmlBody: DEFAULT_BODIES.download_confirmation, defaultDelayMinutes: null },
+  signup_no_purchase:    { variables: ["user_name", "SITE_URL"],                                                   defaultSubject: "Your MintSlip documents are waiting for you",                        defaultHtmlBody: DEFAULT_BODIES.signup_no_purchase,    defaultDelayMinutes: 1440 },
+  abandoned_checkout:    { variables: ["user_name", "doc_name", "SITE_URL"],                                      defaultSubject: "Complete your {doc_name} purchase - MintSlip",                       defaultHtmlBody: DEFAULT_BODIES.abandoned_checkout,    defaultDelayMinutes: 120 },
+  review_request:        { variables: ["user_name", "doc_name", "TRUSTPILOT_URL"],                                defaultSubject: "How was your MintSlip experience? ⭐",                                defaultHtmlBody: DEFAULT_BODIES.review_request,        defaultDelayMinutes: null },
+  password_changed:      { variables: ["user_name", "SITE_URL"],                                                   defaultSubject: "Your password has been changed - MintSlip",                          defaultHtmlBody: DEFAULT_BODIES.password_changed,      defaultDelayMinutes: null },
+  password_reset:        { variables: ["user_name", "reset_link", "reset_code"],                                   defaultSubject: "Reset your password - MintSlip",                                     defaultHtmlBody: DEFAULT_BODIES.password_reset,        defaultDelayMinutes: null },
 };
 
 const BASE_PREVIEW_STYLES = `
@@ -228,6 +228,19 @@ function buildPreviewHtml(htmlBody) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="background-color:#f9fafb;"><div class="container"><div class="header"><div class="logo">🍃 MintSlip</div></div><div class="content">${htmlBody}</div><div class="footer"><p>© ${new Date().getFullYear()} MintSlip. All rights reserved.</p></div></div></body></html>`;
 }
 
+function formatDelay(minutes) {
+  if (!minutes || minutes <= 0) return "immediately";
+  if (minutes < 60) return `${minutes} min`;
+  if (minutes < 1440) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h} hour${h === 1 ? "" : "s"}`;
+  }
+  const d = Math.floor(minutes / 1440);
+  const h = Math.floor((minutes % 1440) / 60);
+  return h > 0 ? `${d}d ${h}h` : `${d} day${d === 1 ? "" : "s"}`;
+}
+
 export default function AdminEmailTemplates() {
   const navigate = useNavigate();
   const [adminInfo, setAdminInfo] = useState(null);
@@ -236,8 +249,11 @@ export default function AdminEmailTemplates() {
   const [subject, setSubject] = useState("");
   const [htmlBody, setHtmlBody] = useState("");
   const [previewText, setPreviewText] = useState("");
+  const [enabled, setEnabled] = useState(true);
+  const [delayMinutes, setDelayMinutes] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [tab, setTab] = useState("edit");
 
   useEffect(() => {
@@ -267,6 +283,12 @@ export default function AdminEmailTemplates() {
     setSubject(tmpl.subject || m?.defaultSubject || "");
     setHtmlBody(tmpl.html_body || m?.defaultHtmlBody || "");
     setPreviewText(tmpl.preview_text || "");
+    setEnabled(tmpl.enabled !== false);
+    setDelayMinutes(
+      tmpl.delay_minutes != null ? String(tmpl.delay_minutes)
+        : m?.defaultDelayMinutes != null ? String(m.defaultDelayMinutes)
+        : ""
+    );
     setTab("edit");
     setSaved(false);
   };
@@ -281,6 +303,14 @@ export default function AdminEmailTemplates() {
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ subject, html_body: htmlBody, preview_text: previewText })
       });
+      // Also save delay if this is a scheduled template
+      if (selected.is_scheduled && delayMinutes !== "") {
+        await fetch(`${BACKEND_URL}/api/admin/email-settings/${selected.name}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ delay_minutes: parseInt(delayMinutes) || null })
+        });
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
       await fetchTemplates();
@@ -305,8 +335,29 @@ export default function AdminEmailTemplates() {
       setSubject(m?.defaultSubject || "");
       setHtmlBody(m?.defaultHtmlBody || "");
       setPreviewText("");
+      if (m?.defaultDelayMinutes != null) setDelayMinutes(String(m.defaultDelayMinutes));
     } catch (e) {
       console.error("Failed to reset template:", e);
+    }
+  };
+
+  const handleToggleEnabled = async (newVal) => {
+    if (!selected || selected.is_system) return;
+    setEnabled(newVal);
+    setSettingsSaving(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      await fetch(`${BACKEND_URL}/api/admin/email-settings/${selected.name}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ enabled: newVal })
+      });
+      setSelected(prev => ({ ...prev, enabled: newVal }));
+      setTemplates(prev => prev.map(t => t.name === selected.name ? { ...t, enabled: newVal } : t));
+    } catch (e) {
+      setEnabled(!newVal); // revert on error
+    } finally {
+      setSettingsSaving(false);
     }
   };
 
@@ -334,12 +385,15 @@ export default function AdminEmailTemplates() {
                       : "hover:bg-slate-50 border-l-2 border-transparent"
                   }`}
                 >
-                  <div className="min-w-0">
-                    <p className={`text-sm font-medium truncate ${selected?.name === tmpl.name ? "text-green-800" : "text-slate-700"}`}>
-                      {tmpl.display_name}
-                    </p>
-                    <p className={`text-xs mt-0.5 ${tmpl.is_custom ? "text-green-600" : "text-slate-400"}`}>
-                      {tmpl.is_custom ? "● Custom" : "○ Default"}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className={`text-sm font-medium truncate ${selected?.name === tmpl.name ? "text-green-800" : tmpl.enabled === false ? "text-slate-400" : "text-slate-700"}`}>
+                        {tmpl.display_name}
+                      </p>
+                      {tmpl.is_system && <Lock className="w-2.5 h-2.5 text-slate-300 flex-shrink-0" />}
+                    </div>
+                    <p className={`text-xs mt-0.5 ${tmpl.enabled === false ? "text-orange-400" : tmpl.is_custom ? "text-green-600" : "text-slate-400"}`}>
+                      {tmpl.enabled === false ? "● Disabled" : tmpl.is_custom ? "● Custom" : "○ Default"}
                     </p>
                   </div>
                   <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-opacity ${selected?.name === tmpl.name ? "opacity-60 text-green-600" : "opacity-0 group-hover:opacity-40"}`} />
@@ -354,21 +408,44 @@ export default function AdminEmailTemplates() {
           <div className="flex-1 flex flex-col gap-4 min-w-0">
 
             {/* Toolbar */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 px-5 py-3 flex items-center justify-between">
-              <div>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 px-5 py-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
                 <h2 className="font-semibold text-slate-800">{selected.display_name}</h2>
                 <p className="text-xs text-slate-400 mt-0.5">
                   {selected.is_custom ? "Using custom template" : "Using default template — edit to override"}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-shrink-0">
+                {/* Enabled toggle */}
+                {selected.is_system ? (
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 border border-slate-200 rounded-lg px-3 py-1.5">
+                    <Lock className="w-3 h-3" />
+                    System — always on
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium ${enabled ? "text-green-600" : "text-slate-400"}`}>
+                      {enabled ? "Enabled" : "Disabled"}
+                    </span>
+                    <button
+                      onClick={() => handleToggleEnabled(!enabled)}
+                      disabled={settingsSaving}
+                      className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none ${enabled ? "bg-green-500" : "bg-slate-300"} ${settingsSaving ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${enabled ? "translate-x-5" : "translate-x-0"}`} />
+                    </button>
+                  </div>
+                )}
+
+                <div className="w-px h-5 bg-slate-200" />
+
                 {selected.is_custom && (
                   <button
                     onClick={handleReset}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 rounded-lg transition-colors"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Reset to Default
+                    Reset
                   </button>
                 )}
                 <button
@@ -395,6 +472,36 @@ export default function AdminEmailTemplates() {
                     </code>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Send Timing (scheduled emails only) */}
+            {selected.is_scheduled && (
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 px-5 py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-4 h-4 text-slate-400" />
+                  <label className="text-sm font-medium text-slate-700">Send Delay</label>
+                  <span className="text-xs text-slate-400">— time after the trigger event</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    value={delayMinutes}
+                    onChange={e => setDelayMinutes(e.target.value)}
+                    className="w-28 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="minutes"
+                  />
+                  <span className="text-sm text-slate-500">minutes</span>
+                  {delayMinutes && parseInt(delayMinutes) > 0 && (
+                    <span className="text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
+                      = {formatDelay(parseInt(delayMinutes))}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400 mt-2">
+                  Default: {formatDelay(selected.default_delay_minutes)} · Saved with "Save Template"
+                </p>
               </div>
             )}
 
@@ -469,7 +576,7 @@ export default function AdminEmailTemplates() {
                 </svg>
               </div>
               <p className="font-medium text-slate-600">Select a template</p>
-              <p className="text-sm mt-1">Choose an email template from the list to edit its subject and body.</p>
+              <p className="text-sm mt-1">Choose an email template from the list to edit its subject, body, and settings.</p>
             </div>
           </div>
         )}

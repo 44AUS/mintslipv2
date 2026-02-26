@@ -4690,30 +4690,37 @@ async def update_auth_settings(request: dict, session: dict = Depends(get_curren
 # ========== EMAIL TEMPLATES ==========
 
 EMAIL_TEMPLATE_DEFS = [
-    {"name": "welcome",               "display_name": "Welcome Email",                  "variables": ["user_name", "user_email", "SITE_URL"]},
-    {"name": "email_verification",    "display_name": "Email Verification",             "variables": ["user_name", "verification_code", "verification_link"]},
-    {"name": "getting_started",       "display_name": "Getting Started Guide",          "variables": ["user_name", "SITE_URL"]},
-    {"name": "subscription_thank_you","display_name": "Subscription Thank You",         "variables": ["user_name", "plan_name", "plan_price", "downloads_per_month", "SITE_URL"]},
-    {"name": "download_confirmation", "display_name": "Download Confirmation",          "variables": ["user_name", "doc_name", "SITE_URL"]},
-    {"name": "signup_no_purchase",    "display_name": "Signup – No Purchase Reminder",  "variables": ["user_name", "SITE_URL"]},
-    {"name": "abandoned_checkout",    "display_name": "Abandoned Checkout",             "variables": ["user_name", "doc_name", "SITE_URL"]},
-    {"name": "review_request",        "display_name": "Review Request",                 "variables": ["user_name", "doc_name", "TRUSTPILOT_URL"]},
-    {"name": "password_changed",      "display_name": "Password Changed",               "variables": ["user_name", "SITE_URL"]},
-    {"name": "password_reset",        "display_name": "Password Reset",                 "variables": ["user_name", "reset_link", "reset_code"]},
+    {"name": "welcome",               "display_name": "Welcome Email",                  "variables": ["user_name", "user_email", "SITE_URL"],                                     "is_system": False, "is_scheduled": False},
+    {"name": "email_verification",    "display_name": "Email Verification",             "variables": ["user_name", "verification_code", "verification_link"],                     "is_system": True,  "is_scheduled": False},
+    {"name": "getting_started",       "display_name": "Getting Started Guide",          "variables": ["user_name", "SITE_URL"],                                                   "is_system": False, "is_scheduled": True,  "default_delay_minutes": 15},
+    {"name": "subscription_thank_you","display_name": "Subscription Thank You",         "variables": ["user_name", "plan_name", "plan_price", "downloads_per_month", "SITE_URL"], "is_system": False, "is_scheduled": True,  "default_delay_minutes": 15},
+    {"name": "download_confirmation", "display_name": "Download Confirmation",          "variables": ["user_name", "doc_name", "SITE_URL"],                                       "is_system": False, "is_scheduled": False},
+    {"name": "signup_no_purchase",    "display_name": "Signup – No Purchase Reminder",  "variables": ["user_name", "SITE_URL"],                                                   "is_system": False, "is_scheduled": True,  "default_delay_minutes": 1440},
+    {"name": "abandoned_checkout",    "display_name": "Abandoned Checkout",             "variables": ["user_name", "doc_name", "SITE_URL"],                                       "is_system": False, "is_scheduled": True,  "default_delay_minutes": 120},
+    {"name": "review_request",        "display_name": "Review Request",                 "variables": ["user_name", "doc_name", "TRUSTPILOT_URL"],                                 "is_system": False, "is_scheduled": False},
+    {"name": "password_changed",      "display_name": "Password Changed",               "variables": ["user_name", "SITE_URL"],                                                   "is_system": True,  "is_scheduled": False},
+    {"name": "password_reset",        "display_name": "Password Reset",                 "variables": ["user_name", "reset_link", "reset_code"],                                   "is_system": True,  "is_scheduled": False},
 ]
 
 
 @app.get("/api/admin/email-templates")
 async def get_email_templates(session: dict = Depends(get_current_admin)):
-    """Get all email templates with their current overrides (admin only)"""
+    """Get all email templates with their current overrides and settings (admin only)"""
     results = []
     for tmpl in EMAIL_TEMPLATE_DEFS:
         custom = await email_templates_collection.find_one({"name": tmpl["name"]}, {"_id": 0})
-        entry = {**tmpl, "is_custom": bool(custom)}
+        has_custom_content = bool(custom and (custom.get("subject") or custom.get("html_body")))
+        entry = {**tmpl, "is_custom": has_custom_content}
         if custom:
-            entry["subject"] = custom.get("subject", "")
-            entry["html_body"] = custom.get("html_body", "")
-            entry["preview_text"] = custom.get("preview_text", "")
+            if has_custom_content:
+                entry["subject"] = custom.get("subject", "")
+                entry["html_body"] = custom.get("html_body", "")
+                entry["preview_text"] = custom.get("preview_text", "")
+            entry["enabled"] = custom.get("enabled", True)
+            if tmpl.get("is_scheduled") and custom.get("delay_minutes") is not None:
+                entry["delay_minutes"] = custom["delay_minutes"]
+        else:
+            entry["enabled"] = True
         results.append(entry)
     return {"success": True, "templates": results}
 
@@ -4735,6 +4742,32 @@ async def update_email_template(name: str, request: dict, session: dict = Depend
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "updated_by": session.get("adminId", "")
         }},
+        upsert=True
+    )
+    return {"success": True}
+
+
+@app.put("/api/admin/email-settings/{name}")
+async def update_email_settings(name: str, request: dict, session: dict = Depends(get_current_admin)):
+    """Save email enabled/delay_minutes settings independently of template content (admin only)"""
+    valid_names = {t["name"] for t in EMAIL_TEMPLATE_DEFS}
+    if name not in valid_names:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    update_data: dict = {
+        "name": name,
+        "settings_updated_at": datetime.now(timezone.utc).isoformat(),
+        "settings_updated_by": session.get("adminId", "")
+    }
+    if "enabled" in request:
+        update_data["enabled"] = bool(request["enabled"])
+    if "delay_minutes" in request:
+        raw = request["delay_minutes"]
+        update_data["delay_minutes"] = int(raw) if raw is not None else None
+
+    await email_templates_collection.update_one(
+        {"name": name},
+        {"$set": update_data},
         upsert=True
     )
     return {"success": True}

@@ -506,6 +506,22 @@ async def resolve_template(template_name: str, default_template: Dict, variables
     return default_template
 
 
+async def get_email_config(template_name: str) -> dict:
+    """Get enabled/delay_minutes settings for a template from DB (defaults: enabled=True)"""
+    try:
+        doc = await email_templates_collection.find_one(
+            {"name": template_name}, {"enabled": 1, "delay_minutes": 1}
+        )
+        if doc:
+            return {
+                "enabled": doc.get("enabled", True),
+                "delay_minutes": doc.get("delay_minutes"),
+            }
+    except Exception:
+        pass
+    return {"enabled": True, "delay_minutes": None}
+
+
 # ============================================================
 # EMAIL SENDING FUNCTIONS
 # ============================================================
@@ -673,8 +689,18 @@ async def process_scheduled_emails():
                 template = await resolve_template("abandoned_checkout", default, {"user_name": template_data.get("user_name", "there"), "doc_name": doc_name_sc, "SITE_URL": SITE_URL})
             
             if template:
+                # Check if the email type is still enabled before sending
+                config = await get_email_config(email_type)
+                if not config["enabled"]:
+                    logger.info(f"{email_type} email disabled, cancelling scheduled email to {to_email}")
+                    await scheduled_emails_collection.update_one(
+                        {"_id": email["_id"]},
+                        {"$set": {"status": "cancelled", "cancelled_reason": "email_disabled"}}
+                    )
+                    continue
+
                 result = await send_email(to_email, template["subject"], template["html"], email_type)
-                
+
                 if result["success"]:
                     await scheduled_emails_collection.update_one(
                         {"_id": email["_id"]},
@@ -715,6 +741,9 @@ async def cancel_scheduled_email(user_id: str, email_type: str) -> bool:
 
 async def send_welcome_email(user_email: str, user_name: str):
     """Send welcome email immediately after signup"""
+    config = await get_email_config("welcome")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
     default = template_welcome(user_name, user_email)
     template = await resolve_template("welcome", default, {"user_name": user_name or "there", "user_email": user_email or "", "SITE_URL": SITE_URL})
     return await send_email(user_email, template["subject"], template["html"], "welcome")
@@ -728,8 +757,12 @@ async def send_verification_email(user_email: str, user_name: str, verification_
 
 
 async def schedule_getting_started_email(user_email: str, user_name: str, user_id: str):
-    """Schedule getting started guide for 15 minutes after signup"""
-    send_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+    """Schedule getting started guide — delay configurable (default 15 min)"""
+    config = await get_email_config("getting_started")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    delay = config["delay_minutes"] if config["delay_minutes"] is not None else 15
+    send_at = datetime.now(timezone.utc) + timedelta(minutes=delay)
     return await schedule_email(
         user_email,
         "getting_started",
@@ -740,8 +773,12 @@ async def schedule_getting_started_email(user_email: str, user_name: str, user_i
 
 
 async def schedule_subscription_thank_you(user_email: str, user_name: str, user_id: str, plan_name: str, plan_price: str, downloads_per_month: int):
-    """Schedule subscription thank you for 15 minutes after purchase"""
-    send_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+    """Schedule subscription thank you — delay configurable (default 15 min)"""
+    config = await get_email_config("subscription_thank_you")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    delay = config["delay_minutes"] if config["delay_minutes"] is not None else 15
+    send_at = datetime.now(timezone.utc) + timedelta(minutes=delay)
     return await schedule_email(
         user_email,
         "subscription_thank_you",
@@ -758,7 +795,7 @@ async def schedule_subscription_thank_you(user_email: str, user_name: str, user_
 
 async def send_download_confirmation(user_email: str, user_name: str, document_type: str, download_link: Optional[str] = None, is_guest: bool = False, pdf_attachment: Optional[Dict[str, str]] = None):
     """Send download confirmation immediately after purchase
-    
+
     Args:
         user_email: Recipient email
         user_name: User's name
@@ -767,6 +804,9 @@ async def send_download_confirmation(user_email: str, user_name: str, document_t
         is_guest: Whether user is a guest
         pdf_attachment: Optional dict with 'filename' and 'content' (base64 encoded PDF)
     """
+    config = await get_email_config("download_confirmation")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
     default = template_download_confirmation(user_name, document_type, download_link, is_guest)
     document_names = {"paystub": "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "w2": "W-2 Form", "w9": "W-9 Form", "1099-nec": "1099-NEC Form", "1099-misc": "1099-MISC Form", "ai-resume": "AI Resume", "offer-letter": "Offer Letter", "schedule-c": "Schedule C", "vehicle-bill-of-sale": "Vehicle Bill of Sale"}
     doc_name = document_names.get(document_type, document_type.replace("-", " ").title())
@@ -785,8 +825,12 @@ async def send_download_confirmation(user_email: str, user_name: str, document_t
 
 
 async def schedule_signup_no_purchase_reminder(user_email: str, user_name: str, user_id: str):
-    """Schedule reminder for 24 hours after signup if no purchase made"""
-    send_at = datetime.now(timezone.utc) + timedelta(hours=24)
+    """Schedule reminder — delay configurable (default 1440 min = 24h)"""
+    config = await get_email_config("signup_no_purchase")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    delay = config["delay_minutes"] if config["delay_minutes"] is not None else 1440
+    send_at = datetime.now(timezone.utc) + timedelta(minutes=delay)
     return await schedule_email(
         user_email,
         "signup_no_purchase",
@@ -797,9 +841,12 @@ async def schedule_signup_no_purchase_reminder(user_email: str, user_name: str, 
 
 
 async def track_checkout_started(user_email: str, user_name: str, user_id: Optional[str], document_type: str):
-    """Track when checkout is started for abandoned checkout emails"""
-    # Schedule abandoned checkout email for 2 hours later
-    send_at = datetime.now(timezone.utc) + timedelta(hours=2)
+    """Track when checkout is started — delay configurable (default 120 min = 2h)"""
+    config = await get_email_config("abandoned_checkout")
+    if not config["enabled"]:
+        return
+    delay = config["delay_minutes"] if config["delay_minutes"] is not None else 120
+    send_at = datetime.now(timezone.utc) + timedelta(minutes=delay)
     await schedule_email(
         user_email,
         "abandoned_checkout",
@@ -820,6 +867,9 @@ async def cancel_abandoned_checkout_email(user_email: str):
 
 async def send_review_request(user_email: str, user_name: str, document_type: str, user_id: Optional[str] = None):
     """Send review request - only once for registered users, every time for guests"""
+    config = await get_email_config("review_request")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
     if user_id:
         # Check if we've already sent a review request to this user
         existing = await email_logs_collection.find_one({

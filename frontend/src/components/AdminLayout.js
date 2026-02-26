@@ -164,9 +164,39 @@ export default function AdminLayout({ children }) {
       : "A";
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
+
+      {/* Desktop Sidebar — full height, above everything */}
+      <aside className="hidden md:flex flex-col w-56 bg-white border-r border-slate-200 flex-shrink-0 z-50">
+        {/* Logo */}
+        <div className="px-4 py-5 border-b border-slate-100 flex-shrink-0">
+          <button onClick={() => navigate("/admin/overview")} className="hover:opacity-80 transition-opacity">
+            <img src={MintSlipLogo} alt="MintSlip" style={{ height: "32px", width: "auto" }} />
+          </button>
+        </div>
+        {/* Nav links — scrollable if content overflows */}
+        <nav className="p-3 space-y-0.5 flex-1 overflow-y-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => navigate(tab.path)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                activeTab === tab.id
+                  ? "bg-green-600 text-white font-medium"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+              }`}
+            >
+              <tab.icon className="w-4 h-4 flex-shrink-0" />
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Right column: header + scrollable content */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-slate-200 flex-shrink-0 z-40">
         <div className="px-4 py-3 flex items-center justify-between">
 
           {/* Left: Mobile hamburger */}
@@ -324,35 +354,6 @@ export default function AdminLayout({ children }) {
           </div>
         )}
       </header>
-
-      <div className="flex flex-1">
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:flex flex-col w-56 bg-white border-r border-slate-200 flex-shrink-0">
-          {/* Sidebar logo */}
-          <div className="px-4 py-5 border-b border-slate-100">
-            <button onClick={() => navigate("/admin/overview")} className="hover:opacity-80 transition-opacity">
-              <img src={MintSlipLogo} alt="MintSlip" style={{ height: "32px", width: "auto" }} />
-            </button>
-          </div>
-
-          {/* Nav links */}
-          <nav className="p-3 space-y-0.5 flex-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => navigate(tab.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? "bg-green-600 text-white font-medium"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
-                }`}
-              >
-                <tab.icon className="w-4 h-4 flex-shrink-0" />
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </aside>
 
         {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">

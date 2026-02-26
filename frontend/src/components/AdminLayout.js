@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MintSlipLogo from '../assests/mintslip-logo.png';
 import {
   LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
-  Shield, Menu, X, FolderArchive, Wrench, UserX, Mail,
+  Shield, Menu, X, FolderArchive, Mail, SlidersHorizontal,
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
   FileBarChart, Building2, Car, Briefcase, User,
 } from "lucide-react";
@@ -39,10 +39,6 @@ export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
-  const [authEnabled, setAuthEnabled] = useState(true);
-  const [authLoading, setAuthLoading] = useState(false);
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -64,39 +60,11 @@ export default function AdminLayout({ children }) {
   }, []);
 
   useEffect(() => {
-    fetchMaintenanceStatus();
-    fetchAuthSettings();
     fetchNotifications();
     fetchAdminProfile();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  const fetchMaintenanceStatus = async () => {
-    try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) setMaintenanceMode(data.maintenance?.isActive || false);
-      }
-    } catch (e) {}
-  };
-
-  const fetchAuthSettings = async () => {
-    try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${BACKEND_URL}/api/admin/auth-settings`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) setAuthEnabled(data.authEnabled !== false);
-      }
-    } catch (e) {}
-  };
 
   const fetchNotifications = async () => {
     try {
@@ -127,7 +95,6 @@ export default function AdminLayout({ children }) {
         if (data.success) setAdminProfile(data.profile);
       }
     } catch (e) {
-      // fallback to localStorage
       const info = localStorage.getItem("adminInfo");
       if (info) { try { setAdminProfile(JSON.parse(info)); } catch (_) {} }
     }
@@ -142,34 +109,6 @@ export default function AdminLayout({ children }) {
     });
     setUnreadCount(0);
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const toggleMaintenanceMode = async () => {
-    setMaintenanceLoading(true);
-    try {
-      const token = localStorage.getItem("adminToken");
-      const newStatus = !maintenanceMode;
-      const res = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ isActive: newStatus, message: "We're currently performing scheduled maintenance. We'll be back shortly!", estimatedTime: "" })
-      });
-      if (res.ok) setMaintenanceMode(newStatus);
-    } catch (e) {} finally { setMaintenanceLoading(false); }
-  };
-
-  const toggleAuthEnabled = async () => {
-    setAuthLoading(true);
-    try {
-      const token = localStorage.getItem("adminToken");
-      const newStatus = !authEnabled;
-      const res = await fetch(`${BACKEND_URL}/api/admin/auth-settings`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ isEnabled: newStatus })
-      });
-      if (res.ok) setAuthEnabled(newStatus);
-    } catch (e) {} finally { setAuthLoading(false); }
   };
 
   const handleLogout = async () => {
@@ -194,6 +133,7 @@ export default function AdminLayout({ children }) {
     if (path.includes("/admin/banned-ips")) return "banned-ips";
     if (path.includes("/admin/email-templates")) return "email-templates";
     if (path.includes("/admin/blog")) return "blog";
+    if (path.includes("/admin/site-settings")) return "site-settings";
     if (path.includes("/admin/settings")) return "settings";
     return "overview";
   };
@@ -201,14 +141,15 @@ export default function AdminLayout({ children }) {
   const activeTab = getActiveTab();
 
   const tabs = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard, path: "/admin/overview" },
-    { id: "purchases", label: "Purchases", icon: ShoppingCart, path: "/admin/purchases" },
-    { id: "users", label: "Users", icon: Users, path: "/admin/users" },
-    { id: "saved-docs", label: "Saved Docs", icon: FolderArchive, path: "/admin/saved-docs" },
-    { id: "discounts", label: "Discounts", icon: Tag, path: "/admin/discounts" },
-    { id: "banned-ips", label: "Banned IPs", icon: Shield, path: "/admin/banned-ips" },
-    { id: "blog", label: "Blog", icon: FileText, path: "/admin/blog" },
-    { id: "email-templates", label: "Email Templates", icon: Mail, path: "/admin/email-templates" },
+    { id: "overview",        label: "Overview",         icon: LayoutDashboard,   path: "/admin/overview" },
+    { id: "purchases",       label: "Purchases",        icon: ShoppingCart,      path: "/admin/purchases" },
+    { id: "users",           label: "Users",            icon: Users,             path: "/admin/users" },
+    { id: "saved-docs",      label: "Saved Docs",       icon: FolderArchive,     path: "/admin/saved-docs" },
+    { id: "discounts",       label: "Discounts",        icon: Tag,               path: "/admin/discounts" },
+    { id: "banned-ips",      label: "Banned IPs",       icon: Shield,            path: "/admin/banned-ips" },
+    { id: "blog",            label: "Blog",             icon: FileText,          path: "/admin/blog" },
+    { id: "email-templates", label: "Email Templates",  icon: Mail,              path: "/admin/email-templates" },
+    { id: "site-settings",   label: "Site Settings",    icon: SlidersHorizontal, path: "/admin/site-settings" },
   ];
 
   const handleNavigation = (path) => {
@@ -221,16 +162,6 @@ export default function AdminLayout({ children }) {
     : adminProfile?.email
       ? adminProfile.email[0].toUpperCase()
       : "A";
-
-  const Toggle = ({ on, onClick, disabled, onColor = "bg-green-500", offColor = "bg-slate-300" }) => (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${on ? onColor : offColor} ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-    >
-      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${on ? "translate-x-5" : "translate-x-0"}`} />
-    </button>
-  );
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
@@ -252,22 +183,8 @@ export default function AdminLayout({ children }) {
             <img src={MintSlipLogo} alt="MintSlip" style={{ height: "30px", width: "auto" }} />
           </button>
 
-          {/* Right: controls */}
-          <div className="flex items-center gap-2 ml-auto">
-
-            {/* Desktop toggles */}
-            <div className="hidden md:flex items-center gap-3 mr-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
-                <Wrench className={`w-3.5 h-3.5 ${maintenanceMode ? "text-orange-500" : "text-slate-400"}`} />
-                <span className="text-xs font-medium text-slate-600 hidden lg:inline">Maintenance</span>
-                <Toggle on={maintenanceMode} onClick={toggleMaintenanceMode} disabled={maintenanceLoading} onColor="bg-orange-500" offColor="bg-slate-300" />
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
-                <UserX className={`w-3.5 h-3.5 ${!authEnabled ? "text-red-500" : "text-slate-400"}`} />
-                <span className="text-xs font-medium text-slate-600 hidden lg:inline">User Auth</span>
-                <Toggle on={authEnabled} onClick={toggleAuthEnabled} disabled={authLoading} onColor="bg-green-500" offColor="bg-red-400" />
-              </div>
-            </div>
+          {/* Right: Notifications + Admin dropdown */}
+          <div className="flex items-center gap-1 ml-auto">
 
             {/* Notifications */}
             <div className="relative" ref={notifRef}>
@@ -389,26 +306,12 @@ export default function AdminLayout({ children }) {
                 </button>
               ))}
               <div className="border-t border-slate-200 my-2" />
-              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-slate-50">
-                <div className="flex items-center gap-3">
-                  <Wrench className={`w-5 h-5 ${maintenanceMode ? "text-orange-500" : "text-slate-400"}`} />
-                  <span className="font-medium text-slate-700">Maintenance</span>
-                </div>
-                <Toggle on={maintenanceMode} onClick={toggleMaintenanceMode} disabled={maintenanceLoading} onColor="bg-orange-500" offColor="bg-slate-300" />
-              </div>
-              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-slate-50">
-                <div className="flex items-center gap-3">
-                  <UserX className={`w-5 h-5 ${!authEnabled ? "text-red-500" : "text-slate-400"}`} />
-                  <span className="font-medium text-slate-700">User Auth</span>
-                </div>
-                <Toggle on={authEnabled} onClick={toggleAuthEnabled} disabled={authLoading} />
-              </div>
               <button
                 onClick={() => { navigate("/admin/settings"); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <Settings className="w-5 h-5" />
-                <span className="font-medium">Settings</span>
+                <span className="font-medium">Account Settings</span>
               </button>
               <button
                 onClick={handleLogout}

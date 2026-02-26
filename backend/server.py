@@ -119,6 +119,7 @@ saved_documents_collection = db["saved_documents"]
 site_settings_collection = db["site_settings"]
 banned_ips_collection = db["banned_ips"]
 email_templates_collection = db["email_templates"]
+admin_notifications_collection = db["admin_notifications"]
 
 # Create uploads directory for user documents if not exists
 USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_documents")
@@ -1028,6 +1029,35 @@ class ChangeAdminPassword(BaseModel):
     currentPassword: str
     newPassword: str
 
+DOC_DISPLAY_NAMES = {
+    "paystub": "Pay Stub",
+    "canadian-paystub": "Canadian Pay Stub",
+    "resume": "AI Resume",
+    "w2": "W-2 Form",
+    "w9": "W-9 Form",
+    "1099-nec": "1099-NEC",
+    "1099-misc": "1099-MISC",
+    "bank-statement": "Bank Statement",
+    "offer-letter": "Offer Letter",
+    "vehicle-bill-of-sale": "Vehicle Bill of Sale",
+    "schedule-c": "Schedule C",
+    "utility-bill": "Service Expense",
+}
+
+async def create_notification(doc_type: str, customer_email: str = "", amount: float = 0):
+    display_name = DOC_DISPLAY_NAMES.get(doc_type, doc_type.replace("-", " ").title())
+    notification = {
+        "id": str(uuid.uuid4()),
+        "type": "document_created",
+        "docType": doc_type,
+        "docDisplayName": display_name,
+        "customerEmail": customer_email or "",
+        "amount": float(amount or 0),
+        "read": False,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await admin_notifications_collection.insert_one(notification)
+
 @app.put("/api/admin/change-password")
 async def change_admin_password(data: ChangeAdminPassword, session: dict = Depends(get_current_admin)):
     """Change admin password (requires current password)"""
@@ -1046,6 +1076,45 @@ async def change_admin_password(data: ChangeAdminPassword, session: dict = Depen
     )
     
     return {"success": True, "message": "Password changed successfully"}
+
+@app.get("/api/admin/notifications")
+async def get_admin_notifications(session: dict = Depends(get_current_admin)):
+    """Get recent admin notifications"""
+    notifications = await admin_notifications_collection.find(
+        {}, {"_id": 0}
+    ).sort("createdAt", -1).limit(30).to_list(30)
+    unread_count = await admin_notifications_collection.count_documents({"read": False})
+    return {"success": True, "notifications": notifications, "unreadCount": unread_count}
+
+@app.put("/api/admin/notifications/mark-read")
+async def mark_notifications_read(session: dict = Depends(get_current_admin)):
+    """Mark all notifications as read"""
+    await admin_notifications_collection.update_many({"read": False}, {"$set": {"read": True}})
+    return {"success": True}
+
+@app.get("/api/admin/profile")
+async def get_admin_profile(session: dict = Depends(get_current_admin)):
+    """Get admin profile"""
+    admin = await admins_collection.find_one({"id": session["adminId"]}, {"_id": 0, "password": 0})
+    return {"success": True, "profile": admin}
+
+@app.put("/api/admin/profile")
+async def update_admin_profile(request: dict, session: dict = Depends(get_current_admin)):
+    """Update admin profile (name, email, photo)"""
+    update = {}
+    if "name" in request:
+        update["name"] = request["name"]
+    if "email" in request:
+        new_email = request["email"].lower().strip()
+        existing = await admins_collection.find_one({"email": new_email, "id": {"$ne": session["adminId"]}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use")
+        update["email"] = new_email
+    if "photo" in request:
+        update["photo"] = request["photo"]
+    if update:
+        await admins_collection.update_one({"id": session["adminId"]}, {"$set": update})
+    return {"success": True}
 
 @app.post("/api/admin/setup")
 async def setup_admin():
@@ -2212,6 +2281,7 @@ async def get_checkout_status(session_id: str):
                         "createdAt": datetime.now(timezone.utc).isoformat()
                     }
                     await purchases_collection.insert_one(purchase)
+                    asyncio.create_task(create_notification(document_type, customer_email, purchase["amount"]))
                     print(f"Tracked purchase via status check: {document_type} x{quantity} - ${purchase['amount']} - userId: {user_id or 'guest'}")
                     
                     # Send download confirmation and review request emails
@@ -2360,6 +2430,7 @@ async def stripe_webhook(request: Request):
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await purchases_collection.insert_one(purchase)
+            asyncio.create_task(create_notification(document_type, customer_email, purchase["amount"]))
             print(f"Tracked guest purchase: {document_type} - ${purchase['amount']}")
             
             # Send emails for guest purchase
@@ -2489,6 +2560,7 @@ async def stripe_webhook(request: Request):
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await purchases_collection.insert_one(purchase)
+            asyncio.create_task(create_notification(metadata.get("documentType", ""), metadata.get("email", ""), payment_intent.amount / 100))
     
     return {"status": "received"}
 
@@ -2817,6 +2889,7 @@ async def track_purchase(data: PurchaseCreate, request: Request):
         "downloadedAt": datetime.now(timezone.utc).isoformat()
     }
     await purchases_collection.insert_one(purchase)
+    asyncio.create_task(create_notification(data.documentType, data.email or "", data.amount))
     
     # If user has subscription, decrement downloads
     if data.userId:

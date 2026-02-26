@@ -32,6 +32,7 @@ import AdminBlog from "@/pages/AdminBlog";
 import AdminBlogEditor from "@/pages/AdminBlogEditor";
 import AdminBannedIPs from "@/pages/AdminBannedIPs";
 import AdminEmailTemplates from "@/pages/AdminEmailTemplates";
+import AdminSettings from "@/pages/AdminSettings";
 import Banned from "@/pages/Banned";
 import UserLogin from "@/pages/UserLogin";
 import UserSignup from "@/pages/UserSignup";
@@ -208,6 +209,7 @@ function App() {
             <Route path="/admin/blog/new" element={<AdminBlogEditor />} />
             <Route path="/admin/blog/edit/:id" element={<AdminBlogEditor />} />
             <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
             {/* Banned Page */}
             <Route path="/banned" element={<Banned />} />
             {/* User Auth Routes (hidden - accessible via direct URL only) */}

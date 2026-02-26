@@ -35,6 +35,7 @@ import {
   Code
 } from "lucide-react";
 import TiptapEditor from "@/components/TiptapEditor";
+import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -393,9 +394,9 @@ export default function AdminBlogEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+    <AdminLayout>
+      {/* Page toolbar */}
+      <div className="bg-white border-b border-slate-200 -mx-6 -mt-6 px-6 py-4 mb-6 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -456,9 +457,9 @@ export default function AdminBlogEditor() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -856,6 +857,6 @@ export default function AdminBlogEditor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 }

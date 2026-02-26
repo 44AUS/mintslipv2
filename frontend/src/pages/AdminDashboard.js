@@ -92,6 +92,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -178,9 +179,6 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
   const [isLoading, setIsLoading] = useState(true);
   const [adminInfo, setAdminInfo] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [maintenanceLoading, setMaintenanceLoading] = useState(false);
   
   // Sync activeTab with URL changes
   useEffect(() => {
@@ -304,57 +302,7 @@ export default function AdminDashboard() {
     }
     
     verifySession(token);
-    fetchMaintenanceStatus(token);
   }, [navigate]);
-
-  // Fetch maintenance status
-  const fetchMaintenanceStatus = async (token) => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setMaintenanceMode(data.maintenance?.isActive || false);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching maintenance status:", error);
-    }
-  };
-
-  // Toggle maintenance mode
-  const toggleMaintenanceMode = async () => {
-    setMaintenanceLoading(true);
-    try {
-      const token = localStorage.getItem("adminToken");
-      const newStatus = !maintenanceMode;
-      
-      const response = await fetch(`${BACKEND_URL}/api/admin/maintenance`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          isActive: newStatus,
-          message: "We're currently performing scheduled maintenance. We'll be back shortly!",
-          estimatedTime: ""
-        })
-      });
-
-      if (response.ok) {
-        setMaintenanceMode(newStatus);
-        toast.success(`Maintenance mode ${newStatus ? 'enabled' : 'disabled'}`);
-      }
-    } catch (error) {
-      console.error("Error toggling maintenance mode:", error);
-      toast.error("Failed to toggle maintenance mode");
-    } finally {
-      setMaintenanceLoading(false);
-    }
-  };
 
   const verifySession = async (token) => {
     try {
@@ -1500,23 +1448,6 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleLogout = async () => {
-    const token = localStorage.getItem("adminToken");
-    
-    try {
-      await fetch(`${BACKEND_URL}/api/admin/logout`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-    
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminInfo");
-    navigate("/admin/login");
-  };
-
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleString();
@@ -1531,232 +1462,19 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <div className="flex items-center gap-3">
+      <AdminLayout adminInfo={adminInfo}>
+        <div className="flex items-center justify-center h-64 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-green-600" />
           <span className="text-lg text-slate-600">Loading dashboard...</span>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Favicon Logo */}
-            <img 
-              src="/favicon.ico" 
-              alt="MintSlip" 
-              className="w-10 h-10 rounded-xl"
-            />
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-slate-800">MintSlip Admin</h1>
-              <p className="text-sm text-slate-500">{adminInfo?.email}</p>
-            </div>
-            <div className="sm:hidden">
-              <h1 className="text-lg font-bold text-slate-800">Admin</h1>
-            </div>
-          </div>
-          
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Maintenance Mode Toggle */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-200">
-              <Wrench className={`w-4 h-4 ${maintenanceMode ? 'text-orange-500' : 'text-slate-400'}`} />
-              <span className="text-sm font-medium text-slate-600 hidden lg:inline">Maintenance</span>
-              <button
-                onClick={toggleMaintenanceMode}
-                disabled={maintenanceLoading}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
-                  maintenanceMode ? 'bg-orange-500' : 'bg-slate-300'
-                } ${maintenanceLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                title={maintenanceMode ? 'Disable maintenance mode' : 'Enable maintenance mode'}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                    maintenanceMode ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={loadDashboardData}
-              className="gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPasswordModalOpen(true)}
-              className="gap-2"
-            >
-              <Lock className="w-4 h-4" />
-              <span className="hidden lg:inline">Change Password</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
-          </div>
-
-          {/* Mobile Hamburger Button */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-slate-700" />
-            ) : (
-              <Menu className="w-6 h-6 text-slate-700" />
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white">
-            <div className="px-4 py-3 space-y-2">
-              {/* Mobile Navigation Tabs */}
-              {[
-                { id: "overview", label: "Overview", icon: LayoutDashboard, path: "/admin/overview" },
-                { id: "purchases", label: "Purchases", icon: ShoppingCart, path: "/admin/purchases" },
-                { id: "users", label: "Users", icon: Users, path: "/admin/users" },
-                { id: "saved-docs", label: "Saved Docs", icon: FolderArchive, path: "/admin/saved-docs" },
-                { id: "discounts", label: "Discounts", icon: Tag, path: "/admin/discounts" },
-                { id: "banned-ips", label: "Banned IPs", icon: Shield, path: "/admin/banned-ips" },
-                { id: "blog", label: "Blog", icon: FileText, path: "/admin/blog" }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    navigate(tab.path);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeTab === tab.id 
-                      ? "bg-green-600 text-white" 
-                      : "text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  <span className="font-medium">{tab.label}</span>
-                </button>
-              ))}
-              
-              {/* Mobile Actions Divider */}
-              <div className="border-t border-slate-200 my-3"></div>
-              
-              {/* Mobile Maintenance Toggle */}
-              <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-slate-50">
-                <div className="flex items-center gap-3">
-                  <Wrench className={`w-5 h-5 ${maintenanceMode ? 'text-orange-500' : 'text-slate-400'}`} />
-                  <span className="font-medium text-slate-700">Maintenance Mode</span>
-                </div>
-                <button
-                  onClick={toggleMaintenanceMode}
-                  disabled={maintenanceLoading}
-                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-                    maintenanceMode ? 'bg-orange-500' : 'bg-slate-300'
-                  } ${maintenanceLoading ? 'opacity-50' : ''}`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                      maintenanceMode ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Mobile Actions */}
-              <button
-                onClick={() => {
-                  loadDashboardData();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
-              >
-                <RefreshCw className="w-5 h-5" />
-                <span className="font-medium">Refresh</span>
-              </button>
-              <button
-                onClick={() => {
-                  setPasswordModalOpen(true);
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
-              >
-                <Lock className="w-5 h-5" />
-                <span className="font-medium">Change Password</span>
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">Logout</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
+    <AdminLayout adminInfo={adminInfo} onRefresh={loadDashboardData} showPasswordModal={() => setPasswordModalOpen(true)}>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Desktop Navigation Tabs */}
-        <div className="hidden md:flex gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm flex-wrap">
-          {[
-            { id: "overview", label: "Overview", icon: LayoutDashboard },
-            { id: "purchases", label: "Purchases", icon: ShoppingCart },
-            { id: "users", label: "Users", icon: Users },
-            { id: "saved-docs", label: "Saved Docs", icon: FolderArchive },
-            { id: "discounts", label: "Discounts", icon: Tag },
-            { id: "banned-ips", label: "Banned IPs", icon: Shield },
-            { id: "blog", label: "Blog", icon: FileText }
-          ].map((tab) => {
-            // Define the route for each tab
-            const getTabRoute = (tabId) => {
-              switch (tabId) {
-                case "overview": return "/admin/overview";
-                case "purchases": return "/admin/purchases";
-                case "users": return "/admin/users";
-                case "saved-docs": return "/admin/saved-docs";
-                case "discounts": return "/admin/discounts";
-                case "banned-ips": return "/admin/banned-ips";
-                case "blog": return "/admin/blog";
-                default: return "/admin/dashboard";
-              }
-            };
-            
-            return (
-              <Button
-                key={tab.id}
-                variant={activeTab === tab.id ? "default" : "ghost"}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  navigate(getTabRoute(tab.id));
-                }}
-                className={`gap-2 ${activeTab === tab.id ? "bg-green-600 hover:bg-green-700" : ""}`}
-              >
-                <tab.icon className="w-4 h-4" />
-                {tab.label}
-              </Button>
-            );
-          })}
-        </div>
 
         {/* Overview Tab */}
         {activeTab === "overview" && dashboardStats && (
@@ -3779,7 +3497,7 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminLayout>
   );
 }
 

@@ -34,6 +34,7 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 scheduled_emails_collection = db["scheduled_emails"]
 email_logs_collection = db["email_logs"]
+email_templates_collection = db["email_templates"]
 
 
 # ============================================================
@@ -484,6 +485,27 @@ def template_password_reset(user_name: str, reset_link: str, reset_code: str) ->
     }
 
 
+async def resolve_template(template_name: str, default_template: Dict, variables: Dict = None) -> Dict:
+    """Check DB for a custom template override; fall back to the hardcoded default."""
+    try:
+        custom = await email_templates_collection.find_one({"name": template_name})
+        if custom and custom.get("subject") and custom.get("html_body"):
+            html_body = custom["html_body"]
+            subject = custom["subject"]
+            if variables:
+                for key, value in variables.items():
+                    placeholder = "{" + key + "}"
+                    html_body = html_body.replace(placeholder, str(value or ""))
+                    subject = subject.replace(placeholder, str(value or ""))
+            return {
+                "subject": subject,
+                "html": get_base_template(html_body, custom.get("preview_text", ""))
+            }
+    except Exception as e:
+        logger.error(f"Error fetching custom template '{template_name}': {e}")
+    return default_template
+
+
 # ============================================================
 # EMAIL SENDING FUNCTIONS
 # ============================================================
@@ -630,21 +652,25 @@ async def process_scheduled_emails():
             
             template = None
             if email_type == "getting_started":
-                template = template_getting_started(template_data.get("user_name", ""))
+                default = template_getting_started(template_data.get("user_name", ""))
+                template = await resolve_template("getting_started", default, {"user_name": template_data.get("user_name", "there"), "SITE_URL": SITE_URL})
             elif email_type == "subscription_thank_you":
-                template = template_subscription_thank_you(
+                default = template_subscription_thank_you(
                     template_data.get("user_name", ""),
                     template_data.get("plan_name", ""),
                     template_data.get("plan_price", ""),
                     template_data.get("downloads_per_month", 0)
                 )
+                template = await resolve_template("subscription_thank_you", default, {"user_name": template_data.get("user_name", "there"), "plan_name": template_data.get("plan_name", ""), "plan_price": template_data.get("plan_price", ""), "downloads_per_month": str(template_data.get("downloads_per_month", 0)), "SITE_URL": SITE_URL})
             elif email_type == "signup_no_purchase":
-                template = template_signup_no_purchase(template_data.get("user_name", ""))
+                default = template_signup_no_purchase(template_data.get("user_name", ""))
+                template = await resolve_template("signup_no_purchase", default, {"user_name": template_data.get("user_name", "there"), "SITE_URL": SITE_URL})
             elif email_type == "abandoned_checkout":
-                template = template_abandoned_checkout(
-                    template_data.get("user_name", ""),
-                    template_data.get("document_type", "")
-                )
+                doc_type = template_data.get("document_type", "")
+                document_names_sc = {"paystub": "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "w2": "W-2 Form", "w9": "W-9 Form", "1099-nec": "1099-NEC Form", "1099-misc": "1099-MISC Form", "ai-resume": "AI Resume", "offer-letter": "Offer Letter", "schedule-c": "Schedule C", "vehicle-bill-of-sale": "Vehicle Bill of Sale"}
+                doc_name_sc = document_names_sc.get(doc_type, doc_type.replace("-", " ").title())
+                default = template_abandoned_checkout(template_data.get("user_name", ""), doc_type)
+                template = await resolve_template("abandoned_checkout", default, {"user_name": template_data.get("user_name", "there"), "doc_name": doc_name_sc, "SITE_URL": SITE_URL})
             
             if template:
                 result = await send_email(to_email, template["subject"], template["html"], email_type)
@@ -689,13 +715,15 @@ async def cancel_scheduled_email(user_id: str, email_type: str) -> bool:
 
 async def send_welcome_email(user_email: str, user_name: str):
     """Send welcome email immediately after signup"""
-    template = template_welcome(user_name, user_email)
+    default = template_welcome(user_name, user_email)
+    template = await resolve_template("welcome", default, {"user_name": user_name or "there", "user_email": user_email or "", "SITE_URL": SITE_URL})
     return await send_email(user_email, template["subject"], template["html"], "welcome")
 
 
 async def send_verification_email(user_email: str, user_name: str, verification_code: str, verification_link: str):
     """Send email verification immediately after signup"""
-    template = template_email_verification(user_name, verification_code, verification_link)
+    default = template_email_verification(user_name, verification_code, verification_link)
+    template = await resolve_template("email_verification", default, {"user_name": user_name or "there", "verification_code": verification_code, "verification_link": verification_link})
     return await send_email(user_email, template["subject"], template["html"], "verification")
 
 
@@ -739,8 +767,11 @@ async def send_download_confirmation(user_email: str, user_name: str, document_t
         is_guest: Whether user is a guest
         pdf_attachment: Optional dict with 'filename' and 'content' (base64 encoded PDF)
     """
-    template = template_download_confirmation(user_name, document_type, download_link, is_guest)
-    
+    default = template_download_confirmation(user_name, document_type, download_link, is_guest)
+    document_names = {"paystub": "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "w2": "W-2 Form", "w9": "W-9 Form", "1099-nec": "1099-NEC Form", "1099-misc": "1099-MISC Form", "ai-resume": "AI Resume", "offer-letter": "Offer Letter", "schedule-c": "Schedule C", "vehicle-bill-of-sale": "Vehicle Bill of Sale"}
+    doc_name = document_names.get(document_type, document_type.replace("-", " ").title())
+    template = await resolve_template("download_confirmation", default, {"user_name": user_name or "there", "doc_name": doc_name, "SITE_URL": SITE_URL})
+
     attachments = None
     if pdf_attachment:
         attachments = [{
@@ -800,19 +831,24 @@ async def send_review_request(user_email: str, user_name: str, document_type: st
             logger.info(f"Review request already sent to {user_email}, skipping")
             return {"success": True, "skipped": True, "reason": "already_sent"}
     
-    template = template_review_request(user_name, document_type)
+    document_names_rv = {"paystub": "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "w2": "W-2 Form", "w9": "W-9 Form", "1099-nec": "1099-NEC Form", "1099-misc": "1099-MISC Form", "ai-resume": "AI Resume", "offer-letter": "Offer Letter", "schedule-c": "Schedule C", "vehicle-bill-of-sale": "Vehicle Bill of Sale"}
+    doc_name_rv = document_names_rv.get(document_type, document_type.replace("-", " ").title())
+    default = template_review_request(user_name, document_type)
+    template = await resolve_template("review_request", default, {"user_name": user_name or "there", "doc_name": doc_name_rv, "TRUSTPILOT_URL": TRUSTPILOT_URL})
     return await send_email(user_email, template["subject"], template["html"], "review_request")
 
 
 async def send_password_changed_email(user_email: str, user_name: str):
     """Send password changed notification immediately"""
-    template = template_password_changed(user_name)
+    default = template_password_changed(user_name)
+    template = await resolve_template("password_changed", default, {"user_name": user_name or "there", "SITE_URL": SITE_URL})
     return await send_email(user_email, template["subject"], template["html"], "password_changed")
 
 
 async def send_password_reset_email(user_email: str, user_name: str, reset_link: str, reset_code: str):
     """Send password reset email"""
-    template = template_password_reset(user_name, reset_link, reset_code)
+    default = template_password_reset(user_name, reset_link, reset_code)
+    template = await resolve_template("password_reset", default, {"user_name": user_name or "there", "reset_link": reset_link, "reset_code": reset_code})
     return await send_email(user_email, template["subject"], template["html"], "password_reset")
 
 

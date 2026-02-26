@@ -16,6 +16,7 @@ import {
   FolderArchive,
   Wrench,
   UserX,
+  Mail,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -131,6 +132,7 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
     if (path.includes("/admin/saved-docs")) return "saved-docs";
     if (path.includes("/admin/discounts")) return "discounts";
     if (path.includes("/admin/banned-ips")) return "banned-ips";
+    if (path.includes("/admin/email-templates")) return "email-templates";
     if (path.includes("/admin/blog")) return "blog";
     return "overview";
   };
@@ -161,7 +163,8 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
     { id: "saved-docs", label: "Saved Docs", icon: FolderArchive, path: "/admin/saved-docs" },
     { id: "discounts", label: "Discounts", icon: Tag, path: "/admin/discounts" },
     { id: "banned-ips", label: "Banned IPs", icon: Shield, path: "/admin/banned-ips" },
-    { id: "blog", label: "Blog", icon: FileText, path: "/admin/blog" }
+    { id: "blog", label: "Blog", icon: FileText, path: "/admin/blog" },
+    { id: "email-templates", label: "Email Templates", icon: Mail, path: "/admin/email-templates" },
   ];
 
   const handleNavigation = (path) => {
@@ -170,7 +173,7 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -381,24 +384,31 @@ export default function AdminLayout({ children, onRefresh, adminInfo, showPasswo
         )}
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Desktop Navigation Tabs */}
-        <div className="hidden md:flex gap-2 mb-6 bg-white rounded-xl p-2 shadow-sm flex-wrap">
-          {tabs.map((tab) => (
-            <Button
-              key={tab.id}
-              variant={activeTab === tab.id ? "default" : "ghost"}
-              onClick={() => navigate(tab.path)}
-              className={`gap-2 ${activeTab === tab.id ? "bg-green-600 hover:bg-green-700" : ""}`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </Button>
-          ))}
-        </div>
+      <div className="flex flex-1">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex flex-col w-56 bg-white border-r border-slate-200 flex-shrink-0">
+          <nav className="p-3 space-y-0.5 flex-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => navigate(tab.path)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-green-600 text-white font-medium"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+                }`}
+              >
+                <tab.icon className="w-4 h-4 flex-shrink-0" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </aside>
 
         {/* Page Content */}
-        {children}
+        <main className="flex-1 p-6 overflow-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

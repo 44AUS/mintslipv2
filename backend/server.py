@@ -118,6 +118,7 @@ blog_images_collection = db["blog_images"]
 saved_documents_collection = db["saved_documents"]
 site_settings_collection = db["site_settings"]
 banned_ips_collection = db["banned_ips"]
+email_templates_collection = db["email_templates"]
 
 # Create uploads directory for user documents if not exists
 USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_documents")
@@ -4611,6 +4612,66 @@ async def update_auth_settings(request: dict, session: dict = Depends(get_curren
     print(f"User auth {status} by admin {session.get('adminId', 'unknown')}")
 
     return {"success": True, "authEnabled": auth_settings["isEnabled"]}
+
+
+# ========== EMAIL TEMPLATES ==========
+
+EMAIL_TEMPLATE_DEFS = [
+    {"name": "welcome",               "display_name": "Welcome Email",                  "variables": ["user_name", "user_email", "SITE_URL"]},
+    {"name": "email_verification",    "display_name": "Email Verification",             "variables": ["user_name", "verification_code", "verification_link"]},
+    {"name": "getting_started",       "display_name": "Getting Started Guide",          "variables": ["user_name", "SITE_URL"]},
+    {"name": "subscription_thank_you","display_name": "Subscription Thank You",         "variables": ["user_name", "plan_name", "plan_price", "downloads_per_month", "SITE_URL"]},
+    {"name": "download_confirmation", "display_name": "Download Confirmation",          "variables": ["user_name", "doc_name", "SITE_URL"]},
+    {"name": "signup_no_purchase",    "display_name": "Signup – No Purchase Reminder",  "variables": ["user_name", "SITE_URL"]},
+    {"name": "abandoned_checkout",    "display_name": "Abandoned Checkout",             "variables": ["user_name", "doc_name", "SITE_URL"]},
+    {"name": "review_request",        "display_name": "Review Request",                 "variables": ["user_name", "doc_name", "TRUSTPILOT_URL"]},
+    {"name": "password_changed",      "display_name": "Password Changed",               "variables": ["user_name", "SITE_URL"]},
+    {"name": "password_reset",        "display_name": "Password Reset",                 "variables": ["user_name", "reset_link", "reset_code"]},
+]
+
+
+@app.get("/api/admin/email-templates")
+async def get_email_templates(session: dict = Depends(get_current_admin)):
+    """Get all email templates with their current overrides (admin only)"""
+    results = []
+    for tmpl in EMAIL_TEMPLATE_DEFS:
+        custom = await email_templates_collection.find_one({"name": tmpl["name"]}, {"_id": 0})
+        entry = {**tmpl, "is_custom": bool(custom)}
+        if custom:
+            entry["subject"] = custom.get("subject", "")
+            entry["html_body"] = custom.get("html_body", "")
+            entry["preview_text"] = custom.get("preview_text", "")
+        results.append(entry)
+    return {"success": True, "templates": results}
+
+
+@app.put("/api/admin/email-templates/{name}")
+async def update_email_template(name: str, request: dict, session: dict = Depends(get_current_admin)):
+    """Save a custom email template override (admin only)"""
+    valid_names = {t["name"] for t in EMAIL_TEMPLATE_DEFS}
+    if name not in valid_names:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    await email_templates_collection.update_one(
+        {"name": name},
+        {"$set": {
+            "name": name,
+            "subject": request.get("subject", ""),
+            "html_body": request.get("html_body", ""),
+            "preview_text": request.get("preview_text", ""),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_by": session.get("adminId", "")
+        }},
+        upsert=True
+    )
+    return {"success": True}
+
+
+@app.delete("/api/admin/email-templates/{name}")
+async def reset_email_template(name: str, session: dict = Depends(get_current_admin)):
+    """Delete a custom template override, reverting to the hardcoded default (admin only)"""
+    await email_templates_collection.delete_one({"name": name})
+    return {"success": True}
 
 
 @app.post("/api/parse-resume")

@@ -57,7 +57,6 @@ def get_base_template(content: str, preview_text: str = "") -> str:
         body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
         .header {{ text-align: center; padding: 20px 0; border-bottom: 1px solid #e5e7eb; }}
-        .logo {{ font-size: 24px; font-weight: bold; color: #10b981; }}
         .content {{ padding: 30px 20px; }}
         .button {{ display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; }}
         .button:hover {{ background-color: #059669; }}
@@ -72,7 +71,7 @@ def get_base_template(content: str, preview_text: str = "") -> str:
     <span style="display: none; max-height: 0; overflow: hidden;">{preview_text}</span>
     <div class="container">
         <div class="header">
-            <div class="logo">🍃 MintSlip</div>
+            <img src="{SITE_URL}/mintslip-logo.png" alt="MintSlip" style="height: 40px; width: auto;" />
         </div>
         <div class="content">
             {content}

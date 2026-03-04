@@ -214,7 +214,6 @@ const BASE_PREVIEW_STYLES = `
   body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
   .container{max-width:600px;margin:0 auto;padding:20px;}
   .header{text-align:center;padding:20px 0;border-bottom:1px solid #e5e7eb;}
-  .logo{font-size:24px;font-weight:bold;color:#10b981;}
   .content{padding:30px 20px;}
   .button{display:inline-block;padding:12px 24px;background-color:#10b981;color:white;text-decoration:none;border-radius:6px;font-weight:500;}
   .footer{padding:20px;text-align:center;color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;}
@@ -225,7 +224,7 @@ const BASE_PREVIEW_STYLES = `
 `;
 
 function buildPreviewHtml(htmlBody) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="background-color:#f9fafb;"><div class="container"><div class="header"><div class="logo">🍃 MintSlip</div></div><div class="content">${htmlBody}</div><div class="footer"><p>© ${new Date().getFullYear()} MintSlip. All rights reserved.</p></div></div></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="background-color:#f9fafb;"><div class="container"><div class="header"><img src="/mintslip-logo.png" alt="MintSlip" style="height:40px;width:auto;" /></div><div class="content">${htmlBody}</div><div class="footer"><p>© ${new Date().getFullYear()} MintSlip. All rights reserved.</p></div></div></body></html>`;
 }
 
 function formatDelay(minutes) {

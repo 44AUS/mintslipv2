@@ -42,7 +42,9 @@ from email_service import (
     send_password_changed_email,
     send_password_reset_email,
     cancel_signup_no_purchase_reminder,
-    process_scheduled_emails
+    process_scheduled_emails,
+    send_email,
+    get_base_template
 )
 
 # Import PDF Engine
@@ -4778,6 +4780,96 @@ async def reset_email_template(name: str, session: dict = Depends(get_current_ad
     """Delete a custom template override, reverting to the hardcoded default (admin only)"""
     await email_templates_collection.delete_one({"name": name})
     return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Mass Email
+# ─────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/mass-email/recipients")
+async def get_mass_email_recipients(session: dict = Depends(get_current_admin)):
+    """Return unique purchaser emails enriched with names from users collection."""
+    # Aggregate unique emails from purchases (field: email)
+    pipeline = [
+        {"$match": {"email": {"$exists": True, "$nin": [None, ""]}}},
+        {"$group": {"_id": {"$toLower": "$email"}, "latestPurchase": {"$max": "$createdAt"}}},
+        {"$sort": {"latestPurchase": -1}},
+    ]
+    email_docs = await purchases_collection.aggregate(pipeline).to_list(length=10000)
+
+    emails = [doc["_id"] for doc in email_docs if doc["_id"]]
+
+    # Bulk-fetch matching users for names
+    user_docs = await users_collection.find(
+        {"email": {"$in": emails}},
+        {"email": 1, "name": 1}
+    ).to_list(length=10000)
+    name_map = {u["email"].lower(): u.get("name", "") for u in user_docs}
+
+    recipients = []
+    for doc in email_docs:
+        em = doc["_id"]
+        recipients.append({
+            "email": em,
+            "name": name_map.get(em, ""),
+            "latestPurchase": doc.get("latestPurchase"),
+        })
+
+    return {"success": True, "recipients": recipients}
+
+
+# Track active mass-email jobs so the frontend can poll status
+_mass_email_jobs: dict = {}
+
+@app.post("/api/admin/mass-email/send")
+async def send_mass_email(request: dict, background_tasks: BackgroundTasks, session: dict = Depends(get_current_admin)):
+    """
+    Kick off a background mass-email send.
+    Body: { subject, html_body, preview_text?, excluded_emails: [] }
+    Returns a job_id the client can poll with GET /api/admin/mass-email/status/{job_id}
+    """
+    subject = (request.get("subject") or "").strip()
+    html_body = (request.get("html_body") or "").strip()
+    preview_text = (request.get("preview_text") or "").strip()
+    excluded = {e.lower() for e in (request.get("excluded_emails") or [])}
+
+    if not subject or not html_body:
+        raise HTTPException(status_code=400, detail="subject and html_body are required")
+
+    # Build recipient list (re-use the aggregation logic inline)
+    pipeline = [
+        {"$match": {"email": {"$exists": True, "$nin": [None, ""]}}},
+        {"$group": {"_id": {"$toLower": "$email"}}},
+    ]
+    email_docs = await purchases_collection.aggregate(pipeline).to_list(length=10000)
+    all_emails = [doc["_id"] for doc in email_docs if doc["_id"] and doc["_id"] not in excluded]
+
+    import uuid
+    job_id = str(uuid.uuid4())
+    _mass_email_jobs[job_id] = {"status": "running", "total": len(all_emails), "sent": 0, "failed": 0, "errors": []}
+
+    async def _do_send():
+        job = _mass_email_jobs[job_id]
+        full_html = get_base_template(html_body, preview_text)
+        for email_addr in all_emails:
+            try:
+                await send_email(email_addr, subject, full_html, email_type="mass_email")
+                job["sent"] += 1
+            except Exception as ex:
+                job["failed"] += 1
+                job["errors"].append({"email": email_addr, "error": str(ex)})
+        job["status"] = "done"
+
+    background_tasks.add_task(_do_send)
+    return {"success": True, "job_id": job_id, "total": len(all_emails)}
+
+
+@app.get("/api/admin/mass-email/status/{job_id}")
+async def get_mass_email_status(job_id: str, session: dict = Depends(get_current_admin)):
+    job = _mass_email_jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"success": True, **job}
 
 
 @app.post("/api/parse-resume")

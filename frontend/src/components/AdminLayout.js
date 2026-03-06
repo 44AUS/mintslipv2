@@ -5,7 +5,7 @@ import {
   LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
   Shield, Menu, X, FolderArchive, Mail, SlidersHorizontal,
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
-  FileBarChart, Building2, Car, Briefcase, User,
+  FileBarChart, Building2, Car, Briefcase, User, Send,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -132,6 +132,7 @@ export default function AdminLayout({ children }) {
     if (path.includes("/admin/discounts")) return "discounts";
     if (path.includes("/admin/banned-ips")) return "banned-ips";
     if (path.includes("/admin/email-templates")) return "email-templates";
+    if (path.includes("/admin/mass-email")) return "mass-email";
     if (path.includes("/admin/blog")) return "blog";
     if (path.includes("/admin/site-settings")) return "site-settings";
     if (path.includes("/admin/settings")) return "settings";
@@ -149,6 +150,7 @@ export default function AdminLayout({ children }) {
     { id: "banned-ips",      label: "Banned IPs",       icon: Shield,            path: "/admin/banned-ips" },
     { id: "blog",            label: "Blog",             icon: FileText,          path: "/admin/blog" },
     { id: "email-templates", label: "Email Templates",  icon: Mail,              path: "/admin/email-templates" },
+    { id: "mass-email",      label: "Mass Email",       icon: Send,              path: "/admin/mass-email" },
     { id: "site-settings",   label: "Site Settings",    icon: SlidersHorizontal, path: "/admin/site-settings" },
   ];
 

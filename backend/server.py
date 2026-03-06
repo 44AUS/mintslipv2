@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Query, Request, Header
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Query, Request, Header, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
@@ -4844,7 +4844,6 @@ async def send_mass_email(request: dict, background_tasks: BackgroundTasks, sess
     email_docs = await purchases_collection.aggregate(pipeline).to_list(length=10000)
     all_emails = [doc["_id"] for doc in email_docs if doc["_id"] and doc["_id"] not in excluded]
 
-    import uuid
     job_id = str(uuid.uuid4())
     _mass_email_jobs[job_id] = {"status": "running", "total": len(all_emails), "sent": 0, "failed": 0, "errors": []}
 

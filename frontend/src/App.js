@@ -37,6 +37,8 @@ import AdminModerators from "@/pages/AdminModerators";
 import AdminAuditLog from "@/pages/AdminAuditLog";
 import AdminSupport from "@/pages/AdminSupport";
 import AdminExport from "@/pages/AdminExport";
+import AdminRevenue from "@/pages/AdminRevenue";
+import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminSiteSettings from "@/pages/AdminSiteSettings";
 import Banned from "@/pages/Banned";
@@ -220,6 +222,8 @@ function App() {
             <Route path="/admin/audit-log" element={<AdminAuditLog />} />
             <Route path="/admin/support" element={<AdminSupport />} />
             <Route path="/admin/export" element={<AdminExport />} />
+            <Route path="/admin/revenue" element={<AdminRevenue />} />
+            <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
             {/* Banned Page */}

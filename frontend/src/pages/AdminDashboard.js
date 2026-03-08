@@ -250,6 +250,12 @@ export default function AdminDashboard() {
   });
   const [isAddingPurchase, setIsAddingPurchase] = useState(false);
   
+  // Refund modal state
+  const [refundModal, setRefundModal] = useState(null); // purchase object
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundReason, setRefundReason] = useState("requested_by_customer");
+  const [refundLoading, setRefundLoading] = useState(false);
+
   // Users filter state
   const [usersSearchQuery, setUsersSearchQuery] = useState("");
   const [usersSearchDebounced, setUsersSearchDebounced] = useState("");
@@ -1359,6 +1365,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleRefund = async () => {
+    if (!refundModal) return;
+    const amount = parseFloat(refundAmount);
+    if (!amount || amount <= 0) { toast.error("Enter a valid refund amount"); return; }
+    if (amount > refundModal.amount) { toast.error("Amount exceeds original purchase"); return; }
+    setRefundLoading(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/purchases/${refundModal.id}/refund`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ amount_dollars: amount, reason: refundReason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Refund failed");
+      toast.success(`Refund of $${amount.toFixed(2)} issued`);
+      setPurchases(prev => prev.map(p => p.id === refundModal.id ? { ...p, refunded: true, refundedAmount: amount } : p));
+      setRefundModal(null);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setRefundLoading(false);
+    }
+  };
+
   const openEditPurchase = (purchase) => {
     setEditingPurchase(purchase);
     setNewPurchase({
@@ -2166,7 +2197,16 @@ export default function AdminDashboard() {
                           {purchase.ipAddress || "-"}
                         </span>
                       </TableCell>
-                      <TableCell className="font-medium">{formatCurrency(purchase.amount)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-medium">{formatCurrency(purchase.amount)}</span>
+                          {purchase.refunded && (
+                            <span className="text-xs px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded w-fit">
+                              Refunded {purchase.refundedAmount ? `$${Number(purchase.refundedAmount).toFixed(2)}` : ""}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {purchase.discountCode ? (
                           <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">
@@ -2178,6 +2218,16 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={purchase.refunded || !purchase.stripePaymentIntentId}
+                            title={purchase.refunded ? "Already refunded" : !purchase.stripePaymentIntentId ? "No payment record" : "Issue refund"}
+                            onClick={() => { setRefundModal(purchase); setRefundAmount(purchase.amount?.toString() || ""); setRefundReason("requested_by_customer"); }}
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 disabled:opacity-40"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -3497,6 +3547,61 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Refund Modal */}
+      <Dialog open={!!refundModal} onOpenChange={(open) => { if (!open) setRefundModal(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Issue Refund</DialogTitle>
+            <DialogDescription>
+              Issue a full or partial Stripe refund for this purchase.
+            </DialogDescription>
+          </DialogHeader>
+          {refundModal && (
+            <div className="space-y-4 py-2">
+              <div className="bg-slate-50 rounded-lg p-3 text-sm space-y-1">
+                <div className="flex justify-between"><span className="text-slate-500">Document</span><span className="font-medium">{DOCUMENT_TYPES[refundModal.documentType] || refundModal.documentType}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">Customer</span><span>{refundModal.email || refundModal.paypalEmail || "N/A"}</span></div>
+                <div className="flex justify-between"><span className="text-slate-500">Original Amount</span><span className="font-medium">{formatCurrency(refundModal.amount)}</span></div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">Refund Amount ($)</label>
+                <input
+                  type="number"
+                  min="0.01"
+                  max={refundModal.amount}
+                  step="0.01"
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">Reason</label>
+                <select
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="requested_by_customer">Customer Request</option>
+                  <option value="duplicate">Duplicate</option>
+                  <option value="fraudulent">Fraudulent</option>
+                </select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRefundModal(null)} disabled={refundLoading}>Cancel</Button>
+            <Button
+              onClick={handleRefund}
+              disabled={refundLoading}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              {refundLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : "Issue Refund"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </AdminLayout>
   );
 }

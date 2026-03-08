@@ -6,7 +6,7 @@ import {
   Shield, Menu, X, FolderArchive, Mail, SlidersHorizontal,
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
   FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
-  ClipboardList, Inbox, Download,
+  ClipboardList, Inbox, Download, TrendingUp, CreditCard,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -142,6 +142,8 @@ export default function AdminLayout({ children }) {
     if (path.includes("/admin/audit-log")) return "audit-log";
     if (path.includes("/admin/support")) return "support";
     if (path.includes("/admin/export")) return "export";
+    if (path.includes("/admin/revenue")) return "revenue";
+    if (path.includes("/admin/subscriptions")) return "subscriptions";
     if (path.includes("/admin/settings")) return "settings";
     return "overview";
   };
@@ -169,6 +171,8 @@ export default function AdminLayout({ children }) {
     { id: "site-settings",   label: "Site Settings",    icon: SlidersHorizontal, path: "/admin/site-settings",    perm: "view_site_settings" },
     { id: "moderators",      label: "Moderators",       icon: UserCog,           path: "/admin/moderators",       perm: "admin_only" },
     { id: "audit-log",       label: "Audit Log",        icon: ClipboardList,     path: "/admin/audit-log",        perm: "admin_only" },
+    { id: "revenue",         label: "Revenue",          icon: TrendingUp,        path: "/admin/revenue",          perm: "view_purchases" },
+    { id: "subscriptions",   label: "Subscriptions",    icon: CreditCard,        path: "/admin/subscriptions",    perm: "admin_only" },
     { id: "support",         label: "Support Inbox",    icon: Inbox,             path: "/admin/support",          perm: null },
     { id: "export",          label: "Data Export",      icon: Download,          path: "/admin/export",           perm: "view_purchases" },
   ];

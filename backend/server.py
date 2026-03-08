@@ -5327,6 +5327,241 @@ async def export_revenue_csv(session: dict = Depends(get_current_admin)):
     )
 
 
+# ─────────────────────────────────────────────────────────────
+# Revenue Summary
+# ─────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/revenue/summary")
+async def get_revenue_summary(session: dict = Depends(get_current_admin)):
+    """Aggregated revenue metrics and breakdowns for the Revenue page."""
+    check_permission(session, "view_purchases")
+
+    now = datetime.now(timezone.utc)
+
+    # Month boundaries
+    this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    last_month_end = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_month_start = (last_month_end - timedelta(days=1)).replace(day=1).isoformat()
+    last_month_end_iso = last_month_end.isoformat()
+
+    # All-time revenue
+    agg = await purchases_collection.aggregate([
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}, "count": {"$sum": 1}}}
+    ]).to_list(1)
+    total_revenue = agg[0]["total"] if agg else 0.0
+    total_purchases = agg[0]["count"] if agg else 0
+    avg_order_value = (total_revenue / total_purchases) if total_purchases else 0.0
+
+    # This month revenue
+    agg_month = await purchases_collection.aggregate([
+        {"$match": {"createdAt": {"$gte": this_month_start}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]).to_list(1)
+    this_month_revenue = agg_month[0]["total"] if agg_month else 0.0
+
+    # Last month revenue
+    agg_last = await purchases_collection.aggregate([
+        {"$match": {"createdAt": {"$gte": last_month_start, "$lt": last_month_end_iso}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]).to_list(1)
+    last_month_revenue = agg_last[0]["total"] if agg_last else 0.0
+
+    # Daily data — last 90 days
+    ninety_days_ago = (now - timedelta(days=90)).isoformat()
+    daily_raw = await purchases_collection.aggregate([
+        {"$match": {"createdAt": {"$gte": ninety_days_ago}}},
+        {"$group": {
+            "_id": {"$substr": ["$createdAt", 0, 10]},
+            "revenue": {"$sum": "$amount"},
+            "count": {"$sum": 1},
+        }},
+        {"$sort": {"_id": 1}},
+    ]).to_list(90)
+    daily_data = [{"date": d["_id"], "revenue": round(d["revenue"], 2), "count": d["count"]} for d in daily_raw]
+
+    # Revenue and count by document type
+    by_type_raw = await purchases_collection.aggregate([
+        {"$group": {
+            "_id": "$documentType",
+            "revenue": {"$sum": "$amount"},
+            "count": {"$sum": 1},
+        }},
+        {"$sort": {"revenue": -1}},
+    ]).to_list(50)
+    by_doc_type = [
+        {
+            "documentType": d["_id"] or "unknown",
+            "revenue": round(d["revenue"], 2),
+            "count": d["count"],
+            "avgPrice": round(d["revenue"] / d["count"], 2) if d["count"] else 0,
+        }
+        for d in by_type_raw
+    ]
+
+    return {
+        "success": True,
+        "totalRevenue": round(total_revenue, 2),
+        "totalPurchases": total_purchases,
+        "avgOrderValue": round(avg_order_value, 2),
+        "thisMonthRevenue": round(this_month_revenue, 2),
+        "lastMonthRevenue": round(last_month_revenue, 2),
+        "dailyData": daily_data,
+        "byDocType": by_doc_type,
+    }
+
+
+# ─────────────────────────────────────────────────────────────
+# Purchase Refunds
+# ─────────────────────────────────────────────────────────────
+
+@app.post("/api/admin/purchases/{purchase_id}/refund")
+async def refund_purchase(purchase_id: str, request: dict, session: dict = Depends(get_current_admin)):
+    """Issue a Stripe refund for a purchase (full or partial)."""
+    check_permission(session, "manage_discounts")
+
+    purchase = await purchases_collection.find_one({"id": purchase_id})
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    if purchase.get("refunded"):
+        raise HTTPException(status_code=400, detail="Purchase has already been refunded")
+
+    pi_id = purchase.get("stripePaymentIntentId") or purchase.get("paymentIntentId")
+    if not pi_id:
+        raise HTTPException(status_code=400, detail="No Stripe payment record found for this purchase")
+
+    amount_dollars = float(request.get("amount_dollars", purchase.get("amount", 0)))
+    if amount_dollars <= 0:
+        raise HTTPException(status_code=400, detail="Refund amount must be greater than 0")
+    if amount_dollars > purchase.get("amount", 0):
+        raise HTTPException(status_code=400, detail="Refund amount exceeds original purchase amount")
+
+    reason = request.get("reason", "requested_by_customer")
+
+    try:
+        refund = await asyncio.to_thread(
+            stripe.Refund.create,
+            payment_intent=pi_id,
+            amount=int(round(amount_dollars * 100)),
+            reason=reason if reason in ("duplicate", "fraudulent", "requested_by_customer") else "requested_by_customer",
+        )
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    await purchases_collection.update_one(
+        {"id": purchase_id},
+        {"$set": {
+            "refunded": True,
+            "refundedAmount": amount_dollars,
+            "refundedAt": datetime.now(timezone.utc).isoformat(),
+            "stripeRefundId": refund.id,
+        }},
+    )
+    await log_action(session, "refund_purchase", "purchase", purchase_id, f"${amount_dollars:.2f} refund_id={refund.id}")
+    return {"success": True, "refund_id": refund.id, "amount": amount_dollars}
+
+
+# ─────────────────────────────────────────────────────────────
+# Admin Subscription Management
+# ─────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/subscriptions")
+async def admin_list_subscriptions(session: dict = Depends(require_admin_only)):
+    """List all users with subscriptions enriched with live Stripe status."""
+    users = await users_collection.find(
+        {"subscription.stripeSubscriptionId": {"$exists": True, "$ne": ""}},
+        {"_id": 0, "password": 0},
+    ).sort("subscription.current_period_end", 1).to_list(1000)
+
+    async def enrich(user):
+        sub = user.get("subscription", {})
+        sub_id = sub.get("stripeSubscriptionId")
+        stripe_status = None
+        is_past_due = False
+        cancel_at_period_end = False
+        current_period_end = sub.get("current_period_end")
+        try:
+            if sub_id:
+                stripe_sub = await asyncio.to_thread(
+                    stripe.Subscription.retrieve, sub_id,
+                    expand=["latest_invoice.payment_intent"]
+                )
+                stripe_status = stripe_sub.status
+                is_past_due = stripe_status in ("past_due", "unpaid")
+                cancel_at_period_end = stripe_sub.cancel_at_period_end
+                current_period_end = datetime.fromtimestamp(stripe_sub.current_period_end, tz=timezone.utc).isoformat() if stripe_sub.current_period_end else current_period_end
+        except Exception:
+            stripe_status = "unknown"
+        return {
+            "userId": user.get("id"),
+            "name": user.get("name", ""),
+            "email": user.get("email", ""),
+            "tier": sub.get("tier", ""),
+            "dbStatus": sub.get("status", ""),
+            "stripeStatus": stripe_status,
+            "isPastDue": is_past_due,
+            "cancelAtPeriodEnd": cancel_at_period_end,
+            "currentPeriodEnd": current_period_end,
+            "stripeSubscriptionId": sub.get("stripeSubscriptionId", ""),
+            "stripeCustomerId": sub.get("stripeCustomerId", ""),
+            "createdAt": sub.get("createdAt", ""),
+        }
+
+    results = await asyncio.gather(*[enrich(u) for u in users])
+    # Sort: past_due first, then by period end
+    results = sorted(results, key=lambda x: (not x["isPastDue"], x["currentPeriodEnd"] or ""))
+    return {"success": True, "subscriptions": results, "total": len(results)}
+
+
+@app.post("/api/admin/subscriptions/{user_id}/cancel")
+async def admin_cancel_subscription(user_id: str, request: dict, session: dict = Depends(require_admin_only)):
+    """Cancel a user's subscription. immediate=True cancels now, False = at period end."""
+    user = await users_collection.find_one({"id": user_id})
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=404, detail="User or subscription not found")
+    sub_id = user["subscription"].get("stripeSubscriptionId")
+    if not sub_id:
+        raise HTTPException(status_code=400, detail="No Stripe subscription found")
+
+    immediate = bool(request.get("immediate", False))
+    try:
+        if immediate:
+            await asyncio.to_thread(stripe.Subscription.delete, sub_id)
+            new_status = "cancelled"
+        else:
+            await asyncio.to_thread(stripe.Subscription.modify, sub_id, cancel_at_period_end=True)
+            new_status = "cancelling"
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    update: dict = {"subscription.status": new_status}
+    if immediate:
+        update["subscription.cancelledAt"] = datetime.now(timezone.utc).isoformat()
+    await users_collection.update_one({"id": user_id}, {"$set": update})
+    action = "cancel_subscription_now" if immediate else "cancel_subscription"
+    await log_action(session, action, "subscription", user_id, user.get("email", ""))
+    return {"success": True, "status": new_status}
+
+
+@app.post("/api/admin/subscriptions/{user_id}/reactivate")
+async def admin_reactivate_subscription(user_id: str, session: dict = Depends(require_admin_only)):
+    """Reactivate a subscription that is set to cancel at period end."""
+    user = await users_collection.find_one({"id": user_id})
+    if not user or not user.get("subscription"):
+        raise HTTPException(status_code=404, detail="User or subscription not found")
+    sub_id = user["subscription"].get("stripeSubscriptionId")
+    if not sub_id:
+        raise HTTPException(status_code=400, detail="No Stripe subscription found")
+
+    try:
+        await asyncio.to_thread(stripe.Subscription.modify, sub_id, cancel_at_period_end=False)
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    await users_collection.update_one({"id": user_id}, {"$set": {"subscription.status": "active"}})
+    await log_action(session, "reactivate_subscription", "subscription", user_id, user.get("email", ""))
+    return {"success": True, "status": "active"}
+
+
 @app.post("/api/parse-resume")
 async def parse_resume(file: UploadFile = File(...)):
     """Parse an uploaded resume (PDF or DOCX) and extract structured data"""

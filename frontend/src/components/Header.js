@@ -215,11 +215,26 @@ function DesktopNavLinks({ location, onNavigate }) {
 
 // User account dropdown component for desktop
 function UserAccountDropdown({ user, onNavigate, onLogout, authEnabled }) {
-  // Hide Login/Register buttons when user is not logged in
   if (!user) {
-    return null;
+    if (!authEnabled) return null;
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onNavigate("/login")}
+          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors"
+        >
+          Log In
+        </button>
+        <button
+          onClick={() => onNavigate("/signup")}
+          className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+        >
+          Sign Up
+        </button>
+      </div>
+    );
   }
-  
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -603,6 +618,24 @@ export default function Header({ title }) {
                     <MobileNavLinks location={location} onNavigate={handleNavigation} />
                   </nav>
                   
+                  {/* Auth buttons in mobile menu when logged out */}
+                  {!user && authEnabled && (
+                    <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-2 px-4">
+                      <button
+                        onClick={() => handleNavigation("/signup")}
+                        className="w-full py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+                      >
+                        Sign Up
+                      </button>
+                      <button
+                        onClick={() => handleNavigation("/login")}
+                        className="w-full py-2.5 text-sm font-medium text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-md transition-colors"
+                      >
+                        Log In
+                      </button>
+                    </div>
+                  )}
+
                   {/* User info in mobile menu */}
                   {user ? (
                     <div className="mt-4 pt-4 border-t border-gray-200">

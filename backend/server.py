@@ -124,6 +124,8 @@ email_templates_collection = db["email_templates"]
 admin_notifications_collection = db["admin_notifications"]
 moderators_collection = db["moderators"]
 moderator_permissions_collection = db["moderator_permissions"]
+audit_logs_collection = db["audit_logs"]
+support_tickets_collection = db["support_tickets"]
 
 # Default permissions per moderator level
 ALL_PERMISSIONS = [
@@ -958,6 +960,28 @@ async def generate_bank_transactions(data: GenerateTransactionsRequest):
 
 
 # ========== AUTHENTICATION HELPERS ==========
+
+async def log_action(session: dict, action: str, resource_type: str = "", resource_id: str = "", details: str = ""):
+    """Fire-and-forget audit log writer."""
+    try:
+        actor_id = session.get("adminId") or session.get("moderatorId", "")
+        actor_name = session.get("email", "unknown")
+        role = session.get("type", "admin")
+        level = session.get("level")
+        await audit_logs_collection.insert_one({
+            "id": str(uuid.uuid4()),
+            "actorId": actor_id,
+            "actorEmail": actor_name,
+            "role": role,
+            "level": level,
+            "action": action,
+            "resourceType": resource_type,
+            "resourceId": resource_id,
+            "details": details,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        })
+    except Exception:
+        pass  # never break the request over logging
 
 def check_permission(session: dict, perm: str):
     """Check that a session has a specific permission. Admins always pass."""
@@ -4016,6 +4040,7 @@ async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
     result = await users_collection.delete_one({"id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
+    await log_action(session, "delete_user", "user", user_id)
     return {"success": True, "message": "User deleted"}
 
 class UpdateUserDetails(BaseModel):
@@ -4075,7 +4100,7 @@ async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     # If banning, also invalidate their sessions
     if new_status:
         await sessions_collection.delete_many({"userId": user_id})
-    
+    await log_action(session, "ban_user" if new_status else "unban_user", "user", user_id)
     return {"success": True, "isBanned": new_status}
 
 
@@ -4441,6 +4466,7 @@ async def ban_ip(data: BannedIPCreate, session: dict = Depends(get_current_admin
     }
     
     await banned_ips_collection.insert_one(banned_ip)
+    await log_action(session, "ban_ip", "banned_ip", data.ip, data.ip)
     return {"success": True, "message": f"IP {data.ip} has been banned", "bannedIp": {k: v for k, v in banned_ip.items() if k != "_id"}}
 
 @app.delete("/api/admin/banned-ips/{ip}")
@@ -4464,7 +4490,7 @@ async def unban_ip(ip: str, session: dict = Depends(get_current_admin)):
     
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="IP not found in ban list")
-    
+    await log_action(session, "unban_ip", "banned_ip", decoded_ip, decoded_ip)
     return {"success": True, "message": f"IP {decoded_ip} has been unbanned"}
 
 @app.post("/api/admin/ban-user-ip/{user_id}")
@@ -4545,6 +4571,7 @@ async def create_discount(request: dict, session: dict = Depends(get_current_adm
         raise HTTPException(status_code=400, detail="Discount code already exists")
     
     await discounts_collection.insert_one(discount)
+    await log_action(session, "create_discount", "discount", discount["id"], discount["code"])
     return {"success": True, "id": discount["id"]}
 
 @app.put("/api/admin/discounts/{discount_id}")
@@ -4580,6 +4607,7 @@ async def delete_discount(discount_id: str, session: dict = Depends(get_current_
     result = await discounts_collection.delete_one({"id": discount_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Discount not found")
+    await log_action(session, "delete_discount", "discount", discount_id)
     return {"success": True}
 
 
@@ -4674,7 +4702,7 @@ async def update_banner_settings(request: dict, session: dict = Depends(get_curr
         {"$set": banner_settings},
         upsert=True
     )
-    
+    await log_action(session, "update_banner", "site_settings", "promotional_banner")
     return {"success": True, "banner": banner_settings}
 
 
@@ -4742,10 +4770,9 @@ async def update_maintenance_settings(request: dict, session: dict = Depends(get
         {"$set": maintenance_settings},
         upsert=True
     )
-    
     status = "enabled" if maintenance_settings["isActive"] else "disabled"
     print(f"Maintenance mode {status} by admin {session.get('adminId', 'unknown')}")
-    
+    await log_action(session, f"maintenance_{status}", "site_settings", "maintenance_mode")
     return {"success": True, "maintenance": maintenance_settings}
 
 
@@ -4790,10 +4817,9 @@ async def update_auth_settings(request: dict, session: dict = Depends(get_curren
         {"$set": auth_settings},
         upsert=True
     )
-
     status = "enabled" if auth_settings["isEnabled"] else "disabled"
     print(f"User auth {status} by admin {session.get('adminId', 'unknown')}")
-
+    await log_action(session, f"auth_{status}", "site_settings", "auth_enabled")
     return {"success": True, "authEnabled": auth_settings["isEnabled"]}
 
 
@@ -4856,6 +4882,7 @@ async def update_email_template(name: str, request: dict, session: dict = Depend
         }},
         upsert=True
     )
+    await log_action(session, "update_email_template", "email_template", name)
     return {"success": True}
 
 
@@ -4891,6 +4918,7 @@ async def reset_email_template(name: str, session: dict = Depends(get_current_ad
     """Delete a custom template override, reverting to the hardcoded default (admin only)"""
     check_permission(session, "manage_email_templates")
     await email_templates_collection.delete_one({"name": name})
+    await log_action(session, "reset_email_template", "email_template", name)
     return {"success": True}
 
 
@@ -4973,6 +5001,7 @@ async def send_mass_email(request: dict, background_tasks: BackgroundTasks, sess
         job["status"] = "done"
 
     background_tasks.add_task(_do_send)
+    await log_action(session, "send_mass_email", "mass_email", job_id, f"subject={subject}, recipients={len(all_emails)}")
     return {"success": True, "job_id": job_id, "total": len(all_emails)}
 
 
@@ -5024,6 +5053,7 @@ async def create_moderator(request: dict, session: dict = Depends(require_admin_
     await moderators_collection.insert_one(moderator)
     moderator.pop("_id", None)
     moderator.pop("password", None)
+    await log_action(session, "create_moderator", "moderator", moderator["id"], f"{name} ({email}) level={level}")
     return {"success": True, "moderator": moderator}
 
 
@@ -5067,6 +5097,7 @@ async def delete_moderator(mod_id: str, session: dict = Depends(require_admin_on
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Moderator not found")
     await sessions_collection.delete_many({"moderatorId": mod_id})
+    await log_action(session, "delete_moderator", "moderator", mod_id)
     return {"success": True}
 
 
@@ -5099,6 +5130,201 @@ async def update_moderator_permissions(level: int, request: dict, session: dict 
         {"$set": {"permissions": perms}},
     )
     return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Audit Log
+# ─────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/audit-log")
+async def get_audit_log(
+    session: dict = Depends(require_admin_only),
+    skip: int = 0,
+    limit: int = 50,
+    actor: Optional[str] = None,
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+):
+    query: dict = {}
+    if actor:
+        query["actorEmail"] = {"$regex": actor, "$options": "i"}
+    if action:
+        query["action"] = {"$regex": action, "$options": "i"}
+    if resource_type:
+        query["resourceType"] = resource_type
+    total = await audit_logs_collection.count_documents(query)
+    logs = await audit_logs_collection.find(query, {"_id": 0}).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    return {"success": True, "logs": logs, "total": total}
+
+
+@app.delete("/api/admin/audit-log")
+async def clear_audit_log(session: dict = Depends(require_admin_only)):
+    await audit_logs_collection.delete_many({})
+    return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Support Tickets (Contact Form)
+# ─────────────────────────────────────────────────────────────
+
+@app.post("/api/contact")
+async def submit_contact(request: dict):
+    """Public endpoint — saves contact form submission to DB."""
+    name = (request.get("name") or "").strip()
+    email = (request.get("email") or "").strip().lower()
+    reason = (request.get("reason") or "").strip()
+    message = (request.get("message") or "").strip()
+    if not name or not email or not message:
+        raise HTTPException(status_code=400, detail="name, email, and message are required")
+    ticket = {
+        "id": str(uuid.uuid4()),
+        "name": name,
+        "email": email,
+        "reason": reason,
+        "message": message,
+        "status": "open",
+        "notes": "",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+    await support_tickets_collection.insert_one(ticket)
+    return {"success": True}
+
+
+@app.get("/api/admin/support-tickets")
+async def get_support_tickets(
+    session: dict = Depends(get_current_admin),
+    skip: int = 0,
+    limit: int = 50,
+    status: Optional[str] = None,
+):
+    query: dict = {}
+    if status and status != "all":
+        query["status"] = status
+    total = await support_tickets_collection.count_documents(query)
+    tickets = await support_tickets_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
+    open_count = await support_tickets_collection.count_documents({"status": "open"})
+    return {"success": True, "tickets": tickets, "total": total, "openCount": open_count}
+
+
+@app.put("/api/admin/support-tickets/{ticket_id}")
+async def update_support_ticket(ticket_id: str, request: dict, session: dict = Depends(get_current_admin)):
+    update: dict = {"updatedAt": datetime.now(timezone.utc).isoformat()}
+    if "status" in request:
+        update["status"] = request["status"]
+    if "notes" in request:
+        update["notes"] = request["notes"]
+    result = await support_tickets_collection.update_one({"id": ticket_id}, {"$set": update})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    await log_action(session, "update_ticket", "support_ticket", ticket_id, f"status={request.get('status', '')}")
+    return {"success": True}
+
+
+@app.delete("/api/admin/support-tickets/{ticket_id}")
+async def delete_support_ticket(ticket_id: str, session: dict = Depends(get_current_admin)):
+    result = await support_tickets_collection.delete_one({"id": ticket_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    await log_action(session, "delete_ticket", "support_ticket", ticket_id)
+    return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# CSV Export
+# ─────────────────────────────────────────────────────────────
+
+from fastapi.responses import StreamingResponse
+import csv
+import io
+
+@app.get("/api/admin/export/purchases")
+async def export_purchases_csv(
+    session: dict = Depends(get_current_admin),
+    startDate: Optional[str] = None,
+    endDate: Optional[str] = None,
+    documentType: Optional[str] = None,
+):
+    check_permission(session, "view_purchases")
+    query: dict = {}
+    if documentType:
+        query["documentType"] = documentType
+    if startDate:
+        query["createdAt"] = {"$gte": startDate}
+    if endDate:
+        query.setdefault("createdAt", {})["$lte"] = endDate
+    purchases = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).to_list(50000)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Date", "Email", "Document Type", "Amount", "Purchase ID", "User ID", "Guest"])
+    for p in purchases:
+        writer.writerow([
+            p.get("createdAt", "")[:10],
+            p.get("email", ""),
+            p.get("documentType", ""),
+            p.get("amount", ""),
+            p.get("id", ""),
+            p.get("userId", ""),
+            "Yes" if p.get("isGuest") else "No",
+        ])
+    output.seek(0)
+    await log_action(session, "export_csv", "purchases", "", "purchases export")
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=purchases.csv"},
+    )
+
+
+@app.get("/api/admin/export/users")
+async def export_users_csv(session: dict = Depends(get_current_admin)):
+    check_permission(session, "view_users")
+    users = await users_collection.find({}, {"_id": 0, "password": 0}).sort("createdAt", -1).to_list(50000)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Date", "Name", "Email", "Subscription", "Email Verified", "Banned", "User ID"])
+    for u in users:
+        sub = u.get("subscription") or {}
+        writer.writerow([
+            u.get("createdAt", "")[:10],
+            u.get("name", ""),
+            u.get("email", ""),
+            sub.get("tier", "none") if sub else "none",
+            "Yes" if u.get("emailVerified") else "No",
+            "Yes" if u.get("isBanned") else "No",
+            u.get("id", ""),
+        ])
+    output.seek(0)
+    await log_action(session, "export_csv", "users", "", "users export")
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=users.csv"},
+    )
+
+
+@app.get("/api/admin/export/revenue")
+async def export_revenue_csv(session: dict = Depends(get_current_admin)):
+    check_permission(session, "view_purchases")
+    purchases = await purchases_collection.find({}, {"_id": 0}).sort("createdAt", -1).to_list(50000)
+    sub_payments = await subscription_payments_collection.find({}, {"_id": 0}).sort("createdAt", -1).to_list(50000)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Date", "Type", "Email", "Amount", "Description", "ID"])
+    for p in purchases:
+        writer.writerow([p.get("createdAt", "")[:10], "purchase", p.get("email", ""), p.get("amount", ""), p.get("documentType", ""), p.get("id", "")])
+    for s in sub_payments:
+        writer.writerow([s.get("createdAt", "")[:10], "subscription", s.get("email", s.get("userId", "")), s.get("amount", ""), s.get("tier", ""), s.get("id", "")])
+    output.seek(0)
+    await log_action(session, "export_csv", "revenue", "", "revenue export")
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=revenue.csv"},
+    )
 
 
 @app.post("/api/parse-resume")
@@ -6039,7 +6265,7 @@ async def create_blog_post(data: BlogPostCreate, session: dict = Depends(get_cur
     }
     
     await blog_posts_collection.insert_one(post)
-    
+    await log_action(session, "create_blog_post", "blog_post", post["id"], post["title"])
     return {"success": True, "message": "Post created", "post": {k: v for k, v in post.items() if k != "_id"}}
 
 @app.put("/api/admin/blog/posts/{post_id}")
@@ -6067,7 +6293,7 @@ async def update_blog_post(post_id: str, data: BlogPostUpdate, session: dict = D
     update_data["updatedBy"] = session.get("adminId")
     
     await blog_posts_collection.update_one({"id": post_id}, {"$set": update_data})
-    
+    await log_action(session, "update_blog_post", "blog_post", post_id)
     return {"success": True, "message": "Post updated"}
 
 @app.delete("/api/admin/blog/posts/{post_id}")
@@ -6075,10 +6301,11 @@ async def delete_blog_post(post_id: str, session: dict = Depends(get_current_adm
     """Delete a blog post (admin)"""
     check_permission(session, "manage_blog")
     result = await blog_posts_collection.delete_one({"id": post_id})
-    
+
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Post not found")
-    
+
+    await log_action(session, "delete_blog_post", "blog_post", post_id)
     return {"success": True, "message": "Post deleted"}
 
 @app.post("/api/admin/blog/upload-image")

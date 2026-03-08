@@ -68,13 +68,22 @@ export default function Contact() {
     }
 
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success("Message sent successfully! We'll get back to you within 24 hours.");
-    setFormData({ name: "", email: "", reason: "", message: "" });
-    setIsSubmitting(false);
+
+    try {
+      const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+      const res = await fetch(`${BACKEND_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      toast.success("Message sent successfully! We'll get back to you within 24 hours.");
+      setFormData({ name: "", email: "", reason: "", message: "" });
+    } catch {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

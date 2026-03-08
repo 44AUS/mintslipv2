@@ -117,6 +117,19 @@ code {
 /* ─── Admin dark mode overrides ─── */
 /* Applied when .dark class is on the AdminLayout root wrapper */
 
+/* Restore CSS variables so primary buttons stay green (not white) and secondary stays correct.
+   Unlayered styles beat @layer base, so these win over the generic .dark variable flip. */
+.dark {
+    --primary: 150 57% 20% !important;
+    --primary-foreground: 0 0% 100% !important;
+    --secondary: 150 100% 97% !important;
+    --secondary-foreground: 150 57% 20% !important;
+    --accent: 30 41 59 !important;
+    --accent-foreground: 0 0% 98% !important;
+    --muted: 30 41 59 !important;
+    --muted-foreground: 0 0% 64% !important;
+}
+
 /* Backgrounds */
 .dark .bg-white { background-color: rgb(15 23 42) !important; }
 .dark .bg-slate-50, .dark .bg-gray-50 { background-color: rgb(15 23 42) !important; }
@@ -130,13 +143,13 @@ code {
 .dark .bg-orange-50 { background-color: rgba(249,115,22,0.08) !important; }
 .dark .bg-purple-50 { background-color: rgba(139,92,246,0.08) !important; }
 
-/* Text */
+/* Text — shifted lighter so everything is readable on dark backgrounds */
 .dark .text-gray-900, .dark .text-slate-900 { color: rgb(248 250 252) !important; }
-.dark .text-gray-800, .dark .text-slate-800 { color: rgb(226 232 240) !important; }
-.dark .text-gray-700, .dark .text-slate-700 { color: rgb(203 213 225) !important; }
-.dark .text-gray-600, .dark .text-slate-600 { color: rgb(148 163 184) !important; }
-.dark .text-gray-500, .dark .text-slate-500 { color: rgb(100 116 139) !important; }
-.dark .text-gray-400, .dark .text-slate-400 { color: rgb(71 85 105) !important; }
+.dark .text-gray-800, .dark .text-slate-800 { color: rgb(241 245 249) !important; }
+.dark .text-gray-700, .dark .text-slate-700 { color: rgb(226 232 240) !important; }
+.dark .text-gray-600, .dark .text-slate-600 { color: rgb(203 213 225) !important; }
+.dark .text-gray-500, .dark .text-slate-500 { color: rgb(148 163 184) !important; }
+.dark .text-gray-400, .dark .text-slate-400 { color: rgb(100 116 139) !important; }
 .dark .text-amber-800 { color: rgb(251 191 36) !important; }
 .dark .text-blue-800 { color: rgb(147 197 253) !important; }
 
@@ -163,7 +176,7 @@ code {
   color: rgb(226 232 240) !important;
   border-color: rgb(51 65 85) !important;
 }
-.dark input::placeholder, .dark textarea::placeholder { color: rgb(71 85 105) !important; }
+.dark input::placeholder, .dark textarea::placeholder { color: rgb(100 116 139) !important; }
 
 /* Shadow elevation cards */
 .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }

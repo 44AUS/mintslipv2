@@ -121,6 +121,16 @@ export default function AdminLayout({ children }) {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
+  const handleClearNotifications = async () => {
+    const token = localStorage.getItem("adminToken");
+    await fetch(`${BACKEND_URL}/api/admin/notifications`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    setNotifications([]);
+    setUnreadCount(0);
+  };
+
   const handleLogout = async () => {
     const token = localStorage.getItem("adminToken");
     try {
@@ -296,11 +306,18 @@ export default function AdminLayout({ children }) {
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                     <p className="text-sm font-semibold text-slate-800">Notifications</p>
-                    {unreadCount > 0 && (
-                      <button onClick={handleMarkRead} className="text-xs text-green-600 hover:text-green-700 font-medium">
-                        Mark all read
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {unreadCount > 0 && (
+                        <button onClick={handleMarkRead} className="text-xs text-green-600 hover:text-green-700 font-medium">
+                          Mark all read
+                        </button>
+                      )}
+                      {notifications.length > 0 && (
+                        <button onClick={handleClearNotifications} className="text-xs text-red-500 hover:text-red-600 font-medium">
+                          Clear all
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
                     {notifications.length === 0 ? (

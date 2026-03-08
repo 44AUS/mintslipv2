@@ -1197,6 +1197,12 @@ async def mark_notifications_read(session: dict = Depends(get_current_admin)):
     await admin_notifications_collection.update_many({"read": False}, {"$set": {"read": True}})
     return {"success": True}
 
+@app.delete("/api/admin/notifications")
+async def clear_all_notifications(session: dict = Depends(get_current_admin)):
+    """Delete all notifications"""
+    await admin_notifications_collection.delete_many({})
+    return {"success": True}
+
 @app.get("/api/admin/profile")
 async def get_admin_profile(session: dict = Depends(get_current_admin)):
     """Get admin profile"""

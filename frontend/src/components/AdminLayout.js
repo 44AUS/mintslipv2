@@ -6,7 +6,7 @@ import {
   Shield, Menu, X, FolderArchive, Mail, SlidersHorizontal,
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
   FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
-  ClipboardList, Inbox, Download, TrendingUp, CreditCard,
+  ClipboardList, Inbox, Download, TrendingUp, CreditCard, Moon, Sun,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -49,6 +49,15 @@ export default function AdminLayout({ children }) {
   const [adminProfile, setAdminProfile] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("adminDarkMode") === "true");
+  const toggleDark = () => {
+    setDarkMode(prev => {
+      const next = !prev;
+      localStorage.setItem("adminDarkMode", next);
+      return next;
+    });
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -194,12 +203,12 @@ export default function AdminLayout({ children }) {
       : "A";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100">
+    <div className={`flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950${darkMode ? " dark" : ""}`}>
 
       {/* Desktop Sidebar — full height, above everything */}
-      <aside className="hidden md:flex flex-col w-56 bg-white border-r border-slate-200 flex-shrink-0 z-50">
+      <aside className="hidden md:flex flex-col w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 z-50">
         {/* Logo */}
-        <div className="px-4 py-5 border-b border-slate-100 flex-shrink-0 flex justify-center">
+        <div className="px-4 py-5 border-b border-slate-100 dark:border-slate-700 flex-shrink-0 flex justify-center">
           <button onClick={() => navigate("/admin/overview")} className="hover:opacity-80 transition-opacity">
             <img src={MintSlipLogo} alt="MintSlip" style={{ height: "32px", width: "auto" }} />
           </button>
@@ -213,7 +222,7 @@ export default function AdminLayout({ children }) {
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 activeTab === tab.id
                   ? "bg-green-600 text-white font-medium"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800"
               }`}
             >
               <tab.icon className="w-4 h-4 flex-shrink-0" />
@@ -226,7 +235,7 @@ export default function AdminLayout({ children }) {
       {/* Right column: header + scrollable content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 flex-shrink-0 z-40">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 z-40">
         <div className="px-4 py-3 flex items-center justify-between">
 
           {/* Left: Mobile hamburger */}
@@ -245,6 +254,18 @@ export default function AdminLayout({ children }) {
 
           {/* Right: Notifications + Admin dropdown */}
           <div className="flex items-center gap-1 ml-auto">
+
+            {/* Dark mode toggle */}
+            <button
+              onClick={toggleDark}
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode
+                ? <Sun className="w-4 h-4 text-amber-400" />
+                : <Moon className="w-4 h-4 text-slate-500" />
+              }
+            </button>
 
             {/* Main site link */}
             <a
@@ -364,7 +385,7 @@ export default function AdminLayout({ children }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-white">
+          <div className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
             <div className="px-4 py-3 space-y-1">
               {tabs.map((tab) => (
                 <button
@@ -397,7 +418,7 @@ export default function AdminLayout({ children }) {
       </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto bg-slate-100 dark:bg-slate-950">
           {children}
         </main>
       </div>

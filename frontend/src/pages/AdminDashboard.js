@@ -1982,7 +1982,7 @@ export default function AdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {dashboardStats.recentPurchases.map((purchase) => (
+                    {dashboardStats.recentPurchases.slice(0, 10).map((purchase) => (
                       <TableRow key={purchase.id}>
                         <TableCell className="text-sm">{formatDate(purchase.createdAt)}</TableCell>
                         <TableCell>

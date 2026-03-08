@@ -2344,7 +2344,8 @@ async def get_checkout_status(session_id: str):
                 user = await users_collection.find_one({"id": user_id})
                 if user and (not user.get("subscription") or user.get("subscription", {}).get("stripeSubscriptionId") != session.subscription):
                     plan_config = SUBSCRIPTION_PLANS.get(tier, {})
-                    
+                    tier_downloads = await get_tier_downloads()
+
                     # Update user subscription
                     await users_collection.update_one(
                         {"id": user_id},
@@ -2354,8 +2355,8 @@ async def get_checkout_status(session_id: str):
                                 "status": "active",
                                 "stripeSubscriptionId": session.subscription,
                                 "stripeCustomerId": session.customer,
-                                "downloads_remaining": plan_config.get("downloads", 0),
-                                "downloads_total": plan_config.get("downloads", 0),
+                                "downloads_remaining": tier_downloads.get(tier, 0),
+                                "downloads_total": tier_downloads.get(tier, 0),
                                 "current_period_start": datetime.now(timezone.utc).isoformat(),
                                 "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
                                 "createdAt": datetime.now(timezone.utc).isoformat()
@@ -2464,7 +2465,8 @@ async def stripe_webhook(request: Request):
         if user_id and tier:
             # Handle subscription purchase
             plan_config = SUBSCRIPTION_PLANS.get(tier, {})
-            
+            tier_downloads = await get_tier_downloads()
+
             # Update user subscription
             await users_collection.update_one(
                 {"id": user_id},
@@ -2474,8 +2476,8 @@ async def stripe_webhook(request: Request):
                         "status": "active",
                         "stripeSubscriptionId": session.subscription,
                         "stripeCustomerId": session.customer,
-                        "downloads_remaining": plan_config.get("downloads", 0),
-                        "downloads_total": plan_config.get("downloads", 0),
+                        "downloads_remaining": tier_downloads.get(tier, 0),
+                        "downloads_total": tier_downloads.get(tier, 0),
                         "current_period_start": datetime.now(timezone.utc).isoformat(),
                         "current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
                         "createdAt": datetime.now(timezone.utc).isoformat()
@@ -2504,7 +2506,7 @@ async def stripe_webhook(request: Request):
                     user_id,
                     plan_config.get("name", tier.title()),
                     str(plan_config.get("price", 0)),
-                    plan_config.get("downloads", 0)
+                    tier_downloads.get(tier, 0)
                 ))
                 asyncio.create_task(cancel_signup_no_purchase_reminder(user_id))
         
@@ -2574,8 +2576,8 @@ async def stripe_webhook(request: Request):
             user = await users_collection.find_one({"subscription.stripeSubscriptionId": subscription_id})
             if user:
                 tier = user["subscription"].get("tier")
-                plan_config = SUBSCRIPTION_PLANS.get(tier, {})
-                
+                tier_downloads = await get_tier_downloads()
+
                 # Record the subscription payment
                 payment_amount = invoice.amount_paid / 100  # Convert from cents
                 subscription_payment = {
@@ -2596,7 +2598,7 @@ async def stripe_webhook(request: Request):
                 await users_collection.update_one(
                     {"id": user["id"]},
                     {"$set": {
-                        "subscription.downloads_remaining": plan_config.get("downloads", 0),
+                        "subscription.downloads_remaining": tier_downloads.get(tier, 0),
                         "subscription.current_period_end": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
                     }}
                 )
@@ -2635,13 +2637,13 @@ async def stripe_webhook(request: Request):
                 
                 # If we found a matching tier and it's different from current, update
                 if new_tier and new_tier != user.get("subscription", {}).get("tier"):
-                    plan_config = SUBSCRIPTION_PLANS.get(new_tier, {})
+                    tier_downloads = await get_tier_downloads()
                     await users_collection.update_one(
                         {"id": user["id"]},
                         {"$set": {
                             "subscription.tier": new_tier,
-                            "subscription.downloads_remaining": plan_config.get("downloads", 0),
-                            "subscription.downloads_total": plan_config.get("downloads", 0),
+                            "subscription.downloads_remaining": tier_downloads.get(new_tier, 0),
+                            "subscription.downloads_total": tier_downloads.get(new_tier, 0),
                             "subscription.status": subscription.status,
                             "subscription.updatedAt": datetime.now(timezone.utc).isoformat()
                         }}
@@ -5325,6 +5327,50 @@ async def export_revenue_csv(session: dict = Depends(get_current_admin)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=revenue.csv"},
     )
+
+
+# ─────────────────────────────────────────────────────────────
+# Subscription Tier Download Settings
+# ─────────────────────────────────────────────────────────────
+
+DEFAULT_TIER_DOWNLOADS = {"starter": 10, "professional": 30, "business": -1}
+
+async def get_tier_downloads() -> dict:
+    """Return download limits per tier, reading from DB (falls back to defaults)."""
+    doc = await site_settings_collection.find_one({"key": "subscription_tier_downloads"})
+    if doc and "tiers" in doc:
+        merged = dict(DEFAULT_TIER_DOWNLOADS)
+        merged.update(doc["tiers"])
+        return merged
+    return dict(DEFAULT_TIER_DOWNLOADS)
+
+
+@app.get("/api/admin/subscription-tier-settings")
+async def get_subscription_tier_settings(session: dict = Depends(require_admin_only)):
+    downloads = await get_tier_downloads()
+    return {"success": True, "tiers": downloads}
+
+
+@app.put("/api/admin/subscription-tier-settings")
+async def update_subscription_tier_settings(request: dict, session: dict = Depends(require_admin_only)):
+    tiers = request.get("tiers", {})
+    validated = {}
+    for tier in ("starter", "professional", "business"):
+        val = tiers.get(tier)
+        if val is not None:
+            try:
+                v = int(val)
+                validated[tier] = v if v > 0 else -1  # -1 = unlimited
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=400, detail=f"Invalid download count for {tier}")
+    await site_settings_collection.update_one(
+        {"key": "subscription_tier_downloads"},
+        {"$set": {"key": "subscription_tier_downloads", "tiers": validated, "updatedAt": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    await log_action(session, "update_tier_downloads", "site_settings", "subscription_tier_downloads",
+                     str(validated))
+    return {"success": True, "tiers": validated}
 
 
 # ─────────────────────────────────────────────────────────────

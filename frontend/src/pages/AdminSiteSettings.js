@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -40,11 +40,18 @@ export default function AdminSiteSettings() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authMsg, setAuthMsg] = useState(null);
 
+  // Tier download settings
+  const DEFAULT_TIERS = { starter: 10, professional: 30, business: -1 };
+  const [tierDownloads, setTierDownloads] = useState(DEFAULT_TIERS);
+  const [tierLoading, setTierLoading] = useState(false);
+  const [tierMsg, setTierMsg] = useState(null);
+
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) { navigate("/admin/login"); return; }
     fetchMaintenance();
     fetchAuth();
+    fetchTierDownloads();
   }, []);
 
   const fetchMaintenance = async () => {
@@ -96,6 +103,41 @@ export default function AdminSiteSettings() {
       setMaintenanceMsg({ type: "error", text: "An error occurred." });
     } finally {
       setMaintenanceLoading(false);
+    }
+  };
+
+  const fetchTierDownloads = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/subscription-tier-settings`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setTierDownloads(data.tiers);
+    } catch (e) {}
+  };
+
+  const saveTierDownloads = async () => {
+    setTierLoading(true);
+    setTierMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/subscription-tier-settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ tiers: tierDownloads })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTierMsg({ type: "success", text: "Tier download limits saved." });
+        setTimeout(() => setTierMsg(null), 3000);
+      } else {
+        setTierMsg({ type: "error", text: data.detail || "Failed to save tier settings." });
+      }
+    } catch (e) {
+      setTierMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setTierLoading(false);
     }
   };
 
@@ -222,6 +264,59 @@ export default function AdminSiteSettings() {
             >
               {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Auth Settings
+            </button>
+          </div>
+
+          {/* Subscription Tier Downloads */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-purple-50">
+                <Download className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Subscription Tier Downloads</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Set how many downloads each plan tier gets per billing period. Use <strong>-1</strong> for unlimited.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 pt-1 border-t border-slate-100">
+              {[
+                { key: "starter", label: "Starter", color: "text-blue-600" },
+                { key: "professional", label: "Professional", color: "text-purple-600" },
+                { key: "business", label: "Business", color: "text-amber-600" },
+              ].map(({ key, label, color }) => (
+                <div key={key}>
+                  <label className={`block text-xs font-semibold ${color} mb-1.5`}>{label}</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="-1"
+                      value={tierDownloads[key] ?? ""}
+                      onChange={e => setTierDownloads(prev => ({ ...prev, [key]: parseInt(e.target.value, 10) || 0 }))}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    {tierDownloads[key] === -1 && (
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">∞</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {tierDownloads[key] === -1 ? "Unlimited" : `${tierDownloads[key]} / period`}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <Msg msg={tierMsg} />
+
+            <button
+              onClick={saveTierDownloads}
+              disabled={tierLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {tierLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Tier Settings
             </button>
           </div>
 

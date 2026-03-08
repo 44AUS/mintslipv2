@@ -29,6 +29,7 @@ import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
 import OnPayLogo from '../assests/onpayLogo.webp';
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 // Canadian Flag SVG component
 const CanadianFlagIcon = () => (
@@ -59,10 +60,11 @@ const PAYROLL_COMPANIES = [
 export default function PaystubForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  
+  const authEnabled = useAuthEnabled();
+
   // Get template from URL query parameter
   const templateFromUrl = searchParams.get('template');
-  
+
   // User subscription state
   const [user, setUser] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
@@ -3469,6 +3471,7 @@ export default function PaystubForm() {
                     </div>
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -3480,6 +3483,7 @@ export default function PaystubForm() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
                 

@@ -22,6 +22,7 @@ import {
   formatEIN, validateEIN,
   formatZipCode, validateZipCode
 } from "@/utils/validation";
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 // US States list
 const US_STATES = [
@@ -36,6 +37,7 @@ const TAX_YEARS = ["2024", "2023", "2022"];
 
 export default function ScheduleCForm() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -1138,6 +1140,7 @@ export default function ScheduleCForm() {
                     </div>
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -1149,6 +1152,7 @@ export default function ScheduleCForm() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
               </div>

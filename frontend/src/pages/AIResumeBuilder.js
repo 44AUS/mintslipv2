@@ -18,6 +18,7 @@ import {
  } from "lucide-react";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { generateAndDownloadResume } from "@/utils/resumeGenerator";
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -71,6 +72,7 @@ const STEPS = [
 
 export default function AIResumeBuilder() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isScrapingJob, setIsScrapingJob] = useState(false);
@@ -2075,6 +2077,7 @@ export default function AIResumeBuilder() {
                     </p>
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -2086,6 +2089,7 @@ export default function AIResumeBuilder() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
               </div>

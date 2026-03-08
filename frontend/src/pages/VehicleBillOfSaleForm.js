@@ -17,6 +17,7 @@ import { generateAndDownloadVehicleBillOfSale } from "@/utils/vehicleBillOfSaleG
 import { generateVehicleBillOfSalePreview } from "@/utils/vehicleBillOfSalePreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
 import { CheckCircle, Car, Sparkles, FileText, Palette, Loader2, Maximize2, CreditCard, Lock } from "lucide-react";
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 // US States list
 const US_STATES = [
@@ -46,6 +47,7 @@ const TEMPLATES = [
 
 export default function VehicleBillOfSaleForm() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -1170,6 +1172,7 @@ export default function VehicleBillOfSaleForm() {
                     )}
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -1181,6 +1184,7 @@ export default function VehicleBillOfSaleForm() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
                 

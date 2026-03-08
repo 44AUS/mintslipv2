@@ -19,6 +19,7 @@ import { formatAccountNumber, validateAccountNumber } from "@/utils/validation";
 import ChimeLogo from '../assests/chime.png';
 import BoA from '../assests/boa2.png';
 import ChaseLogo from '../assests/chase-logo-black-transparent.png';
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -127,6 +128,7 @@ const BANKS_DATA = [
 
 export default function BankStatementForm() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState("template-a"); // Default to Chime which is always available
@@ -1647,6 +1649,7 @@ const createOrder = (data, actions) => {
                     </div>
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -1658,6 +1661,7 @@ const createOrder = (data, actions) => {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
               </div>

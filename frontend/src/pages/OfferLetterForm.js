@@ -18,6 +18,7 @@ import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
 import { Upload, X, CheckCircle, Briefcase, Sparkles, Palette, HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { trackDocumentGenerated, trackPaymentInitiated } from "@/utils/analyticsTracker";
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 // US States list
 const US_STATES = [
@@ -59,6 +60,7 @@ const WORK_LOCATIONS = [
 
 export default function OfferLetterForm() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -1520,6 +1522,7 @@ export default function OfferLetterForm() {
                     )}
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -1531,6 +1534,7 @@ export default function OfferLetterForm() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
               </div>

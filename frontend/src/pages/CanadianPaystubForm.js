@@ -26,6 +26,7 @@ import GustoLogo from '../assests/gustoLogo.png';
 import ADPLogo from '../assests/adp-logo.png';
 import WorkdayLogo from '../assests/workday-logo.png';
 import OnPayLogo from '../assests/onpayLogo.webp';
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -61,6 +62,7 @@ const PAYROLL_COMPANIES = [
 
 export default function CanadianPaystubForm() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   
@@ -3164,6 +3166,7 @@ export default function CanadianPaystubForm() {
                     </div>
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -3175,6 +3178,7 @@ export default function CanadianPaystubForm() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
                 

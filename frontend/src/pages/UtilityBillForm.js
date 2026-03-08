@@ -16,6 +16,7 @@ import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
 import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets, CreditCard, Lock } from "lucide-react";
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 // US States list
 const US_STATES = [
@@ -47,6 +48,7 @@ const SERVICE_TYPES = [
 
 export default function UtilityBillForm() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -1644,6 +1646,7 @@ export default function UtilityBillForm() {
                     )}
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -1655,6 +1658,7 @@ export default function UtilityBillForm() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
                 

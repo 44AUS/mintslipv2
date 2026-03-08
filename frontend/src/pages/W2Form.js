@@ -22,6 +22,7 @@ import {
   formatZipCode, validateZipCode,
   formatFullSSN, validateFullSSN
 } from "@/utils/validation";
+import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -50,6 +51,7 @@ const generateTaxYears = () => {
 
 export default function W2Form() {
   const navigate = useNavigate();
+  const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
@@ -1233,6 +1235,7 @@ export default function W2Form() {
                     </div>
                     
                     {/* Subscription upsell */}
+                    {authEnabled && (
                     <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                       <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
                       <Button
@@ -1244,6 +1247,7 @@ export default function W2Form() {
                         View Subscription Plans
                       </Button>
                     </div>
+                    )}
                   </>
                 )}
               </div>

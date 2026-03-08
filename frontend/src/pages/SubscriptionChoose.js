@@ -21,8 +21,8 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-// Subscription tiers - IDs must match backend SUBSCRIPTION_PLANS
-const SUBSCRIPTION_TIERS = [
+// Base tier config — downloads are overridden at runtime from the API
+const BASE_TIERS = [
   {
     id: "starter",
     name: "Starter",
@@ -31,13 +31,7 @@ const SUBSCRIPTION_TIERS = [
     icon: Zap,
     color: "green",
     popular: false,
-    features: [
-      "10 document downloads per month",
-      "All document types included",
-      "All templates available",
-      "Email support",
-      "Download history"
-    ]
+    extraFeatures: ["All document types included", "All templates available", "Email support", "Download history"]
   },
   {
     id: "professional",
@@ -47,14 +41,7 @@ const SUBSCRIPTION_TIERS = [
     icon: Sparkles,
     color: "blue",
     popular: true,
-    features: [
-      "30 document downloads per month",
-      "All document types included",
-      "All templates available",
-      "Priority email support",
-      "Download history",
-      "Early access to new features"
-    ]
+    extraFeatures: ["All document types included", "All templates available", "Priority email support", "Download history", "Early access to new features"]
   },
   {
     id: "business",
@@ -64,17 +51,17 @@ const SUBSCRIPTION_TIERS = [
     icon: Crown,
     color: "purple",
     popular: false,
-    features: [
-      "Unlimited downloads",
-      "All document types included",
-      "All templates available",
-      "Priority support",
-      "Download history",
-      "Early access to new features",
-      "Bulk generation tools"
-    ]
+    extraFeatures: ["All document types included", "All templates available", "Priority support", "Download history", "Early access to new features", "Bulk generation tools"]
   }
 ];
+
+function buildTiers(planMap) {
+  return BASE_TIERS.map(tier => {
+    const dl = planMap[tier.id] !== undefined ? planMap[tier.id] : tier.downloads;
+    const dlLabel = dl === -1 ? "Unlimited downloads" : `${dl} document downloads per month`;
+    return { ...tier, downloads: dl, features: [dlLabel, ...tier.extraFeatures] };
+  });
+}
 
 export default function SubscriptionChoose() {
   const navigate = useNavigate();
@@ -82,6 +69,21 @@ export default function SubscriptionChoose() {
   const [selectedTier, setSelectedTier] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [tiers, setTiers] = useState(buildTiers({}));
+
+  // Fetch dynamic download counts from backend
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/subscriptions/plans`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.plans) {
+          const planMap = {};
+          data.plans.forEach(p => { planMap[p.tier] = p.downloads; });
+          setTiers(buildTiers(planMap));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Check if user is logged in
@@ -255,7 +257,7 @@ export default function SubscriptionChoose() {
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {SUBSCRIPTION_TIERS.map((tier) => {
+          {tiers.map((tier) => {
             const isSelected = selectedTier === tier.id;
             const colors = getColorClasses(tier.color, isSelected);
             const Icon = tier.icon;
@@ -355,7 +357,7 @@ export default function SubscriptionChoose() {
               </>
             ) : (
               <>
-                {selectedTier ? `Subscribe to ${SUBSCRIPTION_TIERS.find(t => t.id === selectedTier)?.name}` : "Select a Plan"}
+                {selectedTier ? `Subscribe to ${tiers.find(t => t.id === selectedTier)?.name}` : "Select a Plan"}
                 <ArrowRight className="w-5 h-5" />
               </>
             )}

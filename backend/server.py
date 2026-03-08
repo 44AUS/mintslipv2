@@ -2090,15 +2090,17 @@ stripe_price_ids = {}
 
 @app.get("/api/subscriptions/plans")
 async def get_subscription_plans():
-    """Get available subscription plans"""
+    """Get available subscription plans with dynamic download limits"""
+    tier_downloads = await get_tier_downloads()
     plans = []
     for tier, config in SUBSCRIPTION_PLANS.items():
+        dl = tier_downloads.get(tier, config["downloads"])
         plans.append({
             "tier": tier,
             "name": config["name"],
             "price": config["price"],
-            "downloads": config["downloads"],
-            "downloads_display": "Unlimited" if config["downloads"] == -1 else str(config["downloads"])
+            "downloads": dl,
+            "downloads_display": "Unlimited" if dl == -1 else str(dl)
         })
     return {"success": True, "plans": plans}
 

@@ -53,8 +53,8 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-// Subscription tiers (matching PayPal plan tiers)
-const SUBSCRIPTION_TIERS = {
+// Subscription tiers — downloads are overridden at runtime from /api/subscriptions/plans
+const BASE_SUBSCRIPTION_TIERS = {
   starter: { name: "Starter", price: 19.99, downloads: 10, icon: Zap, color: "green" },
   professional: { name: "Professional", price: 29.99, downloads: 30, icon: Sparkles, color: "blue" },
   business: { name: "Business", price: 49.99, downloads: -1, icon: Crown, color: "purple" }
@@ -86,6 +86,7 @@ export default function UserSettings() {
   const [invoices, setInvoices] = useState([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [subscriptionTiers, setSubscriptionTiers] = useState(BASE_SUBSCRIPTION_TIERS);
 
   useEffect(() => {
     const token = localStorage.getItem("userToken");
@@ -101,6 +102,7 @@ export default function UserSettings() {
       // Fetch fresh user data from backend
       fetchUserProfile(token);
       fetchInvoices(token);
+      fetchTierDownloads();
     } catch (e) {
       navigate("/login");
     }
@@ -125,6 +127,22 @@ export default function UserSettings() {
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
+  };
+
+  const fetchTierDownloads = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/subscriptions/plans`);
+      const data = await res.json();
+      if (data.success && data.plans) {
+        setSubscriptionTiers(prev => {
+          const updated = { ...prev };
+          data.plans.forEach(p => {
+            if (updated[p.tier]) updated[p.tier] = { ...updated[p.tier], downloads: p.downloads };
+          });
+          return updated;
+        });
+      }
+    } catch (e) {}
   };
 
   const fetchInvoices = async (token) => {
@@ -400,7 +418,7 @@ export default function UserSettings() {
       // Show confirmation with prorated amount
       const confirmMessage = previewData.preview.immediateCharge 
         ? `You will be charged $${previewData.preview.netAmountDue.toFixed(2)} now for the prorated difference. Continue?`
-        : `Your plan will be changed to ${SUBSCRIPTION_TIERS[selectedNewTier].name}. Continue?`;
+        : `Your plan will be changed to ${subscriptionTiers[selectedNewTier].name}. Continue?`;
       
       if (!window.confirm(confirmMessage)) {
         setIsProcessing(false);
@@ -434,7 +452,7 @@ export default function UserSettings() {
         setUser(userData.user);
       }
       
-      toast.success(`Successfully changed to ${SUBSCRIPTION_TIERS[selectedNewTier].name} plan!`);
+      toast.success(`Successfully changed to ${subscriptionTiers[selectedNewTier].name} plan!`);
       setShowUpgradeDialog(false);
       setSelectedNewTier(null);
     } catch (error) {
@@ -445,7 +463,7 @@ export default function UserSettings() {
     }
   };
 
-  const currentTier = user?.subscription?.tier ? SUBSCRIPTION_TIERS[user.subscription.tier] : null;
+  const currentTier = user?.subscription?.tier ? subscriptionTiers[user.subscription.tier] : null;
   const CurrentTierIcon = currentTier?.icon || Zap;
 
   if (isLoading) {
@@ -1042,7 +1060,7 @@ export default function UserSettings() {
                 <SelectValue placeholder="Select a plan" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(SUBSCRIPTION_TIERS).map(([key, tier]) => (
+                {Object.entries(subscriptionTiers).map(([key, tier]) => (
                   <SelectItem 
                     key={key} 
                     value={key}
@@ -1060,20 +1078,20 @@ export default function UserSettings() {
           </div>
           {selectedNewTier && selectedNewTier !== user?.subscription?.tier && (
             <div className={`p-3 rounded-lg ${
-              SUBSCRIPTION_TIERS[selectedNewTier].price > (currentTier?.price || 0) 
+              subscriptionTiers[selectedNewTier].price > (currentTier?.price || 0) 
                 ? "bg-blue-50 text-blue-700" 
                 : "bg-orange-50 text-orange-700"
             }`}>
               <div className="flex items-center gap-2">
-                {SUBSCRIPTION_TIERS[selectedNewTier].price > (currentTier?.price || 0) ? (
+                {subscriptionTiers[selectedNewTier].price > (currentTier?.price || 0) ? (
                   <>
                     <ArrowUp className="w-4 h-4" />
-                    Upgrading to {SUBSCRIPTION_TIERS[selectedNewTier].name}
+                    Upgrading to {subscriptionTiers[selectedNewTier].name}
                   </>
                 ) : (
                   <>
                     <ArrowDown className="w-4 h-4" />
-                    Downgrading to {SUBSCRIPTION_TIERS[selectedNewTier].name}
+                    Downgrading to {subscriptionTiers[selectedNewTier].name}
                   </>
                 )}
               </div>

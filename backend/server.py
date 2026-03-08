@@ -1143,12 +1143,17 @@ async def user_signup(data: UserSignup, request: Request):
     """User signup endpoint"""
     # Get client IP
     client_ip = get_client_ip(request)
-    
+
+    # Check if signup is enabled
+    auth_settings = await site_settings_collection.find_one({"key": "auth_enabled"})
+    if auth_settings and not auth_settings.get("isEnabled", True):
+        raise HTTPException(status_code=403, detail="New account registration is currently disabled.")
+
     # Check if IP is banned
     banned = await banned_ips_collection.find_one({"ip": client_ip, "isActive": True})
     if banned:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     # Check if email already exists
     existing = await users_collection.find_one({"email": data.email.lower()})
     if existing:
@@ -1219,11 +1224,16 @@ async def user_login(data: UserLogin, request: Request):
     """User login endpoint with rate limiting"""
     # Get client IP for rate limiting
     client_ip = request.client.host if request.client else "unknown"
-    
+
+    # Check if login is enabled
+    auth_settings = await site_settings_collection.find_one({"key": "auth_enabled"})
+    if auth_settings and not auth_settings.get("isEnabled", True):
+        raise HTTPException(status_code=403, detail="User login is currently disabled.")
+
     # Rate limit: 5 login attempts per minute per IP
     if not check_rate_limit(f"user_login_{client_ip}", max_requests=5, window_seconds=60):
         raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
-    
+
     user = await users_collection.find_one({"email": data.email.lower()}, {"_id": 0})
     
     if not user:

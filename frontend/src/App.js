@@ -33,6 +33,7 @@ import AdminBlogEditor from "@/pages/AdminBlogEditor";
 import AdminBannedIPs from "@/pages/AdminBannedIPs";
 import AdminEmailTemplates from "@/pages/AdminEmailTemplates";
 import AdminMassEmail from "@/pages/AdminMassEmail";
+import AdminModerators from "@/pages/AdminModerators";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminSiteSettings from "@/pages/AdminSiteSettings";
 import Banned from "@/pages/Banned";
@@ -212,6 +213,7 @@ function App() {
             <Route path="/admin/blog/edit/:id" element={<AdminBlogEditor />} />
             <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
             <Route path="/admin/mass-email" element={<AdminMassEmail />} />
+            <Route path="/admin/moderators" element={<AdminModerators />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
             {/* Banned Page */}

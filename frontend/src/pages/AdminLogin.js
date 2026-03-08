@@ -65,6 +65,8 @@ export default function AdminLogin() {
       // Store token and admin info
       localStorage.setItem("adminToken", data.token);
       localStorage.setItem("adminInfo", JSON.stringify(data.admin));
+      localStorage.setItem("adminRole", data.role || "admin");
+      localStorage.setItem("adminPermissions", JSON.stringify(data.permissions || null));
       
       toast.success("Login successful!");
       navigate("/admin/dashboard");

@@ -122,6 +122,30 @@ site_settings_collection = db["site_settings"]
 banned_ips_collection = db["banned_ips"]
 email_templates_collection = db["email_templates"]
 admin_notifications_collection = db["admin_notifications"]
+moderators_collection = db["moderators"]
+moderator_permissions_collection = db["moderator_permissions"]
+
+# Default permissions per moderator level
+ALL_PERMISSIONS = [
+    "view_purchases", "view_users", "edit_users", "view_saved_docs",
+    "view_discounts", "manage_discounts", "view_banned_ips", "manage_banned_ips",
+    "view_blog", "manage_blog", "view_email_templates", "manage_email_templates",
+    "send_mass_email", "view_site_settings", "manage_site_settings",
+]
+
+def _make_perms(*enabled):
+    return {p: (p in enabled) for p in ALL_PERMISSIONS}
+
+DEFAULT_LEVEL_PERMISSIONS = {
+    1: _make_perms("view_purchases", "view_users", "view_saved_docs", "view_discounts", "view_blog"),
+    2: _make_perms("view_purchases", "view_users", "edit_users", "view_saved_docs",
+                   "view_discounts", "manage_discounts", "view_banned_ips",
+                   "view_blog", "manage_blog", "view_email_templates"),
+    3: _make_perms("view_purchases", "view_users", "edit_users", "view_saved_docs",
+                   "view_discounts", "manage_discounts", "view_banned_ips", "manage_banned_ips",
+                   "view_blog", "manage_blog", "view_email_templates", "manage_email_templates",
+                   "send_mass_email", "view_site_settings"),
+}
 
 # Create uploads directory for user documents if not exists
 USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_documents")
@@ -935,23 +959,45 @@ async def generate_bank_transactions(data: GenerateTransactionsRequest):
 
 # ========== AUTHENTICATION HELPERS ==========
 
+def check_permission(session: dict, perm: str):
+    """Check that a session has a specific permission. Admins always pass."""
+    if session.get("type") == "admin":
+        return
+    if not session.get("permissions", {}).get(perm, False):
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
 async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Verify admin session token"""
+    """Verify admin or moderator session token"""
     if not credentials:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     token = credentials.credentials
-    session = await sessions_collection.find_one({"token": token, "type": "admin"}, {"_id": 0})
-    
+    session = await sessions_collection.find_one(
+        {"token": token, "type": {"$in": ["admin", "moderator"]}}, {"_id": 0}
+    )
+
     if not session:
         raise HTTPException(status_code=401, detail="Invalid or expired session")
-    
+
+    # Moderators: check isActive
+    if session.get("type") == "moderator":
+        mod = await moderators_collection.find_one({"id": session.get("moderatorId")}, {"isActive": 1})
+        if not mod or not mod.get("isActive", True):
+            await sessions_collection.delete_one({"token": token})
+            raise HTTPException(status_code=401, detail="Account disabled")
+
     # Check if session is expired (24 hours)
     created_at = datetime.fromisoformat(session["createdAt"].replace("Z", "+00:00"))
     if (datetime.now(timezone.utc) - created_at).total_seconds() > 86400:
         await sessions_collection.delete_one({"token": token})
         raise HTTPException(status_code=401, detail="Session expired")
-    
+
+    return session
+
+async def require_admin_only(session: dict = Depends(get_current_admin)):
+    """Only the original admin account may proceed (not moderators)."""
+    if session.get("type") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     return session
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -985,34 +1031,67 @@ async def admin_login(data: AdminLogin, request: Request):
     if not check_rate_limit(f"admin_login_{client_ip}", max_requests=5, window_seconds=60):
         raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
     
-    admin = await admins_collection.find_one({"email": data.email.lower()}, {"_id": 0})
-    
-    if not admin:
+    email = data.email.lower()
+    admin = await admins_collection.find_one({"email": email}, {"_id": 0})
+
+    if admin:
+        # ── Main admin login ──
+        if not verify_password(data.password, admin["password"]):
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
+        token = generate_session_token()
+        session = {
+            "id": str(uuid.uuid4()),
+            "token": token,
+            "adminId": admin["id"],
+            "email": admin["email"],
+            "type": "admin",
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        }
+        await sessions_collection.insert_one(session)
+        return {
+            "success": True,
+            "token": token,
+            "role": "admin",
+            "permissions": None,
+            "admin": {"id": admin["id"], "email": admin["email"], "name": admin.get("name", "Admin")},
+        }
+
+    # ── Moderator login ──
+    moderator = await moderators_collection.find_one({"email": email}, {"_id": 0})
+    if not moderator:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    if not verify_password(data.password, admin["password"]):
+
+    if not moderator.get("isActive", True):
+        raise HTTPException(status_code=403, detail="Account disabled")
+
+    if not verify_password(data.password, moderator["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    # Create session
+
+    level = moderator.get("level", 1)
+    # Load configured permissions for this level (fallback to defaults)
+    perm_doc = await moderator_permissions_collection.find_one({"level": level}, {"_id": 0})
+    permissions = perm_doc.get("permissions", DEFAULT_LEVEL_PERMISSIONS[level]) if perm_doc else DEFAULT_LEVEL_PERMISSIONS[level]
+
     token = generate_session_token()
     session = {
         "id": str(uuid.uuid4()),
         "token": token,
-        "adminId": admin["id"],
-        "email": admin["email"],
-        "type": "admin",
-        "createdAt": datetime.now(timezone.utc).isoformat()
+        "moderatorId": moderator["id"],
+        "email": moderator["email"],
+        "type": "moderator",
+        "level": level,
+        "permissions": permissions,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
     }
     await sessions_collection.insert_one(session)
-    
     return {
         "success": True,
         "token": token,
-        "admin": {
-            "id": admin["id"],
-            "email": admin["email"],
-            "name": admin.get("name", "Admin")
-        }
+        "role": "moderator",
+        "level": level,
+        "permissions": permissions,
+        "admin": {"id": moderator["id"], "email": moderator["email"], "name": moderator.get("name", "Moderator")},
     }
 
 @app.post("/api/admin/logout")
@@ -2926,8 +3005,9 @@ async def get_all_purchases(
     endDate: Optional[str] = None
 ):
     """Get all purchases (admin only)"""
+    check_permission(session, "view_purchases")
     query = {}
-    
+
     if documentType:
         query["documentType"] = documentType
     
@@ -3137,6 +3217,7 @@ async def get_all_users(
     date_to: Optional[str] = None
 ):
     """Get all users (admin only) with optional filtering and search"""
+    check_permission(session, "view_users")
     # Build query based on filters
     query = {}
     conditions = []
@@ -3926,6 +4007,7 @@ async def update_purchase(purchase_id: str, data: ManualPurchaseCreate, session:
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: str, session: dict = Depends(get_current_admin)):
     """Delete a user (admin only)"""
+    check_permission(session, "edit_users")
     # Delete user's sessions
     await sessions_collection.delete_many({"userId": user_id})
     # Delete user's subscriptions
@@ -3944,6 +4026,7 @@ class UpdateUserDetails(BaseModel):
 @app.put("/api/admin/users/{user_id}")
 async def update_user_details(user_id: str, data: UpdateUserDetails, session: dict = Depends(get_current_admin)):
     """Update a user's details (admin only)"""
+    check_permission(session, "edit_users")
     user = await users_collection.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -3978,10 +4061,11 @@ async def update_user_details(user_id: str, data: UpdateUserDetails, session: di
 @app.put("/api/admin/users/{user_id}/ban")
 async def ban_user(user_id: str, session: dict = Depends(get_current_admin)):
     """Ban/unban a user (admin only)"""
+    check_permission(session, "edit_users")
     user = await users_collection.find_one({"id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     new_status = not user.get("isBanned", False)
     await users_collection.update_one(
         {"id": user_id},
@@ -4022,8 +4106,9 @@ async def get_all_saved_documents(
     session: dict = Depends(get_current_admin)
 ):
     """Get all saved documents (admin only)"""
+    check_permission(session, "view_saved_docs")
     query = {}
-    
+
     if userId:
         query["userId"] = userId
     if documentType and documentType != "all":
@@ -4320,12 +4405,14 @@ async def check_ip_ban(request: Request):
 @app.get("/api/admin/banned-ips")
 async def get_banned_ips(session: dict = Depends(get_current_admin)):
     """Get all banned IPs (admin only)"""
+    check_permission(session, "view_banned_ips")
     banned_ips = await banned_ips_collection.find({}, {"_id": 0}).sort("bannedAt", -1).to_list(1000)
     return {"success": True, "bannedIps": banned_ips}
 
 @app.post("/api/admin/banned-ips")
 async def ban_ip(data: BannedIPCreate, session: dict = Depends(get_current_admin)):
     """Ban an IP address (admin only)"""
+    check_permission(session, "manage_banned_ips")
     # Check if IP is already banned
     existing = await banned_ips_collection.find_one({"ip": data.ip})
     
@@ -4359,6 +4446,7 @@ async def ban_ip(data: BannedIPCreate, session: dict = Depends(get_current_admin
 @app.delete("/api/admin/banned-ips/{ip}")
 async def unban_ip(ip: str, session: dict = Depends(get_current_admin)):
     """Unban an IP address (admin only)"""
+    check_permission(session, "manage_banned_ips")
     # URL decode the IP (in case it was encoded)
     from urllib.parse import unquote
     decoded_ip = unquote(ip)
@@ -4427,12 +4515,14 @@ async def ban_user_ip(user_id: str, data: dict, session: dict = Depends(get_curr
 @app.get("/api/admin/discounts")
 async def get_discounts(session: dict = Depends(get_current_admin)):
     """Get all discount codes (admin only - token auth)"""
+    check_permission(session, "view_discounts")
     discounts = await discounts_collection.find({}, {"_id": 0}).to_list(1000)
     return discounts
 
 @app.post("/api/admin/discounts")
 async def create_discount(request: dict, session: dict = Depends(get_current_admin)):
     """Create a new discount code (admin only - token auth)"""
+    check_permission(session, "manage_discounts")
     discount = {
         "id": str(uuid.uuid4()),
         "code": request.get("code", "").upper(),
@@ -4460,6 +4550,7 @@ async def create_discount(request: dict, session: dict = Depends(get_current_adm
 @app.put("/api/admin/discounts/{discount_id}")
 async def update_discount(discount_id: str, request: dict, session: dict = Depends(get_current_admin)):
     """Update a discount code (admin only - token auth)"""
+    check_permission(session, "manage_discounts")
     update_data = {
         "code": request.get("code", "").upper(),
         "discountPercent": request.get("discountPercent"),
@@ -4485,6 +4576,7 @@ async def update_discount(discount_id: str, request: dict, session: dict = Depen
 @app.delete("/api/admin/discounts/{discount_id}")
 async def delete_discount(discount_id: str, session: dict = Depends(get_current_admin)):
     """Delete a discount code (admin only - token auth)"""
+    check_permission(session, "manage_discounts")
     result = await discounts_collection.delete_one({"id": discount_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Discount not found")
@@ -4530,6 +4622,7 @@ async def get_active_banner():
 @app.get("/api/admin/banner")
 async def get_banner_settings(session: dict = Depends(get_current_admin)):
     """Get banner settings (admin only)"""
+    check_permission(session, "view_site_settings")
     settings = await site_settings_collection.find_one({"key": "promotional_banner"}, {"_id": 0})
     
     if not settings:
@@ -4552,6 +4645,7 @@ async def get_banner_settings(session: dict = Depends(get_current_admin)):
 @app.put("/api/admin/banner")
 async def update_banner_settings(request: dict, session: dict = Depends(get_current_admin)):
     """Update promotional banner settings (admin only)"""
+    check_permission(session, "manage_site_settings")
     discount_id = request.get("discountId")
     discount_code = ""
     discount_percent = 0
@@ -4614,6 +4708,7 @@ async def get_maintenance_status():
 @app.get("/api/admin/maintenance")
 async def get_maintenance_settings(session: dict = Depends(get_current_admin)):
     """Get maintenance mode settings (admin only)"""
+    check_permission(session, "view_site_settings")
     settings = await site_settings_collection.find_one({"key": "maintenance_mode"}, {"_id": 0})
     
     if not settings:
@@ -4632,6 +4727,7 @@ async def get_maintenance_settings(session: dict = Depends(get_current_admin)):
 @app.put("/api/admin/maintenance")
 async def update_maintenance_settings(request: dict, session: dict = Depends(get_current_admin)):
     """Update maintenance mode settings (admin only)"""
+    check_permission(session, "manage_site_settings")
     maintenance_settings = {
         "key": "maintenance_mode",
         "isActive": request.get("isActive", False),
@@ -4669,6 +4765,7 @@ async def get_auth_status():
 @app.get("/api/admin/auth-settings")
 async def get_auth_settings(session: dict = Depends(get_current_admin)):
     """Get auth enabled settings (admin only)"""
+    check_permission(session, "view_site_settings")
     settings = await site_settings_collection.find_one({"key": "auth_enabled"}, {"_id": 0})
 
     if not settings:
@@ -4680,6 +4777,7 @@ async def get_auth_settings(session: dict = Depends(get_current_admin)):
 @app.put("/api/admin/auth-settings")
 async def update_auth_settings(request: dict, session: dict = Depends(get_current_admin)):
     """Update auth enabled setting (admin only)"""
+    check_permission(session, "manage_site_settings")
     auth_settings = {
         "key": "auth_enabled",
         "isEnabled": request.get("isEnabled", True),
@@ -4718,6 +4816,7 @@ EMAIL_TEMPLATE_DEFS = [
 @app.get("/api/admin/email-templates")
 async def get_email_templates(session: dict = Depends(get_current_admin)):
     """Get all email templates with their current overrides and settings (admin only)"""
+    check_permission(session, "view_email_templates")
     results = []
     for tmpl in EMAIL_TEMPLATE_DEFS:
         custom = await email_templates_collection.find_one({"name": tmpl["name"]}, {"_id": 0})
@@ -4740,6 +4839,7 @@ async def get_email_templates(session: dict = Depends(get_current_admin)):
 @app.put("/api/admin/email-templates/{name}")
 async def update_email_template(name: str, request: dict, session: dict = Depends(get_current_admin)):
     """Save a custom email template override (admin only)"""
+    check_permission(session, "manage_email_templates")
     valid_names = {t["name"] for t in EMAIL_TEMPLATE_DEFS}
     if name not in valid_names:
         raise HTTPException(status_code=404, detail="Template not found")
@@ -4762,6 +4862,7 @@ async def update_email_template(name: str, request: dict, session: dict = Depend
 @app.put("/api/admin/email-settings/{name}")
 async def update_email_settings(name: str, request: dict, session: dict = Depends(get_current_admin)):
     """Save email enabled/delay_minutes settings independently of template content (admin only)"""
+    check_permission(session, "manage_email_templates")
     valid_names = {t["name"] for t in EMAIL_TEMPLATE_DEFS}
     if name not in valid_names:
         raise HTTPException(status_code=404, detail="Template not found")
@@ -4788,6 +4889,7 @@ async def update_email_settings(name: str, request: dict, session: dict = Depend
 @app.delete("/api/admin/email-templates/{name}")
 async def reset_email_template(name: str, session: dict = Depends(get_current_admin)):
     """Delete a custom template override, reverting to the hardcoded default (admin only)"""
+    check_permission(session, "manage_email_templates")
     await email_templates_collection.delete_one({"name": name})
     return {"success": True}
 
@@ -4838,6 +4940,7 @@ async def send_mass_email(request: dict, background_tasks: BackgroundTasks, sess
     Body: { subject, html_body, preview_text?, excluded_emails: [] }
     Returns a job_id the client can poll with GET /api/admin/mass-email/status/{job_id}
     """
+    check_permission(session, "send_mass_email")
     subject = (request.get("subject") or "").strip()
     html_body = (request.get("html_body") or "").strip()
     preview_text = (request.get("preview_text") or "").strip()
@@ -4879,6 +4982,123 @@ async def get_mass_email_status(job_id: str, session: dict = Depends(get_current
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return {"success": True, **job}
+
+
+# ─────────────────────────────────────────────────────────────
+# Moderator Management (admin-only)
+# ─────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/moderators")
+async def list_moderators(session: dict = Depends(require_admin_only)):
+    mods = await moderators_collection.find({}, {"_id": 0, "password": 0}).sort("createdAt", -1).to_list(1000)
+    return {"success": True, "moderators": mods}
+
+
+@app.post("/api/admin/moderators")
+async def create_moderator(request: dict, session: dict = Depends(require_admin_only)):
+    name = (request.get("name") or "").strip()
+    email = (request.get("email") or "").strip().lower()
+    password = (request.get("password") or "").strip()
+    level = int(request.get("level", 1))
+
+    if not name or not email or not password:
+        raise HTTPException(status_code=400, detail="name, email, and password are required")
+    if level not in (1, 2, 3):
+        raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
+
+    existing_admin = await admins_collection.find_one({"email": email})
+    existing_mod = await moderators_collection.find_one({"email": email})
+    if existing_admin or existing_mod:
+        raise HTTPException(status_code=400, detail="Email already in use")
+
+    moderator = {
+        "id": str(uuid.uuid4()),
+        "email": email,
+        "password": hash_password(password),
+        "name": name,
+        "level": level,
+        "isActive": True,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "createdBy": session.get("adminId", ""),
+    }
+    await moderators_collection.insert_one(moderator)
+    moderator.pop("_id", None)
+    moderator.pop("password", None)
+    return {"success": True, "moderator": moderator}
+
+
+@app.put("/api/admin/moderators/{mod_id}")
+async def update_moderator(mod_id: str, request: dict, session: dict = Depends(require_admin_only)):
+    mod = await moderators_collection.find_one({"id": mod_id})
+    if not mod:
+        raise HTTPException(status_code=404, detail="Moderator not found")
+
+    update_data: dict = {"updatedAt": datetime.now(timezone.utc).isoformat()}
+    if "name" in request and request["name"]:
+        update_data["name"] = request["name"].strip()
+    if "email" in request and request["email"]:
+        new_email = request["email"].strip().lower()
+        if new_email != mod["email"]:
+            clash_admin = await admins_collection.find_one({"email": new_email})
+            clash_mod = await moderators_collection.find_one({"email": new_email, "id": {"$ne": mod_id}})
+            if clash_admin or clash_mod:
+                raise HTTPException(status_code=400, detail="Email already in use")
+        update_data["email"] = new_email
+    if "password" in request and request["password"]:
+        update_data["password"] = hash_password(request["password"])
+    if "level" in request:
+        lvl = int(request["level"])
+        if lvl not in (1, 2, 3):
+            raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
+        update_data["level"] = lvl
+    if "isActive" in request:
+        update_data["isActive"] = bool(request["isActive"])
+        if not request["isActive"]:
+            # Invalidate all active sessions for this moderator
+            await sessions_collection.delete_many({"moderatorId": mod_id})
+
+    await moderators_collection.update_one({"id": mod_id}, {"$set": update_data})
+    return {"success": True}
+
+
+@app.delete("/api/admin/moderators/{mod_id}")
+async def delete_moderator(mod_id: str, session: dict = Depends(require_admin_only)):
+    result = await moderators_collection.delete_one({"id": mod_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Moderator not found")
+    await sessions_collection.delete_many({"moderatorId": mod_id})
+    return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Moderator Level Permissions (admin-only)
+# ─────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/moderator-permissions")
+async def get_moderator_permissions(session: dict = Depends(require_admin_only)):
+    result = {}
+    for level in (1, 2, 3):
+        doc = await moderator_permissions_collection.find_one({"level": level}, {"_id": 0})
+        result[str(level)] = doc.get("permissions", DEFAULT_LEVEL_PERMISSIONS[level]) if doc else DEFAULT_LEVEL_PERMISSIONS[level]
+    return {"success": True, "permissions": result}
+
+
+@app.put("/api/admin/moderator-permissions/{level}")
+async def update_moderator_permissions(level: int, request: dict, session: dict = Depends(require_admin_only)):
+    if level not in (1, 2, 3):
+        raise HTTPException(status_code=400, detail="level must be 1, 2, or 3")
+    perms = {k: bool(v) for k, v in request.get("permissions", {}).items() if k in ALL_PERMISSIONS}
+    await moderator_permissions_collection.update_one(
+        {"level": level},
+        {"$set": {"level": level, "permissions": perms, "updatedAt": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    # Update all active sessions for moderators of this level
+    await sessions_collection.update_many(
+        {"type": "moderator", "level": level},
+        {"$set": {"permissions": perms}},
+    )
+    return {"success": True}
 
 
 @app.post("/api/parse-resume")
@@ -5751,6 +5971,7 @@ async def get_admin_blog_posts(
     status: Optional[str] = None
 ):
     """Get all blog posts (admin)"""
+    check_permission(session, "view_blog")
     query = {}
     if status:
         query["status"] = status
@@ -5784,6 +6005,7 @@ async def get_admin_blog_post(post_id: str, session: dict = Depends(get_current_
 @app.post("/api/admin/blog/posts")
 async def create_blog_post(data: BlogPostCreate, session: dict = Depends(get_current_admin)):
     """Create a new blog post (admin)"""
+    check_permission(session, "manage_blog")
     # Check for duplicate slug
     existing = await blog_posts_collection.find_one({"slug": data.slug})
     if existing:
@@ -5823,6 +6045,7 @@ async def create_blog_post(data: BlogPostCreate, session: dict = Depends(get_cur
 @app.put("/api/admin/blog/posts/{post_id}")
 async def update_blog_post(post_id: str, data: BlogPostUpdate, session: dict = Depends(get_current_admin)):
     """Update a blog post (admin)"""
+    check_permission(session, "manage_blog")
     existing = await blog_posts_collection.find_one({"id": post_id})
     if not existing:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -5850,6 +6073,7 @@ async def update_blog_post(post_id: str, data: BlogPostUpdate, session: dict = D
 @app.delete("/api/admin/blog/posts/{post_id}")
 async def delete_blog_post(post_id: str, session: dict = Depends(get_current_admin)):
     """Delete a blog post (admin)"""
+    check_permission(session, "manage_blog")
     result = await blog_posts_collection.delete_one({"id": post_id})
     
     if result.deleted_count == 0:

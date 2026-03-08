@@ -5,7 +5,7 @@ import {
   LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
   Shield, Menu, X, FolderArchive, Mail, SlidersHorizontal,
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
-  FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink,
+  FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -121,6 +121,8 @@ export default function AdminLayout({ children }) {
     } catch (e) {}
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminInfo");
+    localStorage.removeItem("adminRole");
+    localStorage.removeItem("adminPermissions");
     navigate("/admin/login");
   };
 
@@ -135,24 +137,39 @@ export default function AdminLayout({ children }) {
     if (path.includes("/admin/mass-email")) return "mass-email";
     if (path.includes("/admin/blog")) return "blog";
     if (path.includes("/admin/site-settings")) return "site-settings";
+    if (path.includes("/admin/moderators")) return "moderators";
     if (path.includes("/admin/settings")) return "settings";
     return "overview";
   };
 
   const activeTab = getActiveTab();
 
-  const tabs = [
-    { id: "overview",        label: "Overview",         icon: LayoutDashboard,   path: "/admin/overview" },
-    { id: "purchases",       label: "Purchases",        icon: ShoppingCart,      path: "/admin/purchases" },
-    { id: "users",           label: "Users",            icon: Users,             path: "/admin/users" },
-    { id: "saved-docs",      label: "Saved Docs",       icon: FolderArchive,     path: "/admin/saved-docs" },
-    { id: "discounts",       label: "Discounts",        icon: Tag,               path: "/admin/discounts" },
-    { id: "banned-ips",      label: "Banned IPs",       icon: Shield,            path: "/admin/banned-ips" },
-    { id: "blog",            label: "Blog",             icon: FileText,          path: "/admin/blog" },
-    { id: "email-templates", label: "Email Templates",  icon: Mail,              path: "/admin/email-templates" },
-    { id: "mass-email",      label: "Mass Email",       icon: Send,              path: "/admin/mass-email" },
-    { id: "site-settings",   label: "Site Settings",    icon: SlidersHorizontal, path: "/admin/site-settings" },
+  // Permission helpers
+  const adminRole = localStorage.getItem("adminRole") || "admin";
+  const adminPermissions = (() => {
+    try { return JSON.parse(localStorage.getItem("adminPermissions")); } catch { return null; }
+  })();
+  const isFullAdmin = adminRole === "admin";
+  const hasPerm = (key) => isFullAdmin || (adminPermissions && adminPermissions[key]);
+
+  const allTabs = [
+    { id: "overview",        label: "Overview",         icon: LayoutDashboard,   path: "/admin/overview",         perm: null },
+    { id: "purchases",       label: "Purchases",        icon: ShoppingCart,      path: "/admin/purchases",        perm: "view_purchases" },
+    { id: "users",           label: "Users",            icon: Users,             path: "/admin/users",            perm: "view_users" },
+    { id: "saved-docs",      label: "Saved Docs",       icon: FolderArchive,     path: "/admin/saved-docs",       perm: "view_saved_docs" },
+    { id: "discounts",       label: "Discounts",        icon: Tag,               path: "/admin/discounts",        perm: "view_discounts" },
+    { id: "banned-ips",      label: "Banned IPs",       icon: Shield,            path: "/admin/banned-ips",       perm: "view_banned_ips" },
+    { id: "blog",            label: "Blog",             icon: FileText,          path: "/admin/blog",             perm: "view_blog" },
+    { id: "email-templates", label: "Email Templates",  icon: Mail,              path: "/admin/email-templates",  perm: "view_email_templates" },
+    { id: "mass-email",      label: "Mass Email",       icon: Send,              path: "/admin/mass-email",       perm: "send_mass_email" },
+    { id: "site-settings",   label: "Site Settings",    icon: SlidersHorizontal, path: "/admin/site-settings",    perm: "view_site_settings" },
+    { id: "moderators",      label: "Moderators",       icon: UserCog,           path: "/admin/moderators",       perm: "admin_only" },
   ];
+  const tabs = allTabs.filter((t) => {
+    if (t.perm === null) return true;
+    if (t.perm === "admin_only") return isFullAdmin;
+    return hasPerm(t.perm);
+  });
 
   const handleNavigation = (path) => {
     navigate(path);

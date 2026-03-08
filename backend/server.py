@@ -2744,7 +2744,60 @@ async def reactivate_stripe_subscription(session: dict = Depends(get_current_use
         )
         
         return {"success": True, "message": "Subscription reactivated"}
-        
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/billing/portal")
+async def create_billing_portal_session(request: Request, session: dict = Depends(get_current_user)):
+    """Create a Stripe Customer Portal session for self-serve billing management"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    customer_id = user.get("subscription", {}).get("stripeCustomerId") if user else None
+
+    if not customer_id:
+        raise HTTPException(status_code=400, detail="No billing account found. Please contact support.")
+
+    frontend_url = os.getenv("FRONTEND_URL", "https://mintslip.com")
+    try:
+        portal_session = await asyncio.to_thread(
+            stripe.billing_portal.Session.create,
+            **{"customer": customer_id, "return_url": f"{frontend_url}/user/settings"}
+        )
+        return {"success": True, "url": portal_session.url}
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/user/invoices")
+async def get_user_invoices(session: dict = Depends(get_current_user)):
+    """Fetch the user's Stripe invoice history"""
+    user = await users_collection.find_one({"id": session["userId"]})
+    customer_id = user.get("subscription", {}).get("stripeCustomerId") if user else None
+
+    if not customer_id:
+        return {"success": True, "invoices": []}
+
+    try:
+        invoices_resp = await asyncio.to_thread(
+            stripe.Invoice.list,
+            **{"customer": customer_id, "limit": 24, "expand": ["data.subscription"]}
+        )
+        result = []
+        for inv in invoices_resp.data:
+            result.append({
+                "id": inv.id,
+                "amount": inv.amount_paid / 100,
+                "currency": (inv.currency or "usd").upper(),
+                "status": inv.status,
+                "date": datetime.fromtimestamp(inv.created, tz=timezone.utc).isoformat(),
+                "period_start": datetime.fromtimestamp(inv.period_start, tz=timezone.utc).isoformat() if inv.period_start else None,
+                "period_end": datetime.fromtimestamp(inv.period_end, tz=timezone.utc).isoformat() if inv.period_end else None,
+                "pdf_url": inv.invoice_pdf,
+                "hosted_url": inv.hosted_invoice_url,
+                "description": inv.lines.data[0].description if inv.lines and inv.lines.data else None,
+            })
+        return {"success": True, "invoices": result}
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

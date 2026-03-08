@@ -42,7 +42,13 @@ import {
   FolderArchive,
   Mail,
   Eye,
-  EyeOff
+  EyeOff,
+  ExternalLink,
+  Receipt,
+  Download,
+  CheckCircle,
+  XCircle,
+  Clock
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -77,6 +83,9 @@ export default function UserSettings() {
     showPassword: false
   });
   const [emailError, setEmailError] = useState("");
+  const [invoices, setInvoices] = useState([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("userToken");
@@ -91,6 +100,7 @@ export default function UserSettings() {
       setUser(JSON.parse(userInfo));
       // Fetch fresh user data from backend
       fetchUserProfile(token);
+      fetchInvoices(token);
     } catch (e) {
       navigate("/login");
     }
@@ -114,6 +124,38 @@ export default function UserSettings() {
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
+    }
+  };
+
+  const fetchInvoices = async (token) => {
+    setInvoicesLoading(true);
+    try {
+      const t = token || localStorage.getItem("userToken");
+      const res = await fetch(`${BACKEND_URL}/api/user/invoices`, {
+        headers: { "Authorization": `Bearer ${t}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setInvoices(data.invoices);
+      }
+    } catch (e) {}
+    setInvoicesLoading(false);
+  };
+
+  const handleOpenBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const token = localStorage.getItem("userToken");
+      const res = await fetch(`${BACKEND_URL}/api/billing/portal`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to open billing portal");
+      window.location.href = data.url;
+    } catch (error) {
+      toast.error(error.message);
+      setPortalLoading(false);
     }
   };
 
@@ -560,6 +602,15 @@ export default function UserSettings() {
                     <ArrowUp className="w-4 h-4" />
                     Change Plan
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleOpenBillingPortal}
+                    disabled={portalLoading}
+                    className="gap-2"
+                  >
+                    {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                    Manage Billing
+                  </Button>
                   {user?.subscription?.status !== 'cancelling' && (
                     <Button
                       variant="outline"
@@ -647,6 +698,72 @@ export default function UserSettings() {
             )}
           </div>
         </div>
+
+        {/* Billing History */}
+        {invoices.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 mb-6">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <Receipt className="w-5 h-5" />
+                Billing History
+              </h2>
+              <button
+                onClick={handleOpenBillingPortal}
+                disabled={portalLoading}
+                className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Manage in Stripe
+              </button>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {invoicesLoading ? (
+                <div className="p-6 flex justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                </div>
+              ) : (
+                invoices.map((inv) => {
+                  const statusIcon = inv.status === "paid"
+                    ? <CheckCircle className="w-4 h-4 text-green-500" />
+                    : inv.status === "void" || inv.status === "uncollectible"
+                    ? <XCircle className="w-4 h-4 text-red-400" />
+                    : <Clock className="w-4 h-4 text-amber-400" />;
+                  return (
+                    <div key={inv.id} className="px-6 py-4 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {statusIcon}
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-800 truncate">
+                            {inv.description || "Subscription"}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {new Date(inv.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-sm font-semibold text-slate-800">
+                          ${inv.amount.toFixed(2)} {inv.currency}
+                        </span>
+                        {inv.pdf_url && (
+                          <a
+                            href={inv.pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
+                            title="Download PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Security Section */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-100">

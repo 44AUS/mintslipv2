@@ -5,7 +5,7 @@ import {
   LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
   Shield, Menu, X, FolderArchive, Mail, SlidersHorizontal,
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
-  FileBarChart, Building2, Car, Briefcase, User, Send,
+  FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -217,6 +217,17 @@ export default function AdminLayout({ children }) {
 
           {/* Right: Notifications + Admin dropdown */}
           <div className="flex items-center gap-1 ml-auto">
+
+            {/* Main site link */}
+            <a
+              href="https://mintslip.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">View Site</span>
+            </a>
 
             {/* Notifications */}
             <div className="relative" ref={notifRef}>

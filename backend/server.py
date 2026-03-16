@@ -7826,7 +7826,7 @@ async def wp_phone_lookup(phone: str) -> dict | None:
                 logger.warning(f"Whitepages phone error {r.status_code}: {r.text[:300]}")
                 return None
             d = r.json()
-        results = d.get("results", [])
+        results = d if isinstance(d, list) else d.get("results", [])
         logger.info(f"Whitepages phone results count: {len(results)}")
         if not results:
             return None
@@ -7915,8 +7915,9 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
                 logger.warning(f"Whitepages person error {r.status_code}: {r.text[:300]}")
                 return None
             d = r.json()
-        results = d.get("results", [])
-        logger.info(f"Whitepages person results count: {len(results)}, top-level keys: {list(d.keys())}")
+        # v1 API returns a list directly or {"results": [...]}
+        results = d if isinstance(d, list) else d.get("results", [])
+        logger.info(f"Whitepages person results count: {len(results)}")
         if not results:
             return None
         return [_parse(p) for p in results[:5]]
@@ -7946,7 +7947,7 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
                 logger.warning(f"Whitepages address error {r.status_code}: {r.text[:200]}")
                 return None
             d = r.json()
-        results = d.get("results", [])
+        results = d if isinstance(d, list) else d.get("results", [])
         if not results:
             return None
         loc = results[0]

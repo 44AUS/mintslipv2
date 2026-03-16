@@ -87,12 +87,12 @@ function SimpleLookupResult({ data, lookupType, blurred, query }) {
   const rows = [];
   if (lookupType === "carrier_lookup") {
     rows.push(
-      { label: "Phone",     value: data?.phone,                                            blur: false },
-      { label: "Carrier",   value: data?.carrier,                                          blur: false },
-      { label: "Line Type", value: data?.lineType,                                         blur: false },
-      { label: "Region",    value: data?.region,                                           blur: false },
-      { label: "Status",    value: data?.valid === false ? "Invalid" : "Valid",            blur: false },
-      { label: "Country",   value: data?.countryCode,                                      blur: false },
+      { label: "Phone",     value: data?.phone,                                 blur: false },
+      { label: "Carrier",   value: data?.carrier,                               blur: b },
+      { label: "Line Type", value: data?.lineType,                              blur: b },
+      { label: "Region",    value: data?.region,                                blur: false },
+      { label: "Status",    value: data?.valid === false ? "Invalid" : "Valid", blur: false },
+      { label: "Country",   value: data?.countryCode,                           blur: false },
     );
   } else if (lookupType === "phone_lookup") {
     rows.push(
@@ -271,7 +271,7 @@ export default function PeopleSearchResult() {
     return parts.join(" ");
   })();
 
-  const isSimpleLookup = lookupType === "phone_lookup" || lookupType === "address_lookup";
+  const isSimpleLookup = lookupType === "phone_lookup" || lookupType === "address_lookup" || lookupType === "carrier_lookup";
 
   if (loading) return (
     <>
@@ -308,23 +308,38 @@ export default function PeopleSearchResult() {
           <div className="bg-white rounded-xl border border-slate-200 mb-4 px-6 py-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{name}</h1>
-                <div className="mt-1.5 space-y-0.5">
-                  {(age || dob?.month) && (
-                    <p className="text-sm text-slate-600">
-                      Age {age ?? "Unknown"}{dob?.month && dob?.year ? `, Born ${dob.month} ${dob.year}` : ""}
+                {lookupType === "carrier_lookup" ? (
+                  <>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Phone className="w-5 h-5 text-slate-400" />
+                      <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{d?.phone || query}</h1>
+                    </div>
+                    {d?.region && <p className="text-sm text-slate-600 mt-0.5">{d.region}</p>}
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      {d?.valid === false ? "Invalid number" : "Valid number"}{d?.countryCode ? ` · ${d.countryCode}` : ""}
                     </p>
-                  )}
-                  {locationSummary && <p className="text-sm text-slate-600">Lives in {locationSummary}</p>}
-                  {phoneList.length > 0 && (
-                    <p className="text-sm">
-                      {isPaid
-                        ? <span className="text-slate-600">{phoneList[0]}</span>
-                        : <span className="blur-[5px] select-none text-slate-400">{phoneList[0]}</span>
-                      }
-                    </p>
-                  )}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{name}</h1>
+                    <div className="mt-1.5 space-y-0.5">
+                      {(age || dob?.month) && (
+                        <p className="text-sm text-slate-600">
+                          Age {age ?? "Unknown"}{dob?.month && dob?.year ? `, Born ${dob.month} ${dob.year}` : ""}
+                        </p>
+                      )}
+                      {locationSummary && <p className="text-sm text-slate-600">Lives in {locationSummary}</p>}
+                      {phoneList.length > 0 && (
+                        <p className="text-sm">
+                          {isPaid
+                            ? <span className="text-slate-600">{phoneList[0]}</span>
+                            : <span className="blur-[5px] select-none text-slate-400">{phoneList[0]}</span>
+                          }
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
               {isPaid ? (
                 <div className="flex items-center gap-3 flex-shrink-0">

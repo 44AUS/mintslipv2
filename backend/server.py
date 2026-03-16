@@ -8165,6 +8165,21 @@ async def people_search_prices_endpoint():
     return await get_people_search_prices()
 
 
+@app.get("/api/people-search/debug-raw")
+async def people_search_debug_raw(name: str = "John Smith", state: str = "WA", phone: str = ""):
+    """Temporary debug endpoint — returns raw Whitepages v1 responses."""
+    if not WHITEPAGES_PRO_API_KEY:
+        return {"error": "No API key set"}
+    out = {}
+    async with httpx.AsyncClient(timeout=10) as client:
+        if phone:
+            r = await client.get(f"{_WP_BASE}/phone", params={"phone_number": re.sub(r'[^\d]','',phone)}, headers={"x-api-key": WHITEPAGES_PRO_API_KEY})
+            out["phone"] = {"status": r.status_code, "body": r.json() if r.status_code == 200 else r.text}
+        r = await client.get(f"{_WP_BASE}/person", params={"name": name, "state_code": state}, headers={"x-api-key": WHITEPAGES_PRO_API_KEY})
+        out["person"] = {"status": r.status_code, "body": r.json() if r.status_code == 200 else r.text}
+    return out
+
+
 @app.post("/api/people-search/search")
 async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
     """Run a people search and return blurred preview. Full result stored in DB."""

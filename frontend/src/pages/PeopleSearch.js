@@ -292,19 +292,19 @@ function ResultCard({ entry, lookupType, query }) {
               {addrPreview && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Addresses</span>
-                  <span className="text-sm text-slate-700">{addrPreview}</span>
+                  <span className="text-sm text-slate-400 blur-[4px] select-none">{addrPreview}</span>
                 </div>
               )}
               {relatives && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Related To</span>
-                  <span className="text-sm text-slate-700">{relatives}</span>
+                  <span className="text-sm text-slate-400 blur-[4px] select-none">{relatives}</span>
                 </div>
               )}
               {emailRaw && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Email</span>
-                  <EmailPreview email={emailRaw} />
+                  <span className="text-sm text-slate-400 blur-[4px] select-none">{emailRaw}</span>
                 </div>
               )}
             </div>

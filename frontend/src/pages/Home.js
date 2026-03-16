@@ -1267,7 +1267,6 @@ export default function Home() {
             >
               <Search className="w-5 h-5" />
               People Search
-              <span className="text-[10px] font-bold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

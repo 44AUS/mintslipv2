@@ -202,25 +202,12 @@ export default function PeopleSearch() {
         .then(r => r.json())
         .then(data => {
           if (data.paid && data.result) {
-            // Restore the results list from sessionStorage if available, then mark the paid card
-            const saved = sessionStorage.getItem("ps_results");
-            const savedLt = sessionStorage.getItem("ps_lookupType");
-            const savedQ  = sessionStorage.getItem("ps_query");
-            if (saved) {
-              const parsed = JSON.parse(saved);
-              const updated = parsed.map(r =>
-                r.searchId === sid
-                  ? { ...r, paid: true, fullResult: data.result }
-                  : r
-              );
-              setResults(updated);
-              setLookupType(savedLt || data.lookupType);
-              setQuery(savedQ || "");
-            } else {
-              // No saved list — show a single unlocked card
-              setResults([{ searchId: sid, preview: null, price: null, paid: true, fullResult: data.result }]);
-              setLookupType(data.lookupType);
-            }
+            // Only show the single unlocked report
+            setResults([{ searchId: sid, preview: null, price: null, paid: true, fullResult: data.result }]);
+            setLookupType(data.lookupType);
+            sessionStorage.removeItem("ps_results");
+            sessionStorage.removeItem("ps_lookupType");
+            sessionStorage.removeItem("ps_query");
             toast.success("Payment confirmed – full report unlocked!");
           }
         })

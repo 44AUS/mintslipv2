@@ -7870,10 +7870,29 @@ async def wp_phone_lookup(phone: str) -> dict | None:
         return None
 
 
-async def wp_person_lookup(first: str, last: str, state: str) -> dict | None:
-    """Whitepages Pro Person Search — returns normalized result dict."""
+async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | None:
+    """Whitepages Pro Person Search — returns list of up to 5 normalized results."""
     if not WHITEPAGES_PRO_API_KEY:
         return None
+
+    def _parse(p):
+        name_obj   = p.get("name") or {}
+        full_name  = name_obj.get("full_name") or f"{first} {last}"
+        age_range  = p.get("age_range") or ""
+        cur_addrs  = [a.get("full_address") for a in p.get("current_addresses", []) if a.get("full_address")]
+        hist_addrs = [a.get("full_address") for a in p.get("historical_addresses", []) if a.get("full_address")]
+        phones     = [_wp_format_phone(ph.get("phone_number", "")) for ph in p.get("phones", []) if ph.get("phone_number")]
+        relatives  = _wp_names_from_person(p)
+        st         = state or (p.get("current_addresses") or [{}])[0].get("state_code", "")
+        return {
+            "fullName":          full_name,
+            "ageRange":          age_range or None,
+            "possibleAddresses": (cur_addrs + hist_addrs) or None,
+            "possiblePhones":    phones or None,
+            "possibleRelatives": relatives or None,
+            "state":             st or None,
+        }
+
     try:
         params = {"name": f"{first} {last}", "api_key": WHITEPAGES_PRO_API_KEY}
         if state:
@@ -7887,29 +7906,7 @@ async def wp_person_lookup(first: str, last: str, state: str) -> dict | None:
         results = d.get("results", [])
         if not results:
             return None
-        p = results[0]
-
-        name_obj = p.get("name") or {}
-        full_name = name_obj.get("full_name") or f"{first} {last}"
-        age_range = p.get("age_range") or ""
-
-        cur_addrs = [a.get("full_address") for a in p.get("current_addresses", []) if a.get("full_address")]
-        hist_addrs = [a.get("full_address") for a in p.get("historical_addresses", []) if a.get("full_address")]
-        all_addrs = cur_addrs + hist_addrs
-
-        phones = [_wp_format_phone(ph.get("phone_number", "")) for ph in p.get("phones", []) if ph.get("phone_number")]
-        relatives = _wp_names_from_person(p)
-
-        st = state or (p.get("current_addresses") or [{}])[0].get("state_code", "")
-
-        return {
-            "fullName":          full_name,
-            "ageRange":          age_range or None,
-            "possibleAddresses": all_addrs or None,
-            "possiblePhones":    phones or None,
-            "possibleRelatives": relatives or None,
-            "state":             st or None,
-        }
+        return [_parse(p) for p in results[:5]]
     except Exception as e:
         logger.warning(f"Whitepages person lookup error: {e}")
         return None
@@ -8011,18 +8008,22 @@ def mock_phone_lookup(phone: str) -> dict:
         "callerType": rng.choice(["Individual","Business","Unknown"]),
     }
 
-def mock_name_lookup(first: str, last: str, state: str) -> dict:
-    rng = _rng(f"{first}{last}{state}")
-    age = rng.randint(25, 75)
-    st = state or rng.choice(_STATES)
-    return {
-        "fullName": f"{first} {last}",
-        "ageRange": f"{age}-{age+5}",
-        "possibleAddresses": [_addr(rng, state=st), _addr(rng)],
-        "possiblePhones": [_phone(rng) for _ in range(rng.randint(1,3))],
-        "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2,4))],
-        "state": st,
-    }
+def mock_name_lookup(first: str, last: str, state: str) -> list[dict]:
+    """Return 2-3 mock matches for name lookup (simulates multiple people with same name)."""
+    results = []
+    for i in range(3):
+        rng = _rng(f"{first}{last}{state}{i}")
+        age = rng.randint(25, 75)
+        st = state or rng.choice(_STATES)
+        results.append({
+            "fullName": f"{first} {last}",
+            "ageRange": f"{age}-{age+5}",
+            "possibleAddresses": [_addr(rng, state=st), _addr(rng)],
+            "possiblePhones": [_phone(rng) for _ in range(rng.randint(1, 3))],
+            "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2, 4))],
+            "state": st,
+        })
+    return results
 
 def mock_address_lookup(street: str, city: str, state: str) -> dict:
     rng = _rng(f"{street}{city}{state}")
@@ -8037,22 +8038,26 @@ def mock_address_lookup(street: str, city: str, state: str) -> dict:
         "squareFeet": f"{rng.randint(800,4500):,}",
     }
 
-def mock_background_report(first: str, last: str, state: str) -> dict:
-    rng = _rng(f"{first}{last}{state}bg")
-    age = rng.randint(25, 75)
-    st = state or rng.choice(_STATES)
-    return {
-        "fullName": f"{first} {last}",
-        "ageRange": f"{age}-{age+5}",
-        "phones": [_phone(rng) for _ in range(rng.randint(1,4))],
-        "currentAddress": _addr(rng, state=st),
-        "pastAddresses": [_addr(rng), _addr(rng)],
-        "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2,5))],
-        "state": st,
-        "publicRecords": rng.choice(["None found","Traffic violation (2019)","Small claims court (2017)","None found","None found"]),
-        "education": rng.choice(["State University","Community College","Unknown"]),
-        "estimatedAge": str(age),
-    }
+def mock_background_report(first: str, last: str, state: str) -> list[dict]:
+    """Return 2-3 mock matches for background report."""
+    results = []
+    for i in range(3):
+        rng = _rng(f"{first}{last}{state}bg{i}")
+        age = rng.randint(25, 75)
+        st = state or rng.choice(_STATES)
+        results.append({
+            "fullName": f"{first} {last}",
+            "ageRange": f"{age}-{age+5}",
+            "phones": [_phone(rng) for _ in range(rng.randint(1, 4))],
+            "currentAddress": _addr(rng, state=st),
+            "pastAddresses": [_addr(rng), _addr(rng)],
+            "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2, 5))],
+            "state": st,
+            "publicRecords": rng.choice(["None found","Traffic violation (2019)","Small claims court (2017)","None found","None found"]),
+            "education": rng.choice(["State University","Community College","Unknown"]),
+            "estimatedAge": str(age),
+        })
+    return results
 
 def blur_result(data: dict, lookup_type: str) -> dict:
     """Return a copy of data with sensitive fields partially redacted for preview."""
@@ -8150,102 +8155,109 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         raise HTTPException(status_code=400, detail="Invalid lookup type")
 
     # ── Run search: Whitepages Pro when key configured, mock otherwise ──────────
+    # full_results is always a list; single-result lookups wrap in list
     if lt == "phone_lookup":
         if not data.phone:
             raise HTTPException(status_code=400, detail="Phone number required")
         phone_clean = re.sub(r"[^\d]", "", data.phone)
         if len(phone_clean) < 10:
             raise HTTPException(status_code=400, detail="Invalid phone number – must be 10 digits")
-
         wp = await wp_phone_lookup(phone_clean)
-        if wp:
-            # Use Whitepages as primary; fill any missing fields from mock
-            mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
-            full_result = {**mock_base, **{k: v for k, v in wp.items() if v is not None}}
-        else:
-            full_result = await asyncio.to_thread(mock_phone_lookup, phone_clean)
-
+        mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
+        single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
+        full_results = [single]
         query_summary = data.phone
 
     elif lt == "name_lookup":
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
-
-        wp = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
-        if wp:
-            mock_base = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
-            full_result = {**mock_base, **{k: v for k, v in wp.items() if v is not None}}
+        wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+        mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
+        if wp_list:
+            # Merge: use WP results, pad with mock if fewer than mock count
+            full_results = []
+            for i, wp_item in enumerate(wp_list):
+                mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
+                full_results.append({**mock_fallback, **{k: v for k, v in wp_item.items() if v is not None}})
         else:
-            full_result = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
-
+            full_results = mock_list
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 
     elif lt == "address_lookup":
         if not data.street or not data.city:
             raise HTTPException(status_code=400, detail="Street and city required")
-
         wp = await wp_address_lookup(data.street, data.city, data.state or "")
-        if wp:
-            mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
-            full_result = {**mock_base, **{k: v for k, v in wp.items() if v is not None}}
-        else:
-            full_result = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
-
+        mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
+        single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
+        full_results = [single]
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
 
-    else:  # background_report — use Whitepages person search (deepest result set)
+    else:  # background_report
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
-
-        wp = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
-        mock_base = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
-        if wp:
-            # Map person fields → background report fields
-            full_result = dict(mock_base)
-            if wp.get("possiblePhones"):    full_result["phones"] = wp["possiblePhones"]
-            if wp.get("possibleAddresses"):
-                addrs = wp["possibleAddresses"]
-                full_result["currentAddress"]  = addrs[0] if addrs else full_result["currentAddress"]
-                full_result["pastAddresses"]   = addrs[1:] if len(addrs) > 1 else full_result["pastAddresses"]
-            if wp.get("possibleRelatives"):  full_result["possibleRelatives"] = wp["possibleRelatives"]
-            if wp.get("ageRange"):           full_result["ageRange"] = wp["ageRange"]
-            if wp.get("state"):              full_result["state"] = wp["state"]
+        wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+        mock_list = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
+        if wp_list:
+            full_results = []
+            for i, wp_item in enumerate(wp_list):
+                mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
+                r = dict(mock_fallback)
+                if wp_item.get("possiblePhones"):    r["phones"] = wp_item["possiblePhones"]
+                if wp_item.get("possibleAddresses"):
+                    addrs = wp_item["possibleAddresses"]
+                    r["currentAddress"] = addrs[0] if addrs else r["currentAddress"]
+                    r["pastAddresses"]  = addrs[1:] if len(addrs) > 1 else r["pastAddresses"]
+                if wp_item.get("possibleRelatives"): r["possibleRelatives"] = wp_item["possibleRelatives"]
+                if wp_item.get("ageRange"):          r["ageRange"] = wp_item["ageRange"]
+                if wp_item.get("state"):             r["state"] = wp_item["state"]
+                full_results.append(r)
         else:
-            full_result = mock_base
-
+            full_results = mock_list
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 
     prices = await get_people_search_prices()
     price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES[lt])
 
-    search_id = str(uuid.uuid4())
-    log_entry = {
-        "id": search_id,
-        "lookupType": lt,
-        "query": query_summary,
-        "fullResult": full_result,
-        "price": price,
-        "isPaid": False,
-        "stripeSessionId": None,
-        "clientIp": client_ip,
-        "createdAt": datetime.now(timezone.utc).isoformat(),
-    }
+    # Resolve user info
+    user_id, user_email = "", ""
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         user = await users_collection.find_one({"sessionToken": auth_header[7:]})
         if user:
-            log_entry["userId"] = user["id"]
-            log_entry["userEmail"] = user.get("email", "")
+            user_id = user["id"]
+            user_email = user.get("email", "")
 
-    await people_search_logs_collection.insert_one(log_entry)
+    # Create one log entry per result so each can be independently paid/unlocked
+    now_iso = datetime.now(timezone.utc).isoformat()
+    result_entries = []
+    for full_result in full_results:
+        sid = str(uuid.uuid4())
+        log_entry = {
+            "id": sid,
+            "lookupType": lt,
+            "query": query_summary,
+            "fullResult": full_result,
+            "price": price,
+            "isPaid": False,
+            "stripeSessionId": None,
+            "clientIp": client_ip,
+            "userId": user_id,
+            "userEmail": user_email,
+            "createdAt": now_iso,
+        }
+        await people_search_logs_collection.insert_one(log_entry)
+        result_entries.append({
+            "searchId": sid,
+            "preview":  blur_result(full_result, lt),
+            "price":    price,
+        })
 
     return {
-        "success": True,
-        "searchId": search_id,
-        "lookupType": lt,
-        "preview": blur_result(full_result, lt),
-        "price": price,
-        "query": query_summary,
+        "success":     True,
+        "lookupType":  lt,
+        "query":       query_summary,
+        "results":     result_entries,   # list — each has searchId + preview + price
+        "totalCount":  len(result_entries),
     }
 
 

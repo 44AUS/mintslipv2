@@ -19,78 +19,139 @@ const US_STATES = [
 ];
 
 const TAB_CONFIG = {
-  phone:      { id: "phone_lookup",      label: "Reverse Phone Lookup",   icon: Phone,       price_key: "phone_lookup" },
-  name:       { id: "name_lookup",       label: "Name Lookup",            icon: User,        price_key: "name_lookup" },
-  address:    { id: "address_lookup",    label: "Address Lookup",         icon: MapPin,      price_key: "address_lookup" },
-  background: { id: "background_report", label: "Full Background Report", icon: FileSearch,  price_key: "background_report" },
+  phone:      { id: "phone_lookup",      label: "Reverse Phone Lookup",   icon: Phone },
+  name:       { id: "name_lookup",       label: "Name Lookup",            icon: User },
+  address:    { id: "address_lookup",    label: "Address Lookup",         icon: MapPin },
+  background: { id: "background_report", label: "Full Background Report", icon: FileSearch },
 };
 
+// ── Result card rows ──────────────────────────────────────────────────────────
 function InfoRow({ label, value, blurred }) {
+  if (!value || (Array.isArray(value) && value.length === 0)) return null;
+  const display = Array.isArray(value) ? value.join(", ") : value;
   return (
     <div className="flex flex-col sm:flex-row sm:items-start gap-1 py-2 border-b border-slate-100 last:border-0">
       <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide sm:w-40 flex-shrink-0">{label}</span>
-      <span className={`text-sm text-slate-800 flex-1 ${blurred ? "blur-[4px] select-none text-slate-400" : ""}`}>
-        {Array.isArray(value) ? value.join(", ") : value}
+      <span className={`text-sm flex-1 ${blurred ? "blur-[4px] select-none text-slate-400" : "text-slate-800"}`}>
+        {display}
       </span>
     </div>
   );
 }
 
-function ResultCard({ data, lookupType, blurred }) {
+function ResultRows({ data, lookupType, blurred }) {
   if (!data) return null;
-  const rows = [];
-
-  if (lookupType === "phone_lookup") {
-    rows.push(
-      { label: "Name",              value: data.name,               blurred },
-      { label: "Carrier",           value: data.carrier,            blurred: false },
-      { label: "Line Type",         value: data.lineType,           blurred: false },
-      { label: "Location",          value: data.location,           blurred: false },
-      { label: "Spam Risk",         value: data.spamRisk,           blurred: false },
-      { label: "Caller Type",       value: data.callerType,         blurred: false },
-      { label: "Possible Address",  value: data.possibleAddress,    blurred },
-      { label: "Possible Relatives",value: data.possibleRelatives,  blurred },
-    );
-  } else if (lookupType === "name_lookup") {
-    rows.push(
-      { label: "Full Name",         value: data.fullName,           blurred: false },
-      { label: "Age Range",         value: data.ageRange,           blurred: false },
-      { label: "State",             value: data.state,              blurred: false },
-      { label: "Addresses",         value: data.possibleAddresses,  blurred },
-      { label: "Phone Numbers",     value: data.possiblePhones,     blurred },
-      { label: "Relatives",         value: data.possibleRelatives,  blurred },
-    );
-  } else if (lookupType === "address_lookup") {
-    rows.push(
-      { label: "Address",           value: data.address,            blurred: false },
-      { label: "Property Owner",    value: data.propertyOwner,      blurred },
-      { label: "Residents",         value: data.residents,          blurred },
-      { label: "Est. Value",        value: data.estimatedValue,     blurred },
-      { label: "Property Type",     value: data.propertyType,       blurred: false },
-      { label: "Year Built",        value: data.yearBuilt,          blurred: false },
-      { label: "Square Feet",       value: data.squareFeet,         blurred: false },
-      { label: "Phone Numbers",     value: data.associatedPhones,   blurred },
-    );
-  } else if (lookupType === "background_report") {
-    rows.push(
-      { label: "Full Name",         value: data.fullName,           blurred: false },
-      { label: "Age Range",         value: data.ageRange,           blurred: false },
-      { label: "Current Address",   value: data.currentAddress,     blurred },
-      { label: "Past Addresses",    value: data.pastAddresses,      blurred },
-      { label: "Phone Numbers",     value: data.phones,             blurred },
-      { label: "Relatives",         value: data.possibleRelatives,  blurred },
-      { label: "Public Records",    value: data.publicRecords,      blurred },
-      { label: "Education",         value: data.education,          blurred: false },
-    );
-  }
-
+  const b = blurred;
+  if (lookupType === "phone_lookup") return (
+    <>
+      <InfoRow label="Name"              value={data.name}              blurred={b} />
+      <InfoRow label="Carrier"           value={data.carrier}           blurred={false} />
+      <InfoRow label="Line Type"         value={data.lineType}          blurred={false} />
+      <InfoRow label="Location"          value={data.location}          blurred={false} />
+      <InfoRow label="Spam Risk"         value={data.spamRisk}          blurred={false} />
+      <InfoRow label="Caller Type"       value={data.callerType}        blurred={false} />
+      <InfoRow label="Possible Address"  value={data.possibleAddress}   blurred={b} />
+      <InfoRow label="Relatives"         value={data.possibleRelatives} blurred={b} />
+    </>
+  );
+  if (lookupType === "name_lookup") return (
+    <>
+      <InfoRow label="Full Name"   value={data.fullName}          blurred={false} />
+      <InfoRow label="Age Range"   value={data.ageRange}          blurred={false} />
+      <InfoRow label="State"       value={data.state}             blurred={false} />
+      <InfoRow label="Addresses"   value={data.possibleAddresses} blurred={b} />
+      <InfoRow label="Phone Numbers" value={data.possiblePhones}  blurred={b} />
+      <InfoRow label="Relatives"   value={data.possibleRelatives} blurred={b} />
+    </>
+  );
+  if (lookupType === "address_lookup") return (
+    <>
+      <InfoRow label="Address"        value={data.address}          blurred={false} />
+      <InfoRow label="Property Owner" value={data.propertyOwner}    blurred={b} />
+      <InfoRow label="Residents"      value={data.residents}        blurred={b} />
+      <InfoRow label="Est. Value"     value={data.estimatedValue}   blurred={b} />
+      <InfoRow label="Property Type"  value={data.propertyType}     blurred={false} />
+      <InfoRow label="Year Built"     value={data.yearBuilt}        blurred={false} />
+      <InfoRow label="Sq. Feet"       value={data.squareFeet}       blurred={false} />
+      <InfoRow label="Phone Numbers"  value={data.associatedPhones} blurred={b} />
+    </>
+  );
+  // background_report
   return (
-    <div className="divide-y divide-slate-50">
-      {rows.map((r, i) => <InfoRow key={i} label={r.label} value={r.value} blurred={r.blurred} />)}
+    <>
+      <InfoRow label="Full Name"       value={data.fullName}          blurred={false} />
+      <InfoRow label="Age Range"       value={data.ageRange}          blurred={false} />
+      <InfoRow label="Current Address" value={data.currentAddress}    blurred={b} />
+      <InfoRow label="Past Addresses"  value={data.pastAddresses}     blurred={b} />
+      <InfoRow label="Phone Numbers"   value={data.phones}            blurred={b} />
+      <InfoRow label="Relatives"       value={data.possibleRelatives} blurred={b} />
+      <InfoRow label="Public Records"  value={data.publicRecords}     blurred={b} />
+      <InfoRow label="Education"       value={data.education}         blurred={false} />
+    </>
+  );
+}
+
+// ── Single result card (handles both preview + unlocked state) ────────────────
+function ResultCard({ entry, lookupType, onUnlock, unlocking }) {
+  const isPaid = entry.paid;
+  return (
+    <div className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
+      isPaid ? "border-green-200" : "border-slate-200"
+    }`}>
+      {/* Card header */}
+      <div className={`flex items-center justify-between px-5 py-3 border-b ${
+        isPaid ? "bg-green-50 border-green-100" : "bg-slate-50 border-slate-100"
+      }`}>
+        {isPaid ? (
+          <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
+            <CheckCircle className="w-4 h-4" /> Report Unlocked
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+            <Lock className="w-3 h-3" /> Preview Only
+          </div>
+        )}
+        {isPaid && (
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 py-1.5 transition-colors print:hidden"
+          >
+            <Download className="w-3.5 h-3.5" /> Print
+          </button>
+        )}
+      </div>
+
+      {/* Data rows */}
+      <div className="px-5 py-1">
+        <ResultRows data={isPaid ? entry.fullResult : entry.preview} lookupType={lookupType} blurred={!isPaid} />
+      </div>
+
+      {/* Unlock section */}
+      {!isPaid && (
+        <div className="px-5 pb-5 pt-3 border-t border-slate-100 space-y-3">
+          <p className="text-xs text-slate-400 text-center">
+            Sensitive fields are hidden. Unlock to see the complete report.
+          </p>
+          <button
+            onClick={() => onUnlock(entry.searchId)}
+            disabled={unlocking}
+            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 text-base"
+          >
+            {unlocking
+              ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirecting…</>
+              : <><Unlock className="w-5 h-5" /> Unlock Full Report – ${entry.price?.toFixed(2)}</>
+            }
+          </button>
+          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
+            <Lock className="w-3 h-3" /> Secured by Stripe · Cards, Apple Pay & Google Pay
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+// ── Main page ─────────────────────────────────────────────────────────────────
 export default function PeopleSearch() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -101,13 +162,12 @@ export default function PeopleSearch() {
   const [searching, setSearching] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
 
-  const [preview, setPreview] = useState(null);
-  const [fullResult, setFullResult] = useState(null);
-  const [paid, setPaid] = useState(false);
-  const [searchId, setSearchId] = useState(null);
+  // results: [{ searchId, preview, price, fullResult?, paid? }]
+  const [results, setResults] = useState([]);
   const [lookupType, setLookupType] = useState(null);
-  const [price, setPrice] = useState(null);
   const [query, setQuery] = useState("");
+  // per-card unlocking state: { [searchId]: true }
+  const [unlocking, setUnlocking] = useState({});
 
   // Form fields
   const [phone, setPhone] = useState("");
@@ -130,55 +190,68 @@ export default function PeopleSearch() {
       .catch(() => {});
   }, []);
 
-  // Check payment redirect on mount
+  // Check payment redirect on mount (?session_id=...&search_id=...)
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     const sid = searchParams.get("search_id");
     if (sessionId && sid) {
       setCheckingPayment(true);
-      setSearchId(sid);
       fetch(`${BACKEND_URL}/api/people-search/result/${sid}?session_id=${sessionId}`, {
         headers: authHeaders,
       })
         .then(r => r.json())
         .then(data => {
           if (data.paid && data.result) {
-            setFullResult(data.result);
-            setLookupType(data.lookupType);
-            setPaid(true);
+            // Restore the results list from sessionStorage if available, then mark the paid card
+            const saved = sessionStorage.getItem("ps_results");
+            const savedLt = sessionStorage.getItem("ps_lookupType");
+            const savedQ  = sessionStorage.getItem("ps_query");
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              const updated = parsed.map(r =>
+                r.searchId === sid
+                  ? { ...r, paid: true, fullResult: data.result }
+                  : r
+              );
+              setResults(updated);
+              setLookupType(savedLt || data.lookupType);
+              setQuery(savedQ || "");
+            } else {
+              // No saved list — show a single unlocked card
+              setResults([{ searchId: sid, preview: null, price: null, paid: true, fullResult: data.result }]);
+              setLookupType(data.lookupType);
+            }
             toast.success("Payment confirmed – full report unlocked!");
           }
         })
         .catch(() => {})
         .finally(() => setCheckingPayment(false));
     }
-  }, []);
+  }, []); // eslint-disable-line
 
   const handleSearch = async () => {
     const tab = TAB_CONFIG[activeTab];
     setSearching(true);
-    setPreview(null);
-    setFullResult(null);
-    setPaid(false);
+    setResults([]);
     try {
       const res = await fetch(`${BACKEND_URL}/api/people-search/search`, {
         method: "POST",
         headers: authHeaders,
-        body: JSON.stringify({
-          lookupType: tab.id,
-          phone, firstName, lastName, state, street, city,
-        }),
+        body: JSON.stringify({ lookupType: tab.id, phone, firstName, lastName, state, street, city }),
       });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.detail || "Search failed. Please try again.");
         return;
       }
-      setPreview(data.preview);
-      setSearchId(data.searchId);
+      const newResults = data.results || [];
+      setResults(newResults);
       setLookupType(data.lookupType);
-      setPrice(data.price);
       setQuery(data.query);
+      // Save to sessionStorage so we can restore after Stripe redirect
+      sessionStorage.setItem("ps_results",    JSON.stringify(newResults));
+      sessionStorage.setItem("ps_lookupType", data.lookupType);
+      sessionStorage.setItem("ps_query",      data.query);
     } catch {
       toast.error("Search failed. Please check your connection.");
     } finally {
@@ -186,9 +259,8 @@ export default function PeopleSearch() {
     }
   };
 
-  const handleUnlock = async () => {
-    if (!searchId) return;
-    setSearching(true);
+  const handleUnlock = async (searchId) => {
+    setUnlocking(prev => ({ ...prev, [searchId]: true }));
     try {
       const res = await fetch(`${BACKEND_URL}/api/people-search/checkout`, {
         method: "POST",
@@ -201,20 +273,20 @@ export default function PeopleSearch() {
         return;
       }
       if (data.alreadyPaid && data.result) {
-        setFullResult(data.result);
-        setPaid(true);
+        setResults(prev => prev.map(r =>
+          r.searchId === searchId ? { ...r, paid: true, fullResult: data.result } : r
+        ));
         return;
       }
       if (data.url) window.location.href = data.url;
     } catch {
       toast.error("Checkout failed. Please try again.");
     } finally {
-      setSearching(false);
+      setUnlocking(prev => ({ ...prev, [searchId]: false }));
     }
   };
 
-  const handlePrint = () => window.print();
-
+  const hasResults = results.length > 0;
   const tabLabel = lookupType ? Object.values(TAB_CONFIG).find(t => t.id === lookupType)?.label : "";
 
   return (
@@ -235,11 +307,11 @@ export default function PeopleSearch() {
             </div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">People Search</h1>
             <p className="text-slate-500 text-base max-w-md mx-auto">
-              Search public records. No subscription required — pay per lookup.
+              Search public records. No subscription — pay per lookup.
             </p>
           </div>
 
-          {/* Checking payment overlay */}
+          {/* Payment verification spinner */}
           {checkingPayment && (
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center mb-6">
               <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
@@ -247,31 +319,8 @@ export default function PeopleSearch() {
             </div>
           )}
 
-          {/* Full result after payment */}
-          {paid && fullResult && !checkingPayment && (
-            <div className="bg-white rounded-xl border border-green-200 shadow-sm p-6 mb-6 print:shadow-none">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <span className="font-semibold text-green-700">Report Unlocked</span>
-                </div>
-                <button
-                  onClick={handlePrint}
-                  className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 py-1.5 transition-colors print:hidden"
-                >
-                  <Download className="w-3.5 h-3.5" /> Download / Print
-                </button>
-              </div>
-              <div className="mb-3">
-                <p className="text-sm font-semibold text-slate-700">{tabLabel}</p>
-                <p className="text-xs text-slate-400">{query}</p>
-              </div>
-              <ResultCard data={fullResult} lookupType={lookupType} blurred={false} />
-            </div>
-          )}
-
-          {/* Search panel (hide if paid result shown) */}
-          {!paid && (
+          {/* Search panel */}
+          {!checkingPayment && (
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
 
               {/* Tabs */}
@@ -281,7 +330,7 @@ export default function PeopleSearch() {
                   return (
                     <button
                       key={key}
-                      onClick={() => { setActiveTab(key); setPreview(null); }}
+                      onClick={() => { setActiveTab(key); setResults([]); }}
                       className={`flex-1 min-w-[110px] flex flex-col items-center gap-1.5 px-3 py-3.5 text-xs font-medium transition-colors border-b-2 ${
                         activeTab === key
                           ? "border-green-600 text-green-700 bg-green-50"
@@ -316,29 +365,21 @@ export default function PeopleSearch() {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
-                        <input
-                          value={firstName} onChange={e => setFirstName(e.target.value)}
-                          placeholder="John"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
+                        <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="John"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Last Name</label>
-                        <input
-                          value={lastName} onChange={e => setLastName(e.target.value)}
-                          placeholder="Smith"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
+                        <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Smith"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                        State <span className="text-slate-400 font-normal">(optional)</span>
+                        State <span className="text-slate-400 font-normal">(optional — narrows results)</span>
                       </label>
-                      <select
-                        value={state} onChange={e => setState(e.target.value)}
-                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
-                      >
+                      <select value={state} onChange={e => setState(e.target.value)}
+                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
                         <option value="">Any State</option>
                         {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
@@ -350,27 +391,19 @@ export default function PeopleSearch() {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">Street Address</label>
-                      <input
-                        value={street} onChange={e => setStreet(e.target.value)}
-                        placeholder="123 Main St"
-                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      />
+                      <input value={street} onChange={e => setStreet(e.target.value)} placeholder="123 Main St"
+                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
-                        <input
-                          value={city} onChange={e => setCity(e.target.value)}
-                          placeholder="Springfield"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
+                        <input value={city} onChange={e => setCity(e.target.value)} placeholder="Springfield"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">State</label>
-                        <select
-                          value={state} onChange={e => setState(e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
-                        >
+                        <select value={state} onChange={e => setState(e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
                           <option value="">Select</option>
                           {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
@@ -385,76 +418,61 @@ export default function PeopleSearch() {
                   className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 text-sm"
                 >
                   {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                  {searching ? "Searching…" : `Search – $${prices[TAB_CONFIG[activeTab].price_key].toFixed(2)}`}
+                  {searching ? "Searching…" : `Search – $${prices[TAB_CONFIG[activeTab].id].toFixed(2)} per result`}
                 </button>
-
                 <p className="text-center text-xs text-slate-400">
-                  You will only be charged after previewing results and choosing to unlock.
+                  You only pay when you choose to unlock a specific result.
                 </p>
               </div>
-
-              {/* Preview result */}
-              {preview && !paid && (
-                <div className="border-t border-slate-200 p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-800">
-                        {Object.values(TAB_CONFIG).find(t => t.id === lookupType)?.label} Preview
-                      </p>
-                      <p className="text-xs text-slate-400 mt-0.5">{query}</p>
-                    </div>
-                    <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
-                      <Lock className="w-3 h-3" /> Partial
-                    </span>
-                  </div>
-
-                  <ResultCard data={preview} lookupType={lookupType} blurred={true} />
-
-                  <div className="mt-5 pt-5 border-t border-slate-100 space-y-3">
-                    <p className="text-xs text-slate-400 text-center">
-                      Sensitive information is hidden. Unlock the full report to see complete data.
-                    </p>
-                    <button
-                      onClick={handleUnlock}
-                      disabled={searching}
-                      className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-colors disabled:opacity-50 text-base"
-                    >
-                      {searching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Unlock className="w-5 h-5" />}
-                      {searching ? "Redirecting…" : `Unlock Full Report – $${price?.toFixed(2)}`}
-                    </button>
-                    <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
-                      <Lock className="w-3 h-3" /> Secured by Stripe · Cards, Apple Pay & Google Pay accepted
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* New search button when paid */}
-          {paid && (
-            <button
-              onClick={() => { setPaid(false); setFullResult(null); setPreview(null); setSearchId(null); }}
-              className="w-full flex items-center justify-center gap-2 border border-slate-200 text-slate-600 hover:bg-slate-100 font-medium py-3 rounded-lg transition-colors text-sm"
-            >
-              <Search className="w-4 h-4" /> Run Another Search
-            </button>
+          {/* Results */}
+          {hasResults && !checkingPayment && (
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">
+                    {tabLabel} — {results.length} result{results.length !== 1 ? "s" : ""} found
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">{query}</p>
+                </div>
+                <button
+                  onClick={() => setResults([])}
+                  className="text-xs text-slate-400 hover:text-slate-600 underline"
+                >
+                  Clear
+                </button>
+              </div>
+
+              {results.map((entry) => (
+                <ResultCard
+                  key={entry.searchId}
+                  entry={entry}
+                  lookupType={lookupType}
+                  onUnlock={handleUnlock}
+                  unlocking={!!unlocking[entry.searchId]}
+                />
+              ))}
+            </div>
           )}
 
           {/* Trust badges */}
-          <div className="mt-8 grid grid-cols-3 gap-4">
-            {[
-              { icon: Shield, title: "Secure & Private", desc: "Your searches are never shared" },
-              { icon: Lock,   title: "Pay Per Lookup",   desc: "No subscriptions or hidden fees" },
-              { icon: CheckCircle, title: "Instant Results", desc: "Reports delivered in seconds" },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="bg-white rounded-xl border border-slate-200 p-4 text-center">
-                <Icon className="w-5 h-5 text-green-600 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-slate-700">{title}</p>
-                <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
-              </div>
-            ))}
-          </div>
+          {!hasResults && !checkingPayment && (
+            <div className="mt-2 grid grid-cols-3 gap-4">
+              {[
+                { icon: Shield,       title: "Secure & Private",  desc: "Your searches are never shared" },
+                { icon: Lock,         title: "Pay Per Result",     desc: "Unlock only what you need" },
+                { icon: CheckCircle,  title: "Instant Results",    desc: "Reports delivered in seconds" },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                  <Icon className="w-5 h-5 text-green-600 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-700">{title}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* SEO links */}
           <div className="mt-8 bg-white rounded-xl border border-slate-200 p-5">
@@ -463,19 +481,17 @@ export default function PeopleSearch() {
               {[
                 { to: "/reverse-phone-lookup", label: "Reverse Phone Lookup" },
                 { to: "/find-person-by-name",  label: "Find Person by Name" },
-                { to: "/address-lookup",       label: "Address Lookup" },
-                { to: "/who-called-me",        label: "Who Called Me?" },
+                { to: "/address-lookup",        label: "Address Lookup" },
+                { to: "/who-called-me",         label: "Who Called Me?" },
               ].map(({ to, label }) => (
-                <button
-                  key={to}
-                  onClick={() => navigate(to)}
-                  className="flex items-center gap-1.5 text-xs text-green-700 hover:text-green-800 hover:underline text-left"
-                >
+                <button key={to} onClick={() => navigate(to)}
+                  className="flex items-center gap-1.5 text-xs text-green-700 hover:text-green-800 hover:underline text-left">
                   <ChevronRight className="w-3 h-3 flex-shrink-0" /> {label}
                 </button>
               ))}
             </div>
           </div>
+
         </div>
       </main>
 

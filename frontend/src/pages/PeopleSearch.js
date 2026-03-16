@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
   Phone, User, MapPin, FileSearch, Lock, Search,
-  Shield, Loader2, ChevronRight,
+  Shield, Loader2, ChevronRight, CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -315,8 +315,7 @@ export default function PeopleSearch() {
           </div>
 
           {/* Search panel */}
-          {(
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
 
               {/* Tabs */}
               <div className="flex border-b border-slate-200 overflow-x-auto">
@@ -420,7 +419,6 @@ export default function PeopleSearch() {
                 </p>
               </div>
             </div>
-          )}
 
           {/* Results */}
           {hasResults && (

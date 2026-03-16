@@ -7780,6 +7780,67 @@ async def clean_bank_statement_pdf_endpoint(
 import random
 import copy
 
+# ── Real data integrations (optional — falls back to mock if not configured) ──
+
+# Numverify phone lookup (https://numverify.com — free tier: 100/month)
+NUMVERIFY_API_KEY = os.environ.get("NUMVERIFY_API_KEY")
+
+# Elasticsearch for people data (index your licensed dataset here)
+ELASTICSEARCH_URL   = os.environ.get("ELASTICSEARCH_URL")   # e.g. http://localhost:9200
+ELASTICSEARCH_USER  = os.environ.get("ELASTICSEARCH_USER", "")
+ELASTICSEARCH_PASS  = os.environ.get("ELASTICSEARCH_PASS", "")
+ES_PEOPLE_INDEX     = os.environ.get("ES_PEOPLE_INDEX", "people")
+
+_es_client = None
+if ELASTICSEARCH_URL:
+    try:
+        from elasticsearch import AsyncElasticsearch
+        _es_client = AsyncElasticsearch(
+            [ELASTICSEARCH_URL],
+            http_auth=(ELASTICSEARCH_USER, ELASTICSEARCH_PASS) if ELASTICSEARCH_USER else None,
+            verify_certs=False,
+        )
+        logger.info("Elasticsearch client initialized for people search")
+    except ImportError:
+        logger.warning("elasticsearch-py not installed — people search will use mock data")
+
+
+async def _numverify_lookup(phone: str) -> dict | None:
+    """Call Numverify API and return normalized fields, or None on failure."""
+    if not NUMVERIFY_API_KEY:
+        return None
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.get(
+                "https://apilayer.net/api/validate",
+                params={"access_key": NUMVERIFY_API_KEY, "number": phone,
+                        "country_code": "US", "format": "1"},
+            )
+            d = r.json()
+            if not d.get("valid"):
+                return None
+            return {
+                "carrier":  d.get("carrier") or "Unknown",
+                "lineType": (d.get("line_type") or "unknown").replace("_", " ").title(),
+                "location": d.get("location") or "",
+                "phoneValid": True,
+            }
+    except Exception as e:
+        logger.warning(f"Numverify error: {e}")
+        return None
+
+
+async def _es_search(query_body: dict) -> list[dict]:
+    """Run an Elasticsearch query and return the _source of each hit."""
+    if not _es_client:
+        return []
+    try:
+        resp = await _es_client.search(index=ES_PEOPLE_INDEX, body=query_body, size=5)
+        return [h["_source"] for h in resp["hits"]["hits"]]
+    except Exception as e:
+        logger.warning(f"Elasticsearch error: {e}")
+        return []
+
 DEFAULT_PEOPLE_SEARCH_PRICES = {
     "phone_lookup": 0.99,
     "name_lookup": 1.49,
@@ -7972,29 +8033,107 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
     if lt not in DEFAULT_PEOPLE_SEARCH_PRICES:
         raise HTTPException(status_code=400, detail="Invalid lookup type")
 
-    # Run mock search (plug in real ES / API here)
+    # ── Run search: real APIs/ES when configured, mock otherwise ──────────────
     if lt == "phone_lookup":
         if not data.phone:
             raise HTTPException(status_code=400, detail="Phone number required")
         phone_clean = re.sub(r"[^\d]", "", data.phone)
         if len(phone_clean) < 10:
             raise HTTPException(status_code=400, detail="Invalid phone number – must be 10 digits")
+
+        # Start with mock as base, then enrich with real data
         full_result = await asyncio.to_thread(mock_phone_lookup, phone_clean)
+
+        # Numverify enrichment (carrier, lineType, location)
+        nv = await _numverify_lookup(phone_clean)
+        if nv:
+            full_result.update({k: v for k, v in nv.items() if v})
+
+        # Elasticsearch enrichment (name, address, relatives)
+        es_hits = await _es_search({
+            "query": {"bool": {"should": [
+                {"term": {"phones": phone_clean}},
+                {"term": {"phones": data.phone}},
+            ], "minimum_should_match": 1}}
+        })
+        if es_hits:
+            h = es_hits[0]
+            if h.get("name"):       full_result["name"] = h["name"]
+            if h.get("address"):    full_result["possibleAddress"] = h["address"]
+            if h.get("relatives"):  full_result["possibleRelatives"] = h["relatives"]
+
         query_summary = data.phone
+
     elif lt == "name_lookup":
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
+
         full_result = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
+
+        # Elasticsearch enrichment
+        must = [
+            {"match": {"first_name": data.firstName}},
+            {"match": {"last_name":  data.lastName}},
+        ]
+        if data.state:
+            must.append({"term": {"state": data.state.upper()}})
+        es_hits = await _es_search({"query": {"bool": {"must": must}}})
+        if es_hits:
+            h = es_hits[0]
+            if h.get("age"):       full_result["ageRange"] = str(h["age"])
+            if h.get("addresses"): full_result["possibleAddresses"] = h["addresses"]
+            if h.get("phones"):    full_result["possiblePhones"] = h["phones"]
+            if h.get("relatives"): full_result["possibleRelatives"] = h["relatives"]
+
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
+
     elif lt == "address_lookup":
         if not data.street or not data.city:
             raise HTTPException(status_code=400, detail="Street and city required")
+
         full_result = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
+
+        # Elasticsearch enrichment
+        es_hits = await _es_search({"query": {"bool": {"must": [
+            {"match": {"address.street": data.street}},
+            {"match": {"address.city":   data.city}},
+        ]}}})
+        if es_hits:
+            h = es_hits[0]
+            if h.get("owner"):          full_result["propertyOwner"] = h["owner"]
+            if h.get("residents"):      full_result["residents"] = h["residents"]
+            if h.get("value"):          full_result["estimatedValue"] = h["value"]
+            if h.get("phones"):         full_result["associatedPhones"] = h["phones"]
+            if h.get("year_built"):     full_result["yearBuilt"] = str(h["year_built"])
+            if h.get("square_feet"):    full_result["squareFeet"] = str(h["square_feet"])
+            if h.get("property_type"):  full_result["propertyType"] = h["property_type"]
+
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
+
     else:  # background_report
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
+
         full_result = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
+
+        # Elasticsearch enrichment
+        must = [
+            {"match": {"first_name": data.firstName}},
+            {"match": {"last_name":  data.lastName}},
+        ]
+        if data.state:
+            must.append({"term": {"state": data.state.upper()}})
+        es_hits = await _es_search({"query": {"bool": {"must": must}}})
+        if es_hits:
+            h = es_hits[0]
+            if h.get("phones"):       full_result["phones"] = h["phones"]
+            if h.get("address"):      full_result["currentAddress"] = h["address"]
+            if h.get("past_addresses"): full_result["pastAddresses"] = h["past_addresses"]
+            if h.get("relatives"):    full_result["possibleRelatives"] = h["relatives"]
+            if h.get("records"):      full_result["publicRecords"] = h["records"]
+            if h.get("education"):    full_result["education"] = h["education"]
+            if h.get("age"):          full_result["estimatedAge"] = str(h["age"])
+
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 
     prices = await get_people_search_prices()

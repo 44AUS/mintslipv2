@@ -7784,7 +7784,7 @@ import copy
 # Set WHITEPAGES_PRO_API_KEY in your environment to activate real data.
 # Falls back to mock data when the key is not set.
 WHITEPAGES_PRO_API_KEY = os.environ.get("WHITEPAGES_PRO_API_KEY")
-_WP_BASE = "https://proapi.whitepages.com/3.3"
+_WP_BASE = "https://api.whitepages.com/v1"
 logger.info(f"Whitepages Pro API key loaded: {'YES (' + str(len(WHITEPAGES_PRO_API_KEY)) + ' chars)' if WHITEPAGES_PRO_API_KEY else 'NO (mock mode)'}")
 _wp_env_keys = [k for k in os.environ if "WHITE" in k.upper() or "PAGES" in k.upper()]
 logger.info(f"Whitepages-related env vars found: {_wp_env_keys}")
@@ -7904,11 +7904,14 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
             params["state_code"] = state.upper()
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(f"{_WP_BASE}/person", params=params)
+            logger.info(f"Whitepages person status: {r.status_code}")
+            logger.info(f"Whitepages person raw: {r.text[:800]}")
             if r.status_code != 200:
-                logger.warning(f"Whitepages person error {r.status_code}: {r.text[:200]}")
+                logger.warning(f"Whitepages person error {r.status_code}: {r.text[:300]}")
                 return None
             d = r.json()
         results = d.get("results", [])
+        logger.info(f"Whitepages person results count: {len(results)}, top-level keys: {list(d.keys())}")
         if not results:
             return None
         return [_parse(p) for p in results[:5]]

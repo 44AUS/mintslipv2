@@ -39,6 +39,48 @@ function InfoRow({ label, value, blurred }) {
   );
 }
 
+// Parses DOB string, returns { month, day, year, age }
+function parseDob(dob) {
+  if (!dob) return null;
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let month = "", day = "", year = "";
+  // Try YYYY-MM-DD
+  const iso = String(dob).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) { year = iso[1]; month = months[parseInt(iso[2]) - 1] || ""; day = iso[3]; }
+  // Try MM/DD/YYYY
+  const mdy = String(dob).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mdy) { year = mdy[3]; month = months[parseInt(mdy[1]) - 1] || ""; day = mdy[2]; }
+  // Try just a year
+  if (!year && /^\d{4}$/.test(String(dob))) { year = String(dob); }
+  const age = year ? Math.floor((Date.now() - new Date(`${year}-${month ? (months.indexOf(month)+1).toString().padStart(2,"0") : "01"}-${day || "01"}`)) / (365.25*24*60*60*1000)) : null;
+  return { month, day, year, age };
+}
+
+// Shows month + year unblurred, blurs the day
+function DobRow({ label, value, blurred }) {
+  if (!value) return null;
+  const parsed = parseDob(value);
+  if (!parsed) return <InfoRow label={label} value={value} blurred={blurred} />;
+  const { month, day, year, age } = parsed;
+  const ageStr = age && age > 0 && age < 130 ? ` (Age ${age})` : "";
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-1 py-2 border-b border-slate-100 last:border-0">
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide sm:w-40 flex-shrink-0">{label}</span>
+      <span className="text-sm flex-1">
+        {blurred && day ? (
+          <>
+            <span className="text-slate-800">{month} </span>
+            <span className="blur-[4px] select-none text-slate-400">{day}</span>
+            <span className="text-slate-800">, {year}{ageStr}</span>
+          </>
+        ) : (
+          <span className="text-slate-800">{[month, day, year].filter(Boolean).join(" ")}{ageStr}</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 // Shows street number unblurred, rest of address blurred
 function AddressRow({ label, value, blurred }) {
   if (!value || (Array.isArray(value) && value.length === 0)) return null;
@@ -107,7 +149,7 @@ function ResultRows({ data, lookupType, blurred }) {
   if (lookupType === "name_lookup") return (
     <>
       <InfoRow label="Full Name"    value={data.fullName}          blurred={false} />
-      <InfoRow label="Date of Birth" value={data.dateOfBirth}      blurred={false} />
+      <DobRow  label="Date of Birth" value={data.dateOfBirth}      blurred={b} />
       <InfoRow label="State"        value={data.state}             blurred={false} />
       <AddressRow label="Addresses" value={data.possibleAddresses} blurred={b} />
       <PhoneRow label="Phone Numbers" value={data.possiblePhones}  blurred={b} />
@@ -130,8 +172,8 @@ function ResultRows({ data, lookupType, blurred }) {
   // background_report
   return (
     <>
-      <InfoRow    label="Full Name"       value={data.fullName}          blurred={false} />
-      <InfoRow    label="Date of Birth"  value={data.dateOfBirth}       blurred={false} />
+      <InfoRow label="Full Name"      value={data.fullName}    blurred={false} />
+      <DobRow  label="Date of Birth"  value={data.dateOfBirth} blurred={b} />
       <AddressRow label="Current Address" value={data.currentAddress}  blurred={b} />
       <AddressRow label="Past Addresses" value={data.pastAddresses}    blurred={b} />
       <PhoneRow   label="Phone Numbers"  value={data.phones}           blurred={b} />
@@ -182,7 +224,7 @@ function ResultCard({ entry, lookupType, onUnlock, unlocking }) {
       {!isPaid && (
         <div className="px-5 pb-5 pt-3 border-t border-slate-100 space-y-3">
           <p className="text-xs text-slate-400 text-center">
-            Sensitive fields are hidden. Unlock to see the complete report.
+            Blurred fields (addresses, phone numbers, email, exact birth date) are fully revealed after purchase.
           </p>
           <button
             onClick={() => onUnlock(entry.searchId)}

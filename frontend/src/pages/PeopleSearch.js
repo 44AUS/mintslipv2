@@ -39,6 +39,56 @@ function InfoRow({ label, value, blurred }) {
   );
 }
 
+// Shows street number unblurred, rest of address blurred
+function AddressRow({ label, value, blurred }) {
+  if (!value || (Array.isArray(value) && value.length === 0)) return null;
+  const addresses = Array.isArray(value) ? value : [value];
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-1 py-2 border-b border-slate-100 last:border-0">
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide sm:w-40 flex-shrink-0">{label}</span>
+      <div className="flex-1 space-y-0.5">
+        {addresses.map((addr, i) => {
+          const match = String(addr).match(/^(\d+)\s(.+)$/);
+          return (
+            <span key={i} className="text-sm block">
+              {blurred && match
+                ? <><span className="text-slate-800">{match[1]} </span><span className="blur-[4px] select-none text-slate-400">{match[2]}</span></>
+                : <span className={blurred ? "blur-[4px] select-none text-slate-400" : "text-slate-800"}>{addr}</span>
+              }
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Shows area code unblurred, blurs last 7 digits
+function PhoneRow({ label, value, blurred }) {
+  if (!value || (Array.isArray(value) && value.length === 0)) return null;
+  const phones = Array.isArray(value) ? value : [value];
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-start gap-1 py-2 border-b border-slate-100 last:border-0">
+      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide sm:w-40 flex-shrink-0">{label}</span>
+      <div className="flex-1 space-y-0.5">
+        {phones.map((ph, i) => {
+          const digits = String(ph).replace(/\D/g, "");
+          const areaCode = digits.length >= 10 ? `(${digits.slice(0,3)}) ` : "";
+          const rest = digits.length >= 10 ? `${digits.slice(3,6)}-${digits.slice(6,10)}` : ph;
+          return (
+            <span key={i} className="text-sm block">
+              {blurred && areaCode
+                ? <><span className="text-slate-800">{areaCode}</span><span className="blur-[4px] select-none text-slate-400">{rest}</span></>
+                : <span className={blurred ? "blur-[4px] select-none text-slate-400" : "text-slate-800"}>{ph}</span>
+              }
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ResultRows({ data, lookupType, blurred }) {
   if (!data) return null;
   const b = blurred;
@@ -50,18 +100,19 @@ function ResultRows({ data, lookupType, blurred }) {
       <InfoRow label="Location"          value={data.location}          blurred={false} />
       <InfoRow label="Spam Risk"         value={data.spamRisk}          blurred={false} />
       <InfoRow label="Caller Type"       value={data.callerType}        blurred={false} />
-      <InfoRow label="Possible Address"  value={data.possibleAddress}   blurred={b} />
-      <InfoRow label="Relatives"         value={data.possibleRelatives} blurred={b} />
+      <AddressRow label="Possible Address" value={data.possibleAddress}   blurred={b} />
+      <InfoRow label="Relatives"          value={data.possibleRelatives} blurred={b} />
     </>
   );
   if (lookupType === "name_lookup") return (
     <>
-      <InfoRow label="Full Name"   value={data.fullName}          blurred={false} />
-      <InfoRow label="Age Range"   value={data.ageRange}          blurred={false} />
-      <InfoRow label="State"       value={data.state}             blurred={false} />
-      <InfoRow label="Addresses"   value={data.possibleAddresses} blurred={b} />
-      <InfoRow label="Phone Numbers" value={data.possiblePhones}  blurred={b} />
-      <InfoRow label="Relatives"   value={data.possibleRelatives} blurred={b} />
+      <InfoRow label="Full Name"    value={data.fullName}          blurred={false} />
+      <InfoRow label="Date of Birth" value={data.dateOfBirth}      blurred={false} />
+      <InfoRow label="State"        value={data.state}             blurred={false} />
+      <AddressRow label="Addresses" value={data.possibleAddresses} blurred={b} />
+      <PhoneRow label="Phone Numbers" value={data.possiblePhones}  blurred={b} />
+      <InfoRow label="Emails"       value={data.emails}            blurred={b} />
+      <InfoRow label="Relatives"    value={data.possibleRelatives} blurred={b} />
     </>
   );
   if (lookupType === "address_lookup") return (
@@ -73,20 +124,21 @@ function ResultRows({ data, lookupType, blurred }) {
       <InfoRow label="Property Type"  value={data.propertyType}     blurred={false} />
       <InfoRow label="Year Built"     value={data.yearBuilt}        blurred={false} />
       <InfoRow label="Sq. Feet"       value={data.squareFeet}       blurred={false} />
-      <InfoRow label="Phone Numbers"  value={data.associatedPhones} blurred={b} />
+      <PhoneRow label="Phone Numbers" value={data.associatedPhones} blurred={b} />
     </>
   );
   // background_report
   return (
     <>
-      <InfoRow label="Full Name"       value={data.fullName}          blurred={false} />
-      <InfoRow label="Age Range"       value={data.ageRange}          blurred={false} />
-      <InfoRow label="Current Address" value={data.currentAddress}    blurred={b} />
-      <InfoRow label="Past Addresses"  value={data.pastAddresses}     blurred={b} />
-      <InfoRow label="Phone Numbers"   value={data.phones}            blurred={b} />
-      <InfoRow label="Relatives"       value={data.possibleRelatives} blurred={b} />
-      <InfoRow label="Public Records"  value={data.publicRecords}     blurred={b} />
-      <InfoRow label="Education"       value={data.education}         blurred={false} />
+      <InfoRow    label="Full Name"       value={data.fullName}          blurred={false} />
+      <InfoRow    label="Date of Birth"  value={data.dateOfBirth}       blurred={false} />
+      <AddressRow label="Current Address" value={data.currentAddress}  blurred={b} />
+      <AddressRow label="Past Addresses" value={data.pastAddresses}    blurred={b} />
+      <PhoneRow   label="Phone Numbers"  value={data.phones}           blurred={b} />
+      <InfoRow    label="Emails"         value={data.emails}           blurred={b} />
+      <InfoRow    label="Relatives"      value={data.possibleRelatives} blurred={b} />
+      <InfoRow    label="Public Records" value={data.publicRecords}    blurred={b} />
+      <InfoRow    label="Education"      value={data.education}        blurred={false} />
     </>
   );
 }

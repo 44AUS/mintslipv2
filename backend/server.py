@@ -7817,8 +7817,8 @@ async def wp_phone_lookup(phone: str) -> dict | None:
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
-                f"{_WP_BASE}/phone",
-                params={"phone_number": phone},
+                f"{_WP_BASE}/phone/",
+                params={"number": phone},
                 headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
             )
             logger.info(f"Whitepages phone response: {r.status_code}")
@@ -7879,12 +7879,14 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
         hist_addrs = [a["address"] for a in p.get("historic_addresses", []) if a.get("address")]
         phones     = [_wp_format_phone(ph["number"]) for ph in p.get("phones", []) if ph.get("number")]
         relatives  = [r["name"] for r in p.get("relatives", []) if r.get("name")]
+        emails     = p.get("emails") or []
         return {
             "fullName":          full_name,
-            "ageRange":          dob or None,
+            "dateOfBirth":       dob or None,
             "possibleAddresses": (cur_addrs + hist_addrs) or None,
             "possiblePhones":    phones or None,
             "possibleRelatives": relatives or None,
+            "emails":            emails or None,
             "state":             state or None,
         }
 
@@ -7894,7 +7896,7 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
             params["state_code"] = state.upper()
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
-                f"{_WP_BASE}/person",
+                f"{_WP_BASE}/person/",
                 params=params,
                 headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
             )
@@ -7928,7 +7930,7 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
             params["state_code"] = state.upper()
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
-                f"{_WP_BASE}/location",
+                f"{_WP_BASE}/location/",
                 params=params,
                 headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
             )

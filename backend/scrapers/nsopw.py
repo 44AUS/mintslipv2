@@ -3,6 +3,7 @@ NSOPW — National Sex Offender Public Website
 Free government REST API. No API key required.
 Docs: https://www.nsopw.gov/en/Registry/SearchAPI
 """
+from __future__ import annotations
 import asyncio
 import logging
 import httpx
@@ -74,7 +75,7 @@ def _parse_person(raw: dict, jurisdiction: str) -> dict:
     )
 
 
-async def scrape(collection) -> tuple[int, int, list]:
+async def scrape(collection) -> tuple:
     """Scrape NSOPW for records across all jurisdictions."""
     added = 0
     updated = 0

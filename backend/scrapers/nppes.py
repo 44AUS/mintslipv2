@@ -3,6 +3,7 @@ NPPES NPI Registry — CMS National Plan & Provider Enumeration System
 Free API, no key required. 6M+ healthcare providers with names, addresses, specialties.
 Docs: https://npiregistry.cms.hhs.gov/api-page
 """
+from __future__ import annotations
 import asyncio
 import logging
 import httpx
@@ -84,7 +85,7 @@ def _parse_provider(raw: dict) -> dict | None:
     )
 
 
-async def scrape(collection) -> tuple[int, int, list]:
+async def scrape(collection) -> tuple:
     """Scrape NPPES for all individual providers, paginating per state."""
     added = 0
     updated = 0

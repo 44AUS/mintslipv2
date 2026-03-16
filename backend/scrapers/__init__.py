@@ -16,7 +16,7 @@ _SCRAPERS = {
 }
 
 
-async def run_scraper(source: str, collection) -> tuple[int, int, list]:
+async def run_scraper(source: str, collection) -> tuple:
     fn = _SCRAPERS.get(source)
     if fn is None:
         raise ValueError(f"No scraper registered for source '{source}'")

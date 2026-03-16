@@ -4,6 +4,7 @@ Free API, DEMO_KEY allows 1000 req/day. Register for a free key at api.data.gov 
 Endpoint: /schedules/schedule_a/ — individual campaign contributions with donor name + address.
 Docs: https://api.open.fec.gov/developers/
 """
+from __future__ import annotations
 import asyncio
 import logging
 import httpx
@@ -92,7 +93,7 @@ def _parse_contribution(raw: dict) -> dict | None:
     )
 
 
-async def scrape(collection) -> tuple[int, int, list]:
+async def scrape(collection) -> tuple:
     """Scrape FEC individual contributions for all states."""
     added = 0
     updated = 0

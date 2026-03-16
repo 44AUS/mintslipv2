@@ -8394,7 +8394,7 @@ async def get_people_search_result(search_id: str, session_id: Optional[str] = N
 @app.get("/api/admin/people-search/stats")
 async def admin_ps_stats(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not await admins_collection.find_one({"sessionToken": token}):
+    if not await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}}):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     total = await people_search_logs_collection.count_documents({})
@@ -8415,7 +8415,7 @@ async def admin_ps_stats(request: Request):
 @app.get("/api/admin/people-search/searches")
 async def admin_ps_searches(request: Request, page: int = 1, limit: int = 50):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not await admins_collection.find_one({"sessionToken": token}):
+    if not await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}}):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     skip = (page - 1) * limit
@@ -8431,7 +8431,7 @@ async def admin_ps_searches(request: Request, page: int = 1, limit: int = 50):
 @app.put("/api/admin/people-search/prices")
 async def admin_ps_update_prices(request: Request):
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not await admins_collection.find_one({"sessionToken": token}):
+    if not await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}}):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     body = await request.json()

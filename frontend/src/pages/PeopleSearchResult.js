@@ -361,50 +361,6 @@ export default function PeopleSearchResult() {
           {/* ── Name / Background report layout ── */}
           {!isSimpleLookup && (
             <>
-              {/* Unlock CTA */}
-              {!isPaid && (
-                <div className="bg-white rounded-xl border border-slate-200 mb-4 overflow-hidden">
-                  <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-100">
-                    <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <FileSearch className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="font-bold text-slate-900 text-base">Full Background Report</h2>
-                      <p className="text-sm text-slate-500 mt-0.5">Unlock the complete report for {firstName}</p>
-                    </div>
-                  </div>
-                  <div className="px-6 py-5">
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-5">
-                      {[
-                        "Arrest & Criminal Records",       "Marriage & Divorce Records",
-                        "Misdemeanors & Felonies",         "Bankruptcies, Liens & Judgments",
-                        "Registered Sex Offender Check",   "Assets & Properties",
-                        "Warrants & Police Records",        "Business Records",
-                        "Nationwide Court Records",        "Professional Licenses",
-                        "Evictions & Foreclosures",        "Social Media Records",
-                      ].map(item => (
-                        <div key={item} className="flex items-center gap-2 text-sm text-slate-700">
-                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      onClick={handleUnlock}
-                      disabled={unlocking}
-                      className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors disabled:opacity-50 text-base"
-                    >
-                      {unlocking
-                        ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirecting…</>
-                        : <><Unlock className="w-5 h-5" /> Unlock Full Report{price ? ` – $${price.toFixed(2)}` : ""}</>}
-                    </button>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-3">
-                      <Lock className="w-3 h-3" /> Secured by Stripe · Cards, Apple Pay & Google Pay
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Current Address */}
               {currentAddr && (
                 <Section icon={Home} title="Current Address" description={`The most recently reported address for ${firstName}.`}>

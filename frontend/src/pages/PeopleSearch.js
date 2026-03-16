@@ -186,7 +186,7 @@ function ResultRows({ data, lookupType, blurred }) {
   );
 }
 
-// ── Email preview: show first 2 chars + domain, blur middle ──────────────────
+// ── Email: show first 2 chars + domain, blur middle ──────────────────────────
 function EmailPreview({ email }) {
   const str = String(email);
   const atIdx = str.indexOf("@");
@@ -199,6 +199,32 @@ function EmailPreview({ email }) {
       <span className="text-slate-700">{visible}</span>
       <span className="blur-[4px] select-none text-slate-400">{blurPart}</span>
       <span className="text-slate-700">{domain}</span>
+    </span>
+  );
+}
+
+// ── Address: show street number, blur the rest ────────────────────────────────
+function AddressPreview({ addr }) {
+  const match = String(addr).match(/^(\d+)\s(.+)$/);
+  if (!match) return <span className="text-sm blur-[4px] select-none text-slate-400">{addr}</span>;
+  return (
+    <span className="text-sm">
+      <span className="text-slate-700">{match[1]} </span>
+      <span className="blur-[4px] select-none text-slate-400">{match[2]}</span>
+    </span>
+  );
+}
+
+// ── Relative: show first name, blur last name ─────────────────────────────────
+function RelativePreview({ name }) {
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length < 2) return <span className="text-sm text-slate-700">{name}</span>;
+  const first = parts[0];
+  const rest  = parts.slice(1).join(" ");
+  return (
+    <span className="text-sm">
+      <span className="text-slate-700">{first} </span>
+      <span className="blur-[4px] select-none text-slate-400">{rest}</span>
     </span>
   );
 }
@@ -230,24 +256,21 @@ function ResultCard({ entry, lookupType, query }) {
     return null;
   })();
 
-  // Address cities preview (no street numbers — they'd be blurred anyway)
-  const addrPreview = (() => {
+  // Full addresses (up to 3)
+  const addrList = (() => {
     const addrs = [
       ...(preview.possibleAddresses || []),
       ...(preview.currentAddress ? [preview.currentAddress] : []),
       ...(preview.pastAddresses   || []),
     ].filter(Boolean);
-    if (!addrs.length) return null;
-    const cities = [...new Set(addrs.map(cityState))].slice(0, 3);
-    return cities.join(" • ") || null;
+    return [...new Set(addrs)].slice(0, 3);
   })();
 
   // Relatives — show first 2
-  const relatives = (() => {
+  const relativesList = (() => {
     const r = preview.possibleRelatives;
-    if (!r) return null;
-    const arr = Array.isArray(r) ? r : [r];
-    return arr.slice(0, 2).join(" • ") || null;
+    if (!r) return [];
+    return (Array.isArray(r) ? r : [r]).slice(0, 2);
   })();
 
   // Email — first one only
@@ -285,24 +308,28 @@ function ResultCard({ entry, lookupType, query }) {
           </div>
 
           {/* Detail rows */}
-          {(addrPreview || relatives || emailRaw) && (
+          {(addrList.length > 0 || relativesList.length > 0 || emailRaw) && (
             <div className="mt-3 space-y-1.5">
-              {addrPreview && (
+              {addrList.length > 0 && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Addresses</span>
-                  <span className="text-sm text-slate-400 blur-[4px] select-none">{addrPreview}</span>
+                  <span className="flex flex-wrap gap-x-3 gap-y-0.5">
+                    {addrList.map((a, i) => <AddressPreview key={i} addr={a} />)}
+                  </span>
                 </div>
               )}
-              {relatives && (
+              {relativesList.length > 0 && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Related To</span>
-                  <span className="text-sm text-slate-400 blur-[4px] select-none">{relatives}</span>
+                  <span className="flex flex-wrap gap-x-3 gap-y-0.5">
+                    {relativesList.map((r, i) => <RelativePreview key={i} name={r} />)}
+                  </span>
                 </div>
               )}
               {emailRaw && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Email</span>
-                  <span className="text-sm text-slate-400 blur-[4px] select-none">{emailRaw}</span>
+                  <EmailPreview email={emailRaw} />
                 </div>
               )}
             </div>

@@ -70,6 +70,7 @@ import PDFEngine from "@/pages/PDFEngine";
 import PeopleSearch from "@/pages/PeopleSearch";
 import PeopleSearchResult from "@/pages/PeopleSearchResult";
 import AdminPeopleSearch from "@/pages/AdminPeopleSearch";
+import AdminDataSources from "@/pages/AdminDataSources";
 import ReversePhoneLookup from "@/pages/ReversePhoneLookup";
 import FindPersonByName from "@/pages/FindPersonByName";
 import AddressLookupPage from "@/pages/AddressLookupPage";
@@ -234,6 +235,7 @@ function App() {
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
             <Route path="/admin/people-search" element={<AdminPeopleSearch />} />
+            <Route path="/admin/data-sources" element={<AdminDataSources />} />
             {/* People Search Routes */}
             <Route path="/people-search" element={<PeopleSearch />} />
             <Route path="/people-search/result/:searchId" element={<PeopleSearchResult />} />

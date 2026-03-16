@@ -128,6 +128,9 @@ audit_logs_collection = db["audit_logs"]
 support_tickets_collection = db["support_tickets"]
 people_search_logs_collection = db["people_search_logs"]
 people_search_payments_collection = db["people_search_payments"]
+data_source_settings_collection = db["data_source_settings"]
+people_records_collection = db["people_records"]
+scraper_jobs_collection = db["scraper_jobs"]
 
 # Default permissions per moderator level
 ALL_PERMISSIONS = [
@@ -7968,6 +7971,147 @@ DEFAULT_PEOPLE_SEARCH_PRICES = {
     "background_report": 4.99,
 }
 
+# ── Data Source Settings ─────────────────────────────────────────────────────
+
+DATA_SOURCE_DEFAULTS = [
+    {
+        "source": "whitepages",
+        "label": "Whitepages Pro API",
+        "description": "Live data from the Whitepages Pro REST API. Requires WHITEPAGES_PRO_API_KEY.",
+        "enabled": True,
+        "category": "api",
+        "recordCount": 0,
+    },
+    {
+        "source": "internal",
+        "label": "Internal Database",
+        "description": "Records collected by your own scrapers and manually imported data.",
+        "enabled": False,
+        "category": "database",
+        "recordCount": 0,
+    },
+    {
+        "source": "nsopw",
+        "label": "Sex Offender Registry (NSOPW)",
+        "description": "National sex offender public registry. Free government API.",
+        "enabled": False,
+        "category": "scraper",
+        "recordCount": 0,
+    },
+    {
+        "source": "nppes",
+        "label": "NPI Doctor Registry (NPPES)",
+        "description": "CMS National Plan & Provider Enumeration System. Free API, 6M+ healthcare providers.",
+        "enabled": False,
+        "category": "scraper",
+        "recordCount": 0,
+    },
+    {
+        "source": "fec",
+        "label": "FEC Campaign Finance",
+        "description": "Federal Election Commission donor database. Free API, 100M+ contributions.",
+        "enabled": False,
+        "category": "scraper",
+        "recordCount": 0,
+    },
+    {
+        "source": "faa",
+        "label": "FAA Airmen/Aircraft Registry",
+        "description": "FAA bulk download — pilot certificates and aircraft owners.",
+        "enabled": False,
+        "category": "scraper",
+        "recordCount": 0,
+    },
+    {
+        "source": "voter_rolls",
+        "label": "Voter Roll Data",
+        "description": "Manually imported voter registration data from state sources (varies by state).",
+        "enabled": False,
+        "category": "import",
+        "recordCount": 0,
+    },
+]
+
+async def get_data_sources() -> list:
+    """Return all data source settings, seeding defaults on first call."""
+    docs = await data_source_settings_collection.find({}).to_list(None)
+    existing = {d["source"] for d in docs}
+    for default in DATA_SOURCE_DEFAULTS:
+        if default["source"] not in existing:
+            await data_source_settings_collection.insert_one(dict(default))
+    return await data_source_settings_collection.find({}, {"_id": 0}).to_list(None)
+
+async def is_source_enabled(source: str) -> bool:
+    doc = await data_source_settings_collection.find_one({"source": source})
+    if doc is None:
+        # Default: whitepages on, everything else off
+        return source == "whitepages"
+    return bool(doc.get("enabled", False))
+
+# ── Internal DB helpers ───────────────────────────────────────────────────────
+
+def _fmt_addr(a: dict) -> str:
+    parts = [a.get("street", ""), a.get("city", ""), a.get("state", ""), a.get("zip", "")]
+    return ", ".join(p for p in parts if p)
+
+def normalize_internal_record(doc: dict) -> dict:
+    """Convert a people_records document to the standard search result format."""
+    addrs = doc.get("addresses", [])
+    current = next((a for a in addrs if a.get("current")), addrs[0] if addrs else {})
+    past = [a for a in addrs if not a.get("current")]
+    age = doc.get("age")
+    return {
+        "firstName":        doc.get("firstName", ""),
+        "lastName":         doc.get("lastName", ""),
+        "age":              age,
+        "ageRange":         f"{age - 2}-{age + 2}" if age else None,
+        "state":            current.get("state", doc.get("state", "")),
+        "currentAddress":   _fmt_addr(current) if current else "",
+        "pastAddresses":    [_fmt_addr(a) for a in past],
+        "phones":           doc.get("phones", []),
+        "emails":           doc.get("emails", []),
+        "possibleRelatives": doc.get("relatives", []),
+        "occupation":       doc.get("occupation", ""),
+        "sourceDB":         doc.get("source", "internal"),
+    }
+
+async def internal_name_lookup(first: str, last: str, state: str = "") -> list:
+    query: dict = {
+        "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+        "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+    }
+    if state:
+        query["$or"] = [
+            {"state": {"$regex": state, "$options": "i"}},
+            {"addresses.state": {"$regex": state, "$options": "i"}},
+        ]
+    cursor = people_records_collection.find(query).limit(20)
+    results = []
+    async for doc in cursor:
+        results.append(normalize_internal_record(doc))
+    return results
+
+async def internal_phone_lookup(phone: str) -> list:
+    clean = re.sub(r"[^\d]", "", phone)
+    cursor = people_records_collection.find({"phones": {"$elemMatch": {"$regex": clean}}}).limit(5)
+    results = []
+    async for doc in cursor:
+        results.append(normalize_internal_record(doc))
+    return results
+
+async def internal_address_lookup(street: str, city: str, state: str = "") -> list:
+    query: dict = {
+        "addresses.street": {"$regex": re.escape(street), "$options": "i"},
+        "addresses.city":   {"$regex": re.escape(city),   "$options": "i"},
+    }
+    if state:
+        query["addresses.state"] = {"$regex": state, "$options": "i"}
+    cursor = people_records_collection.find(query).limit(10)
+    results = []
+    async for doc in cursor:
+        results.append(normalize_internal_record(doc))
+    return results
+
 async def get_people_search_prices() -> dict:
     doc = await site_settings_collection.find_one({"key": "people_search_prices"})
     if doc:
@@ -8176,7 +8320,11 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
     if lt not in DEFAULT_PEOPLE_SEARCH_PRICES:
         raise HTTPException(status_code=400, detail="Invalid lookup type")
 
-    # ── Run search: Whitepages Pro when key configured, mock otherwise ──────────
+    # ── Check enabled data sources ────────────────────────────────────────────
+    use_whitepages = await is_source_enabled("whitepages")
+    use_internal   = await is_source_enabled("internal")
+
+    # ── Run search across enabled sources, merge results ─────────────────────
     # full_results is always a list; single-result lookups wrap in list
     if lt == "phone_lookup":
         if not data.phone:
@@ -8184,56 +8332,89 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         phone_clean = re.sub(r"[^\d]", "", data.phone)
         if len(phone_clean) < 10:
             raise HTTPException(status_code=400, detail="Invalid phone number – must be 10 digits")
-        wp = await wp_phone_lookup(phone_clean)
-        mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
-        single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
-        full_results = [single]
+
+        full_results = []
+        if use_whitepages:
+            wp = await wp_phone_lookup(phone_clean)
+            mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
+            single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
+            full_results.append(single)
+        if use_internal:
+            db_results = await internal_phone_lookup(phone_clean)
+            full_results.extend(db_results)
+        if not full_results:
+            mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
+            full_results = [mock_base]
         query_summary = data.phone
 
     elif lt == "name_lookup":
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
-        wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
-        mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
-        if wp_list:
-            # Merge: use WP results, pad with mock if fewer than mock count
-            full_results = []
-            for i, wp_item in enumerate(wp_list):
-                mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
-                full_results.append({**mock_fallback, **{k: v for k, v in wp_item.items() if v is not None}})
-        else:
+
+        full_results = []
+        if use_whitepages:
+            wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+            mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
+            if wp_list:
+                for i, wp_item in enumerate(wp_list):
+                    mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
+                    full_results.append({**mock_fallback, **{k: v for k, v in wp_item.items() if v is not None}})
+            else:
+                full_results.extend(mock_list)
+        if use_internal:
+            db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "")
+            full_results.extend(db_results)
+        if not full_results:
+            mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
             full_results = mock_list
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 
     elif lt == "address_lookup":
         if not data.street or not data.city:
             raise HTTPException(status_code=400, detail="Street and city required")
-        wp = await wp_address_lookup(data.street, data.city, data.state or "")
-        mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
-        single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
-        full_results = [single]
+
+        full_results = []
+        if use_whitepages:
+            wp = await wp_address_lookup(data.street, data.city, data.state or "")
+            mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
+            single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
+            full_results.append(single)
+        if use_internal:
+            db_results = await internal_address_lookup(data.street, data.city, data.state or "")
+            full_results.extend(db_results)
+        if not full_results:
+            mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
+            full_results = [mock_base]
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
 
     else:  # background_report
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
-        wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
-        mock_list = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
-        if wp_list:
-            full_results = []
-            for i, wp_item in enumerate(wp_list):
-                mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
-                r = dict(mock_fallback)
-                if wp_item.get("possiblePhones"):    r["phones"] = wp_item["possiblePhones"]
-                if wp_item.get("possibleAddresses"):
-                    addrs = wp_item["possibleAddresses"]
-                    r["currentAddress"] = addrs[0] if addrs else r["currentAddress"]
-                    r["pastAddresses"]  = addrs[1:] if len(addrs) > 1 else r["pastAddresses"]
-                if wp_item.get("possibleRelatives"): r["possibleRelatives"] = wp_item["possibleRelatives"]
-                if wp_item.get("ageRange"):          r["ageRange"] = wp_item["ageRange"]
-                if wp_item.get("state"):             r["state"] = wp_item["state"]
-                full_results.append(r)
-        else:
+
+        full_results = []
+        if use_whitepages:
+            wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+            mock_list = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
+            if wp_list:
+                for i, wp_item in enumerate(wp_list):
+                    mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
+                    r = dict(mock_fallback)
+                    if wp_item.get("possiblePhones"):    r["phones"] = wp_item["possiblePhones"]
+                    if wp_item.get("possibleAddresses"):
+                        addrs = wp_item["possibleAddresses"]
+                        r["currentAddress"] = addrs[0] if addrs else r["currentAddress"]
+                        r["pastAddresses"]  = addrs[1:] if len(addrs) > 1 else r["pastAddresses"]
+                    if wp_item.get("possibleRelatives"): r["possibleRelatives"] = wp_item["possibleRelatives"]
+                    if wp_item.get("ageRange"):          r["ageRange"] = wp_item["ageRange"]
+                    if wp_item.get("state"):             r["state"] = wp_item["state"]
+                    full_results.append(r)
+            else:
+                full_results.extend(mock_list)
+        if use_internal:
+            db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "")
+            full_results.extend(db_results)
+        if not full_results:
+            mock_list = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
             full_results = mock_list
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 
@@ -8444,6 +8625,147 @@ async def admin_ps_update_prices(request: Request):
         upsert=True,
     )
     return {"success": True, "prices": prices}
+
+
+# ── Admin: Data Sources ───────────────────────────────────────────────────────
+
+@app.get("/api/admin/data-sources")
+async def admin_get_data_sources(request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}}):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    sources = await get_data_sources()
+    # Enrich with live record counts and latest job info
+    for src in sources:
+        src["recordCount"] = await people_records_collection.count_documents({"source": src["source"]})
+        job = await scraper_jobs_collection.find_one(
+            {"source": src["source"]}, sort=[("startedAt", -1)]
+        )
+        if job:
+            job.pop("_id", None)
+            src["lastJob"] = job
+        else:
+            src["lastJob"] = None
+    return {"sources": sources}
+
+
+class DataSourceToggleRequest(BaseModel):
+    enabled: bool
+
+
+@app.put("/api/admin/data-sources/{source}")
+async def admin_toggle_data_source(source: str, body: DataSourceToggleRequest, request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    session = await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}})
+    if not session:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    valid_sources = {d["source"] for d in DATA_SOURCE_DEFAULTS}
+    if source not in valid_sources:
+        raise HTTPException(status_code=400, detail="Unknown source")
+
+    await data_source_settings_collection.update_one(
+        {"source": source},
+        {"$set": {"enabled": body.enabled, "updatedAt": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    await log_action(session, "toggle_data_source", "data_source", source,
+                     f"{'enabled' if body.enabled else 'disabled'}")
+    return {"success": True, "source": source, "enabled": body.enabled}
+
+
+# ── Admin: Scraper Jobs ───────────────────────────────────────────────────────
+
+# In-memory set of currently running scraper tasks so we don't double-trigger
+_running_scrapers: set = set()
+
+
+@app.get("/api/admin/scrapers/jobs")
+async def admin_scraper_jobs(request: Request, limit: int = 50):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}}):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    cursor = scraper_jobs_collection.find({}).sort("startedAt", -1).limit(limit)
+    jobs = []
+    async for doc in cursor:
+        doc.pop("_id", None)
+        jobs.append(doc)
+    return {"jobs": jobs, "running": list(_running_scrapers)}
+
+
+@app.post("/api/admin/scrapers/{source}/trigger")
+async def admin_trigger_scraper(source: str, request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    session = await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}})
+    if not session:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    valid_scrapers = {"nsopw", "nppes", "fec", "faa"}
+    if source not in valid_scrapers:
+        raise HTTPException(status_code=400, detail=f"No scraper available for '{source}'")
+
+    if source in _running_scrapers:
+        raise HTTPException(status_code=409, detail="Scraper already running for this source")
+
+    job_id = str(uuid.uuid4())
+    job_doc = {
+        "jobId": job_id,
+        "source": source,
+        "status": "running",
+        "recordsAdded": 0,
+        "recordsUpdated": 0,
+        "errors": [],
+        "startedAt": datetime.now(timezone.utc).isoformat(),
+        "finishedAt": None,
+    }
+    await scraper_jobs_collection.insert_one(job_doc)
+    _running_scrapers.add(source)
+
+    async def run_scraper():
+        try:
+            from scrapers import run_scraper as _run
+            added, updated, errors = await _run(source, people_records_collection)
+            await scraper_jobs_collection.update_one(
+                {"jobId": job_id},
+                {"$set": {
+                    "status": "completed",
+                    "recordsAdded": added,
+                    "recordsUpdated": updated,
+                    "errors": errors[:20],
+                    "finishedAt": datetime.now(timezone.utc).isoformat(),
+                }},
+            )
+        except Exception as e:
+            await scraper_jobs_collection.update_one(
+                {"jobId": job_id},
+                {"$set": {
+                    "status": "failed",
+                    "errors": [str(e)],
+                    "finishedAt": datetime.now(timezone.utc).isoformat(),
+                }},
+            )
+        finally:
+            _running_scrapers.discard(source)
+
+    asyncio.create_task(run_scraper())
+    await log_action(session, "trigger_scraper", "scraper", source, job_id)
+    return {"success": True, "jobId": job_id}
+
+
+@app.delete("/api/admin/people-records")
+async def admin_clear_people_records(source: str, request: Request):
+    """Delete all scraped records for a given source (for re-scraping)."""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    session = await sessions_collection.find_one({"token": token, "type": "admin"})
+    if not session:
+        raise HTTPException(status_code=401, detail="Admin only")
+
+    result = await people_records_collection.delete_many({"source": source})
+    await log_action(session, "clear_people_records", "scraper", source,
+                     f"{result.deleted_count} records deleted")
+    return {"success": True, "deleted": result.deleted_count}
 
 
 if __name__ == "__main__":

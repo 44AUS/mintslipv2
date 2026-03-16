@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone, ShieldCheck } from "lucide-react";
+import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone, ShieldCheck, Search } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -200,7 +200,17 @@ function DesktopNavLinks({ location, onNavigate }) {
         <FileText className="w-4 h-4" />
         <span className="text-sm">All Generators</span>
       </button>
-      
+
+      <button
+        onClick={() => onNavigate("/people-search")}
+        className={`${getButtonClasses("/people-search")} relative`}
+        data-testid="nav-people-search-link"
+      >
+        <Search className="w-4 h-4" />
+        <span className="text-sm">People Search</span>
+        <span className="ml-1 text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
+      </button>
+
       <button
         onClick={() => onNavigate("/contact")}
         className={getButtonClasses("/contact")}
@@ -471,6 +481,16 @@ function MobileNavLinks({ location, onNavigate }) {
       >
         <FileSpreadsheet className="w-5 h-5" />
         <span className="text-base">All Generators</span>
+      </button>
+
+      <button
+        onClick={() => onNavigate("/people-search")}
+        className={`${getButtonClasses("/people-search")} relative`}
+        data-testid="nav-people-search-mobile"
+      >
+        <Search className="w-5 h-5" />
+        <span className="text-base">People Search</span>
+        <span className="ml-1 text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
       </button>
 
       <button

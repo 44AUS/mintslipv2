@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -1257,6 +1257,17 @@ export default function Home() {
             >
               <Sparkles className="w-5 h-5" />
               AI Resume Builder
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button
+              onClick={() => navigate("/people-search")}
+              size="lg"
+              variant="outline"
+              className="group gap-2 text-lg px-8 py-6 border-2 border-green-200 bg-green-50 hover:border-green-600 hover:bg-green-100 text-green-800 transition-all duration-300 relative"
+            >
+              <Search className="w-5 h-5" />
+              People Search
+              <span className="absolute -top-2 -right-2 text-[10px] font-bold bg-green-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

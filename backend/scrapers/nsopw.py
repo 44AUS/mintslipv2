@@ -31,14 +31,28 @@ SAMPLE_FIRST_NAMES = [
 ]
 
 
+_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; ResearchBot/1.0)",
+    "Accept": "application/json, text/javascript, */*",
+}
+
+_logged_first_response = False
+
+
 async def _fetch_jurisdiction(client: httpx.AsyncClient, jurisdiction: str, first: str) -> list[dict]:
+    global _logged_first_response
     try:
         url = f"{NSOPW_BASE}/{jurisdiction}/results"
-        r = await client.get(url, params={"firstName": first}, timeout=15)
+        r = await client.get(url, params={"firstName": first}, headers=_HEADERS, timeout=15)
         if r.status_code != 200:
+            logger.debug(f"NSOPW {jurisdiction}/{first}: HTTP {r.status_code}")
             return []
         data = r.json()
-        return data.get("Persons", []) or []
+        if not _logged_first_response:
+            logger.info(f"NSOPW first response keys: {list(data.keys())[:10]}")
+            _logged_first_response = True
+        # Support both capitalizations
+        return data.get("Persons") or data.get("persons") or []
     except Exception as e:
         logger.debug(f"NSOPW {jurisdiction}/{first}: {e}")
         return []

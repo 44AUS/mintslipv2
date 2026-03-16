@@ -21,7 +21,16 @@ US_STATES = [
 ]
 
 
+_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; ResearchBot/1.0)",
+    "Accept": "application/json",
+}
+
+_logged_first_response = False
+
+
 async def _fetch_page(client: httpx.AsyncClient, state: str, skip: int) -> list[dict]:
+    global _logged_first_response
     try:
         params = {
             "version": "2.1",
@@ -30,13 +39,18 @@ async def _fetch_page(client: httpx.AsyncClient, state: str, skip: int) -> list[
             "limit": 200,
             "skip": skip,
         }
-        r = await client.get(NPPES_API, params=params, timeout=20)
+        r = await client.get(NPPES_API, params=params, headers=_HEADERS, timeout=30)
         if r.status_code != 200:
+            logger.warning(f"NPPES {state} skip={skip}: HTTP {r.status_code} — {r.text[:200]}")
             return []
         data = r.json()
+        if not _logged_first_response:
+            result_count = len(data.get("results", []))
+            logger.info(f"NPPES first response: result_count={result_count}, keys={list(data.keys())}")
+            _logged_first_response = True
         return data.get("results", []) or []
     except Exception as e:
-        logger.debug(f"NPPES {state} skip={skip}: {e}")
+        logger.warning(f"NPPES {state} skip={skip}: {e}")
         return []
 
 

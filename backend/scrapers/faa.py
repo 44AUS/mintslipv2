@@ -25,9 +25,13 @@ async def _download_zip() -> bytes:
         return r.content
 
 
+def _normalize_headers(headers: list) -> list:
+    """Normalize CSV headers: strip whitespace, uppercase, spaces/dots → underscores."""
+    return [h.strip().upper().replace(" ", "_").replace(".", "_").replace("-", "_") for h in headers]
+
+
 def _parse_csv(zip_bytes: bytes) -> list:
     """Extract and parse the pilot CSV from the ZIP. Returns list of row dicts."""
-    records = []
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
         names = zf.namelist()
         logger.info(f"FAA ZIP contents: {names}")
@@ -43,36 +47,49 @@ def _parse_csv(zip_bytes: bytes) -> list:
 
         logger.info(f"FAA: Using file '{target}'")
         with zf.open(target) as f:
-            reader = csv.DictReader(io.TextIOWrapper(f, encoding="latin-1"))
-            for row in reader:
-                records.append(dict(row))
+            content = f.read().decode("latin-1")
 
+    # Detect delimiter by counting tabs vs commas in first line
+    first_line = content.split("\n")[0]
+    delimiter = "\t" if first_line.count("\t") > first_line.count(",") else ","
+
+    reader = csv.DictReader(io.StringIO(content), delimiter=delimiter)
+    # Normalize column names so we handle spaces, dots, different casing
+    if reader.fieldnames:
+        reader.fieldnames = _normalize_headers(reader.fieldnames)
+        logger.info(f"FAA columns (first 12): {reader.fieldnames[:12]}")
+
+    records = [dict(row) for row in reader]
+    logger.info(f"FAA: Parsed {len(records):,} rows from '{target}'")
     return records
 
 
 def _parse_pilot(row: dict):
     """Parse a raw CSV row into a people_records document, or None if invalid."""
-    # FAA column names (strip whitespace — FAA pads some fields)
-    def g(key):
-        return (row.get(key, "") or "").strip()
+    # Accept multiple column name variants (normalized to uppercase_underscore above)
+    def g(*keys):
+        for k in keys:
+            val = (row.get(k, "") or "").strip()
+            if val:
+                return val
+        return ""
 
-    first = g("FIRST_NAME").title()
-    last  = g("LAST_NAME").title()
+    first = g("FIRST_NAME", "FIRSTNAME", "FIRST").title()
+    last  = g("LAST_NAME", "LASTNAME", "LAST").title()
     if not first or not last:
         return None
 
     city    = g("CITY").title()
     state   = g("STATE").upper()
-    zip_c   = g("ZIP_CODE")[:5]
-    country = g("COUNTRY").upper()
+    zip_c   = g("ZIP_CODE", "ZIP", "ZIPCODE", "ZIP_CD")[:5]
+    country = g("COUNTRY", "COUNTRY_CODE").upper()
 
     # Skip non-US records
     if country and country not in ("US", "USA", "UNITED STATES", ""):
         return None
 
-    unique_id  = g("UNIQUE_ID")
-    med_class  = g("MED_CLASS")
-    # Certificate type isn't in PILOT_BASIC — use med class as proxy
+    unique_id  = g("UNIQUE_ID", "UNIQUE.ID", "ID", "AIRMEN_ID")
+    med_class  = g("MED_CLASS", "MED_CLASS_CD", "MEDICAL_CLASS")
     cert_label = f"Medical Class {med_class}" if med_class else "Pilot"
 
     addr = addr_doc(city=city, state=state, zip_code=zip_c, current=True)

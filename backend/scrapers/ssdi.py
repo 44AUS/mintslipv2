@@ -14,6 +14,7 @@ import asyncio
 import csv
 import io
 import logging
+import os
 import zipfile
 import httpx
 from scrapers.base import new_record, addr_doc
@@ -108,17 +109,32 @@ def _parse_fs_entry(entry: dict) -> dict | None:
     )
 
 
-async def scrape(collection) -> tuple:
-    """Scrape SSDI records from FamilySearch API."""
-    added   = 0
-    updated = 0
-    errors  = []
-    MAX_RECORDS = 50000  # Limit per run — full SSDI is 98M records
+async def _scrape_via_familysearch(collection, token: str) -> tuple:
+    """Scrape SSDI from FamilySearch API using a bearer token."""
+    added, updated, errors = 0, 0, []
+    MAX_RECORDS = 50000
 
     async with httpx.AsyncClient() as client:
         start = 0
         while added + updated < MAX_RECORDS:
-            entries = await _fetch_page(client, start)
+            try:
+                headers = {
+                    "Accept": "application/x-gedcomx-v1+json",
+                    "Authorization": f"Bearer {token}",
+                }
+                params = {"count": 100, "start": start, "q.collectionId": FS_COLLECTION}
+                r = await client.get(FS_API, params=params, headers=headers, timeout=20)
+                if r.status_code == 401:
+                    errors.append("FamilySearch token is invalid or expired")
+                    break
+                if r.status_code != 200:
+                    errors.append(f"FamilySearch returned {r.status_code}")
+                    break
+                entries = r.json().get("entries", []) or []
+            except Exception as e:
+                errors.append(str(e))
+                break
+
             if not entries:
                 break
 
@@ -127,7 +143,6 @@ async def scrape(collection) -> tuple:
                     doc = _parse_fs_entry(entry)
                     if not doc:
                         continue
-
                     fs_id = doc["sourceData"].get("fsId")
                     if fs_id:
                         existing = await collection.find_one(
@@ -137,7 +152,6 @@ async def scrape(collection) -> tuple:
                         if existing:
                             updated += 1
                             continue
-
                     await collection.insert_one(doc)
                     added += 1
                 except Exception as e:
@@ -148,5 +162,25 @@ async def scrape(collection) -> tuple:
                 break
             await asyncio.sleep(0.5)
 
+    return added, updated, errors
+
+
+async def scrape(collection) -> tuple:
+    """Scrape SSDI records.
+
+    Requires FAMILYSEARCH_TOKEN env var (OAuth2 bearer token from FamilySearch).
+    To get a token: sign up at familysearch.org, create an app, use client credentials flow.
+    """
+    token = os.environ.get("FAMILYSEARCH_TOKEN", "")
+    if not token:
+        msg = (
+            "SSDI scraper requires a FamilySearch bearer token. "
+            "Set the FAMILYSEARCH_TOKEN environment variable. "
+            "Get a token at https://www.familysearch.org/developers/"
+        )
+        logger.error(msg)
+        return 0, 0, [msg]
+
+    added, updated, errors = await _scrape_via_familysearch(collection, token)
     logger.info(f"SSDI scrape complete: {added:,} added, {updated:,} updated, {len(errors)} errors")
     return added, updated, errors

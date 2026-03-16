@@ -7,13 +7,17 @@ Docs: https://api.open.fec.gov/developers/
 from __future__ import annotations
 import asyncio
 import logging
+import os
 import httpx
 from scrapers.base import new_record, addr_doc, split_name
 
 logger = logging.getLogger(__name__)
 
 FEC_BASE = "https://api.open.fec.gov/v1"
-FEC_API_KEY = "DEMO_KEY"  # Replace with a free key from https://api.data.gov/signup/
+# Set FEC_API_KEY env var for higher limits. Register free at https://api.data.gov/signup/
+# DEMO_KEY = 40 req/hour, real key = 1000 req/hour
+FEC_API_KEY = os.environ.get("FEC_API_KEY", "DEMO_KEY")
+_USING_DEMO_KEY = FEC_API_KEY == "DEMO_KEY"
 
 US_STATES = [
     "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN",
@@ -99,14 +103,23 @@ async def scrape(collection) -> tuple:
     updated = 0
     errors = []
 
+    # DEMO_KEY = 40 req/hour. 50 states × 1 page = 50 requests (safe).
+    # Real API key = 1000 req/hour, can use more pages.
+    max_pages = 1 if _USING_DEMO_KEY else 10
+    delay     = 2.0 if _USING_DEMO_KEY else 0.3
+    if _USING_DEMO_KEY:
+        logger.warning("FEC: Using DEMO_KEY — limited to 1 page/state. Set FEC_API_KEY env var for full scrape.")
+
     async with httpx.AsyncClient() as client:
         for state in US_STATES:
             page = 1
             state_count = 0
-            max_pages = 10  # Limit per state per run to avoid DEMO_KEY rate limits
 
             while page <= max_pages:
                 data = await _fetch_contributors(client, state, page)
+                if not data:
+                    logger.warning(f"FEC {state}: empty response (rate limited or API error)")
+                    break
                 results = data.get("results", [])
                 if not results:
                     break
@@ -138,7 +151,7 @@ async def scrape(collection) -> tuple:
                 if page >= pagination.get("pages", 1):
                     break
                 page += 1
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(delay)
 
             logger.info(f"FEC {state}: {state_count} new records")
 

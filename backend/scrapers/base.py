@@ -1,4 +1,5 @@
 """Shared utilities for all scrapers."""
+from __future__ import annotations
 import re
 import uuid
 from datetime import datetime, timezone

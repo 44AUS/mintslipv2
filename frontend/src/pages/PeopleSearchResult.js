@@ -103,7 +103,7 @@ function SimpleLookupResult({ data, lookupType, blurred, query }) {
       { label: "Spam Risk",        value: data?.spamRisk,          blur: false },
       { label: "Caller Type",      value: data?.callerType,        blur: false },
       { label: "Possible Address", value: Array.isArray(data?.possibleAddress) ? data.possibleAddress.join(", ") : data?.possibleAddress, blur: b },
-      { label: "Relatives",        value: Array.isArray(data?.possibleRelatives) ? data.possibleRelatives.join(", ") : data?.possibleRelatives, blur: b },
+      { label: "Relatives",        value: Array.isArray(data?.possibleRelatives) ? data.possibleRelatives.join(", ") : data?.possibleRelatives, blur: false },
     );
   } else {
     rows.push(

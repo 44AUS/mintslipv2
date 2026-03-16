@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
   Phone, User, MapPin, FileSearch, Lock, CheckCircle, Search,
-  Shield, Download, Loader2, ChevronRight, Unlock, AlertCircle,
+  Shield, Download, Loader2, ChevronRight, Unlock,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -152,7 +152,7 @@ export default function PeopleSearch() {
         .catch(() => {})
         .finally(() => setCheckingPayment(false));
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = async () => {
     const tab = TAB_CONFIG[activeTab];

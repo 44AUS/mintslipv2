@@ -52,7 +52,7 @@ export default function AdminPeopleSearch() {
     if (!token) { navigate("/admin/login"); return; }
     fetchStats();
     fetchSearches(1);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchStats = async () => {
     try {

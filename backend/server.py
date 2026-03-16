@@ -7785,7 +7785,9 @@ import copy
 # Falls back to mock data when the key is not set.
 WHITEPAGES_PRO_API_KEY = os.environ.get("WHITEPAGES_PRO_API_KEY")
 _WP_BASE = "https://proapi.whitepages.com/3.3"
-logger.info(f"Whitepages Pro API key loaded: {'YES' if WHITEPAGES_PRO_API_KEY else 'NO (mock mode)'}")
+logger.info(f"Whitepages Pro API key loaded: {'YES (' + str(len(WHITEPAGES_PRO_API_KEY)) + ' chars)' if WHITEPAGES_PRO_API_KEY else 'NO (mock mode)'}")
+_wp_env_keys = [k for k in os.environ if "WHITE" in k.upper() or "PAGES" in k.upper()]
+logger.info(f"Whitepages-related env vars found: {_wp_env_keys}")
 
 
 def _wp_format_phone(raw: str) -> str:

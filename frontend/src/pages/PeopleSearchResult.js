@@ -243,7 +243,7 @@ export default function PeopleSearchResult() {
       <Header />
 
       <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
 
           {/* Back button */}
           <button

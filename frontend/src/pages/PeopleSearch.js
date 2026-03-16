@@ -7,6 +7,7 @@ import {
   Phone, User, MapPin, FileSearch, Lock, Search,
   Shield, Loader2, ChevronRight, CheckCircle,
 } from "lucide-react";
+// Note: User kept for TAB_CONFIG icon only
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -185,42 +186,132 @@ function ResultRows({ data, lookupType, blurred }) {
   );
 }
 
-// ── Single result card — clickable, navigates to detail page ─────────────────
+// ── Email preview: show first 2 chars + domain, blur middle ──────────────────
+function EmailPreview({ email }) {
+  const str = String(email);
+  const atIdx = str.indexOf("@");
+  if (atIdx < 2) return <span className="text-sm blur-[4px] select-none text-slate-400">{str}</span>;
+  const visible  = str.slice(0, 2);
+  const blurPart = str.slice(2, atIdx);
+  const domain   = str.slice(atIdx);
+  return (
+    <span className="text-sm">
+      <span className="text-slate-700">{visible}</span>
+      <span className="blur-[4px] select-none text-slate-400">{blurPart}</span>
+      <span className="text-slate-700">{domain}</span>
+    </span>
+  );
+}
+
+// Extract "City, ST" from a full address string
+function cityState(addr) {
+  const m = String(addr).match(/,\s*([^,]+,\s*[A-Z]{2})/);
+  return m ? m[1].trim() : String(addr).replace(/^\d+\s+/, "");
+}
+
+// ── Single result card — Whitepages-style layout ──────────────────────────────
 function ResultCard({ entry, lookupType, query }) {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const preview   = entry.preview || {};
+
+  // Age from DOB
+  const dobParsed = parseDob(preview.dateOfBirth);
+  const age       = dobParsed?.age && dobParsed.age > 0 && dobParsed.age < 130 ? dobParsed.age : null;
+
+  // Name / title
+  const name = preview.fullName || preview.name || preview.address || "Unknown";
+
+  // Location line (city, state)
+  const locationLine = (() => {
+    if (preview.state) return preview.state;
+    const addrs = preview.possibleAddresses || [];
+    if (addrs.length) return cityState(addrs[0]);
+    if (preview.location) return preview.location;
+    return null;
+  })();
+
+  // Address cities preview (no street numbers — they'd be blurred anyway)
+  const addrPreview = (() => {
+    const addrs = [
+      ...(preview.possibleAddresses || []),
+      ...(preview.currentAddress ? [preview.currentAddress] : []),
+      ...(preview.pastAddresses   || []),
+    ].filter(Boolean);
+    if (!addrs.length) return null;
+    const cities = [...new Set(addrs.map(cityState))].slice(0, 3);
+    return cities.join(" • ") || null;
+  })();
+
+  // Relatives — show first 2
+  const relatives = (() => {
+    const r = preview.possibleRelatives;
+    if (!r) return null;
+    const arr = Array.isArray(r) ? r : [r];
+    return arr.slice(0, 2).join(" • ") || null;
+  })();
+
+  // Email — first one only
+  const emailRaw = Array.isArray(preview.emails) ? preview.emails[0] : preview.emails || null;
 
   const handleClick = () => {
     navigate(`/people-search/result/${entry.searchId}`, {
-      state: { preview: entry.preview, lookupType, price: entry.price, query },
+      state: { preview, lookupType, price: entry.price, query },
     });
   };
 
-  const name = entry.preview?.fullName || entry.preview?.name || entry.preview?.address || "View Report";
-  const location = entry.preview?.state || entry.preview?.location || "";
-
   return (
-    <button
-      onClick={handleClick}
-      className="w-full text-left bg-white rounded-xl border border-slate-200 shadow-sm hover:border-green-400 hover:shadow-md transition-all duration-200 overflow-hidden group"
-    >
-      <div className="flex items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 text-green-700" />
+    <div className="bg-white border border-slate-200 hover:border-green-300 hover:shadow-md transition-all duration-200 rounded-xl overflow-hidden">
+      <div className="flex items-stretch">
+
+        {/* Age column */}
+        {age && (
+          <div className="flex flex-col items-center justify-center px-5 py-5 border-r border-slate-100 min-w-[72px] bg-slate-50/50">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">AGE</span>
+            <span className="text-3xl font-extrabold text-slate-900 leading-none">{age}</span>
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-800 truncate">{name}</p>
-            {location && <p className="text-xs text-slate-500 truncate">{location}</p>}
+        )}
+
+        {/* Main info */}
+        <div className="flex-1 px-5 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 leading-tight">{name}</h3>
+              {locationLine && <p className="text-sm text-slate-500 mt-0.5">{locationLine}</p>}
+            </div>
+            <button
+              onClick={handleClick}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap flex-shrink-0"
+            >
+              <Lock className="w-3.5 h-3.5" /> View Full Report
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="flex items-center gap-1 text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-            <Lock className="w-3 h-3" /> Locked
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-green-600 transition-colors" />
+
+          {/* Detail rows */}
+          {(addrPreview || relatives || emailRaw) && (
+            <div className="mt-3 space-y-1.5">
+              {addrPreview && (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Addresses</span>
+                  <span className="text-sm text-slate-700">{addrPreview}</span>
+                </div>
+              )}
+              {relatives && (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Related To</span>
+                  <span className="text-sm text-slate-700">{relatives}</span>
+                </div>
+              )}
+              {emailRaw && (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Email</span>
+                  <EmailPreview email={emailRaw} />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -301,7 +392,7 @@ export default function PeopleSearch() {
       <Header />
 
       <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
 
           {/* Hero */}
           <div className="text-center mb-8">
@@ -315,7 +406,7 @@ export default function PeopleSearch() {
           </div>
 
           {/* Search panel */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6 max-w-2xl mx-auto">
 
               {/* Tabs */}
               <div className="flex border-b border-slate-200 overflow-x-auto">

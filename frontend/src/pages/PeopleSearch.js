@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
-  Phone, User, MapPin, FileSearch, Lock, CheckCircle, Search,
-  Shield, Download, Loader2, ChevronRight, Unlock,
+  Phone, User, MapPin, FileSearch, Lock, Search,
+  Shield, Loader2, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -185,83 +185,58 @@ function ResultRows({ data, lookupType, blurred }) {
   );
 }
 
-// ── Single result card (handles both preview + unlocked state) ────────────────
-function ResultCard({ entry, lookupType, onUnlock, unlocking }) {
-  const isPaid = entry.paid;
+// ── Single result card — clickable, navigates to detail page ─────────────────
+function ResultCard({ entry, lookupType, query }) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/people-search/result/${entry.searchId}`, {
+      state: { preview: entry.preview, lookupType, price: entry.price, query },
+    });
+  };
+
+  const name = entry.preview?.fullName || entry.preview?.name || entry.preview?.address || "View Report";
+  const location = entry.preview?.state || entry.preview?.location || "";
+
   return (
-    <div className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-      isPaid ? "border-green-200" : "border-slate-200"
-    }`}>
-      {/* Card header */}
-      <div className={`flex items-center justify-between px-5 py-3 border-b ${
-        isPaid ? "bg-green-50 border-green-100" : "bg-slate-50 border-slate-100"
-      }`}>
-        {isPaid ? (
-          <div className="flex items-center gap-2 text-green-700 text-sm font-semibold">
-            <CheckCircle className="w-4 h-4" /> Report Unlocked
+    <button
+      onClick={handleClick}
+      className="w-full text-left bg-white rounded-xl border border-slate-200 shadow-sm hover:border-green-400 hover:shadow-md transition-all duration-200 overflow-hidden group"
+    >
+      <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-green-700" />
           </div>
-        ) : (
-          <div className="flex items-center gap-1.5 text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-            <Lock className="w-3 h-3" /> Preview Only
-          </div>
-        )}
-        {isPaid && (
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 py-1.5 transition-colors print:hidden"
-          >
-            <Download className="w-3.5 h-3.5" /> Print
-          </button>
-        )}
-      </div>
-
-      {/* Data rows */}
-      <div className="px-5 py-1">
-        <ResultRows data={isPaid ? entry.fullResult : entry.preview} lookupType={lookupType} blurred={!isPaid} />
-      </div>
-
-      {/* Unlock section */}
-      {!isPaid && (
-        <div className="px-5 pb-5 pt-3 border-t border-slate-100 space-y-3">
-          <p className="text-xs text-slate-400 text-center">
-            Blurred fields (addresses, phone numbers, email, exact birth date) are fully revealed after purchase.
-          </p>
-          <button
-            onClick={() => onUnlock(entry.searchId)}
-            disabled={unlocking}
-            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3.5 rounded-xl transition-colors disabled:opacity-50 text-base"
-          >
-            {unlocking
-              ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirecting…</>
-              : <><Unlock className="w-5 h-5" /> Unlock Full Report – ${entry.price?.toFixed(2)}</>
-            }
-          </button>
-          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
-            <Lock className="w-3 h-3" /> Secured by Stripe · Cards, Apple Pay & Google Pay
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-800 truncate">{name}</p>
+            {location && <p className="text-xs text-slate-500 truncate">{location}</p>}
           </div>
         </div>
-      )}
-    </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 text-amber-600 text-xs font-semibold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+            <Lock className="w-3 h-3" /> Locked
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-green-600 transition-colors" />
+        </div>
+      </div>
+    </button>
   );
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function PeopleSearch() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("phone");
   const [prices, setPrices] = useState({ phone_lookup: 0.99, name_lookup: 1.49, address_lookup: 1.49, background_report: 4.99 });
 
   const [searching, setSearching] = useState(false);
-  const [checkingPayment, setCheckingPayment] = useState(false);
 
   // results: [{ searchId, preview, price, fullResult?, paid? }]
   const [results, setResults] = useState([]);
   const [lookupType, setLookupType] = useState(null);
   const [query, setQuery] = useState("");
-  // per-card unlocking state: { [searchId]: true }
-  const [unlocking, setUnlocking] = useState({});
 
   // Form fields
   const [phone, setPhone] = useState("");
@@ -283,32 +258,6 @@ export default function PeopleSearch() {
       .then(data => { if (data) setPrices(prev => ({ ...prev, ...data })); })
       .catch(() => {});
   }, []);
-
-  // Check payment redirect on mount (?session_id=...&search_id=...)
-  useEffect(() => {
-    const sessionId = searchParams.get("session_id");
-    const sid = searchParams.get("search_id");
-    if (sessionId && sid) {
-      setCheckingPayment(true);
-      fetch(`${BACKEND_URL}/api/people-search/result/${sid}?session_id=${sessionId}`, {
-        headers: authHeaders,
-      })
-        .then(r => r.json())
-        .then(data => {
-          if (data.paid && data.result) {
-            // Only show the single unlocked report
-            setResults([{ searchId: sid, preview: null, price: null, paid: true, fullResult: data.result }]);
-            setLookupType(data.lookupType);
-            sessionStorage.removeItem("ps_results");
-            sessionStorage.removeItem("ps_lookupType");
-            sessionStorage.removeItem("ps_query");
-            toast.success("Payment confirmed – full report unlocked!");
-          }
-        })
-        .catch(() => {})
-        .finally(() => setCheckingPayment(false));
-    }
-  }, []); // eslint-disable-line
 
   const handleSearch = async () => {
     const tab = TAB_CONFIG[activeTab];
@@ -340,33 +289,6 @@ export default function PeopleSearch() {
     }
   };
 
-  const handleUnlock = async (searchId) => {
-    setUnlocking(prev => ({ ...prev, [searchId]: true }));
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/people-search/checkout`, {
-        method: "POST",
-        headers: authHeaders,
-        body: JSON.stringify({ searchId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.detail || "Checkout failed.");
-        return;
-      }
-      if (data.alreadyPaid && data.result) {
-        setResults(prev => prev.map(r =>
-          r.searchId === searchId ? { ...r, paid: true, fullResult: data.result } : r
-        ));
-        return;
-      }
-      if (data.url) window.location.href = data.url;
-    } catch {
-      toast.error("Checkout failed. Please try again.");
-    } finally {
-      setUnlocking(prev => ({ ...prev, [searchId]: false }));
-    }
-  };
-
   const hasResults = results.length > 0;
   const tabLabel = lookupType ? Object.values(TAB_CONFIG).find(t => t.id === lookupType)?.label : "";
 
@@ -392,16 +314,8 @@ export default function PeopleSearch() {
             </p>
           </div>
 
-          {/* Payment verification spinner */}
-          {checkingPayment && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center mb-6">
-              <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
-              <p className="text-slate-600 font-medium">Verifying your payment…</p>
-            </div>
-          )}
-
           {/* Search panel */}
-          {!checkingPayment && (
+          {(
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
 
               {/* Tabs */}
@@ -509,7 +423,7 @@ export default function PeopleSearch() {
           )}
 
           {/* Results */}
-          {hasResults && !checkingPayment && (
+          {hasResults && (
             <div className="space-y-4 mb-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -531,15 +445,14 @@ export default function PeopleSearch() {
                   key={entry.searchId}
                   entry={entry}
                   lookupType={lookupType}
-                  onUnlock={handleUnlock}
-                  unlocking={!!unlocking[entry.searchId]}
+                  query={query}
                 />
               ))}
             </div>
           )}
 
           {/* Trust badges */}
-          {!hasResults && !checkingPayment && (
+          {!hasResults && (
             <div className="mt-2 grid grid-cols-3 gap-4">
               {[
                 { icon: Shield,       title: "Secure & Private",  desc: "Your searches are never shared" },

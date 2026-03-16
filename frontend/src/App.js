@@ -68,6 +68,7 @@ import AIResumeBuilder from "@/pages/AIResumeBuilder";
 import AIResumeLanding from "@/pages/AIResumeLanding";
 import PDFEngine from "@/pages/PDFEngine";
 import PeopleSearch from "@/pages/PeopleSearch";
+import PeopleSearchResult from "@/pages/PeopleSearchResult";
 import AdminPeopleSearch from "@/pages/AdminPeopleSearch";
 import ReversePhoneLookup from "@/pages/ReversePhoneLookup";
 import FindPersonByName from "@/pages/FindPersonByName";
@@ -235,6 +236,7 @@ function App() {
             <Route path="/admin/people-search" element={<AdminPeopleSearch />} />
             {/* People Search Routes */}
             <Route path="/people-search" element={<PeopleSearch />} />
+            <Route path="/people-search/result/:searchId" element={<PeopleSearchResult />} />
             <Route path="/reverse-phone-lookup" element={<ReversePhoneLookup />} />
             <Route path="/find-person-by-name" element={<FindPersonByName />} />
             <Route path="/address-lookup" element={<AddressLookupPage />} />

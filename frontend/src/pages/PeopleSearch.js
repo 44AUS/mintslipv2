@@ -220,8 +220,7 @@ function RelativePreview({ name }) {
   const rest  = parts.slice(1).join(" ");
   return (
     <span className="text-sm">
-      <span className="text-slate-700">{first} </span>
-      <span className="blur-[4px] select-none text-slate-400">{rest}</span>
+      <span className="text-slate-700">{first} {rest}</span>
     </span>
   );
 }

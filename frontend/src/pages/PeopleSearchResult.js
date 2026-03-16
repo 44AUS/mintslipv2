@@ -461,9 +461,7 @@ export default function PeopleSearchResult() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {relativesList.map((rel, i) => (
                       <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <Locked blurred={!isPaid}>
-                          <p className="text-sm font-semibold text-slate-800">{rel}</p>
-                        </Locked>
+                        <p className="text-sm font-semibold text-slate-800">{rel}</p>
                       </div>
                     ))}
                   </div>

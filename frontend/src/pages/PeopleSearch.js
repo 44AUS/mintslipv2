@@ -429,8 +429,24 @@ export default function PeopleSearch() {
     ? { "Content-Type": "application/json", "Authorization": `Bearer ${userToken}` }
     : { "Content-Type": "application/json" };
 
-  // Fetch prices on mount
+  // Restore previous results + fetch prices on mount
   useEffect(() => {
+    const saved = sessionStorage.getItem("ps_results");
+    const savedType = sessionStorage.getItem("ps_lookupType");
+    const savedQuery = sessionStorage.getItem("ps_query");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.length) {
+          setResults(parsed);
+          if (savedType) setLookupType(savedType);
+          if (savedQuery) setQuery(savedQuery);
+          // Restore the active tab to match the saved lookup type
+          const matchingTab = Object.entries(TAB_CONFIG).find(([, v]) => v.id === savedType);
+          if (matchingTab) setActiveTab(matchingTab[0]);
+        }
+      } catch { /* ignore */ }
+    }
     fetch(`${BACKEND_URL}/api/people-search/prices`)
       .then(r => r.json())
       .then(data => { if (data) setPrices(prev => ({ ...prev, ...data })); })
@@ -441,6 +457,9 @@ export default function PeopleSearch() {
     const tab = TAB_CONFIG[activeTab];
     setSearching(true);
     setResults([]);
+    sessionStorage.removeItem("ps_results");
+    sessionStorage.removeItem("ps_lookupType");
+    sessionStorage.removeItem("ps_query");
     try {
       const res = await fetch(`${BACKEND_URL}/api/people-search/search`, {
         method: "POST",
@@ -624,7 +643,7 @@ export default function PeopleSearch() {
                   <p className="text-xs text-slate-400 mt-0.5">{query}</p>
                 </div>
                 <button
-                  onClick={() => setResults([])}
+                  onClick={() => { setResults([]); sessionStorage.removeItem("ps_results"); sessionStorage.removeItem("ps_lookupType"); sessionStorage.removeItem("ps_query"); }}
                   className="text-xs text-slate-400 hover:text-slate-600 underline"
                 >
                   Clear

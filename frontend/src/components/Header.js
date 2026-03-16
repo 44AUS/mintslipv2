@@ -47,7 +47,6 @@ const OTHER_FORMS = [
 // Navigation links component for desktop (without user area - that's separate now)
 function DesktopNavLinks({ location, onNavigate }) {
   const isActive = (path) => location.pathname === path;
-  const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
   const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
   const isPaystubActive = location.pathname === '/paystub-generator' || location.pathname === '/paystub-samples';
   
@@ -130,36 +129,7 @@ function DesktopNavLinks({ location, onNavigate }) {
         <span className="text-sm">AI Resume Builder</span>
       </button>
 
-      {/* Tax Forms Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className={getDropdownTriggerClasses(isTaxFormActive)}
-            data-testid="nav-taxforms-dropdown"
-          >
-            <Receipt className="w-4 h-4" />
-            <span className="text-sm">Tax Forms</span>
-            <ChevronDown className="w-3 h-3 ml-1" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          {TAX_FORMS.map((form) => {
-            const IconComponent = form.icon;
-            return (
-              <DropdownMenuItem
-                key={form.path}
-                onClick={() => onNavigate(form.path)}
-                className={`flex items-center gap-2 cursor-pointer ${
-                  isActive(form.path) ? 'bg-green-50 text-green-800 font-semibold' : ''
-                }`}
-              >
-                <IconComponent className="w-4 h-4" />
-                <span>{form.name}</span>
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* Tax Forms Dropdown — hidden from desktop nav */}
 
       {/* Other Forms/Generators Dropdown
       <DropdownMenu>
@@ -208,7 +178,7 @@ function DesktopNavLinks({ location, onNavigate }) {
       >
         <Search className="w-4 h-4" />
         <span className="text-sm">People Search</span>
-        <span className="ml-1 text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
+        <span className="ml-auto text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
       </button>
 
       <button
@@ -485,12 +455,12 @@ function MobileNavLinks({ location, onNavigate }) {
 
       <button
         onClick={() => onNavigate("/people-search")}
-        className={`${getButtonClasses("/people-search")} relative`}
+        className={getButtonClasses("/people-search")}
         data-testid="nav-people-search-mobile"
       >
         <Search className="w-5 h-5" />
         <span className="text-base">People Search</span>
-        <span className="ml-1 text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
+        <span className="ml-auto text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
       </button>
 
       <button
@@ -738,3 +708,6 @@ export default function Header({ title }) {
     </>
   );
 }
+
+
+

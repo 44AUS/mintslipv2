@@ -7882,14 +7882,25 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
         return None
 
     def _parse(p):
-        name_obj   = p.get("name") or {}
-        full_name  = name_obj.get("full_name") or f"{first} {last}"
-        age_range  = p.get("age_range") or ""
-        cur_addrs  = [a.get("full_address") for a in p.get("current_addresses", []) if a.get("full_address")]
-        hist_addrs = [a.get("full_address") for a in p.get("historical_addresses", []) if a.get("full_address")]
-        phones     = [_wp_format_phone(ph.get("phone_number", "")) for ph in p.get("phones", []) if ph.get("phone_number")]
-        relatives  = _wp_names_from_person(p)
-        st         = state or (p.get("current_addresses") or [{}])[0].get("state_code", "")
+        logger.info(f"Whitepages person item keys: {list(p.keys()) if isinstance(p, dict) else type(p).__name__ + ': ' + str(p)[:200]}")
+        # name may be a plain string (v1) or a dict (v3)
+        raw_name = p.get("name") if isinstance(p, dict) else None
+        if isinstance(raw_name, dict):
+            full_name = raw_name.get("full_name") or f"{raw_name.get('first','')} {raw_name.get('last','')}".strip() or f"{first} {last}"
+        else:
+            full_name = raw_name or f"{first} {last}"
+        age_range  = p.get("age_range") or "" if isinstance(p, dict) else ""
+        # addresses — may be list of dicts or list of strings
+        def _addr(a):
+            return a if isinstance(a, str) else (a.get("full_address") or a.get("standard_address_line1") or "")
+        cur_addrs  = [_addr(a) for a in (p.get("current_addresses") or [] if isinstance(p, dict) else []) if _addr(a)]
+        hist_addrs = [_addr(a) for a in (p.get("historical_addresses") or [] if isinstance(p, dict) else []) if _addr(a)]
+        # phones — may be list of dicts or list of strings
+        def _phone(ph):
+            return _wp_format_phone(ph if isinstance(ph, str) else ph.get("phone_number", ""))
+        phones    = [_phone(ph) for ph in (p.get("phones") or [] if isinstance(p, dict) else []) if ph]
+        relatives = _wp_names_from_person(p) if isinstance(p, dict) else []
+        st        = state or (_addr((p.get("current_addresses") or [{}])[0]) if isinstance(p, dict) and p.get("current_addresses") else "")
         return {
             "fullName":          full_name,
             "ageRange":          age_range or None,

@@ -1234,7 +1234,7 @@ export default function Home() {
               <span className="block text-slate-800">Paystubs in Minutes</span>
             </h1>
             <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
-              Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.
+              Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. Search anyone by name, phone, or address with our new People Search. No sign-up required.
             </p>
           </div>
 
@@ -1259,14 +1259,17 @@ export default function Home() {
               AI Resume Builder
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <button
+            <Button
               onClick={() => navigate("/people-search")}
-              className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-5 py-3 rounded-xl transition-colors text-sm shadow-sm"
+              size="lg"
+              variant="outline"
+              className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
             >
-              <Search className="w-4 h-4 text-green-600" />
+              <Search className="w-5 h-5" />
               People Search
               <span className="text-[10px] font-bold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
-            </button>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
           </div>
 
           {/* Telegram Support Button */}

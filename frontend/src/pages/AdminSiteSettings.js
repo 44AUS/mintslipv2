@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2, Download, Search } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -46,12 +46,19 @@ export default function AdminSiteSettings() {
   const [tierLoading, setTierLoading] = useState(false);
   const [tierMsg, setTierMsg] = useState(null);
 
+  // People search prices
+  const DEFAULT_PS_PRICES = { phone_lookup: 0.99, name_lookup: 1.49, address_lookup: 1.49, background_report: 4.99 };
+  const [psPrices, setPsPrices] = useState(DEFAULT_PS_PRICES);
+  const [psPriceLoading, setPsPriceLoading] = useState(false);
+  const [psPriceMsg, setPsPriceMsg] = useState(null);
+
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) { navigate("/admin/login"); return; }
     fetchMaintenance();
     fetchAuth();
     fetchTierDownloads();
+    fetchPSPrices();
   }, []);
 
   const fetchMaintenance = async () => {
@@ -115,6 +122,41 @@ export default function AdminSiteSettings() {
       const data = await res.json();
       if (data.success) setTierDownloads(data.tiers);
     } catch (e) {}
+  };
+
+  const fetchPSPrices = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/people-search/prices`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data) setPsPrices({ ...DEFAULT_PS_PRICES, ...data });
+    } catch (e) {}
+  };
+
+  const savePSPrices = async () => {
+    setPsPriceLoading(true);
+    setPsPriceMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/people-search/prices`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(psPrices)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPsPriceMsg({ type: "success", text: "People search prices saved." });
+        setTimeout(() => setPsPriceMsg(null), 3000);
+      } else {
+        setPsPriceMsg({ type: "error", text: "Failed to save prices." });
+      }
+    } catch (e) {
+      setPsPriceMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setPsPriceLoading(false);
+    }
   };
 
   const saveTierDownloads = async () => {
@@ -317,6 +359,56 @@ export default function AdminSiteSettings() {
             >
               {tierLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Tier Settings
+            </button>
+          </div>
+
+          {/* People Search Prices */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-blue-50">
+                <Search className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">People Search Prices</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Set the pay-per-lookup price for each search type.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-1 border-t border-slate-100">
+              {[
+                { key: "phone_lookup",      label: "Reverse Phone Lookup",   color: "text-blue-600" },
+                { key: "name_lookup",       label: "Name Lookup",            color: "text-purple-600" },
+                { key: "address_lookup",    label: "Address Lookup",         color: "text-amber-600" },
+                { key: "background_report", label: "Full Background Report", color: "text-green-600" },
+              ].map(({ key, label, color }) => (
+                <div key={key}>
+                  <label className={`block text-xs font-semibold ${color} mb-1.5`}>{label}</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={psPrices[key] ?? ""}
+                      onChange={e => setPsPrices(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))}
+                      className="w-full border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Msg msg={psPriceMsg} />
+
+            <button
+              onClick={savePSPrices}
+              disabled={psPriceLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {psPriceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save People Search Prices
             </button>
           </div>
 

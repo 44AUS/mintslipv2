@@ -126,6 +126,8 @@ moderators_collection = db["moderators"]
 moderator_permissions_collection = db["moderator_permissions"]
 audit_logs_collection = db["audit_logs"]
 support_tickets_collection = db["support_tickets"]
+people_search_logs_collection = db["people_search_logs"]
+people_search_payments_collection = db["people_search_payments"]
 
 # Default permissions per moderator level
 ALL_PERMISSIONS = [
@@ -7770,6 +7772,426 @@ async def clean_bank_statement_pdf_endpoint(
     except Exception as e:
         logger.error(f"Bank statement PDF cleaning error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to clean PDF: {str(e)}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# People Search Feature
+# ─────────────────────────────────────────────────────────────────────────────
+import random
+import copy
+
+DEFAULT_PEOPLE_SEARCH_PRICES = {
+    "phone_lookup": 0.99,
+    "name_lookup": 1.49,
+    "address_lookup": 1.49,
+    "background_report": 4.99,
+}
+
+async def get_people_search_prices() -> dict:
+    doc = await site_settings_collection.find_one({"key": "people_search_prices"})
+    if doc:
+        return doc.get("value", DEFAULT_PEOPLE_SEARCH_PRICES)
+    return DEFAULT_PEOPLE_SEARCH_PRICES
+
+# ── Mock data (swap in real Elasticsearch / API calls via env var) ────────────
+_FIRST = ["James","Mary","John","Patricia","Robert","Jennifer","Michael","Linda","William","Barbara","David","Susan","Richard","Jessica","Joseph","Sarah","Thomas","Karen","Charles","Lisa"]
+_LAST  = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Wilson","Anderson","Taylor","Thomas","Hernandez","Moore","Martin","Jackson","Thompson","White"]
+_CITIES = ["Springfield","Riverside","Franklin","Georgetown","Clinton","Salem","Greenville","Madison","Jefferson","Chester","Oakland","Fairview","Milton","Newport","Arlington"]
+_STATES = ["AL","AZ","AR","CA","CO","CT","FL","GA","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MO","MT","NE","NV","NJ","NM","NY","NC","OH","OK","OR","PA","SC","TN","TX","UT","VA","WA","WI"]
+_CARRIERS = ["Verizon Wireless","AT&T Mobility","T-Mobile USA","Sprint","US Cellular","Comcast Phone","Google Voice"]
+_STREET_NAMES = ["Oak","Maple","Cedar","Pine","Elm","River","Hill","Lake","Valley","Sunset","Forest","Park","Garden","Stone","Bridge"]
+_STREET_TYPES = ["St","Ave","Blvd","Dr","Ln","Rd","Ct","Pl","Way","Ter"]
+
+def _rng(seed_str: str) -> random.Random:
+    return random.Random(sum(ord(c) for c in seed_str))
+
+def _phone(rng):
+    return f"({rng.randint(200,999)}) {rng.randint(200,999)}-{rng.randint(1000,9999)}"
+
+def _addr(rng, city=None, state=None):
+    c = city or rng.choice(_CITIES)
+    s = state or rng.choice(_STATES)
+    num = rng.randint(100, 9999)
+    street = f"{num} {rng.choice(_STREET_NAMES)} {rng.choice(_STREET_TYPES)}"
+    return f"{street}, {c}, {s} {rng.randint(10000,99999)}"
+
+def _name(rng):
+    return f"{rng.choice(_FIRST)} {rng.choice(_LAST)}"
+
+def mock_phone_lookup(phone: str) -> dict:
+    rng = _rng(phone)
+    city = rng.choice(_CITIES)
+    state = rng.choice(_STATES)
+    return {
+        "name": _name(rng),
+        "carrier": rng.choice(_CARRIERS),
+        "lineType": rng.choice(["Mobile","Landline","VoIP"]),
+        "location": f"{city}, {state}",
+        "spamRisk": rng.choice(["Low","Medium","High"]),
+        "possibleAddress": _addr(rng, city, state),
+        "possibleRelatives": [_name(rng), _name(rng)],
+        "phoneValid": True,
+        "callerType": rng.choice(["Individual","Business","Unknown"]),
+    }
+
+def mock_name_lookup(first: str, last: str, state: str) -> dict:
+    rng = _rng(f"{first}{last}{state}")
+    age = rng.randint(25, 75)
+    st = state or rng.choice(_STATES)
+    return {
+        "fullName": f"{first} {last}",
+        "ageRange": f"{age}-{age+5}",
+        "possibleAddresses": [_addr(rng, state=st), _addr(rng)],
+        "possiblePhones": [_phone(rng) for _ in range(rng.randint(1,3))],
+        "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2,4))],
+        "state": st,
+    }
+
+def mock_address_lookup(street: str, city: str, state: str) -> dict:
+    rng = _rng(f"{street}{city}{state}")
+    return {
+        "address": f"{street}, {city}, {state}",
+        "propertyOwner": _name(rng),
+        "residents": [_name(rng) for _ in range(rng.randint(1,3))],
+        "estimatedValue": f"${rng.randint(120000,850000):,}",
+        "associatedPhones": [_phone(rng) for _ in range(rng.randint(1,2))],
+        "propertyType": rng.choice(["Single Family","Condo","Townhouse","Multi-Family"]),
+        "yearBuilt": str(rng.randint(1960,2022)),
+        "squareFeet": f"{rng.randint(800,4500):,}",
+    }
+
+def mock_background_report(first: str, last: str, state: str) -> dict:
+    rng = _rng(f"{first}{last}{state}bg")
+    age = rng.randint(25, 75)
+    st = state or rng.choice(_STATES)
+    return {
+        "fullName": f"{first} {last}",
+        "ageRange": f"{age}-{age+5}",
+        "phones": [_phone(rng) for _ in range(rng.randint(1,4))],
+        "currentAddress": _addr(rng, state=st),
+        "pastAddresses": [_addr(rng), _addr(rng)],
+        "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2,5))],
+        "state": st,
+        "publicRecords": rng.choice(["None found","Traffic violation (2019)","Small claims court (2017)","None found","None found"]),
+        "education": rng.choice(["State University","Community College","Unknown"]),
+        "estimatedAge": str(age),
+    }
+
+def blur_result(data: dict, lookup_type: str) -> dict:
+    """Return a copy of data with sensitive fields partially redacted for preview."""
+    BLOB = "●●●●●"
+
+    def redact_phone(p):
+        # Keep area code, blur the rest
+        digits = re.sub(r"[^\d]", "", p)
+        if len(digits) >= 7:
+            return f"({digits[:3]}) {digits[3]}{BLOB}"
+        return BLOB
+
+    def redact_name(n):
+        parts = n.split()
+        if len(parts) >= 2:
+            return f"{parts[0]} {parts[1][0]}.{BLOB}"
+        return BLOB
+
+    def redact_addr(a):
+        parts = a.split(",")
+        # Show only street prefix
+        street = parts[0][:6] + BLOB if len(parts) > 0 else BLOB
+        suffix = ", " + parts[-1].strip() if len(parts) > 1 else ""
+        return street + suffix
+
+    preview = copy.deepcopy(data)
+
+    if lookup_type == "phone_lookup":
+        if "name" in preview: preview["name"] = redact_name(preview["name"])
+        if "possibleAddress" in preview: preview["possibleAddress"] = redact_addr(preview["possibleAddress"])
+        if "possibleRelatives" in preview:
+            preview["possibleRelatives"] = [redact_name(r) for r in preview["possibleRelatives"]]
+    elif lookup_type == "name_lookup":
+        if "possibleAddresses" in preview:
+            preview["possibleAddresses"] = [redact_addr(a) for a in preview["possibleAddresses"]]
+        if "possiblePhones" in preview:
+            preview["possiblePhones"] = [redact_phone(p) for p in preview["possiblePhones"]]
+        if "possibleRelatives" in preview:
+            preview["possibleRelatives"] = [redact_name(r) for r in preview["possibleRelatives"]]
+    elif lookup_type == "address_lookup":
+        if "propertyOwner" in preview: preview["propertyOwner"] = redact_name(preview["propertyOwner"])
+        if "residents" in preview:
+            preview["residents"] = [redact_name(r) for r in preview["residents"]]
+        if "associatedPhones" in preview:
+            preview["associatedPhones"] = [redact_phone(p) for p in preview["associatedPhones"]]
+        if "estimatedValue" in preview: preview["estimatedValue"] = "$●●●,●●●"
+    elif lookup_type == "background_report":
+        if "phones" in preview:
+            preview["phones"] = [redact_phone(p) for p in preview["phones"]]
+        if "currentAddress" in preview: preview["currentAddress"] = redact_addr(preview["currentAddress"])
+        if "pastAddresses" in preview:
+            preview["pastAddresses"] = [redact_addr(a) for a in preview["pastAddresses"]]
+        if "possibleRelatives" in preview:
+            preview["possibleRelatives"] = [redact_name(r) for r in preview["possibleRelatives"]]
+        if "publicRecords" in preview: preview["publicRecords"] = BLOB
+    return preview
+
+
+class PeopleSearchRequest(BaseModel):
+    lookupType: str
+    phone: Optional[str] = None
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    state: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+
+
+class PeopleSearchCheckoutRequest(BaseModel):
+    searchId: str
+    successUrl: Optional[str] = None
+    cancelUrl: Optional[str] = None
+
+
+@app.get("/api/people-search/prices")
+async def people_search_prices_endpoint():
+    return await get_people_search_prices()
+
+
+@app.post("/api/people-search/search")
+async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
+    """Run a people search and return blurred preview. Full result stored in DB."""
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host or "").split(",")[0].strip()
+
+    # Rate limiting: 20 searches per IP per hour
+    now = time.time()
+    key = f"ps:{client_ip}"
+    rate_limit_storage[key] = [t for t in rate_limit_storage[key] if now - t < 3600]
+    if len(rate_limit_storage[key]) >= 20:
+        raise HTTPException(status_code=429, detail="Too many searches. Please try again later.")
+    rate_limit_storage[key].append(now)
+
+    lt = data.lookupType
+    if lt not in DEFAULT_PEOPLE_SEARCH_PRICES:
+        raise HTTPException(status_code=400, detail="Invalid lookup type")
+
+    # Run mock search (plug in real ES / API here)
+    if lt == "phone_lookup":
+        if not data.phone:
+            raise HTTPException(status_code=400, detail="Phone number required")
+        phone_clean = re.sub(r"[^\d]", "", data.phone)
+        if len(phone_clean) < 10:
+            raise HTTPException(status_code=400, detail="Invalid phone number – must be 10 digits")
+        full_result = await asyncio.to_thread(mock_phone_lookup, phone_clean)
+        query_summary = data.phone
+    elif lt == "name_lookup":
+        if not data.firstName or not data.lastName:
+            raise HTTPException(status_code=400, detail="First and last name required")
+        full_result = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
+        query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
+    elif lt == "address_lookup":
+        if not data.street or not data.city:
+            raise HTTPException(status_code=400, detail="Street and city required")
+        full_result = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
+        query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
+    else:  # background_report
+        if not data.firstName or not data.lastName:
+            raise HTTPException(status_code=400, detail="First and last name required")
+        full_result = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
+        query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
+
+    prices = await get_people_search_prices()
+    price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES[lt])
+
+    search_id = str(uuid.uuid4())
+    log_entry = {
+        "id": search_id,
+        "lookupType": lt,
+        "query": query_summary,
+        "fullResult": full_result,
+        "price": price,
+        "isPaid": False,
+        "stripeSessionId": None,
+        "clientIp": client_ip,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        user = await users_collection.find_one({"sessionToken": auth_header[7:]})
+        if user:
+            log_entry["userId"] = user["id"]
+            log_entry["userEmail"] = user.get("email", "")
+
+    await people_search_logs_collection.insert_one(log_entry)
+
+    return {
+        "success": True,
+        "searchId": search_id,
+        "lookupType": lt,
+        "preview": blur_result(full_result, lt),
+        "price": price,
+        "query": query_summary,
+    }
+
+
+@app.post("/api/people-search/checkout")
+async def people_search_checkout_endpoint(request: Request, data: PeopleSearchCheckoutRequest):
+    """Create a Stripe checkout to unlock a people search result."""
+    log = await people_search_logs_collection.find_one({"id": data.searchId})
+    if not log:
+        raise HTTPException(status_code=404, detail="Search not found")
+    if log.get("isPaid"):
+        return {"success": True, "alreadyPaid": True, "result": log["fullResult"]}
+
+    frontend_url = os.environ.get("FRONTEND_URL", "https://mintslip.com")
+    prices = await get_people_search_prices()
+    lt = log["lookupType"]
+    price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES.get(lt, 0.99))
+    amount_cents = int(round(price * 100))
+
+    labels = {
+        "phone_lookup": "Reverse Phone Lookup",
+        "name_lookup": "Name Lookup Report",
+        "address_lookup": "Address Lookup Report",
+        "background_report": "Full Background Report",
+    }
+    label = labels.get(lt, "People Search Report")
+
+    user_id, user_email = "", ""
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        user = await users_collection.find_one({"sessionToken": auth_header[7:]})
+        if user:
+            user_id = user["id"]
+            user_email = user.get("email", "")
+
+    checkout_session = await asyncio.to_thread(
+        stripe.checkout.Session.create,
+        payment_method_types=["card"],
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "product_data": {
+                    "name": f"MintSlip – {label}",
+                    "description": f"Unlock your {label}: {log['query']}",
+                },
+                "unit_amount": amount_cents,
+            },
+            "quantity": 1,
+        }],
+        mode="payment",
+        success_url=(data.successUrl or
+                     f"{frontend_url}/people-search?session_id={{CHECKOUT_SESSION_ID}}&search_id={data.searchId}"),
+        cancel_url=(data.cancelUrl or f"{frontend_url}/people-search"),
+        metadata={
+            "type": "people_search",
+            "searchId": data.searchId,
+            "lookupType": lt,
+            "userId": user_id,
+            "userEmail": user_email,
+        },
+    )
+
+    await people_search_logs_collection.update_one(
+        {"id": data.searchId},
+        {"$set": {"stripeSessionId": checkout_session.id}},
+    )
+    return {"success": True, "sessionId": checkout_session.id, "url": checkout_session.url}
+
+
+@app.get("/api/people-search/result/{search_id}")
+async def get_people_search_result(search_id: str, session_id: Optional[str] = None):
+    """Return full result if paid; optionally verify a new Stripe session."""
+    log = await people_search_logs_collection.find_one({"id": search_id})
+    if not log:
+        raise HTTPException(status_code=404, detail="Search not found")
+
+    if log.get("isPaid"):
+        return {"success": True, "paid": True, "result": log["fullResult"], "lookupType": log["lookupType"]}
+
+    if session_id:
+        try:
+            session = await asyncio.to_thread(stripe.checkout.Session.retrieve, session_id)
+            if session.payment_status == "paid" and session.status == "complete":
+                prices = await get_people_search_prices()
+                lt = log["lookupType"]
+                price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES.get(lt, 0.99))
+                now_iso = datetime.now(timezone.utc).isoformat()
+                await people_search_logs_collection.update_one(
+                    {"id": search_id},
+                    {"$set": {"isPaid": True, "paidAt": now_iso, "stripeSessionId": session_id}},
+                )
+                payment_record = {
+                    "id": str(uuid.uuid4()),
+                    "searchId": search_id,
+                    "lookupType": lt,
+                    "query": log.get("query", ""),
+                    "amount": price,
+                    "stripeSessionId": session_id,
+                    "userId": log.get("userId", ""),
+                    "userEmail": log.get("userEmail", ""),
+                    "createdAt": now_iso,
+                }
+                await people_search_payments_collection.insert_one(payment_record)
+                return {"success": True, "paid": True, "result": log["fullResult"], "lookupType": lt}
+        except Exception as e:
+            logger.error(f"People search Stripe check error: {e}")
+
+    return {"success": True, "paid": False}
+
+
+# ── Admin: People Search ──────────────────────────────────────────────────────
+
+@app.get("/api/admin/people-search/stats")
+async def admin_ps_stats(request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not await admins_collection.find_one({"sessionToken": token}):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    total = await people_search_logs_collection.count_documents({})
+    paid = await people_search_logs_collection.count_documents({"isPaid": True})
+    payments = await people_search_payments_collection.find({}).to_list(None)
+    revenue = round(sum(p.get("amount", 0) for p in payments), 2)
+
+    by_type = {}
+    async for doc in people_search_logs_collection.aggregate([
+        {"$group": {"_id": "$lookupType", "count": {"$sum": 1},
+                    "paid": {"$sum": {"$cond": ["$isPaid", 1, 0]}}}}
+    ]):
+        by_type[doc["_id"]] = {"count": doc["count"], "paid": doc["paid"]}
+
+    return {"totalSearches": total, "paidSearches": paid, "totalRevenue": revenue, "byType": by_type}
+
+
+@app.get("/api/admin/people-search/searches")
+async def admin_ps_searches(request: Request, page: int = 1, limit: int = 50):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not await admins_collection.find_one({"sessionToken": token}):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    skip = (page - 1) * limit
+    cursor = people_search_logs_collection.find({}, {"fullResult": 0}).sort("createdAt", -1).skip(skip).limit(limit)
+    searches = []
+    async for doc in cursor:
+        doc.pop("_id", None)
+        searches.append(doc)
+    total = await people_search_logs_collection.count_documents({})
+    return {"searches": searches, "total": total, "page": page, "limit": limit}
+
+
+@app.put("/api/admin/people-search/prices")
+async def admin_ps_update_prices(request: Request):
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not await admins_collection.find_one({"sessionToken": token}):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    body = await request.json()
+    prices = {k: round(float(body.get(k, DEFAULT_PEOPLE_SEARCH_PRICES[k])), 2)
+              for k in DEFAULT_PEOPLE_SEARCH_PRICES}
+    await site_settings_collection.update_one(
+        {"key": "people_search_prices"},
+        {"$set": {"key": "people_search_prices", "value": prices,
+                  "updatedAt": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return {"success": True, "prices": prices}
 
 
 if __name__ == "__main__":

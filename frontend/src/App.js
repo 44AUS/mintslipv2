@@ -67,6 +67,12 @@ import DocumentDirectory from "@/pages/DocumentDirectory";
 import AIResumeBuilder from "@/pages/AIResumeBuilder";
 import AIResumeLanding from "@/pages/AIResumeLanding";
 import PDFEngine from "@/pages/PDFEngine";
+import PeopleSearch from "@/pages/PeopleSearch";
+import AdminPeopleSearch from "@/pages/AdminPeopleSearch";
+import ReversePhoneLookup from "@/pages/ReversePhoneLookup";
+import FindPersonByName from "@/pages/FindPersonByName";
+import AddressLookupPage from "@/pages/AddressLookupPage";
+import WhoCalledMe from "@/pages/WhoCalledMe";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useState, useEffect } from "react";
@@ -226,6 +232,13 @@ function App() {
             <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
+            <Route path="/admin/people-search" element={<AdminPeopleSearch />} />
+            {/* People Search Routes */}
+            <Route path="/people-search" element={<PeopleSearch />} />
+            <Route path="/reverse-phone-lookup" element={<ReversePhoneLookup />} />
+            <Route path="/find-person-by-name" element={<FindPersonByName />} />
+            <Route path="/address-lookup" element={<AddressLookupPage />} />
+            <Route path="/who-called-me" element={<WhoCalledMe />} />
             {/* Banned Page */}
             <Route path="/banned" element={<Banned />} />
             {/* User Auth Routes (hidden - accessible via direct URL only) */}

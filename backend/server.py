@@ -7801,10 +7801,10 @@ def _wp_format_phone(raw: str) -> str:
 
 
 def _wp_names_from_person(p: dict) -> list[str]:
-    """Extract associated people full names from a Whitepages person object."""
+    """Extract relative names from a Whitepages v1 person object."""
     out = []
-    for ap in p.get("associated_people", []):
-        fn = ap.get("name", {}).get("full_name") or ""
+    for ap in p.get("relatives", []):
+        fn = ap.get("name") or ""
         if fn:
             out.append(fn)
     return out
@@ -7832,41 +7832,30 @@ async def wp_phone_lookup(phone: str) -> dict | None:
             return None
         res = results[0]
 
-        # Carrier & line type
-        carrier = (res.get("carrier") or {}).get("name") or "Unknown"
-        line_type = (res.get("phone_type") or "Unknown").replace("_", " ").title()
+        # v1: carrier=string, line_type=string, belongs_to=[{name,current_addresses,...}]
+        carrier   = res.get("carrier") or "Unknown"
+        if isinstance(carrier, dict):
+            carrier = carrier.get("name") or "Unknown"
+        line_type = (res.get("line_type") or res.get("phone_type") or "Unknown").replace("_", " ").title()
 
-        # Name / address / relatives from belongs_to
-        name, address, relatives, location = "", "", [], ""
+        name, address, relatives = "", "", []
         belongs = res.get("belongs_to", [])
         if belongs:
             p = belongs[0]
-            name_obj = p.get("name") or {}
-            name = name_obj.get("full_name") or (
-                f"{name_obj.get('first','')} {name_obj.get('last','')}".strip()
-            )
-            locs = p.get("locations") or p.get("current_addresses") or []
-            if locs:
-                address = locs[0].get("full_address") or locs[0].get("standard_address_line1") or ""
-            relatives = _wp_names_from_person(p)
-            if locs:
-                loc = locs[0]
-                location = f"{loc.get('city','')}, {loc.get('state_code','')}".strip(", ")
-
-        # Spam risk heuristic from Whitepages flags
-        is_commercial = res.get("is_commercial", False)
-        is_prepaid    = res.get("is_prepaid", False)
-        spam_risk = "High" if is_commercial else ("Medium" if is_prepaid else "Low")
-
-        caller_type = "Business" if is_commercial else ("Individual" if name else "Unknown")
+            raw = p.get("name") or {}
+            name = raw if isinstance(raw, str) else (raw.get("full_name") or f"{raw.get('first','')} {raw.get('last','')}".strip())
+            addrs = p.get("current_addresses", [])
+            if addrs:
+                address = addrs[0].get("address") or addrs[0].get("full_address") or ""
+            relatives = [r["name"] for r in p.get("relatives", []) if r.get("name")]
 
         return {
             "name":              name or None,
             "carrier":           carrier,
             "lineType":          line_type,
-            "location":          location or None,
-            "spamRisk":          spam_risk,
-            "callerType":        caller_type,
+            "location":          address or None,
+            "spamRisk":          "Unknown",
+            "callerType":        "Individual" if name else "Unknown",
             "possibleAddress":   address or None,
             "possibleRelatives": relatives or None,
             "phoneValid":        res.get("is_valid", True),
@@ -7882,32 +7871,21 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
         return None
 
     def _parse(p):
-        logger.info(f"Whitepages person item keys: {list(p.keys()) if isinstance(p, dict) else type(p).__name__ + ': ' + str(p)[:200]}")
-        # name may be a plain string (v1) or a dict (v3)
-        raw_name = p.get("name") if isinstance(p, dict) else None
-        if isinstance(raw_name, dict):
-            full_name = raw_name.get("full_name") or f"{raw_name.get('first','')} {raw_name.get('last','')}".strip() or f"{first} {last}"
-        else:
-            full_name = raw_name or f"{first} {last}"
-        age_range  = p.get("age_range") or "" if isinstance(p, dict) else ""
-        # addresses — may be list of dicts or list of strings
-        def _addr(a):
-            return a if isinstance(a, str) else (a.get("full_address") or a.get("standard_address_line1") or "")
-        cur_addrs  = [_addr(a) for a in (p.get("current_addresses") or [] if isinstance(p, dict) else []) if _addr(a)]
-        hist_addrs = [_addr(a) for a in (p.get("historical_addresses") or [] if isinstance(p, dict) else []) if _addr(a)]
-        # phones — may be list of dicts or list of strings
-        def _phone(ph):
-            return _wp_format_phone(ph if isinstance(ph, str) else ph.get("phone_number", ""))
-        phones    = [_phone(ph) for ph in (p.get("phones") or [] if isinstance(p, dict) else []) if ph]
-        relatives = _wp_names_from_person(p) if isinstance(p, dict) else []
-        st        = state or (_addr((p.get("current_addresses") or [{}])[0]) if isinstance(p, dict) and p.get("current_addresses") else "")
+        # v1 schema: name=string, phones=[{number,type}], relatives=[{id,name}],
+        # current_addresses=[{id,address}], historic_addresses=[{id,address}]
+        full_name  = p.get("name") or f"{first} {last}"
+        dob        = p.get("date_of_birth") or ""
+        cur_addrs  = [a["address"] for a in p.get("current_addresses", []) if a.get("address")]
+        hist_addrs = [a["address"] for a in p.get("historic_addresses", []) if a.get("address")]
+        phones     = [_wp_format_phone(ph["number"]) for ph in p.get("phones", []) if ph.get("number")]
+        relatives  = [r["name"] for r in p.get("relatives", []) if r.get("name")]
         return {
             "fullName":          full_name,
-            "ageRange":          age_range or None,
+            "ageRange":          dob or None,
             "possibleAddresses": (cur_addrs + hist_addrs) or None,
             "possiblePhones":    phones or None,
             "possibleRelatives": relatives or None,
-            "state":             st or None,
+            "state":             state or None,
         }
 
     try:
@@ -7963,16 +7941,15 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
             return None
         loc = results[0]
 
-        full_addr = loc.get("full_address") or f"{street}, {city}, {state}"
-        residents_raw = loc.get("residents") or loc.get("historical_residents") or []
-        residents = [
-            (r.get("name") or {}).get("full_name") or ""
-            for r in residents_raw
-            if (r.get("name") or {}).get("full_name")
+        # v1: address=string, residents=[{name,...}], phones=[{number,type}]
+        full_addr     = loc.get("address") or loc.get("full_address") or f"{street}, {city}, {state}"
+        residents_raw = loc.get("residents") or []
+        residents     = [
+            (r["name"] if isinstance(r.get("name"), str) else (r.get("name") or {}).get("full_name") or "")
+            for r in residents_raw if r.get("name")
         ]
-        phones = [_wp_format_phone(ph.get("phone_number", "")) for ph in loc.get("phones", []) if ph.get("phone_number")]
+        phones = [_wp_format_phone(ph.get("number") or ph.get("phone_number", "")) for ph in loc.get("phones", []) if ph.get("number") or ph.get("phone_number")]
 
-        # Whitepages doesn't return property value/sqft — keep mock for those
         return {
             "address":          full_addr,
             "residents":        residents or None,

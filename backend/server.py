@@ -8023,6 +8023,14 @@ DATA_SOURCE_DEFAULTS = [
         "recordCount": 0,
     },
     {
+        "source": "ssdi",
+        "label": "SSDI Death Records",
+        "description": "Social Security Death Index — 98M deceased individuals with DOB, DOD, last ZIP. Free via FamilySearch API.",
+        "enabled": False,
+        "category": "scraper",
+        "recordCount": 0,
+    },
+    {
         "source": "voter_rolls",
         "label": "Voter Roll Data",
         "description": "Manually imported voter registration data from state sources (varies by state).",
@@ -8288,6 +8296,82 @@ async def people_search_prices_endpoint():
     return await get_people_search_prices()
 
 
+# ── Carrier Lookup ────────────────────────────────────────────────────────────
+
+def _phonenumbers_carrier_lookup(phone_e164: str) -> dict:
+    """Offline carrier lookup via the phonenumbers library (prefix-based, free)."""
+    try:
+        import phonenumbers
+        from phonenumbers import carrier as pn_carrier, geocoder as pn_geo, PhoneNumberType
+        pn = phonenumbers.parse(phone_e164, None)
+        valid = phonenumbers.is_valid_number(pn)
+        pn_type = phonenumbers.number_type(pn)
+        type_map = {
+            PhoneNumberType.MOBILE:      "mobile",
+            PhoneNumberType.FIXED_LINE:  "landline",
+            PhoneNumberType.FIXED_LINE_OR_MOBILE: "landline_or_mobile",
+            PhoneNumberType.VOIP:        "voip",
+            PhoneNumberType.TOLL_FREE:   "toll_free",
+            PhoneNumberType.PREMIUM_RATE: "premium",
+        }
+        line_type   = type_map.get(pn_type, "unknown")
+        carrier_name = pn_carrier.name_for_number(pn, "en") or ""
+        region       = pn_geo.description_for_number(pn, "en") or ""
+        return {
+            "valid":       valid,
+            "carrier":     carrier_name,
+            "lineType":    line_type,
+            "region":      region,
+            "countryCode": phonenumbers.region_code_for_number(pn),
+        }
+    except Exception:
+        return {"valid": False, "carrier": "", "lineType": "unknown", "region": "", "countryCode": ""}
+
+
+async def _live_carrier_lookup(phone_digits: str) -> dict:
+    """Live carrier lookup via NumVerify API (requires NUMVERIFY_API_KEY env var)."""
+    api_key = os.environ.get("NUMVERIFY_API_KEY", "")
+    if not api_key:
+        return {}
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.get(
+                "http://apilayer.net/api/validate",
+                params={"access_key": api_key, "number": phone_digits, "country_code": "US", "format": 1},
+            )
+            if r.status_code != 200:
+                return {}
+            d = r.json()
+            if not d.get("valid"):
+                return {}
+            return {
+                "valid":       True,
+                "carrier":     d.get("carrier", ""),
+                "lineType":    d.get("line_type", "unknown"),
+                "region":      f"{d.get('location', '')}, {d.get('country_name', '')}".strip(", "),
+                "countryCode": d.get("country_code", "US"),
+            }
+    except Exception:
+        return {}
+
+
+@app.get("/api/people-search/carrier-lookup")
+async def carrier_lookup_endpoint(phone: str):
+    """Look up carrier and line type for a phone number. Free, no auth required."""
+    digits = re.sub(r"[^\d]", "", phone)
+    if len(digits) < 10:
+        raise HTTPException(status_code=400, detail="Phone number must be at least 10 digits")
+    e164 = f"+1{digits[-10:]}" if len(digits) <= 11 else f"+{digits}"
+
+    # Try live lookup first (if API key configured), fall back to offline
+    live = await _live_carrier_lookup(digits)
+    if live:
+        return live
+
+    offline = await asyncio.to_thread(_phonenumbers_carrier_lookup, e164)
+    return offline
+
+
 @app.get("/api/people-search/debug-raw")
 async def people_search_debug_raw(name: str = "John Smith", state: str = "WA", phone: str = ""):
     """Temporary debug endpoint — returns raw Whitepages v1 responses."""
@@ -8345,6 +8429,15 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if not full_results:
             mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
             full_results = [mock_base]
+
+        # Enrich phone result with carrier info
+        e164 = f"+1{phone_clean[-10:]}"
+        carrier_info = await asyncio.to_thread(_phonenumbers_carrier_lookup, e164)
+        for r in full_results:
+            r["carrier"]  = r.get("carrier")  or carrier_info.get("carrier", "")
+            r["lineType"] = r.get("lineType") or carrier_info.get("lineType", "")
+            r["region"]   = r.get("region")   or carrier_info.get("region", "")
+
         query_summary = data.phone
 
     elif lt == "name_lookup":
@@ -8702,7 +8795,7 @@ async def admin_trigger_scraper(source: str, request: Request):
     if not session:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    valid_scrapers = {"nsopw", "nppes", "fec", "faa"}
+    valid_scrapers = {"nsopw", "nppes", "fec", "faa", "ssdi"}
     if source not in valid_scrapers:
         raise HTTPException(status_code=400, detail=f"No scraper available for '{source}'")
 
@@ -8766,6 +8859,174 @@ async def admin_clear_people_records(source: str, request: Request):
     await log_action(session, "clear_people_records", "scraper", source,
                      f"{result.deleted_count} records deleted")
     return {"success": True, "deleted": result.deleted_count}
+
+
+# ── Voter Roll CSV Importer ───────────────────────────────────────────────────
+
+class VoterRollColumnMap(BaseModel):
+    firstName:   str = "first_name"
+    lastName:    str = "last_name"
+    middleName:  str = ""
+    dob:         str = "date_of_birth"
+    street:      str = "address"
+    city:        str = "city"
+    state:       str = "state"
+    zip:         str = "zip"
+    phone:       str = "phone"
+    email:       str = ""
+
+
+@app.post("/api/admin/voter-rolls/preview")
+async def voter_roll_preview(
+    request: Request,
+    file: UploadFile,
+):
+    """Return first 5 rows + header columns so admin can map columns."""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}}):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    content = await file.read()
+    try:
+        text = content.decode("utf-8", errors="replace")
+        import csv as _csv
+        reader = _csv.DictReader(text.splitlines())
+        columns = reader.fieldnames or []
+        rows = []
+        for i, row in enumerate(reader):
+            if i >= 5:
+                break
+            rows.append(dict(row))
+        return {"columns": list(columns), "preview": rows}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Could not parse CSV: {e}")
+
+
+@app.post("/api/admin/voter-rolls/import")
+async def voter_roll_import(
+    request: Request,
+    file: UploadFile,
+    firstName:  str = "first_name",
+    lastName:   str = "last_name",
+    middleName: str = "",
+    dob:        str = "date_of_birth",
+    street:     str = "address",
+    city:       str = "city",
+    state:      str = "state",
+    zipCol:     str = "zip",
+    phone:      str = "phone",
+    email:      str = "",
+    stateName:  str = "",
+):
+    """Import a voter roll CSV file into people_records. Runs in background."""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    session = await sessions_collection.find_one({"token": token, "type": {"$in": ["admin", "moderator"]}})
+    if not session:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    content = await file.read()
+    job_id = str(uuid.uuid4())
+    job_doc = {
+        "jobId": job_id,
+        "source": "voter_rolls",
+        "status": "running",
+        "recordsAdded": 0,
+        "recordsUpdated": 0,
+        "errors": [],
+        "startedAt": datetime.now(timezone.utc).isoformat(),
+        "finishedAt": None,
+    }
+    await scraper_jobs_collection.insert_one(job_doc)
+    _running_scrapers.add("voter_rolls")
+
+    col_map = {
+        "firstName": firstName, "lastName": lastName, "middleName": middleName,
+        "dob": dob, "street": street, "city": city, "state": state,
+        "zip": zipCol, "phone": phone, "email": email,
+    }
+
+    async def _import():
+        import csv as _csv
+        added = updated = 0
+        errors = []
+        try:
+            text = content.decode("utf-8", errors="replace")
+            reader = _csv.DictReader(text.splitlines())
+
+            def g(row, key):
+                col = col_map.get(key, "")
+                return (row.get(col, "") or "").strip() if col else ""
+
+            batch = []
+            BATCH = 500
+            for row in reader:
+                try:
+                    first = g(row, "firstName").title()
+                    last  = g(row, "lastName").title()
+                    if not first or not last:
+                        continue
+
+                    addr_street = g(row, "street")
+                    addr_city   = g(row, "city").title()
+                    addr_state  = (g(row, "state") or stateName).upper()
+                    addr_zip    = g(row, "zip")[:5]
+                    dob_val     = g(row, "dob")
+                    phone_val   = re.sub(r"[^\d]", "", g(row, "phone"))
+                    email_val   = g(row, "email").lower()
+
+                    import uuid as _uuid
+                    from datetime import datetime as _dt, timezone as _tz
+                    doc = {
+                        "recordId":   str(_uuid.uuid4()),
+                        "source":     "voter_rolls",
+                        "firstName":  first,
+                        "lastName":   last,
+                        "middleName": g(row, "middleName").title(),
+                        "dateOfBirth": dob_val,
+                        "state":      addr_state,
+                        "addresses":  [{
+                            "street": addr_street, "city": addr_city,
+                            "state": addr_state, "zip": addr_zip, "current": True,
+                        }] if addr_street or addr_city else [],
+                        "phones":  [phone_val] if phone_val else [],
+                        "emails":  [email_val] if email_val else [],
+                        "relatives": [],
+                        "occupation": "",
+                        "sourceData": {"stateSource": stateName or addr_state},
+                        "createdAt":     _dt.now(_tz.utc).isoformat(),
+                        "lastUpdated":   _dt.now(_tz.utc).isoformat(),
+                    }
+                    batch.append(doc)
+                    if len(batch) >= BATCH:
+                        await people_records_collection.insert_many(batch, ordered=False)
+                        added += len(batch)
+                        batch = []
+                        await asyncio.sleep(0)
+                except Exception as e:
+                    errors.append(str(e))
+
+            if batch:
+                await people_records_collection.insert_many(batch, ordered=False)
+                added += len(batch)
+
+        except Exception as e:
+            errors.append(f"Fatal: {e}")
+        finally:
+            await scraper_jobs_collection.update_one(
+                {"jobId": job_id},
+                {"$set": {
+                    "status": "completed" if not errors or added > 0 else "failed",
+                    "recordsAdded": added,
+                    "recordsUpdated": updated,
+                    "errors": errors[:20],
+                    "finishedAt": datetime.now(timezone.utc).isoformat(),
+                }},
+            )
+            _running_scrapers.discard("voter_rolls")
+
+    asyncio.create_task(_import())
+    await log_action(session, "import_voter_rolls", "voter_rolls", stateName or "unknown", job_id)
+    return {"success": True, "jobId": job_id}
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Database, Globe, Search, RefreshCw, Play, Trash2,
-  CheckCircle, XCircle, Clock, Loader2, ChevronDown, ChevronUp,
-  AlertTriangle, Info,
+  CheckCircle, XCircle, Loader2, ChevronDown, ChevronUp,
+  AlertTriangle, Info, Upload, FileText, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -179,6 +179,224 @@ function SourceCard({ source, runningSet, onToggle, onTrigger, onClear }) {
           <JobRow job={source.lastJob} />
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Voter Roll CSV Importer ───────────────────────────────────────────────────
+
+const FIELD_LABELS = {
+  firstName: "First Name *",
+  lastName:  "Last Name *",
+  middleName:"Middle Name",
+  dob:       "Date of Birth",
+  street:    "Street Address",
+  city:      "City",
+  state:     "State",
+  zip:       "ZIP Code",
+  phone:     "Phone Number",
+  email:     "Email",
+};
+
+function VoterRollImporter({ token, onImportStarted }) {
+  const fileRef = useRef(null);
+  const [step, setStep]           = useState("idle"); // idle | preview | mapping | importing
+  const [file, setFile]           = useState(null);
+  const [columns, setColumns]     = useState([]);
+  const [preview, setPreview]     = useState([]);
+  const [stateName, setStateName] = useState("");
+  const [colMap, setColMap]       = useState({
+    firstName:"", lastName:"", middleName:"", dob:"",
+    street:"", city:"", state:"", zip:"", phone:"", email:"",
+  });
+  const [loading, setLoading]     = useState(false);
+
+  const handleFile = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setFile(f);
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      const res = await fetch(`${BACKEND_URL}/api/admin/voter-rolls/preview`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      if (!res.ok) { toast.error("Could not parse CSV"); return; }
+      const data = await res.json();
+      setColumns(["", ...(data.columns || [])]);
+      setPreview(data.preview || []);
+      // Auto-detect common column names
+      const autoMap = {};
+      const cols = data.columns || [];
+      const find = (...hints) => cols.find(c => hints.some(h => c.toLowerCase().includes(h))) || "";
+      autoMap.firstName  = find("first_name", "firstname", "first");
+      autoMap.lastName   = find("last_name", "lastname", "last");
+      autoMap.middleName = find("middle_name", "middle", "mid");
+      autoMap.dob        = find("birth", "dob", "date_of_birth", "birthdate");
+      autoMap.street     = find("address", "street", "addr");
+      autoMap.city       = find("city", "municipality");
+      autoMap.state      = find("state", "st");
+      autoMap.zip        = find("zip", "postal");
+      autoMap.phone      = find("phone", "telephone", "cell");
+      autoMap.email      = find("email", "mail");
+      setColMap(autoMap);
+      setStep("mapping");
+    } catch { toast.error("Failed to read CSV"); }
+    finally { setLoading(false); }
+  };
+
+  const handleImport = async () => {
+    if (!colMap.firstName || !colMap.lastName) {
+      toast.error("First Name and Last Name columns are required");
+      return;
+    }
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("firstName",  colMap.firstName);
+      fd.append("lastName",   colMap.lastName);
+      fd.append("middleName", colMap.middleName || "");
+      fd.append("dob",        colMap.dob || "");
+      fd.append("street",     colMap.street || "");
+      fd.append("city",       colMap.city || "");
+      fd.append("state",      colMap.state || "");
+      fd.append("zipCol",     colMap.zip || "");
+      fd.append("phone",      colMap.phone || "");
+      fd.append("email",      colMap.email || "");
+      fd.append("stateName",  stateName);
+
+      const res = await fetch(`${BACKEND_URL}/api/admin/voter-rolls/import`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.detail || "Import failed"); return; }
+      toast.success(`Import started (Job: ${data.jobId?.slice(0, 8)}…)`);
+      setStep("idle");
+      setFile(null);
+      if (fileRef.current) fileRef.current.value = "";
+      onImportStarted();
+    } catch { toast.error("Import failed"); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-800">Voter Roll CSV Importer</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Upload a CSV from any state's voter registration data. Auto-detects column names.
+          </p>
+        </div>
+        {step !== "idle" && (
+          <button onClick={() => { setStep("idle"); setFile(null); }} className="text-xs text-slate-400 hover:text-slate-600">
+            Cancel
+          </button>
+        )}
+      </div>
+
+      <div className="px-5 py-4">
+        {step === "idle" && (
+          <div>
+            <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3 mb-4">
+              <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700">
+                <strong>Where to get data:</strong> Texas voter rolls are free at sos.texas.gov · Florida: $5 at dos.fl.gov ·
+                Most states charge $10–$100. The CSV should contain name, address, DOB, and optionally phone.
+              </p>
+            </div>
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl py-8 cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors">
+              <Upload className="w-8 h-8 text-slate-300 mb-2" />
+              <span className="text-sm font-medium text-slate-600">Click to upload voter roll CSV</span>
+              <span className="text-xs text-slate-400 mt-1">Supports any CSV format — column mapping in next step</span>
+              <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFile} />
+              {loading && <Loader2 className="w-5 h-5 animate-spin text-green-500 mt-3" />}
+            </label>
+          </div>
+        )}
+
+        {step === "mapping" && (
+          <div>
+            {/* Preview table */}
+            {preview.length > 0 && (
+              <div className="mb-5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  CSV Preview — {columns.length - 1} columns detected
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-slate-100">
+                  <table className="text-xs w-full">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        {columns.slice(1).map(c => (
+                          <th key={c} className="px-3 py-2 text-left font-semibold text-slate-500 whitespace-nowrap">{c}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {preview.map((row, i) => (
+                        <tr key={i}>
+                          {columns.slice(1).map(c => (
+                            <td key={c} className="px-3 py-1.5 text-slate-600 max-w-[120px] truncate">{row[c] || ""}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Column mapping */}
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Map CSV Columns</p>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {Object.entries(FIELD_LABELS).map(([field, label]) => (
+                <div key={field}>
+                  <label className="text-xs font-medium text-slate-600 block mb-1">{label}</label>
+                  <select
+                    value={colMap[field] || ""}
+                    onChange={e => setColMap(m => ({ ...m, [field]: e.target.value }))}
+                    className="w-full text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    {columns.map(c => <option key={c} value={c}>{c || "— skip —"}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-4">
+              <label className="text-xs font-medium text-slate-600 block mb-1">State Label (optional)</label>
+              <input
+                type="text"
+                placeholder="e.g. Texas"
+                value={stateName}
+                onChange={e => setStateName(e.target.value)}
+                className="w-48 text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <p className="text-xs text-slate-400 mt-1">Stored as metadata to identify the data source state.</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleImport}
+                disabled={loading || !colMap.firstName || !colMap.lastName}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                Start Import
+              </button>
+              <p className="text-xs text-slate-400">
+                {file?.name} · {file ? (file.size / 1024 / 1024).toFixed(1) + " MB" : ""}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -378,19 +596,7 @@ export default function AdminDataSources() {
                     onClear={handleClear}
                   />
                 ))}
-                <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-xl px-5 py-4">
-                  <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-amber-700">
-                    <p className="font-semibold mb-1">How to import voter roll data</p>
-                    <ol className="list-decimal ml-4 space-y-1 text-xs">
-                      <li>Purchase voter registration data from your target state (Texas: free, Florida: $5)</li>
-                      <li>Convert CSV to the <code className="bg-amber-100 px-1 rounded">people_records</code> schema (see docs)</li>
-                      <li>Use <code className="bg-amber-100 px-1 rounded">mongoimport</code> to bulk-load the JSON file</li>
-                      <li>Set <code className="bg-amber-100 px-1 rounded">source: "voter_rolls"</code> on each record</li>
-                      <li>Enable the "Internal Database" source above to include these in searches</li>
-                    </ol>
-                  </div>
-                </div>
+                <VoterRollImporter token={token} onImportStarted={fetchJobs} />
               </>
             )}
           </div>

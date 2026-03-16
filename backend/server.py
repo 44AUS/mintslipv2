@@ -7818,7 +7818,8 @@ async def wp_phone_lookup(phone: str) -> dict | None:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
                 f"{_WP_BASE}/phone",
-                params={"phone_number": phone, "api_key": WHITEPAGES_PRO_API_KEY},
+                params={"phone_number": phone},
+                headers={"WP-Api-Key": WHITEPAGES_PRO_API_KEY},
             )
             logger.info(f"Whitepages phone response: {r.status_code}")
             if r.status_code != 200:
@@ -7899,11 +7900,15 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
         }
 
     try:
-        params = {"name": f"{first} {last}", "api_key": WHITEPAGES_PRO_API_KEY}
+        params = {"name": f"{first} {last}"}
         if state:
             params["state_code"] = state.upper()
         async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(f"{_WP_BASE}/person", params=params)
+            r = await client.get(
+                f"{_WP_BASE}/person",
+                params=params,
+                headers={"WP-Api-Key": WHITEPAGES_PRO_API_KEY},
+            )
             logger.info(f"Whitepages person status: {r.status_code}")
             logger.info(f"Whitepages person raw: {r.text[:800]}")
             if r.status_code != 200:
@@ -7928,12 +7933,15 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
         params = {
             "street_line_1": street,
             "city":          city,
-            "api_key":       WHITEPAGES_PRO_API_KEY,
         }
         if state:
             params["state_code"] = state.upper()
         async with httpx.AsyncClient(timeout=10) as client:
-            r = await client.get(f"{_WP_BASE}/location", params=params)
+            r = await client.get(
+                f"{_WP_BASE}/location",
+                params=params,
+                headers={"WP-Api-Key": WHITEPAGES_PRO_API_KEY},
+            )
             if r.status_code != 200:
                 logger.warning(f"Whitepages address error {r.status_code}: {r.text[:200]}")
                 return None

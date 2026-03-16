@@ -7780,66 +7780,182 @@ async def clean_bank_statement_pdf_endpoint(
 import random
 import copy
 
-# ── Real data integrations (optional — falls back to mock if not configured) ──
-
-# Numverify phone lookup (https://numverify.com — free tier: 100/month)
-NUMVERIFY_API_KEY = os.environ.get("NUMVERIFY_API_KEY")
-
-# Elasticsearch for people data (index your licensed dataset here)
-ELASTICSEARCH_URL   = os.environ.get("ELASTICSEARCH_URL")   # e.g. http://localhost:9200
-ELASTICSEARCH_USER  = os.environ.get("ELASTICSEARCH_USER", "")
-ELASTICSEARCH_PASS  = os.environ.get("ELASTICSEARCH_PASS", "")
-ES_PEOPLE_INDEX     = os.environ.get("ES_PEOPLE_INDEX", "people")
-
-_es_client = None
-if ELASTICSEARCH_URL:
-    try:
-        from elasticsearch import AsyncElasticsearch
-        _es_client = AsyncElasticsearch(
-            [ELASTICSEARCH_URL],
-            http_auth=(ELASTICSEARCH_USER, ELASTICSEARCH_PASS) if ELASTICSEARCH_USER else None,
-            verify_certs=False,
-        )
-        logger.info("Elasticsearch client initialized for people search")
-    except ImportError:
-        logger.warning("elasticsearch-py not installed — people search will use mock data")
+# ── Whitepages Pro integration (https://pro.whitepages.com) ──────────────────
+# Set WHITEPAGES_PRO_API_KEY in your environment to activate real data.
+# Falls back to mock data when the key is not set.
+WHITEPAGES_PRO_API_KEY = os.environ.get("WHITEPAGES_PRO_API_KEY")
+_WP_BASE = "https://proapi.whitepages.com/3.3"
 
 
-async def _numverify_lookup(phone: str) -> dict | None:
-    """Call Numverify API and return normalized fields, or None on failure."""
-    if not NUMVERIFY_API_KEY:
+def _wp_format_phone(raw: str) -> str:
+    """Format a 10-digit string as (XXX) XXX-XXXX."""
+    d = re.sub(r"[^\d]", "", raw or "")
+    if len(d) == 10:
+        return f"({d[:3]}) {d[3:6]}-{d[6:]}"
+    if len(d) == 11 and d[0] == "1":
+        return f"({d[1:4]}) {d[4:7]}-{d[7:]}"
+    return raw
+
+
+def _wp_names_from_person(p: dict) -> list[str]:
+    """Extract associated people full names from a Whitepages person object."""
+    out = []
+    for ap in p.get("associated_people", []):
+        fn = ap.get("name", {}).get("full_name") or ""
+        if fn:
+            out.append(fn)
+    return out
+
+
+async def wp_phone_lookup(phone: str) -> dict | None:
+    """Whitepages Pro Phone Intelligence — returns normalized result dict."""
+    if not WHITEPAGES_PRO_API_KEY:
         return None
     try:
-        async with httpx.AsyncClient(timeout=8) as client:
+        async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
-                "https://apilayer.net/api/validate",
-                params={"access_key": NUMVERIFY_API_KEY, "number": phone,
-                        "country_code": "US", "format": "1"},
+                f"{_WP_BASE}/phone",
+                params={"phone_number": phone, "api_key": WHITEPAGES_PRO_API_KEY},
             )
-            d = r.json()
-            if not d.get("valid"):
+            if r.status_code != 200:
+                logger.warning(f"Whitepages phone error {r.status_code}: {r.text[:200]}")
                 return None
-            return {
-                "carrier":  d.get("carrier") or "Unknown",
-                "lineType": (d.get("line_type") or "unknown").replace("_", " ").title(),
-                "location": d.get("location") or "",
-                "phoneValid": True,
-            }
+            d = r.json()
+        results = d.get("results", [])
+        if not results:
+            return None
+        res = results[0]
+
+        # Carrier & line type
+        carrier = (res.get("carrier") or {}).get("name") or "Unknown"
+        line_type = (res.get("phone_type") or "Unknown").replace("_", " ").title()
+
+        # Name / address / relatives from belongs_to
+        name, address, relatives, location = "", "", [], ""
+        belongs = res.get("belongs_to", [])
+        if belongs:
+            p = belongs[0]
+            name_obj = p.get("name") or {}
+            name = name_obj.get("full_name") or (
+                f"{name_obj.get('first','')} {name_obj.get('last','')}".strip()
+            )
+            locs = p.get("locations") or p.get("current_addresses") or []
+            if locs:
+                address = locs[0].get("full_address") or locs[0].get("standard_address_line1") or ""
+            relatives = _wp_names_from_person(p)
+            if locs:
+                loc = locs[0]
+                location = f"{loc.get('city','')}, {loc.get('state_code','')}".strip(", ")
+
+        # Spam risk heuristic from Whitepages flags
+        is_commercial = res.get("is_commercial", False)
+        is_prepaid    = res.get("is_prepaid", False)
+        spam_risk = "High" if is_commercial else ("Medium" if is_prepaid else "Low")
+
+        caller_type = "Business" if is_commercial else ("Individual" if name else "Unknown")
+
+        return {
+            "name":              name or None,
+            "carrier":           carrier,
+            "lineType":          line_type,
+            "location":          location or None,
+            "spamRisk":          spam_risk,
+            "callerType":        caller_type,
+            "possibleAddress":   address or None,
+            "possibleRelatives": relatives or None,
+            "phoneValid":        res.get("is_valid", True),
+        }
     except Exception as e:
-        logger.warning(f"Numverify error: {e}")
+        logger.warning(f"Whitepages phone lookup error: {e}")
         return None
 
 
-async def _es_search(query_body: dict) -> list[dict]:
-    """Run an Elasticsearch query and return the _source of each hit."""
-    if not _es_client:
-        return []
+async def wp_person_lookup(first: str, last: str, state: str) -> dict | None:
+    """Whitepages Pro Person Search — returns normalized result dict."""
+    if not WHITEPAGES_PRO_API_KEY:
+        return None
     try:
-        resp = await _es_client.search(index=ES_PEOPLE_INDEX, body=query_body, size=5)
-        return [h["_source"] for h in resp["hits"]["hits"]]
+        params = {"name": f"{first} {last}", "api_key": WHITEPAGES_PRO_API_KEY}
+        if state:
+            params["state_code"] = state.upper()
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(f"{_WP_BASE}/person", params=params)
+            if r.status_code != 200:
+                logger.warning(f"Whitepages person error {r.status_code}: {r.text[:200]}")
+                return None
+            d = r.json()
+        results = d.get("results", [])
+        if not results:
+            return None
+        p = results[0]
+
+        name_obj = p.get("name") or {}
+        full_name = name_obj.get("full_name") or f"{first} {last}"
+        age_range = p.get("age_range") or ""
+
+        cur_addrs = [a.get("full_address") for a in p.get("current_addresses", []) if a.get("full_address")]
+        hist_addrs = [a.get("full_address") for a in p.get("historical_addresses", []) if a.get("full_address")]
+        all_addrs = cur_addrs + hist_addrs
+
+        phones = [_wp_format_phone(ph.get("phone_number", "")) for ph in p.get("phones", []) if ph.get("phone_number")]
+        relatives = _wp_names_from_person(p)
+
+        st = state or (p.get("current_addresses") or [{}])[0].get("state_code", "")
+
+        return {
+            "fullName":          full_name,
+            "ageRange":          age_range or None,
+            "possibleAddresses": all_addrs or None,
+            "possiblePhones":    phones or None,
+            "possibleRelatives": relatives or None,
+            "state":             st or None,
+        }
     except Exception as e:
-        logger.warning(f"Elasticsearch error: {e}")
-        return []
+        logger.warning(f"Whitepages person lookup error: {e}")
+        return None
+
+
+async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
+    """Whitepages Pro Reverse Address — returns normalized result dict."""
+    if not WHITEPAGES_PRO_API_KEY:
+        return None
+    try:
+        params = {
+            "street_line_1": street,
+            "city":          city,
+            "api_key":       WHITEPAGES_PRO_API_KEY,
+        }
+        if state:
+            params["state_code"] = state.upper()
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(f"{_WP_BASE}/location", params=params)
+            if r.status_code != 200:
+                logger.warning(f"Whitepages address error {r.status_code}: {r.text[:200]}")
+                return None
+            d = r.json()
+        results = d.get("results", [])
+        if not results:
+            return None
+        loc = results[0]
+
+        full_addr = loc.get("full_address") or f"{street}, {city}, {state}"
+        residents_raw = loc.get("residents") or loc.get("historical_residents") or []
+        residents = [
+            (r.get("name") or {}).get("full_name") or ""
+            for r in residents_raw
+            if (r.get("name") or {}).get("full_name")
+        ]
+        phones = [_wp_format_phone(ph.get("phone_number", "")) for ph in loc.get("phones", []) if ph.get("phone_number")]
+
+        # Whitepages doesn't return property value/sqft — keep mock for those
+        return {
+            "address":          full_addr,
+            "residents":        residents or None,
+            "associatedPhones": phones or None,
+        }
+    except Exception as e:
+        logger.warning(f"Whitepages address lookup error: {e}")
+        return None
 
 DEFAULT_PEOPLE_SEARCH_PRICES = {
     "phone_lookup": 0.99,
@@ -8033,7 +8149,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
     if lt not in DEFAULT_PEOPLE_SEARCH_PRICES:
         raise HTTPException(status_code=400, detail="Invalid lookup type")
 
-    # ── Run search: real APIs/ES when configured, mock otherwise ──────────────
+    # ── Run search: Whitepages Pro when key configured, mock otherwise ──────────
     if lt == "phone_lookup":
         if not data.phone:
             raise HTTPException(status_code=400, detail="Phone number required")
@@ -8041,26 +8157,13 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if len(phone_clean) < 10:
             raise HTTPException(status_code=400, detail="Invalid phone number – must be 10 digits")
 
-        # Start with mock as base, then enrich with real data
-        full_result = await asyncio.to_thread(mock_phone_lookup, phone_clean)
-
-        # Numverify enrichment (carrier, lineType, location)
-        nv = await _numverify_lookup(phone_clean)
-        if nv:
-            full_result.update({k: v for k, v in nv.items() if v})
-
-        # Elasticsearch enrichment (name, address, relatives)
-        es_hits = await _es_search({
-            "query": {"bool": {"should": [
-                {"term": {"phones": phone_clean}},
-                {"term": {"phones": data.phone}},
-            ], "minimum_should_match": 1}}
-        })
-        if es_hits:
-            h = es_hits[0]
-            if h.get("name"):       full_result["name"] = h["name"]
-            if h.get("address"):    full_result["possibleAddress"] = h["address"]
-            if h.get("relatives"):  full_result["possibleRelatives"] = h["relatives"]
+        wp = await wp_phone_lookup(phone_clean)
+        if wp:
+            # Use Whitepages as primary; fill any missing fields from mock
+            mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
+            full_result = {**mock_base, **{k: v for k, v in wp.items() if v is not None}}
+        else:
+            full_result = await asyncio.to_thread(mock_phone_lookup, phone_clean)
 
         query_summary = data.phone
 
@@ -8068,22 +8171,12 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
 
-        full_result = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
-
-        # Elasticsearch enrichment
-        must = [
-            {"match": {"first_name": data.firstName}},
-            {"match": {"last_name":  data.lastName}},
-        ]
-        if data.state:
-            must.append({"term": {"state": data.state.upper()}})
-        es_hits = await _es_search({"query": {"bool": {"must": must}}})
-        if es_hits:
-            h = es_hits[0]
-            if h.get("age"):       full_result["ageRange"] = str(h["age"])
-            if h.get("addresses"): full_result["possibleAddresses"] = h["addresses"]
-            if h.get("phones"):    full_result["possiblePhones"] = h["phones"]
-            if h.get("relatives"): full_result["possibleRelatives"] = h["relatives"]
+        wp = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+        if wp:
+            mock_base = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
+            full_result = {**mock_base, **{k: v for k, v in wp.items() if v is not None}}
+        else:
+            full_result = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
 
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 
@@ -8091,48 +8184,34 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if not data.street or not data.city:
             raise HTTPException(status_code=400, detail="Street and city required")
 
-        full_result = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
-
-        # Elasticsearch enrichment
-        es_hits = await _es_search({"query": {"bool": {"must": [
-            {"match": {"address.street": data.street}},
-            {"match": {"address.city":   data.city}},
-        ]}}})
-        if es_hits:
-            h = es_hits[0]
-            if h.get("owner"):          full_result["propertyOwner"] = h["owner"]
-            if h.get("residents"):      full_result["residents"] = h["residents"]
-            if h.get("value"):          full_result["estimatedValue"] = h["value"]
-            if h.get("phones"):         full_result["associatedPhones"] = h["phones"]
-            if h.get("year_built"):     full_result["yearBuilt"] = str(h["year_built"])
-            if h.get("square_feet"):    full_result["squareFeet"] = str(h["square_feet"])
-            if h.get("property_type"):  full_result["propertyType"] = h["property_type"]
+        wp = await wp_address_lookup(data.street, data.city, data.state or "")
+        if wp:
+            mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
+            full_result = {**mock_base, **{k: v for k, v in wp.items() if v is not None}}
+        else:
+            full_result = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
 
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
 
-    else:  # background_report
+    else:  # background_report — use Whitepages person search (deepest result set)
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
 
-        full_result = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
-
-        # Elasticsearch enrichment
-        must = [
-            {"match": {"first_name": data.firstName}},
-            {"match": {"last_name":  data.lastName}},
-        ]
-        if data.state:
-            must.append({"term": {"state": data.state.upper()}})
-        es_hits = await _es_search({"query": {"bool": {"must": must}}})
-        if es_hits:
-            h = es_hits[0]
-            if h.get("phones"):       full_result["phones"] = h["phones"]
-            if h.get("address"):      full_result["currentAddress"] = h["address"]
-            if h.get("past_addresses"): full_result["pastAddresses"] = h["past_addresses"]
-            if h.get("relatives"):    full_result["possibleRelatives"] = h["relatives"]
-            if h.get("records"):      full_result["publicRecords"] = h["records"]
-            if h.get("education"):    full_result["education"] = h["education"]
-            if h.get("age"):          full_result["estimatedAge"] = str(h["age"])
+        wp = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+        mock_base = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
+        if wp:
+            # Map person fields → background report fields
+            full_result = dict(mock_base)
+            if wp.get("possiblePhones"):    full_result["phones"] = wp["possiblePhones"]
+            if wp.get("possibleAddresses"):
+                addrs = wp["possibleAddresses"]
+                full_result["currentAddress"]  = addrs[0] if addrs else full_result["currentAddress"]
+                full_result["pastAddresses"]   = addrs[1:] if len(addrs) > 1 else full_result["pastAddresses"]
+            if wp.get("possibleRelatives"):  full_result["possibleRelatives"] = wp["possibleRelatives"]
+            if wp.get("ageRange"):           full_result["ageRange"] = wp["ageRange"]
+            if wp.get("state"):              full_result["state"] = wp["state"]
+        else:
+            full_result = mock_base
 
         query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
 

@@ -77,7 +77,7 @@ const EnvelopeAnimation = ({ isVisible }) => (
           <rect x="153" y="117" width="8" height="8" rx="2" fill="#1a4731" transform="rotate(45 157 121)"/>
         </g>
         <circle cx="140" cy="105" r="12" fill="#ffffff"/>
-        <text x="140" y="109" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">⚡</text>
+        <text x="140" y="109" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">âš¡</text>
       </g>
 
       {/* Arrow 2 - Processing to Output */}
@@ -121,7 +121,7 @@ const EnvelopeAnimation = ({ isVisible }) => (
       {/* "INSTANT" badge */}
       <g style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 2.3s forwards' : 'none' }}>
         <rect x="105" y="165" width="70" height="24" rx="12" fill="#1a4731"/>
-        <text x="140" y="181" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">⚡ INSTANT</text>
+        <text x="140" y="181" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">âš¡ INSTANT</text>
       </g>
 
       {/* Time indicator */}
@@ -269,12 +269,12 @@ const SpeedServiceAnimation = ({ isVisible }) => (
         {/* Speed badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.5s' : 'none' }}>
           <rect x="170" y="5" width="50" height="20" rx="10" fill="#fbbf24"/>
-          <text x="195" y="18" textAnchor="middle" fill="#1a1a1a" fontSize="7" fontWeight="bold">⚡ FAST</text>
+          <text x="195" y="18" textAnchor="middle" fill="#1a1a1a" fontSize="7" fontWeight="bold">âš¡ FAST</text>
         </g>
         {/* Accurate badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
           <rect x="230" y="15" width="48" height="20" rx="10" fill="#22c55e"/>
-          <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✓ ACCURATE</text>
+          <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">âœ“ ACCURATE</text>
         </g>
       </g>
 
@@ -903,7 +903,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
         animation: isVisible ? 'bounceIn 0.5s ease-out 2.2s forwards' : 'none'
       }}>
         <rect x="105" y="175" width="90" height="28" rx="14" fill="#1a4731"/>
-        <text x="127" y="193" fill="#ffffff" fontSize="9" fontWeight="bold">🔒 SECURE</text>
+        <text x="127" y="193" fill="#ffffff" fontSize="9" fontWeight="bold">ðŸ”’ SECURE</text>
       </g>
 
       {/* Instant badge */}
@@ -912,7 +912,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
         animation: isVisible ? 'bounceIn 0.5s ease-out 2.4s forwards' : 'none'
       }}>
         <rect x="105" y="210" width="90" height="28" rx="14" fill="#22c55e"/>
-        <text x="127" y="228" fill="#ffffff" fontSize="9" fontWeight="bold">⚡ INSTANT</text>
+        <text x="127" y="228" fill="#ffffff" fontSize="9" fontWeight="bold">âš¡ INSTANT</text>
       </g>
 
       {/* Time indicator */}
@@ -1081,7 +1081,7 @@ const FormTypingAnimation = ({ isVisible }) => (
       {/* Generate Button */}
       <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 2.8s forwards' : 'none' }}>
         <rect x="35" y="180" width="210" height="24" rx="12" fill="#1a4731"/>
-        <text x="140" y="196" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">✓ GENERATE PAYSTUB</text>
+        <text x="140" y="196" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">âœ“ GENERATE PAYSTUB</text>
       </g>
       
       {/* Floating elements */}
@@ -1259,17 +1259,14 @@ export default function Home() {
               AI Resume Builder
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
+            <button
               onClick={() => navigate("/people-search")}
-              size="lg"
-              variant="outline"
-              className="group gap-2 text-lg px-8 py-6 border-2 border-green-200 bg-green-50 hover:border-green-600 hover:bg-green-100 text-green-800 transition-all duration-300 relative"
+              className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-5 py-3 rounded-xl transition-colors text-sm shadow-sm"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 text-green-600" />
               People Search
-              <span className="absolute -top-2 -right-2 text-[10px] font-bold bg-green-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
+              <span className="text-[10px] font-bold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
+            </button>
           </div>
 
           {/* Telegram Support Button */}
@@ -1345,7 +1342,7 @@ export default function Home() {
                     A pay stub is a document that summarizes an employee&apos;s pay for a specific pay period. It&apos;s typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
                   </p>
                   <p className="text-base leading-relaxed text-slate-600">
-                    Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay — the amount you actually take home.
+                    Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay â€” the amount you actually take home.
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
@@ -1419,6 +1416,48 @@ export default function Home() {
         );
       })()}
 
+      {/* People Search Feature Banner */}
+      <section className="py-14 px-4 bg-gradient-to-r from-green-50 to-emerald-50 border-y border-green-100">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-full mb-4">
+              <Search className="w-3.5 h-3.5" /> NEW FEATURE
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-3">People Search and Reverse Lookup</h2>
+            <p className="text-slate-600 mb-5 max-w-md">
+              Find anyone instantly. Look up people by name, reverse search a phone number, or identify who lives at any address. Pay only per lookup - no subscription needed.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <button
+                onClick={() => navigate("/people-search")}
+                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+              >
+                <Search className="w-4 h-4" /> Try People Search
+              </button>
+              <button
+                onClick={() => navigate("/who-called-me")}
+                className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+              >
+                Who Called Me?
+              </button>
+            </div>
+          </div>
+          <div className="flex-shrink-0 grid grid-cols-2 gap-3">
+            {[
+              { label: "Phone Lookup", price: "$0.99", desc: "Identify unknown callers" },
+              { label: "Name Search", price: "$0.99", desc: "Find anyone by name" },
+              { label: "Address Lookup", price: "$1.49", desc: "Find property owners" },
+              { label: "Background Report", price: "$2.99", desc: "Full background check" },
+            ].map(({ label, price, desc }) => (
+              <div key={label} className="bg-white rounded-xl border border-green-100 p-3 text-center shadow-sm">
+                <p className="text-xs font-semibold text-slate-700">{label}</p>
+                <p className="text-lg font-bold text-green-600">{price}</p>
+                <p className="text-xs text-slate-400">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       {/* Best Pricing Section */}
       <section className="bg-gradient-to-br from-green-900 to-green-800 py-20">
         <div className="max-w-7xl mx-auto px-6">
@@ -1430,7 +1469,7 @@ export default function Home() {
               We Offer the Best Pricing in The Paystub Generator Industry
             </h3>
             <p className="text-lg text-green-100 max-w-2xl mx-auto">
-              Transparent Pricing, Unmatched Value — That&apos;s the MintSlip Promise
+              Transparent Pricing, Unmatched Value â€” That&apos;s the MintSlip Promise
             </p>
           </div>
           
@@ -1750,7 +1789,7 @@ export default function Home() {
                 No Data Stored
               </h4>
               <p className="text-slate-600 mb-4 text-center">
-                We don’t save your personal information or generated documents
+                We donâ€™t save your personal information or generated documents
               </p>
               <div className="relative">
                 <div className="bg-gradient-to-br from-white to-red-50 rounded-lg overflow-hidden shadow-lg h-64 flex items-center justify-center">
@@ -1879,7 +1918,7 @@ export default function Home() {
                     </div>
                     <h4 className="font-bold text-green-800 mb-1">View All</h4>
                     <p className="text-xs text-green-600">13+ Document Types</p>
-                    <p className="text-sm font-medium text-green-700 mt-2">Browse Directory →</p>
+                    <p className="text-sm font-medium text-green-700 mt-2">Browse Directory â†’</p>
                   </button>
                 </div>
                 

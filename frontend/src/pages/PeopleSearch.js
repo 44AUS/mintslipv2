@@ -268,12 +268,14 @@ function CarrierResultCard({ entry }) {
 
       {/* Detail grid */}
       <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-1">
-        {preview.carrier && (
-          <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Carrier</span>
-            <span className="text-sm font-medium text-slate-800">{preview.carrier}</span>
-          </div>
-        )}
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Carrier</span>
+          <span className="text-sm font-medium text-slate-800">{preview.carrier || "Unknown"}</span>
+        </div>
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Line Type</span>
+          <span className="text-sm font-medium text-slate-800">{ltLabels[ltKey] || preview.lineType || "Unknown"}</span>
+        </div>
         {preview.region && (
           <div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Region</span>
@@ -286,15 +288,7 @@ function CarrierResultCard({ entry }) {
             <span className="text-sm font-medium text-slate-800">{preview.countryCode}</span>
           </div>
         )}
-        <div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Line Type</span>
-          <span className="text-sm font-medium text-slate-800">{ltLabels[ltKey] || preview.lineType || "Unknown"}</span>
-        </div>
       </div>
-
-      {!preview.carrier && !preview.region && (
-        <p className="text-sm text-slate-500 italic">No carrier data available for this number.</p>
-      )}
     </div>
   );
 }

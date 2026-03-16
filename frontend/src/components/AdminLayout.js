@@ -193,7 +193,7 @@ export default function AdminLayout({ children }) {
     { id: "moderators",      label: "Moderators",       icon: UserCog,           path: "/admin/moderators",       perm: "admin_only" },
     { id: "audit-log",       label: "Audit Log",        icon: ClipboardList,     path: "/admin/audit-log",        perm: "admin_only" },
     { id: "people-search",   label: "People Search",    icon: Search,            path: "/admin/people-search",    perm: "view_purchases" },
-    { id: "data-sources",    label: "Data Sources",     icon: Database,          path: "/admin/data-sources",     perm: "admin_only" },
+    { id: "data-sources",    label: "Data Sources",     icon: Database,          path: "/admin/data-sources",     perm: null },
     { id: "revenue",         label: "Revenue",          icon: TrendingUp,        path: "/admin/revenue",          perm: "view_purchases" },
     { id: "subscriptions",   label: "Subscriptions",    icon: CreditCard,        path: "/admin/subscriptions",    perm: "admin_only" },
     { id: "support",         label: "Support Inbox",    icon: Inbox,             path: "/admin/support",          perm: null },

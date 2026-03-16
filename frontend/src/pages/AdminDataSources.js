@@ -198,7 +198,8 @@ export default function AdminDataSources() {
       const res = await fetch(`${BACKEND_URL}/api/admin/data-sources`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) { navigate("/admin/login"); return; }
+      if (res.status === 401) { navigate("/admin/login"); return; }
+      if (!res.ok) { toast.error(`Server error (${res.status})`); return; }
       const data = await res.json();
       setSources(data.sources || []);
     } catch { toast.error("Failed to load data sources"); }

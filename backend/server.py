@@ -7785,6 +7785,7 @@ import copy
 # Falls back to mock data when the key is not set.
 WHITEPAGES_PRO_API_KEY = os.environ.get("WHITEPAGES_PRO_API_KEY")
 _WP_BASE = "https://proapi.whitepages.com/3.3"
+logger.info(f"Whitepages Pro API key loaded: {'YES' if WHITEPAGES_PRO_API_KEY else 'NO (mock mode)'}")
 
 
 def _wp_format_phone(raw: str) -> str:
@@ -7817,11 +7818,13 @@ async def wp_phone_lookup(phone: str) -> dict | None:
                 f"{_WP_BASE}/phone",
                 params={"phone_number": phone, "api_key": WHITEPAGES_PRO_API_KEY},
             )
+            logger.info(f"Whitepages phone response: {r.status_code}")
             if r.status_code != 200:
-                logger.warning(f"Whitepages phone error {r.status_code}: {r.text[:200]}")
+                logger.warning(f"Whitepages phone error {r.status_code}: {r.text[:300]}")
                 return None
             d = r.json()
         results = d.get("results", [])
+        logger.info(f"Whitepages phone results count: {len(results)}")
         if not results:
             return None
         res = results[0]

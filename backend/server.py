@@ -8264,8 +8264,8 @@ def blur_result(data: dict, lookup_type: str) -> dict:
             preview["associatedPhones"] = [redact_phone(p) for p in preview["associatedPhones"]]
         if "estimatedValue" in preview: preview["estimatedValue"] = "$●●●,●●●"
     elif lookup_type == "carrier_lookup":
-        # carrier, lineType, region, valid are always visible — nothing to redact
-        pass
+        preview["carrier"]  = BLOB
+        preview["lineType"] = BLOB
     return preview
 
 

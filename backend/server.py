@@ -8249,15 +8249,11 @@ def blur_result(data: dict, lookup_type: str) -> dict:
     if lookup_type == "phone_lookup":
         if "name" in preview: preview["name"] = redact_name(preview["name"])
         if "possibleAddress" in preview: preview["possibleAddress"] = redact_addr(preview["possibleAddress"])
-        if "possibleRelatives" in preview:
-            preview["possibleRelatives"] = [redact_name(r) for r in preview["possibleRelatives"]]
     elif lookup_type == "name_lookup":
         if "possibleAddresses" in preview:
             preview["possibleAddresses"] = [redact_addr(a) for a in preview["possibleAddresses"]]
         if "possiblePhones" in preview:
             preview["possiblePhones"] = [redact_phone(p) for p in preview["possiblePhones"]]
-        if "possibleRelatives" in preview:
-            preview["possibleRelatives"] = [redact_name(r) for r in preview["possibleRelatives"]]
     elif lookup_type == "address_lookup":
         if "propertyOwner" in preview: preview["propertyOwner"] = redact_name(preview["propertyOwner"])
         if "residents" in preview:

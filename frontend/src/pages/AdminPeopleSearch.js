@@ -3,24 +3,24 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Search, CheckCircle, DollarSign, TrendingUp, Loader2,
-  ChevronLeft, ChevronRight, Phone, User, MapPin, FileSearch, Save,
+  ChevronLeft, ChevronRight, Phone, User, MapPin, Shield, Save,
 } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 const TYPE_LABELS = {
-  phone_lookup:      "Phone Lookup",
-  name_lookup:       "Name Lookup",
-  address_lookup:    "Address Lookup",
-  background_report: "Background Report",
+  phone_lookup:   "Phone Lookup",
+  name_lookup:    "Name Lookup",
+  address_lookup: "Address Lookup",
+  carrier_lookup: "Carrier Lookup",
 };
 
 const TYPE_ICONS = {
-  phone_lookup:      Phone,
-  name_lookup:       User,
-  address_lookup:    MapPin,
-  background_report: FileSearch,
+  phone_lookup:   Phone,
+  name_lookup:    User,
+  address_lookup: MapPin,
+  carrier_lookup: Shield,
 };
 
 function StatCard({ icon: Icon, label, value, sub, color = "text-slate-700", bg = "bg-slate-50" }) {
@@ -46,10 +46,10 @@ export default function AdminPeopleSearch() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [prices, setPrices] = useState({
-    phone_lookup: "",
-    name_lookup: "",
+    phone_lookup:   "",
+    name_lookup:    "",
     address_lookup: "",
-    background_report: "",
+    carrier_lookup: "",
   });
   const [savingPrices, setSavingPrices] = useState(false);
 
@@ -68,10 +68,10 @@ export default function AdminPeopleSearch() {
       const res = await fetch(`${BACKEND_URL}/api/people-search/prices`);
       const data = await res.json();
       if (res.ok) setPrices({
-        phone_lookup:      String(data.phone_lookup      ?? "0.99"),
-        name_lookup:       String(data.name_lookup       ?? "1.49"),
-        address_lookup:    String(data.address_lookup    ?? "1.49"),
-        background_report: String(data.background_report ?? "4.99"),
+        phone_lookup:   String(data.phone_lookup   ?? "0.99"),
+        name_lookup:    String(data.name_lookup    ?? "1.49"),
+        address_lookup: String(data.address_lookup ?? "1.49"),
+        carrier_lookup: String(data.carrier_lookup ?? "0.49"),
       });
     } catch {}
   };
@@ -179,7 +179,7 @@ export default function AdminPeopleSearch() {
             <h2 className="text-sm font-semibold text-slate-800">Breakdown by Lookup Type</h2>
           </div>
           <div className="divide-y divide-slate-100">
-            {["phone_lookup", "name_lookup", "address_lookup", "background_report"].map(type => {
+            {["phone_lookup", "name_lookup", "address_lookup", "carrier_lookup"].map(type => {
               const info = stats?.byType?.[type] || { count: 0, paid: 0 };
               const conv = info.count > 0 ? ((info.paid / info.count) * 100).toFixed(1) : "0.0";
               const Icon = TYPE_ICONS[type] || Search;
@@ -217,7 +217,7 @@ export default function AdminPeopleSearch() {
             </button>
           </div>
           <div className="divide-y divide-slate-100">
-            {["phone_lookup", "name_lookup", "address_lookup", "background_report"].map(type => {
+            {["phone_lookup", "name_lookup", "address_lookup", "carrier_lookup"].map(type => {
               const Icon = TYPE_ICONS[type] || Search;
               return (
                 <div key={type} className="flex items-center justify-between px-5 py-3">

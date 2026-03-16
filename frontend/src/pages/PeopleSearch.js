@@ -20,10 +20,10 @@ const US_STATES = [
 ];
 
 const TAB_CONFIG = {
-  phone:      { id: "phone_lookup",      label: "Reverse Phone Lookup",   icon: Phone },
-  name:       { id: "name_lookup",       label: "Name Lookup",            icon: User },
-  address:    { id: "address_lookup",    label: "Address Lookup",         icon: MapPin },
-  background: { id: "background_report", label: "Full Background Report", icon: FileSearch },
+  phone:   { id: "phone_lookup",   label: "Reverse Phone Lookup", icon: Phone },
+  name:    { id: "name_lookup",    label: "Name Lookup",          icon: User },
+  address: { id: "address_lookup", label: "Address Lookup",       icon: MapPin },
+  carrier: { id: "carrier_lookup", label: "Carrier Lookup",       icon: Shield },
 };
 
 // ── Result card rows ──────────────────────────────────────────────────────────
@@ -170,18 +170,15 @@ function ResultRows({ data, lookupType, blurred }) {
       <PhoneRow label="Phone Numbers" value={data.associatedPhones} blurred={b} />
     </>
   );
-  // background_report
+  // carrier_lookup
   return (
     <>
-      <InfoRow label="Full Name"      value={data.fullName}    blurred={false} />
-      <DobRow  label="Date of Birth"  value={data.dateOfBirth} blurred={b} />
-      <AddressRow label="Current Address" value={data.currentAddress}  blurred={b} />
-      <AddressRow label="Past Addresses" value={data.pastAddresses}    blurred={b} />
-      <PhoneRow   label="Phone Numbers"  value={data.phones}           blurred={b} />
-      <InfoRow    label="Emails"         value={data.emails}           blurred={b} />
-      <InfoRow    label="Relatives"      value={data.possibleRelatives} blurred={b} />
-      <InfoRow    label="Public Records" value={data.publicRecords}    blurred={b} />
-      <InfoRow    label="Education"      value={data.education}        blurred={false} />
+      <InfoRow label="Carrier"     value={data.carrier}     blurred={false} />
+      <InfoRow label="Line Type"   value={data.lineType}    blurred={false} />
+      <InfoRow label="Region"      value={data.region}      blurred={false} />
+      <InfoRow label="Valid"       value={data.valid === false ? "Invalid" : data.valid ? "Valid" : null} blurred={false} />
+      <InfoRow label="Name"        value={data.name}        blurred={b} />
+      <AddressRow label="Address"  value={data.possibleAddress} blurred={b} />
     </>
   );
 }
@@ -345,7 +342,7 @@ export default function PeopleSearch() {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("phone");
-  const [prices, setPrices] = useState({ phone_lookup: 0.99, name_lookup: 1.49, address_lookup: 1.49, background_report: 4.99 });
+  const [prices, setPrices] = useState({ phone_lookup: 0.99, name_lookup: 1.49, address_lookup: 1.49, carrier_lookup: 0.49 });
 
   const [searching, setSearching] = useState(false);
 
@@ -412,7 +409,7 @@ export default function PeopleSearch() {
     <>
       <Helmet>
         <title>People Search – Reverse Phone, Name & Address Lookup | MintSlip</title>
-        <meta name="description" content="Pay-per-lookup people search. Reverse phone lookup, name search, address lookup, and full background reports. No subscription needed." />
+        <meta name="description" content="Pay-per-lookup people search. Reverse phone lookup, name search, address lookup, and carrier lookup. No subscription needed." />
       </Helmet>
       <Header />
 
@@ -470,7 +467,22 @@ export default function PeopleSearch() {
                   </div>
                 )}
 
-                {(activeTab === "name" || activeTab === "background") && (
+                {activeTab === "carrier" && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="(555) 123-4567"
+                      className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      onKeyDown={e => e.key === "Enter" && handleSearch()}
+                    />
+                    <p className="text-xs text-slate-400 mt-2">Returns carrier name, line type (mobile/landline/VoIP), and region for any US number.</p>
+                  </div>
+                )}
+
+                {activeTab === "name" && (
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div>

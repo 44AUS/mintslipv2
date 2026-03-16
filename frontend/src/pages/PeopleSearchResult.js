@@ -234,7 +234,7 @@ export default function PeopleSearchResult() {
     return null;
   })();
 
-  const pageTitle = { phone_lookup: "Reverse Phone Lookup", name_lookup: "Name Lookup", address_lookup: "Address Lookup", background_report: "Full Background Report" }[lookupType] || "People Search";
+  const pageTitle = { phone_lookup: "Reverse Phone Lookup", name_lookup: "Name Lookup", address_lookup: "Address Lookup", carrier_lookup: "Carrier Lookup" }[lookupType] || "People Search";
 
   // FAQ
   const faqs = [

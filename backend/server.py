@@ -7965,10 +7965,10 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
         return None
 
 DEFAULT_PEOPLE_SEARCH_PRICES = {
-    "phone_lookup": 0.99,
-    "name_lookup": 1.49,
+    "phone_lookup":   0.99,
+    "name_lookup":    1.49,
     "address_lookup": 1.49,
-    "background_report": 4.99,
+    "carrier_lookup": 0.49,
 }
 
 # ── Data Source Settings ─────────────────────────────────────────────────────
@@ -8263,15 +8263,9 @@ def blur_result(data: dict, lookup_type: str) -> dict:
         if "associatedPhones" in preview:
             preview["associatedPhones"] = [redact_phone(p) for p in preview["associatedPhones"]]
         if "estimatedValue" in preview: preview["estimatedValue"] = "$●●●,●●●"
-    elif lookup_type == "background_report":
-        if "phones" in preview:
-            preview["phones"] = [redact_phone(p) for p in preview["phones"]]
-        if "currentAddress" in preview: preview["currentAddress"] = redact_addr(preview["currentAddress"])
-        if "pastAddresses" in preview:
-            preview["pastAddresses"] = [redact_addr(a) for a in preview["pastAddresses"]]
-        if "possibleRelatives" in preview:
-            preview["possibleRelatives"] = [redact_name(r) for r in preview["possibleRelatives"]]
-        if "publicRecords" in preview: preview["publicRecords"] = BLOB
+    elif lookup_type == "carrier_lookup":
+        # carrier, lineType, region, valid are always visible — nothing to redact
+        pass
     return preview
 
 
@@ -8480,36 +8474,28 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             full_results = [mock_base]
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
 
-    else:  # background_report
-        if not data.firstName or not data.lastName:
-            raise HTTPException(status_code=400, detail="First and last name required")
+    else:  # carrier_lookup
+        if not data.phone:
+            raise HTTPException(status_code=400, detail="Phone number required")
+        phone_clean = re.sub(r"[^\d]", "", data.phone)
+        if len(phone_clean) < 10:
+            raise HTTPException(status_code=400, detail="Invalid phone number – must be 10 digits")
 
-        full_results = []
-        if use_whitepages:
-            wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
-            mock_list = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
-            if wp_list:
-                for i, wp_item in enumerate(wp_list):
-                    mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
-                    r = dict(mock_fallback)
-                    if wp_item.get("possiblePhones"):    r["phones"] = wp_item["possiblePhones"]
-                    if wp_item.get("possibleAddresses"):
-                        addrs = wp_item["possibleAddresses"]
-                        r["currentAddress"] = addrs[0] if addrs else r["currentAddress"]
-                        r["pastAddresses"]  = addrs[1:] if len(addrs) > 1 else r["pastAddresses"]
-                    if wp_item.get("possibleRelatives"): r["possibleRelatives"] = wp_item["possibleRelatives"]
-                    if wp_item.get("ageRange"):          r["ageRange"] = wp_item["ageRange"]
-                    if wp_item.get("state"):             r["state"] = wp_item["state"]
-                    full_results.append(r)
-            else:
-                full_results.extend(mock_list)
-        if use_internal:
-            db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "")
-            full_results.extend(db_results)
-        if not full_results:
-            mock_list = await asyncio.to_thread(mock_background_report, data.firstName, data.lastName, data.state or "")
-            full_results = mock_list
-        query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
+        e164 = f"+1{phone_clean[-10:]}"
+        # Live lookup first, fall back to offline
+        carrier_data = await _live_carrier_lookup(phone_clean)
+        if not carrier_data:
+            carrier_data = await asyncio.to_thread(_phonenumbers_carrier_lookup, e164)
+
+        full_results = [{
+            "phone":     data.phone,
+            "carrier":   carrier_data.get("carrier", ""),
+            "lineType":  carrier_data.get("lineType", ""),
+            "region":    carrier_data.get("region", ""),
+            "valid":     carrier_data.get("valid", True),
+            "countryCode": carrier_data.get("countryCode", "US"),
+        }]
+        query_summary = data.phone
 
     prices = await get_people_search_prices()
     price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES[lt])
@@ -8573,10 +8559,10 @@ async def people_search_checkout_endpoint(request: Request, data: PeopleSearchCh
     amount_cents = int(round(price * 100))
 
     labels = {
-        "phone_lookup": "Reverse Phone Lookup",
-        "name_lookup": "Name Lookup Report",
+        "phone_lookup":   "Reverse Phone Lookup",
+        "name_lookup":    "Name Lookup Report",
         "address_lookup": "Address Lookup Report",
-        "background_report": "Full Background Report",
+        "carrier_lookup": "Carrier Lookup",
     }
     label = labels.get(lt, "People Search Report")
 

@@ -7,6 +7,7 @@ import {
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
   FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
   ClipboardList, Inbox, Download, TrendingUp, CreditCard, Moon, Sun, Search, Database,
+  FileSearch, UserMinus,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -163,6 +164,8 @@ export default function AdminLayout({ children }) {
     if (path.includes("/admin/export")) return "export";
     if (path.includes("/admin/people-search")) return "people-search";
     if (path.includes("/admin/data-sources")) return "data-sources";
+    if (path.includes("/admin/people-records")) return "people-records";
+    if (path.includes("/admin/opt-outs")) return "opt-outs";
     if (path.includes("/admin/revenue")) return "revenue";
     if (path.includes("/admin/subscriptions")) return "subscriptions";
     if (path.includes("/admin/settings")) return "settings";
@@ -194,6 +197,8 @@ export default function AdminLayout({ children }) {
     { id: "audit-log",       label: "Audit Log",        icon: ClipboardList,     path: "/admin/audit-log",        perm: "admin_only" },
     { id: "people-search",   label: "People Search",    icon: Search,            path: "/admin/people-search",    perm: "view_purchases" },
     { id: "data-sources",    label: "Data Sources",     icon: Database,          path: "/admin/data-sources",     perm: null },
+    { id: "people-records",  label: "People Records",   icon: FileSearch,        path: "/admin/people-records",   perm: null },
+    { id: "opt-outs",        label: "Opt-Out Requests", icon: UserMinus,         path: "/admin/opt-outs",         perm: "admin_only" },
     { id: "revenue",         label: "Revenue",          icon: TrendingUp,        path: "/admin/revenue",          perm: "view_purchases" },
     { id: "subscriptions",   label: "Subscriptions",    icon: CreditCard,        path: "/admin/subscriptions",    perm: "admin_only" },
     { id: "support",         label: "Support Inbox",    icon: Inbox,             path: "/admin/support",          perm: null },

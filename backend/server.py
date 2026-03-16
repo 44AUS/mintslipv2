@@ -131,6 +131,8 @@ people_search_payments_collection = db["people_search_payments"]
 data_source_settings_collection = db["data_source_settings"]
 people_records_collection = db["people_records"]
 scraper_jobs_collection = db["scraper_jobs"]
+opt_out_requests_collection = db["opt_out_requests"]
+suppression_list_collection = db["suppression_list"]
 
 # Default permissions per moderator level
 ALL_PERMISSIONS = [
@@ -8845,6 +8847,169 @@ async def admin_clear_people_records(source: str, request: Request):
     await log_action(session, "clear_people_records", "scraper", source,
                      f"{result.deleted_count} records deleted")
     return {"success": True, "deleted": result.deleted_count}
+
+
+# ── Admin: People Records Browser ────────────────────────────────────────────
+
+@app.get("/api/admin/people-records/browse")
+async def admin_browse_people_records(
+    q: str = "",
+    source: str = "",
+    page: int = 1,
+    session: dict = Depends(get_current_admin),
+):
+    LIMIT = 25
+    skip = (page - 1) * LIMIT
+    query: dict = {}
+    if source:
+        query["source"] = source
+    if q:
+        q_stripped = q.strip()
+        digits_only = re.sub(r"[^\d]", "", q_stripped)
+        if len(digits_only) >= 7:
+            query["phones"] = {"$elemMatch": {"$regex": digits_only}}
+        else:
+            parts = q_stripped.split()
+            if len(parts) >= 2:
+                query["$and"] = [
+                    {"firstName": {"$regex": re.escape(parts[0]),  "$options": "i"}},
+                    {"lastName":  {"$regex": re.escape(parts[-1]), "$options": "i"}},
+                ]
+            else:
+                query["$or"] = [
+                    {"firstName": {"$regex": re.escape(q_stripped), "$options": "i"}},
+                    {"lastName":  {"$regex": re.escape(q_stripped), "$options": "i"}},
+                ]
+    total = await people_records_collection.count_documents(query)
+    cursor = (
+        people_records_collection
+        .find(query, {"_id": 0, "recordId": 1, "firstName": 1, "lastName": 1,
+                      "source": 1, "state": 1, "addresses": 1, "phones": 1, "createdAt": 1})
+        .sort("createdAt", -1)
+        .skip(skip)
+        .limit(LIMIT)
+    )
+    records = await cursor.to_list(LIMIT)
+    pages = max(1, (total + LIMIT - 1) // LIMIT)
+    return {"success": True, "records": records, "total": total, "page": page, "pages": pages}
+
+
+@app.delete("/api/admin/people-records/record/{record_id}")
+async def admin_delete_one_people_record(
+    record_id: str,
+    session: dict = Depends(get_current_admin),
+):
+    result = await people_records_collection.delete_one({"recordId": record_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Record not found")
+    await log_action(session, "delete_people_record", "people_record", record_id)
+    return {"success": True, "deleted": record_id}
+
+
+# ── Public: Opt-Out Requests ──────────────────────────────────────────────────
+
+class OptOutRequest(BaseModel):
+    name:   str
+    email:  str
+    reason: str = ""
+    phone:  str = ""
+
+@app.post("/api/opt-out")
+async def submit_opt_out(body: OptOutRequest):
+    name  = body.name.strip()
+    email = body.email.strip().lower()
+    if not name or not email:
+        raise HTTPException(status_code=400, detail="name and email are required")
+    doc = {
+        "id":        str(uuid.uuid4()),
+        "name":      name,
+        "email":     email,
+        "phone":     body.phone.strip(),
+        "reason":    body.reason.strip(),
+        "status":    "pending",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+    await opt_out_requests_collection.insert_one(doc)
+    return {"success": True}
+
+
+# ── Admin: Opt-Out Management ─────────────────────────────────────────────────
+
+@app.get("/api/admin/opt-outs")
+async def admin_list_opt_outs(
+    status: str = "pending",
+    page: int = 1,
+    session: dict = Depends(get_current_admin),
+):
+    LIMIT = 25
+    skip  = (page - 1) * LIMIT
+    query: dict = {}
+    if status and status != "all":
+        query["status"] = status
+    total   = await opt_out_requests_collection.count_documents(query)
+    records = await (
+        opt_out_requests_collection
+        .find(query, {"_id": 0})
+        .sort("createdAt", -1)
+        .skip(skip)
+        .limit(LIMIT)
+        .to_list(LIMIT)
+    )
+    pages = max(1, (total + LIMIT - 1) // LIMIT)
+    return {"success": True, "requests": records, "total": total, "page": page, "pages": pages}
+
+
+@app.post("/api/admin/opt-outs/{opt_out_id}/approve")
+async def admin_approve_opt_out(opt_out_id: str, session: dict = Depends(require_admin_only)):
+    req = await opt_out_requests_collection.find_one({"id": opt_out_id}, {"_id": 0})
+    if not req:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    name_parts = req["name"].split()
+    first = name_parts[0] if name_parts else ""
+    last  = name_parts[-1] if len(name_parts) > 1 else ""
+
+    deleted_count = 0
+    if first and last:
+        result = await people_records_collection.delete_many({
+            "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+            "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+        })
+        deleted_count = result.deleted_count
+
+    await suppression_list_collection.update_one(
+        {"email": req["email"]},
+        {"$set": {
+            "name":    req["name"],
+            "email":   req["email"],
+            "phone":   req.get("phone", ""),
+            "addedAt": datetime.now(timezone.utc).isoformat(),
+            "addedBy": session.get("email", "admin"),
+        }},
+        upsert=True,
+    )
+    await opt_out_requests_collection.update_one(
+        {"id": opt_out_id},
+        {"$set": {"status": "approved", "deletedCount": deleted_count,
+                  "updatedAt": datetime.now(timezone.utc).isoformat()}},
+    )
+    await log_action(session, "approve_opt_out", "opt_out", opt_out_id,
+                     f"Deleted {deleted_count} records for {req['name']}")
+    return {"success": True, "deleted": deleted_count}
+
+
+@app.post("/api/admin/opt-outs/{opt_out_id}/deny")
+async def admin_deny_opt_out(opt_out_id: str, session: dict = Depends(require_admin_only)):
+    req = await opt_out_requests_collection.find_one({"id": opt_out_id})
+    if not req:
+        raise HTTPException(status_code=404, detail="Not found")
+    await opt_out_requests_collection.update_one(
+        {"id": opt_out_id},
+        {"$set": {"status": "denied", "updatedAt": datetime.now(timezone.utc).isoformat()}},
+    )
+    await log_action(session, "deny_opt_out", "opt_out", opt_out_id, req.get("name", ""))
+    return {"success": True}
 
 
 # ── Voter Roll CSV Importer ───────────────────────────────────────────────────

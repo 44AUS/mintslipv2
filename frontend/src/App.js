@@ -71,6 +71,9 @@ import PeopleSearch from "@/pages/PeopleSearch";
 import PeopleSearchResult from "@/pages/PeopleSearchResult";
 import AdminPeopleSearch from "@/pages/AdminPeopleSearch";
 import AdminDataSources from "@/pages/AdminDataSources";
+import AdminPeopleRecords from "@/pages/AdminPeopleRecords";
+import AdminOptOuts from "@/pages/AdminOptOuts";
+import OptOut from "@/pages/OptOut";
 import ReversePhoneLookup from "@/pages/ReversePhoneLookup";
 import FindPersonByName from "@/pages/FindPersonByName";
 import AddressLookupPage from "@/pages/AddressLookupPage";
@@ -202,6 +205,7 @@ function App() {
             <Route path="/how-to-make-a-paystub" element={<HowToMakePaystub />} />
             <Route path="/paystub-for-apartment" element={<PaystubForApartment />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/opt-out" element={<OptOut />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
@@ -236,6 +240,8 @@ function App() {
             <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
             <Route path="/admin/people-search" element={<AdminPeopleSearch />} />
             <Route path="/admin/data-sources" element={<AdminDataSources />} />
+            <Route path="/admin/people-records" element={<AdminPeopleRecords />} />
+            <Route path="/admin/opt-outs" element={<AdminOptOuts />} />
             {/* People Search Routes */}
             <Route path="/people-search" element={<PeopleSearch />} />
             <Route path="/people-search/result/:searchId" element={<PeopleSearchResult />} />

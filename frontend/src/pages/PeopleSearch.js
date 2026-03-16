@@ -232,6 +232,73 @@ function cityState(addr) {
   return m ? m[1].trim() : String(addr).replace(/^\d+\s+/, "");
 }
 
+// ── Carrier lookup result card ────────────────────────────────────────────────
+function CarrierResultCard({ entry }) {
+  const preview = entry.preview || {};
+
+  const ltKey = (preview.lineType || "unknown").toLowerCase();
+  const ltColors = {
+    mobile:   "bg-blue-100 text-blue-700",
+    landline: "bg-slate-100 text-slate-700",
+    voip:     "bg-purple-100 text-purple-700",
+    unknown:  "bg-slate-100 text-slate-500",
+  };
+  const ltLabels = { mobile: "Mobile", landline: "Landline", voip: "VoIP", unknown: "Unknown" };
+  const isValid = preview.valid !== false;
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+      {/* Header row */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <span className="text-lg font-bold text-slate-900">{preview.phone || "Unknown Number"}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${isValid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+            {isValid ? "Valid" : "Invalid"}
+          </span>
+          {ltKey !== "unknown" && (
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${ltColors[ltKey] || ltColors.unknown}`}>
+              {ltLabels[ltKey] || preview.lineType}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Detail grid */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-1">
+        {preview.carrier && (
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Carrier</span>
+            <span className="text-sm font-medium text-slate-800">{preview.carrier}</span>
+          </div>
+        )}
+        {preview.region && (
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Region</span>
+            <span className="text-sm font-medium text-slate-800">{preview.region}</span>
+          </div>
+        )}
+        {preview.countryCode && (
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Country</span>
+            <span className="text-sm font-medium text-slate-800">{preview.countryCode}</span>
+          </div>
+        )}
+        <div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Line Type</span>
+          <span className="text-sm font-medium text-slate-800">{ltLabels[ltKey] || preview.lineType || "Unknown"}</span>
+        </div>
+      </div>
+
+      {!preview.carrier && !preview.region && (
+        <p className="text-sm text-slate-500 italic">No carrier data available for this number.</p>
+      )}
+    </div>
+  );
+}
+
 // ── Single result card — Whitepages-style layout ──────────────────────────────
 function ResultCard({ entry, lookupType, query }) {
   const navigate  = useNavigate();
@@ -567,12 +634,9 @@ export default function PeopleSearch() {
               </div>
 
               {results.map((entry) => (
-                <ResultCard
-                  key={entry.searchId}
-                  entry={entry}
-                  lookupType={lookupType}
-                  query={query}
-                />
+                lookupType === "carrier_lookup"
+                  ? <CarrierResultCard key={entry.searchId} entry={entry} />
+                  : <ResultCard key={entry.searchId} entry={entry} lookupType={lookupType} query={query} />
               ))}
             </div>
           )}

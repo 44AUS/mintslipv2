@@ -85,7 +85,16 @@ function FaqItem({ question, answer }) {
 function SimpleLookupResult({ data, lookupType, blurred, query }) {
   const b = blurred;
   const rows = [];
-  if (lookupType === "phone_lookup") {
+  if (lookupType === "carrier_lookup") {
+    rows.push(
+      { label: "Phone",     value: data?.phone,                                            blur: false },
+      { label: "Carrier",   value: data?.carrier,                                          blur: false },
+      { label: "Line Type", value: data?.lineType,                                         blur: false },
+      { label: "Region",    value: data?.region,                                           blur: false },
+      { label: "Status",    value: data?.valid === false ? "Invalid" : "Valid",            blur: false },
+      { label: "Country",   value: data?.countryCode,                                      blur: false },
+    );
+  } else if (lookupType === "phone_lookup") {
     rows.push(
       { label: "Name",             value: data?.name,              blur: b  },
       { label: "Carrier",          value: data?.carrier,           blur: false },

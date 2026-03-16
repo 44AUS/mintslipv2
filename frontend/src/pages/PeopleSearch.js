@@ -404,7 +404,7 @@ export default function PeopleSearch() {
           </div>
 
           {/* Search panel */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6 max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
 
               {/* Tabs */}
               <div className="flex border-b border-slate-200 overflow-x-auto">

@@ -7819,7 +7819,7 @@ async def wp_phone_lookup(phone: str) -> dict | None:
             r = await client.get(
                 f"{_WP_BASE}/phone",
                 params={"phone_number": phone},
-                headers={"WP-Api-Key": WHITEPAGES_PRO_API_KEY},
+                headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
             )
             logger.info(f"Whitepages phone response: {r.status_code}")
             if r.status_code != 200:
@@ -7907,7 +7907,7 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
             r = await client.get(
                 f"{_WP_BASE}/person",
                 params=params,
-                headers={"WP-Api-Key": WHITEPAGES_PRO_API_KEY},
+                headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
             )
             logger.info(f"Whitepages person status: {r.status_code}")
             logger.info(f"Whitepages person raw: {r.text[:800]}")
@@ -7940,7 +7940,7 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
             r = await client.get(
                 f"{_WP_BASE}/location",
                 params=params,
-                headers={"WP-Api-Key": WHITEPAGES_PRO_API_KEY},
+                headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
             )
             if r.status_code != 200:
                 logger.warning(f"Whitepages address error {r.status_code}: {r.text[:200]}")

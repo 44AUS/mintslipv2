@@ -65,8 +65,7 @@ from pdf_engine import (
     clean_bank_statement_pdf
 )
 
-# Import Emergent Integrations for Gemini
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+import anthropic
 
 # Stripe Configuration
 import stripe
@@ -429,19 +428,20 @@ BLOG_CATEGORIES = [
     {"slug": "employment", "name": "Employment", "description": "Employment documentation and workplace guides"},
 ]
 
-# Initialize Gemini LLM Chat
-def get_llm_chat():
-    api_key = os.environ.get("EMERGENT_LLM_KEY")
+_RESUME_SYSTEM = "You are an expert resume writer and ATS optimization specialist. You help create professional, ATS-optimized resumes tailored to specific job descriptions."
+
+async def call_claude(prompt: str) -> str:
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")
-    
-    chat = LlmChat(
-        api_key=api_key,
-        session_id=str(uuid.uuid4()),
-        system_message="You are an expert resume writer and ATS optimization specialist. You help create professional, ATS-optimized resumes tailored to specific job descriptions."
-    ).with_model("gemini", "gemini-2.5-flash")
-    
-    return chat
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    client = anthropic.AsyncAnthropic(api_key=api_key)
+    message = await client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=8096,
+        system=_RESUME_SYSTEM,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return message.content[0].text
 
 @app.get("/api/health")
 async def health_check():
@@ -5719,8 +5719,6 @@ async def parse_resume(file: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="Could not extract text from the resume. Please ensure the file is not empty or corrupted.")
         
         # Use AI to parse the extracted text into structured format
-        chat = get_llm_chat()
-        
         prompt = f"""Parse the following resume text and extract structured information. Return ONLY valid JSON, no markdown code blocks.
 
 RESUME TEXT:
@@ -5767,8 +5765,7 @@ Important:
 - Set "current" to true if the job says "Present" or "Current"
 - Return ONLY the JSON object, nothing else"""
 
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        response = await call_claude(prompt)
         
         # Parse the JSON response
         response_text = response.strip()
@@ -5875,8 +5872,6 @@ async def scrape_job(request: JobScrapeRequest):
 async def generate_resume(data: ResumeInput):
     """Generate AI-optimized resume content"""
     try:
-        chat = get_llm_chat()
-        
         # Build context from user data - include job location
         work_history = "\n".join([
             f"- {exp.position} at {exp.company}, {exp.location} ({exp.startDate} - {'Present' if exp.current else exp.endDate})\n  Responsibilities: {'; '.join(exp.responsibilities)}"
@@ -5951,8 +5946,7 @@ Please generate the following in JSON format. ONLY output valid JSON, no markdow
 CRITICAL: You MUST generate {len(data.workExperience)} SEPARATE work experience entries with DIFFERENT bullet points for each. Each position's bullets should be tailored to the specific responsibilities mentioned for that role. Do NOT copy the same bullets across different positions.
 """
 
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        response = await call_claude(prompt)
         
         # Parse the JSON response
         response_text = response
@@ -6007,8 +6001,6 @@ CRITICAL: You MUST generate {len(data.workExperience)} SEPARATE work experience 
 async def regenerate_section(data: dict):
     """Regenerate a specific section of the resume"""
     try:
-        chat = get_llm_chat()
-        
         section = data.get("section")
         current_content = data.get("currentContent")
         job_description = data.get("jobDescription", "")
@@ -6045,8 +6037,7 @@ Return a JSON object: {{"technical": [...], "soft": [...], "other": [...]}}"""
         if not prompt:
             raise HTTPException(status_code=400, detail=f"Unknown section: {section}")
         
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        response = await call_claude(prompt)
         
         response_text = response.strip()
         
@@ -6079,8 +6070,6 @@ class GenerateResponsibilitiesRequest(BaseModel):
 async def generate_responsibilities(data: GenerateResponsibilitiesRequest):
     """Generate AI-powered responsibilities/achievements for a work position"""
     try:
-        chat = get_llm_chat()
-        
         context = f"""Position: {data.position}
 Company: {data.company}
 {"Industry: " + data.industry if data.industry else ""}
@@ -6100,8 +6089,7 @@ Requirements:
 Return ONLY a JSON array of strings, no explanation:
 ["First responsibility with metrics and impact", "Second responsibility...", "Third...", "Fourth...", "Fifth..."]"""
         
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        response = await call_claude(prompt)
         
         # Try to parse JSON array from response
         try:
@@ -6816,8 +6804,6 @@ async def ai_generate_blog_content(
 ):
     """Generate blog content using AI (admin)"""
     try:
-        chat = get_llm_chat()
-        
         prompt = f"""Write a comprehensive, SEO-optimized blog article about: {topic}
 
 Target Keywords: {keywords if keywords else 'pay stub, proof of income, payroll'}
@@ -6852,8 +6838,7 @@ Format your response as JSON:
     "suggestedTags": ["tag1", "tag2"]
 }}"""
         
-        user_message = UserMessage(text=prompt)
-        response = await chat.send_message(user_message)
+        response = await call_claude(prompt)
         
         # Try to parse JSON from response
         try:

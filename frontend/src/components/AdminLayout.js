@@ -225,7 +225,7 @@ export default function AdminLayout({ children }) {
     <div className={`flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950${darkMode ? " dark" : ""}`}>
 
       {/* Desktop Sidebar — full height, above everything */}
-      <aside className="hidden md:flex flex-col w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 z-50">
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 z-50">
         {/* Logo */}
         <div className="px-4 py-5 border-b border-slate-100 dark:border-slate-700 flex-shrink-0 flex justify-center">
           <button onClick={() => navigate("/admin/overview")} className="hover:opacity-80 transition-opacity">

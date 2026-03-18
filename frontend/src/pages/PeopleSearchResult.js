@@ -207,9 +207,11 @@ export default function PeopleSearchResult() {
   const [lookupType, setLookupType] = useState(passed.lookupType || null);
   const [price] = useState(passed.price || null);
   const [query] = useState(passed.query || "");
+  // isInternal: direct internal record view — treat as already paid
+  const isInternal = passed.isInternal || false;
 
-  const [fullResult, setFullResult] = useState(null);
-  const [isPaid, setIsPaid] = useState(false);
+  const [fullResult, setFullResult] = useState(passed.initialPaid ? (passed.preview || null) : null);
+  const [isPaid, setIsPaid] = useState(isInternal || passed.initialPaid || false);
   const [unlocking, setUnlocking] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -221,6 +223,21 @@ export default function PeopleSearchResult() {
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
+    if (isInternal) {
+      // Fetch full record from internal DB by recordId
+      setLoading(true);
+      fetch(`${BACKEND_URL}/api/people/record/${searchId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.record) {
+            setFullResult(data.record);
+            setIsPaid(true);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+      return;
+    }
     if (sessionId || !preview) {
       setLoading(true);
       fetch(`${BACKEND_URL}/api/people-search/result/${searchId}${sessionId ? `?session_id=${sessionId}` : ""}`, {
@@ -329,10 +346,16 @@ export default function PeopleSearchResult() {
     return Array.isArray(a) ? a : [a];
   })();
 
+  // relativesList: normalize to { name, recordId } objects
   const relativesList = (() => {
     const r = d?.possibleRelatives;
     if (!r) return [];
-    return Array.isArray(r) ? r : [r];
+    const arr = Array.isArray(r) ? r : [r];
+    return arr.map(x => {
+      if (typeof x === "string") return { name: x, recordId: null };
+      if (x && typeof x === "object") return { name: x.name || String(x), recordId: x.recordId || null };
+      return { name: String(x), recordId: null };
+    });
   })();
 
   const locationSummary = (() => {
@@ -355,7 +378,7 @@ export default function PeopleSearchResult() {
     { q: `Where does ${name} live?`, a: isPaid && currentAddr ? currentAddr : `Unlock the full report to see ${firstName}'s current address.` },
     { q: `How old is ${name}?`, a: age ? `${name} is ${age} years old.` : `Unlock the full report to see ${firstName}'s age and date of birth.` },
     { q: `What is ${firstName}'s phone number?`, a: isPaid && phoneList.length ? phoneList.slice(0,2).join(", ") : `Unlock the full report to see ${firstName}'s phone numbers.` },
-    { q: `Who are ${firstName}'s relatives?`, a: isPaid && relativesList.length ? relativesList.join(", ") : `Unlock the full report to see ${firstName}'s possible relatives.` },
+    { q: `Who are ${firstName}'s relatives?`, a: isPaid && relativesList.length ? relativesList.map(r => r.name).join(", ") : `Unlock the full report to see ${firstName}'s possible relatives.` },
     { q: `Where has ${firstName} lived previously?`, a: isPaid && pastAddrs.length ? pastAddrs.join("; ") : `Unlock the full report to see all previous addresses.` },
     { q: `What email addresses does ${firstName} use?`, a: isPaid && emailList.length ? emailList.slice(0,2).join(", ") + (emailList.length > 2 ? ` + ${emailList.length - 2} more` : "") : `Unlock the full report to see known email addresses.` },
   ];
@@ -369,7 +392,7 @@ export default function PeopleSearchResult() {
       if (currentAddr) parts.push(`${firstName}'s current address is ${currentAddr}.`);
       if (phoneList.length) parts.push(`Phone number${phoneList.length > 1 ? "s" : ""} on file: ${phoneList.slice(0,2).join(", ")}${phoneList.length > 2 ? ` and ${phoneList.length - 2} others` : ""}.`);
       if (emailList.length) parts.push(`Known email address${emailList.length > 1 ? "es" : ""} include ${emailList.slice(0,2).join(" and ")}${emailList.length > 2 ? ` plus ${emailList.length - 2} others` : ""}.`);
-      if (relativesList.length) parts.push(`Relatives include ${relativesList.slice(0,3).join(", ")}.`);
+      if (relativesList.length) parts.push(`Relatives include ${relativesList.slice(0,3).map(r => r.name).join(", ")}.`);
     } else {
       parts.push(`Unlock the full report to view ${firstName}'s complete contact information, phone numbers, email addresses, and relatives.`);
     }
@@ -560,17 +583,25 @@ export default function PeopleSearchResult() {
                 <Section icon={Users} title="Possible Relatives" description={`May include parents, spouse, siblings, and children of ${firstName}.`}>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {relativesList.map((rel, i) => {
-                      const parts = String(rel).trim().split(/\s+/);
-                      const relFirst = parts[0] || "";
-                      const relLast  = parts.slice(1).join(" ") || "";
+                      const relName = rel.name || String(rel);
+                      const nameParts = relName.trim().split(/\s+/);
+                      const relFirst = nameParts[0] || "";
+                      const relLast  = nameParts.slice(1).join(" ") || "";
+                      const handleRelClick = rel.recordId
+                        ? () => navigate(`/people-search/result/${rel.recordId}`, {
+                            state: { preview: { fullName: relName }, lookupType: "name_lookup", isInternal: true, initialPaid: true },
+                          })
+                        : () => navigate("/people-search", { state: { prefill: { firstName: relFirst, lastName: relLast } } });
                       return (
                         <button
                           key={i}
-                          onClick={() => navigate("/people-search", { state: { prefill: { firstName: relFirst, lastName: relLast } } })}
+                          onClick={handleRelClick}
                           className="p-3 bg-slate-50 hover:bg-green-50 hover:border-green-300 rounded-lg border border-slate-100 text-left transition-colors group"
                         >
-                          <p className="text-sm font-semibold text-slate-800 group-hover:text-green-700">{rel}</p>
-                          <p className="text-[10px] text-slate-400 group-hover:text-green-500 mt-0.5">Search this person →</p>
+                          <p className="text-sm font-semibold text-slate-800 group-hover:text-green-700">{relName}</p>
+                          <p className="text-[10px] text-slate-400 group-hover:text-green-500 mt-0.5">
+                            {rel.recordId ? "View profile →" : "Search this person →"}
+                          </p>
                         </button>
                       );
                     })}

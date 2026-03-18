@@ -357,7 +357,7 @@ function ResultCard({ entry, lookupType, query }) {
         {/* Age column */}
         <div className="flex flex-col items-center justify-center px-5 py-5 border-r border-slate-100 min-w-[72px] bg-slate-50/50">
           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">AGE</span>
-          <span className="text-3xl font-extrabold text-slate-900 leading-none">{age ?? "?"}</span>
+          <span className="text-3xl font-extrabold text-slate-900 leading-none">{age ?? "–"}</span>
         </div>
 
         {/* Main info */}

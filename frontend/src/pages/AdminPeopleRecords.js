@@ -53,7 +53,7 @@ function emptyForm() {
   return {
     firstName: "", lastName: "", middleName: "",
     aliases: [],
-    age: "", dateOfBirth: "", gender: "",
+    dateOfBirth: "", gender: "",
     state: "",
     addresses: [],
     phones: [],
@@ -210,6 +210,111 @@ function TagListForm({ items, onChange, placeholder }) {
   );
 }
 
+// ── Person link form (relatives/associates with live DB search) ───────────────
+// items: [{ name, recordId }] or legacy strings
+function PersonLinkForm({ items, onChange, placeholder }) {
+  const [input, setInput] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [sugLoading, setSugLoading] = useState(false);
+  const debounceRef = useState(null);
+
+  // Normalize legacy string items to objects
+  const normalized = items.map(i =>
+    typeof i === "string" ? { name: i, recordId: null } : i
+  );
+
+  const search = (val) => {
+    clearTimeout(debounceRef[0]);
+    if (val.length < 2) { setSuggestions([]); return; }
+    debounceRef[0] = setTimeout(async () => {
+      setSugLoading(true);
+      try {
+        const token = localStorage.getItem("adminToken");
+        const res = await fetch(
+          `${BACKEND_URL}/api/admin/people-records/search-suggest?q=${encodeURIComponent(val)}&limit=8`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        setSuggestions(data.results || []);
+      } catch { setSuggestions([]); }
+      finally { setSugLoading(false); }
+    }, 250);
+  };
+
+  const addSuggestion = (sug) => {
+    if (normalized.some(x => x.recordId === sug.recordId)) return;
+    onChange([...normalized, { name: sug.name, recordId: sug.recordId }]);
+    setInput("");
+    setSuggestions([]);
+  };
+
+  const addManual = () => {
+    const v = input.trim();
+    if (!v) return;
+    if (normalized.some(x => x.name.toLowerCase() === v.toLowerCase())) return;
+    onChange([...normalized, { name: v, recordId: null }]);
+    setInput("");
+    setSuggestions([]);
+  };
+
+  const remove = (i) => onChange(normalized.filter((_, idx) => idx !== i));
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <div className="flex gap-2">
+          <input
+            value={input}
+            onChange={e => { setInput(e.target.value); search(e.target.value); }}
+            onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addManual())}
+            placeholder={placeholder}
+            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <button type="button" onClick={addManual}
+            className="flex items-center gap-1 text-sm font-semibold bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition-colors">
+            <Plus className="w-3.5 h-3.5" /> Add
+          </button>
+        </div>
+        {(suggestions.length > 0 || sugLoading) && (
+          <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
+            {sugLoading && (
+              <div className="flex items-center gap-2 px-3 py-2 text-sm text-slate-400">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…
+              </div>
+            )}
+            {suggestions.map(sug => (
+              <button
+                key={sug.recordId}
+                type="button"
+                onClick={() => addSuggestion(sug)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-green-50 text-left transition-colors"
+              >
+                <span className="font-medium text-slate-800">{sug.name}</span>
+                <span className="text-xs text-slate-400">{sug.state}{sug.age ? ` · Age ${sug.age}` : ""}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {normalized.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {normalized.map((item, i) => (
+            <span key={i} className={`flex items-center gap-1.5 text-sm px-2.5 py-1 rounded-full ${
+              item.recordId
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-slate-100 text-slate-700"
+            }`}>
+              {item.recordId && <Check className="w-3 h-3 text-green-600 flex-shrink-0" />}
+              {item.name}
+              <button type="button" onClick={() => remove(i)} className="text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Person Modal ──────────────────────────────────────────────────────────────
 function PersonModal({ record, onClose, onSave }) {
   const isEdit = !!record?.recordId;
@@ -220,15 +325,14 @@ function PersonModal({ record, onClose, onSave }) {
       lastName:    record.lastName  || "",
       middleName:  record.middleName || "",
       aliases:     record.aliases   || [],
-      age:         record.age != null ? String(record.age) : "",
       dateOfBirth: record.dateOfBirth || "",
       gender:      record.gender || "",
       state:       record.state  || "",
       addresses:   record.addresses  || [],
       phones:      (record.phones || []).map(p => typeof p === "string" ? { number: p, type: "cell", current: true } : p),
       emails:      (record.emails || []).map(e => typeof e === "string" ? { address: e, primary: false } : e),
-      relatives:   record.relatives  || [],
-      associates:  record.associates || [],
+      relatives:   (record.relatives  || []).map(r => typeof r === "string" ? { name: r, recordId: null } : r),
+      associates:  (record.associates || []).map(r => typeof r === "string" ? { name: r, recordId: null } : r),
       occupation:  record.occupation || "",
       employer:    record.employer   || "",
     };
@@ -245,7 +349,7 @@ function PersonModal({ record, onClose, onSave }) {
     }
     setSaving(true);
     try {
-      const payload = { ...form, age: form.age !== "" ? parseInt(form.age) : null };
+      const payload = { ...form };
       const url = isEdit
         ? `${BACKEND_URL}/api/admin/people-records/record/${record.recordId}`
         : `${BACKEND_URL}/api/admin/people-records/create`;
@@ -321,15 +425,10 @@ function PersonModal({ record, onClose, onSave }) {
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Aliases / Also Known As</label>
                 <TagListForm items={form.aliases} onChange={v => set("aliases", v)} placeholder="Nickname or alternate name" />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date of Birth</label>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date of Birth <span className="text-slate-400 font-normal">(age auto-calculated)</span></label>
                   <input type="date" value={form.dateOfBirth} onChange={e => set("dateOfBirth", e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Age</label>
-                  <input type="number" min="0" max="130" value={form.age} onChange={e => set("age", e.target.value)}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
                 </div>
                 <div>
@@ -367,11 +466,11 @@ function PersonModal({ record, onClose, onSave }) {
             <div className="space-y-6">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide">Relatives</label>
-                <TagListForm items={form.relatives} onChange={v => set("relatives", v)} placeholder="Full name of relative" />
+                <PersonLinkForm items={form.relatives} onChange={v => set("relatives", v)} placeholder="Search by name or type manually" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-3 uppercase tracking-wide">Associates</label>
-                <TagListForm items={form.associates} onChange={v => set("associates", v)} placeholder="Full name of associate" />
+                <PersonLinkForm items={form.associates} onChange={v => set("associates", v)} placeholder="Search by name or type manually" />
               </div>
             </div>
           )}

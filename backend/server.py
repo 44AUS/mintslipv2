@@ -8103,28 +8103,156 @@ def _email_str(e) -> str:
         return e.get("address", "")
     return ""
 
+def calc_age_from_dob(dob: str) -> int | None:
+    """Calculate age from a date of birth string (YYYY-MM-DD or MM/DD/YYYY)."""
+    if not dob:
+        return None
+    try:
+        import re as _re
+        from datetime import date as _date
+        iso = _re.match(r"^(\d{4})-(\d{2})-(\d{2})$", str(dob))
+        if iso:
+            born = _date(int(iso.group(1)), int(iso.group(2)), int(iso.group(3)))
+        else:
+            mdy = _re.match(r"^(\d{1,2})/(\d{1,2})/(\d{4})$", str(dob))
+            if mdy:
+                born = _date(int(mdy.group(3)), int(mdy.group(1)), int(mdy.group(2)))
+            else:
+                return None
+        today = _date.today()
+        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        return age if 0 < age < 130 else None
+    except Exception:
+        return None
+
+
 def normalize_internal_record(doc: dict) -> dict:
     """Convert a people_records document to the standard search result format."""
     addrs = doc.get("addresses", [])
     current = next((a for a in addrs if a.get("current")), addrs[0] if addrs else {})
     past = [a for a in addrs if not a.get("current")]
-    age = doc.get("age")
+    age = doc.get("age") or calc_age_from_dob(doc.get("dateOfBirth", ""))
     emails = [_email_str(e) for e in doc.get("emails", []) if _email_str(e)]
     return {
         "firstName":        doc.get("firstName", ""),
         "lastName":         doc.get("lastName", ""),
+        "middleName":       doc.get("middleName", ""),
+        "dateOfBirth":      doc.get("dateOfBirth", ""),
         "aliases":          doc.get("aliases", []),
         "age":              age,
         "ageRange":         f"{age - 2}-{age + 2}" if age else None,
+        "gender":           doc.get("gender", ""),
         "state":            current.get("state", doc.get("state", "")),
         "currentAddress":   _fmt_addr(current) if current else "",
         "pastAddresses":    [_fmt_addr(a) for a in past],
         "phones":           doc.get("phones", []),
         "emails":           emails,
         "possibleRelatives": doc.get("relatives", []),
+        "associates":       doc.get("associates", []),
         "occupation":       doc.get("occupation", ""),
+        "employer":         doc.get("employer", ""),
         "sourceDB":         doc.get("source", "internal"),
+        "recordId":         doc.get("recordId", ""),
     }
+
+async def upsert_from_whitepages(lookup_type: str, result: dict) -> None:
+    """Import a Whitepages result into the internal people_records collection (dedup by phone or name+state)."""
+    try:
+        first = (result.get("firstName") or "").strip()
+        last  = (result.get("lastName")  or "").strip()
+        if not first or not last:
+            return  # can't store without a name
+
+        now = datetime.now(timezone.utc).isoformat()
+
+        # Build dedup query
+        if lookup_type == "phone_lookup":
+            phones_raw = result.get("possiblePhones") or result.get("phones") or []
+            phone_nums = []
+            for p in (phones_raw if isinstance(phones_raw, list) else [phones_raw]):
+                num = p.get("number") if isinstance(p, dict) else str(p)
+                clean = re.sub(r"[^\d]", "", num or "")
+                if clean:
+                    phone_nums.append(clean)
+            if not phone_nums:
+                return
+            query = {"phones": {"$elemMatch": {"$regex": phone_nums[0]}}}
+        else:
+            # name + state dedup
+            state = result.get("state", "")
+            query = {
+                "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+                "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+            }
+            if state:
+                query["$or"] = [
+                    {"state": state},
+                    {"addresses.state": state},
+                ]
+
+        existing = await people_records_collection.find_one(query)
+        if existing:
+            return  # already in DB
+
+        # Build addresses list
+        addrs = []
+        ca = result.get("currentAddress")
+        if ca:
+            # currentAddress may be a full string like "123 Main St, City, ST 12345"
+            # Parse it into components if possible
+            parts = [p.strip() for p in str(ca).split(",")]
+            if len(parts) >= 2:
+                state_zip = parts[-1].strip().split()
+                st = state_zip[0] if state_zip else ""
+                city = parts[-2].strip() if len(parts) >= 2 else ""
+                street = ", ".join(parts[:-2]) if len(parts) > 2 else ""
+                addrs.append({"street": street, "city": city, "state": st, "zip": state_zip[1] if len(state_zip) > 1 else "", "current": True})
+
+        for pa in (result.get("pastAddresses") or []):
+            parts = [p.strip() for p in str(pa).split(",")]
+            if len(parts) >= 2:
+                state_zip = parts[-1].strip().split()
+                st = state_zip[0] if state_zip else ""
+                city_p = parts[-2].strip() if len(parts) >= 2 else ""
+                street_p = ", ".join(parts[:-2]) if len(parts) > 2 else ""
+                addrs.append({"street": street_p, "city": city_p, "state": st, "zip": state_zip[1] if len(state_zip) > 1 else "", "current": False})
+
+        # Build phones list
+        phones_raw2 = result.get("possiblePhones") or result.get("phones") or []
+        phones = []
+        for p in (phones_raw2 if isinstance(phones_raw2, list) else [phones_raw2]):
+            if isinstance(p, dict):
+                phones.append(p)
+            elif p:
+                phones.append({"number": str(p), "type": "unknown", "current": True})
+
+        dob = result.get("dateOfBirth", "")
+        doc = {
+            "recordId":    str(uuid.uuid4()),
+            "source":      "whitepages",
+            "firstName":   first,
+            "lastName":    last,
+            "middleName":  result.get("middleName", ""),
+            "aliases":     result.get("aliases", []),
+            "age":         calc_age_from_dob(dob) or result.get("age"),
+            "dateOfBirth": dob,
+            "gender":      result.get("gender", ""),
+            "state":       result.get("state", ""),
+            "addresses":   addrs,
+            "phones":      phones,
+            "emails":      [_email_str(e) for e in result.get("emails", []) if _email_str(e)],
+            "relatives":   result.get("possibleRelatives", []),
+            "associates":  [],
+            "occupation":  result.get("occupation", ""),
+            "employer":    result.get("employer", ""),
+            "sourceData":  {},
+            "createdAt":   now,
+            "lastUpdated": now,
+        }
+        await people_records_collection.insert_one(doc)
+    except Exception:
+        pass  # never let import errors break the search response
+
 
 async def internal_name_lookup(first: str, last: str, state: str = "", city: str = "", min_age: int = None, max_age: int = None) -> list:
     query: dict = {
@@ -8380,6 +8508,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             wp = await wp_phone_lookup(phone_clean)
             if wp:
                 full_results.append(wp)
+                asyncio.ensure_future(upsert_from_whitepages("phone_lookup", wp))
         if use_internal:
             db_results = await internal_phone_lookup(phone_clean)
             full_results.extend(db_results)
@@ -8406,6 +8535,8 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
             if wp_list:
                 full_results.extend(wp_list)
+                for wp_item in wp_list:
+                    asyncio.ensure_future(upsert_from_whitepages("name_lookup", wp_item))
         if use_internal:
             db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
             full_results.extend(db_results)
@@ -8439,6 +8570,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             wp = await wp_address_lookup(data.street, data.city, data.state or "")
             if wp:
                 full_results.append(wp)
+                asyncio.ensure_future(upsert_from_whitepages("address_lookup", wp))
         if use_internal:
             db_results = await internal_address_lookup(data.street, data.city, data.state or "")
             full_results.extend(db_results)
@@ -8913,7 +9045,7 @@ async def admin_create_people_record(data: dict, session: dict = Depends(get_cur
         "lastName":    data.get("lastName", "").strip(),
         "middleName":  data.get("middleName", "").strip(),
         "aliases":     data.get("aliases", []),
-        "age":         data.get("age"),
+        "age":         calc_age_from_dob(data.get("dateOfBirth", "")),
         "dateOfBirth": data.get("dateOfBirth", ""),
         "gender":      data.get("gender", ""),
         "state":       data.get("state", ""),
@@ -8947,8 +9079,8 @@ async def admin_update_people_record(record_id: str, data: dict, session: dict =
         "lastName":    data.get("lastName",  existing.get("lastName", "")).strip(),
         "middleName":  data.get("middleName", existing.get("middleName", "")).strip(),
         "aliases":     data.get("aliases",   existing.get("aliases", [])),
-        "age":         data.get("age", existing.get("age")),
         "dateOfBirth": data.get("dateOfBirth", existing.get("dateOfBirth", "")),
+        "age":         calc_age_from_dob(data.get("dateOfBirth", existing.get("dateOfBirth", ""))),
         "gender":      data.get("gender", existing.get("gender", "")),
         "state":       data.get("state", existing.get("state", "")),
         "addresses":   data.get("addresses", existing.get("addresses", [])),
@@ -8974,6 +9106,51 @@ async def admin_mass_delete_people_records(data: dict, session: dict = Depends(g
     result = await people_records_collection.delete_many({"recordId": {"$in": ids}})
     await log_action(session, "mass_delete_people_records", "people_record", "bulk", f"{result.deleted_count} deleted")
     return {"success": True, "deleted": result.deleted_count}
+
+
+# ── Public: People Record by ID ───────────────────────────────────────────────
+
+@app.get("/api/people/record/{record_id}")
+async def get_people_record_by_id(record_id: str):
+    """Return a normalized people record by recordId (for linked relative navigation)."""
+    doc = await people_records_collection.find_one({"recordId": record_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Record not found")
+    normalized = normalize_internal_record(doc)
+    return {"success": True, "record": normalized}
+
+
+# ── Admin: Browse people records by query (for relation linking) ──────────────
+
+@app.get("/api/admin/people-records/search-suggest")
+async def admin_people_records_suggest(q: str = "", limit: int = 10, session: dict = Depends(get_current_admin)):
+    """Return name suggestions for linking relatives/associates."""
+    if not q or len(q) < 2:
+        return {"results": []}
+    parts = q.strip().split()
+    if len(parts) == 1:
+        regex_query = {
+            "$or": [
+                {"firstName": {"$regex": f"^{re.escape(parts[0])}", "$options": "i"}},
+                {"lastName":  {"$regex": f"^{re.escape(parts[0])}", "$options": "i"}},
+            ]
+        }
+    else:
+        regex_query = {
+            "firstName": {"$regex": f"^{re.escape(parts[0])}", "$options": "i"},
+            "lastName":  {"$regex": f"^{re.escape(parts[-1])}", "$options": "i"},
+        }
+    cursor = people_records_collection.find(regex_query).limit(limit)
+    results = []
+    async for doc in cursor:
+        full_name = f"{doc.get('firstName', '')} {doc.get('lastName', '')}".strip()
+        results.append({
+            "recordId": doc.get("recordId", ""),
+            "name":     full_name,
+            "state":    doc.get("state", ""),
+            "age":      doc.get("age") or calc_age_from_dob(doc.get("dateOfBirth", "")),
+        })
+    return {"results": results}
 
 
 # ── Public: Opt-Out Requests ──────────────────────────────────────────────────

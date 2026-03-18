@@ -383,8 +383,13 @@ function ResultCard({ entry, lookupType, query }) {
               {relativesList.length > 0 && (
                 <div className="flex items-baseline gap-3">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">Related To</span>
-                  <span className="flex flex-wrap gap-x-3 gap-y-0.5">
-                    {relativesList.map((r, i) => <RelativePreview key={i} name={r} />)}
+                  <span className="flex flex-wrap items-center gap-y-0.5">
+                    {relativesList.map((r, i) => (
+                      <span key={i} className="flex items-center">
+                        {i > 0 && <span className="mx-1.5 text-slate-300">·</span>}
+                        <RelativePreview name={r} />
+                      </span>
+                    ))}
                   </span>
                 </div>
               )}

@@ -7860,43 +7860,74 @@ def _wp_names_from_person(p: dict) -> list[str]:
 
 
 async def wp_phone_lookup(phone: str) -> dict | None:
-    """Whitepages Pro Phone Intelligence — returns normalized result dict."""
+    """Whitepages v1 reverse phone — GET /v1/person?phone=NUMBER with X-Api-Key header."""
     if not WHITEPAGES_PRO_API_KEY:
         return None
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
-                f"{_WP_BASE}/phone/",
-                params={"number": phone},
-                headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
+                f"{_WP_BASE}/person",
+                params={"phone": phone},
+                headers={"X-Api-Key": WHITEPAGES_PRO_API_KEY},
             )
             logger.info(f"Whitepages phone response: {r.status_code}")
             if r.status_code != 200:
-                logger.warning(f"Whitepages phone error {r.status_code}: {r.text[:300]}")
+                logger.warning(f"Whitepages phone error {r.status_code}: {r.text[:500]}")
                 return None
             d = r.json()
-        results = d if isinstance(d, list) else d.get("results", [])
+            logger.info(f"Whitepages phone raw keys: {list(d.keys()) if isinstance(d, dict) else type(d)}")
+
+        # /person?phone= can return a single dict or a list
+        if isinstance(d, list):
+            results = d
+        elif isinstance(d, dict) and "results" in d:
+            results = d["results"]
+        elif isinstance(d, dict):
+            results = [d]
+        else:
+            results = []
+
         logger.info(f"Whitepages phone results count: {len(results)}")
         if not results:
             return None
         res = results[0]
 
-        # v1: carrier=string, line_type=string, belongs_to=[{name,current_addresses,...}]
-        carrier   = res.get("carrier") or "Unknown"
+        # Extract person info — v1 /person schema
+        raw_name = res.get("name") or {}
+        if isinstance(raw_name, str):
+            name = raw_name
+        else:
+            name = raw_name.get("full_name") or f"{raw_name.get('first','')} {raw_name.get('last','')}".strip()
+
+        # Address
+        address = ""
+        cur_addrs = res.get("current_addresses") or res.get("addresses") or []
+        if cur_addrs:
+            a = cur_addrs[0]
+            address = a.get("address") or a.get("full_address") or \
+                      ", ".join(filter(None, [a.get("city"), a.get("state_code"), a.get("zip")]))
+
+        # Relatives
+        relatives = []
+        for rel in (res.get("relatives") or res.get("associated_people") or []):
+            n = rel.get("name") or ""
+            if isinstance(n, dict):
+                n = n.get("full_name") or f"{n.get('first','')} {n.get('last','')}".strip()
+            if n:
+                relatives.append(n)
+
+        # Carrier / line type — may be on the phone sub-object or top level
+        phones_list = res.get("phones") or []
+        carrier = ""
+        line_type = ""
+        if phones_list:
+            ph = phones_list[0]
+            carrier   = ph.get("carrier") or ""
+            line_type = (ph.get("line_type") or ph.get("phone_type") or "").replace("_", " ").title()
+        carrier   = carrier   or res.get("carrier")   or "Unknown"
+        line_type = line_type or res.get("line_type") or "Unknown"
         if isinstance(carrier, dict):
             carrier = carrier.get("name") or "Unknown"
-        line_type = (res.get("line_type") or res.get("phone_type") or "Unknown").replace("_", " ").title()
-
-        name, address, relatives = "", "", []
-        belongs = res.get("belongs_to", [])
-        if belongs:
-            p = belongs[0]
-            raw = p.get("name") or {}
-            name = raw if isinstance(raw, str) else (raw.get("full_name") or f"{raw.get('first','')} {raw.get('last','')}".strip())
-            addrs = p.get("current_addresses", [])
-            if addrs:
-                address = addrs[0].get("address") or addrs[0].get("full_address") or ""
-            relatives = [r["name"] for r in p.get("relatives", []) if r.get("name")]
 
         return {
             "name":              name or None,
@@ -7953,7 +7984,7 @@ async def wp_person_lookup(first: str, last: str, state: str, city: str = "", mi
             r = await client.get(
                 f"{_WP_BASE}/person/",
                 params=params,
-                headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
+                headers={"X-Api-Key": WHITEPAGES_PRO_API_KEY},
             )
             logger.info(f"Whitepages person status: {r.status_code}")
             logger.info(f"Whitepages person raw: {r.text[:800]}")
@@ -7987,7 +8018,7 @@ async def wp_address_lookup(street: str, city: str, state: str) -> dict | None:
             r = await client.get(
                 f"{_WP_BASE}/location/",
                 params=params,
-                headers={"x-api-key": WHITEPAGES_PRO_API_KEY},
+                headers={"X-Api-Key": WHITEPAGES_PRO_API_KEY},
             )
             if r.status_code != 200:
                 logger.warning(f"Whitepages address error {r.status_code}: {r.text[:200]}")
@@ -8430,7 +8461,9 @@ async def internal_name_lookup(first: str, last: str, state: str = "", city: str
     return results
 
 async def internal_phone_lookup(phone: str) -> list:
-    clean = re.sub(r"[^\d]", "", phone)
+    clean = re.sub(r"[^\d]", "", phone)[-10:]  # normalize to last 10 digits to match stored format
+    if len(clean) < 7:
+        return []
     cursor = people_records_collection.find({
         "$or": [
             {"phones": {"$elemMatch": {"number": {"$regex": clean}}}},  # dict format {number, type}
@@ -8495,8 +8528,21 @@ def blur_result(data: dict, lookup_type: str) -> dict:
     preview = copy.deepcopy(data)
 
     if lookup_type == "phone_lookup":
+        # Whitepages-style fields
         if "name" in preview: preview["name"] = redact_name(preview["name"])
         if "possibleAddress" in preview: preview["possibleAddress"] = redact_addr(preview["possibleAddress"])
+        # Internal DB record fields (normalize_internal_record format)
+        if "fullName" in preview: preview["fullName"] = redact_name(preview["fullName"])
+        if "currentAddress" in preview: preview["currentAddress"] = redact_addr(preview["currentAddress"])
+        if "pastAddresses" in preview:
+            preview["pastAddresses"] = [redact_addr(a) for a in preview["pastAddresses"] if a]
+        if "possibleAddresses" in preview:
+            preview["possibleAddresses"] = [redact_addr(a) for a in preview["possibleAddresses"] if a]
+        if "phones" in preview:
+            preview["phones"] = [
+                {**p, "number": redact_phone(p["number"])} if isinstance(p, dict) else redact_phone(str(p))
+                for p in preview["phones"]
+            ]
     elif lookup_type == "name_lookup":
         if "possibleAddresses" in preview:
             preview["possibleAddresses"] = [redact_addr(a) for a in preview["possibleAddresses"]]
@@ -8632,9 +8678,9 @@ async def people_search_debug_raw(name: str = "John Smith", state: str = "WA", p
     out = {}
     async with httpx.AsyncClient(timeout=10) as client:
         if phone:
-            r = await client.get(f"{_WP_BASE}/phone", params={"phone_number": re.sub(r'[^\d]','',phone)}, headers={"x-api-key": WHITEPAGES_PRO_API_KEY})
+            r = await client.get(f"{_WP_BASE}/phone", params={"phone_number": re.sub(r'[^\d]','',phone)}, headers={"X-Api-Key": WHITEPAGES_PRO_API_KEY})
             out["phone"] = {"status": r.status_code, "body": r.json() if r.status_code == 200 else r.text}
-        r = await client.get(f"{_WP_BASE}/person", params={"name": name, "state_code": state}, headers={"x-api-key": WHITEPAGES_PRO_API_KEY})
+        r = await client.get(f"{_WP_BASE}/person", params={"name": name, "state_code": state}, headers={"X-Api-Key": WHITEPAGES_PRO_API_KEY})
         out["person"] = {"status": r.status_code, "body": r.json() if r.status_code == 200 else r.text}
     return out
 

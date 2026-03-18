@@ -310,10 +310,13 @@ function ResultCard({ entry, lookupType, query }) {
 
   // Location line (city, state)
   const locationLine = (() => {
-    if (preview.state) return preview.state;
     const addrs = preview.possibleAddresses || [];
-    if (addrs.length) return cityState(addrs[0]);
+    if (addrs.length) {
+      const cs = cityState(addrs[0]);
+      if (cs) return cs;
+    }
     if (preview.location) return preview.location;
+    if (preview.state) return preview.state;
     return null;
   })();
 

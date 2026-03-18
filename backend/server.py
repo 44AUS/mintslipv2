@@ -8533,11 +8533,9 @@ def blur_result(data: dict, lookup_type: str) -> dict:
     preview = copy.deepcopy(data)
 
     if lookup_type == "phone_lookup":
-        # Whitepages-style fields
-        if "name" in preview: preview["name"] = redact_name(preview["name"])
+        # Show full name unredacted — only blur address/phone details
         if "possibleAddress" in preview: preview["possibleAddress"] = redact_addr(preview["possibleAddress"])
         # Internal DB record fields (normalize_internal_record format)
-        if "fullName" in preview: preview["fullName"] = redact_name(preview["fullName"])
         if "currentAddress" in preview: preview["currentAddress"] = redact_addr(preview["currentAddress"])
         if "pastAddresses" in preview:
             preview["pastAddresses"] = [redact_addr(a) for a in preview["pastAddresses"] if a]

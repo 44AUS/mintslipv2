@@ -8286,6 +8286,8 @@ class PeopleSearchCheckoutRequest(BaseModel):
     searchId: str
     successUrl: Optional[str] = None
     cancelUrl: Optional[str] = None
+    discountCode: Optional[str] = None
+    discountAmount: Optional[float] = 0
 
 
 @app.get("/api/people-search/prices")
@@ -8581,7 +8583,9 @@ async def people_search_checkout_endpoint(request: Request, data: PeopleSearchCh
     prices = await get_people_search_prices()
     lt = log["lookupType"]
     price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES.get(lt, 0.99))
-    amount_cents = int(round(price * 100))
+    discount_amount = float(data.discountAmount or 0)
+    final_price = max(0.50, round(price - discount_amount, 2))
+    amount_cents = int(round(final_price * 100))
 
     labels = {
         "phone_lookup":   "Reverse Phone Lookup",
@@ -8623,6 +8627,8 @@ async def people_search_checkout_endpoint(request: Request, data: PeopleSearchCh
             "lookupType": lt,
             "userId": user_id,
             "userEmail": user_email,
+            "discountCode": data.discountCode or "",
+            "discountAmount": str(discount_amount),
         },
     )
 

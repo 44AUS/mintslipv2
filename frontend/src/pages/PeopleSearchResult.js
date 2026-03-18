@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import {
   Lock, CheckCircle, Download, Loader2, Unlock, ArrowLeft,
   MapPin, Phone, Mail, Users, Home, FileSearch, ChevronDown, ChevronUp,
+  Tag, X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -81,6 +82,66 @@ function FaqItem({ question, answer }) {
   );
 }
 
+// ── Unlock block with promo code ─────────────────────────────────────────────
+function UnlockBlock({ price, appliedDiscount, promoInput, setPromoInput, promoLoading, promoError, validatePromo, setAppliedDiscount, setPromoError, unlocking, handleUnlock }) {
+  const displayPrice = appliedDiscount ? appliedDiscount.finalPrice : price;
+  return (
+    <div className="px-6 pb-6 pt-4 space-y-3">
+      {/* Promo code */}
+      {!appliedDiscount ? (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+              <input
+                value={promoInput}
+                onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(""); }}
+                onKeyDown={e => e.key === "Enter" && validatePromo()}
+                placeholder="Promo code"
+                className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono uppercase"
+              />
+            </div>
+            <button
+              onClick={validatePromo}
+              disabled={promoLoading || !promoInput.trim()}
+              className="text-sm font-semibold px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-40 transition-colors"
+            >
+              {promoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+            </button>
+          </div>
+          {promoError && <p className="text-xs text-red-500">{promoError}</p>}
+        </div>
+      ) : (
+        <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm">
+            <Tag className="w-3.5 h-3.5 text-green-600" />
+            <span className="font-mono font-semibold text-green-700">{appliedDiscount.code}</span>
+            <span className="text-green-600">–{appliedDiscount.percent}% off</span>
+            <span className="text-slate-400 line-through text-xs">${price?.toFixed(2)}</span>
+          </div>
+          <button onClick={() => { setAppliedDiscount(null); setPromoInput(""); setPromoError(""); }} className="text-slate-400 hover:text-red-500 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Unlock button */}
+      <button
+        onClick={handleUnlock}
+        disabled={unlocking}
+        className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50"
+      >
+        {unlocking
+          ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirecting…</>
+          : <><Unlock className="w-5 h-5" /> Unlock Full Report{displayPrice ? ` – $${displayPrice.toFixed(2)}` : ""}</>}
+      </button>
+      <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
+        <Lock className="w-3 h-3" /> Secured by Stripe
+      </div>
+    </div>
+  );
+}
+
 // Simple phone/address lookup fallback layout
 function SimpleLookupResult({ data, lookupType, blurred, query }) {
   const b = blurred;
@@ -152,6 +213,12 @@ export default function PeopleSearchResult() {
   const [unlocking, setUnlocking] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Promo code
+  const [promoInput, setPromoInput] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState(null); // {code, percent, discountAmount, finalPrice}
+
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     if (sessionId || !preview) {
@@ -173,6 +240,31 @@ export default function PeopleSearchResult() {
     }
   }, []); // eslint-disable-line
 
+  const validatePromo = async () => {
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    setPromoError("");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/validate-coupon`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoInput.trim(), generatorType: "people_search" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        const discountAmt = parseFloat(((price || 0) * data.discountPercent / 100).toFixed(2));
+        const finalPrice  = Math.max(0.50, parseFloat(((price || 0) - discountAmt).toFixed(2)));
+        setAppliedDiscount({ code: data.code, percent: data.discountPercent, discountAmount: discountAmt, finalPrice });
+      } else {
+        setPromoError(data.detail || "Invalid code");
+      }
+    } catch {
+      setPromoError("Could not validate code");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
   const handleUnlock = async () => {
     setUnlocking(true);
     try {
@@ -183,6 +275,8 @@ export default function PeopleSearchResult() {
           searchId,
           successUrl: `${window.location.origin}/people-search/result/${searchId}?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl:  `${window.location.origin}/people-search/result/${searchId}`,
+          discountCode:   appliedDiscount?.code || null,
+          discountAmount: appliedDiscount?.discountAmount || 0,
         }),
       });
       const data = await res.json();
@@ -372,17 +466,7 @@ export default function PeopleSearchResult() {
                 <SimpleLookupResult data={d} lookupType={lookupType} blurred={!isPaid} query={query} />
                 {!d && <p className="text-sm text-slate-400 py-6 text-center">No preview data available.</p>}
               </div>
-              {!isPaid && (
-                <div className="px-6 pb-6 pt-3 border-t border-slate-100 space-y-3">
-                  <button onClick={handleUnlock} disabled={unlocking}
-                    className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50">
-                    {unlocking ? <><Loader2 className="w-5 h-5 animate-spin" /> Redirecting…</> : <><Unlock className="w-5 h-5" /> Unlock Full Report{price ? ` – $${price.toFixed(2)}` : ""}</>}
-                  </button>
-                  <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400">
-                    <Lock className="w-3 h-3" /> Secured by Stripe
-                  </div>
-                </div>
-              )}
+              {!isPaid && <UnlockBlock price={price} appliedDiscount={appliedDiscount} promoInput={promoInput} setPromoInput={setPromoInput} promoLoading={promoLoading} promoError={promoError} validatePromo={validatePromo} setAppliedDiscount={setAppliedDiscount} setPromoError={setPromoError} unlocking={unlocking} handleUnlock={handleUnlock} />}
             </div>
           )}
 
@@ -485,6 +569,13 @@ export default function PeopleSearchResult() {
                 <h2 className="text-xl font-bold text-slate-900 mb-3">Background Profile on {name}</h2>
                 <p className="text-sm text-slate-600 leading-relaxed">{narrative}</p>
               </div>
+
+              {/* Unlock block */}
+              {!isPaid && (
+                <div className="bg-white rounded-xl border border-slate-200 mb-4 overflow-hidden">
+                  <UnlockBlock price={price} appliedDiscount={appliedDiscount} promoInput={promoInput} setPromoInput={setPromoInput} promoLoading={promoLoading} promoError={promoError} validatePromo={validatePromo} setAppliedDiscount={setAppliedDiscount} setPromoError={setPromoError} unlocking={unlocking} handleUnlock={handleUnlock} />
+                </div>
+              )}
             </>
           )}
 

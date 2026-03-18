@@ -8969,8 +8969,7 @@ async def admin_browse_people_records(
     total = await people_records_collection.count_documents(query)
     cursor = (
         people_records_collection
-        .find(query, {"_id": 0, "recordId": 1, "firstName": 1, "lastName": 1,
-                      "source": 1, "state": 1, "addresses": 1, "phones": 1, "createdAt": 1})
+        .find(query, {"_id": 0})
         .sort("createdAt", -1)
         .skip(skip)
         .limit(LIMIT)
@@ -8990,6 +8989,78 @@ async def admin_delete_one_people_record(
         raise HTTPException(status_code=404, detail="Record not found")
     await log_action(session, "delete_people_record", "people_record", record_id)
     return {"success": True, "deleted": record_id}
+
+
+@app.post("/api/admin/people-records/create")
+async def admin_create_people_record(data: dict, session: dict = Depends(get_current_admin)):
+    """Create a new internal people record."""
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "recordId":    str(uuid.uuid4()),
+        "source":      "internal",
+        "firstName":   data.get("firstName", "").strip(),
+        "lastName":    data.get("lastName", "").strip(),
+        "middleName":  data.get("middleName", "").strip(),
+        "age":         data.get("age"),
+        "dateOfBirth": data.get("dateOfBirth", ""),
+        "gender":      data.get("gender", ""),
+        "state":       data.get("state", ""),
+        "addresses":   data.get("addresses", []),
+        "phones":      data.get("phones", []),
+        "emails":      data.get("emails", []),
+        "relatives":   data.get("relatives", []),
+        "associates":  data.get("associates", []),
+        "occupation":  data.get("occupation", ""),
+        "employer":    data.get("employer", ""),
+        "sourceData":  {},
+        "createdAt":   now,
+        "lastUpdated": now,
+    }
+    if not doc["firstName"] or not doc["lastName"]:
+        raise HTTPException(status_code=400, detail="First and last name are required")
+    await people_records_collection.insert_one(doc)
+    await log_action(session, "create_people_record", "people_record", doc["recordId"], f"{doc['firstName']} {doc['lastName']}")
+    doc.pop("_id", None)
+    return {"success": True, "record": doc}
+
+
+@app.put("/api/admin/people-records/record/{record_id}")
+async def admin_update_people_record(record_id: str, data: dict, session: dict = Depends(get_current_admin)):
+    """Update an existing people record."""
+    existing = await people_records_collection.find_one({"recordId": record_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Record not found")
+    updates = {
+        "firstName":   data.get("firstName", existing.get("firstName", "")).strip(),
+        "lastName":    data.get("lastName",  existing.get("lastName", "")).strip(),
+        "middleName":  data.get("middleName", existing.get("middleName", "")).strip(),
+        "age":         data.get("age", existing.get("age")),
+        "dateOfBirth": data.get("dateOfBirth", existing.get("dateOfBirth", "")),
+        "gender":      data.get("gender", existing.get("gender", "")),
+        "state":       data.get("state", existing.get("state", "")),
+        "addresses":   data.get("addresses", existing.get("addresses", [])),
+        "phones":      data.get("phones",    existing.get("phones", [])),
+        "emails":      data.get("emails",    existing.get("emails", [])),
+        "relatives":   data.get("relatives", existing.get("relatives", [])),
+        "associates":  data.get("associates", existing.get("associates", [])),
+        "occupation":  data.get("occupation", existing.get("occupation", "")),
+        "employer":    data.get("employer",   existing.get("employer", "")),
+        "lastUpdated": datetime.now(timezone.utc).isoformat(),
+    }
+    await people_records_collection.update_one({"recordId": record_id}, {"$set": updates})
+    await log_action(session, "update_people_record", "people_record", record_id, f"{updates['firstName']} {updates['lastName']}")
+    return {"success": True}
+
+
+@app.post("/api/admin/people-records/mass-delete")
+async def admin_mass_delete_people_records(data: dict, session: dict = Depends(get_current_admin)):
+    """Delete multiple people records by recordId."""
+    ids = data.get("ids", [])
+    if not ids:
+        raise HTTPException(status_code=400, detail="No IDs provided")
+    result = await people_records_collection.delete_many({"recordId": {"$in": ids}})
+    await log_action(session, "mass_delete_people_records", "people_record", "bulk", f"{result.deleted_count} deleted")
+    return {"success": True, "deleted": result.deleted_count}
 
 
 # ── Public: Opt-Out Requests ──────────────────────────────────────────────────

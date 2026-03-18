@@ -7899,13 +7899,17 @@ async def wp_phone_lookup(phone: str) -> dict | None:
         else:
             name = raw_name.get("full_name") or f"{raw_name.get('first','')} {raw_name.get('last','')}".strip()
 
-        # Address
+        # Address — build full string from street + city + state + zip
         address = ""
         cur_addrs = res.get("current_addresses") or res.get("addresses") or []
         if cur_addrs:
             a = cur_addrs[0]
-            address = a.get("address") or a.get("full_address") or \
-                      ", ".join(filter(None, [a.get("city"), a.get("state_code"), a.get("zip")]))
+            street_part = a.get("address") or a.get("full_address") or a.get("street_line_1") or ""
+            city_part   = a.get("city") or ""
+            state_part  = a.get("state_code") or a.get("state") or ""
+            zip_part    = a.get("zip") or a.get("postal_code") or ""
+            state_zip   = f"{state_part} {zip_part}".strip()
+            address = ", ".join(p for p in [street_part, city_part, state_zip] if p)
 
         # Relatives
         relatives = []
@@ -7955,8 +7959,16 @@ async def wp_person_lookup(first: str, last: str, state: str, city: str = "", mi
         # current_addresses=[{id,address}], historic_addresses=[{id,address}]
         full_name  = p.get("name") or f"{first} {last}"
         dob        = p.get("date_of_birth") or ""
-        cur_addrs  = [a["address"] for a in p.get("current_addresses", []) if a.get("address")]
-        hist_addrs = [a["address"] for a in p.get("historic_addresses", []) if a.get("address")]
+        def _wp_addr_str(a):
+            """Build a full address string from a Whitepages address object."""
+            street = a.get("address") or a.get("full_address") or a.get("street_line_1") or ""
+            city   = a.get("city") or ""
+            state  = a.get("state_code") or a.get("state") or ""
+            zip_   = a.get("zip") or a.get("postal_code") or ""
+            state_zip = f"{state} {zip_}".strip()
+            return ", ".join(p for p in [street, city, state_zip] if p)
+        cur_addrs  = [_wp_addr_str(a) for a in p.get("current_addresses", []) if any(a.get(k) for k in ["address","city","state_code","state"])]
+        hist_addrs = [_wp_addr_str(a) for a in p.get("historic_addresses", []) if any(a.get(k) for k in ["address","city","state_code","state"])]
         phones     = [_wp_format_phone(ph["number"]) for ph in p.get("phones", []) if ph.get("number")]
         relatives  = [r["name"] for r in p.get("relatives", []) if r.get("name")]
         emails     = p.get("emails") or []

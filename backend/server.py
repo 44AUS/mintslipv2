@@ -118,6 +118,8 @@ blog_categories_collection = db["blog_categories"]
 blog_images_collection = db["blog_images"]
 saved_documents_collection = db["saved_documents"]
 site_settings_collection = db["site_settings"]
+phone_entries_collection = db["phone_entries"]
+address_entries_collection = db["address_entries"]
 banned_ips_collection = db["banned_ips"]
 email_templates_collection = db["email_templates"]
 admin_notifications_collection = db["admin_notifications"]
@@ -8328,6 +8330,83 @@ async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = ""
         pass  # never let import errors break the search response
 
 
+async def upsert_phone_entry(phone: str, linked_results: list) -> None:
+    """Auto-register a searched phone in the phone_entries registry."""
+    try:
+        clean = re.sub(r"[^\d]", "", phone)[-10:]
+        if len(clean) < 7:
+            return
+        display = f"({clean[:3]}) {clean[3:6]}-{clean[6:]}" if len(clean) == 10 else clean
+        linked_ids = list({r.get("recordId") for r in linked_results if r.get("recordId")})
+        now = datetime.now(timezone.utc).isoformat()
+        existing = await phone_entries_collection.find_one({"phone": clean})
+        if existing:
+            update: dict = {
+                "searchCount": existing.get("searchCount", 0) + 1,
+                "lastSearched": now,
+            }
+            if linked_ids:
+                all_ids = list(set(existing.get("linkedRecordIds", []) + linked_ids))
+                update["linkedRecordIds"] = all_ids
+            await phone_entries_collection.update_one({"phone": clean}, {"$set": update})
+        else:
+            await phone_entries_collection.insert_one({
+                "entryId": str(uuid.uuid4()),
+                "phone": clean,
+                "displayPhone": display,
+                "type": "unknown",
+                "carrier": "",
+                "linkedRecordIds": linked_ids,
+                "searchCount": 1,
+                "lastSearched": now,
+                "source": "auto",
+                "addedAt": now,
+                "notes": "",
+            })
+    except Exception:
+        pass
+
+
+async def upsert_address_entry(street: str, city: str, state: str, linked_results: list) -> None:
+    """Auto-register a searched address in the address_entries registry."""
+    try:
+        street_clean = street.strip()
+        city_clean = city.strip()
+        if not street_clean or not city_clean:
+            return
+        linked_ids = list({r.get("recordId") for r in linked_results if r.get("recordId")})
+        now = datetime.now(timezone.utc).isoformat()
+        existing = await address_entries_collection.find_one({
+            "street": {"$regex": f"^{re.escape(street_clean)}$", "$options": "i"},
+            "city":   {"$regex": f"^{re.escape(city_clean)}$", "$options": "i"},
+        })
+        if existing:
+            update: dict = {
+                "searchCount": existing.get("searchCount", 0) + 1,
+                "lastSearched": now,
+            }
+            if linked_ids:
+                all_ids = list(set(existing.get("linkedRecordIds", []) + linked_ids))
+                update["linkedRecordIds"] = all_ids
+            await address_entries_collection.update_one({"entryId": existing["entryId"]}, {"$set": update})
+        else:
+            await address_entries_collection.insert_one({
+                "entryId": str(uuid.uuid4()),
+                "street": street_clean,
+                "city": city_clean,
+                "state": state.strip(),
+                "zip": "",
+                "linkedRecordIds": linked_ids,
+                "searchCount": 1,
+                "lastSearched": now,
+                "source": "auto",
+                "addedAt": now,
+                "notes": "",
+            })
+    except Exception:
+        pass
+
+
 async def internal_name_lookup(first: str, last: str, state: str = "", city: str = "", min_age: int = None, max_age: int = None) -> list:
     query: dict = {
         "firstName": {"$regex": re.escape(first), "$options": "i"},
@@ -8681,6 +8760,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if use_internal:
             db_results = await internal_phone_lookup(phone_clean)
             full_results.extend(db_results)
+        asyncio.ensure_future(upsert_phone_entry(phone_clean, full_results))
 
         # Enrich phone result with carrier info
         e164 = f"+1{phone_clean[-10:]}"
@@ -8744,6 +8824,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if use_internal:
             db_results = await internal_address_lookup(data.street, data.city, data.state or "")
             full_results.extend(db_results)
+        asyncio.ensure_future(upsert_address_entry(data.street, data.city, data.state or "", full_results))
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
 
     else:  # carrier_lookup
@@ -9683,6 +9764,172 @@ async def set_nav_order(request: Request, session: dict = Depends(get_current_ad
         upsert=True
     )
     await log_action(session, "update_nav_order", "site_settings", "site_nav_order")
+    return {"success": True}
+
+
+# ===== PHONE & ADDRESS ENTRY REGISTRY =====
+
+@app.get("/api/admin/phone-entries")
+async def admin_list_phone_entries(q: str = "", page: int = 1, session: dict = Depends(get_current_admin)):
+    LIMIT = 25
+    skip = (page - 1) * LIMIT
+    query: dict = {}
+    if q:
+        clean = re.sub(r"[^\d]", "", q)
+        if clean:
+            query["phone"] = {"$regex": clean}
+        else:
+            query["$or"] = [
+                {"notes": {"$regex": re.escape(q), "$options": "i"}},
+                {"carrier": {"$regex": re.escape(q), "$options": "i"}},
+            ]
+    total = await phone_entries_collection.count_documents(query)
+    cursor = phone_entries_collection.find(query, {"_id": 0}).sort("lastSearched", -1).skip(skip).limit(LIMIT)
+    entries = await cursor.to_list(LIMIT)
+    for entry in entries:
+        linked = []
+        for rid in (entry.get("linkedRecordIds") or []):
+            doc = await people_records_collection.find_one({"recordId": rid}, {"_id": 0, "firstName": 1, "lastName": 1, "recordId": 1})
+            if doc:
+                linked.append({"recordId": doc["recordId"], "name": f"{doc['firstName']} {doc['lastName']}"})
+        entry["linkedPeople"] = linked
+    pages = max(1, (total + LIMIT - 1) // LIMIT)
+    return {"success": True, "entries": entries, "total": total, "page": page, "pages": pages}
+
+
+@app.post("/api/admin/phone-entries")
+async def admin_create_phone_entry(data: dict, session: dict = Depends(get_current_admin)):
+    phone = re.sub(r"[^\d]", "", data.get("phone", ""))[-10:]
+    if len(phone) < 7:
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+    existing = await phone_entries_collection.find_one({"phone": phone})
+    if existing:
+        raise HTTPException(status_code=409, detail="Phone entry already exists")
+    display = f"({phone[:3]}) {phone[3:6]}-{phone[6:]}" if len(phone) == 10 else phone
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "entryId": str(uuid.uuid4()),
+        "phone": phone,
+        "displayPhone": display,
+        "type": data.get("type", "unknown"),
+        "carrier": data.get("carrier", ""),
+        "linkedRecordIds": data.get("linkedRecordIds", []),
+        "searchCount": 0,
+        "lastSearched": None,
+        "source": "manual",
+        "addedAt": now,
+        "notes": data.get("notes", ""),
+    }
+    await phone_entries_collection.insert_one(doc)
+    doc.pop("_id", None)
+    await log_action(session, "create_phone_entry", "phone_entry", doc["entryId"], phone)
+    return {"success": True, "entry": doc}
+
+
+@app.put("/api/admin/phone-entries/{entry_id}")
+async def admin_update_phone_entry(entry_id: str, data: dict, session: dict = Depends(get_current_admin)):
+    existing = await phone_entries_collection.find_one({"entryId": entry_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Not found")
+    updates = {
+        "type":             data.get("type",             existing.get("type", "unknown")),
+        "carrier":          data.get("carrier",          existing.get("carrier", "")),
+        "linkedRecordIds":  data.get("linkedRecordIds",  existing.get("linkedRecordIds", [])),
+        "notes":            data.get("notes",            existing.get("notes", "")),
+    }
+    await phone_entries_collection.update_one({"entryId": entry_id}, {"$set": updates})
+    await log_action(session, "update_phone_entry", "phone_entry", entry_id)
+    return {"success": True}
+
+
+@app.delete("/api/admin/phone-entries/{entry_id}")
+async def admin_delete_phone_entry(entry_id: str, session: dict = Depends(get_current_admin)):
+    result = await phone_entries_collection.delete_one({"entryId": entry_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    await log_action(session, "delete_phone_entry", "phone_entry", entry_id)
+    return {"success": True}
+
+
+@app.get("/api/admin/address-entries")
+async def admin_list_address_entries(q: str = "", page: int = 1, session: dict = Depends(get_current_admin)):
+    LIMIT = 25
+    skip = (page - 1) * LIMIT
+    query: dict = {}
+    if q:
+        q_stripped = q.strip()
+        query["$or"] = [
+            {"street": {"$regex": re.escape(q_stripped), "$options": "i"}},
+            {"city":   {"$regex": re.escape(q_stripped), "$options": "i"}},
+            {"state":  {"$regex": re.escape(q_stripped), "$options": "i"}},
+            {"zip":    {"$regex": re.escape(q_stripped), "$options": "i"}},
+        ]
+    total = await address_entries_collection.count_documents(query)
+    cursor = address_entries_collection.find(query, {"_id": 0}).sort("lastSearched", -1).skip(skip).limit(LIMIT)
+    entries = await cursor.to_list(LIMIT)
+    for entry in entries:
+        linked = []
+        for rid in (entry.get("linkedRecordIds") or []):
+            doc = await people_records_collection.find_one({"recordId": rid}, {"_id": 0, "firstName": 1, "lastName": 1, "recordId": 1})
+            if doc:
+                linked.append({"recordId": doc["recordId"], "name": f"{doc['firstName']} {doc['lastName']}"})
+        entry["linkedPeople"] = linked
+    pages = max(1, (total + LIMIT - 1) // LIMIT)
+    return {"success": True, "entries": entries, "total": total, "page": page, "pages": pages}
+
+
+@app.post("/api/admin/address-entries")
+async def admin_create_address_entry(data: dict, session: dict = Depends(get_current_admin)):
+    street = data.get("street", "").strip()
+    city = data.get("city", "").strip()
+    if not street or not city:
+        raise HTTPException(status_code=400, detail="Street and city required")
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "entryId": str(uuid.uuid4()),
+        "street": street,
+        "city": city,
+        "state": data.get("state", "").strip(),
+        "zip": data.get("zip", "").strip(),
+        "linkedRecordIds": data.get("linkedRecordIds", []),
+        "searchCount": 0,
+        "lastSearched": None,
+        "source": "manual",
+        "addedAt": now,
+        "notes": data.get("notes", ""),
+    }
+    await address_entries_collection.insert_one(doc)
+    doc.pop("_id", None)
+    await log_action(session, "create_address_entry", "address_entry", doc["entryId"], f"{street}, {city}")
+    return {"success": True, "entry": doc}
+
+
+@app.put("/api/admin/address-entries/{entry_id}")
+async def admin_update_address_entry(entry_id: str, data: dict, session: dict = Depends(get_current_admin)):
+    existing = await address_entries_collection.find_one({"entryId": entry_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Not found")
+    updates = {
+        "street":           data.get("street",          existing.get("street", "")).strip(),
+        "city":             data.get("city",            existing.get("city", "")).strip(),
+        "state":            data.get("state",           existing.get("state", "")).strip(),
+        "zip":              data.get("zip",             existing.get("zip", "")).strip(),
+        "linkedRecordIds":  data.get("linkedRecordIds", existing.get("linkedRecordIds", [])),
+        "notes":            data.get("notes",           existing.get("notes", "")),
+    }
+    if not updates["street"] or not updates["city"]:
+        raise HTTPException(status_code=400, detail="Street and city required")
+    await address_entries_collection.update_one({"entryId": entry_id}, {"$set": updates})
+    await log_action(session, "update_address_entry", "address_entry", entry_id)
+    return {"success": True}
+
+
+@app.delete("/api/admin/address-entries/{entry_id}")
+async def admin_delete_address_entry(entry_id: str, session: dict = Depends(get_current_admin)):
+    result = await address_entries_collection.delete_one({"entryId": entry_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    await log_action(session, "delete_address_entry", "address_entry", entry_id)
     return {"success": True}
 
 

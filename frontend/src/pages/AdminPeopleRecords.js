@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Search, Trash2, Loader2, ChevronLeft, ChevronRight, Database,
-  Plus, Edit2, X, Check, Phone, Mail, MapPin, Users, Briefcase, UserPlus,
+  Plus, Edit2, X, Check, Phone, Mail, MapPin, Users, Briefcase, UserPlus, Link2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -505,6 +505,192 @@ function PersonModal({ record, onClose, onSave }) {
   );
 }
 
+// ── Phone Entry Modal ─────────────────────────────────────────────────────────
+function PhoneEntryModal({ entry, onClose, onSave }) {
+  const isEdit = !!entry?.entryId;
+  const [form, setForm] = useState({
+    phone:        entry?.displayPhone || entry?.phone || "",
+    type:         entry?.type || "unknown",
+    carrier:      entry?.carrier || "",
+    notes:        entry?.notes || "",
+    linkedPeople: entry?.linkedPeople || [],
+  });
+  const [saving, setSaving] = useState(false);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSave = async () => {
+    if (!form.phone.trim()) { toast.error("Phone number required"); return; }
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const payload = {
+        phone: form.phone, type: form.type, carrier: form.carrier, notes: form.notes,
+        linkedRecordIds: form.linkedPeople.map(p => p.recordId).filter(Boolean),
+      };
+      const url = isEdit
+        ? `${BACKEND_URL}/api/admin/phone-entries/${entry.entryId}`
+        : `${BACKEND_URL}/api/admin/phone-entries`;
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.detail || "Save failed"); return; }
+      toast.success(isEdit ? "Phone entry updated" : "Phone entry added");
+      onSave();
+    } catch { toast.error("Save failed"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <h2 className="text-lg font-bold text-slate-900">{isEdit ? "Edit Phone Entry" : "Add Phone Entry"}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Phone Number <span className="text-red-500">*</span></label>
+            <input value={form.phone} onChange={e => set("phone", e.target.value)} disabled={isEdit}
+              placeholder="(555) 123-4567"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-slate-50 disabled:text-slate-500" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Type</label>
+              <select value={form.type} onChange={e => set("type", e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                {["unknown","cell","landline","voip","other"].map(t => (
+                  <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Carrier</label>
+              <input value={form.carrier} onChange={e => set("carrier", e.target.value)}
+                placeholder="e.g. Verizon"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Linked People Records</label>
+            <PersonLinkForm items={form.linkedPeople} onChange={v => set("linkedPeople", v)} placeholder="Search for a person to link…" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notes</label>
+            <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={2}
+              placeholder="Internal notes…"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg">Cancel</button>
+          <button onClick={handleSave} disabled={saving}
+            className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {isEdit ? "Save Changes" : "Add Phone"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Address Entry Modal ───────────────────────────────────────────────────────
+function AddressEntryModal({ entry, onClose, onSave }) {
+  const isEdit = !!entry?.entryId;
+  const [form, setForm] = useState({
+    street: entry?.street || "", city: entry?.city || "",
+    state:  entry?.state  || "", zip:  entry?.zip  || "",
+    notes:  entry?.notes  || "", linkedPeople: entry?.linkedPeople || [],
+  });
+  const [saving, setSaving] = useState(false);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSave = async () => {
+    if (!form.street.trim() || !form.city.trim()) { toast.error("Street and city required"); return; }
+    setSaving(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const payload = {
+        street: form.street, city: form.city, state: form.state, zip: form.zip, notes: form.notes,
+        linkedRecordIds: form.linkedPeople.map(p => p.recordId).filter(Boolean),
+      };
+      const url = isEdit
+        ? `${BACKEND_URL}/api/admin/address-entries/${entry.entryId}`
+        : `${BACKEND_URL}/api/admin/address-entries`;
+      const res = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.detail || "Save failed"); return; }
+      toast.success(isEdit ? "Address entry updated" : "Address entry added");
+      onSave();
+    } catch { toast.error("Save failed"); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <h2 className="text-lg font-bold text-slate-900">{isEdit ? "Edit Address Entry" : "Add Address Entry"}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Street <span className="text-red-500">*</span></label>
+            <input value={form.street} onChange={e => set("street", e.target.value)} placeholder="123 Main St"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-1">
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">City <span className="text-red-500">*</span></label>
+              <input value={form.city} onChange={e => set("city", e.target.value)} placeholder="Springfield"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">State</label>
+              <select value={form.state} onChange={e => set("state", e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                <option value="">—</option>
+                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">ZIP</label>
+              <input value={form.zip} onChange={e => set("zip", e.target.value)} placeholder="62701"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Linked People Records</label>
+            <PersonLinkForm items={form.linkedPeople} onChange={v => set("linkedPeople", v)} placeholder="Search for a person to link…" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notes</label>
+            <textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={2}
+              placeholder="Internal notes…"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg">Cancel</button>
+          <button onClick={handleSave} disabled={saving}
+            className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {isEdit ? "Save Changes" : "Add Address"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function AdminPeopleRecords() {
   const navigate = useNavigate();
@@ -524,6 +710,30 @@ export default function AdminPeopleRecords() {
   const [modalRecord, setModalRecord]  = useState(undefined); // undefined=closed, null=new, obj=edit
   const [filterState, setFilterState]  = useState("");
   const [filterAddress, setFilterAddress] = useState("");
+
+  const [activeTab, setActiveTab] = useState("people");
+
+  // Phone registry tab
+  const [phones, setPhones]               = useState([]);
+  const [phonesTotal, setPhonesTotal]     = useState(0);
+  const [phonesPage, setPhonesPage]       = useState(1);
+  const [phonesPages, setPhonesPages]     = useState(1);
+  const [phonesLoading, setPhonesLoading] = useState(false);
+  const [phonesQ, setPhonesQ]             = useState("");
+  const [phoneModal, setPhoneModal]       = useState(undefined);
+  const [phoneConfirmId, setPhoneConfirmId]   = useState(null);
+  const [phoneDeletingId, setPhoneDeletingId] = useState(null);
+
+  // Address registry tab
+  const [addrs, setAddrs]               = useState([]);
+  const [addrsTotal, setAddrsTotal]     = useState(0);
+  const [addrsPage, setAddrsPage]       = useState(1);
+  const [addrsPages, setAddrsPages]     = useState(1);
+  const [addrsLoading, setAddrsLoading] = useState(false);
+  const [addrsQ, setAddrsQ]             = useState("");
+  const [addrModal, setAddrModal]       = useState(undefined);
+  const [addrConfirmId, setAddrConfirmId]   = useState(null);
+  const [addrDeletingId, setAddrDeletingId] = useState(null);
 
   useEffect(() => {
     if (!token) { navigate("/admin/login"); return; }
@@ -554,6 +764,74 @@ export default function AdminPeopleRecords() {
   }, [q, source, token, navigate]);
 
   const handleSearch = () => fetchRecords(1);
+
+  const fetchPhones = useCallback(async (p, overrideQ) => {
+    setPhonesLoading(true);
+    const qVal = overrideQ !== undefined ? overrideQ : phonesQ;
+    try {
+      const params = new URLSearchParams({ page: p, q: qVal });
+      const res = await fetch(`${BACKEND_URL}/api/admin/phone-entries?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setPhones(data.entries || []);
+      setPhonesTotal(data.total || 0);
+      setPhonesPage(data.page || 1);
+      setPhonesPages(data.pages || 1);
+    } catch { toast.error("Failed to load phone entries"); }
+    finally { setPhonesLoading(false); }
+  }, [phonesQ, token]);
+
+  const fetchAddrs = useCallback(async (p, overrideQ) => {
+    setAddrsLoading(true);
+    const qVal = overrideQ !== undefined ? overrideQ : addrsQ;
+    try {
+      const params = new URLSearchParams({ page: p, q: qVal });
+      const res = await fetch(`${BACKEND_URL}/api/admin/address-entries?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setAddrs(data.entries || []);
+      setAddrsTotal(data.total || 0);
+      setAddrsPage(data.page || 1);
+      setAddrsPages(data.pages || 1);
+    } catch { toast.error("Failed to load address entries"); }
+    finally { setAddrsLoading(false); }
+  }, [addrsQ, token]);
+
+  const handleDeletePhone = async (entryId) => {
+    setPhoneDeletingId(entryId);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/phone-entries/${entryId}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { toast.error("Failed to delete"); return; }
+      toast.success("Phone entry deleted");
+      setPhoneConfirmId(null);
+      fetchPhones(phonesPage);
+    } catch { toast.error("Delete failed"); }
+    finally { setPhoneDeletingId(null); }
+  };
+
+  const handleDeleteAddr = async (entryId) => {
+    setAddrDeletingId(entryId);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/address-entries/${entryId}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { toast.error("Failed to delete"); return; }
+      toast.success("Address entry deleted");
+      setAddrConfirmId(null);
+      fetchAddrs(addrsPage);
+    } catch { toast.error("Delete failed"); }
+    finally { setAddrDeletingId(null); }
+  };
+
+  // Load phone/address data when switching to those tabs
+  useEffect(() => {
+    if (activeTab === "phones")    fetchPhones(1);
+    if (activeTab === "addresses") fetchAddrs(1);
+  }, [activeTab]); // eslint-disable-line
 
   const handleDelete = async (recordId) => {
     setDeletingId(recordId);
@@ -612,14 +890,41 @@ export default function AdminPeopleRecords() {
   return (
     <AdminLayout>
       {modalRecord !== undefined && (
-        <PersonModal
-          record={modalRecord}
-          onClose={() => setModalRecord(undefined)}
-          onSave={() => { setModalRecord(undefined); fetchRecords(page); }}
-        />
+        <PersonModal record={modalRecord} onClose={() => setModalRecord(undefined)}
+          onSave={() => { setModalRecord(undefined); fetchRecords(page); }} />
+      )}
+      {phoneModal !== undefined && (
+        <PhoneEntryModal entry={phoneModal} onClose={() => setPhoneModal(undefined)}
+          onSave={() => { setPhoneModal(undefined); fetchPhones(phonesPage); }} />
+      )}
+      {addrModal !== undefined && (
+        <AddressEntryModal entry={addrModal} onClose={() => setAddrModal(undefined)}
+          onSave={() => { setAddrModal(undefined); fetchAddrs(addrsPage); }} />
       )}
 
       <div className="max-w-7xl mx-auto space-y-6">
+
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-700">
+          {[
+            { id: "people",    label: "People Records",   icon: Users  },
+            { id: "phones",    label: "Phone Registry",   icon: Phone  },
+            { id: "addresses", label: "Address Registry", icon: MapPin },
+          ].map(t => (
+            <button key={t.id} onClick={() => setActiveTab(t.id)}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap -mb-px ${
+                activeTab === t.id
+                  ? "border-green-600 text-green-700"
+                  : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+              }`}>
+              <t.icon className="w-4 h-4" />{t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── People Records Tab ── */}
+        {activeTab === "people" && (<>
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -630,19 +935,14 @@ export default function AdminPeopleRecords() {
           </div>
           <div className="flex items-center gap-3">
             {selected.size > 0 && (
-              <button
-                onClick={handleMassDelete}
-                disabled={massDeleting}
-                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
-              >
+              <button onClick={handleMassDelete} disabled={massDeleting}
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
                 {massDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Delete {selected.size} selected
               </button>
             )}
-            <button
-              onClick={() => setModalRecord(null)}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-            >
+            <button onClick={() => setModalRecord(null)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
               <Plus className="w-4 h-4" /> Add Person
             </button>
             <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">
@@ -798,27 +1098,242 @@ export default function AdminPeopleRecords() {
         {/* Pagination */}
         {pages > 1 && (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">
-              Page {page} of {pages} · {total.toLocaleString()} records
-            </p>
+            <p className="text-sm text-slate-500">Page {page} of {pages} · {total.toLocaleString()} records</p>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => { const p = page - 1; setPage(p); fetchRecords(p); }}
-                disabled={page <= 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors"
-              >
+              <button onClick={() => { const p = page - 1; setPage(p); fetchRecords(p); }} disabled={page <= 1}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors">
                 <ChevronLeft className="w-4 h-4 text-slate-600" />
               </button>
-              <button
-                onClick={() => { const p = page + 1; setPage(p); fetchRecords(p); }}
-                disabled={page >= pages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors"
-              >
+              <button onClick={() => { const p = page + 1; setPage(p); fetchRecords(p); }} disabled={page >= pages}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors">
                 <ChevronRight className="w-4 h-4 text-slate-600" />
               </button>
             </div>
           </div>
         )}
+        </>)}
+
+        {/* ── Phone Registry Tab ── */}
+        {activeTab === "phones" && (<>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Phone Registry</h1>
+              <p className="text-sm text-slate-500 mt-0.5">{phonesTotal.toLocaleString()} entries · auto-imported from searches + manually added</p>
+            </div>
+            <button onClick={() => setPhoneModal(null)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              <Plus className="w-4 h-4" /> Add Phone
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input value={phonesQ} onChange={e => setPhonesQ(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && fetchPhones(1)}
+                  placeholder="Search by phone number…"
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+              <button onClick={() => fetchPhones(1)} disabled={phonesLoading}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50">
+                {phonesLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Search
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            {phonesLoading ? (
+              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
+            ) : phones.length === 0 ? (
+              <div className="text-center py-16">
+                <Phone className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">No phone entries yet</p>
+                <p className="text-slate-400 text-sm mt-1">Entries are auto-imported when users search phone numbers, or add them manually.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                      {["Phone", "Type", "Carrier", "Linked People", "Searches", "Last Searched", "Source", ""].map(h => (
+                        <th key={h} className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {phones.map(entry => (
+                      <tr key={entry.entryId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-4 py-3 font-mono font-medium text-slate-900 dark:text-white whitespace-nowrap">{entry.displayPhone || entry.phone}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 capitalize">{entry.type || "unknown"}</span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">{entry.carrier || "—"}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(entry.linkedPeople || []).length === 0
+                              ? <span className="text-slate-400 text-xs">—</span>
+                              : (entry.linkedPeople || []).map(p => (
+                                <span key={p.recordId} className="flex items-center gap-1 bg-green-50 text-green-800 border border-green-200 text-xs px-2 py-0.5 rounded-full">
+                                  <Link2 className="w-2.5 h-2.5" />{p.name}
+                                </span>
+                              ))}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 text-center">{entry.searchCount || 0}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{fmt(entry.lastSearched)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${entry.source === "manual" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-slate-100 text-slate-600 border border-slate-200"}`}>
+                            {entry.source === "manual" ? "Manual" : "Auto"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {phoneConfirmId === entry.entryId ? (
+                            <div className="flex items-center gap-2 justify-end">
+                              <button onClick={() => handleDeletePhone(entry.entryId)} disabled={phoneDeletingId === entry.entryId}
+                                className="text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-lg font-semibold disabled:opacity-50">
+                                {phoneDeletingId === entry.entryId ? "Deleting…" : "Confirm"}
+                              </button>
+                              <button onClick={() => setPhoneConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-700 px-2 py-1">Cancel</button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 justify-end">
+                              <button onClick={() => setPhoneModal(entry)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                              <button onClick={() => setPhoneConfirmId(entry.entryId)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {phonesPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">Page {phonesPage} of {phonesPages} · {phonesTotal.toLocaleString()} entries</p>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { const p = phonesPage - 1; setPhonesPage(p); fetchPhones(p); }} disabled={phonesPage <= 1}
+                  className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors"><ChevronLeft className="w-4 h-4 text-slate-600" /></button>
+                <button onClick={() => { const p = phonesPage + 1; setPhonesPage(p); fetchPhones(p); }} disabled={phonesPage >= phonesPages}
+                  className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors"><ChevronRight className="w-4 h-4 text-slate-600" /></button>
+              </div>
+            </div>
+          )}
+        </>)}
+
+        {/* ── Address Registry Tab ── */}
+        {activeTab === "addresses" && (<>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Address Registry</h1>
+              <p className="text-sm text-slate-500 mt-0.5">{addrsTotal.toLocaleString()} entries · auto-imported from searches + manually added</p>
+            </div>
+            <button onClick={() => setAddrModal(null)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              <Plus className="w-4 h-4" /> Add Address
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input value={addrsQ} onChange={e => setAddrsQ(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && fetchAddrs(1)}
+                  placeholder="Search by street, city, state, ZIP…"
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+              <button onClick={() => fetchAddrs(1)} disabled={addrsLoading}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50">
+                {addrsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Search
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            {addrsLoading ? (
+              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
+            ) : addrs.length === 0 ? (
+              <div className="text-center py-16">
+                <MapPin className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 font-medium">No address entries yet</p>
+                <p className="text-slate-400 text-sm mt-1">Entries are auto-imported when users search addresses, or add them manually.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                      {["Address", "Linked People", "Searches", "Last Searched", "Source", ""].map(h => (
+                        <th key={h} className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 py-3">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {addrs.map(entry => (
+                      <tr key={entry.entryId} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-slate-900 dark:text-white">{entry.street}</p>
+                          <p className="text-xs text-slate-500">{[entry.city, entry.state, entry.zip].filter(Boolean).join(", ")}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(entry.linkedPeople || []).length === 0
+                              ? <span className="text-slate-400 text-xs">—</span>
+                              : (entry.linkedPeople || []).map(p => (
+                                <span key={p.recordId} className="flex items-center gap-1 bg-green-50 text-green-800 border border-green-200 text-xs px-2 py-0.5 rounded-full">
+                                  <Link2 className="w-2.5 h-2.5" />{p.name}
+                                </span>
+                              ))}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 text-center">{entry.searchCount || 0}</td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{fmt(entry.lastSearched)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${entry.source === "manual" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-slate-100 text-slate-600 border border-slate-200"}`}>
+                            {entry.source === "manual" ? "Manual" : "Auto"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {addrConfirmId === entry.entryId ? (
+                            <div className="flex items-center gap-2 justify-end">
+                              <button onClick={() => handleDeleteAddr(entry.entryId)} disabled={addrDeletingId === entry.entryId}
+                                className="text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-lg font-semibold disabled:opacity-50">
+                                {addrDeletingId === entry.entryId ? "Deleting…" : "Confirm"}
+                              </button>
+                              <button onClick={() => setAddrConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-700 px-2 py-1">Cancel</button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 justify-end">
+                              <button onClick={() => setAddrModal(entry)} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                              <button onClick={() => setAddrConfirmId(entry.entryId)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {addrsPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500">Page {addrsPage} of {addrsPages} · {addrsTotal.toLocaleString()} entries</p>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { const p = addrsPage - 1; setAddrsPage(p); fetchAddrs(p); }} disabled={addrsPage <= 1}
+                  className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors"><ChevronLeft className="w-4 h-4 text-slate-600" /></button>
+                <button onClick={() => { const p = addrsPage + 1; setAddrsPage(p); fetchAddrs(p); }} disabled={addrsPage >= addrsPages}
+                  className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-colors"><ChevronRight className="w-4 h-4 text-slate-600" /></button>
+              </div>
+            </div>
+          )}
+        </>)}
+
       </div>
     </AdminLayout>
   );

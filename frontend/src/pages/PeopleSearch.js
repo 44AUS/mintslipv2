@@ -320,7 +320,11 @@ function ResultCard({ entry, lookupType, query }) {
       const cs = cityState(preview.currentAddress);
       if (cs) return cs;
     }
-    if (preview.location) return preview.location;
+    if (preview.possibleAddress) {
+      const cs = cityState(preview.possibleAddress);
+      if (cs) return cs;
+    }
+    if (preview.location) return cityState(preview.location) || preview.location;
     if (preview.state) return preview.state;
     return null;
   })();
@@ -331,6 +335,7 @@ function ResultCard({ entry, lookupType, query }) {
       ...(preview.possibleAddresses || []),
       ...(preview.currentAddress ? [preview.currentAddress] : []),
       ...(preview.pastAddresses   || []),
+      ...(preview.possibleAddress ? [preview.possibleAddress] : []),
     ].filter(Boolean);
     return [...new Set(addrs)].slice(0, 3);
   })();

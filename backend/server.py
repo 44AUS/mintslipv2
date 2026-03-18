@@ -8540,6 +8540,7 @@ def blur_result(data: dict, lookup_type: str) -> dict:
     if lookup_type == "phone_lookup":
         # Show full name unredacted — only blur address/phone details
         if "possibleAddress" in preview: preview["possibleAddress"] = redact_addr(preview["possibleAddress"])
+        if preview.get("location"): preview["location"] = redact_addr(preview["location"])
         # Internal DB record fields (normalize_internal_record format)
         if "currentAddress" in preview: preview["currentAddress"] = redact_addr(preview["currentAddress"])
         if "pastAddresses" in preview:

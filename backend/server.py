@@ -8329,8 +8329,8 @@ async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = ""
 
 async def internal_name_lookup(first: str, last: str, state: str = "", city: str = "", min_age: int = None, max_age: int = None) -> list:
     query: dict = {
-        "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
-        "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+        "firstName": {"$regex": re.escape(first), "$options": "i"},
+        "lastName":  {"$regex": re.escape(last),  "$options": "i"},
     }
     if state:
         query["$or"] = [
@@ -8727,12 +8727,26 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             "price":    price,
         })
 
+    debug_info = {}
+    if len(result_entries) == 0:
+        debug_info = {
+            "use_internal": use_internal,
+            "use_whitepages": use_whitepages,
+            "internal_count": await people_records_collection.count_documents({}),
+        }
+        if lt == "name_lookup":
+            fn, ln = data.get_first_last()
+            debug_info["parsed_first"] = fn
+            debug_info["parsed_last"] = ln
+            debug_info["raw_fullName"] = data.fullName
+
     return {
         "success":     True,
         "lookupType":  lt,
         "query":       query_summary,
         "results":     result_entries,   # list — each has searchId + preview + price
         "totalCount":  len(result_entries),
+        "_debug":      debug_info,
     }
 
 

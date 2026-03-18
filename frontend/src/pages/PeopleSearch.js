@@ -524,6 +524,11 @@ export default function PeopleSearch() {
       setResults(newResults);
       setLookupType(data.lookupType);
       setQuery(data.query);
+      if (newResults.length === 0 && data._debug) {
+        const d = data._debug;
+        console.warn("Search debug:", d);
+        toast.info(`No results. DB records: ${d.internal_count}, internal enabled: ${d.use_internal}, parsed: "${d.parsed_first} ${d.parsed_last}"`);
+      }
       // Save to sessionStorage so we can restore after Stripe redirect
       sessionStorage.setItem("ps_results",    JSON.stringify(newResults));
       sessionStorage.setItem("ps_lookupType", data.lookupType);

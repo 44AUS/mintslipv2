@@ -221,6 +221,10 @@ export default function PeopleSearchResult() {
   const [promoError, setPromoError] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(null); // {code, percent, discountAmount, finalPrice}
 
+  // Associated people from internal DB (for phone/address lookups)
+  const [associatedPeople, setAssociatedPeople] = useState([]);
+  const [assocLoading, setAssocLoading] = useState(false);
+
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     if (isInternal) {
@@ -306,6 +310,39 @@ export default function PeopleSearchResult() {
       setUnlocking(false);
     }
   };
+
+  // Fetch associated people from internal DB for phone/address lookups
+  useEffect(() => {
+    if (!isPaid) return;
+    if (lookupType === "phone_lookup") {
+      const phone = d?.phone || query;
+      if (!phone) return;
+      setAssocLoading(true);
+      fetch(`${BACKEND_URL}/api/people-search/associated-by-phone?phone=${encodeURIComponent(phone)}`)
+        .then(r => r.json())
+        .then(data => setAssociatedPeople(data.results || []))
+        .catch(() => {})
+        .finally(() => setAssocLoading(false));
+    } else if (lookupType === "address_lookup") {
+      const addr = d?.address || query || "";
+      // Parse address string into components
+      const parts = addr.split(",").map(s => s.trim());
+      const street = parts[0] || "";
+      const city   = parts[1] || "";
+      const stateRaw = (parts[2] || "").split(" ")[0] || "";
+      if (!street && !city) return;
+      setAssocLoading(true);
+      const params = new URLSearchParams();
+      if (street) params.set("street", street);
+      if (city)   params.set("city", city);
+      if (stateRaw) params.set("state", stateRaw);
+      fetch(`${BACKEND_URL}/api/people-search/associated-by-address?${params}`)
+        .then(r => r.json())
+        .then(data => setAssociatedPeople(data.results || []))
+        .catch(() => {})
+        .finally(() => setAssocLoading(false));
+    }
+  }, [isPaid, lookupType]); // eslint-disable-line
 
   const d = isPaid ? fullResult : preview;
 
@@ -502,6 +539,63 @@ export default function PeopleSearchResult() {
                 {!d && <p className="text-sm text-slate-400 py-6 text-center">No preview data available.</p>}
               </div>
               {!isPaid && <UnlockBlock price={price} appliedDiscount={appliedDiscount} promoInput={promoInput} setPromoInput={setPromoInput} promoLoading={promoLoading} promoError={promoError} validatePromo={validatePromo} setAppliedDiscount={setAppliedDiscount} setPromoError={setPromoError} unlocking={unlocking} handleUnlock={handleUnlock} />}
+            </div>
+          )}
+
+          {/* ── Associated people from internal DB (phone / address) ── */}
+          {isPaid && (lookupType === "phone_lookup" || lookupType === "address_lookup") && (assocLoading || associatedPeople.length > 0) && (
+            <div className="bg-white rounded-xl border border-slate-200 mb-4 overflow-hidden">
+              <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-100">
+                <div className="w-10 h-10 bg-green-700 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-slate-900 text-base leading-tight">
+                    {lookupType === "phone_lookup" ? "People Associated with This Number" : "People Associated with This Address"}
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {lookupType === "phone_lookup"
+                      ? "Records in our database linked to this phone number."
+                      : "Residents and owners linked to this address in our database."}
+                  </p>
+                </div>
+              </div>
+              <div className="px-6 py-5">
+                {assocLoading ? (
+                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Checking database…
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {associatedPeople.map((person, i) => {
+                      const pName = person.fullName || `${person.firstName || ""} ${person.lastName || ""}`.trim() || "Unknown";
+                      const pAge  = person.age ? ` · Age ${person.age}` : "";
+                      const pState = person.state || "";
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => person.recordId
+                            ? navigate(`/people-search/result/${person.recordId}`, {
+                                state: { preview: person, lookupType: "name_lookup", isInternal: true, initialPaid: true },
+                              })
+                            : null
+                          }
+                          className="flex items-start gap-3 p-3 bg-slate-50 hover:bg-green-50 hover:border-green-300 rounded-lg border border-slate-100 text-left transition-colors group"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-xs font-bold text-green-700">{pName.charAt(0).toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800 group-hover:text-green-700">{pName}{pAge}</p>
+                            {pState && <p className="text-xs text-slate-400 mt-0.5">{pState}</p>}
+                            {person.recordId && <p className="text-[10px] text-green-600 mt-0.5 group-hover:text-green-700">View full profile →</p>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

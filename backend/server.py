@@ -9051,6 +9051,8 @@ async def admin_clear_people_records(source: str, request: Request):
 async def admin_browse_people_records(
     q: str = "",
     source: str = "",
+    state: str = "",
+    address: str = "",
     page: int = 1,
     session: dict = Depends(get_current_admin),
 ):
@@ -9059,6 +9061,17 @@ async def admin_browse_people_records(
     query: dict = {}
     if source:
         query["source"] = source
+    if state:
+        query["$or"] = [
+            {"state": {"$regex": f"^{re.escape(state)}$", "$options": "i"}},
+            {"addresses.state": {"$regex": f"^{re.escape(state)}$", "$options": "i"}},
+        ]
+    if address:
+        addr_stripped = address.strip()
+        query["$or"] = [
+            {"addresses.street": {"$regex": re.escape(addr_stripped), "$options": "i"}},
+            {"addresses.city":   {"$regex": re.escape(addr_stripped), "$options": "i"}},
+        ]
     if q:
         q_stripped = q.strip()
         digits_only = re.sub(r"[^\d]", "", q_stripped)
@@ -9173,6 +9186,43 @@ async def admin_mass_delete_people_records(data: dict, session: dict = Depends(g
     result = await people_records_collection.delete_many({"recordId": {"$in": ids}})
     await log_action(session, "mass_delete_people_records", "people_record", "bulk", f"{result.deleted_count} deleted")
     return {"success": True, "deleted": result.deleted_count}
+
+
+# ── Public: People associated with a phone or address ────────────────────────
+
+@app.get("/api/people-search/associated-by-phone")
+async def associated_people_by_phone(phone: str):
+    """Return internal DB people records that have the given phone number."""
+    clean = re.sub(r"[^\d]", "", phone)[-10:]
+    if len(clean) < 7:
+        return {"results": []}
+    cursor = people_records_collection.find(
+        {"phones": {"$elemMatch": {"$regex": clean}}}
+    ).limit(10)
+    results = []
+    async for doc in cursor:
+        results.append(normalize_internal_record(doc))
+    return {"results": results}
+
+
+@app.get("/api/people-search/associated-by-address")
+async def associated_people_by_address(street: str = "", city: str = "", state: str = ""):
+    """Return internal DB people records associated with the given address."""
+    if not street and not city:
+        return {"results": []}
+    conditions = []
+    if street:
+        conditions.append({"addresses.street": {"$regex": re.escape(street.strip()), "$options": "i"}})
+    if city:
+        conditions.append({"addresses.city": {"$regex": re.escape(city.strip()), "$options": "i"}})
+    if state:
+        conditions.append({"addresses.state": {"$regex": f"^{re.escape(state.strip())}$", "$options": "i"}})
+    query = {"$and": conditions} if len(conditions) > 1 else conditions[0]
+    cursor = people_records_collection.find(query).limit(10)
+    results = []
+    async for doc in cursor:
+        results.append(normalize_internal_record(doc))
+    return {"results": results}
 
 
 # ── Public: People Record by ID ───────────────────────────────────────────────

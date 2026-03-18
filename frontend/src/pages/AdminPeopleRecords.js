@@ -522,6 +522,8 @@ export default function AdminPeopleRecords() {
   const [selected, setSelected]     = useState(new Set());
   const [massDeleting, setMassDeleting] = useState(false);
   const [modalRecord, setModalRecord]  = useState(undefined); // undefined=closed, null=new, obj=edit
+  const [filterState, setFilterState]  = useState("");
+  const [filterAddress, setFilterAddress] = useState("");
 
   useEffect(() => {
     if (!token) { navigate("/admin/login"); return; }
@@ -533,7 +535,7 @@ export default function AdminPeopleRecords() {
     const qVal   = overrideQ   !== undefined ? overrideQ   : q;
     const srcVal = overrideSrc !== undefined ? overrideSrc : source;
     try {
-      const params = new URLSearchParams({ page: p, q: qVal, source: srcVal });
+      const params = new URLSearchParams({ page: p, q: qVal, source: srcVal, state: filterState, address: filterAddress });
       const res = await fetch(`${BACKEND_URL}/api/admin/people-records/browse?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -672,6 +674,21 @@ export default function AdminPeopleRecords() {
                 <option key={s} value={s}>{s ? s.toUpperCase() : "All Sources"}</option>
               ))}
             </select>
+            <select
+              value={filterState}
+              onChange={e => setFilterState(e.target.value)}
+              className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white"
+            >
+              <option value="">All States</option>
+              {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <input
+              value={filterAddress}
+              onChange={e => setFilterAddress(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSearch()}
+              placeholder="City or street…"
+              className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-slate-800 dark:border-slate-600 dark:text-white w-40"
+            />
             <button
               onClick={handleSearch}
               disabled={loading}

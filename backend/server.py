@@ -7859,6 +7859,26 @@ def _wp_names_from_person(p: dict) -> list[str]:
     return out
 
 
+def _wp_build_addr(a: dict) -> str:
+    """Build a full address string from a Whitepages address object without duplicating fields.
+    If a['address'] already contains the city (e.g. it's a full formatted string), use it as-is.
+    Otherwise combine street + city + state + zip into a single parseable string.
+    """
+    raw    = a.get("address") or a.get("full_address") or a.get("street_line_1") or ""
+    city   = a.get("city") or ""
+    state  = a.get("state_code") or a.get("state") or ""
+    zip_   = a.get("zip") or a.get("postal_code") or ""
+    state_zip = f"{state} {zip_}".strip()
+
+    # If raw already embeds the city, don't duplicate it
+    if raw and city and city.lower() in raw.lower():
+        return raw
+    # If raw already has 2+ commas it's likely a full address
+    if raw and raw.count(",") >= 2:
+        return raw
+    return ", ".join(p for p in [raw, city, state_zip] if p)
+
+
 async def wp_phone_lookup(phone: str) -> dict | None:
     """Whitepages v1 reverse phone — GET /v1/person?phone=NUMBER with X-Api-Key header."""
     if not WHITEPAGES_PRO_API_KEY:
@@ -7904,12 +7924,7 @@ async def wp_phone_lookup(phone: str) -> dict | None:
         cur_addrs = res.get("current_addresses") or res.get("addresses") or []
         if cur_addrs:
             a = cur_addrs[0]
-            street_part = a.get("address") or a.get("full_address") or a.get("street_line_1") or ""
-            city_part   = a.get("city") or ""
-            state_part  = a.get("state_code") or a.get("state") or ""
-            zip_part    = a.get("zip") or a.get("postal_code") or ""
-            state_zip   = f"{state_part} {zip_part}".strip()
-            address = ", ".join(p for p in [street_part, city_part, state_zip] if p)
+            address = _wp_build_addr(a)
 
         # Relatives
         relatives = []
@@ -7959,16 +7974,8 @@ async def wp_person_lookup(first: str, last: str, state: str, city: str = "", mi
         # current_addresses=[{id,address}], historic_addresses=[{id,address}]
         full_name  = p.get("name") or f"{first} {last}"
         dob        = p.get("date_of_birth") or ""
-        def _wp_addr_str(a):
-            """Build a full address string from a Whitepages address object."""
-            street = a.get("address") or a.get("full_address") or a.get("street_line_1") or ""
-            city   = a.get("city") or ""
-            state  = a.get("state_code") or a.get("state") or ""
-            zip_   = a.get("zip") or a.get("postal_code") or ""
-            state_zip = f"{state} {zip_}".strip()
-            return ", ".join(p for p in [street, city, state_zip] if p)
-        cur_addrs  = [_wp_addr_str(a) for a in p.get("current_addresses", []) if any(a.get(k) for k in ["address","city","state_code","state"])]
-        hist_addrs = [_wp_addr_str(a) for a in p.get("historic_addresses", []) if any(a.get(k) for k in ["address","city","state_code","state"])]
+        cur_addrs  = [_wp_build_addr(a) for a in p.get("current_addresses", []) if any(a.get(k) for k in ["address","city","state_code","state"])]
+        hist_addrs = [_wp_build_addr(a) for a in p.get("historic_addresses", []) if any(a.get(k) for k in ["address","city","state_code","state"])]
         phones     = [_wp_format_phone(ph["number"]) for ph in p.get("phones", []) if ph.get("number")]
         relatives  = [r["name"] for r in p.get("relatives", []) if r.get("name")]
         emails     = p.get("emails") or []

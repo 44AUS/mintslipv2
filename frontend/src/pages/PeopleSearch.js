@@ -726,46 +726,23 @@ export default function PeopleSearch() {
             ))}
           </div>
 
-          {/* Input row */}
-          <div className="flex items-stretch border border-slate-200 rounded-lg overflow-hidden mb-3 bg-white">
+          {/* Input row — wrapped in relative container so autocomplete dropdown escapes overflow-hidden */}
+          <div ref={acRef} className="relative mb-3">
+            <div className="flex items-stretch border border-slate-200 rounded-lg overflow-hidden bg-white">
             {(activeTab === "name") && (
               <>
-                <div ref={acRef} className="flex-1 relative min-w-0">
-                  <input
-                    value={fullName}
-                    onChange={e => { setFullName(e.target.value); fetchAcSuggestions(e.target.value); }}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") { setAcOpen(false); handleSearch(); }
-                      if (e.key === "Escape") setAcOpen(false);
-                    }}
-                    onFocus={() => { if (acSuggestions.length > 0) setAcOpen(true); }}
-                    placeholder="e.g. Jon Snow"
-                    className="w-full px-4 py-3 text-sm focus:outline-none"
-                    autoComplete="off"
-                  />
-                  {acOpen && acSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-b-xl shadow-lg overflow-hidden">
-                      {acSuggestions.map((s, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => {
-                            setFullName(s.fullName);
-                            setAcOpen(false);
-                            setAcSuggestions([]);
-                          }}
-                          className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-slate-50 text-left border-b border-slate-100 last:border-0"
-                        >
-                          <span className="font-medium text-slate-800">{s.fullName}</span>
-                          <span className="text-xs text-slate-400 flex-shrink-0 ml-3">
-                            {[s.age ? `Age ${s.age}` : null, s.state].filter(Boolean).join(" · ")}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <input
+                  value={fullName}
+                  onChange={e => { setFullName(e.target.value); fetchAcSuggestions(e.target.value); }}
+                  onKeyDown={e => {
+                    if (e.key === "Enter") { setAcOpen(false); handleSearch(); }
+                    if (e.key === "Escape") setAcOpen(false);
+                  }}
+                  onFocus={() => { if (acSuggestions.length > 0) setAcOpen(true); }}
+                  placeholder="e.g. Jon Snow"
+                  className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
+                  autoComplete="off"
+                />
                 <div className="w-px bg-slate-200 self-stretch" />
                 <input
                   value={locationStr}
@@ -814,6 +791,27 @@ export default function PeopleSearch() {
               {searching ? <Loader2 className="w-5 h-5 animate-spin text-slate-400" /> : <Search className="w-5 h-5" />}
             </button>
           </div>
+
+          {/* Autocomplete dropdown — outside overflow-hidden */}
+          {acOpen && acSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-b-xl shadow-lg overflow-hidden">
+              {acSuggestions.map((s, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { setFullName(s.fullName); setAcOpen(false); setAcSuggestions([]); }}
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-slate-50 text-left border-b border-slate-100 last:border-0"
+                >
+                  <span className="font-medium text-slate-800">{s.fullName}</span>
+                  <span className="text-xs text-slate-400 flex-shrink-0 ml-3">
+                    {[s.age ? `Age ${s.age}` : null, s.state].filter(Boolean).join(" · ")}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          </div>{/* end relative autocomplete wrapper */}
 
         </div>
       </div>

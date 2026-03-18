@@ -331,7 +331,10 @@ function ResultCard({ entry, lookupType, query }) {
   const relativesList = (() => {
     const r = preview.possibleRelatives;
     if (!r) return [];
-    return (Array.isArray(r) ? r : [r]).slice(0, 2);
+    return (Array.isArray(r) ? r : [r])
+      .map(item => typeof item === "string" ? item : item?.name || "")
+      .filter(Boolean)
+      .slice(0, 2);
   })();
 
   // Aliases — "May Go By"

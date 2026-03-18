@@ -8175,97 +8175,6 @@ async def get_people_search_prices() -> dict:
         return doc.get("value", DEFAULT_PEOPLE_SEARCH_PRICES)
     return DEFAULT_PEOPLE_SEARCH_PRICES
 
-# ── Mock data (swap in real Elasticsearch / API calls via env var) ────────────
-_FIRST = ["James","Mary","John","Patricia","Robert","Jennifer","Michael","Linda","William","Barbara","David","Susan","Richard","Jessica","Joseph","Sarah","Thomas","Karen","Charles","Lisa"]
-_LAST  = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Wilson","Anderson","Taylor","Thomas","Hernandez","Moore","Martin","Jackson","Thompson","White"]
-_CITIES = ["Springfield","Riverside","Franklin","Georgetown","Clinton","Salem","Greenville","Madison","Jefferson","Chester","Oakland","Fairview","Milton","Newport","Arlington"]
-_STATES = ["AL","AZ","AR","CA","CO","CT","FL","GA","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MO","MT","NE","NV","NJ","NM","NY","NC","OH","OK","OR","PA","SC","TN","TX","UT","VA","WA","WI"]
-_CARRIERS = ["Verizon Wireless","AT&T Mobility","T-Mobile USA","Sprint","US Cellular","Comcast Phone","Google Voice"]
-_STREET_NAMES = ["Oak","Maple","Cedar","Pine","Elm","River","Hill","Lake","Valley","Sunset","Forest","Park","Garden","Stone","Bridge"]
-_STREET_TYPES = ["St","Ave","Blvd","Dr","Ln","Rd","Ct","Pl","Way","Ter"]
-
-def _rng(seed_str: str) -> random.Random:
-    return random.Random(sum(ord(c) for c in seed_str))
-
-def _phone(rng):
-    return f"({rng.randint(200,999)}) {rng.randint(200,999)}-{rng.randint(1000,9999)}"
-
-def _addr(rng, city=None, state=None):
-    c = city or rng.choice(_CITIES)
-    s = state or rng.choice(_STATES)
-    num = rng.randint(100, 9999)
-    street = f"{num} {rng.choice(_STREET_NAMES)} {rng.choice(_STREET_TYPES)}"
-    return f"{street}, {c}, {s} {rng.randint(10000,99999)}"
-
-def _name(rng):
-    return f"{rng.choice(_FIRST)} {rng.choice(_LAST)}"
-
-def mock_phone_lookup(phone: str) -> dict:
-    rng = _rng(phone)
-    city = rng.choice(_CITIES)
-    state = rng.choice(_STATES)
-    return {
-        "name": _name(rng),
-        "carrier": rng.choice(_CARRIERS),
-        "lineType": rng.choice(["Mobile","Landline","VoIP"]),
-        "location": f"{city}, {state}",
-        "spamRisk": rng.choice(["Low","Medium","High"]),
-        "possibleAddress": _addr(rng, city, state),
-        "possibleRelatives": [_name(rng), _name(rng)],
-        "phoneValid": True,
-        "callerType": rng.choice(["Individual","Business","Unknown"]),
-    }
-
-def mock_name_lookup(first: str, last: str, state: str) -> list[dict]:
-    """Return 2-3 mock matches for name lookup (simulates multiple people with same name)."""
-    results = []
-    for i in range(3):
-        rng = _rng(f"{first}{last}{state}{i}")
-        age = rng.randint(25, 75)
-        st = state or rng.choice(_STATES)
-        results.append({
-            "fullName": f"{first} {last}",
-            "ageRange": f"{age}-{age+5}",
-            "possibleAddresses": [_addr(rng, state=st), _addr(rng)],
-            "possiblePhones": [_phone(rng) for _ in range(rng.randint(1, 3))],
-            "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2, 4))],
-            "state": st,
-        })
-    return results
-
-def mock_address_lookup(street: str, city: str, state: str) -> dict:
-    rng = _rng(f"{street}{city}{state}")
-    return {
-        "address": f"{street}, {city}, {state}",
-        "propertyOwner": _name(rng),
-        "residents": [_name(rng) for _ in range(rng.randint(1,3))],
-        "estimatedValue": f"${rng.randint(120000,850000):,}",
-        "associatedPhones": [_phone(rng) for _ in range(rng.randint(1,2))],
-        "propertyType": rng.choice(["Single Family","Condo","Townhouse","Multi-Family"]),
-        "yearBuilt": str(rng.randint(1960,2022)),
-        "squareFeet": f"{rng.randint(800,4500):,}",
-    }
-
-def mock_background_report(first: str, last: str, state: str) -> list[dict]:
-    """Return 2-3 mock matches for background report."""
-    results = []
-    for i in range(3):
-        rng = _rng(f"{first}{last}{state}bg{i}")
-        age = rng.randint(25, 75)
-        st = state or rng.choice(_STATES)
-        results.append({
-            "fullName": f"{first} {last}",
-            "ageRange": f"{age}-{age+5}",
-            "phones": [_phone(rng) for _ in range(rng.randint(1, 4))],
-            "currentAddress": _addr(rng, state=st),
-            "pastAddresses": [_addr(rng), _addr(rng)],
-            "possibleRelatives": [f"{rng.choice(_FIRST)} {last}" for _ in range(rng.randint(2, 5))],
-            "state": st,
-            "publicRecords": rng.choice(["None found","Traffic violation (2019)","Small claims court (2017)","None found","None found"]),
-            "education": rng.choice(["State University","Community College","Unknown"]),
-            "estimatedAge": str(age),
-        })
-    return results
 
 def blur_result(data: dict, lookup_type: str) -> dict:
     """Return a copy of data with sensitive fields partially redacted for preview."""
@@ -8469,15 +8378,11 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         full_results = []
         if use_whitepages:
             wp = await wp_phone_lookup(phone_clean)
-            mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
-            single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
-            full_results.append(single)
+            if wp:
+                full_results.append(wp)
         if use_internal:
             db_results = await internal_phone_lookup(phone_clean)
             full_results.extend(db_results)
-        if not full_results:
-            mock_base = await asyncio.to_thread(mock_phone_lookup, phone_clean)
-            full_results = [mock_base]
 
         # Enrich phone result with carrier info
         e164 = f"+1{phone_clean[-10:]}"
@@ -8499,19 +8404,11 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         full_results = []
         if use_whitepages:
             wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
-            mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
             if wp_list:
-                for i, wp_item in enumerate(wp_list):
-                    mock_fallback = mock_list[i] if i < len(mock_list) else mock_list[-1]
-                    full_results.append({**mock_fallback, **{k: v for k, v in wp_item.items() if v is not None}})
-            else:
-                full_results.extend(mock_list)
+                full_results.extend(wp_list)
         if use_internal:
             db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
             full_results.extend(db_results)
-        if not full_results:
-            mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
-            full_results = mock_list
 
         # Post-filter by age for results that have age data
         if min_age is not None or max_age is not None:
@@ -8540,15 +8437,11 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         full_results = []
         if use_whitepages:
             wp = await wp_address_lookup(data.street, data.city, data.state or "")
-            mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
-            single = {**mock_base, **{k: v for k, v in wp.items() if v is not None}} if wp else mock_base
-            full_results.append(single)
+            if wp:
+                full_results.append(wp)
         if use_internal:
             db_results = await internal_address_lookup(data.street, data.city, data.state or "")
             full_results.extend(db_results)
-        if not full_results:
-            mock_base = await asyncio.to_thread(mock_address_lookup, data.street, data.city, data.state or "")
-            full_results = [mock_base]
         query_summary = f"{data.street}, {data.city}" + (f", {data.state}" if data.state else "")
 
     else:  # carrier_lookup

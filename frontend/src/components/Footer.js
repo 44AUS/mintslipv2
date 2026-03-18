@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Mail, MapPin, Phone, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
+import MintSlipLogo from '../assests/mintslip-logo.png';
 
 const FOOTER_LINKS = {
   documents: {
@@ -65,12 +66,11 @@ export default function Footer() {
           
           {/* Brand & Description */}
           <div className="lg:col-span-2">
-            <button 
+            <button
               onClick={() => navigate("/")}
-              className="text-2xl font-black tracking-tight mb-4 block text-white"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="mb-4 block"
             >
-              MintSlip
+              <img src={MintSlipLogo} alt="MintSlip" className="h-10 w-auto" />
             </button>
             
             {/* App Store Badges */}

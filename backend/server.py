@@ -8461,13 +8461,18 @@ async def internal_name_lookup(first: str, last: str, state: str = "", city: str
     return results
 
 async def internal_phone_lookup(phone: str) -> list:
-    clean = re.sub(r"[^\d]", "", phone)[-10:]  # normalize to last 10 digits to match stored format
-    if len(clean) < 7:
+    digits = re.sub(r"[^\d]", "", phone)[-10:]  # last 10 digits
+    if len(digits) < 7:
         return []
+    # Build a flexible regex that matches digits with any formatting chars between them
+    # e.g. "5551234567" → "5\D*5\D*5\D*1\D*2\D*3\D*4\D*5\D*6\D*7"
+    # This matches "(555) 123-4567", "555-123-4567", "5551234567", etc.
+    flex_pattern = r"\D*".join(digits)
+    print(f"[internal_phone_lookup] digits={digits} pattern={flex_pattern}")
     cursor = people_records_collection.find({
         "$or": [
-            {"phones": {"$elemMatch": {"number": {"$regex": clean}}}},  # dict format {number, type}
-            {"phones": {"$elemMatch": {"$regex": clean}}},               # plain string format
+            {"phones": {"$elemMatch": {"number": {"$regex": flex_pattern}}}},  # dict format {number, type}
+            {"phones": {"$elemMatch": {"$regex": flex_pattern}}},               # plain string format
         ]
     }).limit(5)
     results = []
@@ -8805,6 +8810,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
                 asyncio.ensure_future(upsert_from_whitepages("phone_lookup", wp, phone=phone_clean))
         if use_internal:
             db_results = await internal_phone_lookup(phone_clean)
+            print(f"[phone_lookup] internal DB returned {len(db_results)} results for phone={phone_clean}")
             full_results.extend(db_results)
         asyncio.ensure_future(upsert_phone_entry(phone_clean, full_results))
 

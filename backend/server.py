@@ -8279,15 +8279,109 @@ async def _insert_person_record(first: str, last: str, dob: str, state: str,
         "associates":  [],
         "occupation":  "",
         "employer":    "",
-        "sourceData":  {},
-        "createdAt":   now,
-        "lastUpdated": now,
+        "sourceData":   {},
+        "createdAt":    now,
+        "lastUpdated":  now,
+        "lastVerified": now,
     }
     await people_records_collection.insert_one(doc)
 
 
+STALE_AFTER_DAYS = 90  # refresh a record from Whitepages if older than this
+
+
+def _is_stale(doc: dict) -> bool:
+    """Return True if the record hasn't been verified in STALE_AFTER_DAYS days."""
+    ts = doc.get("lastVerified") or doc.get("lastUpdated") or doc.get("createdAt")
+    if not ts:
+        return True
+    try:
+        last = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        if last.tzinfo is None:
+            last = last.replace(tzinfo=timezone.utc)
+        return (datetime.now(timezone.utc) - last).days >= STALE_AFTER_DAYS
+    except Exception:
+        return True
+
+
+async def _merge_into_record(record_id: str, new_addrs: list, new_phones: list,
+                              new_emails: list, new_relatives: list,
+                              new_dob: str = "", new_state: str = "") -> None:
+    """Additively merge fresh Whitepages data into an existing record.
+    Never removes existing data — only adds new items not already present.
+    """
+    doc = await people_records_collection.find_one({"recordId": record_id})
+    if not doc:
+        return
+    now = datetime.now(timezone.utc).isoformat()
+
+    # ── Addresses: add new ones not already stored (match on city+state) ──────
+    existing_addrs = doc.get("addresses", [])
+    existing_cs = {(a.get("city", "").lower(), a.get("state", "").upper()) for a in existing_addrs}
+    for a in new_addrs:
+        key = (a.get("city", "").lower(), a.get("state", "").upper())
+        if key not in existing_cs and (a.get("city") or a.get("street")):
+            # New address becomes non-current; existing current stays current
+            a["current"] = False
+            existing_addrs.append(a)
+            existing_cs.add(key)
+
+    # ── Phones: add new digits not already stored ─────────────────────────────
+    existing_phones = doc.get("phones", [])
+    def _phone_digits(p):
+        num = p.get("number", "") if isinstance(p, dict) else str(p)
+        return re.sub(r"[^\d]", "", num)[-10:]
+    existing_digits = {_phone_digits(p) for p in existing_phones}
+    for p in new_phones:
+        d = _phone_digits(p)
+        if d and d not in existing_digits:
+            existing_phones.append(p)
+            existing_digits.add(d)
+
+    # ── Emails: add new ones not already stored ───────────────────────────────
+    existing_emails = doc.get("emails", [])
+    existing_email_set = {_email_str(e).lower() for e in existing_emails}
+    for e in new_emails:
+        es = _email_str(e).lower()
+        if es and es not in existing_email_set:
+            existing_emails.append(e)
+            existing_email_set.add(es)
+
+    # ── Relatives: add new names not already stored ───────────────────────────
+    existing_relatives = doc.get("relatives", [])
+    existing_rel_set = {r.lower() if isinstance(r, str) else str(r).lower() for r in existing_relatives}
+    for r in new_relatives:
+        rs = r.lower() if isinstance(r, str) else str(r).lower()
+        if rs and rs not in existing_rel_set:
+            existing_relatives.append(r)
+            existing_rel_set.add(rs)
+
+    updates: dict = {
+        "addresses":   existing_addrs,
+        "phones":      existing_phones,
+        "emails":      existing_emails,
+        "relatives":   existing_relatives,
+        "lastVerified": now,
+        "lastUpdated":  now,
+    }
+    # Fill in DOB / state only if currently missing
+    if new_dob and not doc.get("dateOfBirth"):
+        updates["dateOfBirth"] = new_dob
+        updates["age"] = calc_age_from_dob(new_dob)
+    if new_state and not doc.get("state"):
+        updates["state"] = new_state
+
+    await people_records_collection.update_one(
+        {"recordId": record_id}, {"$set": updates}
+    )
+
+
 async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = "") -> None:
-    """Import a Whitepages result into the internal people_records collection (dedup by phone or name+state).
+    """Import or refresh a Whitepages result in the internal people_records collection.
+
+    - First search: inserts a new record and stamps lastVerified = now.
+    - Subsequent searches within STALE_AFTER_DAYS: skips (record is fresh).
+    - After STALE_AFTER_DAYS: merges new data additively (never deletes existing fields).
 
     Each lookup type returns different field shapes:
       phone_lookup:   { name, location, possibleAddress, possibleRelatives }
@@ -8296,37 +8390,38 @@ async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = ""
     """
     try:
         if lookup_type == "phone_lookup":
-            # Dedup by phone number; name is a full-name string
             full_name = (result.get("name") or "").strip()
             first, last = _split_full_name(full_name)
             if not first or not last:
                 return
 
             clean_phone = re.sub(r"[^\d]", "", phone)[-10:]
+            existing = None
             if clean_phone:
-                # Check if this phone already exists in the DB
+                digits = clean_phone
+                flex = r"\D*".join(digits)
                 existing = await people_records_collection.find_one(
-                    {"phones": {"$elemMatch": {"number": {"$regex": clean_phone}}}}
+                    {"phones": {"$elemMatch": {"number": {"$regex": flex}}}}
                 )
-                if existing:
-                    return
-
-            # Also check by exact name to avoid duplicates when phone not stored yet
-            name_exists = await people_records_collection.find_one({
-                "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
-                "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
-            })
-            if name_exists:
-                return
+            if not existing:
+                existing = await people_records_collection.find_one({
+                    "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+                    "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+                })
 
             addr_str = result.get("location") or result.get("possibleAddress") or ""
-            addrs  = [_parse_addr_str(addr_str, current=True)] if addr_str else []
+            addrs = [_parse_addr_str(addr_str, current=True)] if addr_str else []
             phones_list = [{"number": clean_phone, "type": "unknown", "current": True}] if clean_phone else []
             relatives = [r for r in (result.get("possibleRelatives") or []) if r]
-            await _insert_person_record(first, last, "", "", addrs, phones_list, [], relatives)
+
+            if existing:
+                if _is_stale(existing):
+                    await _merge_into_record(existing["recordId"], addrs, phones_list, [], relatives)
+                # else: record is fresh, skip
+            else:
+                await _insert_person_record(first, last, "", "", addrs, phones_list, [], relatives)
 
         elif lookup_type == "name_lookup":
-            # fullName, possibleAddresses (list of strings), possiblePhones (list of dicts), state
             full_name = (result.get("fullName") or "").strip()
             first, last = _split_full_name(full_name)
             if not first or not last:
@@ -8344,10 +8439,22 @@ async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = ""
             emails_raw = result.get("emails") or []
             emails = [_email_str(e) for e in emails_raw]
             relatives = [r for r in (result.get("possibleRelatives") or []) if r]
-            await _insert_person_record(first, last, dob, state, addrs, phones_list, emails, relatives)
+
+            query: dict = {
+                "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+                "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+            }
+            if state:
+                query["$or"] = [{"state": state}, {"addresses.state": state}]
+            existing = await people_records_collection.find_one(query)
+
+            if existing:
+                if _is_stale(existing):
+                    await _merge_into_record(existing["recordId"], addrs, phones_list, emails, relatives, dob, state)
+            else:
+                await _insert_person_record(first, last, dob, state, addrs, phones_list, emails, relatives)
 
         elif lookup_type == "address_lookup":
-            # residents is a list of full-name strings; address is a single string
             residents = result.get("residents") or []
             addr_str  = result.get("address") or ""
             phones_raw = result.get("associatedPhones") or []
@@ -8360,7 +8467,15 @@ async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = ""
                 first, last = _split_full_name(resident_name)
                 if not first or not last:
                     continue
-                await _insert_person_record(first, last, "", "", addrs, phones_list, [], [])
+                existing = await people_records_collection.find_one({
+                    "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+                    "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+                })
+                if existing:
+                    if _is_stale(existing):
+                        await _merge_into_record(existing["recordId"], addrs, phones_list, [], [])
+                else:
+                    await _insert_person_record(first, last, "", "", addrs, phones_list, [], [])
 
     except Exception:
         pass  # never let import errors break the search response

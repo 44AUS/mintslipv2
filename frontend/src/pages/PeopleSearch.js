@@ -220,8 +220,16 @@ function RelativePreview({ name }) {
 
 // Extract "City, ST" from a full address string
 function cityState(addr) {
-  const m = String(addr).match(/,\s*([^,]+,\s*[A-Z]{2})/);
-  return m ? m[1].trim() : String(addr).replace(/^\d+\s+/, "");
+  if (!addr) return "";
+  const parts = String(addr).split(",").map(s => s.trim());
+  // Find the 2-letter state abbreviation and return "City, ST"
+  for (let i = 1; i < parts.length; i++) {
+    if (/^[A-Z]{2}\b/.test(parts[i])) {
+      return `${parts[i - 1]}, ${parts[i].slice(0, 2)}`;
+    }
+  }
+  // Fallback: strip leading street number
+  return String(addr).replace(/^\d+\s+/, "");
 }
 
 // ── Carrier lookup result card ────────────────────────────────────────────────

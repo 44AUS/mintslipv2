@@ -8217,19 +8217,24 @@ def normalize_internal_record(doc: dict) -> dict:
 def _parse_addr_str(addr_str: str, current: bool = True) -> dict:
     """Parse a full address string like '123 Main St, Louisville, KY 40201' into components."""
     parts = [p.strip() for p in str(addr_str).split(",")]
-    if len(parts) >= 3:
+    # Check if the last part starts with a 2-letter US state abbreviation
+    last = parts[-1].strip() if parts else ""
+    has_state = bool(re.match(r"^[A-Z]{2}\b", last))
+
+    if len(parts) >= 3 and has_state:
         street = ", ".join(parts[:-2])
         city   = parts[-2].strip()
-        state_zip = parts[-1].strip().split()
-        st  = state_zip[0] if state_zip else ""
+        state_zip = last.split()
+        st   = state_zip[0] if state_zip else ""
         zip_ = state_zip[1] if len(state_zip) > 1 else ""
-    elif len(parts) == 2:
+    elif len(parts) == 2 and has_state:
         street = ""
         city   = parts[0].strip()
-        state_zip = parts[-1].strip().split()
-        st  = state_zip[0] if state_zip else ""
+        state_zip = last.split()
+        st   = state_zip[0] if state_zip else ""
         zip_ = state_zip[1] if len(state_zip) > 1 else ""
     else:
+        # No recognizable state — treat everything as street
         street = addr_str
         city = st = zip_ = ""
     return {"street": street, "city": city, "state": st, "zip": zip_, "current": current}
@@ -8548,7 +8553,11 @@ def blur_result(data: dict, lookup_type: str) -> dict:
             ]
     elif lookup_type == "name_lookup":
         if "possibleAddresses" in preview:
-            preview["possibleAddresses"] = [redact_addr(a) for a in preview["possibleAddresses"]]
+            preview["possibleAddresses"] = [redact_addr(a) for a in preview["possibleAddresses"] if a]
+        if "currentAddress" in preview and preview["currentAddress"]:
+            preview["currentAddress"] = redact_addr(preview["currentAddress"])
+        if "pastAddresses" in preview:
+            preview["pastAddresses"] = [redact_addr(a) for a in preview["pastAddresses"] if a]
         if "possiblePhones" in preview:
             preview["possiblePhones"] = [redact_phone(p) for p in preview["possiblePhones"]]
     elif lookup_type == "address_lookup":
@@ -9437,6 +9446,65 @@ async def admin_mass_delete_people_records(data: dict, session: dict = Depends(g
     result = await people_records_collection.delete_many({"recordId": {"$in": ids}})
     await log_action(session, "mass_delete_people_records", "people_record", "bulk", f"{result.deleted_count} deleted")
     return {"success": True, "deleted": result.deleted_count}
+
+
+US_STATE_CODES = {
+    "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
+    "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+    "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
+    "VA","WA","WV","WI","WY",
+}
+
+@app.post("/api/admin/people-records/fix-addresses")
+async def admin_fix_bad_addresses(session: dict = Depends(get_current_admin)):
+    """One-time migration: fix addresses where the street was incorrectly stored in the city field.
+    Detects bad addresses where city starts with a digit or state is not a valid US state code.
+    Reconstructs the original string and re-parses with the corrected parser.
+    """
+    fixed_records = 0
+    fixed_addresses = 0
+    cursor = people_records_collection.find(
+        {"addresses": {"$elemMatch": {
+            "$or": [
+                {"city": {"$regex": r"^\d"}},             # city starts with digit → street
+                {"state": {"$not": {"$in": list(US_STATE_CODES)}}},  # state not a valid abbreviation
+            ]
+        }}}
+    )
+    async for doc in cursor:
+        new_addrs = []
+        changed = False
+        for addr in doc.get("addresses", []):
+            city  = addr.get("city", "")
+            state = addr.get("state", "")
+            zip_  = addr.get("zip", "")
+            street = addr.get("street", "")
+
+            # Detect bad entry: city looks like a street or state isn't a valid code
+            city_is_street = bool(re.match(r"^\d", city))
+            state_invalid  = state and state not in US_STATE_CODES
+
+            if city_is_street or state_invalid:
+                # Reconstruct the original mangled string and re-parse
+                parts = [p for p in [street, city, f"{state} {zip_}".strip()] if p]
+                reconstructed = ", ".join(parts)
+                reparsed = _parse_addr_str(reconstructed, current=addr.get("current", False))
+                new_addrs.append(reparsed)
+                changed = True
+                fixed_addresses += 1
+            else:
+                new_addrs.append(addr)
+
+        if changed:
+            await people_records_collection.update_one(
+                {"_id": doc["_id"]},
+                {"$set": {"addresses": new_addrs, "lastUpdated": datetime.now(timezone.utc).isoformat()}}
+            )
+            fixed_records += 1
+
+    await log_action(session, "fix_bad_addresses", "people_record", "bulk",
+                     f"Fixed {fixed_addresses} addresses across {fixed_records} records")
+    return {"success": True, "fixedRecords": fixed_records, "fixedAddresses": fixed_addresses}
 
 
 # ── Public: People associated with a phone or address ────────────────────────

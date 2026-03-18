@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Search, Trash2, Loader2, ChevronLeft, ChevronRight, Database,
-  Plus, Edit2, X, Check, Phone, Mail, MapPin, Users, Briefcase, UserPlus, Link2,
+  Plus, Edit2, X, Check, Phone, Mail, MapPin, Users, Briefcase, UserPlus, Link2, Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -707,6 +707,7 @@ export default function AdminPeopleRecords() {
   const [confirmId, setConfirmId]   = useState(null);
   const [selected, setSelected]     = useState(new Set());
   const [massDeleting, setMassDeleting] = useState(false);
+  const [fixingAddresses, setFixingAddresses] = useState(false);
   const [modalRecord, setModalRecord]  = useState(undefined); // undefined=closed, null=new, obj=edit
   const [filterState, setFilterState]  = useState("");
   const [filterAddress, setFilterAddress] = useState("");
@@ -871,6 +872,24 @@ export default function AdminPeopleRecords() {
     }
   };
 
+  const handleFixAddresses = async () => {
+    setFixingAddresses(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/people-records/fix-addresses`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error("Fix failed"); return; }
+      toast.success(`Fixed ${data.fixedAddresses} addresses across ${data.fixedRecords} records`);
+      fetchRecords(page);
+    } catch {
+      toast.error("Fix failed");
+    } finally {
+      setFixingAddresses(false);
+    }
+  };
+
   const toggleSelect = (id) => {
     setSelected(prev => {
       const next = new Set(prev);
@@ -941,6 +960,12 @@ export default function AdminPeopleRecords() {
                 Delete {selected.size} selected
               </button>
             )}
+            <button onClick={handleFixAddresses} disabled={fixingAddresses}
+              title="Fix records where street address was stored in the city field"
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+              {fixingAddresses ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
+              Fix Addresses
+            </button>
             <button onClick={() => setModalRecord(null)}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
               <Plus className="w-4 h-4" /> Add Person

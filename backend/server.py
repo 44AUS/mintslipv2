@@ -6307,6 +6307,22 @@ async def use_coupon(data: CouponValidateRequest):
 
 # ========== BLOG ENDPOINTS ==========
 
+# Enable internal data source on every startup (migration for installs that seeded it as False)
+@app.on_event("startup")
+async def enable_internal_data_source():
+    await data_source_settings_collection.update_one(
+        {"source": "internal"},
+        {"$set": {"enabled": True}},
+        upsert=True,
+    )
+    await data_source_settings_collection.update_one(
+        {"source": "whitepages"},
+        {"$set": {"enabled": True}},
+        upsert=True,
+    )
+    logger.info("Data source defaults applied: internal=enabled, whitepages=enabled")
+
+
 # Initialize default blog categories
 @app.on_event("startup")
 async def init_blog_categories():
@@ -8090,9 +8106,8 @@ async def get_data_sources() -> list:
 async def is_source_enabled(source: str) -> bool:
     doc = await data_source_settings_collection.find_one({"source": source})
     if doc is None:
-        # Default: whitepages and internal both on
-        return source in ("whitepages", "internal")
-    return bool(doc.get("enabled", False))
+        return True  # default on for all sources
+    return bool(doc.get("enabled", True))
 
 # ── Internal DB helpers ───────────────────────────────────────────────────────
 
@@ -8537,6 +8552,15 @@ async def people_search_debug_raw(name: str = "John Smith", state: str = "WA", p
         r = await client.get(f"{_WP_BASE}/person", params={"name": name, "state_code": state}, headers={"x-api-key": WHITEPAGES_PRO_API_KEY})
         out["person"] = {"status": r.status_code, "body": r.json() if r.status_code == 200 else r.text}
     return out
+
+
+@app.get("/api/people-search/debug-sources")
+async def debug_sources():
+    """Returns data source enabled states + internal record count. No auth required."""
+    docs = await data_source_settings_collection.find({}, {"_id": 0}).to_list(None)
+    internal_count = await people_records_collection.count_documents({})
+    sample = await people_records_collection.find({}, {"firstName": 1, "lastName": 1, "source": 1, "_id": 0}).limit(5).to_list(5)
+    return {"sources": docs, "internalRecordCount": internal_count, "sampleRecords": sample}
 
 
 @app.post("/api/people-search/search")

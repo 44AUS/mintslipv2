@@ -8740,6 +8740,47 @@ async def people_search_prices_endpoint():
     return await get_people_search_prices()
 
 
+@app.get("/api/people-search/autocomplete")
+async def people_search_autocomplete(q: str = ""):
+    """Return up to 8 name suggestions from the internal DB for the given query string."""
+    q = q.strip()
+    if len(q) < 2:
+        return {"suggestions": []}
+    parts = q.split()
+    if len(parts) == 1:
+        # Single word — match first OR last name
+        pattern = re.escape(parts[0])
+        query = {"$or": [
+            {"firstName": {"$regex": f"^{pattern}", "$options": "i"}},
+            {"lastName":  {"$regex": f"^{pattern}", "$options": "i"}},
+        ]}
+    else:
+        # Multiple words — first word = first name, rest = last name prefix
+        first_pat = re.escape(parts[0])
+        last_pat  = re.escape(" ".join(parts[1:]))
+        query = {
+            "firstName": {"$regex": f"^{first_pat}", "$options": "i"},
+            "lastName":  {"$regex": f"^{last_pat}",  "$options": "i"},
+        }
+    cursor = people_records_collection.find(
+        query,
+        {"firstName": 1, "middleName": 1, "lastName": 1, "state": 1, "dateOfBirth": 1, "addresses": 1}
+    ).limit(8)
+    suggestions = []
+    async for doc in cursor:
+        first  = doc.get("firstName", "")
+        middle = doc.get("middleName", "")
+        last   = doc.get("lastName", "")
+        full   = " ".join(p for p in [first, middle, last] if p)
+        state  = doc.get("state", "")
+        if not state:
+            addrs = doc.get("addresses", [])
+            state = next((a.get("state", "") for a in addrs if a.get("state")), "")
+        age = calc_age_from_dob(doc.get("dateOfBirth", ""))
+        suggestions.append({"fullName": full, "state": state, "age": age})
+    return {"suggestions": suggestions}
+
+
 # ── Carrier Lookup ────────────────────────────────────────────────────────────
 
 def _phonenumbers_carrier_lookup(phone_e164: str) -> dict:

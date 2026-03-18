@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
@@ -509,6 +509,12 @@ export default function PeopleSearch() {
   const [city, setCity] = useState("");       // address tab city
   const [state, setState] = useState("");     // address tab state
 
+  // Autocomplete
+  const [acSuggestions, setAcSuggestions] = useState([]);
+  const [acOpen, setAcOpen] = useState(false);
+  const acDebounce = useRef(null);
+  const acRef = useRef(null);
+
   // Sidebar filters (name lookup only)
   const [filterState, setFilterState] = useState("");
   const [ageRange, setAgeRange] = useState("");
@@ -557,6 +563,26 @@ export default function PeopleSearch() {
       .then(data => { if (data) setPrices(prev => ({ ...prev, ...data })); })
       .catch(() => {});
   }, []); // eslint-disable-line
+
+  const fetchAcSuggestions = useCallback((val) => {
+    clearTimeout(acDebounce.current);
+    if (val.trim().length < 2) { setAcSuggestions([]); setAcOpen(false); return; }
+    acDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/people-search/autocomplete?q=${encodeURIComponent(val.trim())}`);
+        const data = await res.json();
+        setAcSuggestions(data.suggestions || []);
+        setAcOpen((data.suggestions || []).length > 0);
+      } catch { setAcSuggestions([]); setAcOpen(false); }
+    }, 280);
+  }, []);
+
+  // Close autocomplete on outside click
+  useEffect(() => {
+    const handler = (e) => { if (acRef.current && !acRef.current.contains(e.target)) setAcOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleSearch = async () => {
     const tab = TAB_CONFIG[activeTab];
@@ -704,13 +730,42 @@ export default function PeopleSearch() {
           <div className="flex items-stretch border border-slate-200 rounded-lg overflow-hidden mb-3 bg-white">
             {(activeTab === "name") && (
               <>
-                <input
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleSearch()}
-                  placeholder="e.g. Jon Snow"
-                  className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
-                />
+                <div ref={acRef} className="flex-1 relative min-w-0">
+                  <input
+                    value={fullName}
+                    onChange={e => { setFullName(e.target.value); fetchAcSuggestions(e.target.value); }}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") { setAcOpen(false); handleSearch(); }
+                      if (e.key === "Escape") setAcOpen(false);
+                    }}
+                    onFocus={() => { if (acSuggestions.length > 0) setAcOpen(true); }}
+                    placeholder="e.g. Jon Snow"
+                    className="w-full px-4 py-3 text-sm focus:outline-none"
+                    autoComplete="off"
+                  />
+                  {acOpen && acSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-b-xl shadow-lg overflow-hidden">
+                      {acSuggestions.map((s, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            setFullName(s.fullName);
+                            setAcOpen(false);
+                            setAcSuggestions([]);
+                          }}
+                          className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-slate-50 text-left border-b border-slate-100 last:border-0"
+                        >
+                          <span className="font-medium text-slate-800">{s.fullName}</span>
+                          <span className="text-xs text-slate-400 flex-shrink-0 ml-3">
+                            {[s.age ? `Age ${s.age}` : null, s.state].filter(Boolean).join(" · ")}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="w-px bg-slate-200 self-stretch" />
                 <input
                   value={locationStr}

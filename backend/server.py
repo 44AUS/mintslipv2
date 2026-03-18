@@ -3089,6 +3089,8 @@ async def track_purchase(data: PurchaseCreate, request: Request):
     
     return {"success": True, "purchaseId": purchase["id"]}
 
+PEOPLE_SEARCH_TYPES = {"phone_lookup", "name_lookup", "address_lookup", "carrier_lookup"}
+
 @app.get("/api/admin/purchases")
 async def get_all_purchases(
     session: dict = Depends(get_current_admin),
@@ -3100,23 +3102,56 @@ async def get_all_purchases(
 ):
     """Get all purchases (admin only)"""
     check_permission(session, "view_purchases")
-    query = {}
 
-    if documentType:
-        query["documentType"] = documentType
-    
+    date_filter = {}
     if startDate:
-        query["createdAt"] = {"$gte": startDate}
-    
+        date_filter["$gte"] = startDate
     if endDate:
-        if "createdAt" in query:
-            query["createdAt"]["$lte"] = endDate
-        else:
-            query["createdAt"] = {"$lte": endDate}
-    
-    purchases = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
-    total = await purchases_collection.count_documents(query)
-    
+        date_filter["$lte"] = endDate
+
+    is_ps_type = documentType in PEOPLE_SEARCH_TYPES
+    is_doc_type = documentType and not is_ps_type
+
+    purchases = []
+
+    # Regular document purchases
+    if not is_ps_type:
+        q: dict = {}
+        if is_doc_type:
+            q["documentType"] = documentType
+        if date_filter:
+            q["createdAt"] = date_filter
+        purchases += await purchases_collection.find(q, {"_id": 0}).sort("createdAt", -1).to_list(None)
+
+    # People search payments
+    if not is_doc_type:
+        psq: dict = {}
+        if is_ps_type:
+            psq["lookupType"] = documentType
+        if date_filter:
+            psq["createdAt"] = date_filter
+        ps_payments = await people_search_payments_collection.find(psq, {"_id": 0}).to_list(None)
+        for p in ps_payments:
+            purchases.append({
+                "id":           p.get("id"),
+                "documentType": p.get("lookupType"),
+                "template":     p.get("query", ""),
+                "amount":       p.get("amount", 0),
+                "email":        p.get("userEmail", ""),
+                "userId":       p.get("userId", ""),
+                "userEmail":    p.get("userEmail", ""),
+                "stripeSessionId": p.get("stripeSessionId"),
+                "discountCode": p.get("discountCode"),
+                "discountAmount": p.get("discountAmount", 0),
+                "createdAt":    p.get("createdAt"),
+                "searchId":     p.get("searchId"),
+            })
+
+    # Sort all combined by createdAt desc, then paginate
+    purchases.sort(key=lambda x: x.get("createdAt") or "", reverse=True)
+    total = len(purchases)
+    purchases = purchases[skip: skip + limit]
+
     return {
         "success": True,
         "purchases": purchases,
@@ -6237,7 +6272,12 @@ async def validate_coupon(data: CouponValidateRequest):
     # Check generator applicability
     if discount.get("applicableTo") == "specific":
         allowed_generators = discount.get("specificGenerators", [])
-        if data.generatorType not in allowed_generators:
+        ps_types = {"phone_lookup", "name_lookup", "address_lookup", "carrier_lookup"}
+        # "people_search" in allowed list covers all lookup types
+        allowed_expanded = set(allowed_generators)
+        if "people_search" in allowed_expanded:
+            allowed_expanded |= ps_types
+        if data.generatorType not in allowed_expanded:
             raise HTTPException(status_code=400, detail=f"This coupon code is not valid for {data.generatorType}")
     
     return {
@@ -8584,8 +8624,7 @@ async def people_search_checkout_endpoint(request: Request, data: PeopleSearchCh
     lt = log["lookupType"]
     price = prices.get(lt, DEFAULT_PEOPLE_SEARCH_PRICES.get(lt, 0.99))
     discount_amount = float(data.discountAmount or 0)
-    final_price = max(0.50, round(price - discount_amount, 2))
-    amount_cents = int(round(final_price * 100))
+    final_price = round(price - discount_amount, 2)
 
     labels = {
         "phone_lookup":   "Reverse Phone Lookup",
@@ -8602,6 +8641,24 @@ async def people_search_checkout_endpoint(request: Request, data: PeopleSearchCh
         if user:
             user_id = user["id"]
             user_email = user.get("email", "")
+
+    # 100% off — mark as paid directly, no Stripe needed
+    if final_price <= 0:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        await people_search_logs_collection.update_one(
+            {"id": data.searchId},
+            {"$set": {"isPaid": True, "paidAt": now_iso, "discountCode": data.discountCode}},
+        )
+        payment_record = {
+            "id": str(uuid.uuid4()), "searchId": data.searchId, "lookupType": lt,
+            "query": log.get("query", ""), "amount": 0, "stripeSessionId": None,
+            "userId": user_id, "userEmail": user_email, "createdAt": now_iso,
+            "discountCode": data.discountCode, "discountAmount": discount_amount,
+        }
+        await people_search_payments_collection.insert_one(payment_record)
+        return {"success": True, "alreadyPaid": True, "result": log["fullResult"]}
+
+    amount_cents = int(round(final_price * 100))
 
     checkout_session = await asyncio.to_thread(
         stripe.checkout.Session.create,

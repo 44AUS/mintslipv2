@@ -60,6 +60,11 @@ const GENERATORS = [
   { id: "vehicle-bill-of-sale", name: "Vehicle Bill of Sale" },
   { id: "utility-bill", name: "Utility Bill Generator" },
   { id: "ai-resume", name: "AI Resume Builder" },
+  { id: "people_search", name: "People Search (All Lookups)" },
+  { id: "phone_lookup", name: "People Search – Reverse Phone" },
+  { id: "name_lookup", name: "People Search – Name Lookup" },
+  { id: "address_lookup", name: "People Search – Address Lookup" },
+  { id: "carrier_lookup", name: "People Search – Carrier Lookup" },
 ];
 
 export default function AdminDiscounts() {

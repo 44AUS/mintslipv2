@@ -26,6 +26,17 @@ const TAB_CONFIG = {
   carrier: { id: "carrier_lookup", label: "Carrier Lookup",       icon: Shield },
 };
 
+const AGE_RANGES = [
+  { value: "",      label: "All Ages", min: null, max: null },
+  { value: "18-29", label: "18-29",   min: 18,   max: 29   },
+  { value: "30-39", label: "30-39",   min: 30,   max: 39   },
+  { value: "40-49", label: "40-49",   min: 40,   max: 49   },
+  { value: "50-59", label: "50-59",   min: 50,   max: 59   },
+  { value: "60-69", label: "60-69",   min: 60,   max: 69   },
+  { value: "70-79", label: "70-79",   min: 70,   max: 79   },
+  { value: "80+",   label: "80+",     min: 80,   max: null },
+];
+
 // ── Result card rows ──────────────────────────────────────────────────────────
 function InfoRow({ label, value, blurred }) {
   if (!value || (Array.isArray(value) && value.length === 0)) return null;
@@ -500,8 +511,7 @@ export default function PeopleSearch() {
 
   // Sidebar filters (name lookup only)
   const [filterState, setFilterState] = useState("");
-  const [minAge, setMinAge] = useState("");
-  const [maxAge, setMaxAge] = useState("");
+  const [ageRange, setAgeRange] = useState("");
 
   const userToken = localStorage.getItem("userToken");
   const authHeaders = userToken
@@ -594,8 +604,9 @@ export default function PeopleSearch() {
         body.fullName = fullName;
         body.city  = filterState ? "" : loc.city;
         body.state = filterState || loc.state;
-        if (minAge) body.minAge = parseInt(minAge);
-        if (maxAge) body.maxAge = parseInt(maxAge);
+        const ageRangeObj = AGE_RANGES.find(r => r.value === ageRange);
+        if (ageRangeObj?.min != null) body.minAge = ageRangeObj.min;
+        if (ageRangeObj?.max != null) body.maxAge = ageRangeObj.max;
       } else if (tab.id === "address_lookup") {
         body.street = street;
         body.city   = city;
@@ -892,22 +903,17 @@ export default function PeopleSearch() {
                     <select value={filterState} onChange={e => setFilterState(e.target.value)}
                       className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
                       <option value="">Any State</option>
-                      {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                      {[...new Set(results.map(r => r.preview?.state).filter(Boolean))].sort()
+                        .map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Min Age</label>
-                    <input type="number" min="18" max="99" value={minAge} onChange={e => setMinAge(e.target.value)}
-                      placeholder="18"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Max Age</label>
-                    <input type="number" min="18" max="99" value={maxAge} onChange={e => setMaxAge(e.target.value)}
-                      placeholder="99"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Age Range</label>
+                    <select value={ageRange} onChange={e => setAgeRange(e.target.value)}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      {AGE_RANGES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    </select>
                   </div>
 
                   <button onClick={handleSearch} disabled={searching}

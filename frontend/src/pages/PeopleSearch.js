@@ -418,6 +418,9 @@ export default function PeopleSearch() {
   const [state, setState] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
+  const [nameCity, setNameCity] = useState("");
+  const [minAge, setMinAge] = useState("");
+  const [maxAge, setMaxAge] = useState("");
 
   const userToken = localStorage.getItem("userToken");
   const authHeaders = userToken
@@ -459,7 +462,12 @@ export default function PeopleSearch() {
       const res = await fetch(`${BACKEND_URL}/api/people-search/search`, {
         method: "POST",
         headers: authHeaders,
-        body: JSON.stringify({ lookupType: tab.id, phone, firstName, lastName, state, street, city }),
+        body: JSON.stringify({
+          lookupType: tab.id, phone, firstName, lastName, state, street,
+          city: tab.id === "name_lookup" ? nameCity : city,
+          ...(tab.id === "name_lookup" && minAge ? { minAge: parseInt(minAge) } : {}),
+          ...(tab.id === "name_lookup" && maxAge ? { maxAge: parseInt(maxAge) } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -575,15 +583,40 @@ export default function PeopleSearch() {
                           className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                        State <span className="text-slate-400 font-normal">(optional — narrows results)</span>
-                      </label>
-                      <select value={state} onChange={e => setState(e.target.value)}
-                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
-                        <option value="">Any State</option>
-                        {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                      </select>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                          City <span className="text-slate-400 font-normal">(optional)</span>
+                        </label>
+                        <input value={nameCity} onChange={e => setNameCity(e.target.value)} placeholder="Louisville"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                          State <span className="text-slate-400 font-normal">(optional)</span>
+                        </label>
+                        <select value={state} onChange={e => setState(e.target.value)}
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
+                          <option value="">Any State</option>
+                          {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                          Min Age <span className="text-slate-400 font-normal">(optional, 18–65)</span>
+                        </label>
+                        <input type="number" min="18" max="65" value={minAge} onChange={e => setMinAge(e.target.value)} placeholder="18"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                          Max Age <span className="text-slate-400 font-normal">(optional, 18–65)</span>
+                        </label>
+                        <input type="number" min="18" max="65" value={maxAge} onChange={e => setMaxAge(e.target.value)} placeholder="65"
+                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+                      </div>
                     </div>
                   </>
                 )}

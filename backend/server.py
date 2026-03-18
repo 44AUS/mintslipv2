@@ -7855,7 +7855,7 @@ async def wp_phone_lookup(phone: str) -> dict | None:
         return None
 
 
-async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | None:
+async def wp_person_lookup(first: str, last: str, state: str, city: str = "", min_age: int = None, max_age: int = None) -> list[dict] | None:
     """Whitepages Pro Person Search — returns list of up to 5 normalized results."""
     if not WHITEPAGES_PRO_API_KEY:
         return None
@@ -7884,6 +7884,12 @@ async def wp_person_lookup(first: str, last: str, state: str) -> list[dict] | No
         params = {"name": f"{first} {last}"}
         if state:
             params["state_code"] = state.upper()
+        if city:
+            params["city"] = city
+        if min_age is not None:
+            params["min_age"] = min_age
+        if max_age is not None:
+            params["max_age"] = max_age
         async with httpx.AsyncClient(timeout=10) as client:
             r = await client.get(
                 f"{_WP_BASE}/person/",
@@ -8070,7 +8076,7 @@ def normalize_internal_record(doc: dict) -> dict:
         "sourceDB":         doc.get("source", "internal"),
     }
 
-async def internal_name_lookup(first: str, last: str, state: str = "") -> list:
+async def internal_name_lookup(first: str, last: str, state: str = "", city: str = "", min_age: int = None, max_age: int = None) -> list:
     query: dict = {
         "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
         "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
@@ -8080,6 +8086,12 @@ async def internal_name_lookup(first: str, last: str, state: str = "") -> list:
             {"state": {"$regex": state, "$options": "i"}},
             {"addresses.state": {"$regex": state, "$options": "i"}},
         ]
+    if city:
+        query["addresses.city"] = {"$regex": re.escape(city), "$options": "i"}
+    if min_age is not None:
+        query.setdefault("age", {})["$gte"] = min_age
+    if max_age is not None:
+        query.setdefault("age", {})["$lte"] = max_age
     cursor = people_records_collection.find(query).limit(20)
     results = []
     async for doc in cursor:
@@ -8266,6 +8278,8 @@ class PeopleSearchRequest(BaseModel):
     state: Optional[str] = None
     street: Optional[str] = None
     city: Optional[str] = None
+    minAge: Optional[int] = None
+    maxAge: Optional[int] = None
 
 
 class PeopleSearchCheckoutRequest(BaseModel):
@@ -8427,9 +8441,12 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         if not data.firstName or not data.lastName:
             raise HTTPException(status_code=400, detail="First and last name required")
 
+        min_age = data.minAge
+        max_age = data.maxAge
+
         full_results = []
         if use_whitepages:
-            wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "")
+            wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
             mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
             if wp_list:
                 for i, wp_item in enumerate(wp_list):
@@ -8438,12 +8455,31 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             else:
                 full_results.extend(mock_list)
         if use_internal:
-            db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "")
+            db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
             full_results.extend(db_results)
         if not full_results:
             mock_list = await asyncio.to_thread(mock_name_lookup, data.firstName, data.lastName, data.state or "")
             full_results = mock_list
-        query_summary = f"{data.firstName} {data.lastName}" + (f", {data.state}" if data.state else "")
+
+        # Post-filter by age for results that have age data
+        if min_age is not None or max_age is not None:
+            def _age_ok(r):
+                age = r.get("age")
+                if age is None:
+                    return True  # keep if unknown
+                if min_age is not None and age < min_age:
+                    return False
+                if max_age is not None and age > max_age:
+                    return False
+                return True
+            full_results = [r for r in full_results if _age_ok(r)]
+
+        parts = [f"{data.firstName} {data.lastName}"]
+        if data.city: parts.append(data.city)
+        if data.state: parts.append(data.state)
+        if min_age or max_age:
+            parts.append(f"Age {min_age or ''}–{max_age or ''}")
+        query_summary = ", ".join(parts)
 
     elif lt == "address_lookup":
         if not data.street or not data.city:

@@ -7864,6 +7864,7 @@ def _wp_build_addr(a: dict) -> str:
     If a['address'] already contains the city (e.g. it's a full formatted string), use it as-is.
     Otherwise combine street + city + state + zip into a single parseable string.
     """
+    print(f"[wp_addr] keys={list(a.keys())} raw={a.get('address')!r} city={a.get('city')!r} state={a.get('state_code') or a.get('state')!r} zip={a.get('zip')!r}")
     raw    = a.get("address") or a.get("full_address") or a.get("street_line_1") or ""
     city   = a.get("city") or ""
     state  = a.get("state_code") or a.get("state") or ""
@@ -7876,7 +7877,9 @@ def _wp_build_addr(a: dict) -> str:
     # If raw already has 2+ commas it's likely a full address
     if raw and raw.count(",") >= 2:
         return raw
-    return ", ".join(p for p in [raw, city, state_zip] if p)
+    result = ", ".join(p for p in [raw, city, state_zip] if p)
+    print(f"[wp_addr] built={result!r}")
+    return result
 
 
 async def wp_phone_lookup(phone: str) -> dict | None:
@@ -9636,6 +9639,23 @@ US_STATE_CODES = {
     "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
     "VA","WA","WV","WI","WY",
 }
+
+@app.get("/api/admin/people-records/address-audit")
+async def admin_address_audit(session: dict = Depends(get_current_admin)):
+    """Return a sample of 20 address records so we can see exactly what's stored."""
+    cursor = people_records_collection.find(
+        {"addresses": {"$exists": True, "$not": {"$size": 0}}},
+        {"firstName": 1, "lastName": 1, "addresses": 1, "source": 1}
+    ).limit(20)
+    samples = []
+    async for doc in cursor:
+        samples.append({
+            "name": f"{doc.get('firstName','')} {doc.get('lastName','')}",
+            "source": doc.get("source", ""),
+            "addresses": doc.get("addresses", []),
+        })
+    return {"samples": samples}
+
 
 @app.post("/api/admin/people-records/fix-addresses")
 async def admin_fix_bad_addresses(session: dict = Depends(get_current_admin)):

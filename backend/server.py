@@ -8803,9 +8803,17 @@ async def admin_get_data_sources(request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     sources = await get_data_sources()
+    # Known non-internal sources (scrapers + import types)
+    non_internal_sources = [s["source"] for s in DATA_SOURCE_DEFAULTS if s["source"] not in ("internal", "whitepages")]
     # Enrich with live record counts and latest job info
     for src in sources:
-        src["recordCount"] = await people_records_collection.count_documents({"source": src["source"]})
+        if src["source"] == "internal":
+            # Count all records that aren't from a named scraper/import source
+            src["recordCount"] = await people_records_collection.count_documents(
+                {"source": {"$nin": non_internal_sources}}
+            )
+        else:
+            src["recordCount"] = await people_records_collection.count_documents({"source": src["source"]})
         job = await scraper_jobs_collection.find_one(
             {"source": src["source"]}, sort=[("startedAt", -1)]
         )

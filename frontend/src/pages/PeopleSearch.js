@@ -200,16 +200,9 @@ function EmailPreview({ email }) {
   );
 }
 
-// ── Address: show street number, blur the rest ────────────────────────────────
+// ── Address: show city/state (no zip) ────────────────────────────────────────
 function AddressPreview({ addr }) {
-  const match = String(addr).match(/^(\d+)\s(.+)$/);
-  if (!match) return <span className="text-sm blur-[4px] select-none text-slate-400">{addr}</span>;
-  return (
-    <span className="text-sm">
-      <span className="text-slate-700">{match[1]} </span>
-      <span className="blur-[4px] select-none text-slate-400">{match[2]}</span>
-    </span>
-  );
+  return <span className="text-sm text-slate-700">{addr}</span>;
 }
 
 // ── Relative: show first name, blur last name ─────────────────────────────────

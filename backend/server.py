@@ -8223,11 +8223,17 @@ def blur_result(data: dict, lookup_type: str) -> dict:
         return BLOB
 
     def redact_addr(a):
-        parts = a.split(",")
-        # Show only street prefix
-        street = parts[0][:6] + BLOB if len(parts) > 0 else BLOB
-        suffix = ", " + parts[-1].strip() if len(parts) > 1 else ""
-        return street + suffix
+        # Show only City, ST — no street number, no zip
+        parts = [p.strip() for p in a.split(",")]
+        if len(parts) >= 3:
+            city = parts[-2]
+            state = parts[-1][:2]
+            return f"{city}, {state}"
+        elif len(parts) == 2:
+            city = parts[0]
+            state = parts[1][:2]
+            return f"{city}, {state}"
+        return a
 
     preview = copy.deepcopy(data)
 

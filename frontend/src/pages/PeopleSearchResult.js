@@ -235,11 +235,15 @@ export default function PeopleSearchResult() {
   })();
 
   const locationSummary = (() => {
-    if (d?.state) return d.state;
     if (currentAddr) {
-      const m = String(currentAddr).match(/,\s*([^,]+,\s*[A-Z]{2})/);
-      return m ? m[1].trim() : null;
+      // Try "City, ST" from full address e.g. "123 Main St, Louisville, KY 40201"
+      const m = String(currentAddr).match(/,\s*([^,]+),\s*([A-Z]{2})\b/);
+      if (m) return `${m[1].trim()}, ${m[2]}`;
+      // Already "City, ST" format from preview
+      const m2 = String(currentAddr).match(/^([^,]+),\s*([A-Z]{2})\b/);
+      if (m2) return `${m2[1].trim()}, ${m2[2]}`;
     }
+    if (d?.state) return d.state;
     return null;
   })();
 

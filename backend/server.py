@@ -8217,24 +8217,30 @@ def normalize_internal_record(doc: dict) -> dict:
 def _parse_addr_str(addr_str: str, current: bool = True) -> dict:
     """Parse a full address string like '123 Main St, Louisville, KY 40201' into components."""
     parts = [p.strip() for p in str(addr_str).split(",")]
-    # Check if the last part starts with a 2-letter US state abbreviation
+    # Last part must start with a 2-letter US state abbreviation to be valid
     last = parts[-1].strip() if parts else ""
     has_state = bool(re.match(r"^[A-Z]{2}\b", last))
 
+    state_zip = last.split() if has_state else []
+    st   = state_zip[0] if state_zip else ""
+    zip_ = state_zip[1] if len(state_zip) > 1 else ""
+
     if len(parts) >= 3 and has_state:
+        # "123 Main St, Louisville, KY 40201"
         street = ", ".join(parts[:-2])
         city   = parts[-2].strip()
-        state_zip = last.split()
-        st   = state_zip[0] if state_zip else ""
-        zip_ = state_zip[1] if len(state_zip) > 1 else ""
     elif len(parts) == 2 and has_state:
-        street = ""
-        city   = parts[0].strip()
-        state_zip = last.split()
-        st   = state_zip[0] if state_zip else ""
-        zip_ = state_zip[1] if len(state_zip) > 1 else ""
+        first = parts[0].strip()
+        if re.match(r"^\d", first):
+            # "123 Main St, KY 40201" — street with no city info
+            street = first
+            city   = ""
+        else:
+            # "Louisville, KY 40201" — normal city + state
+            street = ""
+            city   = first
     else:
-        # No recognizable state — treat everything as street
+        # No recognizable city/state — store everything as street
         street = addr_str
         city = st = zip_ = ""
     return {"street": street, "city": city, "state": st, "zip": zip_, "current": current}
@@ -9579,26 +9585,23 @@ async def admin_fix_bad_addresses(session: dict = Depends(get_current_admin)):
     """
     fixed_records = 0
     fixed_addresses = 0
+    # Fetch ALL records that have any address — re-validate each one in Python
+    # (avoids complex MongoDB queries with edge cases around null/missing fields)
     cursor = people_records_collection.find(
-        {"addresses": {"$elemMatch": {
-            "$or": [
-                {"city": {"$regex": r"^\d"}},             # city starts with digit → street
-                {"state": {"$not": {"$in": list(US_STATE_CODES)}}},  # state not a valid abbreviation
-            ]
-        }}}
+        {"addresses": {"$exists": True, "$not": {"$size": 0}}}
     )
     async for doc in cursor:
         new_addrs = []
         changed = False
         for addr in doc.get("addresses", []):
-            city  = addr.get("city", "")
-            state = addr.get("state", "")
-            zip_  = addr.get("zip", "")
+            city   = addr.get("city", "")
+            state  = addr.get("state", "")
+            zip_   = addr.get("zip", "")
             street = addr.get("street", "")
 
-            # Detect bad entry: city looks like a street or state isn't a valid code
+            # Bad if city starts with a digit (street number) OR state is not a valid US code
             city_is_street = bool(re.match(r"^\d", city))
-            state_invalid  = state and state not in US_STATE_CODES
+            state_invalid  = bool(state) and state not in US_STATE_CODES
 
             if city_is_street or state_invalid:
                 # Reconstruct the original mangled string and re-parse

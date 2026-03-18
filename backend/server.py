@@ -8155,101 +8155,149 @@ def normalize_internal_record(doc: dict) -> dict:
         "recordId":         doc.get("recordId", ""),
     }
 
-async def upsert_from_whitepages(lookup_type: str, result: dict) -> None:
-    """Import a Whitepages result into the internal people_records collection (dedup by phone or name+state)."""
+def _parse_addr_str(addr_str: str, current: bool = True) -> dict:
+    """Parse a full address string like '123 Main St, Louisville, KY 40201' into components."""
+    parts = [p.strip() for p in str(addr_str).split(",")]
+    if len(parts) >= 3:
+        street = ", ".join(parts[:-2])
+        city   = parts[-2].strip()
+        state_zip = parts[-1].strip().split()
+        st  = state_zip[0] if state_zip else ""
+        zip_ = state_zip[1] if len(state_zip) > 1 else ""
+    elif len(parts) == 2:
+        street = ""
+        city   = parts[0].strip()
+        state_zip = parts[-1].strip().split()
+        st  = state_zip[0] if state_zip else ""
+        zip_ = state_zip[1] if len(state_zip) > 1 else ""
+    else:
+        street = addr_str
+        city = st = zip_ = ""
+    return {"street": street, "city": city, "state": st, "zip": zip_, "current": current}
+
+
+def _split_full_name(full_name: str) -> tuple[str, str]:
+    """Split 'First Last' into (first, last). Returns ('', '') if no last name."""
+    parts = full_name.strip().split()
+    if len(parts) < 2:
+        return parts[0] if parts else "", ""
+    return parts[0], " ".join(parts[1:])
+
+
+async def _insert_person_record(first: str, last: str, dob: str, state: str,
+                                 addrs: list, phones: list, emails: list,
+                                 relatives: list) -> None:
+    """Insert a person record after checking for duplicates."""
+    query: dict = {
+        "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
+        "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
+    }
+    if state:
+        query["$or"] = [{"state": state}, {"addresses.state": state}]
+    if await people_records_collection.find_one(query):
+        return  # already exists
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "recordId":    str(uuid.uuid4()),
+        "source":      "whitepages",
+        "firstName":   first,
+        "lastName":    last,
+        "middleName":  "",
+        "aliases":     [],
+        "age":         calc_age_from_dob(dob),
+        "dateOfBirth": dob,
+        "gender":      "",
+        "state":       state,
+        "addresses":   addrs,
+        "phones":      phones,
+        "emails":      [e for e in emails if e],
+        "relatives":   relatives,
+        "associates":  [],
+        "occupation":  "",
+        "employer":    "",
+        "sourceData":  {},
+        "createdAt":   now,
+        "lastUpdated": now,
+    }
+    await people_records_collection.insert_one(doc)
+
+
+async def upsert_from_whitepages(lookup_type: str, result: dict, phone: str = "") -> None:
+    """Import a Whitepages result into the internal people_records collection (dedup by phone or name+state).
+
+    Each lookup type returns different field shapes:
+      phone_lookup:   { name, location, possibleAddress, possibleRelatives }
+      name_lookup:    { fullName, dateOfBirth, possibleAddresses, possiblePhones, possibleRelatives, state }
+      address_lookup: { address, residents, associatedPhones }
+    """
     try:
-        first = (result.get("firstName") or "").strip()
-        last  = (result.get("lastName")  or "").strip()
-        if not first or not last:
-            return  # can't store without a name
-
-        now = datetime.now(timezone.utc).isoformat()
-
-        # Build dedup query
         if lookup_type == "phone_lookup":
-            phones_raw = result.get("possiblePhones") or result.get("phones") or []
-            phone_nums = []
-            for p in (phones_raw if isinstance(phones_raw, list) else [phones_raw]):
-                num = p.get("number") if isinstance(p, dict) else str(p)
-                clean = re.sub(r"[^\d]", "", num or "")
-                if clean:
-                    phone_nums.append(clean)
-            if not phone_nums:
+            # Dedup by phone number; name is a full-name string
+            full_name = (result.get("name") or "").strip()
+            first, last = _split_full_name(full_name)
+            if not first or not last:
                 return
-            query = {"phones": {"$elemMatch": {"$regex": phone_nums[0]}}}
-        else:
-            # name + state dedup
-            state = result.get("state", "")
-            query = {
+
+            clean_phone = re.sub(r"[^\d]", "", phone)[-10:]
+            if clean_phone:
+                # Check if this phone already exists in the DB
+                existing = await people_records_collection.find_one(
+                    {"phones": {"$elemMatch": {"number": {"$regex": clean_phone}}}}
+                )
+                if existing:
+                    return
+
+            # Also check by exact name to avoid duplicates when phone not stored yet
+            name_exists = await people_records_collection.find_one({
                 "firstName": {"$regex": f"^{re.escape(first)}$", "$options": "i"},
                 "lastName":  {"$regex": f"^{re.escape(last)}$",  "$options": "i"},
-            }
-            if state:
-                query["$or"] = [
-                    {"state": state},
-                    {"addresses.state": state},
-                ]
+            })
+            if name_exists:
+                return
 
-        existing = await people_records_collection.find_one(query)
-        if existing:
-            return  # already in DB
+            addr_str = result.get("location") or result.get("possibleAddress") or ""
+            addrs  = [_parse_addr_str(addr_str, current=True)] if addr_str else []
+            phones_list = [{"number": clean_phone, "type": "unknown", "current": True}] if clean_phone else []
+            relatives = [r for r in (result.get("possibleRelatives") or []) if r]
+            await _insert_person_record(first, last, "", "", addrs, phones_list, [], relatives)
 
-        # Build addresses list
-        addrs = []
-        ca = result.get("currentAddress")
-        if ca:
-            # currentAddress may be a full string like "123 Main St, City, ST 12345"
-            # Parse it into components if possible
-            parts = [p.strip() for p in str(ca).split(",")]
-            if len(parts) >= 2:
-                state_zip = parts[-1].strip().split()
-                st = state_zip[0] if state_zip else ""
-                city = parts[-2].strip() if len(parts) >= 2 else ""
-                street = ", ".join(parts[:-2]) if len(parts) > 2 else ""
-                addrs.append({"street": street, "city": city, "state": st, "zip": state_zip[1] if len(state_zip) > 1 else "", "current": True})
+        elif lookup_type == "name_lookup":
+            # fullName, possibleAddresses (list of strings), possiblePhones (list of dicts), state
+            full_name = (result.get("fullName") or "").strip()
+            first, last = _split_full_name(full_name)
+            if not first or not last:
+                return
 
-        for pa in (result.get("pastAddresses") or []):
-            parts = [p.strip() for p in str(pa).split(",")]
-            if len(parts) >= 2:
-                state_zip = parts[-1].strip().split()
-                st = state_zip[0] if state_zip else ""
-                city_p = parts[-2].strip() if len(parts) >= 2 else ""
-                street_p = ", ".join(parts[:-2]) if len(parts) > 2 else ""
-                addrs.append({"street": street_p, "city": city_p, "state": st, "zip": state_zip[1] if len(state_zip) > 1 else "", "current": False})
+            state = result.get("state") or ""
+            dob   = result.get("dateOfBirth") or ""
+            addrs_raw = result.get("possibleAddresses") or []
+            addrs = [_parse_addr_str(a, current=(i == 0)) for i, a in enumerate(addrs_raw) if a]
+            phones_raw = result.get("possiblePhones") or []
+            phones_list = [
+                p if isinstance(p, dict) else {"number": str(p), "type": "unknown", "current": True}
+                for p in phones_raw if p
+            ]
+            emails_raw = result.get("emails") or []
+            emails = [_email_str(e) for e in emails_raw]
+            relatives = [r for r in (result.get("possibleRelatives") or []) if r]
+            await _insert_person_record(first, last, dob, state, addrs, phones_list, emails, relatives)
 
-        # Build phones list
-        phones_raw2 = result.get("possiblePhones") or result.get("phones") or []
-        phones = []
-        for p in (phones_raw2 if isinstance(phones_raw2, list) else [phones_raw2]):
-            if isinstance(p, dict):
-                phones.append(p)
-            elif p:
-                phones.append({"number": str(p), "type": "unknown", "current": True})
+        elif lookup_type == "address_lookup":
+            # residents is a list of full-name strings; address is a single string
+            residents = result.get("residents") or []
+            addr_str  = result.get("address") or ""
+            phones_raw = result.get("associatedPhones") or []
+            phones_list = [
+                p if isinstance(p, dict) else {"number": str(p), "type": "unknown", "current": True}
+                for p in phones_raw if p
+            ]
+            addrs = [_parse_addr_str(addr_str, current=True)] if addr_str else []
+            for resident_name in residents:
+                first, last = _split_full_name(resident_name)
+                if not first or not last:
+                    continue
+                await _insert_person_record(first, last, "", "", addrs, phones_list, [], [])
 
-        dob = result.get("dateOfBirth", "")
-        doc = {
-            "recordId":    str(uuid.uuid4()),
-            "source":      "whitepages",
-            "firstName":   first,
-            "lastName":    last,
-            "middleName":  result.get("middleName", ""),
-            "aliases":     result.get("aliases", []),
-            "age":         calc_age_from_dob(dob) or result.get("age"),
-            "dateOfBirth": dob,
-            "gender":      result.get("gender", ""),
-            "state":       result.get("state", ""),
-            "addresses":   addrs,
-            "phones":      phones,
-            "emails":      [_email_str(e) for e in result.get("emails", []) if _email_str(e)],
-            "relatives":   result.get("possibleRelatives", []),
-            "associates":  [],
-            "occupation":  result.get("occupation", ""),
-            "employer":    result.get("employer", ""),
-            "sourceData":  {},
-            "createdAt":   now,
-            "lastUpdated": now,
-        }
-        await people_records_collection.insert_one(doc)
     except Exception:
         pass  # never let import errors break the search response
 
@@ -8508,7 +8556,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
             wp = await wp_phone_lookup(phone_clean)
             if wp:
                 full_results.append(wp)
-                asyncio.ensure_future(upsert_from_whitepages("phone_lookup", wp))
+                asyncio.ensure_future(upsert_from_whitepages("phone_lookup", wp, phone=phone_clean))
         if use_internal:
             db_results = await internal_phone_lookup(phone_clean)
             full_results.extend(db_results)

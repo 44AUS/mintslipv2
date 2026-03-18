@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
@@ -438,6 +438,13 @@ function ResultCard({ entry, lookupType, query }) {
   );
 }
 
+const INVESTIGATION_STEPS = {
+  phone_lookup:   ["Searching phone carrier…", "Checking public records…", "Matching address history…", "Analyzing spam reports…"],
+  name_lookup:    ["Searching public records…", "Matching address history…", "Checking relatives & associates…", "Compiling report…"],
+  address_lookup: ["Looking up address…", "Checking property records…", "Finding current residents…", "Matching phone numbers…"],
+  carrier_lookup: ["Querying carrier database…", "Verifying number status…", "Checking line type…"],
+};
+
 // Parse "Louisville, KY" or "KY" or "Louisville" into { city, state }
 function parseLocationStr(str) {
   if (!str) return { city: "", state: "" };
@@ -463,6 +470,12 @@ export default function PeopleSearch() {
   const [results, setResults] = useState([]);
   const [lookupType, setLookupType] = useState(null);
   const [query, setQuery] = useState("");
+
+  // Investigation animation state
+  const [investSteps, setInvestSteps]   = useState([]);  // "pending"|"active"|"done" per step
+  const [investTab, setInvestTab]       = useState(null);
+  const searchDoneRef   = useRef(false);
+  const stepTimersRef   = useRef([]);
 
   // Search bar fields
   const [phone, setPhone] = useState("");
@@ -524,11 +537,41 @@ export default function PeopleSearch() {
 
   const handleSearch = async () => {
     const tab = TAB_CONFIG[activeTab];
+
+    // Clear old timers
+    stepTimersRef.current.forEach(t => clearTimeout(t));
+    stepTimersRef.current = [];
+    searchDoneRef.current = false;
+
+    // Kick off investigation animation
+    const steps = INVESTIGATION_STEPS[tab.id] || [];
+    setInvestTab(tab.id);
+    setInvestSteps(steps.map((_, i) => i === 0 ? "active" : "pending"));
+
+    // Advance one step every 800ms; hold last step until search resolves
+    steps.forEach((_, i) => {
+      if (i === 0) return; // already active
+      const t = setTimeout(() => {
+        setInvestSteps(prev => prev.map((s, idx) => {
+          if (idx < i)  return "done";
+          if (idx === i) return "active";
+          return s;
+        }));
+      }, i * 800);
+      stepTimersRef.current.push(t);
+    });
+
     setSearching(true);
     setResults([]);
     sessionStorage.removeItem("ps_results");
     sessionStorage.removeItem("ps_lookupType");
     sessionStorage.removeItem("ps_query");
+
+    let fetchedResults = [];
+    let fetchedType = tab.id;
+    let fetchedQuery = "";
+    let fetchError = false;
+
     try {
       const loc = parseLocationStr(locationStr);
       const body = { lookupType: tab.id };
@@ -551,24 +594,39 @@ export default function PeopleSearch() {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.detail || "Search failed. Please try again."); return; }
-      const newResults = data.results || [];
-      setResults(newResults);
-      setLookupType(data.lookupType);
-      setQuery(data.query);
-      if (newResults.length === 0 && data._debug) {
+      if (!res.ok) { toast.error(data.detail || "Search failed. Please try again."); fetchError = true; return; }
+      fetchedResults = data.results || [];
+      fetchedType    = data.lookupType;
+      fetchedQuery   = data.query;
+      if (fetchedResults.length === 0 && data._debug) {
         const d = data._debug;
         console.warn("Search debug:", d);
         toast.info(`No results. DB records: ${d.internal_count}, internal: ${d.use_internal}, parsed: "${d.parsed_first} ${d.parsed_last}"`);
       }
-      sessionStorage.setItem("ps_results",    JSON.stringify(newResults));
-      sessionStorage.setItem("ps_lookupType", data.lookupType);
-      sessionStorage.setItem("ps_query",      data.query);
     } catch {
       toast.error("Search failed. Please check your connection.");
-    } finally {
-      setSearching(false);
+      fetchError = true;
     }
+
+    // Mark all steps done, then reveal results after a short pause
+    const minElapsed = steps.length * 800;
+    const elapsed = Date.now() - (Date.now()); // approximation — just wait for last timer
+    const revealDelay = fetchError ? 0 : 400;
+
+    setInvestSteps(steps.map(() => "done"));
+
+    setTimeout(() => {
+      setSearching(false);
+      setInvestSteps([]);
+      if (!fetchError) {
+        setResults(fetchedResults);
+        setLookupType(fetchedType);
+        setQuery(fetchedQuery);
+        sessionStorage.setItem("ps_results",    JSON.stringify(fetchedResults));
+        sessionStorage.setItem("ps_lookupType", fetchedType);
+        sessionStorage.setItem("ps_query",      fetchedQuery);
+      }
+    }, revealDelay);
   };
 
   const clearResults = () => {
@@ -727,12 +785,81 @@ export default function PeopleSearch() {
           </div>
         )}
 
-        {/* Searching spinner */}
-        {searching && (
-          <div className="flex items-center justify-center py-24">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
-              <p className="text-slate-500 text-sm">Searching…</p>
+        {/* Investigation animation */}
+        {searching && investSteps.length > 0 && (
+          <div className="flex items-center justify-center py-16 px-4">
+            <div className="w-full max-w-md">
+
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="relative w-10 h-10 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <FileSearch className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-white animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-900">Investigating…</p>
+                  <p className="text-xs text-slate-400">Running live checks across public records</p>
+                </div>
+              </div>
+
+              {/* Steps */}
+              <div className="space-y-3">
+                {(INVESTIGATION_STEPS[investTab] || []).map((label, i) => {
+                  const status = investSteps[i] || "pending";
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-500 ${
+                        status === "done"   ? "bg-green-50 border-green-200"
+                      : status === "active" ? "bg-white border-slate-200 shadow-sm"
+                      :                       "bg-slate-50/60 border-slate-100 opacity-40"
+                      }`}
+                    >
+                      {/* Status icon */}
+                      <div className="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                        {status === "done" && (
+                          <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        {status === "active" && (
+                          <Loader2 className="w-4 h-4 text-green-600 animate-spin" />
+                        )}
+                        {status === "pending" && (
+                          <div className="w-4 h-4 rounded-full border-2 border-slate-300" />
+                        )}
+                      </div>
+
+                      {/* Label */}
+                      <span className={`text-sm font-medium transition-colors ${
+                        status === "done"   ? "text-green-700"
+                      : status === "active" ? "text-slate-800"
+                      :                       "text-slate-400"
+                      }`}>
+                        {label}
+                      </span>
+
+                      {/* Active pulse dots */}
+                      {status === "active" && (
+                        <span className="ml-auto flex gap-0.5">
+                          {[0, 1, 2].map(d => (
+                            <span
+                              key={d}
+                              className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce"
+                              style={{ animationDelay: `${d * 150}ms` }}
+                            />
+                          ))}
+                        </span>
+                      )}
+                      {status === "done" && (
+                        <span className="ml-auto text-[10px] font-bold text-green-500 uppercase tracking-wide">Done</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}

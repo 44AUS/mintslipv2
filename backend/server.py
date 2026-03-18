@@ -8085,8 +8085,8 @@ async def get_data_sources() -> list:
 async def is_source_enabled(source: str) -> bool:
     doc = await data_source_settings_collection.find_one({"source": source})
     if doc is None:
-        # Default: whitepages on, everything else off
-        return source == "whitepages"
+        # Default: whitepages and internal both on
+        return source in ("whitepages", "internal")
     return bool(doc.get("enabled", False))
 
 # ── Internal DB helpers ───────────────────────────────────────────────────────
@@ -8526,11 +8526,11 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
     """Run a people search and return blurred preview. Full result stored in DB."""
     client_ip = request.headers.get("X-Forwarded-For", request.client.host or "").split(",")[0].strip()
 
-    # Rate limiting: 20 searches per IP per hour
+    # Rate limiting: 100 searches per IP per hour
     now = time.time()
     key = f"ps:{client_ip}"
     rate_limit_storage[key] = [t for t in rate_limit_storage[key] if now - t < 3600]
-    if len(rate_limit_storage[key]) >= 20:
+    if len(rate_limit_storage[key]) >= 100:
         raise HTTPException(status_code=429, detail="Too many searches. Please try again later.")
     rate_limit_storage[key].append(now)
 

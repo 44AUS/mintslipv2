@@ -51,6 +51,7 @@ function emailStr(e) {
 // ── Empty form state ──────────────────────────────────────────────────────────
 function emptyForm() {
   return {
+    fullName: "",
     firstName: "", lastName: "", middleName: "",
     aliases: [],
     dateOfBirth: "", gender: "",
@@ -320,10 +321,14 @@ function PersonModal({ record, onClose, onSave }) {
   const isEdit = !!record?.recordId;
   const [form, setForm] = useState(() => {
     if (!record) return emptyForm();
+    const fn = record.firstName || "";
+    const mn = record.middleName || "";
+    const ln = record.lastName || "";
     return {
-      firstName:   record.firstName || "",
-      lastName:    record.lastName  || "",
-      middleName:  record.middleName || "",
+      fullName:    [fn, mn, ln].filter(Boolean).join(" "),
+      firstName:   fn,
+      lastName:    ln,
+      middleName:  mn,
       aliases:     record.aliases   || [],
       dateOfBirth: record.dateOfBirth || "",
       gender:      record.gender || "",
@@ -343,13 +348,17 @@ function PersonModal({ record, onClose, onSave }) {
   const set = (field, val) => setForm(f => ({ ...f, [field]: val }));
 
   const handleSave = async () => {
-    if (!form.firstName.trim() || !form.lastName.trim()) {
-      toast.error("First and last name are required");
+    const nameParts = (form.fullName || "").trim().split(/\s+/).filter(Boolean);
+    if (nameParts.length < 2) {
+      toast.error("Please enter at least a first and last name");
       return;
     }
+    const firstName  = nameParts[0];
+    const lastName   = nameParts[nameParts.length - 1];
+    const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "";
     setSaving(true);
     try {
-      const payload = { ...form };
+      const payload = { ...form, firstName, lastName, middleName };
       const url = isEdit
         ? `${BACKEND_URL}/api/admin/people-records/record/${record.recordId}`
         : `${BACKEND_URL}/api/admin/people-records/create`;
@@ -404,22 +413,12 @@ function PersonModal({ record, onClose, onSave }) {
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {tab === "basic" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">First Name <span className="text-red-500">*</span></label>
-                  <input value={form.firstName} onChange={e => set("firstName", e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Middle Name</label>
-                  <input value={form.middleName} onChange={e => set("middleName", e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Last Name <span className="text-red-500">*</span></label>
-                  <input value={form.lastName} onChange={e => set("lastName", e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
-                </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Full Name <span className="text-red-500">*</span></label>
+                <input value={form.fullName} onChange={e => set("fullName", e.target.value)}
+                  placeholder="First Middle Last"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                <p className="text-xs text-slate-400 mt-1">Enter full name — first, optional middle, last</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">Aliases / Also Known As</label>

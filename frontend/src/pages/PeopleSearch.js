@@ -448,8 +448,7 @@ export default function PeopleSearch() {
 
   // Form fields
   const [phone, setPhone] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [state, setState] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
@@ -468,8 +467,7 @@ export default function PeopleSearch() {
     if (prefill?.firstName) {
       // Came from a relative click — pre-fill name tab and auto-search
       setActiveTab("name");
-      setFirstName(prefill.firstName);
-      setLastName(prefill.lastName || "");
+      setFullName([prefill.firstName, prefill.lastName].filter(Boolean).join(" "));
       // Clear nav state so back-navigation doesn't re-trigger
       window.history.replaceState({}, "");
       // Auto-search after state settles
@@ -511,7 +509,7 @@ export default function PeopleSearch() {
         method: "POST",
         headers: authHeaders,
         body: JSON.stringify({
-          lookupType: tab.id, phone, firstName, lastName, state, street,
+          lookupType: tab.id, phone, fullName, state, street,
           city: tab.id === "name_lookup" ? nameCity : city,
           ...(tab.id === "name_lookup" && minAge ? { minAge: parseInt(minAge) } : {}),
           ...(tab.id === "name_lookup" && maxAge ? { maxAge: parseInt(maxAge) } : {}),
@@ -619,17 +617,12 @@ export default function PeopleSearch() {
 
                 {activeTab === "name" && (
                   <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">First Name</label>
-                        <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="John"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Last Name</label>
-                        <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Smith"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+                      <input value={fullName} onChange={e => setFullName(e.target.value)}
+                        placeholder="John Smith"
+                        onKeyDown={e => e.key === "Enter" && handleSearch()}
+                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>

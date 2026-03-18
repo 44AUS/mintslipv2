@@ -8019,7 +8019,7 @@ DATA_SOURCE_DEFAULTS = [
         "source": "internal",
         "label": "Internal Database",
         "description": "Records collected by your own scrapers and manually imported data.",
-        "enabled": False,
+        "enabled": True,
         "category": "database",
         "recordCount": 0,
     },
@@ -8080,6 +8080,11 @@ async def get_data_sources() -> list:
     for default in DATA_SOURCE_DEFAULTS:
         if default["source"] not in existing:
             await data_source_settings_collection.insert_one(dict(default))
+    # Ensure internal source is enabled (upgrade path — was seeded as False historically)
+    await data_source_settings_collection.update_one(
+        {"source": "internal", "enabled": False},
+        {"$set": {"enabled": True}},
+    )
     return await data_source_settings_collection.find({}, {"_id": 0}).to_list(None)
 
 async def is_source_enabled(source: str) -> bool:
@@ -8133,10 +8138,15 @@ def normalize_internal_record(doc: dict) -> dict:
     past = [a for a in addrs if not a.get("current")]
     age = doc.get("age") or calc_age_from_dob(doc.get("dateOfBirth", ""))
     emails = [_email_str(e) for e in doc.get("emails", []) if _email_str(e)]
+    first  = doc.get("firstName", "")
+    middle = doc.get("middleName", "")
+    last   = doc.get("lastName", "")
+    full_name = " ".join(p for p in [first, middle, last] if p)
     return {
-        "firstName":        doc.get("firstName", ""),
-        "lastName":         doc.get("lastName", ""),
-        "middleName":       doc.get("middleName", ""),
+        "fullName":         full_name,
+        "firstName":        first,
+        "lastName":         last,
+        "middleName":       middle,
         "dateOfBirth":      doc.get("dateOfBirth", ""),
         "aliases":          doc.get("aliases", []),
         "age":              age,
@@ -8408,6 +8418,7 @@ def blur_result(data: dict, lookup_type: str) -> dict:
 class PeopleSearchRequest(BaseModel):
     lookupType: str
     phone: Optional[str] = None
+    fullName: Optional[str] = None   # combined name field; parsed into firstName/lastName
     firstName: Optional[str] = None
     lastName: Optional[str] = None
     state: Optional[str] = None
@@ -8415,6 +8426,13 @@ class PeopleSearchRequest(BaseModel):
     city: Optional[str] = None
     minAge: Optional[int] = None
     maxAge: Optional[int] = None
+
+    def get_first_last(self):
+        """Return (firstName, lastName) — parsed from fullName if provided."""
+        if self.fullName and self.fullName.strip():
+            parts = self.fullName.strip().split()
+            return parts[0], " ".join(parts[1:]) if len(parts) > 1 else ""
+        return (self.firstName or ""), (self.lastName or "")
 
 
 class PeopleSearchCheckoutRequest(BaseModel):
@@ -8572,7 +8590,8 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
         query_summary = data.phone
 
     elif lt == "name_lookup":
-        if not data.firstName or not data.lastName:
+        first_name, last_name = data.get_first_last()
+        if not first_name or not last_name:
             raise HTTPException(status_code=400, detail="First and last name required")
 
         min_age = data.minAge
@@ -8580,13 +8599,13 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
 
         full_results = []
         if use_whitepages:
-            wp_list = await wp_person_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
+            wp_list = await wp_person_lookup(first_name, last_name, data.state or "", data.city or "", min_age, max_age)
             if wp_list:
                 full_results.extend(wp_list)
                 for wp_item in wp_list:
                     asyncio.ensure_future(upsert_from_whitepages("name_lookup", wp_item))
         if use_internal:
-            db_results = await internal_name_lookup(data.firstName, data.lastName, data.state or "", data.city or "", min_age, max_age)
+            db_results = await internal_name_lookup(first_name, last_name, data.state or "", data.city or "", min_age, max_age)
             full_results.extend(db_results)
 
         # Post-filter by age for results that have age data
@@ -8602,7 +8621,7 @@ async def people_search_endpoint(request: Request, data: PeopleSearchRequest):
                 return True
             full_results = [r for r in full_results if _age_ok(r)]
 
-        parts = [f"{data.firstName} {data.lastName}"]
+        parts = [f"{first_name} {last_name}"]
         if data.city: parts.append(data.city)
         if data.state: parts.append(data.state)
         if min_age or max_age:

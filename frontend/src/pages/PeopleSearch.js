@@ -438,6 +438,19 @@ function ResultCard({ entry, lookupType, query }) {
   );
 }
 
+// Parse "Louisville, KY" or "KY" or "Louisville" into { city, state }
+function parseLocationStr(str) {
+  if (!str) return { city: "", state: "" };
+  const parts = str.split(",").map(s => s.trim());
+  if (parts.length >= 2) {
+    const stateCandidate = parts[1].split(" ")[0].toUpperCase();
+    return { city: parts[0], state: US_STATES.includes(stateCandidate) ? stateCandidate : parts[1] };
+  }
+  const upper = str.trim().toUpperCase();
+  if (US_STATES.includes(upper)) return { city: "", state: upper };
+  return { city: str.trim(), state: "" };
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function PeopleSearch() {
   const navigate = useNavigate();
@@ -445,21 +458,22 @@ export default function PeopleSearch() {
 
   const [activeTab, setActiveTab] = useState("phone");
   const [prices, setPrices] = useState({ phone_lookup: 0.99, name_lookup: 1.49, address_lookup: 1.49, carrier_lookup: 0.49 });
-
   const [searching, setSearching] = useState(false);
 
-  // results: [{ searchId, preview, price, fullResult?, paid? }]
   const [results, setResults] = useState([]);
   const [lookupType, setLookupType] = useState(null);
   const [query, setQuery] = useState("");
 
-  // Form fields
+  // Search bar fields
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
-  const [state, setState] = useState("");
+  const [locationStr, setLocationStr] = useState(""); // "City, ST" combined field
   const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [nameCity, setNameCity] = useState("");
+  const [city, setCity] = useState("");       // address tab city
+  const [state, setState] = useState("");     // address tab state
+
+  // Sidebar filters (name lookup only)
+  const [filterState, setFilterState] = useState("");
   const [minAge, setMinAge] = useState("");
   const [maxAge, setMaxAge] = useState("");
 
@@ -468,19 +482,23 @@ export default function PeopleSearch() {
     ? { "Content-Type": "application/json", "Authorization": `Bearer ${userToken}` }
     : { "Content-Type": "application/json" };
 
-  // Restore previous results + fetch prices on mount, handle relative prefill
   useEffect(() => {
     const prefill = location.state?.prefill;
-    if (prefill?.firstName) {
-      // Came from a relative click — pre-fill name tab and auto-search
-      setActiveTab("name");
-      setFullName([prefill.firstName, prefill.lastName].filter(Boolean).join(" "));
-      // Clear nav state so back-navigation doesn't re-trigger
+    const auto = location.state?.autoSearch;
+    if (prefill?.firstName || auto) {
+      setActiveTab(location.state?.tab || "name");
+      if (prefill?.firstName) setFullName([prefill.firstName, prefill.lastName].filter(Boolean).join(" "));
+      if (auto && location.state?.values) {
+        const v = location.state.values;
+        if (v.phone)     setPhone(v.phone);
+        if (v.fullName)  setFullName(v.fullName);
+        if (v.locationStr) setLocationStr(v.locationStr);
+        if (v.street)    setStreet(v.street);
+        if (v.city)      setCity(v.city);
+        if (v.state)     setState(v.state);
+      }
       window.history.replaceState({}, "");
-      // Auto-search after state settles
-      setTimeout(() => {
-        document.getElementById("ps-search-btn")?.click();
-      }, 100);
+      setTimeout(() => { document.getElementById("ps-search-btn")?.click(); }, 120);
     } else {
       const saved = sessionStorage.getItem("ps_results");
       const savedType = sessionStorage.getItem("ps_lookupType");
@@ -502,7 +520,7 @@ export default function PeopleSearch() {
       .then(r => r.json())
       .then(data => { if (data) setPrices(prev => ({ ...prev, ...data })); })
       .catch(() => {});
-  }, []);
+  }, []); // eslint-disable-line
 
   const handleSearch = async () => {
     const tab = TAB_CONFIG[activeTab];
@@ -512,21 +530,28 @@ export default function PeopleSearch() {
     sessionStorage.removeItem("ps_lookupType");
     sessionStorage.removeItem("ps_query");
     try {
+      const loc = parseLocationStr(locationStr);
+      const body = { lookupType: tab.id };
+      if (tab.id === "phone_lookup" || tab.id === "carrier_lookup") {
+        body.phone = phone;
+      } else if (tab.id === "name_lookup") {
+        body.fullName = fullName;
+        body.city  = filterState ? "" : loc.city;
+        body.state = filterState || loc.state;
+        if (minAge) body.minAge = parseInt(minAge);
+        if (maxAge) body.maxAge = parseInt(maxAge);
+      } else if (tab.id === "address_lookup") {
+        body.street = street;
+        body.city   = city;
+        body.state  = state;
+      }
       const res = await fetch(`${BACKEND_URL}/api/people-search/search`, {
         method: "POST",
         headers: authHeaders,
-        body: JSON.stringify({
-          lookupType: tab.id, phone, fullName, state, street,
-          city: tab.id === "name_lookup" ? nameCity : city,
-          ...(tab.id === "name_lookup" && minAge ? { minAge: parseInt(minAge) } : {}),
-          ...(tab.id === "name_lookup" && maxAge ? { maxAge: parseInt(maxAge) } : {}),
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.detail || "Search failed. Please try again.");
-        return;
-      }
+      if (!res.ok) { toast.error(data.detail || "Search failed. Please try again."); return; }
       const newResults = data.results || [];
       setResults(newResults);
       setLookupType(data.lookupType);
@@ -534,9 +559,8 @@ export default function PeopleSearch() {
       if (newResults.length === 0 && data._debug) {
         const d = data._debug;
         console.warn("Search debug:", d);
-        toast.info(`No results. DB records: ${d.internal_count}, internal enabled: ${d.use_internal}, parsed: "${d.parsed_first} ${d.parsed_last}"`);
+        toast.info(`No results. DB records: ${d.internal_count}, internal: ${d.use_internal}, parsed: "${d.parsed_first} ${d.parsed_last}"`);
       }
-      // Save to sessionStorage so we can restore after Stripe redirect
       sessionStorage.setItem("ps_results",    JSON.stringify(newResults));
       sessionStorage.setItem("ps_lookupType", data.lookupType);
       sessionStorage.setItem("ps_query",      data.query);
@@ -547,8 +571,23 @@ export default function PeopleSearch() {
     }
   };
 
+  const clearResults = () => {
+    setResults([]);
+    sessionStorage.removeItem("ps_results");
+    sessionStorage.removeItem("ps_lookupType");
+    sessionStorage.removeItem("ps_query");
+  };
+
   const hasResults = results.length > 0;
   const tabLabel = lookupType ? Object.values(TAB_CONFIG).find(t => t.id === lookupType)?.label : "";
+
+  // Tab labels for the compact bar
+  const BAR_TABS = [
+    { key: "name",    label: "People Search" },
+    { key: "phone",   label: "Phone" },
+    { key: "address", label: "Address" },
+    { key: "carrier", label: "Carrier" },
+  ];
 
   return (
     <>
@@ -558,195 +597,109 @@ export default function PeopleSearch() {
       </Helmet>
       <Header />
 
-      <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <div className="max-w-4xl mx-auto">
+      {/* ── Sticky search bar ── */}
+      <div className="sticky top-[72px] z-40 bg-white border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4">
 
-          {/* Hero */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-              <Shield className="w-3.5 h-3.5" /> Pay Only For What You Need
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">People Search</h1>
-            <p className="text-slate-500 text-base max-w-md mx-auto">
-              Search public records. No subscription — pay per lookup.
-            </p>
+          {/* Tab strip */}
+          <div className="flex gap-0 overflow-x-auto">
+            {BAR_TABS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => { setActiveTab(key); clearResults(); }}
+                className={`px-5 py-3 text-xs font-bold uppercase tracking-widest border-b-2 whitespace-nowrap transition-colors ${
+                  activeTab === key
+                    ? "border-slate-900 text-slate-900"
+                    : "border-transparent text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          {/* Search panel */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+          {/* Input row */}
+          <div className="flex items-stretch border border-slate-200 rounded-lg overflow-hidden mb-3 bg-white">
+            {(activeTab === "name") && (
+              <>
+                <input
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  placeholder="e.g. Jon Snow"
+                  className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
+                />
+                <div className="w-px bg-slate-200 self-stretch" />
+                <input
+                  value={locationStr}
+                  onChange={e => setLocationStr(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  placeholder="City, State, or ZIP"
+                  className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
+                />
+              </>
+            )}
+            {(activeTab === "phone" || activeTab === "carrier") && (
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSearch()}
+                placeholder="(555) 123-4567"
+                className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
+              />
+            )}
+            {activeTab === "address" && (
+              <>
+                <input
+                  value={street}
+                  onChange={e => setStreet(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  placeholder="Street address"
+                  className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
+                />
+                <div className="w-px bg-slate-200 self-stretch" />
+                <input
+                  value={city}
+                  onChange={e => setCity(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  placeholder="City, State"
+                  className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0"
+                />
+              </>
+            )}
+            <button
+              id="ps-search-btn"
+              onClick={handleSearch}
+              disabled={searching}
+              className="px-5 bg-white hover:bg-slate-50 border-l border-slate-200 text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50 flex items-center"
+            >
+              {searching ? <Loader2 className="w-5 h-5 animate-spin text-slate-400" /> : <Search className="w-5 h-5" />}
+            </button>
+          </div>
 
-              {/* Tabs */}
-              <div className="flex border-b border-slate-200 overflow-x-auto">
-                {Object.entries(TAB_CONFIG).map(([key, cfg]) => {
-                  const Icon = cfg.icon;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => { setActiveTab(key); setResults([]); }}
-                      className={`flex-1 min-w-[110px] flex flex-col items-center gap-1.5 px-3 py-3.5 text-xs font-medium transition-colors border-b-2 ${
-                        activeTab === key
-                          ? "border-green-600 text-green-700 bg-green-50"
-                          : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span className="text-center leading-tight">{cfg.label.split(" ").slice(0, 2).join(" ")}</span>
-                    </button>
-                  );
-                })}
+        </div>
+      </div>
+
+      <main className="min-h-screen bg-slate-50">
+
+        {/* No-results state: hero + trust badges */}
+        {!hasResults && !searching && (
+          <div className="max-w-4xl mx-auto px-4 py-12">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+                <Shield className="w-3.5 h-3.5" /> Pay Only For What You Need
               </div>
-
-              {/* Form */}
-              <div className="p-6 space-y-4">
-                {activeTab === "phone" && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      placeholder="(555) 123-4567"
-                      className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      onKeyDown={e => e.key === "Enter" && handleSearch()}
-                    />
-                  </div>
-                )}
-
-                {activeTab === "carrier" && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone Number</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={e => setPhone(e.target.value)}
-                      placeholder="(555) 123-4567"
-                      className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      onKeyDown={e => e.key === "Enter" && handleSearch()}
-                    />
-                    <p className="text-xs text-slate-400 mt-2">Returns carrier name, line type (mobile/landline/VoIP), and region for any US number.</p>
-                  </div>
-                )}
-
-                {activeTab === "name" && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
-                      <input value={fullName} onChange={e => setFullName(e.target.value)}
-                        placeholder="John Smith"
-                        onKeyDown={e => e.key === "Enter" && handleSearch()}
-                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          City <span className="text-slate-400 font-normal">(optional)</span>
-                        </label>
-                        <input value={nameCity} onChange={e => setNameCity(e.target.value)} placeholder="Louisville"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          State <span className="text-slate-400 font-normal">(optional)</span>
-                        </label>
-                        <select value={state} onChange={e => setState(e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
-                          <option value="">Any State</option>
-                          {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          Min Age <span className="text-slate-400 font-normal">(optional, 18–65)</span>
-                        </label>
-                        <input type="number" min="18" max="65" value={minAge} onChange={e => setMinAge(e.target.value)} placeholder="18"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          Max Age <span className="text-slate-400 font-normal">(optional, 18–65)</span>
-                        </label>
-                        <input type="number" min="18" max="65" value={maxAge} onChange={e => setMaxAge(e.target.value)} placeholder="65"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {activeTab === "address" && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Street Address</label>
-                      <input value={street} onChange={e => setStreet(e.target.value)} placeholder="123 Main St"
-                        className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
-                        <input value={city} onChange={e => setCity(e.target.value)} placeholder="Springfield"
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">State</label>
-                        <select value={state} onChange={e => setState(e.target.value)}
-                          className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
-                          <option value="">Select</option>
-                          {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <button
-                  id="ps-search-btn"
-                  onClick={handleSearch}
-                  disabled={searching}
-                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 text-sm"
-                >
-                  {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                  {searching ? "Searching…" : `Search – $${prices[TAB_CONFIG[activeTab].id].toFixed(2)} per result`}
-                </button>
-                <p className="text-center text-xs text-slate-400">
-                  You only pay when you choose to unlock a specific result.
-                </p>
-              </div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">People Search</h1>
+              <p className="text-slate-500 text-base max-w-md mx-auto">
+                Search public records. No subscription — pay per lookup.
+              </p>
             </div>
-
-          {/* Results */}
-          {hasResults && (
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    {tabLabel} — {results.length} result{results.length !== 1 ? "s" : ""} found
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">{query}</p>
-                </div>
-                <button
-                  onClick={() => { setResults([]); sessionStorage.removeItem("ps_results"); sessionStorage.removeItem("ps_lookupType"); sessionStorage.removeItem("ps_query"); }}
-                  className="text-xs text-slate-400 hover:text-slate-600 underline"
-                >
-                  Clear
-                </button>
-              </div>
-
-              {results.map((entry) => (
-                lookupType === "carrier_lookup"
-                  ? <CarrierResultCard key={entry.searchId} entry={entry} query={query} />
-                  : <ResultCard key={entry.searchId} entry={entry} lookupType={lookupType} query={query} />
-              ))}
-            </div>
-          )}
-
-          {/* Trust badges */}
-          {!hasResults && (
-            <div className="mt-2 grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 mb-10">
               {[
-                { icon: Shield,       title: "Secure & Private",  desc: "Your searches are never shared" },
-                { icon: Lock,         title: "Pay Per Result",     desc: "Unlock only what you need" },
-                { icon: CheckCircle,  title: "Instant Results",    desc: "Reports delivered in seconds" },
+                { icon: Shield,      title: "Secure & Private", desc: "Your searches are never shared" },
+                { icon: Lock,        title: "Pay Per Result",    desc: "Unlock only what you need" },
+                { icon: CheckCircle, title: "Instant Results",   desc: "Reports delivered in seconds" },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="bg-white rounded-xl border border-slate-200 p-4 text-center">
                   <Icon className="w-5 h-5 text-green-600 mx-auto mb-2" />
@@ -755,27 +708,109 @@ export default function PeopleSearch() {
                 </div>
               ))}
             </div>
-          )}
-
-          {/* SEO links */}
-          <div className="mt-8 bg-white rounded-xl border border-slate-200 p-5">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Search Types</p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { to: "/reverse-phone-lookup", label: "Reverse Phone Lookup" },
-                { to: "/find-person-by-name",  label: "Find Person by Name" },
-                { to: "/address-lookup",        label: "Address Lookup" },
-                { to: "/who-called-me",         label: "Who Called Me?" },
-              ].map(({ to, label }) => (
-                <button key={to} onClick={() => navigate(to)}
-                  className="flex items-center gap-1.5 text-xs text-green-700 hover:text-green-800 hover:underline text-left">
-                  <ChevronRight className="w-3 h-3 flex-shrink-0" /> {label}
-                </button>
-              ))}
+            <div className="bg-white rounded-xl border border-slate-200 p-5">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Search Types</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { to: "/reverse-phone-lookup", label: "Reverse Phone Lookup" },
+                  { to: "/find-person-by-name",  label: "Find Person by Name" },
+                  { to: "/address-lookup",        label: "Address Lookup" },
+                  { to: "/who-called-me",         label: "Who Called Me?" },
+                ].map(({ to, label }) => (
+                  <button key={to} onClick={() => navigate(to)}
+                    className="flex items-center gap-1.5 text-xs text-green-700 hover:text-green-800 hover:underline text-left">
+                    <ChevronRight className="w-3 h-3 flex-shrink-0" /> {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-        </div>
+        {/* Searching spinner */}
+        {searching && (
+          <div className="flex items-center justify-center py-24">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+              <p className="text-slate-500 text-sm">Searching…</p>
+            </div>
+          </div>
+        )}
+
+        {/* Results: sidebar + cards */}
+        {hasResults && (
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex gap-6 items-start">
+
+              {/* Left sidebar — filters (name lookup only) */}
+              {lookupType === "name_lookup" && (
+                <aside className="w-52 flex-shrink-0 bg-white border border-slate-200 rounded-xl p-4 sticky top-[130px] space-y-4">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Filters</p>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">State</label>
+                    <select value={filterState} onChange={e => setFilterState(e.target.value)}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      <option value="">Any State</option>
+                      {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Min Age</label>
+                    <input type="number" min="18" max="99" value={minAge} onChange={e => setMinAge(e.target.value)}
+                      placeholder="18"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Max Age</label>
+                    <input type="number" min="18" max="99" value={maxAge} onChange={e => setMaxAge(e.target.value)}
+                      placeholder="99"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                  </div>
+
+                  <button onClick={handleSearch} disabled={searching}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 rounded-lg transition-colors disabled:opacity-50">
+                    {searching ? "…" : "Refine"}
+                  </button>
+
+                  <button onClick={clearResults}
+                    className="w-full text-xs text-slate-400 hover:text-slate-600 underline pt-1">
+                    Clear results
+                  </button>
+                </aside>
+              )}
+
+              {/* Results column */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">
+                      {tabLabel} — {results.length} result{results.length !== 1 ? "s" : ""} found
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">{query}</p>
+                  </div>
+                  {lookupType !== "name_lookup" && (
+                    <button onClick={clearResults} className="text-xs text-slate-400 hover:text-slate-600 underline">
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {results.map((entry) => (
+                    lookupType === "carrier_lookup"
+                      ? <CarrierResultCard key={entry.searchId} entry={entry} query={query} />
+                      : <ResultCard key={entry.searchId} entry={entry} lookupType={lookupType} query={query} />
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </main>
 
       <Footer />

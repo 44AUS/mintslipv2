@@ -6,9 +6,92 @@ import Footer from "@/components/Footer";
 import {
   Lock, CheckCircle, Download, Loader2, Unlock, ArrowLeft,
   MapPin, Phone, Mail, Users, Home, FileSearch, ChevronDown, ChevronUp,
-  Tag, X,
+  Tag, X, Search,
 } from "lucide-react";
 import { toast } from "sonner";
+
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA",
+  "KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT",
+  "VA","WA","WV","WI","WY",
+];
+
+const BAR_TABS = [
+  { key: "name",    id: "name_lookup",    label: "People Search" },
+  { key: "phone",   id: "phone_lookup",   label: "Phone" },
+  { key: "address", id: "address_lookup", label: "Address" },
+  { key: "carrier", id: "carrier_lookup", label: "Carrier" },
+];
+
+function ResultSearchBar({ currentLookupType }) {
+  const navigate = useNavigate();
+  const initTab = BAR_TABS.find(t => t.id === currentLookupType)?.key || "name";
+  const [activeTab, setActiveTab] = useState(initTab);
+  const [phone, setPhone]         = useState("");
+  const [fullName, setFullName]   = useState("");
+  const [locationStr, setLoc]     = useState("");
+  const [street, setStreet]       = useState("");
+  const [city, setCity]           = useState("");
+
+  const goSearch = () => {
+    navigate("/people-search", {
+      state: {
+        autoSearch: true,
+        tab: activeTab,
+        values: { phone, fullName, locationStr, street, city },
+      },
+    });
+  };
+
+  return (
+    <div className="sticky top-[72px] z-40 bg-white border-b border-slate-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex gap-0 overflow-x-auto">
+          {BAR_TABS.map(({ key, label }) => (
+            <button key={key} onClick={() => setActiveTab(key)}
+              className={`px-5 py-3 text-xs font-bold uppercase tracking-widest border-b-2 whitespace-nowrap transition-colors ${
+                activeTab === key
+                  ? "border-slate-900 text-slate-900"
+                  : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-stretch border border-slate-200 rounded-lg overflow-hidden mb-3 bg-white">
+          {activeTab === "name" && (
+            <>
+              <input value={fullName} onChange={e => setFullName(e.target.value)} onKeyDown={e => e.key === "Enter" && goSearch()}
+                placeholder="e.g. Jon Snow" className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0" />
+              <div className="w-px bg-slate-200 self-stretch" />
+              <input value={locationStr} onChange={e => setLoc(e.target.value)} onKeyDown={e => e.key === "Enter" && goSearch()}
+                placeholder="City, State, or ZIP" className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0" />
+            </>
+          )}
+          {(activeTab === "phone" || activeTab === "carrier") && (
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} onKeyDown={e => e.key === "Enter" && goSearch()}
+              placeholder="(555) 123-4567" className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0" />
+          )}
+          {activeTab === "address" && (
+            <>
+              <input value={street} onChange={e => setStreet(e.target.value)} onKeyDown={e => e.key === "Enter" && goSearch()}
+                placeholder="Street address" className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0" />
+              <div className="w-px bg-slate-200 self-stretch" />
+              <input value={city} onChange={e => setCity(e.target.value)} onKeyDown={e => e.key === "Enter" && goSearch()}
+                placeholder="City, State" className="flex-1 px-4 py-3 text-sm focus:outline-none min-w-0" />
+            </>
+          )}
+          <button onClick={goSearch}
+            className="px-5 bg-white hover:bg-slate-50 border-l border-slate-200 text-blue-600 hover:text-blue-700 transition-colors flex items-center">
+            <Search className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -458,6 +541,7 @@ export default function PeopleSearchResult() {
         <title>{name} – {pageTitle} | MintSlip</title>
       </Helmet>
       <Header />
+      <ResultSearchBar currentLookupType={lookupType} />
 
       <main className="min-h-screen bg-slate-50 py-8 px-4">
         <div className="max-w-4xl mx-auto">

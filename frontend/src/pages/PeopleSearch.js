@@ -308,6 +308,10 @@ function ResultCard({ entry, lookupType, query }) {
       const cs = cityState(addrs[0]);
       if (cs) return cs;
     }
+    if (preview.currentAddress) {
+      const cs = cityState(preview.currentAddress);
+      if (cs) return cs;
+    }
     if (preview.location) return preview.location;
     if (preview.state) return preview.state;
     return null;

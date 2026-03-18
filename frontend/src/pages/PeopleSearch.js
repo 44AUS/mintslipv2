@@ -692,9 +692,9 @@ export default function PeopleSearch() {
   // Tab labels for the compact bar
   const BAR_TABS = [
     { key: "name",    label: "People Search" },
-    { key: "phone",   label: "Phone" },
-    { key: "address", label: "Address" },
-    { key: "carrier", label: "Carrier" },
+    { key: "phone",   label: "Reverse Phone" },
+    { key: "address", label: "Reverse Address" },
+    { key: "carrier", label: "Carrier Lookup" },
   ];
 
   return (
@@ -717,7 +717,7 @@ export default function PeopleSearch() {
                 onClick={() => { setActiveTab(key); clearResults(); }}
                 className={`px-5 py-3 text-xs font-bold uppercase tracking-widest border-b-2 whitespace-nowrap transition-colors ${
                   activeTab === key
-                    ? "border-slate-900 text-slate-900"
+                    ? "border-green-600 text-green-700"
                     : "border-transparent text-slate-400 hover:text-slate-600"
                 }`}
               >

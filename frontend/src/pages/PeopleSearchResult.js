@@ -308,6 +308,14 @@ export default function PeopleSearchResult() {
   const [associatedPeople, setAssociatedPeople] = useState([]);
   const [assocLoading, setAssocLoading] = useState(false);
 
+  // Phone community stats
+  const [phoneStats, setPhoneStats]     = useState(null);
+  const [reportModal, setReportModal]   = useState(false);
+  const [reportCat, setReportCat]       = useState("Scam");
+  const [reportComment, setReportComment] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportDone, setReportDone]     = useState(false);
+
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     if (isInternal) {
@@ -426,6 +434,42 @@ export default function PeopleSearchResult() {
         .finally(() => setAssocLoading(false));
     }
   }, [isPaid, lookupType]); // eslint-disable-line
+
+  // Fetch phone stats on mount for phone lookups
+  useEffect(() => {
+    if (lookupType !== "phone_lookup") return;
+    const rawPhone = passed.preview?.phone || query || "";
+    const digits = rawPhone.replace(/\D/g, "").slice(-10);
+    if (!digits) return;
+    fetch(`${BACKEND_URL}/api/phone-stats/${digits}`)
+      .then(r => r.json())
+      .then(data => setPhoneStats(data))
+      .catch(() => {});
+  }, [lookupType]); // eslint-disable-line
+
+  const handlePhoneReport = async () => {
+    const rawPhone = passed.preview?.phone || query || "";
+    const digits = rawPhone.replace(/\D/g, "").slice(-10);
+    if (!digits) return;
+    setReportLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/phone-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: digits, category: reportCat, comment: reportComment }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.detail || "Could not submit report"); return; }
+      setReportDone(true);
+      setReportModal(false);
+      setPhoneStats(prev => prev ? { ...prev, total_reports: data.total_reports } : prev);
+      toast.success("Report submitted — thank you!");
+    } catch {
+      toast.error("Failed to submit report");
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const d = isPaid ? fullResult : preview;
 
@@ -615,6 +659,130 @@ export default function PeopleSearchResult() {
               )}
             </div>
           </div>
+
+          {/* ── Phone community stats ── */}
+          {lookupType === "phone_lookup" && (
+            <div className="bg-white rounded-xl border border-slate-200 mb-4 overflow-hidden">
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+
+                  {/* Stats counters */}
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                        <Users className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-extrabold text-slate-900 leading-none">
+                          {phoneStats ? phoneStats.searches_today : "—"}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">searches today</p>
+                      </div>
+                    </div>
+
+                    <div className="w-px h-10 bg-slate-100" />
+
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        phoneStats?.total_reports > 0 ? "bg-red-50" : "bg-slate-50"
+                      }`}>
+                        <span className="text-lg">{phoneStats?.total_reports > 0 ? "⚠️" : "✓"}</span>
+                      </div>
+                      <div>
+                        <p className={`text-xl font-extrabold leading-none ${
+                          phoneStats?.total_reports > 0 ? "text-red-600" : "text-green-600"
+                        }`}>
+                          {phoneStats ? phoneStats.total_reports : "—"}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {phoneStats?.total_reports === 1 ? "scam report" : "scam reports"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Top categories */}
+                    {phoneStats?.categories?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {phoneStats.categories.slice(0, 3).map(c => (
+                          <span key={c.category} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-100">
+                            {c.category} ({c.count})
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Report button */}
+                  <button
+                    onClick={() => setReportModal(true)}
+                    disabled={reportDone}
+                    className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border transition-colors flex-shrink-0 ${
+                      reportDone
+                        ? "border-green-200 bg-green-50 text-green-700 cursor-default"
+                        : "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
+                    }`}
+                  >
+                    {reportDone ? "✓ Reported" : "⚑ Report Number"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Report modal ── */}
+          {reportModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-bold text-slate-900">Report This Number</h3>
+                  <button onClick={() => setReportModal(false)} className="text-slate-400 hover:text-slate-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-slate-500 mb-4">
+                  Help the community by reporting what type of call this is.
+                </p>
+
+                {/* Category grid */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {["Scam", "Spam", "Robocall", "Telemarketer", "Fraud", "Harassment", "Unknown"].map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setReportCat(cat)}
+                      className={`py-2 px-3 text-xs font-semibold rounded-lg border transition-colors ${
+                        reportCat === cat
+                          ? "bg-red-600 text-white border-red-600"
+                          : "bg-white text-slate-600 border-slate-200 hover:border-red-300 hover:text-red-700"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Optional comment */}
+                <textarea
+                  value={reportComment}
+                  onChange={e => setReportComment(e.target.value)}
+                  placeholder="Add a comment (optional)…"
+                  rows={2}
+                  className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4 resize-none"
+                />
+
+                <div className="flex gap-3">
+                  <button onClick={() => setReportModal(false)}
+                    className="flex-1 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button onClick={handlePhoneReport} disabled={reportLoading}
+                    className="flex-1 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                    {reportLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Report"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Simple lookup (phone / address) ── */}
           {isSimpleLookup && (

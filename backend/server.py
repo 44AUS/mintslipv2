@@ -127,6 +127,7 @@ audit_logs_collection = db["audit_logs"]
 support_tickets_collection = db["support_tickets"]
 people_search_logs_collection = db["people_search_logs"]
 people_search_payments_collection = db["people_search_payments"]
+phone_reports_collection = db["phone_reports"]
 data_source_settings_collection = db["data_source_settings"]
 people_records_collection = db["people_records"]
 scraper_jobs_collection = db["scraper_jobs"]
@@ -8561,6 +8562,79 @@ async def debug_sources():
     internal_count = await people_records_collection.count_documents({})
     sample = await people_records_collection.find({}, {"firstName": 1, "lastName": 1, "source": 1, "_id": 0}).limit(5).to_list(5)
     return {"sources": docs, "internalRecordCount": internal_count, "sampleRecords": sample}
+
+
+PHONE_REPORT_CATEGORIES = ["Scam", "Spam", "Robocall", "Telemarketer", "Fraud", "Harassment", "Unknown"]
+
+@app.get("/api/phone-stats/{phone}")
+async def get_phone_stats(phone: str):
+    """Return how many people searched this number today + scam report counts."""
+    clean = re.sub(r"[^\d]", "", phone)[-10:]
+    if not clean:
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+
+    # Searches today (UTC)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    searches_today = await people_search_logs_collection.count_documents({
+        "lookupType": "phone_lookup",
+        "query": {"$regex": clean},
+        "createdAt": {"$gte": today_start},
+    })
+
+    # Scam reports
+    total_reports = await phone_reports_collection.count_documents({"phone": clean})
+    cat_pipeline = [
+        {"$match": {"phone": clean}},
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+    ]
+    cat_docs = await phone_reports_collection.aggregate(cat_pipeline).to_list(None)
+    categories = [{"category": d["_id"], "count": d["count"]} for d in cat_docs]
+
+    return {
+        "phone": clean,
+        "searches_today": searches_today,
+        "total_reports": total_reports,
+        "categories": categories,
+    }
+
+
+class PhoneReportRequest(BaseModel):
+    phone: str
+    category: str
+    comment: Optional[str] = None
+
+
+@app.post("/api/phone-report")
+async def submit_phone_report(request: Request, data: PhoneReportRequest):
+    """Submit a community report for a phone number."""
+    clean = re.sub(r"[^\d]", "", data.phone)[-10:]
+    if not clean:
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+    if data.category not in PHONE_REPORT_CATEGORIES:
+        raise HTTPException(status_code=400, detail="Invalid category")
+
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host or "").split(",")[0].strip()
+
+    # One report per IP per phone per day
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    already = await phone_reports_collection.find_one({
+        "phone": clean, "clientIp": client_ip, "createdAt": {"$gte": today_start},
+    })
+    if already:
+        raise HTTPException(status_code=429, detail="You already reported this number today")
+
+    await phone_reports_collection.insert_one({
+        "id": str(uuid.uuid4()),
+        "phone": clean,
+        "category": data.category,
+        "comment": (data.comment or "")[:500],
+        "clientIp": client_ip,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    })
+
+    total = await phone_reports_collection.count_documents({"phone": clean})
+    return {"success": True, "total_reports": total}
 
 
 @app.post("/api/people-search/search")

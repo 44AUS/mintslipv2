@@ -8352,7 +8352,12 @@ async def internal_name_lookup(first: str, last: str, state: str = "", city: str
 
 async def internal_phone_lookup(phone: str) -> list:
     clean = re.sub(r"[^\d]", "", phone)
-    cursor = people_records_collection.find({"phones": {"$elemMatch": {"$regex": clean}}}).limit(5)
+    cursor = people_records_collection.find({
+        "$or": [
+            {"phones": {"$elemMatch": {"number": {"$regex": clean}}}},  # dict format {number, type}
+            {"phones": {"$elemMatch": {"$regex": clean}}},               # plain string format
+        ]
+    }).limit(5)
     results = []
     async for doc in cursor:
         results.append(normalize_internal_record(doc))
@@ -9188,7 +9193,10 @@ async def admin_browse_people_records(
         q_stripped = q.strip()
         digits_only = re.sub(r"[^\d]", "", q_stripped)
         if len(digits_only) >= 7:
-            query["phones"] = {"$elemMatch": {"$regex": digits_only}}
+            query["$or"] = [
+                {"phones": {"$elemMatch": {"number": {"$regex": digits_only}}}},
+                {"phones": {"$elemMatch": {"$regex": digits_only}}},
+            ]
         else:
             parts = q_stripped.split()
             if len(parts) >= 2:

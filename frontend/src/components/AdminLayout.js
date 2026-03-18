@@ -7,8 +7,15 @@ import {
   Bell, Settings, Lock, ChevronDown, Receipt, FileSpreadsheet,
   FileBarChart, Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
   ClipboardList, Inbox, Download, TrendingUp, CreditCard, Moon, Sun, Search, Database,
-  FileSearch, UserMinus,
+  FileSearch, UserMinus, GripVertical,
 } from "lucide-react";
+import {
+  DndContext, closestCenter, PointerSensor, useSensor, useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -37,6 +44,43 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
+function SortableNavItem({ tab, isActive, onClick }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tab.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+  const Icon = tab.icon;
+  return (
+    <div ref={setNodeRef} style={style} className="group relative">
+      <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+          isActive
+            ? "bg-green-600 text-white font-medium"
+            : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800"
+        }`}
+      >
+        {/* Drag handle — visible on hover */}
+        <span
+          {...attributes}
+          {...listeners}
+          className={`absolute left-0 inset-y-0 w-5 flex items-center justify-center cursor-grab active:cursor-grabbing transition-opacity rounded-l-lg ${
+            isActive ? "text-white/40 hover:text-white/80" : "text-slate-300 hover:text-slate-500"
+          }`}
+          onClick={e => e.stopPropagation()}
+        >
+          <GripVertical className="w-3.5 h-3.5" />
+        </span>
+        <Icon className="w-4 h-4 flex-shrink-0" />
+        {tab.label}
+      </button>
+    </div>
+  );
+}
+
 export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +96,11 @@ export default function AdminLayout({ children }) {
   const profileRef = useRef(null);
 
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("adminDarkMode") === "true");
+  const [navOrder, setNavOrder] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("adminNavOrder")) || null; } catch { return null; }
+  });
+  const dnsSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
   const toggleDark = () => {
     setDarkMode(prev => {
       const next = !prev;
@@ -210,6 +259,25 @@ export default function AdminLayout({ children }) {
     return hasPerm(t.perm);
   });
 
+  // Apply saved order, keeping any new/unsaved tabs at the end
+  const sortedTabs = (() => {
+    if (!navOrder) return tabs;
+    const tabMap = Object.fromEntries(tabs.map(t => [t.id, t]));
+    const ordered = navOrder.filter(id => tabMap[id]).map(id => tabMap[id]);
+    const unseen  = tabs.filter(t => !navOrder.includes(t.id));
+    return [...ordered, ...unseen];
+  })();
+
+  const handleNavDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const oldIndex = sortedTabs.findIndex(t => t.id === active.id);
+    const newIndex = sortedTabs.findIndex(t => t.id === over.id);
+    const reordered = arrayMove(sortedTabs, oldIndex, newIndex);
+    const newOrder = reordered.map(t => t.id);
+    setNavOrder(newOrder);
+    localStorage.setItem("adminNavOrder", JSON.stringify(newOrder));
+  };
+
   const handleNavigation = (path) => {
     navigate(path);
     setMobileMenuOpen(false);
@@ -232,22 +300,20 @@ export default function AdminLayout({ children }) {
             <img src={MintSlipLogo} alt="MintSlip" style={{ height: "32px", width: "auto" }} />
           </button>
         </div>
-        {/* Nav links — scrollable if content overflows */}
+        {/* Nav links — sortable via drag handle */}
         <nav className="p-3 space-y-0.5 flex-1 overflow-y-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => navigate(tab.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                activeTab === tab.id
-                  ? "bg-green-600 text-white font-medium"
-                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800"
-              }`}
-            >
-              <tab.icon className="w-4 h-4 flex-shrink-0" />
-              {tab.label}
-            </button>
-          ))}
+          <DndContext sensors={dnsSensors} collisionDetection={closestCenter} onDragEnd={handleNavDragEnd}>
+            <SortableContext items={sortedTabs.map(t => t.id)} strategy={verticalListSortingStrategy}>
+              {sortedTabs.map((tab) => (
+                <SortableNavItem
+                  key={tab.id}
+                  tab={tab}
+                  isActive={activeTab === tab.id}
+                  onClick={() => navigate(tab.path)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         </nav>
       </aside>
 

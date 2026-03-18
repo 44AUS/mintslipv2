@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2, Download, Search } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2, Download, Search, GripVertical, Navigation } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -24,6 +27,23 @@ function Toggle({ on, onClick, disabled, onColor = "bg-green-500", offColor = "b
     >
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${on ? "translate-x-6" : "translate-x-0"}`} />
     </button>
+  );
+}
+
+function SortableNavRow({ item, index }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  return (
+    <div ref={setNodeRef} style={style}
+      className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+      <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 flex-shrink-0">
+        <GripVertical className="w-4 h-4" />
+      </span>
+      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-500 text-xs font-bold flex items-center justify-center flex-shrink-0">
+        {index + 1}
+      </span>
+      <span className="text-sm text-slate-700 font-medium">{item.label}</span>
+    </div>
   );
 }
 
@@ -52,6 +72,19 @@ export default function AdminSiteSettings() {
   const [psPriceLoading, setPsPriceLoading] = useState(false);
   const [psPriceMsg, setPsPriceMsg] = useState(null);
 
+  // Site navigation order
+  const NAV_ITEMS_DISPLAY = [
+    { id: "paystubs",      label: "Pay Stubs" },
+    { id: "resume",        label: "AI Resume Builder" },
+    { id: "generators",    label: "All Generators" },
+    { id: "people-search", label: "People Search" },
+    { id: "contact",       label: "Contact" },
+  ];
+  const [navItems, setNavItems] = useState(NAV_ITEMS_DISPLAY);
+  const [navSaving, setNavSaving] = useState(false);
+  const [navMsg, setNavMsg] = useState(null);
+  const navSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) { navigate("/admin/login"); return; }
@@ -59,7 +92,53 @@ export default function AdminSiteSettings() {
     fetchAuth();
     fetchTierDownloads();
     fetchPSPrices();
+    fetchNavOrder();
   }, []);
+
+  const fetchNavOrder = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/nav-order`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.order)) {
+        const map = Object.fromEntries(NAV_ITEMS_DISPLAY.map(i => [i.id, i]));
+        const ordered = data.order.filter(id => map[id]).map(id => map[id]);
+        const unseen  = NAV_ITEMS_DISPLAY.filter(i => !data.order.includes(i.id));
+        setNavItems([...ordered, ...unseen]);
+      }
+    } catch (e) {}
+  };
+
+  const handleNavDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    setNavItems(prev => {
+      const oldIdx = prev.findIndex(i => i.id === active.id);
+      const newIdx = prev.findIndex(i => i.id === over.id);
+      return arrayMove(prev, oldIdx, newIdx);
+    });
+  };
+
+  const saveNavOrder = async () => {
+    setNavSaving(true);
+    setNavMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/nav-order`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ order: navItems.map(i => i.id) }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setNavMsg({ type: "success", text: "Navigation order saved. All visitors will see the new order." });
+        setTimeout(() => setNavMsg(null), 4000);
+      } else {
+        setNavMsg({ type: "error", text: "Failed to save navigation order." });
+      }
+    } catch (e) {
+      setNavMsg({ type: "error", text: "An error occurred." });
+    }
+    setNavSaving(false);
+  };
 
   const fetchMaintenance = async () => {
     try {
@@ -409,6 +488,40 @@ export default function AdminSiteSettings() {
             >
               {psPriceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save People Search Prices
+            </button>
+          </div>
+
+          {/* Site Navigation Order */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+                <Navigation className="w-5 h-5 text-slate-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Site Navigation Order</p>
+                <p className="text-xs text-slate-500 mt-0.5">Drag to reorder the main site navigation. All visitors will see this order.</p>
+              </div>
+            </div>
+
+            <DndContext sensors={navSensors} collisionDetection={closestCenter} onDragEnd={handleNavDragEnd}>
+              <SortableContext items={navItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1.5">
+                  {navItems.map((item, idx) => (
+                    <SortableNavRow key={item.id} item={item} index={idx} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+
+            <Msg msg={navMsg} />
+
+            <button
+              onClick={saveNavOrder}
+              disabled={navSaving}
+              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {navSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Navigation Order
             </button>
           </div>
 

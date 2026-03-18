@@ -9664,6 +9664,28 @@ async def voter_roll_import(
     return {"success": True, "jobId": job_id}
 
 
+# ===== SITE NAV ORDER =====
+
+@app.get("/api/nav-order")
+async def get_nav_order():
+    doc = await site_settings_collection.find_one({"key": "site_nav_order"}, {"_id": 0})
+    return {"success": True, "order": doc["value"] if doc else None}
+
+@app.put("/api/admin/nav-order")
+async def set_nav_order(request: Request, session: dict = Depends(get_current_admin)):
+    body = await request.json()
+    order = body.get("order", [])
+    if not isinstance(order, list):
+        raise HTTPException(status_code=400, detail="order must be a list")
+    await site_settings_collection.update_one(
+        {"key": "site_nav_order"},
+        {"$set": {"key": "site_nav_order", "value": order}},
+        upsert=True
+    )
+    await log_action(session, "update_nav_order", "site_settings", "site_nav_order")
+    return {"success": True}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

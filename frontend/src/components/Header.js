@@ -44,151 +44,88 @@ const OTHER_FORMS = [
   // Add more forms here as needed
 ];
 
-// Navigation links component for desktop (without user area - that's separate now)
-function DesktopNavLinks({ location, onNavigate }) {
-  const isActive = (path) => location.pathname === path;
-  const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
-  const isPaystubActive = location.pathname === '/paystub-generator' || location.pathname === '/paystub-samples';
-  
-  const getButtonClasses = (path) => {
-    const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
-    if (isActive(path)) {
-      return `${base} bg-green-100 text-green-800 font-semibold`;
-    }
-    return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
-  };
+// Default desktop nav items (order is user-configurable)
+const DEFAULT_NAV_ITEMS = [
+  { id: "paystubs",       type: "dropdown" },
+  { id: "resume",         type: "link", path: "/ai-resume-builder",  label: "AI Resume Builder", icon: Sparkles },
+  { id: "generators",     type: "link", path: "/generators",         label: "All Generators",    icon: FileText },
+  { id: "people-search",  type: "link", path: "/people-search",      label: "People Search",     icon: Search, badge: "NEW" },
+  { id: "contact",        type: "link", path: "/contact",            label: "Contact",            icon: Mail },
+];
 
-  const getDropdownTriggerClasses = (isDropdownActive) => {
-    const base = "flex items-center gap-2 px-4 py-2 rounded-md transition-all";
-    if (isDropdownActive) {
-      return `${base} bg-green-100 text-green-800 font-semibold`;
-    }
-    return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
-  };
+function DesktopNavItem({ item, location, onNavigate }) {
+  const isActive = (path) => location.pathname === path;
+  const isPaystubActive = location.pathname === "/paystub-generator" || location.pathname === "/paystub-samples" || location.pathname === "/canadian-paystub-generator";
+
+  const btnBase = "flex items-center gap-2 px-4 py-2 rounded-md transition-all text-sm";
+  const activeClasses = `${btnBase} bg-green-100 text-green-800 font-semibold`;
+  const idleClasses   = `${btnBase} hover:bg-green-50 text-slate-500 hover:text-green-700`;
+
+  if (item.type === "dropdown") {
+    return (
+      <div className="flex items-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={isPaystubActive ? activeClasses : idleClasses} data-testid="nav-paystub-dropdown">
+              <FileText className="w-4 h-4" />
+              <span>Pay Stubs</span>
+              <ChevronDown className="w-3 h-3 ml-1" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            {[
+              { path: "/paystub-generator",          label: "Create Paystub" },
+              { path: "/canadian-paystub-generator", label: "Canada Pay Stubs" },
+              { path: "/paystub-samples",             label: "Sample Templates" },
+            ].map(({ path, label }) => (
+              <DropdownMenuItem key={path} onClick={() => onNavigate(path)}
+                className={`flex items-center gap-2 cursor-pointer ${isActive(path) ? "bg-green-50 text-green-800 font-semibold" : ""}`}>
+                <FileText className="w-4 h-4" /><span>{label}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
+
+  const Icon = item.icon;
+  return (
+    <div className="flex items-center">
+      <button onClick={() => onNavigate(item.path)}
+        className={`${isActive(item.path) ? activeClasses : idleClasses} relative`}>
+        <Icon className="w-4 h-4" />
+        <span>{item.label}</span>
+        {item.badge && (
+          <span className="ml-1 text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full">{item.badge}</span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function DesktopNavLinks({ location, onNavigate }) {
+  const [orderedItems, setOrderedItems] = useState(DEFAULT_NAV_ITEMS);
+
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/nav-order`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.order)) {
+          const map = Object.fromEntries(DEFAULT_NAV_ITEMS.map(i => [i.id, i]));
+          const ordered = data.order.filter(id => map[id]).map(id => map[id]);
+          const unseen  = DEFAULT_NAV_ITEMS.filter(i => !data.order.includes(i.id));
+          setOrderedItems([...ordered, ...unseen]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <>
-      {/* Pay Stubs Dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className={getDropdownTriggerClasses(isPaystubActive)}
-            data-testid="nav-paystub-dropdown"
-          >
-            <FileText className="w-4 h-4" />
-            <span className="text-sm">Pay Stubs</span>
-            <ChevronDown className="w-3 h-3 ml-1" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuItem
-            onClick={() => onNavigate("/paystub-generator")}
-            className={`flex items-center gap-2 cursor-pointer ${
-              isActive("/paystub-generator") ? 'bg-green-50 text-green-800 font-semibold' : ''
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Create Paystub</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onNavigate("/canadian-paystub-generator")}
-            className={`flex items-center gap-2 cursor-pointer ${
-              isActive("/canadian-paystub-generator") ? 'bg-green-50 text-green-800 font-semibold' : ''
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Canada Pay Stubs</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onNavigate("/paystub-samples")}
-            className={`flex items-center gap-2 cursor-pointer ${
-              isActive("/paystub-samples") ? 'bg-green-50 text-green-800 font-semibold' : ''
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Sample Templates</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      
-      {/* <button
-        onClick={() => onNavigate("/accounting-mockup-generator")}
-        className={getButtonClasses("/accounting-mockup-generator")}
-        data-testid="nav-bankstatement-link"
-      >
-        <FileBarChart className="w-4 h-4" />
-        <span className="text-sm">Accounting Mockups</span>
-      </button> */}
-
-      <button
-        onClick={() => onNavigate("/ai-resume-builder")}
-        className={getButtonClasses("/ai-resume-builder")}
-        data-testid="nav-resume-builder-link"
-      >
-        <Sparkles className="w-4 h-4" />
-        <span className="text-sm">AI Resume Builder</span>
-      </button>
-
-      {/* Tax Forms Dropdown — hidden from desktop nav */}
-
-      {/* Other Forms/Generators Dropdown
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className={getDropdownTriggerClasses(isOtherFormActive)}
-            data-testid="nav-otherforms-dropdown"
-          >
-            <Receipt className="w-4 h-4" />
-            <span className="text-sm">Other Forms</span>
-            <ChevronDown className="w-3 h-3 ml-1" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          {OTHER_FORMS.map((form) => {
-            const IconComponent = form.icon;
-            return (
-              <DropdownMenuItem
-                key={form.path}
-                onClick={() => onNavigate(form.path)}
-                className={`flex items-center gap-2 cursor-pointer ${
-                  isActive(form.path) ? 'bg-green-50 text-green-800 font-semibold' : ''
-                }`}
-              >
-                <IconComponent className="w-4 h-4" />
-                <span>{form.name}</span>
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu> */}
-
-      <button
-        onClick={() => onNavigate("/generators")}
-        className={getButtonClasses("/generators")}
-        data-testid="nav-generators-link"
-      >
-        <FileText className="w-4 h-4" />
-        <span className="text-sm">All Generators</span>
-      </button>
-
-      <button
-        onClick={() => onNavigate("/people-search")}
-        className={`${getButtonClasses("/people-search")} relative`}
-        data-testid="nav-people-search-link"
-      >
-        <Search className="w-4 h-4" />
-        <span className="text-sm">People Search</span>
-        <span className="ml-auto text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
-      </button>
-
-      <button
-        onClick={() => onNavigate("/contact")}
-        className={getButtonClasses("/contact")}
-        data-testid="nav-contact-link"
-      >
-        <Mail className="w-4 h-4" />
-        <span className="text-sm">Contact</span>
-      </button>
+      {orderedItems.map(item => (
+        <DesktopNavItem key={item.id} item={item} location={location} onNavigate={onNavigate} />
+      ))}
     </>
   );
 }

@@ -8095,22 +8095,32 @@ def _fmt_addr(a: dict) -> str:
     parts = [a.get("street", ""), a.get("city", ""), a.get("state", ""), a.get("zip", "")]
     return ", ".join(p for p in parts if p)
 
+def _email_str(e) -> str:
+    """Normalize email to plain string."""
+    if isinstance(e, str):
+        return e
+    if isinstance(e, dict):
+        return e.get("address", "")
+    return ""
+
 def normalize_internal_record(doc: dict) -> dict:
     """Convert a people_records document to the standard search result format."""
     addrs = doc.get("addresses", [])
     current = next((a for a in addrs if a.get("current")), addrs[0] if addrs else {})
     past = [a for a in addrs if not a.get("current")]
     age = doc.get("age")
+    emails = [_email_str(e) for e in doc.get("emails", []) if _email_str(e)]
     return {
         "firstName":        doc.get("firstName", ""),
         "lastName":         doc.get("lastName", ""),
+        "aliases":          doc.get("aliases", []),
         "age":              age,
         "ageRange":         f"{age - 2}-{age + 2}" if age else None,
         "state":            current.get("state", doc.get("state", "")),
         "currentAddress":   _fmt_addr(current) if current else "",
         "pastAddresses":    [_fmt_addr(a) for a in past],
         "phones":           doc.get("phones", []),
-        "emails":           doc.get("emails", []),
+        "emails":           emails,
         "possibleRelatives": doc.get("relatives", []),
         "occupation":       doc.get("occupation", ""),
         "sourceDB":         doc.get("source", "internal"),
@@ -9009,6 +9019,7 @@ async def admin_create_people_record(data: dict, session: dict = Depends(get_cur
         "firstName":   data.get("firstName", "").strip(),
         "lastName":    data.get("lastName", "").strip(),
         "middleName":  data.get("middleName", "").strip(),
+        "aliases":     data.get("aliases", []),
         "age":         data.get("age"),
         "dateOfBirth": data.get("dateOfBirth", ""),
         "gender":      data.get("gender", ""),
@@ -9042,6 +9053,7 @@ async def admin_update_people_record(record_id: str, data: dict, session: dict =
         "firstName":   data.get("firstName", existing.get("firstName", "")).strip(),
         "lastName":    data.get("lastName",  existing.get("lastName", "")).strip(),
         "middleName":  data.get("middleName", existing.get("middleName", "")).strip(),
+        "aliases":     data.get("aliases",   existing.get("aliases", [])),
         "age":         data.get("age", existing.get("age")),
         "dateOfBirth": data.get("dateOfBirth", existing.get("dateOfBirth", "")),
         "gender":      data.get("gender", existing.get("gender", "")),

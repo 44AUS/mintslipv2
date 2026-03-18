@@ -330,8 +330,19 @@ function ResultCard({ entry, lookupType, query }) {
     return (Array.isArray(r) ? r : [r]).slice(0, 2);
   })();
 
-  // Email — first one only
-  const emailRaw = Array.isArray(preview.emails) ? preview.emails[0] : preview.emails || null;
+  // Aliases — "May Go By"
+  const aliasesList = (() => {
+    const a = preview.aliases;
+    if (!a) return [];
+    return (Array.isArray(a) ? a : [a]).slice(0, 3);
+  })();
+
+  // Email — first one, normalize object format
+  const emailRaw = (() => {
+    const raw = Array.isArray(preview.emails) ? preview.emails[0] : preview.emails || null;
+    if (!raw) return null;
+    return typeof raw === "string" ? raw : raw?.address || null;
+  })();
 
   const handleClick = () => {
     navigate(`/people-search/result/${entry.searchId}`, {
@@ -365,7 +376,7 @@ function ResultCard({ entry, lookupType, query }) {
           </div>
 
           {/* Detail rows */}
-          {(addrList.length > 0 || relativesList.length > 0 || emailRaw) && (
+          {(addrList.length > 0 || aliasesList.length > 0 || relativesList.length > 0 || emailRaw) && (
             <div className="mt-3 space-y-1.5">
               {addrList.length > 0 && (
                 <div className="flex items-baseline gap-3">
@@ -375,6 +386,19 @@ function ResultCard({ entry, lookupType, query }) {
                       <span key={i} className="flex items-center">
                         {i > 0 && <span className="mx-1.5 text-slate-300">·</span>}
                         <AddressPreview addr={cityState(a)} />
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              )}
+              {aliasesList.length > 0 && (
+                <div className="flex items-baseline gap-3">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24 flex-shrink-0">May Go By</span>
+                  <span className="flex flex-wrap items-center gap-y-0.5">
+                    {aliasesList.map((a, i) => (
+                      <span key={i} className="flex items-center">
+                        {i > 0 && <span className="mx-1.5 text-slate-300">·</span>}
+                        <span className="text-sm text-slate-700">{a}</span>
                       </span>
                     ))}
                   </span>

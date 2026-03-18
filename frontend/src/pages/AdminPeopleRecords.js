@@ -52,6 +52,7 @@ function emailStr(e) {
 function emptyForm() {
   return {
     firstName: "", lastName: "", middleName: "",
+    aliases: [],
     age: "", dateOfBirth: "", gender: "",
     state: "",
     addresses: [],
@@ -218,6 +219,7 @@ function PersonModal({ record, onClose, onSave }) {
       firstName:   record.firstName || "",
       lastName:    record.lastName  || "",
       middleName:  record.middleName || "",
+      aliases:     record.aliases   || [],
       age:         record.age != null ? String(record.age) : "",
       dateOfBirth: record.dateOfBirth || "",
       gender:      record.gender || "",
@@ -314,6 +316,10 @@ function PersonModal({ record, onClose, onSave }) {
                   <input value={form.lastName} onChange={e => set("lastName", e.target.value)}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Aliases / Also Known As</label>
+                <TagListForm items={form.aliases} onChange={v => set("aliases", v)} placeholder="Nickname or alternate name" />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>

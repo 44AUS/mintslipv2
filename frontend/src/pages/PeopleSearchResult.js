@@ -319,7 +319,14 @@ export default function PeopleSearchResult() {
   const emailList = (() => {
     const e = d?.emails;
     if (!e) return [];
-    return Array.isArray(e) ? e : [e];
+    const arr = Array.isArray(e) ? e : [e];
+    return arr.map(x => typeof x === "string" ? x : x?.address).filter(Boolean);
+  })();
+
+  const aliasesList = (() => {
+    const a = d?.aliases;
+    if (!a) return [];
+    return Array.isArray(a) ? a : [a];
   })();
 
   const relativesList = (() => {
@@ -427,6 +434,11 @@ export default function PeopleSearchResult() {
                         </p>
                       )}
                       {locationSummary && <p className="text-sm text-slate-600">Lives in {locationSummary}</p>}
+                      {aliasesList.length > 0 && (
+                        <p className="text-sm text-slate-500">
+                          May go by: <span className="font-medium text-slate-700">{aliasesList.join(", ")}</span>
+                        </p>
+                      )}
                       {phoneList.length > 0 && (
                         <p className="text-sm">
                           {isPaid

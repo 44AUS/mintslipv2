@@ -367,7 +367,8 @@ export default function PeopleSearchResult() {
   const phoneList = (() => {
     const p = d?.possiblePhones || d?.phones;
     if (!p) return [];
-    return Array.isArray(p) ? p : [p];
+    const arr = Array.isArray(p) ? p : [p];
+    return arr.map(x => typeof x === "string" ? x : x?.number || "").filter(Boolean);
   })();
 
   const emailList = (() => {

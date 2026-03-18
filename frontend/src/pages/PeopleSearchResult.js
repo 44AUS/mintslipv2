@@ -547,11 +547,21 @@ export default function PeopleSearchResult() {
               {relativesList.length > 0 && (
                 <Section icon={Users} title="Possible Relatives" description={`May include parents, spouse, siblings, and children of ${firstName}.`}>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {relativesList.map((rel, i) => (
-                      <div key={i} className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <p className="text-sm font-semibold text-slate-800">{rel}</p>
-                      </div>
-                    ))}
+                    {relativesList.map((rel, i) => {
+                      const parts = String(rel).trim().split(/\s+/);
+                      const relFirst = parts[0] || "";
+                      const relLast  = parts.slice(1).join(" ") || "";
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => navigate("/people-search", { state: { prefill: { firstName: relFirst, lastName: relLast } } })}
+                          className="p-3 bg-slate-50 hover:bg-green-50 hover:border-green-300 rounded-lg border border-slate-100 text-left transition-colors group"
+                        >
+                          <p className="text-sm font-semibold text-slate-800 group-hover:text-green-700">{rel}</p>
+                          <p className="text-[10px] text-slate-400 group-hover:text-green-500 mt-0.5">Search this person →</p>
+                        </button>
+                      );
+                    })}
                   </div>
                 </Section>
               )}

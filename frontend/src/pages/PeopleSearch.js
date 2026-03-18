@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -400,6 +400,7 @@ function ResultCard({ entry, lookupType, query }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function PeopleSearch() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [activeTab, setActiveTab] = useState("phone");
   const [prices, setPrices] = useState({ phone_lookup: 0.99, name_lookup: 1.49, address_lookup: 1.49, carrier_lookup: 0.49 });
@@ -427,23 +428,36 @@ export default function PeopleSearch() {
     ? { "Content-Type": "application/json", "Authorization": `Bearer ${userToken}` }
     : { "Content-Type": "application/json" };
 
-  // Restore previous results + fetch prices on mount
+  // Restore previous results + fetch prices on mount, handle relative prefill
   useEffect(() => {
-    const saved = sessionStorage.getItem("ps_results");
-    const savedType = sessionStorage.getItem("ps_lookupType");
-    const savedQuery = sessionStorage.getItem("ps_query");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed?.length) {
-          setResults(parsed);
-          if (savedType) setLookupType(savedType);
-          if (savedQuery) setQuery(savedQuery);
-          // Restore the active tab to match the saved lookup type
-          const matchingTab = Object.entries(TAB_CONFIG).find(([, v]) => v.id === savedType);
-          if (matchingTab) setActiveTab(matchingTab[0]);
-        }
-      } catch { /* ignore */ }
+    const prefill = location.state?.prefill;
+    if (prefill?.firstName) {
+      // Came from a relative click — pre-fill name tab and auto-search
+      setActiveTab("name");
+      setFirstName(prefill.firstName);
+      setLastName(prefill.lastName || "");
+      // Clear nav state so back-navigation doesn't re-trigger
+      window.history.replaceState({}, "");
+      // Auto-search after state settles
+      setTimeout(() => {
+        document.getElementById("ps-search-btn")?.click();
+      }, 100);
+    } else {
+      const saved = sessionStorage.getItem("ps_results");
+      const savedType = sessionStorage.getItem("ps_lookupType");
+      const savedQuery = sessionStorage.getItem("ps_query");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed?.length) {
+            setResults(parsed);
+            if (savedType) setLookupType(savedType);
+            if (savedQuery) setQuery(savedQuery);
+            const matchingTab = Object.entries(TAB_CONFIG).find(([, v]) => v.id === savedType);
+            if (matchingTab) setActiveTab(matchingTab[0]);
+          }
+        } catch { /* ignore */ }
+      }
     }
     fetch(`${BACKEND_URL}/api/people-search/prices`)
       .then(r => r.json())
@@ -647,6 +661,7 @@ export default function PeopleSearch() {
                 )}
 
                 <button
+                  id="ps-search-btn"
                   onClick={handleSearch}
                   disabled={searching}
                   className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 text-sm"

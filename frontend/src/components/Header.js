@@ -49,7 +49,7 @@ const DEFAULT_NAV_ITEMS = [
   { id: "paystubs",       type: "dropdown" },
   { id: "resume",         type: "link", path: "/ai-resume-builder",  label: "AI Resume Builder", icon: Sparkles },
   { id: "generators",     type: "link", path: "/generators",         label: "All Generators",    icon: FileText },
-  { id: "people-search",  type: "link", path: "/people-search",      label: "People Search",     icon: Search, badge: "NEW" },
+  { id: "people-search",  type: "link", path: "/people-search",      label: "People Search",     icon: Search },
   { id: "contact",        type: "link", path: "/contact",            label: "Contact",            icon: Mail },
 ];
 

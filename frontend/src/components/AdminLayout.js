@@ -497,11 +497,11 @@ export default function AdminLayout({ children }) {
             </IonToolbar>
           </IonHeader>
 
-          <IonContent scrollY={true}>
+          <div style={{ flex: 1, overflowY: "auto", background: "var(--admin-content-bg)", minHeight: 0 }}>
             <div className="admin-page-content">
               {children}
             </div>
-          </IonContent>
+          </div>
         </IonPage>
 
       </IonSplitPane>

@@ -152,13 +152,7 @@ ion-page#admin-main ion-header ion-toolbar {
   --padding-end: 8px;
 }
 
-ion-page#admin-main ion-content {
-  --background: var(--admin-content-bg);
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-}
+/* Main content scroll area is now a plain div — no ion-content rules needed */
 
 /* ── Sidebar navigation ── */
 .admin-nav-list {

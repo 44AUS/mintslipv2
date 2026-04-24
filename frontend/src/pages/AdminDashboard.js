@@ -1,97 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
+  IonFooter, IonButton, IonButtons, IonSpinner,
+} from "@ionic/react";
 import { toast } from "sonner";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Users,
-  DollarSign,
-  TrendingUp,
-  FileText,
-  LogOut,
-  RefreshCw,
-  Tag,
-  Calendar,
-  Filter,
-  Download,
-  CreditCard,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Trash2,
-  Ban,
-  UserX,
-  MoreVertical,
-  CalendarDays,
-  Lock,
-  Eye,
-  EyeOff,
-  FileDown,
-  Search,
-  Pencil,
-  UserPlus,
-  UserCheck,
-  Clock,
-  AlertCircle,
-  Shield,
-  Globe,
-  Menu,
-  X,
-  FolderArchive,
-  File,
-  MailCheck,
-  Wrench
+  LayoutDashboard, ShoppingCart, Users, DollarSign, TrendingUp, FileText,
+  RefreshCw, Tag, Calendar, Filter, Download, CreditCard, ChevronLeft,
+  ChevronRight, Trash2, Ban, UserX, MoreVertical, CalendarDays, Eye,
+  FileDown, Search, Pencil, UserPlus, UserCheck, Clock, Shield, X,
+  FolderArchive, MailCheck,
 } from "lucide-react";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  Legend
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, PieChart, Pie, Cell, Legend,
 } from "recharts";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -271,6 +195,9 @@ export default function AdminDashboard() {
   // Historical import state
   const [isImportingHistory, setIsImportingHistory] = useState(false);
   const [importResult, setImportResult] = useState(null);
+
+  // User action dropdown
+  const [openUserMenuId, setOpenUserMenuId] = useState(null);
 
   // Saved documents state
   const [savedDocuments, setSavedDocuments] = useState([]);
@@ -1498,9 +1425,9 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <AdminLayout adminInfo={adminInfo}>
-        <div className="flex items-center justify-center h-64 gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-          <span className="text-lg text-slate-600">Loading dashboard...</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 256, gap: 12 }}>
+          <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
+          <span style={{ fontSize: "1.125rem", color: "var(--admin-text-muted)" }}>Loading dashboard…</span>
         </div>
       </AdminLayout>
     );
@@ -1586,17 +1513,12 @@ export default function AdminDashboard() {
                       <ShoppingCart className="w-6 h-6" />
                     </div>
                   </div>
-                  <Select value={purchasesPeriod} onValueChange={setPurchasesPeriod}>
-                    <SelectTrigger className="w-[110px] h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="week">This Week</SelectItem>
-                      <SelectItem value="month">This Month</SelectItem>
-                      <SelectItem value="quarter">This Quarter</SelectItem>
-                      <SelectItem value="year">This Year</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select className="admin-select" style={{ width: 120, fontSize: "0.75rem", padding: "5px 28px 5px 8px" }} value={purchasesPeriod} onChange={(e) => setPurchasesPeriod(e.target.value)}>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="quarter">This Quarter</option>
+                    <option value="year">This Year</option>
+                  </select>
                 </div>
                 <div className="mt-2">
                   <div className="flex items-center justify-between">
@@ -1643,17 +1565,12 @@ export default function AdminDashboard() {
                       <CalendarDays className="w-6 h-6" />
                     </div>
                   </div>
-                  <Select value={revenuePeriod} onValueChange={setRevenuePeriod}>
-                    <SelectTrigger className="w-[110px] h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="week">This Week</SelectItem>
-                      <SelectItem value="month">This Month</SelectItem>
-                      <SelectItem value="quarter">This Quarter</SelectItem>
-                      <SelectItem value="year">This Year</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select className="admin-select" style={{ width: 120, fontSize: "0.75rem", padding: "5px 28px 5px 8px" }} value={revenuePeriod} onChange={(e) => setRevenuePeriod(e.target.value)}>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="quarter">This Quarter</option>
+                    <option value="year">This Year</option>
+                  </select>
                 </div>
                 <div className="mt-2">
                   <div className="flex items-center justify-between">
@@ -1755,17 +1672,12 @@ export default function AdminDashboard() {
                       </button>
                     </div>
                     {/* Period Filter */}
-                    <Select value={chartPeriod} onValueChange={setChartPeriod}>
-                      <SelectTrigger className="w-[130px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="7days">Last 7 Days</SelectItem>
-                        <SelectItem value="30days">Last 30 Days</SelectItem>
-                        <SelectItem value="90days">Last 90 Days</SelectItem>
-                        <SelectItem value="year">Last Year</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <select className="admin-select" style={{ width: 140 }} value={chartPeriod} onChange={(e) => setChartPeriod(e.target.value)}>
+                      <option value="7days">Last 7 Days</option>
+                      <option value="30days">Last 30 Days</option>
+                      <option value="90days">Last 90 Days</option>
+                      <option value="year">Last Year</option>
+                    </select>
                   </div>
                 </div>
                 <div className="h-[300px]">
@@ -1972,86 +1884,52 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-semibold text-slate-800 mb-4">Recent Purchases</h2>
               <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Document Type</TableHead>
-                      <TableHead>Template</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>IP Address</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Discount</TableHead>
-                      <TableHead className="w-[80px]">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Document Type</th>
+                      <th>Template</th>
+                      <th>Customer</th>
+                      <th>IP Address</th>
+                      <th>Amount</th>
+                      <th>Discount</th>
+                      <th style={{ width: 80 }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {dashboardStats.recentPurchases.slice(0, 10).map((purchase) => (
-                      <TableRow key={purchase.id}>
-                        <TableCell className="text-sm">{formatDate(purchase.createdAt)}</TableCell>
-                        <TableCell>
-                          <span className="px-2 py-1 bg-slate-100 rounded-md text-sm">
-                            {formatDocumentType(purchase)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {purchase.template ? (
-                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
-                              {getTemplateName(purchase.template)}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="text-sm">{purchase.email || purchase.paypalEmail || "N/A"}</span>
-                            {purchase.userId ? (
-                              <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded w-fit">Registered</span>
-                            ) : (
-                              <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded w-fit">Guest</span>
-                            )}
+                      <tr key={purchase.id}>
+                        <td style={{ fontSize: "0.8125rem" }}>{formatDate(purchase.createdAt)}</td>
+                        <td><span className="admin-badge admin-badge-slate">{formatDocumentType(purchase)}</span></td>
+                        <td>
+                          {purchase.template
+                            ? <span className="admin-badge admin-badge-blue">{getTemplateName(purchase.template)}</span>
+                            : <span style={{ color: "var(--admin-text-muted)" }}>-</span>}
+                        </td>
+                        <td>
+                          <div style={{ fontSize: "0.875rem" }}>{purchase.email || purchase.paypalEmail || "N/A"}</div>
+                          {purchase.userId
+                            ? <span className="admin-badge admin-badge-green" style={{ marginTop: 2 }}>Registered</span>
+                            : <span className="admin-badge admin-badge-slate" style={{ marginTop: 2 }}>Guest</span>}
+                        </td>
+                        <td><span style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--admin-text-muted)" }}>{purchase.ipAddress || "-"}</span></td>
+                        <td style={{ fontWeight: 600 }}>{formatCurrency(purchase.amount)}</td>
+                        <td>
+                          {purchase.discountCode
+                            ? <span className="admin-badge admin-badge-green">{purchase.discountCode} (-{formatCurrency(purchase.discountAmount)})</span>
+                            : <span style={{ color: "var(--admin-text-muted)" }}>-</span>}
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <button className="admin-action-btn primary" onClick={() => openEditPurchase(purchase)} title="Edit"><Pencil size={14} /></button>
+                            <button className="admin-action-btn danger" onClick={() => deletePurchase(purchase.id)} title="Delete"><Trash2 size={14} /></button>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-xs font-mono text-slate-500">
-                            {purchase.ipAddress || "-"}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-medium">{formatCurrency(purchase.amount)}</TableCell>
-                        <TableCell>
-                          {purchase.discountCode ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">
-                              {purchase.discountCode} (-{formatCurrency(purchase.discountAmount)})
-                            </span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditPurchase(purchase)}
-                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deletePurchase(purchase.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -2064,90 +1942,56 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-800">All Purchases</h2>
                 <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => setAddPurchaseModalOpen(true)}
-                    className="gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
+                  <IonButton color="primary" onClick={() => setAddPurchaseModalOpen(true)}>
+                    <ShoppingCart size={16} style={{ marginRight: 6 }} />
                     Add Purchase
-                  </Button>
-                  <Button
-                    onClick={exportPurchasesToCSV}
-                    variant="outline"
-                    className="gap-2"
-                  >
-                    <FileDown className="w-4 h-4" />
+                  </IonButton>
+                  <IonButton fill="outline" color="medium" onClick={exportPurchasesToCSV}>
+                    <FileDown size={16} style={{ marginRight: 6 }} />
                     Export CSV
-                  </Button>
+                  </IonButton>
                 </div>
               </div>
-              
+
               {/* Filters Row */}
               <div className="flex flex-wrap items-center gap-3">
-                {/* Search */}
-                <div className="relative flex-1 min-w-[200px] max-w-[300px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
+                <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 300 }}>
+                  <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--admin-text-muted)", pointerEvents: "none" }} />
+                  <input
+                    className="admin-input"
+                    style={{ paddingLeft: 32 }}
                     placeholder="Search by email, type..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
                   />
                 </div>
-                
-                {/* Document Type Filter */}
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <Select value={documentTypeFilter} onValueChange={(v) => { setDocumentTypeFilter(v); setPurchasesPage(0); }}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Document Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Filter size={14} style={{ color: "var(--admin-text-muted)" }} />
+                  <select className="admin-select" style={{ width: 180 }} value={documentTypeFilter} onChange={(e) => { setDocumentTypeFilter(e.target.value); setPurchasesPage(0); }}>
+                    <option value="all">All Types</option>
+                    {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
                 </div>
-                
-                {/* Date Range Filter */}
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-500" />
-                  <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Date Range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="today">Today</SelectItem>
-                      <SelectItem value="week">This Week</SelectItem>
-                      <SelectItem value="month">This Month</SelectItem>
-                      <SelectItem value="quarter">This Quarter</SelectItem>
-                      <SelectItem value="year">This Year</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Calendar size={14} style={{ color: "var(--admin-text-muted)" }} />
+                  <select className="admin-select" style={{ width: 150 }} value={dateRangeFilter} onChange={(e) => setDateRangeFilter(e.target.value)}>
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="quarter">This Quarter</option>
+                    <option value="year">This Year</option>
+                  </select>
                 </div>
-                
-                {/* Clear Filters */}
                 {(documentTypeFilter !== "all" || dateRangeFilter !== "all" || searchQuery) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setDocumentTypeFilter("all");
-                      setDateRangeFilter("all");
-                      setSearchQuery("");
-                      setPurchasesPage(0);
-                    }}
-                    className="text-slate-500 hover:text-slate-700"
-                  >
+                  <IonButton fill="clear" size="small" color="medium" onClick={() => { setDocumentTypeFilter("all"); setDateRangeFilter("all"); setSearchQuery(""); setPurchasesPage(0); }}>
                     Clear Filters
-                  </Button>
+                  </IonButton>
                 )}
               </div>
-              
-              {/* Results Summary */}
+
               <div className="text-sm text-slate-500">
                 Showing {getFilteredPurchases().length} of {purchases.length} purchases
                 {(documentTypeFilter !== "all" || dateRangeFilter !== "all" || searchQuery) && " (filtered)"}
@@ -2155,129 +1999,76 @@ export default function AdminDashboard() {
             </div>
 
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Document Type</TableHead>
-                    <TableHead>Template</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Discount</TableHead>
-                    <TableHead className="w-[80px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Document Type</th>
+                    <th>Template</th>
+                    <th>Customer</th>
+                    <th>IP Address</th>
+                    <th>Amount</th>
+                    <th>Discount</th>
+                    <th style={{ width: 80 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {getFilteredPurchases().map((purchase) => (
-                    <TableRow key={purchase.id}>
-                      <TableCell className="text-sm">{formatDate(purchase.createdAt)}</TableCell>
-                      <TableCell>
-                        <span className="px-2 py-1 bg-slate-100 rounded-md text-sm">
-                          {formatDocumentType(purchase)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {purchase.template ? (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
-                            {getTemplateName(purchase.template)}
+                    <tr key={purchase.id}>
+                      <td style={{ fontSize: "0.8125rem" }}>{formatDate(purchase.createdAt)}</td>
+                      <td><span className="admin-badge admin-badge-slate">{formatDocumentType(purchase)}</span></td>
+                      <td>
+                        {purchase.template
+                          ? <span className="admin-badge admin-badge-blue">{getTemplateName(purchase.template)}</span>
+                          : <span style={{ color: "var(--admin-text-muted)" }}>-</span>}
+                      </td>
+                      <td>
+                        <div style={{ fontSize: "0.875rem" }}>{purchase.email || purchase.paypalEmail || "N/A"}</div>
+                        {purchase.userId
+                          ? <span className="admin-badge admin-badge-green" style={{ marginTop: 2 }}>Registered</span>
+                          : <span className="admin-badge admin-badge-slate" style={{ marginTop: 2 }}>Guest</span>}
+                      </td>
+                      <td><span style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--admin-text-muted)" }}>{purchase.ipAddress || "-"}</span></td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{formatCurrency(purchase.amount)}</div>
+                        {purchase.refunded && (
+                          <span className="admin-badge admin-badge-amber" style={{ marginTop: 2 }}>
+                            Refunded {purchase.refundedAmount ? `$${Number(purchase.refundedAmount).toFixed(2)}` : ""}
                           </span>
-                        ) : (
-                          <span className="text-slate-400">-</span>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm">{purchase.email || purchase.paypalEmail || "N/A"}</span>
-                          {purchase.userId ? (
-                            <span className="text-xs px-1.5 py-0.5 bg-green-100 text-green-700 rounded w-fit">Registered</span>
-                          ) : (
-                            <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded w-fit">Guest</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-xs font-mono text-slate-500">
-                          {purchase.ipAddress || "-"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-medium">{formatCurrency(purchase.amount)}</span>
-                          {purchase.refunded && (
-                            <span className="text-xs px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded w-fit">
-                              Refunded {purchase.refundedAmount ? `$${Number(purchase.refundedAmount).toFixed(2)}` : ""}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {purchase.discountCode ? (
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">
-                            {purchase.discountCode}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
+                      </td>
+                      <td>
+                        {purchase.discountCode
+                          ? <span className="admin-badge admin-badge-green">{purchase.discountCode}</span>
+                          : <span style={{ color: "var(--admin-text-muted)" }}>-</span>}
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", gap: 2 }}>
+                          <button
+                            className="admin-action-btn warning"
                             disabled={purchase.refunded || !purchase.stripePaymentIntentId}
                             title={purchase.refunded ? "Already refunded" : !purchase.stripePaymentIntentId ? "No payment record" : "Issue refund"}
                             onClick={() => { setRefundModal(purchase); setRefundAmount(purchase.amount?.toString() || ""); setRefundReason("requested_by_customer"); }}
-                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 disabled:opacity-40"
+                            style={{ opacity: (purchase.refunded || !purchase.stripePaymentIntentId) ? 0.4 : 1 }}
                           >
-                            <CreditCard className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditPurchase(purchase)}
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deletePurchase(purchase.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                            <CreditCard size={14} />
+                          </button>
+                          <button className="admin-action-btn primary" onClick={() => openEditPurchase(purchase)} title="Edit"><Pencil size={14} /></button>
+                          <button className="admin-action-btn danger" onClick={() => deletePurchase(purchase.id)} title="Delete"><Trash2 size={14} /></button>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <p className="text-sm text-slate-600">
-                Showing {purchasesPage * pageSize + 1} - {Math.min((purchasesPage + 1) * pageSize, purchasesTotal)} of {purchasesTotal}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={purchasesPage === 0}
-                  onClick={() => setPurchasesPage(p => p - 1)}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={(purchasesPage + 1) * pageSize >= purchasesTotal}
-                  onClick={() => setPurchasesPage(p => p + 1)}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
+            <div className="admin-pagination" style={{ marginTop: 16 }}>
+              <span>Showing {purchasesPage * pageSize + 1} – {Math.min((purchasesPage + 1) * pageSize, purchasesTotal)} of {purchasesTotal}</span>
+              <div className="admin-pagination-btns">
+                <IonButton fill="outline" size="small" color="medium" disabled={purchasesPage === 0} onClick={() => setPurchasesPage(p => p - 1)}><ChevronLeft size={16} /></IonButton>
+                <IonButton fill="outline" size="small" color="medium" disabled={(purchasesPage + 1) * pageSize >= purchasesTotal} onClick={() => setPurchasesPage(p => p + 1)}><ChevronRight size={16} /></IonButton>
               </div>
             </div>
           </div>
@@ -2435,23 +2226,11 @@ export default function AdminDashboard() {
                         </div>
                       )}
                     </div>
-                    <Button
-                      onClick={importHistoricalSubscriptions}
-                      disabled={isImportingHistory}
-                      className="bg-purple-600 hover:bg-purple-700 text-white ml-4"
-                    >
-                      {isImportingHistory ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Importing...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Import from Stripe
-                        </>
-                      )}
-                    </Button>
+                    <IonButton onClick={importHistoricalSubscriptions} disabled={isImportingHistory} style={{ "--background": "#9333ea", "--color": "#fff", marginLeft: 16 }}>
+                      {isImportingHistory
+                        ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />Importing...</>
+                        : <><Download size={16} style={{ marginRight: 6 }} />Import from Stripe</>}
+                    </IonButton>
                   </div>
                 </div>
               </div>
@@ -2637,78 +2416,44 @@ export default function AdminDashboard() {
                 {/* Filters Row */}
                 <div className="flex flex-wrap items-center gap-3">
                   {/* Search */}
-                  <div className="relative flex-1 min-w-[200px] max-w-[300px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
+                  <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 300 }}>
+                    <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--admin-text-muted)", pointerEvents: "none" }} />
+                    <input
+                      className="admin-input"
+                      style={{ paddingLeft: 32 }}
                       placeholder="Search by name or email..."
                       value={usersSearchQuery}
                       onChange={(e) => setUsersSearchQuery(e.target.value)}
-                      className="pl-9"
                     />
                   </div>
-                  
-                  {/* Subscription Type Filter */}
+
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-slate-500" />
-                    <Select 
-                      value={usersSubscriptionFilter} 
-                      onValueChange={(v) => { 
-                        setUsersSubscriptionFilter(v); 
-                        setUsersPage(0); 
-                      }}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder="Subscription" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Subscriptions</SelectItem>
-                        <SelectItem value="none">No Subscription</SelectItem>
-                        <SelectItem value="starter">Starter</SelectItem>
-                        <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="business">Business</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <CreditCard size={14} style={{ color: "var(--admin-text-muted)" }} />
+                    <select className="admin-select" style={{ width: 165 }} value={usersSubscriptionFilter} onChange={(e) => { setUsersSubscriptionFilter(e.target.value); setUsersPage(0); }}>
+                      <option value="all">All Subscriptions</option>
+                      <option value="none">No Subscription</option>
+                      <option value="starter">Starter</option>
+                      <option value="professional">Professional</option>
+                      <option value="business">Business</option>
+                    </select>
                   </div>
-                  
-                  {/* Join Date Filter */}
+
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-500" />
-                    <Select 
-                      value={usersDateFilter} 
-                      onValueChange={(v) => { 
-                        setUsersDateFilter(v); 
-                        setUsersPage(0); 
-                      }}
-                    >
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Join Date" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Time</SelectItem>
-                        <SelectItem value="today">Joined Today</SelectItem>
-                        <SelectItem value="week">This Week</SelectItem>
-                        <SelectItem value="month">This Month</SelectItem>
-                        <SelectItem value="quarter">This Quarter</SelectItem>
-                        <SelectItem value="year">This Year</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Calendar size={14} style={{ color: "var(--admin-text-muted)" }} />
+                    <select className="admin-select" style={{ width: 150 }} value={usersDateFilter} onChange={(e) => { setUsersDateFilter(e.target.value); setUsersPage(0); }}>
+                      <option value="all">All Time</option>
+                      <option value="today">Joined Today</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="quarter">This Quarter</option>
+                      <option value="year">This Year</option>
+                    </select>
                   </div>
-                  
-                  {/* Clear Filters */}
+
                   {(usersSubscriptionFilter !== "all" || usersDateFilter !== "all" || usersSearchQuery) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setUsersSubscriptionFilter("all");
-                        setUsersDateFilter("all");
-                        setUsersSearchQuery("");
-                        setUsersPage(0);
-                      }}
-                      className="text-slate-500 hover:text-slate-700"
-                    >
+                    <IonButton fill="clear" size="small" color="medium" onClick={() => { setUsersSubscriptionFilter("all"); setUsersDateFilter("all"); setUsersSearchQuery(""); setUsersPage(0); }}>
                       Clear Filters
-                    </Button>
+                    </IonButton>
                   )}
                 </div>
                 
@@ -2736,178 +2481,123 @@ export default function AdminDashboard() {
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>IP Address</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Subscription</TableHead>
-                        <TableHead>Downloads</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="w-[80px]">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                        <th>Subscription</th>
+                        <th>Downloads</th>
+                        <th>Joined</th>
+                        <th style={{ width: 80 }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {users.map((user) => {
                         const tier = user.subscription ? SUBSCRIPTION_TIERS[user.subscription.tier] : null;
-                        // Use downloads_remaining from subscription object if available, otherwise fall back to tier config
                         const isUnlimited = user.subscription?.downloads_remaining === -1 || tier?.downloads === -1;
                         const downloadsTotal = user.subscription?.downloads_total || tier?.downloads || 0;
                         const downloadsRemaining = user.subscription?.downloads_remaining ?? 0;
-                        const downloadsUsed = isUnlimited ? 0 : Math.max(0, downloadsTotal - downloadsRemaining);
                         const downloadsLimit = isUnlimited ? "∞" : downloadsTotal;
                         return (
-                          <TableRow key={user.id} className={user.isBanned ? "bg-red-50" : ""}>
-                            <TableCell className="font-medium">{user.name}</TableCell>
-                            <TableCell className="text-sm">{user.email}</TableCell>
-                            <TableCell>
-                              <span className="text-xs font-mono text-slate-500">
-                                {user.ipAddress || "-"}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              {user.isBanned ? (
-                                <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-sm">Banned</span>
-                              ) : user.emailVerified === false ? (
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-md text-sm">Unverified</span>
-                              ) : (
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-sm">Active</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
+                          <tr key={user.id} style={user.isBanned ? { background: "rgba(220,38,38,0.04)" } : {}}>
+                            <td style={{ fontWeight: 600 }}>{user.name}</td>
+                            <td style={{ fontSize: "0.875rem" }}>{user.email}</td>
+                            <td><span style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--admin-text-muted)" }}>{user.ipAddress || "-"}</span></td>
+                            <td>
+                              {user.isBanned
+                                ? <span className="admin-badge admin-badge-red">Banned</span>
+                                : user.emailVerified === false
+                                  ? <span className="admin-badge admin-badge-amber">Unverified</span>
+                                  : <span className="admin-badge admin-badge-green">Active</span>}
+                            </td>
+                            <td>
                               {user.subscription ? (
-                                <div className="flex flex-col gap-1">
-                                  <span className={`px-2 py-1 rounded-md text-sm w-fit ${
-                                    user.subscription.tier === "unlimited" || user.subscription.tier === "business" ? "bg-purple-100 text-purple-700" :
-                                    user.subscription.tier === "pro" || user.subscription.tier === "professional" ? "bg-blue-100 text-blue-700" :
-                                    "bg-green-100 text-green-700"
+                                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                                  <span className={`admin-badge ${
+                                    user.subscription.tier === "unlimited" || user.subscription.tier === "business" ? "admin-badge-purple" :
+                                    user.subscription.tier === "pro" || user.subscription.tier === "professional" ? "admin-badge-blue" :
+                                    "admin-badge-green"
                                   }`}>
                                     {tier?.name || user.subscription.tier.charAt(0).toUpperCase() + user.subscription.tier.slice(1)}
                                   </span>
                                   {user.subscription.status === "cancelling" && (
-                                    <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded text-xs w-fit flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      Cancelling
+                                    <span className="admin-badge admin-badge-amber" style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                                      <Clock size={10} /> Cancelling
                                     </span>
                                   )}
                                 </div>
                               ) : (
-                                <span className="text-slate-400">None</span>
+                                <span style={{ color: "var(--admin-text-muted)" }}>None</span>
                               )}
-                            </TableCell>
-                            <TableCell>
+                            </td>
+                            <td>
                               {user.subscription ? (
-                                isUnlimited ? (
-                                  <span className="font-medium text-purple-600">Unlimited</span>
-                                ) : (
-                                  <>
-                                    <span className="font-medium">{downloadsRemaining}</span>
-                                    <span className="text-slate-400"> / {downloadsLimit}</span>
-                                  </>
-                                )
+                                isUnlimited
+                                  ? <span style={{ fontWeight: 600, color: "#8b5cf6" }}>Unlimited</span>
+                                  : <span><span style={{ fontWeight: 600 }}>{downloadsRemaining}</span><span style={{ color: "var(--admin-text-muted)" }}> / {downloadsLimit}</span></span>
                               ) : (
-                                <span className="text-slate-400">-</span>
+                                <span style={{ color: "var(--admin-text-muted)" }}>-</span>
                               )}
-                            </TableCell>
-                            <TableCell className="text-sm">{formatDate(user.createdAt)}</TableCell>
-                            <TableCell>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    onClick={() => openEditUserModal(user)}
-                                    className="text-slate-600"
-                                  >
-                                    <Pencil className="w-4 h-4 mr-2" />
-                                    Edit User
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => openSubscriptionModal(user)}
-                                    className="text-blue-600"
-                                  >
-                                    <CreditCard className="w-4 h-4 mr-2" />
-                                    Change Subscription
-                                  </DropdownMenuItem>
-                                  {user.subscription && (
-                                    <DropdownMenuItem 
-                                      onClick={() => openDownloadsModal(user)}
-                                      className="text-green-600"
-                                    >
-                                      <Download className="w-4 h-4 mr-2" />
-                                      Add Bonus Downloads
-                                    </DropdownMenuItem>
-                                  )}
-                                  {user.emailVerified === false && (
-                                    <DropdownMenuItem 
-                                      onClick={() => confirmUserEmail(user.id)}
-                                      className="text-emerald-600"
-                                    >
-                                      <MailCheck className="w-4 h-4 mr-2" />
-                                      Confirm Email
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem 
-                                    onClick={() => toggleBanUser(user.id, user.isBanned)}
-                                    className={user.isBanned ? "text-green-600" : "text-orange-600"}
-                                  >
-                                    <Ban className="w-4 h-4 mr-2" />
-                                    {user.isBanned ? "Unban User" : "Ban User"}
-                                  </DropdownMenuItem>
-                                  {user.ipAddress && user.ipAddress !== "unknown" && (
-                                    <DropdownMenuItem 
-                                      onClick={() => banUserIP(user)}
-                                      className="text-red-600"
-                                    >
-                                      <Shield className="w-4 h-4 mr-2" />
-                                      Ban IP Address
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuItem 
-                                    onClick={() => deleteUser(user.id)}
-                                    className="text-red-600"
-                                  >
-                                    <UserX className="w-4 h-4 mr-2" />
-                                    Delete User
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
+                            </td>
+                            <td style={{ fontSize: "0.8125rem" }}>{formatDate(user.createdAt)}</td>
+                            <td>
+                              <div style={{ position: "relative" }}>
+                                <button
+                                  className="admin-action-btn"
+                                  onClick={() => setOpenUserMenuId(openUserMenuId === user.id ? null : user.id)}
+                                >
+                                  <MoreVertical size={16} />
+                                </button>
+                                {openUserMenuId === user.id && (
+                                  <div className="user-action-menu">
+                                    <button className="profile-menu-item" onClick={() => { openEditUserModal(user); setOpenUserMenuId(null); }}>
+                                      <Pencil size={13} /> Edit User
+                                    </button>
+                                    <button className="profile-menu-item" style={{ color: "#3b82f6" }} onClick={() => { openSubscriptionModal(user); setOpenUserMenuId(null); }}>
+                                      <CreditCard size={13} /> Change Subscription
+                                    </button>
+                                    {user.subscription && (
+                                      <button className="profile-menu-item" style={{ color: "var(--ion-color-primary)" }} onClick={() => { openDownloadsModal(user); setOpenUserMenuId(null); }}>
+                                        <Download size={13} /> Add Bonus Downloads
+                                      </button>
+                                    )}
+                                    {user.emailVerified === false && (
+                                      <button className="profile-menu-item" style={{ color: "#10b981" }} onClick={() => { confirmUserEmail(user.id); setOpenUserMenuId(null); }}>
+                                        <MailCheck size={13} /> Confirm Email
+                                      </button>
+                                    )}
+                                    <div className="profile-menu-divider" />
+                                    <button className="profile-menu-item" style={{ color: user.isBanned ? "var(--ion-color-primary)" : "#f97316" }} onClick={() => { toggleBanUser(user.id, user.isBanned); setOpenUserMenuId(null); }}>
+                                      <Ban size={13} /> {user.isBanned ? "Unban User" : "Ban User"}
+                                    </button>
+                                    {user.ipAddress && user.ipAddress !== "unknown" && (
+                                      <button className="profile-menu-item danger" onClick={() => { banUserIP(user); setOpenUserMenuId(null); }}>
+                                        <Shield size={13} /> Ban IP Address
+                                      </button>
+                                    )}
+                                    <button className="profile-menu-item danger" onClick={() => { deleteUser(user.id); setOpenUserMenuId(null); }}>
+                                      <UserX size={13} /> Delete User
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
                         );
                       })}
-                    </TableBody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <p className="text-sm text-slate-600">
-                    Showing {usersPage * pageSize + 1} - {Math.min((usersPage + 1) * pageSize, usersTotal)} of {usersTotal}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={usersPage === 0}
-                      onClick={() => setUsersPage(p => p - 1)}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={(usersPage + 1) * pageSize >= usersTotal}
-                      onClick={() => setUsersPage(p => p + 1)}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
+                <div className="admin-pagination" style={{ marginTop: 16 }}>
+                  <span>Showing {usersPage * pageSize + 1} – {Math.min((usersPage + 1) * pageSize, usersTotal)} of {usersTotal}</span>
+                  <div className="admin-pagination-btns">
+                    <IonButton fill="outline" size="small" color="medium" disabled={usersPage === 0} onClick={() => setUsersPage(p => p - 1)}><ChevronLeft size={16} /></IonButton>
+                    <IonButton fill="outline" size="small" color="medium" disabled={(usersPage + 1) * pageSize >= usersTotal} onClick={() => setUsersPage(p => p + 1)}><ChevronRight size={16} /></IonButton>
                   </div>
                 </div>
               </>
@@ -2925,36 +2615,32 @@ export default function AdminDashboard() {
                 Saved Documents ({savedDocumentsTotal})
               </h2>
               <div className="flex flex-wrap gap-2">
-                <Select value={savedDocumentsTypeFilter} onValueChange={(v) => { setSavedDocumentsTypeFilter(v); setSavedDocumentsPage(0); }}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Document Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
+                <select
+                  className="admin-select"
+                  value={savedDocumentsTypeFilter}
+                  onChange={(e) => { setSavedDocumentsTypeFilter(e.target.value); setSavedDocumentsPage(0); }}
+                >
+                  <option value="all">All Types</option>
+                  {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+                <input
+                  className="admin-input"
                   placeholder="Filter by User ID..."
                   value={savedDocumentsUserFilter}
                   onChange={(e) => { setSavedDocumentsUserFilter(e.target.value); setSavedDocumentsPage(0); }}
-                  className="w-[200px]"
+                  style={{ width: 200 }}
                 />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={loadSavedDocuments}
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </Button>
+                <IonButton fill="outline" size="small" color="medium" onClick={loadSavedDocuments}>
+                  <RefreshCw size={16} />
+                </IonButton>
               </div>
             </div>
 
             {isSavedDocumentsLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
               </div>
             ) : savedDocuments.length === 0 ? (
               <div className="text-center py-12 text-slate-500">
@@ -2964,37 +2650,37 @@ export default function AdminDashboard() {
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Document Type</TableHead>
-                        <TableHead>File Name</TableHead>
-                        <TableHead>Size</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Document Type</th>
+                        <th>File Name</th>
+                        <th>Size</th>
+                        <th>Created</th>
+                        <th style={{ textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                       {savedDocuments.map((doc) => (
-                        <TableRow key={doc.id}>
-                          <TableCell>
+                        <tr key={doc.id}>
+                          <td>
                             <div>
                               <p className="font-medium text-slate-800">{doc.userEmail}</p>
                               {doc.userName && <p className="text-xs text-slate-500">{doc.userName}</p>}
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-sm">
+                          </td>
+                          <td>
+                            <span className="admin-badge admin-badge-slate">
                               {DOCUMENT_TYPES[doc.documentType] || doc.documentType}
                             </span>
-                          </TableCell>
-                          <TableCell>
+                          </td>
+                          <td>
                             {doc.fileExists === false ? (
-                              <span className="text-sm text-red-500 truncate max-w-[200px] block flex items-center gap-1" title="File missing from server">
-                                <X className="w-3 h-3 flex-shrink-0" />
+                              <span style={{ color: "#ef4444", fontSize: "0.875rem", display: "flex", alignItems: "center", gap: 4 }} title="File missing from server">
+                                <X size={12} style={{ flexShrink: 0 }} />
                                 {doc.fileName}
-                                <span className="text-xs text-red-400">(missing)</span>
+                                <span style={{ fontSize: "0.75rem", color: "#f87171" }}>(missing)</span>
                               </span>
                             ) : (
                               <button
@@ -3005,12 +2691,10 @@ export default function AdminDashboard() {
                                     const response = await fetch(downloadUrl, {
                                       headers: { "Authorization": `Bearer ${token}` }
                                     });
-                                    
                                     if (!response.ok) {
                                       const errorData = await response.json().catch(() => ({}));
                                       throw new Error(errorData.detail || `HTTP ${response.status}`);
                                     }
-                                    
                                     const blob = await response.blob();
                                     const url = window.URL.createObjectURL(blob);
                                     window.open(url, '_blank');
@@ -3019,62 +2703,41 @@ export default function AdminDashboard() {
                                     toast.error(`Failed to open document: ${err.message}`);
                                   }
                                 }}
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[200px] block cursor-pointer flex items-center gap-1"
+                                style={{ color: "#3b82f6", fontSize: "0.875rem", display: "flex", alignItems: "center", gap: 4, cursor: "pointer", background: "none", border: "none", padding: 0 }}
                                 title="Click to view PDF"
                               >
-                                <Eye className="w-3 h-3 flex-shrink-0" />
+                                <Eye size={12} style={{ flexShrink: 0 }} />
                                 {doc.fileName}
                               </button>
                             )}
-                          </TableCell>
-                          <TableCell>
+                          </td>
+                          <td>
                             <span className="text-sm text-slate-500">
                               {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : '-'}
                             </span>
-                          </TableCell>
-                          <TableCell>
+                          </td>
+                          <td>
                             <span className="text-sm text-slate-500">
                               {new Date(doc.createdAt).toLocaleDateString()}
                             </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteSavedDocument(doc.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            <button className="admin-action-btn danger" onClick={() => deleteSavedDocument(doc.id)}>
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
                       ))}
-                    </TableBody>
-                  </Table>
+                    </tbody>
+                  </table>
                 </div>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <p className="text-sm text-slate-500">
-                    Showing {savedDocumentsPage * pageSize + 1} - {Math.min((savedDocumentsPage + 1) * pageSize, savedDocumentsTotal)} of {savedDocumentsTotal}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={savedDocumentsPage === 0}
-                      onClick={() => setSavedDocumentsPage(p => p - 1)}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={(savedDocumentsPage + 1) * pageSize >= savedDocumentsTotal}
-                      onClick={() => setSavedDocumentsPage(p => p + 1)}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
+                <div className="admin-pagination" style={{ marginTop: 16 }}>
+                  <span>Showing {savedDocumentsPage * pageSize + 1} – {Math.min((savedDocumentsPage + 1) * pageSize, savedDocumentsTotal)} of {savedDocumentsTotal}</span>
+                  <div className="admin-pagination-btns">
+                    <IonButton fill="outline" size="small" color="medium" disabled={savedDocumentsPage === 0} onClick={() => setSavedDocumentsPage(p => p - 1)}><ChevronLeft size={16} /></IonButton>
+                    <IonButton fill="outline" size="small" color="medium" disabled={(savedDocumentsPage + 1) * pageSize >= savedDocumentsTotal} onClick={() => setSavedDocumentsPage(p => p + 1)}><ChevronRight size={16} /></IonButton>
                   </div>
                 </div>
               </>
@@ -3087,13 +2750,10 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-slate-800">Discount Codes</h2>
-              <Button
-                onClick={() => navigate("/admin/discounts")}
-                className="bg-green-600 hover:bg-green-700 gap-2"
-              >
-                <Tag className="w-4 h-4" />
+              <IonButton color="primary" onClick={() => navigate("/admin/discounts")}>
+                <Tag size={16} style={{ marginRight: 6 }} />
                 Manage Discount Codes
-              </Button>
+              </IonButton>
             </div>
             <p className="text-slate-600">
               Click the button above to manage discount codes using the existing discount management interface.
@@ -3103,508 +2763,382 @@ export default function AdminDashboard() {
       </div>
 
       {/* Subscription Change Modal */}
-      <Dialog open={subscriptionModalOpen} onOpenChange={setSubscriptionModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change User Subscription</DialogTitle>
-            <DialogDescription>
-              Update subscription plan for {selectedUser?.name} ({selectedUser?.email})
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4 space-y-4">
-            <div className="text-sm text-slate-600 mb-4">
-              Current plan: <span className="font-medium">{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</span>
-              {selectedUser?.subscription?.downloads_remaining !== undefined && (
-                <span className="ml-2 text-slate-500">
-                  ({selectedUser.subscription.downloads_remaining === -1 ? "Unlimited" : `${selectedUser.subscription.downloads_remaining} downloads remaining`})
-                </span>
-              )}
-            </div>
-            
-            <Select value={selectedTier} onValueChange={setSelectedTier}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a plan" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Subscription</SelectItem>
-                {Object.entries(ADMIN_ASSIGNABLE_TIERS).map(([key, tier]) => (
-                  <SelectItem key={key} value={key}>
-                    {tier.name} - ${tier.price}/mo ({tier.downloads === -1 ? "Unlimited" : tier.downloads} downloads)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {selectedTier && selectedTier !== "none" && (
-              <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-                <p><strong>{ADMIN_ASSIGNABLE_TIERS[selectedTier]?.name || SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
-                <p>${ADMIN_ASSIGNABLE_TIERS[selectedTier]?.price || SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
-                <p>{(ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads ?? SUBSCRIPTION_TIERS[selectedTier]?.downloads) === -1 ? "Unlimited" : (ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads || SUBSCRIPTION_TIERS[selectedTier]?.downloads)} downloads per month</p>
-              </div>
-            )}
-            
-            {selectedTier === "none" && (
-              <div className="p-3 bg-orange-50 rounded-lg text-sm text-orange-700">
-                <p><strong>Remove Subscription</strong></p>
-                <p>User will no longer have access to subscription features</p>
-              </div>
+      <IonModal isOpen={subscriptionModalOpen} onDidDismiss={() => setSubscriptionModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Change User Subscription</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setSubscriptionModalOpen(false)}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            Update subscription plan for {selectedUser?.name} ({selectedUser?.email})
+          </p>
+          <div style={{ marginBottom: 12, fontSize: "0.875rem", color: "#475569" }}>
+            Current plan: <strong>{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</strong>
+            {selectedUser?.subscription?.downloads_remaining !== undefined && (
+              <span style={{ marginLeft: 8, color: "#64748b" }}>
+                ({selectedUser.subscription.downloads_remaining === -1 ? "Unlimited" : `${selectedUser.subscription.downloads_remaining} downloads remaining`})
+              </span>
             )}
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSubscriptionModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={updateUserSubscription} className="bg-green-600 hover:bg-green-700">
-              Update Subscription
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="admin-form-group">
+            <select className="admin-select" value={selectedTier} onChange={(e) => setSelectedTier(e.target.value)}>
+              <option value="">Select a plan</option>
+              <option value="none">No Subscription</option>
+              {Object.entries(ADMIN_ASSIGNABLE_TIERS).map(([key, tier]) => (
+                <option key={key} value={key}>
+                  {tier.name} - ${tier.price}/mo ({tier.downloads === -1 ? "Unlimited" : tier.downloads} downloads)
+                </option>
+              ))}
+            </select>
+          </div>
+          {selectedTier && selectedTier !== "none" && (
+            <div style={{ padding: 12, background: "rgba(59,130,246,0.08)", borderRadius: 8, fontSize: "0.875rem", color: "#3b82f6", marginTop: 12 }}>
+              <p><strong>{ADMIN_ASSIGNABLE_TIERS[selectedTier]?.name || SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
+              <p>${ADMIN_ASSIGNABLE_TIERS[selectedTier]?.price || SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
+              <p>{(ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads ?? SUBSCRIPTION_TIERS[selectedTier]?.downloads) === -1 ? "Unlimited" : (ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads || SUBSCRIPTION_TIERS[selectedTier]?.downloads)} downloads per month</p>
+            </div>
+          )}
+          {selectedTier === "none" && (
+            <div style={{ padding: 12, background: "rgba(249,115,22,0.08)", borderRadius: 8, fontSize: "0.875rem", color: "#f97316", marginTop: 12 }}>
+              <p><strong>Remove Subscription</strong></p>
+              <p>User will no longer have access to subscription features</p>
+            </div>
+          )}
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => setSubscriptionModalOpen(false)}>Cancel</IonButton>
+              <IonButton color="primary" onClick={updateUserSubscription}>Update Subscription</IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
 
       {/* Add Bonus Downloads Modal */}
-      <Dialog open={downloadsModalOpen} onOpenChange={setDownloadsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Download className="w-5 h-5 text-green-600" />
-              Add Bonus Downloads
-            </DialogTitle>
-            <DialogDescription>
-              Add extra downloads for {selectedUser?.name} ({selectedUser?.email})
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="p-3 bg-slate-50 rounded-lg text-sm">
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-600">Current Plan:</span>
-                <span className="font-medium">{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Downloads Remaining:</span>
-                <span className="font-medium">
-                  {selectedUser?.subscription?.downloads_remaining === -1 
-                    ? "∞ Unlimited" 
-                    : selectedUser?.subscription?.downloads_remaining || 0}
-                </span>
-              </div>
+      <IonModal isOpen={downloadsModalOpen} onDidDismiss={() => setDownloadsModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Download size={18} style={{ color: "#16a34a" }} /> Add Bonus Downloads
+            </IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setDownloadsModalOpen(false)}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            Add extra downloads for {selectedUser?.name} ({selectedUser?.email})
+          </p>
+          <div style={{ padding: 12, background: "rgba(241,245,249,0.6)", borderRadius: 8, fontSize: "0.875rem", marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ color: "#64748b" }}>Current Plan:</span>
+              <strong>{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</strong>
             </div>
-            
-            {selectedUser?.subscription?.downloads_remaining === -1 ? (
-              <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-                <p>This user already has unlimited downloads.</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Bonus Downloads to Add</label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={editDownloadsCount}
-                    onChange={(e) => setEditDownloadsCount(e.target.value)}
-                    placeholder="Enter number of downloads to add"
-                    className="w-full"
-                  />
-                  <p className="text-xs text-slate-500">
-                    These bonus downloads will be added to the current count and reset on the next billing cycle.
-                  </p>
-                </div>
-                
-                {editDownloadsCount && parseInt(editDownloadsCount) > 0 && (
-                  <div className="p-3 bg-green-50 rounded-lg text-sm text-green-700">
-                    <p><strong>After adding:</strong> {(selectedUser?.subscription?.downloads_remaining || 0) + parseInt(editDownloadsCount)} downloads</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDownloadsModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={updateUserDownloads} 
-              className="bg-green-600 hover:bg-green-700"
-              disabled={selectedUser?.subscription?.downloads_remaining === -1 || !editDownloadsCount || parseInt(editDownloadsCount) < 1}
-            >
-              Add Downloads
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit User Modal */}
-      <Dialog open={editUserModalOpen} onOpenChange={setEditUserModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Pencil className="w-5 h-5 text-slate-600" />
-              Edit User
-            </DialogTitle>
-            <DialogDescription>
-              Update user information for {selectedUser?.email}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Name</label>
-              <Input
-                type="text"
-                value={editUserData.name}
-                onChange={(e) => setEditUserData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Enter user's name"
-                className="w-full"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Email</label>
-              <Input
-                type="email"
-                value={editUserData.email}
-                onChange={(e) => setEditUserData(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Enter user's email"
-                className="w-full"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">IP Address</label>
-              <Input
-                type="text"
-                value={editUserData.ipAddress}
-                onChange={(e) => setEditUserData(prev => ({ ...prev, ipAddress: e.target.value }))}
-                placeholder="e.g., 192.168.1.1"
-                className="w-full font-mono"
-              />
-              <p className="text-xs text-slate-400">The IP address associated with this user</p>
-            </div>
-            
-            <div className="p-3 bg-slate-50 rounded-lg text-sm">
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-600">User ID:</span>
-                <span className="font-mono text-xs">{selectedUser?.id}</span>
-              </div>
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-600">Joined:</span>
-                <span>{selectedUser?.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : "N/A"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Status:</span>
-                <span className={selectedUser?.isBanned ? "text-red-600" : "text-green-600"}>
-                  {selectedUser?.isBanned ? "Banned" : "Active"}
-                </span>
-              </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "#64748b" }}>Downloads Remaining:</span>
+              <strong>
+                {selectedUser?.subscription?.downloads_remaining === -1
+                  ? "∞ Unlimited"
+                  : selectedUser?.subscription?.downloads_remaining || 0}
+              </strong>
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUserModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={updateUser} 
-              className="bg-green-600 hover:bg-green-700"
-              disabled={isUpdatingUser || !editUserData.name.trim() || !editUserData.email.trim()}
-            >
-              {isUpdatingUser ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Change Password Modal */}
-      <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Admin Password</DialogTitle>
-            <DialogDescription>
-              Enter your current password and choose a new secure password.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Current Password</label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-              />
+          {selectedUser?.subscription?.downloads_remaining === -1 ? (
+            <div style={{ padding: 12, background: "rgba(59,130,246,0.08)", borderRadius: 8, fontSize: "0.875rem", color: "#3b82f6" }}>
+              <p>This user already has unlimited downloads.</p>
             </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">New Password</label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password (min 8 characters)"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Confirm New Password</label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-              />
-            </div>
-            
-            {newPassword && confirmPassword && newPassword !== confirmPassword && (
-              <p className="text-sm text-red-500">Passwords don't match</p>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setPasswordModalOpen(false);
-              setCurrentPassword("");
-              setNewPassword("");
-              setConfirmPassword("");
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={changePassword} 
-              disabled={isChangingPassword || !currentPassword || !newPassword || newPassword !== confirmPassword}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isChangingPassword ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Changing...
-                </>
-              ) : (
-                "Change Password"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add/Edit Purchase Modal */}
-      <Dialog open={addPurchaseModalOpen} onOpenChange={closeModal}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editingPurchase ? "Edit Purchase" : "Add Manual Purchase"}</DialogTitle>
-            <DialogDescription>
-              {editingPurchase 
-                ? "Update the purchase record details below."
-                : "Add a historical purchase record. This is useful for tracking purchases made before the system was implemented."
-              }
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-            {/* Document Type */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Document Type *</label>
-              <Select 
-                value={newPurchase.documentType} 
-                onValueChange={(v) => setNewPurchase(prev => ({ ...prev, documentType: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Amount */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Amount ($) *</label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="9.99"
-                value={newPurchase.amount}
-                onChange={(e) => setNewPurchase(prev => ({ ...prev, amount: e.target.value }))}
-              />
-            </div>
-            
-            {/* PayPal Email */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Customer Email *</label>
-              <Input
-                type="email"
-                placeholder="customer@example.com"
-                value={newPurchase.paypalEmail}
-                onChange={(e) => setNewPurchase(prev => ({ ...prev, paypalEmail: e.target.value }))}
-              />
-            </div>
-            
-            {/* Purchase Date */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Purchase Date</label>
-              <Input
-                type="date"
-                value={newPurchase.purchaseDate}
-                onChange={(e) => setNewPurchase(prev => ({ ...prev, purchaseDate: e.target.value }))}
-              />
-            </div>
-            
-            {/* Template (Optional) */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Template (Optional)</label>
-              <Input
-                placeholder="e.g., modern, classic, template-1"
-                value={newPurchase.template}
-                onChange={(e) => setNewPurchase(prev => ({ ...prev, template: e.target.value }))}
-              />
-            </div>
-            
-            {/* Discount Code (Optional) */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Discount Code</label>
-                <Input
-                  placeholder="CODE123"
-                  value={newPurchase.discountCode}
-                  onChange={(e) => setNewPurchase(prev => ({ ...prev, discountCode: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Discount Amount ($)</label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={newPurchase.discountAmount}
-                  onChange={(e) => setNewPurchase(prev => ({ ...prev, discountAmount: e.target.value }))}
-                />
-              </div>
-            </div>
-            
-            {/* Notes (Optional) */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Notes (Optional)</label>
-              <Input
-                placeholder="Any additional notes about this purchase"
-                value={newPurchase.notes}
-                onChange={(e) => setNewPurchase(prev => ({ ...prev, notes: e.target.value }))}
-              />
-            </div>
-            
-            {/* Quantity and IP Address */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">Quantity</label>
-                <Input
+          ) : (
+            <>
+              <div className="admin-form-group">
+                <label className="admin-form-label">Bonus Downloads to Add</label>
+                <input
+                  className="admin-input"
                   type="number"
                   min="1"
-                  placeholder="1"
-                  value={newPurchase.quantity}
-                  onChange={(e) => setNewPurchase(prev => ({ ...prev, quantity: e.target.value }))}
+                  value={editDownloadsCount}
+                  onChange={(e) => setEditDownloadsCount(e.target.value)}
+                  placeholder="Enter number of downloads to add"
                 />
-                <p className="text-xs text-slate-400">Number of documents (e.g., paystubs)</p>
+                <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
+                  These bonus downloads will be added to the current count and reset on the next billing cycle.
+                </p>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">IP Address</label>
-                <Input
-                  placeholder="192.168.1.1"
-                  value={newPurchase.ipAddress}
-                  onChange={(e) => setNewPurchase(prev => ({ ...prev, ipAddress: e.target.value }))}
-                />
-                <p className="text-xs text-slate-400">Customer's IP address</p>
-              </div>
+              {editDownloadsCount && parseInt(editDownloadsCount) > 0 && (
+                <div style={{ padding: 12, background: "rgba(22,163,74,0.08)", borderRadius: 8, fontSize: "0.875rem", color: "#16a34a", marginTop: 12 }}>
+                  <p><strong>After adding:</strong> {(selectedUser?.subscription?.downloads_remaining || 0) + parseInt(editDownloadsCount)} downloads</p>
+                </div>
+              )}
+            </>
+          )}
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => setDownloadsModalOpen(false)}>Cancel</IonButton>
+              <IonButton color="primary" onClick={updateUserDownloads} disabled={selectedUser?.subscription?.downloads_remaining === -1 || !editDownloadsCount || parseInt(editDownloadsCount) < 1}>
+                Add Downloads
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
+
+      {/* Edit User Modal */}
+      <IonModal isOpen={editUserModalOpen} onDidDismiss={() => setEditUserModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Pencil size={16} /> Edit User
+            </IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setEditUserModalOpen(false)}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            Update user information for {selectedUser?.email}
+          </p>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Name</label>
+            <input
+              className="admin-input"
+              type="text"
+              value={editUserData.name}
+              onChange={(e) => setEditUserData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter user's name"
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Email</label>
+            <input
+              className="admin-input"
+              type="email"
+              value={editUserData.email}
+              onChange={(e) => setEditUserData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="Enter user's email"
+            />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">IP Address</label>
+            <input
+              className="admin-input"
+              type="text"
+              value={editUserData.ipAddress}
+              onChange={(e) => setEditUserData(prev => ({ ...prev, ipAddress: e.target.value }))}
+              placeholder="e.g., 192.168.1.1"
+              style={{ fontFamily: "monospace" }}
+            />
+            <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>The IP address associated with this user</p>
+          </div>
+          <div style={{ padding: 12, background: "rgba(241,245,249,0.6)", borderRadius: 8, fontSize: "0.875rem", marginTop: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ color: "#64748b" }}>User ID:</span>
+              <span style={{ fontFamily: "monospace", fontSize: "0.75rem" }}>{selectedUser?.id}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ color: "#64748b" }}>Joined:</span>
+              <span>{selectedUser?.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : "N/A"}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "#64748b" }}>Status:</span>
+              <span style={{ color: selectedUser?.isBanned ? "#ef4444" : "#16a34a" }}>
+                {selectedUser?.isBanned ? "Banned" : "Active"}
+              </span>
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={editingPurchase ? updatePurchase : addManualPurchase} 
-              disabled={isAddingPurchase || !newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail}
-              className="bg-green-600 hover:bg-green-700"
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => setEditUserModalOpen(false)}>Cancel</IonButton>
+              <IonButton color="primary" onClick={updateUser} disabled={isUpdatingUser || !editUserData.name.trim() || !editUserData.email.trim()}>
+                {isUpdatingUser ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />Saving...</> : "Save Changes"}
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
+
+      {/* Change Password Modal */}
+      <IonModal isOpen={passwordModalOpen} onDidDismiss={() => { setPasswordModalOpen(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Change Admin Password</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => { setPasswordModalOpen(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            Enter your current password and choose a new secure password.
+          </p>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Current Password</label>
+            <input className="admin-input" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">New Password</label>
+            <input className="admin-input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password (min 8 characters)" />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Confirm New Password</label>
+            <input className="admin-input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" />
+          </div>
+          {newPassword && confirmPassword && newPassword !== confirmPassword && (
+            <p style={{ fontSize: "0.875rem", color: "#ef4444", marginTop: 4 }}>Passwords don't match</p>
+          )}
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => { setPasswordModalOpen(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}>Cancel</IonButton>
+              <IonButton color="primary" onClick={changePassword} disabled={isChangingPassword || !currentPassword || !newPassword || newPassword !== confirmPassword}>
+                {isChangingPassword ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />Changing...</> : "Change Password"}
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
+
+      {/* Add/Edit Purchase Modal */}
+      <IonModal isOpen={addPurchaseModalOpen} onDidDismiss={closeModal} style={{ "--width": "560px", "--max-width": "95vw", "--height": "auto", "--max-height": "90vh" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>{editingPurchase ? "Edit Purchase" : "Add Manual Purchase"}</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={closeModal}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding" style={{ overflowY: "auto" }}>
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            {editingPurchase
+              ? "Update the purchase record details below."
+              : "Add a historical purchase record. This is useful for tracking purchases made before the system was implemented."}
+          </p>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Document Type *</label>
+            <select
+              className="admin-select"
+              value={newPurchase.documentType}
+              onChange={(e) => setNewPurchase(prev => ({ ...prev, documentType: e.target.value }))}
             >
-              {isAddingPurchase ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {editingPurchase ? "Updating..." : "Adding..."}
-                </>
-              ) : (
-                editingPurchase ? "Update Purchase" : "Add Purchase"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {Object.entries(DOCUMENT_TYPES).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Amount ($) *</label>
+            <input className="admin-input" type="number" step="0.01" placeholder="9.99" value={newPurchase.amount} onChange={(e) => setNewPurchase(prev => ({ ...prev, amount: e.target.value }))} />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Customer Email *</label>
+            <input className="admin-input" type="email" placeholder="customer@example.com" value={newPurchase.paypalEmail} onChange={(e) => setNewPurchase(prev => ({ ...prev, paypalEmail: e.target.value }))} />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Purchase Date</label>
+            <input className="admin-input" type="date" value={newPurchase.purchaseDate} onChange={(e) => setNewPurchase(prev => ({ ...prev, purchaseDate: e.target.value }))} />
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Template (Optional)</label>
+            <input className="admin-input" placeholder="e.g., modern, classic, template-1" value={newPurchase.template} onChange={(e) => setNewPurchase(prev => ({ ...prev, template: e.target.value }))} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="admin-form-group">
+              <label className="admin-form-label">Discount Code</label>
+              <input className="admin-input" placeholder="CODE123" value={newPurchase.discountCode} onChange={(e) => setNewPurchase(prev => ({ ...prev, discountCode: e.target.value }))} />
+            </div>
+            <div className="admin-form-group">
+              <label className="admin-form-label">Discount Amount ($)</label>
+              <input className="admin-input" type="number" step="0.01" placeholder="0.00" value={newPurchase.discountAmount} onChange={(e) => setNewPurchase(prev => ({ ...prev, discountAmount: e.target.value }))} />
+            </div>
+          </div>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Notes (Optional)</label>
+            <input className="admin-input" placeholder="Any additional notes about this purchase" value={newPurchase.notes} onChange={(e) => setNewPurchase(prev => ({ ...prev, notes: e.target.value }))} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="admin-form-group">
+              <label className="admin-form-label">Quantity</label>
+              <input className="admin-input" type="number" min="1" placeholder="1" value={newPurchase.quantity} onChange={(e) => setNewPurchase(prev => ({ ...prev, quantity: e.target.value }))} />
+              <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>Number of documents (e.g., paystubs)</p>
+            </div>
+            <div className="admin-form-group">
+              <label className="admin-form-label">IP Address</label>
+              <input className="admin-input" placeholder="192.168.1.1" value={newPurchase.ipAddress} onChange={(e) => setNewPurchase(prev => ({ ...prev, ipAddress: e.target.value }))} />
+              <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>Customer's IP address</p>
+            </div>
+          </div>
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={closeModal}>Cancel</IonButton>
+              <IonButton color="primary" onClick={editingPurchase ? updatePurchase : addManualPurchase} disabled={isAddingPurchase || !newPurchase.documentType || !newPurchase.amount || !newPurchase.paypalEmail}>
+                {isAddingPurchase
+                  ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />{editingPurchase ? "Updating..." : "Adding..."}</>
+                  : editingPurchase ? "Update Purchase" : "Add Purchase"}
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
       {/* Refund Modal */}
-      <Dialog open={!!refundModal} onOpenChange={(open) => { if (!open) setRefundModal(null); }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Issue Refund</DialogTitle>
-            <DialogDescription>
-              Issue a full or partial Stripe refund for this purchase.
-            </DialogDescription>
-          </DialogHeader>
+      <IonModal isOpen={!!refundModal} onDidDismiss={() => setRefundModal(null)} style={{ "--width": "480px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Issue Refund</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setRefundModal(null)}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            Issue a full or partial Stripe refund for this purchase.
+          </p>
           {refundModal && (
-            <div className="space-y-4 py-2">
-              <div className="bg-slate-50 rounded-lg p-3 text-sm space-y-1">
-                <div className="flex justify-between"><span className="text-slate-500">Document</span><span className="font-medium">{DOCUMENT_TYPES[refundModal.documentType] || refundModal.documentType}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Customer</span><span>{refundModal.email || refundModal.paypalEmail || "N/A"}</span></div>
-                <div className="flex justify-between"><span className="text-slate-500">Original Amount</span><span className="font-medium">{formatCurrency(refundModal.amount)}</span></div>
+            <>
+              <div style={{ padding: 12, background: "rgba(241,245,249,0.6)", borderRadius: 8, fontSize: "0.875rem", marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span style={{ color: "#64748b" }}>Document</span><strong>{DOCUMENT_TYPES[refundModal.documentType] || refundModal.documentType}</strong></div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span style={{ color: "#64748b" }}>Customer</span><span>{refundModal.email || refundModal.paypalEmail || "N/A"}</span></div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Original Amount</span><strong>{formatCurrency(refundModal.amount)}</strong></div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Refund Amount ($)</label>
-                <input
-                  type="number"
-                  min="0.01"
-                  max={refundModal.amount}
-                  step="0.01"
-                  value={refundAmount}
-                  onChange={(e) => setRefundAmount(e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
+              <div className="admin-form-group">
+                <label className="admin-form-label">Refund Amount ($)</label>
+                <input className="admin-input" type="number" min="0.01" max={refundModal.amount} step="0.01" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">Reason</label>
-                <select
-                  value={refundReason}
-                  onChange={(e) => setRefundReason(e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
+              <div className="admin-form-group">
+                <label className="admin-form-label">Reason</label>
+                <select className="admin-select" value={refundReason} onChange={(e) => setRefundReason(e.target.value)}>
                   <option value="requested_by_customer">Customer Request</option>
                   <option value="duplicate">Duplicate</option>
                   <option value="fraudulent">Fraudulent</option>
                 </select>
               </div>
-            </div>
+            </>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRefundModal(null)} disabled={refundLoading}>Cancel</Button>
-            <Button
-              onClick={handleRefund}
-              disabled={refundLoading}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              {refundLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : "Issue Refund"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => setRefundModal(null)} disabled={refundLoading}>Cancel</IonButton>
+              <IonButton color="warning" onClick={handleRefund} disabled={refundLoading}>
+                {refundLoading ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />Processing...</> : "Issue Refund"}
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
 
     </AdminLayout>
   );
@@ -3612,22 +3146,23 @@ export default function AdminDashboard() {
 
 // Stat Card Component
 function StatCard({ title, value, icon: Icon, color }) {
-  const colors = {
-    green: "bg-green-100 text-green-600",
-    blue: "bg-blue-100 text-blue-600",
-    purple: "bg-purple-100 text-purple-600",
-    orange: "bg-orange-100 text-orange-600"
+  const iconColors = {
+    green: { bg: "rgba(22,163,74,0.12)", color: "#16a34a" },
+    blue: { bg: "rgba(59,130,246,0.12)", color: "#3b82f6" },
+    purple: { bg: "rgba(139,92,246,0.12)", color: "#8b5cf6" },
+    orange: { bg: "rgba(249,115,22,0.12)", color: "#f97316" },
   };
+  const c = iconColors[color] || iconColors.green;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex items-center justify-between">
+    <div className="admin-stat-card">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <p className="text-sm text-slate-500">{title}</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
+          <p className="admin-stat-label">{title}</p>
+          <p className="admin-stat-value">{value}</p>
         </div>
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colors[color]}`}>
-          <Icon className="w-6 h-6" />
+        <div style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: c.bg }}>
+          <Icon size={24} style={{ color: c.color }} />
         </div>
       </div>
     </div>

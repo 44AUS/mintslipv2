@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { IonSpinner } from "@ionic/react";
 import AdminLayout from "@/components/AdminLayout";
 import {
   Database, Globe, Search, RefreshCw, Play, Trash2,
-  CheckCircle, XCircle, Loader2, ChevronDown, ChevronUp,
+  CheckCircle, XCircle, ChevronDown, ChevronUp,
   AlertTriangle, Info, Upload, FileText, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -31,10 +32,16 @@ const SCRAPER_SOURCES = ["nsopw", "nppes", "fec", "faa"];
 
 function StatusBadge({ job }) {
   if (!job) return <span className="text-xs text-slate-400">Never run</span>;
+  if (job.status === "running") {
+    return (
+      <span className="flex items-center gap-1 text-xs font-medium text-blue-600">
+        <IonSpinner name="crescent" style={{ width: 14, height: 14, color: "#2563eb" }} /> Running
+      </span>
+    );
+  }
   const map = {
-    running:   { icon: Loader2, cls: "text-blue-600 animate-spin",  label: "Running" },
-    completed: { icon: CheckCircle, cls: "text-green-600",           label: "Done" },
-    failed:    { icon: XCircle, cls: "text-red-500",                 label: "Failed" },
+    completed: { icon: CheckCircle, cls: "text-green-600", label: "Done" },
+    failed:    { icon: XCircle, cls: "text-red-500",       label: "Failed" },
   };
   const { icon: Icon, cls, label } = map[job.status] || map.failed;
   return (
@@ -148,7 +155,7 @@ function SourceCard({ source, runningSet, onToggle, onTrigger, onClear }) {
               className="flex items-center gap-1.5 text-xs font-medium bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
             >
               {isRunning
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Running…</>
+                ? <><IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> Running…</>
                 : <><Play className="w-3.5 h-3.5" /> Run Scraper</>}
             </button>
           )}
@@ -316,7 +323,7 @@ function VoterRollImporter({ token, onImportStarted }) {
               <span className="text-sm font-medium text-slate-600">Click to upload voter roll CSV</span>
               <span className="text-xs text-slate-400 mt-1">Supports any CSV format — column mapping in next step</span>
               <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFile} />
-              {loading && <Loader2 className="w-5 h-5 animate-spin text-green-500 mt-3" />}
+              {loading && <IonSpinner name="crescent" color="primary" style={{ width: 20, height: 20, marginTop: 12 }} />}
             </label>
           </div>
         )}
@@ -387,7 +394,7 @@ function VoterRollImporter({ token, onImportStarted }) {
                 disabled={loading || !colMap.firstName || !colMap.lastName}
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors disabled:opacity-50"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                {loading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <ArrowRight className="w-4 h-4" />}
                 Start Import
               </button>
               <p className="text-xs text-slate-400">
@@ -542,7 +549,7 @@ export default function AdminDataSources() {
         {/* Source cards */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-7 h-7 animate-spin text-slate-400" />
+            <IonSpinner name="crescent" style={{ width: 28, height: 28, color: "#94a3b8" }} />
           </div>
         ) : (
           <div className="space-y-3 mb-8">

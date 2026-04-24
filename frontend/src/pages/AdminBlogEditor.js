@@ -1,24 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
+  IonFooter, IonButton, IonButtons, IonSpinner,
+} from "@ionic/react";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Save,
@@ -26,7 +12,6 @@ import {
   Upload,
   Image as ImageIcon,
   Sparkles,
-  Loader2,
   Plus,
   Trash2,
   ExternalLink,
@@ -43,7 +28,7 @@ export default function AdminBlogEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -54,7 +39,7 @@ export default function AdminBlogEditor() {
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
   const [aiKeywords, setAiKeywords] = useState("");
-  
+
   const [post, setPost] = useState({
     title: "",
     slug: "",
@@ -71,7 +56,7 @@ export default function AdminBlogEditor() {
     indexFollow: true,
     publishDate: new Date().toISOString().split('T')[0]
   });
-  
+
   const [newTag, setNewTag] = useState("");
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
 
@@ -81,28 +66,18 @@ export default function AdminBlogEditor() {
       navigate("/admin/login");
       return;
     }
-    
     loadCategories();
-    
-    if (isEditing) {
-      loadPost();
-    }
+    if (isEditing) loadPost();
   }, [id]);
 
   const loadPost = async () => {
     setIsLoading(true);
     const token = localStorage.getItem("adminToken");
-    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/posts/${id}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
-      
-      if (response.status === 401) {
-        navigate("/admin/login");
-        return;
-      }
-      
+      if (response.status === 401) { navigate("/admin/login"); return; }
       const data = await response.json();
       if (data.success) {
         setPost({
@@ -116,7 +91,6 @@ export default function AdminBlogEditor() {
         navigate("/admin/blog");
       }
     } catch (error) {
-      console.error("Error loading post:", error);
       toast.error("Failed to load post");
     } finally {
       setIsLoading(false);
@@ -127,46 +101,31 @@ export default function AdminBlogEditor() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/blog/categories`);
       const data = await response.json();
-      if (data.success) {
-        setCategories(data.categories);
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error);
-    }
+      if (data.success) setCategories(data.categories);
+    } catch (_) {}
   };
 
-  const generateSlug = (title) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  };
+  const generateSlug = (title) =>
+    title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
   const handleTitleChange = (e) => {
     const title = e.target.value;
-    setPost(prev => ({
-      ...prev,
-      title,
-      slug: prev.slug || generateSlug(title)
-    }));
+    setPost(prev => ({ ...prev, title, slug: prev.slug || generateSlug(title) }));
   };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     setIsUploading(true);
     const token = localStorage.getItem("adminToken");
     const formData = new FormData();
     formData.append("file", file);
-    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/upload-image`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
       });
-      
       const data = await response.json();
       if (data.success) {
         setPost(prev => ({ ...prev, featuredImage: data.url }));
@@ -174,29 +133,25 @@ export default function AdminBlogEditor() {
       } else {
         toast.error(data.detail || "Failed to upload image");
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Error uploading image");
     } finally {
       setIsUploading(false);
     }
   };
 
-  // Handler for WYSIWYG editor image uploads - returns the URL
   const handleEditorImageUpload = async (file) => {
     const token = localStorage.getItem("adminToken");
     const formData = new FormData();
     formData.append("file", file);
-    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/upload-image`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
       });
-      
       const data = await response.json();
       if (data.success) {
-        // Return full URL for the editor
         const imageUrl = data.url.startsWith('/') ? `${BACKEND_URL}${data.url}` : data.url;
         toast.success("Image inserted");
         return imageUrl;
@@ -204,36 +159,22 @@ export default function AdminBlogEditor() {
         toast.error("Failed to upload image");
         return null;
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Error uploading image");
       return null;
     }
   };
 
-  // AI Image Generation Handler
   const handleGenerateImage = async () => {
-    if (!post.title.trim()) {
-      toast.error("Please enter a blog title first");
-      return;
-    }
-    
+    if (!post.title.trim()) { toast.error("Please enter a blog title first"); return; }
     setIsGeneratingImage(true);
     const token = localStorage.getItem("adminToken");
-    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/generate-image`, {
         method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title: post.title,
-          category: post.category || null,
-          keywords: post.tags.join(", ") || null
-        })
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ title: post.title, category: post.category || null, keywords: post.tags.join(", ") || null })
       });
-      
       const data = await response.json();
       if (data.success) {
         setPost(prev => ({ ...prev, featuredImage: data.url }));
@@ -241,8 +182,7 @@ export default function AdminBlogEditor() {
       } else {
         toast.error(data.detail || "Failed to generate image");
       }
-    } catch (error) {
-      console.error("Error generating image:", error);
+    } catch (_) {
       toast.error("Error generating AI image");
     } finally {
       setIsGeneratingImage(false);
@@ -251,17 +191,13 @@ export default function AdminBlogEditor() {
 
   const handleAddTag = () => {
     if (!newTag.trim()) return;
-    if (post.tags.includes(newTag.trim())) {
-      toast.error("Tag already exists");
-      return;
-    }
+    if (post.tags.includes(newTag.trim())) { toast.error("Tag already exists"); return; }
     setPost(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
     setNewTag("");
   };
 
-  const handleRemoveTag = (tag) => {
+  const handleRemoveTag = (tag) =>
     setPost(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
-  };
 
   const handleAddFaq = () => {
     if (!newFaq.question.trim() || !newFaq.answer.trim()) {
@@ -272,63 +208,32 @@ export default function AdminBlogEditor() {
     setNewFaq({ question: "", answer: "" });
   };
 
-  const handleRemoveFaq = (index) => {
-    setPost(prev => ({
-      ...prev,
-      faqSchema: prev.faqSchema.filter((_, i) => i !== index)
-    }));
-  };
+  const handleRemoveFaq = (index) =>
+    setPost(prev => ({ ...prev, faqSchema: prev.faqSchema.filter((_, i) => i !== index) }));
 
   const handleSave = async (status = post.status) => {
-    if (!post.title.trim()) {
-      toast.error("Please enter a title");
-      return;
-    }
-    if (!post.slug.trim()) {
-      toast.error("Please enter a slug");
-      return;
-    }
-    if (!post.content.trim()) {
-      toast.error("Please enter content");
-      return;
-    }
-    
+    if (!post.title.trim()) { toast.error("Please enter a title"); return; }
+    if (!post.slug.trim()) { toast.error("Please enter a slug"); return; }
+    if (!post.content.trim()) { toast.error("Please enter content"); return; }
     setIsSaving(true);
     const token = localStorage.getItem("adminToken");
-    
     try {
-      const endpoint = isEditing 
+      const endpoint = isEditing
         ? `${BACKEND_URL}/api/admin/blog/posts/${id}`
         : `${BACKEND_URL}/api/admin/blog/posts`;
-      
-      const method = isEditing ? "PUT" : "POST";
-      
-      const payload = {
-        ...post,
-        status,
-        publishDate: new Date(post.publishDate).toISOString()
-      };
-      
       const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        method: isEditing ? "PUT" : "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...post, status, publishDate: new Date(post.publishDate).toISOString() })
       });
-      
       const data = await response.json();
-      
       if (data.success) {
         toast.success(isEditing ? "Post updated!" : "Post created!");
-        if (!isEditing && data.post?.id) {
-          navigate(`/admin/blog/edit/${data.post.id}`);
-        }
+        if (!isEditing && data.post?.id) navigate(`/admin/blog/edit/${data.post.id}`);
       } else {
         toast.error(data.detail || "Failed to save post");
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Error saving post");
     } finally {
       setIsSaving(false);
@@ -336,28 +241,16 @@ export default function AdminBlogEditor() {
   };
 
   const handleAiGenerate = async () => {
-    if (!aiTopic.trim()) {
-      toast.error("Please enter a topic");
-      return;
-    }
-    
+    if (!aiTopic.trim()) { toast.error("Please enter a topic"); return; }
     setIsGenerating(true);
     const token = localStorage.getItem("adminToken");
-    
     try {
-      const params = new URLSearchParams({
-        topic: aiTopic,
-        keywords: aiKeywords,
-        tone: "professional"
-      });
-      
+      const params = new URLSearchParams({ topic: aiTopic, keywords: aiKeywords, tone: "professional" });
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/ai-generate?${params}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` }
       });
-      
       const data = await response.json();
-      
       if (data.success && data.generated) {
         const generated = data.generated;
         setPost(prev => ({
@@ -378,7 +271,7 @@ export default function AdminBlogEditor() {
       } else {
         toast.error(data.detail || "Failed to generate content");
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Error generating content");
     } finally {
       setIsGenerating(false);
@@ -388,7 +281,7 @@ export default function AdminBlogEditor() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
       </div>
     );
   }
@@ -400,60 +293,31 @@ export default function AdminBlogEditor() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/admin/blog")}
-                className="gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
-              </Button>
+              <IonButton fill="clear" color="medium" size="small" onClick={() => navigate("/admin/blog")}>
+                <ArrowLeft size={16} style={{ marginRight: 4 }} />Back
+              </IonButton>
               <div className="h-6 w-px bg-slate-200" />
               <h1 className="text-xl font-bold text-slate-800">
                 {isEditing ? "Edit Post" : "New Post"}
               </h1>
             </div>
-            
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowPreview(!showPreview)}
-                className="gap-2"
-              >
-                <Eye className="w-4 h-4" />
-                {showPreview ? "Edit" : "Preview"}
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAiDialogOpen(true)}
-                className="gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                AI Assist
-              </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => handleSave("draft")}
-                disabled={isSaving}
-                className="gap-2"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              <IonButton fill="outline" color="medium" size="small" onClick={() => setShowPreview(!showPreview)}>
+                <Eye size={14} style={{ marginRight: 4 }} />{showPreview ? "Edit" : "Preview"}
+              </IonButton>
+              <IonButton fill="outline" color="medium" size="small" onClick={() => setAiDialogOpen(true)}>
+                <Sparkles size={14} style={{ marginRight: 4 }} />AI Assist
+              </IonButton>
+              <IonButton fill="outline" color="medium" onClick={() => handleSave("draft")} disabled={isSaving}>
+                {isSaving
+                  ? <IonSpinner name="crescent" style={{ width: 14, height: 14, marginRight: 4 }} />
+                  : <Save size={14} style={{ marginRight: 4 }} />}
                 Save Draft
-              </Button>
-              
-              <Button
-                onClick={() => handleSave("published")}
-                disabled={isSaving}
-                className="gap-2 bg-green-600 hover:bg-green-700"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              </IonButton>
+              <IonButton color="primary" onClick={() => handleSave("published")} disabled={isSaving}>
+                {isSaving && <IonSpinner name="crescent" style={{ width: 14, height: 14, marginRight: 4 }} />}
                 {post.status === "published" ? "Update" : "Publish"}
-              </Button>
+              </IonButton>
             </div>
           </div>
         </div>
@@ -464,34 +328,33 @@ export default function AdminBlogEditor() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {showPreview ? (
-              /* Preview Mode */
               <div className="bg-white rounded-xl shadow-sm border p-8">
                 <h1 className="text-3xl font-bold text-slate-800 mb-4">{post.title || "Untitled"}</h1>
-                <div 
+                <div
                   className="prose prose-lg max-w-none"
                   dangerouslySetInnerHTML={{ __html: post.content || "<p><em>No content yet</em></p>" }}
                 />
               </div>
             ) : (
-              /* Edit Mode */
               <>
                 {/* Title & Slug */}
                 <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Title *</label>
-                    <Input
+                    <input
+                      className="admin-input"
                       value={post.title}
                       onChange={handleTitleChange}
                       placeholder="Enter post title"
-                      className="text-lg"
                     />
                   </div>
-                  
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Slug *</label>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-500">/blog/</span>
-                      <Input
+                      <input
+                        className="admin-input"
+                        style={{ flex: 1 }}
                         value={post.slug}
                         onChange={(e) => setPost(prev => ({ ...prev, slug: generateSlug(e.target.value) }))}
                         placeholder="post-url-slug"
@@ -500,7 +363,7 @@ export default function AdminBlogEditor() {
                   </div>
                 </div>
 
-                {/* Content - WYSIWYG Editor */}
+                {/* Content */}
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <label className="block text-sm font-medium text-slate-700 mb-4">Content *</label>
                   <TiptapEditor
@@ -516,7 +379,8 @@ export default function AdminBlogEditor() {
                 {/* Excerpt */}
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <label className="block text-sm font-medium text-slate-700 mb-2">Excerpt</label>
-                  <Textarea
+                  <textarea
+                    className="admin-textarea"
                     value={post.excerpt}
                     onChange={(e) => setPost(prev => ({ ...prev, excerpt: e.target.value }))}
                     placeholder="Brief summary of the post (auto-generated if empty)"
@@ -527,7 +391,6 @@ export default function AdminBlogEditor() {
                 {/* FAQ Schema */}
                 <div className="bg-white rounded-xl shadow-sm border p-6">
                   <label className="block text-sm font-medium text-slate-700 mb-4">FAQ Schema (for SEO)</label>
-                  
                   {post.faqSchema.map((faq, index) => (
                     <div key={index} className="border rounded-lg p-4 mb-3 bg-slate-50">
                       <div className="flex items-start justify-between gap-2">
@@ -535,34 +398,32 @@ export default function AdminBlogEditor() {
                           <p className="font-medium text-slate-800">{faq.question}</p>
                           <p className="text-sm text-slate-600 mt-1">{faq.answer}</p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
+                        <button
                           onClick={() => handleRemoveFaq(index)}
-                          className="text-red-600 hover:text-red-700"
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", padding: 4 }}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   ))}
-                  
                   <div className="space-y-3 mt-4 pt-4 border-t">
-                    <Input
+                    <input
+                      className="admin-input"
                       value={newFaq.question}
                       onChange={(e) => setNewFaq(prev => ({ ...prev, question: e.target.value }))}
                       placeholder="Question"
                     />
-                    <Textarea
+                    <textarea
+                      className="admin-textarea"
                       value={newFaq.answer}
                       onChange={(e) => setNewFaq(prev => ({ ...prev, answer: e.target.value }))}
                       placeholder="Answer"
                       rows={2}
                     />
-                    <Button variant="outline" size="sm" onClick={handleAddFaq} className="gap-2">
-                      <Plus className="w-4 h-4" />
-                      Add FAQ
-                    </Button>
+                    <IonButton fill="outline" color="medium" size="small" onClick={handleAddFaq}>
+                      <Plus size={14} style={{ marginRight: 4 }} />Add FAQ
+                    </IonButton>
                   </div>
                 </div>
               </>
@@ -574,35 +435,30 @@ export default function AdminBlogEditor() {
             {/* Status & Date */}
             <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
               <h3 className="font-semibold text-slate-800">Publish Settings</h3>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
-                <Select 
-                  value={post.status} 
-                  onValueChange={(v) => setPost(prev => ({ ...prev, status: v }))}
+                <select
+                  className="admin-select"
+                  value={post.status}
+                  onChange={(e) => setPost(prev => ({ ...prev, status: e.target.value }))}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Publish Date</label>
-                <Input
+                <input
+                  className="admin-input"
                   type="date"
                   value={post.publishDate}
                   onChange={(e) => setPost(prev => ({ ...prev, publishDate: e.target.value }))}
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Author</label>
-                <Input
+                <input
+                  className="admin-input"
                   value={post.author}
                   onChange={(e) => setPost(prev => ({ ...prev, author: e.target.value }))}
                 />
@@ -614,23 +470,20 @@ export default function AdminBlogEditor() {
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-800">Featured Image</h3>
                 {post.featuredImage && (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <IonButton
+                    fill="outline"
+                    size="small"
                     onClick={handleGenerateImage}
                     disabled={isGeneratingImage || !post.title.trim()}
-                    className="gap-1 text-purple-600 border-purple-200 hover:bg-purple-50"
+                    style={{ "--color": "#9333ea", "--border-color": "#e9d5ff" }}
                   >
-                    {isGeneratingImage ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
+                    {isGeneratingImage
+                      ? <IonSpinner name="crescent" style={{ width: 14, height: 14, marginRight: 4 }} />
+                      : <Sparkles size={14} style={{ marginRight: 4 }} />}
                     Regenerate
-                  </Button>
+                  </IonButton>
                 )}
               </div>
-              
               {post.featuredImage ? (
                 <div className="relative">
                   <img
@@ -638,41 +491,39 @@ export default function AdminBlogEditor() {
                     alt="Featured"
                     className="w-full rounded-lg"
                   />
-                  <Button
-                    variant="destructive"
-                    size="sm"
+                  <IonButton
+                    color="danger"
+                    size="small"
                     onClick={() => setPost(prev => ({ ...prev, featuredImage: "" }))}
-                    className="absolute top-2 right-2"
+                    style={{ position: "absolute", top: 8, right: 8 }}
                   >
-                    <X className="w-4 h-4" />
-                  </Button>
+                    <X size={14} />
+                  </IonButton>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {/* AI Generate Button */}
-                  <Button
-                    variant="outline"
+                  <IonButton
+                    fill="outline"
+                    expand="block"
                     onClick={handleGenerateImage}
                     disabled={isGeneratingImage || !post.title.trim()}
-                    className="w-full gap-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+                    style={{ "--color": "#7e22ce", "--border-color": "#e9d5ff" }}
                   >
                     {isGeneratingImage ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <IonSpinner name="crescent" style={{ width: 14, height: 14, marginRight: 6 }} />
                         Generating AI Image...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4" />
+                        <Sparkles size={14} style={{ marginRight: 6 }} />
                         Generate with AI
                       </>
                     )}
-                  </Button>
-                  
+                  </IonButton>
                   {!post.title.trim() && (
                     <p className="text-xs text-slate-400 text-center">Enter a title to enable AI generation</p>
                   )}
-                  
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
                       <span className="w-full border-t border-slate-200" />
@@ -681,17 +532,11 @@ export default function AdminBlogEditor() {
                       <span className="bg-white px-2 text-slate-400">or upload manually</span>
                     </div>
                   </div>
-                  
                   <label className="block cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                     <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
                       {isUploading ? (
-                        <Loader2 className="w-6 h-6 mx-auto text-slate-400 animate-spin" />
+                        <IonSpinner name="crescent" style={{ width: 24, height: 24, color: "#94a3b8" }} />
                       ) : (
                         <>
                           <Upload className="w-6 h-6 mx-auto text-slate-400 mb-2" />
@@ -707,74 +552,70 @@ export default function AdminBlogEditor() {
             {/* Category */}
             <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
               <h3 className="font-semibold text-slate-800">Category</h3>
-              <Select 
-                value={post.category || "none"} 
-                onValueChange={(v) => setPost(prev => ({ ...prev, category: v === "none" ? "" : v }))}
+              <select
+                className="admin-select"
+                value={post.category || ""}
+                onChange={(e) => setPost(prev => ({ ...prev, category: e.target.value }))}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Category</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.slug} value={cat.slug}>{cat.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">No Category</option>
+                {categories.map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* Tags */}
             <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
               <h3 className="font-semibold text-slate-800">Tags</h3>
-              
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
-                  <span 
-                    key={tag} 
-                    className="px-2 py-1 bg-slate-100 rounded text-sm flex items-center gap-1"
-                  >
+                  <span key={tag} className="px-2 py-1 bg-slate-100 rounded text-sm flex items-center gap-1">
                     {tag}
-                    <button onClick={() => handleRemoveTag(tag)} className="text-slate-400 hover:text-red-500">
-                      <X className="w-3 h-3" />
+                    <button
+                      onClick={() => handleRemoveTag(tag)}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", lineHeight: 1 }}
+                    >
+                      <X size={12} />
                     </button>
                   </span>
                 ))}
               </div>
-              
               <div className="flex gap-2">
-                <Input
+                <input
+                  className="admin-input"
+                  style={{ flex: 1 }}
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add tag"
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                 />
-                <Button variant="outline" size="sm" onClick={handleAddTag}>
-                  <Plus className="w-4 h-4" />
-                </Button>
+                <IonButton fill="outline" color="medium" size="small" onClick={handleAddTag}>
+                  <Plus size={14} />
+                </IonButton>
               </div>
             </div>
 
             {/* SEO Settings */}
             <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
               <h3 className="font-semibold text-slate-800">SEO Settings</h3>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Meta Title <span className="text-slate-400">({(post.metaTitle || post.title).length}/60)</span>
                 </label>
-                <Input
+                <input
+                  className="admin-input"
                   value={post.metaTitle}
                   onChange={(e) => setPost(prev => ({ ...prev, metaTitle: e.target.value }))}
                   placeholder={post.title || "SEO title"}
                   maxLength={60}
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Meta Description <span className="text-slate-400">({(post.metaDescription || "").length}/160)</span>
                 </label>
-                <Textarea
+                <textarea
+                  className="admin-textarea"
                   value={post.metaDescription}
                   onChange={(e) => setPost(prev => ({ ...prev, metaDescription: e.target.value }))}
                   placeholder="Brief description for search engines"
@@ -782,7 +623,6 @@ export default function AdminBlogEditor() {
                   maxLength={160}
                 />
               </div>
-              
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -800,63 +640,71 @@ export default function AdminBlogEditor() {
         </div>
       </div>
 
-      {/* AI Generation Dialog */}
-      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600" />
-              AI Content Generator
-            </DialogTitle>
-            <DialogDescription>
-              Generate blog content using AI. The generated content can be edited after.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
+      {/* AI Generation Modal */}
+      <IonModal isOpen={aiDialogOpen} onDidDismiss={() => setAiDialogOpen(false)} style={{ "--width": "500px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Sparkles size={18} style={{ color: "#9333ea" }} />
+                AI Content Generator
+              </span>
+            </IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setAiDialogOpen(false)}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
+            Generate blog content using AI. The generated content can be edited after.
+          </p>
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Topic / Title *</label>
-              <Input
+              <input
+                className="admin-input"
                 value={aiTopic}
                 onChange={(e) => setAiTopic(e.target.value)}
                 placeholder="e.g., How to Create a Pay Stub for Self-Employment"
               />
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Target Keywords (optional)</label>
-              <Input
+              <input
+                className="admin-input"
                 value={aiKeywords}
                 onChange={(e) => setAiKeywords(e.target.value)}
                 placeholder="e.g., pay stub, self-employed, proof of income"
               />
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAiDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAiGenerate} 
-              disabled={isGenerating || !aiTopic.trim()}
-              className="gap-2 bg-purple-600 hover:bg-purple-700"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Generate Content
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => setAiDialogOpen(false)}>Cancel</IonButton>
+              <IonButton
+                onClick={handleAiGenerate}
+                disabled={isGenerating || !aiTopic.trim()}
+                style={{ "--background": "#9333ea", "--background-activated": "#7e22ce" }}
+              >
+                {isGenerating ? (
+                  <>
+                    <IonSpinner name="crescent" style={{ width: 14, height: 14, marginRight: 6 }} />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={14} style={{ marginRight: 6 }} />
+                    Generate Content
+                  </>
+                )}
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
     </AdminLayout>
   );
 }

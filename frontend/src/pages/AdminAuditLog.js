@@ -1,44 +1,37 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { IonButton, IonSpinner } from "@ionic/react";
 import { toast } from "sonner";
 import { Search, Trash2, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_SIZE = 50;
 
-const ACTION_COLORS = {
-  delete_user: "destructive",
-  ban_user: "destructive",
-  unban_user: "secondary",
-  ban_ip: "destructive",
-  unban_ip: "secondary",
-  delete_discount: "destructive",
-  create_discount: "default",
-  delete_blog_post: "destructive",
-  create_blog_post: "default",
-  update_blog_post: "outline",
-  update_email_template: "outline",
-  reset_email_template: "secondary",
-  send_mass_email: "default",
-  create_moderator: "default",
-  delete_moderator: "destructive",
-  export_csv: "outline",
-  update_banner: "outline",
-  maintenance_enabled: "destructive",
-  maintenance_disabled: "secondary",
-  auth_enabled: "secondary",
-  auth_disabled: "destructive",
-  update_ticket: "outline",
-  delete_ticket: "destructive",
+const ACTION_BADGE = {
+  delete_user: "admin-badge-red",
+  ban_user: "admin-badge-red",
+  unban_user: "admin-badge-green",
+  ban_ip: "admin-badge-red",
+  unban_ip: "admin-badge-green",
+  delete_discount: "admin-badge-red",
+  create_discount: "admin-badge-green",
+  delete_blog_post: "admin-badge-red",
+  create_blog_post: "admin-badge-green",
+  update_blog_post: "admin-badge-slate",
+  update_email_template: "admin-badge-slate",
+  reset_email_template: "admin-badge-slate",
+  send_mass_email: "admin-badge-blue",
+  create_moderator: "admin-badge-blue",
+  delete_moderator: "admin-badge-red",
+  export_csv: "admin-badge-slate",
+  update_banner: "admin-badge-slate",
+  maintenance_enabled: "admin-badge-red",
+  maintenance_disabled: "admin-badge-green",
+  auth_enabled: "admin-badge-green",
+  auth_disabled: "admin-badge-red",
+  update_ticket: "admin-badge-slate",
+  delete_ticket: "admin-badge-red",
 };
-
-function actionColor(action) {
-  return ACTION_COLORS[action] || "outline";
-}
 
 export default function AdminAuditLog() {
   const [logs, setLogs] = useState([]);
@@ -54,10 +47,7 @@ export default function AdminAuditLog() {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const params = new URLSearchParams({
-        skip: page * PAGE_SIZE,
-        limit: PAGE_SIZE,
-      });
+      const params = new URLSearchParams({ skip: page * PAGE_SIZE, limit: PAGE_SIZE });
       if (search) params.set("actor", search);
       if (actionFilter !== "all") params.set("action", actionFilter);
       if (resourceFilter !== "all") params.set("resource_type", resourceFilter);
@@ -110,144 +100,125 @@ export default function AdminAuditLog() {
             <p className="text-sm text-gray-500 mt-1">{total} total entries</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={fetchLogs} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-            <Button variant="destructive" size="sm" onClick={handleClear} disabled={clearing || loading}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear Log
-            </Button>
+            <IonButton fill="outline" color="medium" size="small" onClick={fetchLogs} disabled={loading}>
+              <RefreshCw size={14} style={{ marginRight: 6 }} />Refresh
+            </IonButton>
+            <IonButton color="danger" size="small" onClick={handleClear} disabled={clearing || loading}>
+              <Trash2 size={14} style={{ marginRight: 6 }} />Clear Log
+            </IonButton>
           </div>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
+          <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
+            <Search size={16} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
+            <input
+              className="admin-input"
+              style={{ paddingLeft: 34 }}
               placeholder="Search by actor email..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-              className="pl-9"
             />
           </div>
-          <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v); setPage(0); }}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="All actions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Actions</SelectItem>
-              <SelectItem value="delete_user">Delete User</SelectItem>
-              <SelectItem value="ban_user">Ban User</SelectItem>
-              <SelectItem value="unban_user">Unban User</SelectItem>
-              <SelectItem value="ban_ip">Ban IP</SelectItem>
-              <SelectItem value="unban_ip">Unban IP</SelectItem>
-              <SelectItem value="create_discount">Create Discount</SelectItem>
-              <SelectItem value="delete_discount">Delete Discount</SelectItem>
-              <SelectItem value="create_blog_post">Create Blog Post</SelectItem>
-              <SelectItem value="update_blog_post">Update Blog Post</SelectItem>
-              <SelectItem value="delete_blog_post">Delete Blog Post</SelectItem>
-              <SelectItem value="update_email_template">Update Template</SelectItem>
-              <SelectItem value="send_mass_email">Mass Email</SelectItem>
-              <SelectItem value="create_moderator">Create Moderator</SelectItem>
-              <SelectItem value="delete_moderator">Delete Moderator</SelectItem>
-              <SelectItem value="export_csv">CSV Export</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={resourceFilter} onValueChange={(v) => { setResourceFilter(v); setPage(0); }}>
-            <SelectTrigger className="w-44">
-              <SelectValue placeholder="All resources" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Resources</SelectItem>
-              <SelectItem value="user">User</SelectItem>
-              <SelectItem value="banned_ip">Banned IP</SelectItem>
-              <SelectItem value="discount">Discount</SelectItem>
-              <SelectItem value="blog_post">Blog Post</SelectItem>
-              <SelectItem value="email_template">Email Template</SelectItem>
-              <SelectItem value="mass_email">Mass Email</SelectItem>
-              <SelectItem value="moderator">Moderator</SelectItem>
-              <SelectItem value="site_settings">Site Settings</SelectItem>
-              <SelectItem value="support_ticket">Support Ticket</SelectItem>
-            </SelectContent>
-          </Select>
+          <select className="admin-select" style={{ width: 192 }} value={actionFilter} onChange={(e) => { setActionFilter(e.target.value); setPage(0); }}>
+            <option value="all">All Actions</option>
+            <option value="delete_user">Delete User</option>
+            <option value="ban_user">Ban User</option>
+            <option value="unban_user">Unban User</option>
+            <option value="ban_ip">Ban IP</option>
+            <option value="unban_ip">Unban IP</option>
+            <option value="create_discount">Create Discount</option>
+            <option value="delete_discount">Delete Discount</option>
+            <option value="create_blog_post">Create Blog Post</option>
+            <option value="update_blog_post">Update Blog Post</option>
+            <option value="delete_blog_post">Delete Blog Post</option>
+            <option value="update_email_template">Update Template</option>
+            <option value="send_mass_email">Mass Email</option>
+            <option value="create_moderator">Create Moderator</option>
+            <option value="delete_moderator">Delete Moderator</option>
+            <option value="export_csv">CSV Export</option>
+          </select>
+          <select className="admin-select" style={{ width: 176 }} value={resourceFilter} onChange={(e) => { setResourceFilter(e.target.value); setPage(0); }}>
+            <option value="all">All Resources</option>
+            <option value="user">User</option>
+            <option value="banned_ip">Banned IP</option>
+            <option value="discount">Discount</option>
+            <option value="blog_post">Blog Post</option>
+            <option value="email_template">Email Template</option>
+            <option value="mass_email">Mass Email</option>
+            <option value="moderator">Moderator</option>
+            <option value="site_settings">Site Settings</option>
+            <option value="support_ticket">Support Ticket</option>
+          </select>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
+        <div className="overflow-x-auto">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Actor</th>
+                <th>Role</th>
+                <th>Action</th>
+                <th>Resource</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Timestamp</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Actor</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Role</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Action</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Resource</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Details</th>
+                  <td colSpan={6} style={{ textAlign: "center", padding: "32px 0" }}>
+                    <IonSpinner name="crescent" color="primary" />
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {loading ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Loading...</td>
-                  </tr>
-                ) : logs.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">No log entries found</td>
-                  </tr>
-                ) : logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(log.timestamp).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
-                      {log.actorEmail || log.actorId}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={log.role === "admin" ? "default" : "secondary"} className="capitalize">
-                        {log.role}{log.level ? ` L${log.level}` : ""}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={actionColor(log.action)}>
-                        {log.action.replace(/_/g, " ")}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {log.resourceType && (
-                        <span className="capitalize">{log.resourceType.replace(/_/g, " ")}</span>
-                      )}
-                      {log.resourceId && (
-                        <span className="ml-1 text-gray-400 text-xs font-mono truncate max-w-[120px] inline-block align-middle">
-                          ({log.resourceId.length > 20 ? log.resourceId.slice(0, 20) + "…" : log.resourceId})
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate">
-                      {log.details}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: "center", padding: "32px 0", color: "#94a3b8" }}>No log entries found</td>
+                </tr>
+              ) : logs.map((log) => (
+                <tr key={log.id}>
+                  <td style={{ fontSize: "0.8125rem", whiteSpace: "nowrap", color: "var(--admin-text-muted)" }}>
+                    {new Date(log.timestamp).toLocaleString()}
+                  </td>
+                  <td style={{ fontWeight: 500, whiteSpace: "nowrap" }}>{log.actorEmail || log.actorId}</td>
+                  <td>
+                    <span className={`admin-badge ${log.role === "admin" ? "admin-badge-blue" : "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>
+                      {log.role}{log.level ? ` L${log.level}` : ""}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`admin-badge ${ACTION_BADGE[log.action] || "admin-badge-slate"}`}>
+                      {log.action.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td>
+                    {log.resourceType && (
+                      <span style={{ textTransform: "capitalize" }}>{log.resourceType.replace(/_/g, " ")}</span>
+                    )}
+                    {log.resourceId && (
+                      <span style={{ marginLeft: 4, color: "#94a3b8", fontSize: "0.75rem", fontFamily: "monospace" }}>
+                        ({log.resourceId.length > 20 ? log.resourceId.slice(0, 20) + "…" : log.resourceId})
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--admin-text-muted)" }}>
+                    {log.details}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              Page {page + 1} of {totalPages} ({total} entries)
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage(p => p - 1)} disabled={page === 0}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+          <div className="admin-pagination">
+            <span>Page {page + 1} of {totalPages} ({total} entries)</span>
+            <div className="admin-pagination-btns">
+              <IonButton fill="outline" size="small" color="medium" onClick={() => setPage(p => p - 1)} disabled={page === 0}><ChevronLeft size={16} /></IonButton>
+              <IonButton fill="outline" size="small" color="medium" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages - 1}><ChevronRight size={16} /></IonButton>
             </div>
           </div>
         )}

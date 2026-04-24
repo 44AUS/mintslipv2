@@ -1,59 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
+  IonFooter, IonButton, IonButtons, IonSpinner,
+} from "@ionic/react";
 import { toast } from "sonner";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  FileText,
-  Plus,
-  Pencil,
-  Trash2,
-  Eye,
-  Search,
-  Filter,
-  Loader2,
-  Calendar,
-  Clock,
-  MoreVertical,
-  ExternalLink,
-  Sparkles
+  FileText, Plus, Pencil, Trash2, Eye, Search, Filter,
+  Calendar, Clock, MoreVertical, ExternalLink, X,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function AdminBlog() {
   const navigate = useNavigate();
-  
+
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,17 +24,15 @@ export default function AdminBlog() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [adminInfo, setAdminInfo] = useState(null);
-  
+  const [openMenuPostId, setOpenMenuPostId] = useState(null);
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     const info = localStorage.getItem("adminInfo");
-    if (!token) {
-      navigate("/admin/login");
-      return;
-    }
+    if (!token) { navigate("/admin/login"); return; }
     if (info) setAdminInfo(JSON.parse(info));
     loadPosts();
     loadCategories();
@@ -81,33 +41,16 @@ export default function AdminBlog() {
   const loadPosts = async () => {
     setIsLoading(true);
     const token = localStorage.getItem("adminToken");
-    
     try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: "20"
-      });
-      
-      if (statusFilter && statusFilter !== "all") {
-        params.append("status", statusFilter);
-      }
-      
+      const params = new URLSearchParams({ page: currentPage.toString(), limit: "20" });
+      if (statusFilter && statusFilter !== "all") params.append("status", statusFilter);
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/posts?${params}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
-      
-      if (response.status === 401) {
-        navigate("/admin/login");
-        return;
-      }
-      
+      if (response.status === 401) { navigate("/admin/login"); return; }
       const data = await response.json();
-      if (data.success) {
-        setPosts(data.posts);
-        setTotalPages(data.pages);
-      }
+      if (data.success) { setPosts(data.posts); setTotalPages(data.pages); }
     } catch (error) {
-      console.error("Error loading posts:", error);
       toast.error("Failed to load posts");
     } finally {
       setIsLoading(false);
@@ -118,32 +61,21 @@ export default function AdminBlog() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/blog/categories`);
       const data = await response.json();
-      if (data.success) {
-        setCategories(data.categories);
-      }
-    } catch (error) {
-      console.error("Error loading categories:", error);
-    }
+      if (data.success) setCategories(data.categories);
+    } catch (_) {}
   };
 
   const handleDelete = async () => {
     if (!postToDelete) return;
-    
     const token = localStorage.getItem("adminToken");
-    
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/blog/posts/${postToDelete.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
-      
-      if (response.ok) {
-        toast.success("Post deleted successfully");
-        loadPosts();
-      } else {
-        toast.error("Failed to delete post");
-      }
-    } catch (error) {
+      if (response.ok) { toast.success("Post deleted successfully"); loadPosts(); }
+      else toast.error("Failed to delete post");
+    } catch (_) {
       toast.error("Error deleting post");
     } finally {
       setDeleteDialogOpen(false);
@@ -151,261 +83,191 @@ export default function AdminBlog() {
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
-    });
-  };
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
   const filteredPosts = posts.filter(post => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    return post.title.toLowerCase().includes(query) || 
-           post.slug.toLowerCase().includes(query);
+    return post.title.toLowerCase().includes(query) || post.slug.toLowerCase().includes(query);
   });
 
   return (
-    <AdminLayout 
-      adminInfo={adminInfo} 
-      onRefresh={loadPosts}
-    >
-        {/* Page Header with New Post Button */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-800">Blog Management</h2>
-          <Button
-            onClick={() => navigate("/admin/blog/new")}
-            className="gap-2 bg-green-600 hover:bg-green-700"
-          >
-            <Plus className="w-4 h-4" />
-            New Post
-          </Button>
-        </div>
+    <AdminLayout adminInfo={adminInfo} onRefresh={loadPosts}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-slate-800">Blog Management</h2>
+        <IonButton color="primary" onClick={() => navigate("/admin/blog/new")}>
+          <Plus size={16} style={{ marginRight: 6 }} />New Post
+        </IonButton>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-5 border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-green-600" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Total Posts", value: posts.length, bg: "rgba(22,163,74,0.12)", color: "#16a34a", icon: FileText },
+          { label: "Published", value: posts.filter(p => p.status === "published").length, bg: "rgba(59,130,246,0.12)", color: "#3b82f6", icon: Eye },
+          { label: "Drafts", value: posts.filter(p => p.status === "draft").length, bg: "rgba(234,179,8,0.12)", color: "#ca8a04", icon: Pencil },
+          { label: "Total Views", value: posts.reduce((s, p) => s + (p.views || 0), 0), bg: "rgba(139,92,246,0.12)", color: "#8b5cf6", icon: Eye },
+        ].map(({ label, value, bg, color, icon: Icon }) => (
+          <div key={label} className="admin-stat-card">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon size={20} style={{ color }} />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Total Posts</p>
-                <p className="text-2xl font-bold text-slate-800">{posts.length}</p>
+                <p className="admin-stat-label">{label}</p>
+                <p className="admin-stat-value">{value}</p>
               </div>
             </div>
           </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-5 border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Eye className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Published</p>
-                <p className="text-2xl font-bold text-slate-800">
-                  {posts.filter(p => p.status === "published").length}
-                </p>
-              </div>
-            </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 400 }}>
+            <Search size={16} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
+            <input
+              className="admin-input"
+              style={{ paddingLeft: 34 }}
+              placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-5 border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
-                <Pencil className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Drafts</p>
-                <p className="text-2xl font-bold text-slate-800">
-                  {posts.filter(p => p.status === "draft").length}
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-sm p-5 border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <Eye className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Total Views</p>
-                <p className="text-2xl font-bold text-slate-800">
-                  {posts.reduce((sum, p) => sum + (p.views || 0), 0)}
-                </p>
-              </div>
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Filter size={16} style={{ color: "#64748b" }} />
+            <select className="admin-select" style={{ width: 150 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">All Status</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="relative flex-1 min-w-[200px] max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Search posts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-500" />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Posts Table */}
+      <div className="bg-white rounded-xl shadow-sm" style={{ overflow: "hidden" }}>
+        {isLoading ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 0" }}>
+            <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
           </div>
-        </div>
-
-        {/* Posts Table */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-            </div>
-          ) : filteredPosts.length === 0 ? (
-            <div className="text-center py-20">
-              <FileText className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-              <h3 className="text-xl font-semibold text-slate-600 mb-2">No posts yet</h3>
-              <p className="text-slate-500 mb-4">Create your first blog post to get started</p>
-              <Button onClick={() => navigate("/admin/blog/new")} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Create Post
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[400px]">Post</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="w-[80px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+        ) : filteredPosts.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 0" }}>
+            <FileText size={64} style={{ color: "#cbd5e1", margin: "0 auto 16px" }} />
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "#475569", marginBottom: 8 }}>No posts yet</h3>
+            <p style={{ color: "#64748b", marginBottom: 16 }}>Create your first blog post to get started</p>
+            <IonButton color="primary" onClick={() => navigate("/admin/blog/new")}>
+              <Plus size={16} style={{ marginRight: 6 }} />Create Post
+            </IonButton>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 400 }}>Post</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Views</th>
+                  <th>Date</th>
+                  <th style={{ width: 80 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
                 {filteredPosts.map((post) => (
-                  <TableRow key={post.id}>
-                    <TableCell>
-                      <div className="flex items-start gap-3">
+                  <tr key={post.id}>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                         {post.featuredImage ? (
-                          <img
-                            src={post.featuredImage.startsWith('/') ? `${BACKEND_URL}${post.featuredImage}` : post.featuredImage}
-                            alt=""
-                            className="w-16 h-12 rounded object-cover flex-shrink-0"
-                          />
+                          <img src={post.featuredImage.startsWith('/') ? `${BACKEND_URL}${post.featuredImage}` : post.featuredImage} alt="" style={{ width: 64, height: 48, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
                         ) : (
-                          <div className="w-16 h-12 rounded bg-slate-100 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-6 h-6 text-slate-300" />
+                          <div style={{ width: 64, height: 48, borderRadius: 6, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <FileText size={24} style={{ color: "#cbd5e1" }} />
                           </div>
                         )}
-                        <div className="min-w-0">
-                          <p className="font-medium text-slate-800 truncate">{post.title}</p>
-                          <p className="text-sm text-slate-500 truncate">/blog/{post.slug}</p>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.title}</p>
+                          <p style={{ fontSize: "0.875rem", color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>/blog/{post.slug}</p>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {post.category ? (
-                        <span className="px-2 py-1 bg-slate-100 rounded text-sm">
-                          {categories.find(c => c.slug === post.category)?.name || post.category}
-                        </span>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        post.status === "published" 
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}>
+                    </td>
+                    <td>
+                      {post.category
+                        ? <span className="admin-badge admin-badge-slate">{categories.find(c => c.slug === post.category)?.name || post.category}</span>
+                        : <span style={{ color: "#94a3b8" }}>—</span>}
+                    </td>
+                    <td>
+                      <span className={`admin-badge ${post.status === "published" ? "admin-badge-green" : "admin-badge-amber"}`}>
                         {post.status === "published" ? "Published" : "Draft"}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-slate-600">{post.views || 0}</span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col text-sm">
-                        <span className="text-slate-600">{formatDate(post.publishDate || post.createdAt)}</span>
-                        <span className="text-slate-400 text-xs flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {post.readingTime || 5} min
+                    </td>
+                    <td>{post.views || 0}</td>
+                    <td>
+                      <div style={{ fontSize: "0.875rem" }}>
+                        <span style={{ color: "#475569" }}>{formatDate(post.publishDate || post.createdAt)}</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>
+                          <Clock size={12} />{post.readingTime || 5} min
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/admin/blog/edit/${post.id}`)}>
-                            <Pencil className="w-4 h-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          {post.status === "published" && (
-                            <DropdownMenuItem onClick={() => window.open(`/blog/${post.slug}`, '_blank')}>
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              View
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setPostToDelete(post);
-                              setDeleteDialogOpen(true);
-                            }}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                    <td>
+                      <div style={{ position: "relative" }}>
+                        <button className="admin-action-btn" onClick={() => setOpenMenuPostId(openMenuPostId === post.id ? null : post.id)}>
+                          <MoreVertical size={14} />
+                        </button>
+                        {openMenuPostId === post.id && (
+                          <div className="user-action-menu">
+                            <button className="profile-menu-item" onClick={() => { navigate(`/admin/blog/edit/${post.id}`); setOpenMenuPostId(null); }}>
+                              <Pencil size={13} /> Edit
+                            </button>
+                            {post.status === "published" && (
+                              <button className="profile-menu-item" onClick={() => { window.open(`/blog/${post.slug}`, '_blank'); setOpenMenuPostId(null); }}>
+                                <ExternalLink size={13} /> View
+                              </button>
+                            )}
+                            <div className="profile-menu-divider" />
+                            <button className="profile-menu-item danger" onClick={() => { setPostToDelete(post); setDeleteDialogOpen(true); setOpenMenuPostId(null); }}>
+                              <Trash2 size={13} /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Post</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete "{postToDelete?.title}"? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete Post
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Delete Confirmation Modal */}
+      <IonModal isOpen={deleteDialogOpen} onDidDismiss={() => setDeleteDialogOpen(false)} style={{ "--width": "440px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Delete Post</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setDeleteDialogOpen(false)}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
+            Are you sure you want to delete "<strong>{postToDelete?.title}</strong>"? This action cannot be undone.
+          </p>
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => setDeleteDialogOpen(false)}>Cancel</IonButton>
+              <IonButton color="danger" onClick={handleDelete}>Delete Post</IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
     </AdminLayout>
   );
 }

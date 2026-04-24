@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Search, Users, Eye, Code2, CheckSquare, Square, AlertCircle, CheckCircle, Loader2, X } from "lucide-react";
+import { IonSpinner } from "@ionic/react";
+import { Send, Search, Users, Eye, Code2, CheckSquare, Square, AlertCircle, CheckCircle, X } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -229,7 +230,7 @@ export default function AdminMassEmail() {
             <div className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center py-12 text-slate-400">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <IonSpinner name="crescent" style={{ width: 20, height: 20 }} />
                 </div>
               ) : filteredRecipients.length === 0 ? (
                 <p className="px-4 py-6 text-xs text-slate-400 text-center">No recipients found.</p>
@@ -309,7 +310,7 @@ export default function AdminMassEmail() {
                 onClick={() => setConfirmOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-green-600 hover:bg-green-700 text-white"
               >
-                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {sending ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Send className="w-4 h-4" />}
                 {sending ? "Sending…" : `Send to ${includedCount} recipient${includedCount !== 1 ? "s" : ""}`}
               </button>
             </div>
@@ -385,7 +386,7 @@ export default function AdminMassEmail() {
               : "bg-blue-50 border-blue-200"
           }`}>
             {jobStatus.status === "running" ? (
-              <Loader2 className="w-5 h-5 text-blue-500 animate-spin flex-shrink-0 mt-0.5" />
+              <IonSpinner name="crescent" style={{ width: 20, height: 20, color: "#3b82f6", flexShrink: 0, marginTop: 2 }} />
             ) : jobStatus.failed === 0 ? (
               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             ) : (

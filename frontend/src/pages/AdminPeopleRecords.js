@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { IonSpinner } from "@ionic/react";
 import AdminLayout from "@/components/AdminLayout";
 import {
-  Search, Trash2, Loader2, ChevronLeft, ChevronRight, Database,
+  Search, Trash2, ChevronLeft, ChevronRight, Database,
   Plus, Edit2, X, Check, Phone, Mail, MapPin, Users, Briefcase, UserPlus, Link2, Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -280,7 +281,7 @@ function PersonLinkForm({ items, onChange, placeholder }) {
           <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
             {sugLoading && (
               <div className="flex items-center gap-2 px-3 py-2 text-sm text-slate-400">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…
+                <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> Searching…
               </div>
             )}
             {suggestions.map(sug => (
@@ -496,7 +497,7 @@ function PersonModal({ record, onClose, onSave }) {
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg transition-colors">Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {saving ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Check className="w-4 h-4" />}
             {isEdit ? "Save Changes" : "Create Record"}
           </button>
         </div>
@@ -589,7 +590,7 @@ function PhoneEntryModal({ entry, onClose, onSave }) {
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg">Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {saving ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Check className="w-4 h-4" />}
             {isEdit ? "Save Changes" : "Add Phone"}
           </button>
         </div>
@@ -682,7 +683,7 @@ function AddressEntryModal({ entry, onClose, onSave }) {
           <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-200 rounded-lg">Cancel</button>
           <button onClick={handleSave} disabled={saving}
             className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {saving ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Check className="w-4 h-4" />}
             {isEdit ? "Save Changes" : "Add Address"}
           </button>
         </div>
@@ -956,14 +957,14 @@ export default function AdminPeopleRecords() {
             {selected.size > 0 && (
               <button onClick={handleMassDelete} disabled={massDeleting}
                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
-                {massDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {massDeleting ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Trash2 className="w-4 h-4" />}
                 Delete {selected.size} selected
               </button>
             )}
             <button onClick={handleFixAddresses} disabled={fixingAddresses}
               title="Fix records where street address was stored in the city field"
               className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
-              {fixingAddresses ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
+              {fixingAddresses ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Wrench className="w-4 h-4" />}
               Fix Addresses
             </button>
             <button onClick={() => setModalRecord(null)}
@@ -1019,7 +1020,7 @@ export default function AdminPeopleRecords() {
               disabled={loading}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+              {loading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Search className="w-4 h-4" />}
               Search
             </button>
           </div>
@@ -1029,7 +1030,7 @@ export default function AdminPeopleRecords() {
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+              <IonSpinner name="crescent" color="primary" style={{ width: 24, height: 24 }} />
             </div>
           ) : records.length === 0 ? (
             <div className="text-center py-16">
@@ -1162,14 +1163,14 @@ export default function AdminPeopleRecords() {
               </div>
               <button onClick={() => fetchPhones(1)} disabled={phonesLoading}
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50">
-                {phonesLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Search
+                {phonesLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Search className="w-4 h-4" />} Search
               </button>
             </div>
           </div>
 
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             {phonesLoading ? (
-              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
+              <div className="flex items-center justify-center py-16"><IonSpinner name="crescent" color="primary" style={{ width: 24, height: 24 }} /></div>
             ) : phones.length === 0 ? (
               <div className="text-center py-16">
                 <Phone className="w-10 h-10 text-slate-300 mx-auto mb-3" />
@@ -1273,14 +1274,14 @@ export default function AdminPeopleRecords() {
               </div>
               <button onClick={() => fetchAddrs(1)} disabled={addrsLoading}
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50">
-                {addrsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Search
+                {addrsLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Search className="w-4 h-4" />} Search
               </button>
             </div>
           </div>
 
           <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             {addrsLoading ? (
-              <div className="flex items-center justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
+              <div className="flex items-center justify-center py-16"><IonSpinner name="crescent" color="primary" style={{ width: 24, height: 24 }} /></div>
             ) : addrs.length === 0 ? (
               <div className="text-center py-16">
                 <MapPin className="w-10 h-10 text-slate-300 mx-auto mb-3" />

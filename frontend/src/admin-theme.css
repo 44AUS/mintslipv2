@@ -1,0 +1,919 @@
+/* ==========================================================
+   MintSlip Admin — Ionic Theme
+   Green primary palette + light/dark admin variables
+   ========================================================== */
+
+/* ── Ionic color palette ── */
+:root {
+  --ion-color-primary:          #16a34a;
+  --ion-color-primary-rgb:      22, 163, 74;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade:    #138f41;
+  --ion-color-primary-tint:     #2dad5c;
+
+  --ion-color-secondary:        #334155;
+  --ion-color-secondary-rgb:    51, 65, 85;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade:  #1e293b;
+  --ion-color-secondary-tint:   #475569;
+
+  --ion-color-success:          #16a34a;
+  --ion-color-success-rgb:      22, 163, 74;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-shade:    #138f41;
+  --ion-color-success-tint:     #2dad5c;
+
+  --ion-color-warning:          #d97706;
+  --ion-color-warning-rgb:      217, 119, 6;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-shade:    #b45309;
+  --ion-color-warning-tint:     #f59e0b;
+
+  --ion-color-danger:           #dc2626;
+  --ion-color-danger-rgb:       220, 38, 38;
+  --ion-color-danger-contrast:  #ffffff;
+  --ion-color-danger-shade:     #b91c1c;
+  --ion-color-danger-tint:      #ef4444;
+
+  --ion-color-medium:           #64748b;
+  --ion-color-medium-rgb:       100, 116, 139;
+  --ion-color-medium-contrast:  #ffffff;
+  --ion-color-medium-shade:     #475569;
+  --ion-color-medium-tint:      #94a3b8;
+
+  --ion-color-light:            #f1f5f9;
+  --ion-color-light-rgb:        241, 245, 249;
+  --ion-color-light-contrast:   #1e293b;
+  --ion-color-light-shade:      #e2e8f0;
+  --ion-color-light-tint:       #f8fafc;
+
+  /* Ionic backgrounds */
+  --ion-background-color:       #f1f5f9;
+  --ion-background-color-rgb:   241, 245, 249;
+  --ion-text-color:             #1e293b;
+  --ion-text-color-rgb:         30, 41, 59;
+  --ion-border-color:           #e2e8f0;
+  --ion-item-background:        #ffffff;
+  --ion-card-background:        #ffffff;
+  --ion-toolbar-background:     #ffffff;
+  --ion-toolbar-border-color:   #e2e8f0;
+
+  /* Admin-specific tokens */
+  --admin-sidebar-bg:           #ffffff;
+  --admin-content-bg:           #f1f5f9;
+  --admin-card-bg:              #ffffff;
+  --admin-border:               #e2e8f0;
+  --admin-text:                 #1e293b;
+  --admin-text-muted:           #64748b;
+  --admin-nav-active-bg:        #16a34a;
+  --admin-nav-active-text:      #ffffff;
+  --admin-nav-hover-bg:         #f1f5f9;
+  --admin-nav-text:             #475569;
+  --admin-header-bg:            #ffffff;
+  --admin-radius:               8px;
+  --admin-radius-lg:            12px;
+}
+
+/* ── Dark palette ── */
+.ion-palette-dark {
+  --ion-color-primary:          #22c55e;
+  --ion-color-primary-rgb:      34, 197, 94;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade:    #16a34a;
+  --ion-color-primary-tint:     #4ade80;
+
+  --ion-background-color:       #020617;
+  --ion-background-color-rgb:   2, 6, 23;
+  --ion-text-color:             #f1f5f9;
+  --ion-text-color-rgb:         241, 245, 249;
+  --ion-border-color:           #334155;
+  --ion-item-background:        #1e293b;
+  --ion-card-background:        #1e293b;
+  --ion-toolbar-background:     #0f172a;
+  --ion-toolbar-border-color:   #334155;
+  --ion-color-light:            #1e293b;
+  --ion-color-light-rgb:        30, 41, 59;
+  --ion-color-light-contrast:   #f1f5f9;
+  --ion-color-light-shade:      #0f172a;
+  --ion-color-light-tint:       #334155;
+
+  --admin-sidebar-bg:           #0f172a;
+  --admin-content-bg:           #020617;
+  --admin-card-bg:              #1e293b;
+  --admin-border:               #334155;
+  --admin-text:                 #f1f5f9;
+  --admin-text-muted:           #94a3b8;
+  --admin-nav-hover-bg:         #1e293b;
+  --admin-nav-text:             #94a3b8;
+  --admin-header-bg:            #0f172a;
+}
+
+/* ── IonApp / IonSplitPane layout ── */
+ion-app.admin-app {
+  --ion-background-color: var(--admin-content-bg);
+}
+
+ion-menu {
+  --background: var(--admin-sidebar-bg);
+  --border-right: 1px solid var(--admin-border);
+  --max-width: 260px;
+  --min-width: 260px;
+  --width: 260px;
+}
+
+ion-menu ion-header ion-toolbar {
+  --background: var(--admin-sidebar-bg);
+  --border-color: var(--admin-border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+}
+
+ion-menu ion-content {
+  --background: var(--admin-sidebar-bg);
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 8px;
+  --padding-bottom: 12px;
+}
+
+ion-split-pane {
+  --border: 1px solid var(--admin-border);
+}
+
+/* Main page header */
+ion-page#admin-main ion-header ion-toolbar {
+  --background: var(--admin-header-bg);
+  --border-color: var(--admin-border);
+  --min-height: 56px;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+ion-page#admin-main ion-content {
+  --background: var(--admin-content-bg);
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+/* ── Sidebar navigation ── */
+.admin-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.sortable-nav-item {
+  position: relative;
+}
+
+.admin-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px 9px 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--admin-radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-nav-text);
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+
+.admin-nav-btn:hover {
+  background: var(--admin-nav-hover-bg);
+  color: var(--admin-text);
+}
+
+.admin-nav-btn.active {
+  background: var(--admin-nav-active-bg);
+  color: var(--admin-nav-active-text);
+}
+
+.drag-handle {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: grab;
+  color: rgba(100,116,139,0.4);
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.drag-handle:hover {
+  color: var(--admin-text-muted);
+}
+
+.admin-nav-btn.active .drag-handle {
+  color: rgba(255,255,255,0.4);
+}
+
+.admin-nav-btn.active .drag-handle:hover {
+  color: rgba(255,255,255,0.8);
+}
+
+/* ── Header action buttons ── */
+.admin-header-icon-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 7px;
+  border-radius: var(--admin-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.admin-header-icon-btn:hover {
+  background: var(--ion-color-light);
+  color: var(--admin-text);
+}
+
+.admin-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 6px;
+  border: none;
+  background: none;
+  border-radius: var(--admin-radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.admin-profile-btn:hover {
+  background: var(--ion-color-light);
+}
+
+.admin-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.admin-avatar-initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-profile-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-text);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Dropdowns (notifications, profile) ── */
+.admin-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  z-index: 9999;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.12s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.notif-dropdown { width: 320px; }
+.profile-dropdown { width: 210px; }
+
+.dropdown-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dropdown-header-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0;
+}
+
+.dropdown-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dropdown-text-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0;
+}
+
+.dropdown-text-btn.primary { color: var(--ion-color-primary); }
+.dropdown-text-btn.primary:hover { color: var(--ion-color-primary-shade); }
+.dropdown-text-btn.danger  { color: var(--ion-color-danger); }
+.dropdown-text-btn.danger:hover  { color: var(--ion-color-danger-shade); }
+
+.notif-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.notif-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--admin-text-muted);
+  font-size: 0.875rem;
+}
+
+.notif-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.notif-item.unread {
+  background: rgba(22,163,74,0.06);
+}
+
+.notif-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--ion-color-light);
+  color: var(--admin-text-muted);
+}
+
+.notif-item.unread .notif-icon {
+  background: rgba(22,163,74,0.12);
+  color: var(--ion-color-primary);
+}
+
+.notif-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0 0 2px;
+}
+
+.notif-sub {
+  font-size: 0.75rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-time {
+  font-size: 0.6875rem;
+  color: var(--admin-text-muted);
+  margin: 3px 0 0;
+}
+
+.profile-info {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.profile-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-email {
+  font-size: 0.75rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-menu {
+  padding: 4px 0;
+}
+
+.profile-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--admin-text);
+  transition: background 0.12s;
+  text-align: left;
+}
+
+.profile-menu-item:hover { background: var(--ion-color-light); }
+.profile-menu-item.danger { color: var(--ion-color-danger); }
+.profile-menu-item.danger:hover { background: rgba(220,38,38,0.06); }
+
+.profile-menu-divider {
+  height: 1px;
+  background: var(--admin-border);
+  margin: 4px 0;
+}
+
+/* ── Page content wrapper ── */
+.admin-page-content {
+  padding: 24px;
+  min-height: 100%;
+}
+
+/* ── Cards ── */
+ion-card {
+  --background: var(--admin-card-bg);
+  --color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  margin: 0;
+}
+
+ion-card-header {
+  padding-bottom: 4px;
+}
+
+ion-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+ion-card-subtitle {
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted);
+}
+
+/* ── Stat card shorthand ── */
+.admin-stat-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 20px;
+}
+
+.admin-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--admin-text-muted);
+  margin: 0 0 8px;
+}
+
+.admin-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--admin-text);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.admin-stat-sub {
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+}
+
+/* ── Section header ── */
+.admin-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--admin-text);
+  margin: 0;
+}
+
+.admin-section-sub {
+  font-size: 0.875rem;
+  color: var(--admin-text-muted);
+  margin: 2px 0 0;
+}
+
+/* ── Tables ── */
+.admin-table-wrap {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.admin-table thead th {
+  background: var(--ion-color-light);
+  color: var(--admin-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+}
+
+.admin-table tbody td {
+  padding: 12px 14px;
+  color: var(--admin-text);
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover td {
+  background: var(--admin-nav-hover-bg);
+}
+
+.admin-table-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--admin-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ── Pagination ── */
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--admin-border);
+  background: var(--admin-card-bg);
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted);
+}
+
+.admin-pagination-btns {
+  display: flex;
+  gap: 6px;
+}
+
+/* ── Badges (supplemental to ion-badge) ── */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-badge-green  { background: rgba(22,163,74,0.12);  color: #16a34a; }
+.admin-badge-red    { background: rgba(220,38,38,0.12);   color: #dc2626; }
+.admin-badge-amber  { background: rgba(217,119,6,0.12);   color: #d97706; }
+.admin-badge-slate  { background: rgba(100,116,139,0.12); color: #64748b; }
+.admin-badge-blue   { background: rgba(59,130,246,0.12);  color: #3b82f6; }
+.admin-badge-purple { background: rgba(139,92,246,0.12);  color: #7c3aed; }
+
+/* ── Form helpers ── */
+.admin-form-row {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.admin-form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.admin-input {
+  padding: 9px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: var(--admin-card-bg);
+  color: var(--admin-text);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-input:focus {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+}
+
+.admin-textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: var(--admin-card-bg);
+  color: var(--admin-text);
+  font-size: 0.875rem;
+  outline: none;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.admin-textarea:focus {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+}
+
+.admin-select {
+  padding: 9px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: var(--admin-card-bg);
+  color: var(--admin-text);
+  font-size: 0.875rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-select:focus {
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+}
+
+/* ── Toggle (custom switch) ── */
+.admin-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.admin-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.admin-toggle-track {
+  width: 40px;
+  height: 22px;
+  background: var(--admin-border);
+  border-radius: 999px;
+  transition: background 0.2s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.admin-toggle input:checked + .admin-toggle-track {
+  background: var(--ion-color-primary);
+}
+
+.admin-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.admin-toggle input:checked ~ .admin-toggle-thumb,
+.admin-toggle input:checked + .admin-toggle-track + .admin-toggle-thumb {
+  transform: translateX(18px);
+}
+
+/* ── IonButton overrides ── */
+ion-button {
+  --border-radius: var(--admin-radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── IonModal ── */
+ion-modal {
+  --border-radius: var(--admin-radius-lg);
+  --width: 540px;
+  --max-width: 95vw;
+  --height: auto;
+  --max-height: 90vh;
+  --box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+ion-modal ion-header ion-toolbar {
+  --background: var(--admin-card-bg);
+  --border-color: var(--admin-border);
+}
+
+ion-modal ion-content {
+  --background: var(--admin-card-bg);
+}
+
+ion-modal ion-footer ion-toolbar {
+  --background: var(--admin-card-bg);
+  --border-color: var(--admin-border);
+}
+
+/* ── Table action buttons ── */
+.admin-action-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--admin-text-muted);
+  transition: background 0.12s, color 0.12s;
+  padding: 0;
+}
+
+.admin-action-btn:hover {
+  background: var(--ion-color-light);
+  color: var(--admin-text);
+}
+
+.admin-action-btn.primary:hover { color: var(--ion-color-primary); }
+.admin-action-btn.danger:hover  { color: var(--ion-color-danger);  background: rgba(220,38,38,0.08); }
+.admin-action-btn.warning:hover { color: var(--ion-color-warning); background: rgba(217,119,6,0.08); }
+
+/* ── Inline filter pill tabs ── */
+.admin-pill-tabs {
+  display: flex;
+  align-items: center;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.admin-pill-tab {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--admin-text-muted);
+  transition: background 0.12s, color 0.12s;
+}
+
+.admin-pill-tab.active {
+  background: var(--admin-card-bg);
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ── User action dropdown ── */
+.user-action-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 2px);
+  z-index: 999;
+  width: 190px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 4px 0;
+  animation: dropdownFadeIn 0.1s ease;
+}
+
+/* ── IonSearchbar ── */
+ion-searchbar {
+  --background: var(--admin-card-bg);
+  --border-radius: var(--admin-radius);
+  --box-shadow: none;
+  --border-width: 1px;
+  --border-color: var(--admin-border);
+  padding: 0;
+}
+
+/* ── Grid utilities ── */
+.admin-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.admin-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.admin-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 768px) {
+  .admin-grid-2,
+  .admin-grid-3,
+  .admin-grid-4 { grid-template-columns: 1fr; }
+  .admin-page-content { padding: 16px; }
+  .admin-form-row.cols-2,
+  .admin-form-row.cols-3 { grid-template-columns: 1fr; }
+}
+
+/* ── Flex utilities ── */
+.admin-flex { display: flex; align-items: center; }
+.admin-flex-between { display: flex; align-items: center; justify-content: space-between; }
+.admin-flex-end { display: flex; align-items: center; justify-content: flex-end; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+
+/* ── Spacing ── */
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.mt-4 { margin-top: 16px; }
+
+/* ── Text utilities ── */
+.text-muted { color: var(--admin-text-muted); font-size: 0.875rem; }
+.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 0.75rem; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -1,32 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import {
+  IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
+  IonFooter, IonButton, IonButtons, IonSpinner,
+} from "@ionic/react";
 import { toast } from "sonner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Shield,
-  Plus,
-  Trash2,
-  Loader2,
-  Globe,
-  AlertTriangle,
-  CheckCircle
-} from "lucide-react";
+import { Shield, Plus, Globe, AlertTriangle, CheckCircle, X } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -163,12 +142,11 @@ export default function AdminBannedIPs() {
     return new Date(dateString).toLocaleString();
   };
 
-  // Loading state
   if (loading && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="flex items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
           <span className="text-lg text-slate-600">Loading...</span>
         </div>
       </div>
@@ -236,18 +214,14 @@ export default function AdminBannedIPs() {
               <p className="text-sm text-slate-500">Manage IP addresses blocked from accessing the website</p>
             </div>
           </div>
-          <Button 
-            onClick={() => setIsDialogOpen(true)}
-            className="gap-2 bg-red-600 hover:bg-red-700"
-          >
-            <Plus className="w-4 h-4" />
-            Ban IP Address
-          </Button>
+          <IonButton color="danger" onClick={() => setIsDialogOpen(true)}>
+            <Plus size={16} style={{ marginRight: 6 }} />Ban IP Address
+          </IonButton>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+            <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
           </div>
         ) : activeIps.length === 0 ? (
           <div className="text-center py-12">
@@ -257,48 +231,32 @@ export default function AdminBannedIPs() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>IP Address</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Banned At</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>IP Address</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Banned At</th>
+                  <th style={{ width: 100 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
                 {activeIps.map((banned) => (
-                  <TableRow key={banned.id} className="bg-red-50/50">
-                    <TableCell>
-                      <span className="font-mono text-sm font-medium">{banned.ip}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-slate-600">{banned.reason || "-"}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-md text-xs font-medium">
-                        Active Ban
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-sm text-slate-500">
-                      {formatDate(banned.bannedAt)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => unbanIp(banned.ip)}
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        Unban
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <tr key={banned.id} style={{ background: "rgba(239,68,68,0.04)" }}>
+                    <td><span style={{ fontFamily: "monospace", fontWeight: 600 }}>{banned.ip}</span></td>
+                    <td>{banned.reason || "-"}</td>
+                    <td><span className="admin-badge admin-badge-red">Active Ban</span></td>
+                    <td style={{ color: "var(--admin-text-muted)", fontSize: "0.875rem" }}>{formatDate(banned.bannedAt)}</td>
+                    <td>
+                      <IonButton fill="clear" size="small" color="primary" onClick={() => unbanIp(banned.ip)}>
+                        <CheckCircle size={14} style={{ marginRight: 4 }} />Unban
+                      </IonButton>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         )}
 
@@ -307,116 +265,72 @@ export default function AdminBannedIPs() {
           <div className="mt-8 pt-6 border-t">
             <h3 className="text-md font-semibold text-slate-700 mb-4">Previously Unbanned IPs</h3>
             <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>IP Address</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Unbanned At</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>IP Address</th>
+                    <th>Reason</th>
+                    <th>Unbanned At</th>
+                    <th style={{ width: 100 }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {inactiveIps.map((banned) => (
-                    <TableRow key={banned.id}>
-                      <TableCell>
-                        <span className="font-mono text-sm">{banned.ip}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-slate-500">{banned.reason || "-"}</span>
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-500">
-                        {formatDate(banned.unbannedAt)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setNewIp(banned.ip);
-                            setNewReason(banned.reason || "");
-                            setIsDialogOpen(true);
-                          }}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Shield className="w-4 h-4 mr-1" />
-                          Re-ban
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <tr key={banned.id}>
+                      <td><span style={{ fontFamily: "monospace" }}>{banned.ip}</span></td>
+                      <td style={{ color: "var(--admin-text-muted)" }}>{banned.reason || "-"}</td>
+                      <td style={{ color: "var(--admin-text-muted)", fontSize: "0.875rem" }}>{formatDate(banned.unbannedAt)}</td>
+                      <td>
+                        <IonButton fill="clear" size="small" color="danger" onClick={() => { setNewIp(banned.ip); setNewReason(banned.reason || ""); setIsDialogOpen(true); }}>
+                          <Shield size={14} style={{ marginRight: 4 }} />Re-ban
+                        </IonButton>
+                      </td>
+                    </tr>
                   ))}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           </div>
         )}
       </div>
 
-      {/* Ban IP Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
-              Ban IP Address
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700">IP Address *</label>
-              <Input
-                value={newIp}
-                onChange={(e) => setNewIp(e.target.value)}
-                placeholder="e.g., 192.168.1.1"
-                className="mt-1 font-mono"
-              />
-              <p className="text-xs text-slate-500 mt-1">
-                Enter the IPv4 address to ban
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-slate-700">Reason (optional)</label>
-              <Input
-                value={newReason}
-                onChange={(e) => setNewReason(e.target.value)}
-                placeholder="e.g., Spam, Abuse, Fraud"
-                className="mt-1"
-              />
-            </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-sm text-amber-800">
-                <strong>Warning:</strong> Banning an IP will prevent all users from that address from accessing the website. They will see a "You are banned" page.
-              </p>
-            </div>
+      {/* Ban IP Modal */}
+      <IonModal isOpen={isDialogOpen} onDidDismiss={() => { setIsDialogOpen(false); setNewIp(""); setNewReason(""); }} style={{ "--width": "480px", "--max-width": "95vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <AlertTriangle size={16} style={{ color: "#ef4444" }} /> Ban IP Address
+            </IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => { setIsDialogOpen(false); setNewIp(""); setNewReason(""); }}><X size={20} /></IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent className="ion-padding">
+          <div className="admin-form-group">
+            <label className="admin-form-label">IP Address *</label>
+            <input className="admin-input" value={newIp} onChange={(e) => setNewIp(e.target.value)} placeholder="e.g., 192.168.1.1" style={{ fontFamily: "monospace" }} />
+            <p style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>Enter the IPv4 address to ban</p>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setIsDialogOpen(false);
-              setNewIp("");
-              setNewReason("");
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={banIp} 
-              disabled={isAdding}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isAdding ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Banning...
-                </>
-              ) : (
-                <>
-                  <Shield className="w-4 h-4 mr-2" />
-                  Ban IP
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="admin-form-group">
+            <label className="admin-form-label">Reason (optional)</label>
+            <input className="admin-input" value={newReason} onChange={(e) => setNewReason(e.target.value)} placeholder="e.g., Spam, Abuse, Fraud" />
+          </div>
+          <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 8, padding: 12, fontSize: "0.875rem", color: "#92400e", marginTop: 4 }}>
+            <strong>Warning:</strong> Banning an IP will prevent all users from that address from accessing the website. They will see a "You are banned" page.
+          </div>
+        </IonModalContent>
+        <IonFooter>
+          <IonToolbar style={{ padding: "8px 16px" }}>
+            <IonButtons slot="end">
+              <IonButton fill="outline" color="medium" onClick={() => { setIsDialogOpen(false); setNewIp(""); setNewReason(""); }}>Cancel</IonButton>
+              <IonButton color="danger" onClick={banIp} disabled={isAdding}>
+                {isAdding ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />Banning...</> : <><Shield size={14} style={{ marginRight: 6 }} />Ban IP</>}
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonFooter>
+      </IonModal>
     </AdminLayout>
   );
 }

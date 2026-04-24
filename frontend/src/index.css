@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ionic structure — only active when AdminLayout mounts (adds .ionic-active to html/body) */
+html.ionic-active,
+body.ionic-active {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Ensure non-admin pages keep normal scrolling */
+html:not(.ionic-active),
+body:not(.ionic-active) {
+  height: auto;
+  overflow: auto;
+}
+
 body {
     margin: 0;
     font-family:

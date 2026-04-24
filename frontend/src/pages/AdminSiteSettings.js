@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Loader2, Download, Search, GripVertical, Navigation } from "lucide-react";
+import { IonSpinner } from "@ionic/react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
@@ -349,7 +350,7 @@ export default function AdminSiteSettings() {
               disabled={maintenanceLoading}
               className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {maintenanceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {maintenanceLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Maintenance Settings
             </button>
           </div>
@@ -383,7 +384,7 @@ export default function AdminSiteSettings() {
               disabled={authLoading}
               className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {authLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Auth Settings
             </button>
           </div>
@@ -436,7 +437,7 @@ export default function AdminSiteSettings() {
               disabled={tierLoading}
               className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {tierLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {tierLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Tier Settings
             </button>
           </div>
@@ -486,7 +487,7 @@ export default function AdminSiteSettings() {
               disabled={psPriceLoading}
               className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {psPriceLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {psPriceLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save People Search Prices
             </button>
           </div>
@@ -520,7 +521,7 @@ export default function AdminSiteSettings() {
               disabled={navSaving}
               className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {navSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {navSaving ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Navigation Order
             </button>
           </div>

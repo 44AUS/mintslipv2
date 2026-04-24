@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { Loader2, ChevronLeft, ChevronRight, UserMinus, CheckCircle, XCircle, Clock } from "lucide-react";
+import { IonButton, IonSpinner } from "@ionic/react";
+import { ChevronLeft, ChevronRight, UserMinus, CheckCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -129,7 +130,7 @@ export default function AdminOptOuts() {
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+              <IonSpinner name="crescent" color="primary" />
             </div>
           ) : requests.length === 0 ? (
             <div className="text-center py-16">
@@ -167,20 +168,12 @@ export default function AdminOptOuts() {
                         <td className="px-4 py-3">
                           {req.status === "pending" ? (
                             <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleApprove(req.id, req.name)}
-                                disabled={isActing}
-                                className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50 transition-colors"
-                              >
-                                {isActing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Approve"}
-                              </button>
-                              <button
-                                onClick={() => handleDeny(req.id)}
-                                disabled={isActing}
-                                className="text-xs border border-red-200 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg font-semibold disabled:opacity-50 transition-colors"
-                              >
+                              <IonButton size="small" color="primary" onClick={() => handleApprove(req.id, req.name)} disabled={isActing}>
+                                {isActing ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : "Approve"}
+                              </IonButton>
+                              <IonButton size="small" color="danger" fill="outline" onClick={() => handleDeny(req.id)} disabled={isActing}>
                                 Deny
-                              </button>
+                              </IonButton>
                             </div>
                           ) : (
                             <span className="text-xs text-slate-400">—</span>
@@ -199,21 +192,9 @@ export default function AdminOptOuts() {
         {pages > 1 && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-slate-500">Page {page} of {pages}</p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => { const p = page - 1; setPage(p); fetchRequests(p); }}
-                disabled={page <= 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40"
-              >
-                <ChevronLeft className="w-4 h-4 text-slate-600" />
-              </button>
-              <button
-                onClick={() => { const p = page + 1; setPage(p); fetchRequests(p); }}
-                disabled={page >= pages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40"
-              >
-                <ChevronRight className="w-4 h-4 text-slate-600" />
-              </button>
+            <div className="admin-pagination-btns">
+              <IonButton fill="outline" size="small" color="medium" onClick={() => { const p = page - 1; setPage(p); fetchRequests(p); }} disabled={page <= 1}><ChevronLeft size={16} /></IonButton>
+              <IonButton fill="outline" size="small" color="medium" onClick={() => { const p = page + 1; setPage(p); fetchRequests(p); }} disabled={page >= pages}><ChevronRight size={16} /></IonButton>
             </div>
           </div>
         )}

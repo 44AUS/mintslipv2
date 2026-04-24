@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { IonSpinner } from "@ionic/react";
 import {
   UserPlus, Edit2, Trash2, Shield, Check, X, ChevronRight,
-  Eye, EyeOff, Loader2, AlertCircle, CheckCircle,
+  Eye, EyeOff, AlertCircle, CheckCircle,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -265,7 +266,7 @@ export default function AdminModerators() {
 
           {loadingMods ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+              <IonSpinner name="crescent" style={{ width: 20, height: 20, color: "#94a3b8" }} />
             </div>
           ) : moderators.length === 0 ? (
             <div className="py-12 text-center">
@@ -336,7 +337,7 @@ export default function AdminModerators() {
 
           {loadingPerms ? (
             <div className="flex items-center justify-center py-10">
-              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+              <IonSpinner name="crescent" style={{ width: 20, height: 20, color: "#94a3b8" }} />
             </div>
           ) : (
             <div className="p-5 space-y-5">
@@ -363,7 +364,7 @@ export default function AdminModerators() {
                   disabled={savingPerms}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                 >
-                  {savingPerms ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {savingPerms ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Check className="w-4 h-4" />}
                   Save Level {permTab} Permissions
                 </button>
                 {permsMsg && (
@@ -472,7 +473,7 @@ export default function AdminModerators() {
                   disabled={saving}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                 >
-                  {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {saving && <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />}
                   {editingMod ? "Save Changes" : "Create Moderator"}
                 </button>
               </div>
@@ -506,7 +507,7 @@ export default function AdminModerators() {
                 disabled={deleting}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
               >
-                {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {deleting && <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />}
                 Delete
               </button>
             </div>

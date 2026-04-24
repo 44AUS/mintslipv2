@@ -5,8 +5,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
+import { IonButton } from "@ionic/react";
 import { DollarSign, ShoppingCart, TrendingUp, TrendingDown, BarChart2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -118,10 +118,9 @@ export default function AdminRevenue() {
             <h1 className="text-2xl font-bold text-gray-900">Revenue</h1>
             <p className="text-sm text-gray-500 mt-1">One-time purchase analytics</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <IonButton fill="outline" color="medium" size="small" onClick={fetchData} disabled={loading}>
+            <RefreshCw size={14} style={{ marginRight: 6 }} />Refresh
+          </IonButton>
         </div>
 
         {/* Metric cards */}

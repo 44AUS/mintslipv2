@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Camera, Save, Lock, User, Mail, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { IonSpinner } from "@ionic/react";
+import { Camera, Save, Lock, User, Mail, CheckCircle, AlertCircle } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -240,7 +241,7 @@ export default function AdminSettings() {
                 disabled={profileLoading}
                 className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
               >
-                {profileLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {profileLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
                 Save Changes
               </button>
             </div>
@@ -275,7 +276,7 @@ export default function AdminSettings() {
               disabled={pwLoading}
               className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
-              {pwLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+              {pwLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Lock className="w-4 h-4" />}
               Update Password
             </button>
           </div>

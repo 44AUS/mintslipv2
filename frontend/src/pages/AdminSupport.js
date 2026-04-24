@@ -1,18 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { IonButton, IonSpinner } from "@ionic/react";
 import { toast } from "sonner";
 import { RefreshCw, Trash2, ChevronDown, ChevronUp, Mail, Clock } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-const STATUS_COLORS = {
-  open: "destructive",
-  "in-progress": "default",
-  closed: "secondary",
+const STATUS_BADGE = {
+  open: "admin-badge-red",
+  "in-progress": "admin-badge-blue",
+  closed: "admin-badge-slate",
 };
 
 const REASON_LABELS = {
@@ -97,83 +94,73 @@ export default function AdminSupport() {
             </p>
           </div>
           <div className="flex gap-3 items-center">
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); }}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Tickets</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" onClick={fetchTickets} disabled={loading}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
+            <select className="admin-select" style={{ width: 160 }} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <option value="all">All Tickets</option>
+              <option value="open">Open</option>
+              <option value="in-progress">In Progress</option>
+              <option value="closed">Closed</option>
+            </select>
+            <IonButton fill="outline" color="medium" size="small" onClick={fetchTickets} disabled={loading}>
+              <RefreshCw size={14} style={{ marginRight: 6 }} />Refresh
+            </IonButton>
           </div>
         </div>
 
         {loading && tickets.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">Loading...</div>
+          <div style={{ textAlign: "center", padding: "48px 0" }}>
+            <IonSpinner name="crescent" color="primary" />
+          </div>
         ) : tickets.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-200">
+          <div className="bg-white rounded-xl shadow-sm" style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8" }}>
             No tickets found
           </div>
         ) : (
           <div className="space-y-3">
             {tickets.map((ticket) => (
-              <div key={ticket.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                {/* Header row */}
+              <div key={ticket.id} className="bg-white rounded-xl shadow-sm" style={{ overflow: "hidden" }}>
                 <button
-                  className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-gray-50 transition-colors"
+                  style={{ width: "100%", padding: "16px 20px", display: "flex", alignItems: "center", gap: 16, textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
                   onClick={() => setExpanded(expanded === ticket.id ? null : ticket.id)}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="font-semibold text-gray-900">{ticket.name}</span>
-                      <span className="text-sm text-gray-500">{ticket.email}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <span style={{ fontWeight: 600, color: "var(--admin-text)" }}>{ticket.name}</span>
+                      <span style={{ fontSize: "0.875rem", color: "var(--admin-text-muted)" }}>{ticket.email}</span>
                       {ticket.reason && (
-                        <Badge variant="outline" className="text-xs">
-                          {REASON_LABELS[ticket.reason] || ticket.reason}
-                        </Badge>
+                        <span className="admin-badge admin-badge-slate">{REASON_LABELS[ticket.reason] || ticket.reason}</span>
                       )}
-                      <Badge variant={STATUS_COLORS[ticket.status] || "outline"}>
+                      <span className={`admin-badge ${STATUS_BADGE[ticket.status] || "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>
                         {ticket.status}
-                      </Badge>
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1 truncate">{ticket.message}</p>
+                    <p style={{ fontSize: "0.875rem", color: "var(--admin-text-muted)", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {ticket.message}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Clock className="w-3 h-3" />
-                      {new Date(ticket.createdAt).toLocaleDateString()}
-                    </div>
-                    {expanded === ticket.id ? (
-                      <ChevronUp className="w-4 h-4 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "#94a3b8" }}>
+                      <Clock size={12} />{new Date(ticket.createdAt).toLocaleDateString()}
+                    </span>
+                    {expanded === ticket.id ? <ChevronUp size={16} style={{ color: "#94a3b8" }} /> : <ChevronDown size={16} style={{ color: "#94a3b8" }} />}
                   </div>
                 </button>
 
-                {/* Expanded detail */}
                 {expanded === ticket.id && (
-                  <div className="px-5 pb-5 border-t border-gray-100 space-y-4">
-                    <div className="mt-4 bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap">
+                  <div style={{ padding: "0 20px 20px", borderTop: "1px solid var(--admin-border)" }}>
+                    <div style={{ marginTop: 16, background: "rgba(241,245,249,0.6)", borderRadius: 8, padding: 16, fontSize: "0.875rem", color: "var(--admin-text)", whiteSpace: "pre-wrap" }}>
                       {ticket.message}
                     </div>
 
                     {ticket.notes && (
-                      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800">
-                        <span className="font-medium">Internal note:</span> {ticket.notes}
+                      <div style={{ background: "rgba(59,130,246,0.07)", border: "1px solid rgba(59,130,246,0.15)", borderRadius: 8, padding: 12, fontSize: "0.875rem", color: "#3b82f6", marginTop: 12 }}>
+                        <strong>Internal note:</strong> {ticket.notes}
                       </div>
                     )}
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Internal Note</label>
-                      <Textarea
+                    <div className="admin-form-group" style={{ marginTop: 16 }}>
+                      <label className="admin-form-label">Internal Note</label>
+                      <textarea
+                        className="admin-textarea"
                         placeholder="Add an internal note (not visible to user)..."
                         value={notes[ticket.id] ?? (ticket.notes || "")}
                         onChange={(e) => setNotes(n => ({ ...n, [ticket.id]: e.target.value }))}
@@ -181,48 +168,36 @@ export default function AdminSupport() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700">Status:</span>
-                        <Select
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginTop: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--admin-text)" }}>Status:</span>
+                        <select
+                          className="admin-select"
+                          style={{ width: 144 }}
                           value={ticket.status}
-                          onValueChange={(v) => updateTicket(ticket.id, { status: v })}
+                          onChange={(e) => updateTicket(ticket.id, { status: e.target.value })}
                         >
-                          <SelectTrigger className="w-36 h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="open">Open</SelectItem>
-                            <SelectItem value="in-progress">In Progress</SelectItem>
-                            <SelectItem value="closed">Closed</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="open">Open</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="closed">Closed</option>
+                        </select>
                       </div>
 
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const note = notes[ticket.id] ?? ticket.notes ?? "";
-                            updateTicket(ticket.id, { notes: note });
-                          }}
-                        >
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <IonButton fill="outline" color="medium" size="small" onClick={() => {
+                          const note = notes[ticket.id] ?? ticket.notes ?? "";
+                          updateTicket(ticket.id, { notes: note });
+                        }}>
                           Save Note
-                        </Button>
-                        <a href={`mailto:${ticket.email}`} className="inline-flex">
-                          <Button size="sm" variant="outline">
-                            <Mail className="w-4 h-4 mr-1" />
-                            Reply via Email
-                          </Button>
+                        </IonButton>
+                        <a href={`mailto:${ticket.email}`} style={{ textDecoration: "none" }}>
+                          <IonButton fill="outline" color="medium" size="small">
+                            <Mail size={14} style={{ marginRight: 4 }} />Reply via Email
+                          </IonButton>
                         </a>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteTicket(ticket.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <IonButton color="danger" size="small" fill="outline" onClick={() => deleteTicket(ticket.id)}>
+                          <Trash2 size={14} />
+                        </IonButton>
                       </div>
                     </div>
                   </div>

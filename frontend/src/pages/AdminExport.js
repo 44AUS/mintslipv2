@@ -1,8 +1,6 @@
 import { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { IonButton, IonSpinner } from "@ionic/react";
 import { toast } from "sonner";
 import { Download, FileText, Users, DollarSign } from "lucide-react";
 
@@ -46,48 +44,35 @@ function ExportCard({ icon: Icon, title, description, exportType, dateFilters })
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-      <div className="flex items-start gap-4">
-        <div className="p-3 bg-emerald-50 rounded-lg">
-          <Icon className="w-6 h-6 text-emerald-600" />
+    <div className="admin-stat-card" style={{ padding: 24 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
+        <div style={{ padding: 12, background: "rgba(22,163,74,0.1)", borderRadius: 10 }}>
+          <Icon size={24} style={{ color: "#16a34a" }} />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900">{title}</h3>
-          <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+          <h3 style={{ fontWeight: 600, color: "var(--admin-text)", margin: 0 }}>{title}</h3>
+          <p style={{ fontSize: "0.875rem", color: "var(--admin-text-muted)", marginTop: 2 }}>{description}</p>
         </div>
       </div>
 
       {dateFilters && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs">Start Date</Label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="h-8 text-sm"
-            />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label" style={{ fontSize: "0.75rem" }}>Start Date</label>
+            <input className="admin-input" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">End Date</Label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="h-8 text-sm"
-            />
+          <div className="admin-form-group" style={{ marginBottom: 0 }}>
+            <label className="admin-form-label" style={{ fontSize: "0.75rem" }}>End Date</label>
+            <input className="admin-input" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
         </div>
       )}
 
-      <Button
-        onClick={handleExport}
-        disabled={loading}
-        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-      >
-        <Download className="w-4 h-4 mr-2" />
-        {loading ? "Exporting..." : "Download CSV"}
-      </Button>
+      <IonButton expand="block" color="primary" onClick={handleExport} disabled={loading}>
+        {loading
+          ? <><IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 8 }} />Exporting...</>
+          : <><Download size={16} style={{ marginRight: 8 }} />Download CSV</>}
+      </IonButton>
     </div>
   );
 }
@@ -125,7 +110,7 @@ export default function AdminExport() {
           />
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
+        <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 8, padding: 16, fontSize: "0.875rem", color: "#92400e" }}>
           <strong>Note:</strong> Date filters are optional. Leave blank to export all records.
           Large exports may take a few seconds to generate.
         </div>

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { IonButton, IonSpinner } from "@ionic/react";
 import { toast } from "sonner";
 import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, CreditCard } from "lucide-react";
 
@@ -121,10 +120,9 @@ export default function AdminSubscriptions() {
               )}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchSubs} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <IonButton fill="outline" color="medium" size="small" onClick={fetchSubs} disabled={loading}>
+            <RefreshCw size={14} style={{ marginRight: 6 }} />Refresh
+          </IonButton>
         </div>
 
         {/* Filter tabs */}
@@ -187,12 +185,9 @@ export default function AdminSubscriptions() {
                         {sub.tier && <p className="text-xs text-gray-400 mt-0.5">{TIER_PRICES[sub.tier]}</p>}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge
-                          variant={sub.dbStatus === "active" ? "default" : sub.dbStatus === "cancelling" ? "outline" : "secondary"}
-                          className="capitalize"
-                        >
+                        <span className={`admin-badge ${sub.dbStatus === "active" ? "admin-badge-green" : sub.dbStatus === "cancelling" ? "admin-badge-amber" : "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>
                           {sub.dbStatus || "—"}
-                        </Badge>
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <StripeBadge status={sub.stripeStatus} />
@@ -211,34 +206,17 @@ export default function AdminSubscriptions() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1 flex-wrap">
                           {sub.dbStatus === "cancelling" ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={actionLoading === sub.userId}
-                              onClick={() => handleReactivate(sub.userId)}
-                              className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                            >
-                              Reactivate
-                            </Button>
+                            <IonButton size="small" fill="outline" color="primary" disabled={actionLoading === sub.userId} onClick={() => handleReactivate(sub.userId)}>
+                              {actionLoading === sub.userId ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : "Reactivate"}
+                            </IonButton>
                           ) : sub.dbStatus === "active" || sub.isPastDue ? (
                             <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={actionLoading === sub.userId}
-                                onClick={() => handleCancel(sub.userId, sub.email)}
-                                className="text-orange-600 border-orange-200 hover:bg-orange-50"
-                              >
+                              <IonButton size="small" fill="outline" color="warning" disabled={actionLoading === sub.userId} onClick={() => handleCancel(sub.userId, sub.email)}>
                                 Cancel
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                disabled={actionLoading === sub.userId}
-                                onClick={() => handleCancelNow(sub.userId, sub.email)}
-                              >
+                              </IonButton>
+                              <IonButton size="small" color="danger" disabled={actionLoading === sub.userId} onClick={() => handleCancelNow(sub.userId, sub.email)}>
                                 Cancel Now
-                              </Button>
+                              </IonButton>
                             </>
                           ) : (
                             <span className="text-xs text-gray-400">No actions</span>

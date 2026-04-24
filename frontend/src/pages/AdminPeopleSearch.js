@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
+import { IonSpinner } from "@ionic/react";
 import {
-  Search, CheckCircle, DollarSign, TrendingUp, Loader2,
+  Search, CheckCircle, DollarSign, TrendingUp,
   ChevronLeft, ChevronRight, Phone, User, MapPin, Shield, Save,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -212,7 +213,7 @@ export default function AdminPeopleSearch() {
               disabled={savingPrices}
               className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
             >
-              {savingPrices ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              {savingPrices ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : <Save className="w-3.5 h-3.5" />}
               Save Prices
             </button>
           </div>
@@ -253,7 +254,7 @@ export default function AdminPeopleSearch() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+              <IonSpinner name="crescent" style={{ width: 24, height: 24, color: "#94a3b8" }} />
             </div>
           ) : searches.length === 0 ? (
             <div className="text-center py-12 text-slate-400 text-sm">No searches yet.</div>

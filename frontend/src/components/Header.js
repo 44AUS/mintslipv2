@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone, ShieldCheck, Search } from "lucide-react";
+import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone, ShieldCheck } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -49,7 +49,6 @@ const DEFAULT_NAV_ITEMS = [
   { id: "paystubs",       type: "dropdown" },
   { id: "resume",         type: "link", path: "/ai-resume-builder",  label: "AI Resume Builder", icon: Sparkles },
   { id: "generators",     type: "link", path: "/generators",         label: "All Generators",    icon: FileText },
-  { id: "people-search",  type: "link", path: "/people-search",      label: "People Search",     icon: Search },
   { id: "contact",        type: "link", path: "/contact",            label: "Contact",            icon: Mail },
 ];
 
@@ -388,16 +387,6 @@ function MobileNavLinks({ location, onNavigate }) {
       >
         <FileSpreadsheet className="w-5 h-5" />
         <span className="text-base">All Generators</span>
-      </button>
-
-      <button
-        onClick={() => onNavigate("/people-search")}
-        className={getButtonClasses("/people-search")}
-        data-testid="nav-people-search-mobile"
-      >
-        <Search className="w-5 h-5" />
-        <span className="text-base">People Search</span>
-        <span className="ml-auto text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full">NEW</span>
       </button>
 
       <button

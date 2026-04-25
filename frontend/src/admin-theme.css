@@ -143,16 +143,37 @@ ion-split-pane {
   --border: 1px solid var(--admin-border);
 }
 
-/* Main page header */
-ion-page#admin-main ion-header ion-toolbar {
-  --background: var(--admin-header-bg);
-  --border-color: var(--admin-border);
-  --min-height: 56px;
-  --padding-start: 8px;
-  --padding-end: 8px;
+/* ── Main topbar (plain div, not IonHeader — avoids Ionic offset calculations) ── */
+.admin-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 0 8px;
+  background: var(--admin-header-bg);
+  border-bottom: 1px solid var(--admin-border);
+  z-index: 10;
 }
 
-/* Main content scroll area is now a plain div — no ion-content rules needed */
+.admin-topbar-start {
+  display: flex;
+  align-items: center;
+}
+
+.admin-topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Main scrollable content area ── */
+.admin-main-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  background: var(--admin-content-bg);
+}
 
 /* ── Sidebar navigation ── */
 .admin-nav-list {

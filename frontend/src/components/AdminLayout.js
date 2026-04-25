@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
-  IonContent, IonButtons, IonMenuButton, IonPage, IonBadge, IonButton,
+  IonContent, IonMenuButton, IonBadge, IonButton,
 } from "@ionic/react";
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
@@ -343,166 +343,137 @@ export default function AdminLayout({ children }) {
           </IonContent>
         </IonMenu>
 
-        {/* ── Main page ── */}
-        <IonPage id="admin-main">
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonMenuButton autoHide={false} />
-              </IonButtons>
+        {/* ── Main area (plain divs — no Ionic page/header to avoid offset bugs) ── */}
+        <div id="admin-main" className="ion-page" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-              <IonButtons slot="end" style={{ gap: 2 }}>
-                {/* Dark mode toggle */}
+          {/* Topbar */}
+          <div className="admin-topbar">
+            <div className="admin-topbar-start">
+              <IonMenuButton autoHide={false} style={{ color: "var(--admin-text-muted)" }} />
+            </div>
+
+            <div className="admin-topbar-end">
+              {/* Dark mode */}
+              <button className="admin-header-icon-btn" onClick={toggleDark} title={darkMode ? "Switch to light mode" : "Switch to dark mode"}>
+                {darkMode ? <Sun size={16} color="var(--ion-color-warning)" /> : <Moon size={16} />}
+              </button>
+
+              {/* View site */}
+              <a
+                href="https://mintslip.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="admin-header-icon-btn"
+                style={{ textDecoration: "none", fontSize: "0.75rem", fontWeight: 600, gap: 4, display: "flex", alignItems: "center", padding: "7px 10px" }}
+              >
+                <ExternalLink size={14} />
+                <span style={{ display: window.innerWidth < 576 ? "none" : "inline" }}>View Site</span>
+              </a>
+
+              {/* Notifications */}
+              <div ref={notifRef} style={{ position: "relative" }}>
                 <button
                   className="admin-header-icon-btn"
-                  onClick={toggleDark}
-                  title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                  style={{ position: "relative" }}
+                  onClick={() => { setNotifOpen(v => !v); if (!notifOpen) handleMarkRead(); }}
                 >
-                  {darkMode
-                    ? <Sun size={16} color="var(--ion-color-warning)" />
-                    : <Moon size={16} />
-                  }
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <IonBadge
+                      color="danger"
+                      style={{
+                        position: "absolute", top: 2, right: 2,
+                        fontSize: 9, minWidth: 16, height: 16,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        borderRadius: 999, padding: "0 4px",
+                      }}
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </IonBadge>
+                  )}
                 </button>
 
-                {/* View site */}
-                <a
-                  href="https://mintslip.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="admin-header-icon-btn"
-                  style={{ textDecoration: "none", fontSize: "0.75rem", fontWeight: 600, gap: 4, display: "flex", alignItems: "center", padding: "7px 10px" }}
-                >
-                  <ExternalLink size={14} />
-                  <span className="ion-hide-sm-down">View Site</span>
-                </a>
-
-                {/* Notifications */}
-                <div ref={notifRef} style={{ position: "relative" }}>
-                  <button
-                    className="admin-header-icon-btn"
-                    style={{ position: "relative" }}
-                    onClick={() => { setNotifOpen(v => !v); if (!notifOpen) handleMarkRead(); }}
-                  >
-                    <Bell size={18} />
-                    {unreadCount > 0 && (
-                      <IonBadge
-                        color="danger"
-                        style={{
-                          position: "absolute", top: 2, right: 2,
-                          fontSize: 9, minWidth: 16, height: 16,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          borderRadius: 999, padding: "0 4px",
-                        }}
-                      >
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </IonBadge>
-                    )}
-                  </button>
-
-                  {notifOpen && (
-                    <div className="admin-dropdown notif-dropdown">
-                      <div className="dropdown-header">
-                        <p className="dropdown-header-title">Notifications</p>
-                        <div className="dropdown-header-actions">
-                          {unreadCount > 0 && (
-                            <button className="dropdown-text-btn primary" onClick={handleMarkRead}>
-                              Mark all read
-                            </button>
-                          )}
-                          {notifications.length > 0 && (
-                            <button className="dropdown-text-btn danger" onClick={handleClearNotifications}>
-                              Clear all
-                            </button>
-                          )}
+                {notifOpen && (
+                  <div className="admin-dropdown notif-dropdown">
+                    <div className="dropdown-header">
+                      <p className="dropdown-header-title">Notifications</p>
+                      <div className="dropdown-header-actions">
+                        {unreadCount > 0 && (
+                          <button className="dropdown-text-btn primary" onClick={handleMarkRead}>Mark all read</button>
+                        )}
+                        {notifications.length > 0 && (
+                          <button className="dropdown-text-btn danger" onClick={handleClearNotifications}>Clear all</button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="notif-list">
+                      {notifications.length === 0 ? (
+                        <div className="notif-empty">
+                          <Bell size={28} style={{ marginBottom: 8, opacity: 0.3 }} />
+                          <div>No notifications yet</div>
                         </div>
-                      </div>
-
-                      <div className="notif-list">
-                        {notifications.length === 0 ? (
-                          <div className="notif-empty">
-                            <Bell size={28} style={{ marginBottom: 8, opacity: 0.3 }} />
-                            <div>No notifications yet</div>
-                          </div>
-                        ) : notifications.map(n => {
-                          const Icon = DOC_ICONS[n.docType] || FileText;
-                          return (
-                            <div key={n.id} className={`notif-item${n.read ? "" : " unread"}`}>
-                              <div className="notif-icon">
-                                <Icon size={16} />
-                              </div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <p className="notif-title">{n.docDisplayName} created</p>
-                                <p className="notif-sub">{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</p>
-                                <p className="notif-time">{timeAgo(n.createdAt)}</p>
-                              </div>
+                      ) : notifications.map(n => {
+                        const Icon = DOC_ICONS[n.docType] || FileText;
+                        return (
+                          <div key={n.id} className={`notif-item${n.read ? "" : " unread"}`}>
+                            <div className="notif-icon"><Icon size={16} /></div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p className="notif-title">{n.docDisplayName} created</p>
+                              <p className="notif-sub">{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</p>
+                              <p className="notif-time">{timeAgo(n.createdAt)}</p>
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+              </div>
 
-                {/* Admin profile */}
-                <div ref={profileRef} style={{ position: "relative" }}>
-                  <button
-                    className="admin-profile-btn"
-                    onClick={() => setProfileOpen(v => !v)}
-                  >
-                    {adminProfile?.photo ? (
-                      <img src={adminProfile.photo} alt="avatar" className="admin-avatar" />
-                    ) : (
-                      <div className="admin-avatar-initials">{adminInitials}</div>
-                    )}
-                    <span className="admin-profile-name ion-hide-sm-down">
-                      {adminProfile?.name || adminProfile?.email || "Admin"}
-                    </span>
-                    <ChevronDown size={13} color="var(--admin-text-muted)" />
-                  </button>
+              {/* Profile */}
+              <div ref={profileRef} style={{ position: "relative" }}>
+                <button className="admin-profile-btn" onClick={() => setProfileOpen(v => !v)}>
+                  {adminProfile?.photo
+                    ? <img src={adminProfile.photo} alt="avatar" className="admin-avatar" />
+                    : <div className="admin-avatar-initials">{adminInitials}</div>}
+                  <span className="admin-profile-name" style={{ display: window.innerWidth < 576 ? "none" : undefined }}>
+                    {adminProfile?.name || adminProfile?.email || "Admin"}
+                  </span>
+                  <ChevronDown size={13} color="var(--admin-text-muted)" />
+                </button>
 
-                  {profileOpen && (
-                    <div className="admin-dropdown profile-dropdown">
-                      <div className="profile-info">
-                        <p className="profile-name">{adminProfile?.name || "Admin"}</p>
-                        <p className="profile-email">{adminProfile?.email}</p>
-                      </div>
-                      <div className="profile-menu">
-                        <button
-                          className="profile-menu-item"
-                          onClick={() => { navigate("/admin/settings"); setProfileOpen(false); }}
-                        >
-                          <User size={15} color="var(--admin-text-muted)" />
-                          Profile & Settings
-                        </button>
-                        <button
-                          className="profile-menu-item"
-                          onClick={() => { navigate("/admin/settings?tab=password"); setProfileOpen(false); }}
-                        >
-                          <Lock size={15} color="var(--admin-text-muted)" />
-                          Change Password
-                        </button>
-                        <div className="profile-menu-divider" />
-                        <button
-                          className="profile-menu-item danger"
-                          onClick={() => { setProfileOpen(false); handleLogout(); }}
-                        >
-                          <LogOut size={15} />
-                          Logout
-                        </button>
-                      </div>
+                {profileOpen && (
+                  <div className="admin-dropdown profile-dropdown">
+                    <div className="profile-info">
+                      <p className="profile-name">{adminProfile?.name || "Admin"}</p>
+                      <p className="profile-email">{adminProfile?.email}</p>
                     </div>
-                  )}
-                </div>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
+                    <div className="profile-menu">
+                      <button className="profile-menu-item" onClick={() => { navigate("/admin/settings"); setProfileOpen(false); }}>
+                        <User size={15} color="var(--admin-text-muted)" />Profile & Settings
+                      </button>
+                      <button className="profile-menu-item" onClick={() => { navigate("/admin/settings?tab=password"); setProfileOpen(false); }}>
+                        <Lock size={15} color="var(--admin-text-muted)" />Change Password
+                      </button>
+                      <div className="profile-menu-divider" />
+                      <button className="profile-menu-item danger" onClick={() => { setProfileOpen(false); handleLogout(); }}>
+                        <LogOut size={15} />Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-          <div style={{ flex: 1, overflowY: "auto", background: "var(--admin-content-bg)", minHeight: 0 }}>
+          {/* Scrollable content */}
+          <div className="admin-main-scroll">
             <div className="admin-page-content">
               {children}
             </div>
           </div>
-        </IonPage>
+
+        </div>
 
       </IonSplitPane>
     </IonApp>

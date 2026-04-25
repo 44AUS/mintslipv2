@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(npm run build)",
+      "Bash(find c:/Users/austi/Desktop/mintslipv2/frontend/src -name logo* -o -name Logo* -o -name *.png -o -name *.svg)",
+      "Bash(yarn add *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}

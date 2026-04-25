@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Search } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -1234,7 +1234,7 @@ export default function Home() {
               <span className="block text-slate-800">Paystubs in Minutes</span>
             </h1>
             <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
-              Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. Search anyone by name, phone, or address with our new People Search. No sign-up required.
+              Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.
             </p>
           </div>
 
@@ -1257,16 +1257,6 @@ export default function Home() {
             >
               <Sparkles className="w-5 h-5" />
               AI Resume Builder
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button
-              onClick={() => navigate("/people-search")}
-              size="lg"
-              variant="outline"
-              className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
-            >
-              <Search className="w-5 h-5" />
-              People Search
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -1418,48 +1408,6 @@ export default function Home() {
         );
       })()}
 
-      {/* People Search Feature Banner */}
-      <section className="py-14 px-4 bg-gradient-to-r from-green-50 to-emerald-50 border-y border-green-100">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-full mb-4">
-              <Search className="w-3.5 h-3.5" /> NEW FEATURE
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-3">People Search and Reverse Lookup</h2>
-            <p className="text-slate-600 mb-5 max-w-md">
-              Find anyone instantly. Look up people by name, reverse search a phone number, or identify who lives at any address. Pay only per lookup - no subscription needed.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              <button
-                onClick={() => navigate("/people-search")}
-                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
-              >
-                <Search className="w-4 h-4" /> Try People Search
-              </button>
-              <button
-                onClick={() => navigate("/who-called-me")}
-                className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
-              >
-                Who Called Me?
-              </button>
-            </div>
-          </div>
-          <div className="flex-shrink-0 grid grid-cols-2 gap-3">
-            {[
-              { label: "Phone Lookup", price: "$0.99", desc: "Identify unknown callers" },
-              { label: "Name Search", price: "$0.99", desc: "Find anyone by name" },
-              { label: "Address Lookup", price: "$1.49", desc: "Find property owners" },
-              { label: "Background Report", price: "$2.99", desc: "Full background check" },
-            ].map(({ label, price, desc }) => (
-              <div key={label} className="bg-white rounded-xl border border-green-100 p-3 text-center shadow-sm">
-                <p className="text-xs font-semibold text-slate-700">{label}</p>
-                <p className="text-lg font-bold text-green-600">{price}</p>
-                <p className="text-xs text-slate-400">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       {/* Best Pricing Section */}
       <section className="bg-gradient-to-br from-green-900 to-green-800 py-20">
         <div className="max-w-7xl mx-auto px-6">

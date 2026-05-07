@@ -2,15 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
-  IonContent, IonBadge, IonButtons,
+  IonContent, IonBadge, IonButtons, IonButton,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem,
 } from "@ionic/react";
 import {
-  FileText, LogOut, Bell, X,
+  FileText, LogOut, Bell,
   Lock, ChevronDown, Receipt, FileSpreadsheet, FileBarChart,
   Building2, Car, Briefcase, User, ExternalLink,
-  Moon, Sun,
 } from "lucide-react";
 import { menuController } from "@ionic/core";
 import IonIcon from "./IonIcon";
@@ -292,21 +291,6 @@ export default function AdminLayout({ children }) {
       ? adminProfile.email[0].toUpperCase()
       : "A";
 
-  const circularBtnStyle = {
-    width: 32,
-    height: 32,
-    borderRadius: "50%",
-    border: "1px solid var(--app-divider)",
-    background: "var(--ion-color-step-50)",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "var(--ion-text-color)",
-    flexShrink: 0,
-    padding: 0,
-  };
-
   const segmentBtnStyle = {
     "--color":           "rgba(255,255,255,0.65)",
     "--color-checked":   "#ffffff",
@@ -331,12 +315,15 @@ export default function AdminLayout({ children }) {
             <IonToolbar>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", width: "100%" }}>
                 {/* Close sidebar */}
-                <button
+                <IonButton
+                  fill="clear"
                   onClick={handleCloseSidebar}
-                  style={circularBtnStyle}
+                  style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
                 >
-                  <X size={15} />
-                </button>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                    <IonIcon name="close-outline" style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
 
                 {/* Logo */}
                 <button
@@ -347,9 +334,16 @@ export default function AdminLayout({ children }) {
                 </button>
 
                 {/* Dark mode toggle */}
-                <button onClick={toggleDark} style={circularBtnStyle}>
-                  {darkMode ? <Sun size={15} color="var(--ion-color-warning)" /> : <Moon size={15} />}
-                </button>
+                <IonButton
+                  fill="clear"
+                  onClick={toggleDark}
+                  title={darkMode ? "Light mode" : "Dark mode"}
+                  style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
+                >
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                    <IonIcon name={darkMode ? "sunny-outline" : "moon-outline"} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
               </div>
             </IonToolbar>
           </IonHeader>
@@ -378,12 +372,15 @@ export default function AdminLayout({ children }) {
 
               {/* Left: hamburger + brand */}
               <IonButtons slot="start">
-                <button
+                <IonButton
+                  fill="clear"
                   onClick={handleMenuToggle}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", borderRadius: 6 }}
+                  style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
                 >
-                  <IonIcon name="menu-outline" style={{ fontSize: "1.5rem", color: "inherit" }} />
-                </button>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                    <IonIcon name="menu-outline" style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
               </IonButtons>
 
               {/* Center: scrollable nav tabs (subset) */}
@@ -414,15 +411,16 @@ export default function AdminLayout({ children }) {
               <IonButtons slot="end" style={{ gap: 0 }}>
 
                 {/* Dark mode toggle */}
-                <button
-                  className="admin-header-icon-btn"
+                <IonButton
+                  fill="clear"
                   onClick={toggleDark}
-                  title={darkMode ? "Switch to light" : "Switch to dark"}
+                  title={darkMode ? "Light mode" : "Dark mode"}
+                  style={{ "--color": "rgba(255,255,255,0.55)", "--border-radius": "50%" }}
                 >
-                  {darkMode
-                    ? <Sun  size={17} color="var(--ion-color-warning)" />
-                    : <Moon size={17} color="rgba(255,255,255,0.8)" />}
-                </button>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                    <IonIcon name={darkMode ? "sunny-outline" : "moon-outline"} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
 
                 {/* View site */}
                 <a

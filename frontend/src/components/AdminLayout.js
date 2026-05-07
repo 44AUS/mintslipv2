@@ -287,7 +287,7 @@ export default function AdminLayout({ children }) {
       <IonSplitPane
         contentId="admin-main"
         when="md"
-        style={{ "--side-width": "240px", "--side-max-width": "240px", "--side-min-width": "240px" }}
+        style={{ "--side-width": "300px", "--side-max-width": "300px", "--side-min-width": "300px" }}
       >
 
         {/* ── Sidebar ── */}

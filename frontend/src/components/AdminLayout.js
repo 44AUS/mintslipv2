@@ -2,17 +2,24 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
-  IonContent, IonBadge, IonButtons, IonButton,
+  IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem,
 } from "@ionic/react";
+import {
+  menuOutline, closeOutline, moonOutline, sunnyOutline,
+  gridOutline, cartOutline, peopleOutline, folderOutline,
+  pricetagOutline, shieldOutline, documentTextOutline,
+  mailOutline, sendOutline, optionsOutline, personAddOutline,
+  listOutline, trendingUpOutline, cardOutline, chatboxOutline,
+  downloadOutline,
+} from "ionicons/icons";
 import {
   FileText, LogOut, Bell,
   Lock, ChevronDown, Receipt, FileSpreadsheet, FileBarChart,
   Building2, Car, Briefcase, User, ExternalLink,
 } from "lucide-react";
 import { menuController } from "@ionic/core";
-import IonIcon from "./IonIcon";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
 
@@ -75,7 +82,7 @@ function NavItem({ tab, isActive, onClick }) {
           lineHeight: 0, flexShrink: 0, fontSize: "1.25rem",
         }}>
           <IonIcon
-            name={tab.ionicon}
+            icon={tab.icon}
             style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }}
           />
         </span>
@@ -258,22 +265,22 @@ export default function AdminLayout({ children }) {
   const hasPerm = (key) => isFullAdmin || (adminPermissions && adminPermissions[key]);
 
   const allTabs = [
-    { id: "overview",        label: "Overview",        ionicon: "grid-outline",              path: "/admin/overview",        perm: null },
-    { id: "purchases",       label: "Purchases",       ionicon: "cart-outline",              path: "/admin/purchases",       perm: "view_purchases" },
-    { id: "users",           label: "Users",           ionicon: "people-outline",            path: "/admin/users",           perm: "view_users" },
-    { id: "saved-docs",      label: "Saved Docs",      ionicon: "folder-outline",            path: "/admin/saved-docs",      perm: "view_saved_docs" },
-    { id: "discounts",       label: "Discounts",       ionicon: "pricetag-outline",          path: "/admin/discounts",       perm: "view_discounts" },
-    { id: "banned-ips",      label: "Banned IPs",      ionicon: "shield-outline",            path: "/admin/banned-ips",      perm: "view_banned_ips" },
-    { id: "blog",            label: "Blog",            ionicon: "document-text-outline",     path: "/admin/blog",            perm: "view_blog" },
-    { id: "email-templates", label: "Email Templates", ionicon: "mail-outline",              path: "/admin/email-templates", perm: "view_email_templates" },
-    { id: "mass-email",      label: "Mass Email",      ionicon: "send-outline",              path: "/admin/mass-email",      perm: "send_mass_email" },
-    { id: "site-settings",   label: "Site Settings",   ionicon: "options-outline",           path: "/admin/site-settings",   perm: "view_site_settings" },
-    { id: "moderators",      label: "Moderators",      ionicon: "person-add-outline",        path: "/admin/moderators",      perm: "admin_only" },
-    { id: "audit-log",       label: "Audit Log",       ionicon: "list-outline",              path: "/admin/audit-log",       perm: "admin_only" },
-    { id: "revenue",         label: "Revenue",         ionicon: "trending-up-outline",       path: "/admin/revenue",         perm: "view_purchases" },
-    { id: "subscriptions",   label: "Subscriptions",   ionicon: "card-outline",              path: "/admin/subscriptions",   perm: "admin_only" },
-    { id: "support",         label: "Support",         ionicon: "chatbox-outline",           path: "/admin/support",         perm: null },
-    { id: "export",          label: "Export",          ionicon: "download-outline",          path: "/admin/export",          perm: "view_purchases" },
+    { id: "overview",        label: "Overview",        icon: gridOutline,          path: "/admin/overview",        perm: null },
+    { id: "purchases",       label: "Purchases",       icon: cartOutline,          path: "/admin/purchases",       perm: "view_purchases" },
+    { id: "users",           label: "Users",           icon: peopleOutline,        path: "/admin/users",           perm: "view_users" },
+    { id: "saved-docs",      label: "Saved Docs",      icon: folderOutline,        path: "/admin/saved-docs",      perm: "view_saved_docs" },
+    { id: "discounts",       label: "Discounts",       icon: pricetagOutline,      path: "/admin/discounts",       perm: "view_discounts" },
+    { id: "banned-ips",      label: "Banned IPs",      icon: shieldOutline,        path: "/admin/banned-ips",      perm: "view_banned_ips" },
+    { id: "blog",            label: "Blog",            icon: documentTextOutline,  path: "/admin/blog",            perm: "view_blog" },
+    { id: "email-templates", label: "Email Templates", icon: mailOutline,          path: "/admin/email-templates", perm: "view_email_templates" },
+    { id: "mass-email",      label: "Mass Email",      icon: sendOutline,          path: "/admin/mass-email",      perm: "send_mass_email" },
+    { id: "site-settings",   label: "Site Settings",   icon: optionsOutline,       path: "/admin/site-settings",   perm: "view_site_settings" },
+    { id: "moderators",      label: "Moderators",      icon: personAddOutline,     path: "/admin/moderators",      perm: "admin_only" },
+    { id: "audit-log",       label: "Audit Log",       icon: listOutline,          path: "/admin/audit-log",       perm: "admin_only" },
+    { id: "revenue",         label: "Revenue",         icon: trendingUpOutline,    path: "/admin/revenue",         perm: "view_purchases" },
+    { id: "subscriptions",   label: "Subscriptions",   icon: cardOutline,          path: "/admin/subscriptions",   perm: "admin_only" },
+    { id: "support",         label: "Support",         icon: chatboxOutline,       path: "/admin/support",         perm: null },
+    { id: "export",          label: "Export",          icon: downloadOutline,      path: "/admin/export",          perm: "view_purchases" },
   ];
 
   const tabs = allTabs.filter(t => {
@@ -321,7 +328,7 @@ export default function AdminLayout({ children }) {
                   style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
                 >
                   <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon name="close-outline" style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
 
@@ -341,7 +348,7 @@ export default function AdminLayout({ children }) {
                   style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
                 >
                   <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon name={darkMode ? "sunny-outline" : "moon-outline"} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
               </div>
@@ -378,7 +385,7 @@ export default function AdminLayout({ children }) {
                   style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
                 >
                   <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon name="menu-outline" style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
               </IonButtons>
@@ -418,7 +425,7 @@ export default function AdminLayout({ children }) {
                   style={{ "--color": "rgba(255,255,255,0.55)", "--border-radius": "50%" }}
                 >
                   <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon name={darkMode ? "sunny-outline" : "moon-outline"} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
 

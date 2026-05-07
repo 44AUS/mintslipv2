@@ -7,11 +7,12 @@ import {
   IonList, IonItem,
 } from "@ionic/react";
 import {
-  FileText, LogOut, Bell,
+  FileText, LogOut, Bell, X,
   Lock, ChevronDown, Receipt, FileSpreadsheet, FileBarChart,
   Building2, Car, Briefcase, User, ExternalLink,
   Moon, Sun,
 } from "lucide-react";
+import { menuController } from "@ionic/core";
 import IonIcon from "./IonIcon";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -272,6 +273,21 @@ export default function AdminLayout({ children }) {
       ? adminProfile.email[0].toUpperCase()
       : "A";
 
+  const circularBtnStyle = {
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    border: "1px solid var(--app-divider)",
+    background: "var(--ion-color-step-50)",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "var(--ion-text-color)",
+    flexShrink: 0,
+    padding: 0,
+  };
+
   const segmentBtnStyle = {
     "--color":           "rgba(255,255,255,0.65)",
     "--color-checked":   "#ffffff",
@@ -294,12 +310,26 @@ export default function AdminLayout({ children }) {
         <IonMenu contentId="admin-main" type="overlay" menuId="adminSidebar">
           <IonHeader>
             <IonToolbar>
-              <div style={{ padding: "4px 16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", width: "100%" }}>
+                {/* Close sidebar */}
+                <button
+                  onClick={() => menuController.close("adminSidebar")}
+                  style={circularBtnStyle}
+                >
+                  <X size={15} />
+                </button>
+
+                {/* Logo */}
                 <button
                   onClick={() => navigate("/admin/overview")}
                   style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
                   <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
+                </button>
+
+                {/* Dark mode toggle */}
+                <button onClick={toggleDark} style={circularBtnStyle}>
+                  {darkMode ? <Sun size={15} color="var(--ion-color-warning)" /> : <Moon size={15} />}
                 </button>
               </div>
             </IonToolbar>

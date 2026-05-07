@@ -357,7 +357,7 @@ export default function AdminLayout({ children }) {
 
           <IonContent>
             {/* Profile card */}
-            <div style={{ padding: "0px 8px 12px", flexShrink: 0 }}>
+            <div style={{ padding: "12px 8px 12px", flexShrink: 0 }}>
               <div style={{
                 borderRadius: 10,
                 overflow: "hidden",

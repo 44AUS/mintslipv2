@@ -300,7 +300,7 @@ export default function AdminLayout({ children }) {
 
   return (
     <IonApp className="admin-app">
-      <IonSplitPane contentId="admin-main" when="md">
+      <IonSplitPane contentId="admin-main" when="md" style={{ "--side-width": "220px", "--side-max-width": "220px", "--side-min-width": "220px" }}>
 
         {/* ── Sidebar ── */}
         <IonMenu contentId="admin-main" type="overlay" menuId="adminSidebar">

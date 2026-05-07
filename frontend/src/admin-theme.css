@@ -148,7 +148,7 @@ ion-menu ion-header ion-toolbar {
 }
 
 /* ── IonMenu sidebar ── */
-ion-menu { --width: 280px; }
+ion-menu { --width: 220px; --max-width: 220px; }
 ion-menu ion-content { --background: var(--app-sidebar-bg); }
 
 /* ── IonItem / IonList defaults ── */

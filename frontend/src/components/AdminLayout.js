@@ -2,23 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
-  IonContent, IonMenuButton, IonBadge, IonButton, IonButtons,
+  IonContent, IonMenuButton, IonBadge, IonButtons,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
 } from "@ionic/react";
 import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
-  Shield, FolderArchive, Mail, SlidersHorizontal, Bell, Settings,
+  Shield, FolderArchive, Mail, SlidersHorizontal, Bell,
   Lock, ChevronDown, Receipt, FileSpreadsheet, FileBarChart,
   Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
   ClipboardList, Inbox, Download, TrendingUp, CreditCard, Moon, Sun,
-  GripVertical,
 } from "lucide-react";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -40,6 +32,12 @@ const DOC_ICONS = {
   "utility-bill":         FileText,
 };
 
+// Tabs hidden from the top-bar segment (still visible in sidebar)
+const TOPBAR_EXCLUDE = new Set([
+  "overview", "saved-docs", "email-templates",
+  "site-settings", "banned-ips", "export",
+]);
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -50,37 +48,19 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function SortableNavItem({ tab, isActive, onClick }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: tab.id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 50 : undefined,
-  };
+function NavItem({ tab, isActive, onClick }) {
   const Icon = tab.icon;
   return (
-    <div ref={setNodeRef} style={style} className="sortable-nav-item">
-      <button onClick={onClick} className={`admin-nav-btn${isActive ? " active" : ""}`}>
-        <span
-          {...attributes}
-          {...listeners}
-          className="drag-handle"
-          onClick={e => e.stopPropagation()}
-        >
-          <GripVertical size={13} />
-        </span>
-        <Icon size={16} style={{ flexShrink: 0 }} />
-        {tab.label}
-      </button>
-    </div>
+    <button onClick={onClick} className={`admin-nav-btn${isActive ? " active" : ""}`}>
+      <Icon size={16} style={{ flexShrink: 0 }} />
+      {tab.label}
+    </button>
   );
 }
 
 export default function AdminLayout({ children }) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
@@ -93,14 +73,6 @@ export default function AdminLayout({ children }) {
 
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("adminDarkMode") === "true",
-  );
-  const [navOrder, setNavOrder] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("adminNavOrder")) || null; }
-    catch { return null; }
-  });
-
-  const dndSensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
   );
 
   /* Apply/remove dark class on body */
@@ -259,28 +231,13 @@ export default function AdminLayout({ children }) {
   ];
 
   const tabs = allTabs.filter(t => {
-    if (t.perm === null)        return true;
+    if (t.perm === null)         return true;
     if (t.perm === "admin_only") return isFullAdmin;
     return hasPerm(t.perm);
   });
 
-  const sortedTabs = (() => {
-    if (!navOrder) return tabs;
-    const tabMap   = Object.fromEntries(tabs.map(t => [t.id, t]));
-    const ordered  = navOrder.filter(id => tabMap[id]).map(id => tabMap[id]);
-    const unseen   = tabs.filter(t => !navOrder.includes(t.id));
-    return [...ordered, ...unseen];
-  })();
-
-  const handleNavDragEnd = ({ active, over }) => {
-    if (!over || active.id === over.id) return;
-    const oldIdx  = sortedTabs.findIndex(t => t.id === active.id);
-    const newIdx  = sortedTabs.findIndex(t => t.id === over.id);
-    const reordered = arrayMove(sortedTabs, oldIdx, newIdx);
-    const newOrder  = reordered.map(t => t.id);
-    setNavOrder(newOrder);
-    localStorage.setItem("adminNavOrder", JSON.stringify(newOrder));
-  };
+  // Only a subset of tabs appear in the top-bar segment
+  const topbarTabs = tabs.filter(t => !TOPBAR_EXCLUDE.has(t.id));
 
   const adminInitials = adminProfile?.name
     ? adminProfile.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
@@ -289,18 +246,22 @@ export default function AdminLayout({ children }) {
       : "A";
 
   const segmentBtnStyle = {
-    "--color":            "rgba(255,255,255,0.65)",
-    "--color-checked":    "#ffffff",
-    "--indicator-color":  "#ffffff",
-    "--border-radius":    "0",
-    "--padding-top":      "0",
-    "--padding-bottom":   "0",
+    "--color":           "rgba(255,255,255,0.65)",
+    "--color-checked":   "#ffffff",
+    "--indicator-color": "#ffffff",
+    "--border-radius":   "0",
+    "--padding-top":     "0",
+    "--padding-bottom":  "0",
     minHeight: 60,
   };
 
   return (
     <IonApp className="admin-app">
-      <IonSplitPane contentId="admin-main" when="md" style={{ "--side-width": "220px", "--side-max-width": "220px", "--side-min-width": "220px" }}>
+      <IonSplitPane
+        contentId="admin-main"
+        when="md"
+        style={{ "--side-width": "240px", "--side-max-width": "240px", "--side-min-width": "240px" }}
+      >
 
         {/* ── Sidebar ── */}
         <IonMenu contentId="admin-main" type="overlay" menuId="adminSidebar">
@@ -318,27 +279,16 @@ export default function AdminLayout({ children }) {
           </IonHeader>
 
           <IonContent>
-            <DndContext
-              sensors={dndSensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleNavDragEnd}
-            >
-              <SortableContext
-                items={sortedTabs.map(t => t.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="admin-nav-list">
-                  {sortedTabs.map(tab => (
-                    <SortableNavItem
-                      key={tab.id}
-                      tab={tab}
-                      isActive={activeTab === tab.id}
-                      onClick={() => navigate(tab.path)}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
+            <div className="admin-nav-list">
+              {tabs.map(tab => (
+                <NavItem
+                  key={tab.id}
+                  tab={tab}
+                  isActive={activeTab === tab.id}
+                  onClick={() => navigate(tab.path)}
+                />
+              ))}
+            </div>
           </IonContent>
         </IonMenu>
 
@@ -362,22 +312,22 @@ export default function AdminLayout({ children }) {
                 </span>
               </IonButtons>
 
-              {/* Center: scrollable nav tabs */}
+              {/* Center: scrollable nav tabs (subset) */}
               <IonSegment
                 scrollable
                 value={activeTab}
                 onIonChange={e => {
-                  const tab = sortedTabs.find(t => t.id === e.detail.value);
+                  const tab = topbarTabs.find(t => t.id === e.detail.value);
                   if (tab) navigate(tab.path);
                 }}
                 style={{
-                  "--background":         "transparent",
-                  "--color":              "rgba(255,255,255,0.65)",
-                  "--color-checked":      "#ffffff",
-                  "--indicator-color":    "#ffffff",
+                  "--background":      "transparent",
+                  "--color":           "rgba(255,255,255,0.65)",
+                  "--color-checked":   "#ffffff",
+                  "--indicator-color": "#ffffff",
                 }}
               >
-                {sortedTabs.map(tab => (
+                {topbarTabs.map(tab => (
                   <IonSegmentButton key={tab.id} value={tab.id} style={segmentBtnStyle}>
                     <IonLabel style={{ fontSize: "0.72rem", fontWeight: 500, margin: 0 }}>
                       {tab.label}

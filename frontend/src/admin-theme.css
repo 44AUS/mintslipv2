@@ -1,17 +1,17 @@
 /* ==========================================================
    MintSlip Admin — HaulIQ Design System
-   Blue primary palette · Inter font · body.dark dark mode
+   Green primary palette · Inter font · body.dark dark mode
    ========================================================== */
 
 /* ── CSS Variables (light mode) ── */
 :root {
   --ion-font-family: 'Inter', system-ui, sans-serif;
 
-  --ion-color-primary:          #1565C0;
-  --ion-color-primary-rgb:      21, 101, 192;
+  --ion-color-primary:          #16a34a;
+  --ion-color-primary-rgb:      22, 163, 74;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-shade:    #1259a9;
-  --ion-color-primary-tint:     #2c74c6;
+  --ion-color-primary-shade:    #138f41;
+  --ion-color-primary-tint:     #2dad5c;
 
   --ion-color-secondary:        #334155;
   --ion-color-secondary-rgb:    51, 65, 85;
@@ -56,7 +56,7 @@
   --ion-text-color-rgb:         13, 27, 42;
   --ion-card-background:        #ffffff;
   --ion-border-color:           rgba(0, 0, 0, 0.12);
-  --ion-toolbar-background:     #1565C0;
+  --ion-toolbar-background:     #16a34a;
   --ion-toolbar-color:          #ffffff;
   --ion-item-background:        #ffffff;
 
@@ -68,7 +68,7 @@
   --ion-color-step-300:         rgba(0, 0, 0, 0.26);
 
   /* App-level tokens */
-  --app-bar-color:              #1565C0;
+  --app-bar-color:              #16a34a;
   --app-sidebar-bg:             #ffffff;
   --app-divider:                rgba(0, 0, 0, 0.08);
 
@@ -148,7 +148,7 @@ ion-menu ion-header ion-toolbar {
 }
 
 /* ── IonMenu sidebar ── */
-ion-menu { --width: 220px; --max-width: 220px; }
+ion-menu { --width: 240px; --max-width: 240px; }
 ion-menu ion-content { --background: var(--app-sidebar-bg); }
 
 /* ── IonItem / IonList defaults ── */
@@ -219,7 +219,7 @@ ion-app.admin-app {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px 9px 32px;
+  padding: 9px 12px;
   border: none;
   background: transparent;
   border-radius: var(--admin-radius);
@@ -229,7 +229,6 @@ ion-app.admin-app {
   color: var(--admin-nav-text);
   text-align: left;
   transition: background 0.15s, color 0.15s;
-  position: relative;
   font-family: var(--ion-font-family);
 }
 
@@ -244,25 +243,6 @@ ion-app.admin-app {
   font-weight: 600;
 }
 
-.drag-handle {
-  position: absolute;
-  left: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  cursor: grab;
-  color: rgba(146, 148, 156, 0.5);
-  border-radius: 4px;
-  transition: color 0.15s;
-}
-
-.drag-handle:hover { color: var(--admin-text-muted); }
-.admin-nav-btn.active .drag-handle { color: rgba(21, 101, 192, 0.35); }
-.admin-nav-btn.active .drag-handle:hover { color: var(--ion-color-primary); }
 
 /* ── Topbar action buttons (now inside blue IonToolbar) ── */
 .admin-header-icon-btn {
@@ -395,7 +375,7 @@ ion-app.admin-app {
   border-bottom: 1px solid var(--admin-border);
 }
 
-.notif-item.unread { background: rgba(21, 101, 192, 0.05); }
+.notif-item.unread { background: rgba(22, 163, 74, 0.05); }
 
 .notif-icon {
   width: 32px;
@@ -410,7 +390,7 @@ ion-app.admin-app {
 }
 
 .notif-item.unread .notif-icon {
-  background: rgba(21, 101, 192, 0.12);
+  background: rgba(22, 163, 74, 0.12);
   color: var(--ion-color-primary);
 }
 
@@ -592,7 +572,7 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 .admin-badge-red    { background: rgba(235, 68, 90, 0.12);   color: #eb445a; }
 .admin-badge-amber  { background: rgba(255, 196, 9, 0.15);   color: #b8860b; }
 .admin-badge-slate  { background: rgba(146, 148, 156, 0.14); color: #6c6e76; }
-.admin-badge-blue   { background: rgba(21, 101, 192, 0.12);  color: #1565C0; }
+.admin-badge-blue   { background: rgba(22, 163, 74, 0.12);  color: #1565C0; }
 .admin-badge-purple { background: rgba(139, 92, 246, 0.12);  color: #7c3aed; }
 
 /* ── Form helpers ── */
@@ -620,7 +600,7 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 
 .admin-input:focus {
   border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.12);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
 
 .admin-textarea {
@@ -641,7 +621,7 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 
 .admin-textarea:focus {
   border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.12);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
 
 .admin-select {
@@ -665,7 +645,7 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 
 .admin-select:focus {
   border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.12);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
 
 /* ── Toggle (custom switch) ── */

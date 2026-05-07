@@ -300,16 +300,6 @@ export default function AdminLayout({ children }) {
               {/* Left: hamburger + brand */}
               <IonButtons slot="start">
                 <IonMenuButton autoHide={false} style={{ color: "#ffffff" }} />
-                <span style={{
-                  fontWeight: 700,
-                  fontSize: "0.95rem",
-                  color: "#ffffff",
-                  marginLeft: 2,
-                  whiteSpace: "nowrap",
-                  fontFamily: "Inter, system-ui, sans-serif",
-                }}>
-                  MintSlip Admin
-                </span>
               </IonButtons>
 
               {/* Center: scrollable nav tabs (subset) */}

@@ -7,12 +7,12 @@ import {
   IonList, IonItem,
 } from "@ionic/react";
 import {
-  LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
-  Shield, FolderArchive, Mail, SlidersHorizontal, Bell,
+  FileText, LogOut, Bell,
   Lock, ChevronDown, Receipt, FileSpreadsheet, FileBarChart,
-  Building2, Car, Briefcase, User, Send, ExternalLink, UserCog,
-  ClipboardList, Inbox, Download, TrendingUp, CreditCard, Moon, Sun,
+  Building2, Car, Briefcase, User, ExternalLink,
+  Moon, Sun,
 } from "lucide-react";
+import IonIcon from "./IonIcon";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
 
@@ -50,34 +50,37 @@ function timeAgo(dateStr) {
 }
 
 function NavItem({ tab, isActive, onClick }) {
-  const Icon = tab.icon;
   return (
     <IonItem
       button
       detail={false}
-      lines="none"
       onClick={onClick}
       style={{
-        "--background":           isActive ? "var(--ion-color-step-100)" : "transparent",
-        "--background-hover":     "var(--ion-color-step-100)",
-        "--background-activated": "var(--ion-color-step-150)",
-        "--color":                isActive ? "var(--ion-color-primary)" : "var(--ion-text-color)",
-        "--padding-start":        "12px",
-        "--inner-padding-end":    "12px",
-        "--min-height":           "42px",
-        borderRadius:             "8px",
-        marginBottom:             "2px",
+        "--background":            isActive ? "var(--ion-color-step-100)" : "transparent",
+        "--background-hover":      "var(--ion-color-step-100)",
+        "--background-hover-opacity": "1",
+        "--background-activated":  "var(--ion-color-step-150)",
+        "--color":                 isActive ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+        "--border-color":          "var(--app-divider)",
+        "--min-height":            "48px",
+        "--padding-start":         "20px",
+        "--padding-end":           "0",
+        "--inner-padding-end":     "0",
+        fontWeight:                isActive ? 600 : 400,
       }}
     >
-      <div slot="start" style={{ display: "flex", alignItems: "center", marginInlineEnd: "10px" }}>
-        <Icon
-          size={16}
-          style={{ color: isActive ? "var(--ion-color-primary)" : "var(--ion-color-medium)" }}
-        />
+      <div slot="start" style={{ position: "relative", display: "flex" }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          lineHeight: 0, flexShrink: 0, fontSize: "1.25rem",
+        }}>
+          <IonIcon
+            name={tab.ionicon}
+            style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }}
+          />
+        </span>
       </div>
-      <IonLabel style={{ fontSize: "0.875rem", fontWeight: isActive ? 600 : 500 }}>
-        {tab.label}
-      </IonLabel>
+      <IonLabel>{tab.label}</IonLabel>
     </IonItem>
   );
 }
@@ -236,22 +239,22 @@ export default function AdminLayout({ children }) {
   const hasPerm = (key) => isFullAdmin || (adminPermissions && adminPermissions[key]);
 
   const allTabs = [
-    { id: "overview",        label: "Overview",        icon: LayoutDashboard,   path: "/admin/overview",        perm: null },
-    { id: "purchases",       label: "Purchases",       icon: ShoppingCart,      path: "/admin/purchases",       perm: "view_purchases" },
-    { id: "users",           label: "Users",           icon: Users,             path: "/admin/users",           perm: "view_users" },
-    { id: "saved-docs",      label: "Saved Docs",      icon: FolderArchive,     path: "/admin/saved-docs",      perm: "view_saved_docs" },
-    { id: "discounts",       label: "Discounts",       icon: Tag,               path: "/admin/discounts",       perm: "view_discounts" },
-    { id: "banned-ips",      label: "Banned IPs",      icon: Shield,            path: "/admin/banned-ips",      perm: "view_banned_ips" },
-    { id: "blog",            label: "Blog",            icon: FileText,          path: "/admin/blog",            perm: "view_blog" },
-    { id: "email-templates", label: "Email Templates", icon: Mail,              path: "/admin/email-templates", perm: "view_email_templates" },
-    { id: "mass-email",      label: "Mass Email",      icon: Send,              path: "/admin/mass-email",      perm: "send_mass_email" },
-    { id: "site-settings",   label: "Site Settings",   icon: SlidersHorizontal, path: "/admin/site-settings",   perm: "view_site_settings" },
-    { id: "moderators",      label: "Moderators",      icon: UserCog,           path: "/admin/moderators",      perm: "admin_only" },
-    { id: "audit-log",       label: "Audit Log",       icon: ClipboardList,     path: "/admin/audit-log",       perm: "admin_only" },
-    { id: "revenue",         label: "Revenue",         icon: TrendingUp,        path: "/admin/revenue",         perm: "view_purchases" },
-    { id: "subscriptions",   label: "Subscriptions",   icon: CreditCard,        path: "/admin/subscriptions",   perm: "admin_only" },
-    { id: "support",         label: "Support",         icon: Inbox,             path: "/admin/support",         perm: null },
-    { id: "export",          label: "Export",          icon: Download,          path: "/admin/export",          perm: "view_purchases" },
+    { id: "overview",        label: "Overview",        ionicon: "grid-outline",              path: "/admin/overview",        perm: null },
+    { id: "purchases",       label: "Purchases",       ionicon: "cart-outline",              path: "/admin/purchases",       perm: "view_purchases" },
+    { id: "users",           label: "Users",           ionicon: "people-outline",            path: "/admin/users",           perm: "view_users" },
+    { id: "saved-docs",      label: "Saved Docs",      ionicon: "folder-outline",            path: "/admin/saved-docs",      perm: "view_saved_docs" },
+    { id: "discounts",       label: "Discounts",       ionicon: "pricetag-outline",          path: "/admin/discounts",       perm: "view_discounts" },
+    { id: "banned-ips",      label: "Banned IPs",      ionicon: "shield-outline",            path: "/admin/banned-ips",      perm: "view_banned_ips" },
+    { id: "blog",            label: "Blog",            ionicon: "document-text-outline",     path: "/admin/blog",            perm: "view_blog" },
+    { id: "email-templates", label: "Email Templates", ionicon: "mail-outline",              path: "/admin/email-templates", perm: "view_email_templates" },
+    { id: "mass-email",      label: "Mass Email",      ionicon: "send-outline",              path: "/admin/mass-email",      perm: "send_mass_email" },
+    { id: "site-settings",   label: "Site Settings",   ionicon: "options-outline",           path: "/admin/site-settings",   perm: "view_site_settings" },
+    { id: "moderators",      label: "Moderators",      ionicon: "person-add-outline",        path: "/admin/moderators",      perm: "admin_only" },
+    { id: "audit-log",       label: "Audit Log",       ionicon: "list-outline",              path: "/admin/audit-log",       perm: "admin_only" },
+    { id: "revenue",         label: "Revenue",         ionicon: "trending-up-outline",       path: "/admin/revenue",         perm: "view_purchases" },
+    { id: "subscriptions",   label: "Subscriptions",   ionicon: "card-outline",              path: "/admin/subscriptions",   perm: "admin_only" },
+    { id: "support",         label: "Support",         ionicon: "chatbox-outline",           path: "/admin/support",         perm: null },
+    { id: "export",          label: "Export",          ionicon: "download-outline",          path: "/admin/export",          perm: "view_purchases" },
   ];
 
   const tabs = allTabs.filter(t => {
@@ -303,7 +306,10 @@ export default function AdminLayout({ children }) {
           </IonHeader>
 
           <IonContent>
-            <IonList lines="none" style={{ padding: "8px", "--background": "transparent" }}>
+            <IonList
+              lines="inset"
+              style={{ flexGrow: 1, overflowY: "auto", padding: "0px", "--background": "transparent" }}
+            >
               {tabs.map(tab => (
                 <NavItem
                   key={tab.id}

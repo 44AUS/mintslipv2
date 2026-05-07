@@ -294,7 +294,7 @@ export default function AdminLayout({ children }) {
         <IonMenu contentId="admin-main" type="overlay" menuId="adminSidebar">
           <IonHeader>
             <IonToolbar>
-              <div style={{ padding: "4px 16px", display: "flex", alignItems: "center" }}>
+              <div style={{ padding: "4px 16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <button
                   onClick={() => navigate("/admin/overview")}
                   style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}

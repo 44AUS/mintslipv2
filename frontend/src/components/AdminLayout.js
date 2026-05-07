@@ -4,6 +4,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
   IonContent, IonMenuButton, IonBadge, IonButtons,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
+  IonList, IonItem,
 } from "@ionic/react";
 import {
   LayoutDashboard, ShoppingCart, Users, Tag, FileText, LogOut,
@@ -51,10 +52,33 @@ function timeAgo(dateStr) {
 function NavItem({ tab, isActive, onClick }) {
   const Icon = tab.icon;
   return (
-    <button onClick={onClick} className={`admin-nav-btn${isActive ? " active" : ""}`}>
-      <Icon size={16} style={{ flexShrink: 0 }} />
-      {tab.label}
-    </button>
+    <IonItem
+      button
+      detail={false}
+      lines="none"
+      onClick={onClick}
+      style={{
+        "--background":           isActive ? "var(--ion-color-step-100)" : "transparent",
+        "--background-hover":     "var(--ion-color-step-100)",
+        "--background-activated": "var(--ion-color-step-150)",
+        "--color":                isActive ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+        "--padding-start":        "12px",
+        "--inner-padding-end":    "12px",
+        "--min-height":           "42px",
+        borderRadius:             "8px",
+        marginBottom:             "2px",
+      }}
+    >
+      <div slot="start" style={{ display: "flex", alignItems: "center", marginInlineEnd: "10px" }}>
+        <Icon
+          size={16}
+          style={{ color: isActive ? "var(--ion-color-primary)" : "var(--ion-color-medium)" }}
+        />
+      </div>
+      <IonLabel style={{ fontSize: "0.875rem", fontWeight: isActive ? 600 : 500 }}>
+        {tab.label}
+      </IonLabel>
+    </IonItem>
   );
 }
 
@@ -279,7 +303,7 @@ export default function AdminLayout({ children }) {
           </IonHeader>
 
           <IonContent>
-            <div className="admin-nav-list">
+            <IonList lines="none" style={{ padding: "8px", "--background": "transparent" }}>
               {tabs.map(tab => (
                 <NavItem
                   key={tab.id}
@@ -288,7 +312,7 @@ export default function AdminLayout({ children }) {
                   onClick={() => navigate(tab.path)}
                 />
               ))}
-            </div>
+            </IonList>
           </IonContent>
         </IonMenu>
 

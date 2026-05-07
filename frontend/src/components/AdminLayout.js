@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
-  IonContent, IonMenuButton, IonBadge, IonButtons,
+  IonContent, IonBadge, IonButtons,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem,
 } from "@ionic/react";
@@ -102,6 +102,25 @@ export default function AdminLayout({ children }) {
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("adminDarkMode") === "true",
   );
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleMenuToggle = async () => {
+    const isDesktop = window.innerWidth >= 768;
+    if (isDesktop) {
+      setSidebarOpen(prev => !prev);
+    } else {
+      await menuController.toggle("adminSidebar");
+    }
+  };
+
+  const handleCloseSidebar = async () => {
+    const isDesktop = window.innerWidth >= 768;
+    if (isDesktop) {
+      setSidebarOpen(false);
+    } else {
+      await menuController.close("adminSidebar");
+    }
+  };
 
   /* Apply/remove dark class on body */
   useEffect(() => {
@@ -302,7 +321,7 @@ export default function AdminLayout({ children }) {
     <IonApp className="admin-app">
       <IonSplitPane
         contentId="admin-main"
-        when="md"
+        when={sidebarOpen ? "md" : "(max-width: -1px)"}
         style={{ "--side-width": "300px", "--side-max-width": "300px", "--side-min-width": "300px" }}
       >
 
@@ -313,7 +332,7 @@ export default function AdminLayout({ children }) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", width: "100%" }}>
                 {/* Close sidebar */}
                 <button
-                  onClick={() => menuController.close("adminSidebar")}
+                  onClick={handleCloseSidebar}
                   style={circularBtnStyle}
                 >
                   <X size={15} />
@@ -359,7 +378,12 @@ export default function AdminLayout({ children }) {
 
               {/* Left: hamburger + brand */}
               <IonButtons slot="start">
-                <IonMenuButton autoHide={false} style={{ color: "#ffffff" }} />
+                <button
+                  onClick={handleMenuToggle}
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff", borderRadius: 6 }}
+                >
+                  <IonIcon name="menu-outline" style={{ fontSize: "1.5rem", color: "inherit" }} />
+                </button>
               </IonButtons>
 
               {/* Center: scrollable nav tabs (subset) */}

@@ -4,7 +4,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
   IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem,
+  IonList, IonItem, IonAvatar,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -12,7 +12,7 @@ import {
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
   listOutline, trendingUpOutline, cardOutline, chatboxOutline,
-  downloadOutline,
+  downloadOutline, chevronForwardOutline,
 } from "ionicons/icons";
 import {
   FileText, LogOut, Bell,
@@ -356,6 +356,67 @@ export default function AdminLayout({ children }) {
           </IonHeader>
 
           <IonContent>
+            {/* Profile card */}
+            <div style={{ padding: "0px 8px 12px", flexShrink: 0 }}>
+              <div style={{
+                borderRadius: 10,
+                overflow: "hidden",
+                backgroundColor: "rgba(0, 0, 0, 0.35)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+              }}>
+                {/* Business row */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "12px 20px",
+                  cursor: "pointer",
+                  borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+                }}>
+                  <IonAvatar style={{ width: 40, height: 40, flexShrink: 0 }}>
+                    <img src={MintSlipLogo} alt="MintSlip" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%", background: "#fff" }} />
+                  </IonAvatar>
+                  <div style={{ minWidth: 0, flex: "1 1 0%" }}>
+                    <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
+                    <div style={{ fontSize: "0.9rem", color: "rgb(255, 255, 255)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
+                  </div>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "rgba(255, 255, 255, 0.45)" }}>
+                    <IonIcon icon={chevronForwardOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </div>
+
+                {/* User row */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "12px 20px",
+                  cursor: "pointer",
+                }}>
+                  <div style={{ position: "relative", flexShrink: 0 }}>
+                    <IonAvatar style={{ width: 40, height: 40 }}>
+                      {adminProfile?.photo
+                        ? <img src={adminProfile.photo} alt={adminProfile?.name || "Admin"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                        : <div style={{
+                            width: "100%", height: "100%", borderRadius: "50%",
+                            background: "var(--ion-color-primary)", color: "#fff",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "1rem", fontWeight: 700,
+                          }}>{adminInitials}</div>
+                      }
+                    </IonAvatar>
+                  </div>
+                  <div style={{ minWidth: 0, flex: "1 1 0%" }}>
+                    <div style={{ fontSize: "0.9rem", color: "rgb(255, 255, 255)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
+                      {adminProfile?.name || adminProfile?.email || "Admin"}
+                    </div>
+                    <div style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {adminRole === "admin" ? "Super Admin" : "Moderator"}
+                    </div>
+                  </div>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "rgba(255, 255, 255, 0.45)" }}>
+                    <IonIcon icon={chevronForwardOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <IonList
               lines="inset"
               style={{ flexGrow: 1, overflowY: "auto", padding: "0px", "--background": "transparent" }}

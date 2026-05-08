@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
@@ -6,7 +7,7 @@ import {
   IonAccordion, IonAccordionGroup, IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonBadge, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent,
+  IonBadge,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline } from "ionicons/icons";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
@@ -1331,44 +1332,44 @@ export default function AppCanadianPaystub() {
         </div>
       </div>
 
-      {/* PDF Preview Modal */}
-      <IonModal isOpen={previewModalOpen} onDidDismiss={() => setPreviewModalOpen(false)}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Canadian Pay Stub Preview (Watermarked)</IonTitle>
-            <IonButtons slot="end">
-              <IonButton onClick={() => setPreviewModalOpen(false)}>
-                <IonIcon icon={closeOutline} />
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent>
-          <div style={{ padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      {/* PDF Preview Portal Overlay */}
+      {previewModalOpen && createPortal(
+        <div
+          onClick={() => setPreviewModalOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 720, maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.4)" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #e5e7eb" }}>
+              <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "#111" }}>
+                Canadian Pay Stub Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "0.75rem", color: "#d97706", background: "#fef3c7", padding: "2px 8px", borderRadius: 4 }}>Watermark removed after payment</span>
+                <button onClick={() => setPreviewModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, color: "#555" }}>×</button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflow: "auto", padding: 16, display: "flex", justifyContent: "center" }}>
+              {pdfPreviews[previewPageIndex] && (
+                <img src={pdfPreviews[previewPageIndex]} alt={`Canadian pay stub preview ${previewPageIndex + 1}`} style={{ width: "100%", height: "auto", borderRadius: 4 }} />
+              )}
+            </div>
             {pdfPreviews.length > 1 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <IonButton fill="clear" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i-1))}>
-                  <IonIcon icon={chevronBackOutline} />
-                </IonButton>
-                <span>Stub {previewPageIndex + 1} of {pdfPreviews.length}</span>
-                <IonButton fill="clear" disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i+1))}>
-                  <IonIcon icon={chevronForwardOutline} />
-                </IonButton>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderTop: "1px solid #e5e7eb" }}>
+                <button disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i-1))} style={{ background: "none", border: "1px solid #d1d5db", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>‹</button>
+                {pdfPreviews.map((_, idx) => (
+                  <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "#16a34a" : "#f3f4f6", color: idx === previewPageIndex ? "#fff" : "#374151" }}>{idx + 1}</button>
+                ))}
+                <button disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i+1))} style={{ background: "none", border: "1px solid #d1d5db", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>›</button>
               </div>
             )}
-            {pdfPreviews[previewPageIndex] && (
-              <img
-                src={pdfPreviews[previewPageIndex]}
-                alt={`Canadian pay stub preview ${previewPageIndex + 1}`}
-                style={{ width: "100%", maxWidth: 680, border: "1px solid var(--ion-color-light)", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
-              />
-            )}
-            <IonNote style={{ textAlign: "center", fontSize: "0.8rem" }}>
-              This is a watermarked preview. Purchase to download the final document.
-            </IonNote>
+            <p style={{ textAlign: "center", fontSize: "0.75rem", color: "#9ca3af", padding: "6px 16px 12px" }}>Click outside to close</p>
           </div>
-        </IonContent>
-      </IonModal>
+        </div>,
+        document.body
+      )}
 
     </AppLayout>
   );

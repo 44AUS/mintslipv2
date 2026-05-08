@@ -1,0 +1,15 @@
+{
+  "appId": "com.mintslip.app",
+  "appName": "MintSlip",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#16a34a",
+      "showSpinner": false
+    }
+  }
+}

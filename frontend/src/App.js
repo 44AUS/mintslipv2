@@ -159,7 +159,30 @@ function IPBanCheck({ children }) {
   return children;
 }
 
+const IS_MOBILE_APP = process.env.REACT_APP_IS_MOBILE === "true";
+
+function MobileApp() {
+  return (
+    <HelmetProvider>
+      <Elements stripe={stripePromise}>
+        <div className="App">
+          <Toaster position="top-center" richColors />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/app/paystub" element={<AppPaystub />} />
+              <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
+              <Route path="*" element={<AppPaystub />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </Elements>
+    </HelmetProvider>
+  );
+}
+
 function App() {
+  if (IS_MOBILE_APP) return <MobileApp />;
+
   return (
     <HelmetProvider>
       <Elements stripe={stripePromise}>

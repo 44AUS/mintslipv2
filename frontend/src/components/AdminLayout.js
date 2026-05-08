@@ -4,7 +4,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
   IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonAvatar,
+  IonList, IonItem, IonAvatar, IonPopover,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -13,6 +13,7 @@ import {
   mailOutline, sendOutline, optionsOutline, personAddOutline,
   listOutline, trendingUpOutline, cardOutline, chatboxOutline,
   downloadOutline, chevronForwardOutline,
+  personOutline, lockClosedOutline, logOutOutline,
 } from "ionicons/icons";
 import {
   FileText, LogOut, Bell,
@@ -384,7 +385,7 @@ export default function AdminLayout({ children }) {
                 </div>
 
                 {/* User row */}
-                <div style={{
+                <div id="sidebar-user-trigger" style={{
                   display: "flex", alignItems: "center", gap: 12,
                   padding: "12px 20px",
                   cursor: "pointer",
@@ -416,6 +417,42 @@ export default function AdminLayout({ children }) {
                 </div>
               </div>
             </div>
+
+            {/* User profile popover */}
+            <IonPopover
+              trigger="sidebar-user-trigger"
+              triggerAction="click"
+              side="top"
+              alignment="start"
+              style={{ "--width": "220px" }}
+            >
+              <IonContent>
+                <div style={{ padding: "6px 0" }}>
+                  <button
+                    onClick={() => { navigate("/admin/settings"); document.querySelector("ion-popover")?.dismiss(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ion-text-color)", fontSize: "0.88rem" }}
+                  >
+                    <IonIcon icon={personOutline} style={{ fontSize: 18, flexShrink: 0 }} />
+                    Profile &amp; Settings
+                  </button>
+                  <button
+                    onClick={() => { navigate("/admin/settings?tab=password"); document.querySelector("ion-popover")?.dismiss(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ion-text-color)", fontSize: "0.88rem" }}
+                  >
+                    <IonIcon icon={lockClosedOutline} style={{ fontSize: 18, flexShrink: 0 }} />
+                    Change Password
+                  </button>
+                  <div style={{ height: 1, background: "var(--app-divider)", margin: "4px 0" }} />
+                  <button
+                    onClick={() => { document.querySelector("ion-popover")?.dismiss(); handleLogout(); }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ion-color-danger)", fontSize: "0.88rem" }}
+                  >
+                    <IonIcon icon={logOutOutline} style={{ fontSize: 18, flexShrink: 0 }} />
+                    Log Out
+                  </button>
+                </div>
+              </IonContent>
+            </IonPopover>
 
             <IonList
               lines="inset"

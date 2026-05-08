@@ -634,7 +634,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Template / Payroll Company ── */}
               <IonAccordion value="template">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Template &amp; Payroll Provider</strong></IonLabel>
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
@@ -718,7 +718,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Worker Type ── */}
               <IonAccordion value="worker">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Worker Type</strong></IonLabel>
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
@@ -737,7 +737,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Employee Info ── */}
               <IonAccordion value="employee">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>{formData.workerType === "contractor" ? "Contractor" : "Employee"} Information</strong></IonLabel>
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
@@ -784,7 +784,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Company Info ── */}
               <IonAccordion value="company">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Company Information</strong></IonLabel>
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
@@ -847,7 +847,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Pay Details ── */}
               <IonAccordion value="pay">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Pay Details</strong></IonLabel>
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
@@ -955,7 +955,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Tax Settings ── */}
               <IonAccordion value="tax">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Tax Settings</strong></IonLabel>
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
@@ -984,7 +984,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Deductions ── */}
               <IonAccordion value="deductions">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Deductions</strong></IonLabel>
                   {deductions.length > 0 && <IonBadge slot="end" color="primary">{deductions.length}</IonBadge>}
                 </IonItem>
@@ -1030,7 +1030,7 @@ export default function AppCanadianPaystub() {
 
               {/* ── Contributions ── */}
               <IonAccordion value="contributions">
-                <IonItem slot="header" color="light">
+                <IonItem slot="header">
                   <IonLabel><strong>Contributions (RRSP, TFSA, etc.)</strong></IonLabel>
                   {contributions.length > 0 && <IonBadge slot="end" color="secondary">{contributions.length}</IonBadge>}
                 </IonItem>
@@ -1077,7 +1077,7 @@ export default function AppCanadianPaystub() {
               {/* ── Employer Benefits (Template C only) ── */}
               {selectedTemplate === "template-c" && formData.workerType === "employee" && (
                 <IonAccordion value="employer-benefits">
-                  <IonItem slot="header" color="light">
+                  <IonItem slot="header">
                     <IonLabel><strong>Employer Benefits</strong></IonLabel>
                     {employerBenefits.length > 0 && <IonBadge slot="end" color="tertiary">{employerBenefits.length}</IonBadge>}
                   </IonItem>
@@ -1130,7 +1130,7 @@ export default function AppCanadianPaystub() {
               {/* ── Absence Plans (Template C / H) ── */}
               {(selectedTemplate === "template-c" || selectedTemplate === "template-h") && formData.workerType === "employee" && (
                 <IonAccordion value="absence">
-                  <IonItem slot="header" color="light">
+                  <IonItem slot="header">
                     <IonLabel><strong>Absence Plans (PTO, Vacation, Sick)</strong></IonLabel>
                     {absencePlans.length > 0 && <IonBadge slot="end" color="medium">{absencePlans.length}</IonBadge>}
                   </IonItem>

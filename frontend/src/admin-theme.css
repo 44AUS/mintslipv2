@@ -159,6 +159,21 @@ ion-item {
 }
 ion-list { background: transparent; padding: 0; }
 
+/* ── IonAccordion — theme-aware backgrounds ── */
+ion-accordion {
+  --background: var(--ion-background-color);
+  background: var(--ion-background-color);
+}
+ion-accordion ion-item[slot="header"] {
+  --background: var(--ion-color-step-50);
+  --color: var(--ion-text-color);
+}
+ion-accordion .ion-accordion-toggle-icon { color: var(--ion-text-color); }
+ion-accordion [slot="content"] {
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+}
+
 /* ── IonSplitPane ── */
 ion-split-pane {
   --border: 1px solid var(--app-divider);

@@ -137,7 +137,7 @@ export default function AppLayout({ children, fillHeight = false }) {
           <IonContent>
             {/* Profile card — with top padding to clear header shadow */}
             <div style={{ padding: "20px 8px 12px", flexShrink: 0 }}>
-              <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
+              <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-card-background)", border: "1px solid var(--app-divider)" }}>
                 {/* Business row */}
                 <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)" }}>
                   <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -171,39 +171,41 @@ export default function AppLayout({ children, fillHeight = false }) {
               </div>
             </div>
 
-            {/* Nav links */}
-            <IonList lines="none" style={{ padding: "0 0 8px 0", "--background": "transparent" }}>
-              {[
-                { label: "Back to MintSlip", icon: arrowBackOutline, path: "/" },
-                { label: "Terms of Service",  icon: documentTextOutline, path: "/terms" },
-                { label: "Privacy Policy",    icon: shieldOutline,       path: "/privacy" },
-              ].map(({ label, icon, path }) => (
-                <IonItem
-                  key={label}
-                  button
-                  detail={false}
-                  onClick={() => navigate(path)}
-                  style={{
-                    "--background":               "transparent",
-                    "--background-hover":         "var(--ion-color-step-100)",
-                    "--background-hover-opacity": "1",
-                    "--color":                    "var(--ion-text-color)",
-                    "--border-color":             "var(--app-divider)",
-                    "--min-height":               "48px",
-                    "--padding-start":            "20px",
-                    "--padding-end":              "0",
-                    "--inner-padding-end":        "0",
-                  }}
-                >
-                  <div slot="start" style={{ position: "relative", display: "flex" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.25rem" }}>
-                      <IonIcon icon={icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                    </span>
-                  </div>
-                  <IonLabel>{label}</IonLabel>
-                </IonItem>
-              ))}
-            </IonList>
+            {/* Bottom nav links — pinned via slot="fixed" */}
+            <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
+              <IonList lines="none" style={{ padding: "4px 0", "--background": "transparent" }}>
+                {[
+                  { label: "Back to MintSlip", icon: arrowBackOutline, path: "/" },
+                  { label: "Terms of Service",  icon: documentTextOutline, path: "/terms" },
+                  { label: "Privacy Policy",    icon: shieldOutline,       path: "/privacy" },
+                ].map(({ label, icon, path }) => (
+                  <IonItem
+                    key={label}
+                    button
+                    detail={false}
+                    onClick={() => navigate(path)}
+                    style={{
+                      "--background":               "transparent",
+                      "--background-hover":         "var(--ion-color-step-100)",
+                      "--background-hover-opacity": "1",
+                      "--color":                    "var(--ion-text-color)",
+                      "--border-color":             "transparent",
+                      "--min-height":               "44px",
+                      "--padding-start":            "20px",
+                      "--padding-end":              "0",
+                      "--inner-padding-end":        "0",
+                    }}
+                  >
+                    <div slot="start" style={{ position: "relative", display: "flex" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.2rem" }}>
+                        <IonIcon icon={icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                      </span>
+                    </div>
+                    <IonLabel style={{ fontSize: "0.875rem" }}>{label}</IonLabel>
+                  </IonItem>
+                ))}
+              </IonList>
+            </div>
           </IonContent>
         </IonMenu>
 
@@ -328,7 +330,7 @@ export default function AppLayout({ children, fillHeight = false }) {
 
           {/* Profile card */}
           <div style={{ padding: "12px 8px", flexShrink: 0 }}>
-            <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
+            <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-card-background)", border: "1px solid var(--app-divider)" }}>
               {/* Business row */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)" }}>
                 <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -359,8 +361,11 @@ export default function AppLayout({ children, fillHeight = false }) {
             </div>
           </div>
 
-          {/* Nav links */}
-          <div style={{ flex: 1, overflowY: "auto" }}>
+          {/* Spacer */}
+          <div style={{ flex: 1 }} />
+
+          {/* Bottom nav links — pinned */}
+          <div style={{ flexShrink: 0, borderTop: "1px solid var(--app-divider)" }}>
             {[
               { label: "Back to MintSlip", icon: arrowBackOutline,    path: "/" },
               { label: "Terms of Service",  icon: documentTextOutline, path: "/terms" },
@@ -372,12 +377,12 @@ export default function AppLayout({ children, fillHeight = false }) {
                 style={{
                   width: "100%", background: "none", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 16,
-                  padding: "0 20px", minHeight: 48, textAlign: "left",
+                  padding: "0 20px", minHeight: 44, textAlign: "left",
                   color: "var(--ion-text-color)",
-                  fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
+                  fontFamily: "var(--ion-font-family)", fontSize: "0.875rem",
                 }}
               >
-                <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+                <IonIcon icon={icon} style={{ fontSize: 18, flexShrink: 0, color: "inherit" }} />
                 {label}
               </button>
             ))}

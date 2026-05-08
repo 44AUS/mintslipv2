@@ -359,7 +359,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
           <IonContent>
             {/* Profile card */}
             <div style={{ padding: "12px 8px 12px", flexShrink: 0 }}>
-              <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
+              <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-card-background)", border: "1px solid var(--app-divider)" }}>
                 {/* Business row */}
                 <div id="sidebar-biz-trigger" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer", borderBottom: "1px solid var(--app-divider)" }}>
                   <IonAvatar style={{ width: 40, height: 40, flexShrink: 0 }}>
@@ -743,7 +743,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
 
         {/* Profile card */}
         <div style={{ padding: "12px 8px", flexShrink: 0 }}>
-          <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
+          <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-card-background)", border: "1px solid var(--app-divider)" }}>
             <button onClick={() => { navigate("/admin/site-settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)", textAlign: "left" }}>
               <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <img src={MintSlipLogo} alt="MintSlip" style={{ width: 30, height: 30, objectFit: "contain" }} />

@@ -44,14 +44,14 @@ const DOC_ICONS = {
 
 // Tabs hidden from the top-bar segment (still visible in sidebar)
 const TOPBAR_EXCLUDE = new Set([
-  "overview", "saved-docs", "email-templates",
+  "saved-docs", "email-templates",
   "site-settings", "banned-ips", "export",
   "moderators", "mass-email", "audit-log", "support",
 ]);
 
 // Tabs hidden from the sidebar nav (still visible in top-bar)
 const SIDEBAR_EXCLUDE = new Set([
-  "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
+  "overview", "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
 ]);
 
 function timeAgo(dateStr) {

@@ -499,7 +499,7 @@ export default function AdminLayout({ children }) {
         </IonMenu>
 
         {/* ── Notifications drawer (right) ── */}
-        <IonMenu side="end" contentId="admin-main" menuId="notifMenu" type="overlay" style={{ "--width": "340px", "--max-width": "90vw" }}>
+        <IonMenu side="end" contentId="admin-main" menuId="notifMenu" type="overlay" style={{ "--width": "340px", "--max-width": "90vw" }} onIonDidOpen={handleMarkRead}>
           <IonHeader>
             <IonToolbar>
               <IonButtons slot="start">
@@ -605,7 +605,7 @@ export default function AdminLayout({ children }) {
                 <div style={{ position: "relative" }}>
                   <IonButton
                     fill="clear"
-                    onClick={() => { menuController.open("notifMenu"); handleMarkRead(); }}
+                    onClick={() => menuController.toggle("notifMenu")}
                     style={{ "--color": "rgba(255,255,255,0.8)", "--border-radius": "50%" }}
                   >
                     <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>

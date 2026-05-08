@@ -1243,17 +1243,13 @@ export default function AppCanadianPaystub() {
 
               {/* Coupon input */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (
-                <div style={{ marginTop: 12, padding: 12, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                    <IonIcon icon={pricetagOutline} style={{ color: "var(--ion-color-medium)" }} />
-                    <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Have a coupon code?</span>
-                  </div>
+                <div style={{ marginTop: 12 }}>
                   {!appliedDiscount ? (
                     <>
                       <div style={{ display: "flex", gap: 8 }}>
                         <IonInput
                           fill="outline"
-                          placeholder="Enter code"
+                          placeholder="Coupon code"
                           value={couponCode}
                           onIonInput={e => { setCouponCode(e.detail.value?.toUpperCase() || ""); setCouponError(""); }}
                           style={{ flex: 1, fontFamily: "monospace" }}

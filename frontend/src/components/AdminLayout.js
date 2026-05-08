@@ -49,6 +49,11 @@ const TOPBAR_EXCLUDE = new Set([
   "moderators", "mass-email", "audit-log", "support",
 ]);
 
+// Tabs hidden from the sidebar nav (still visible in top-bar)
+const SIDEBAR_EXCLUDE = new Set([
+  "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
+]);
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -487,7 +492,7 @@ export default function AdminLayout({ children }) {
               lines="inset"
               style={{ flexGrow: 1, overflowY: "auto", padding: "0px", "--background": "transparent" }}
             >
-              {tabs.map(tab => (
+              {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (
                 <NavItem
                   key={tab.id}
                   tab={tab}

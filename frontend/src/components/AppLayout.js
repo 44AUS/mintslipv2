@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline,
-  chevronDownOutline, documentTextOutline, leafOutline,
+  chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -113,32 +113,20 @@ export default function AppLayout({ children, fillHeight = false }) {
             <IonToolbar>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", width: "100%" }}>
                 {/* Close sidebar */}
-                <IonButton
-                  fill="clear"
-                  onClick={handleCloseSidebar}
-                  style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
-                >
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                <IonButton fill="clear" onClick={handleCloseSidebar} style={{ "--border-radius": "50%" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px", color: "var(--ion-text-color)" }}>
                     <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
 
                 {/* Logo */}
-                <button
-                  onClick={() => navigate("/app/paystub")}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
+                <button onClick={() => navigate("/app/paystub")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
                 </button>
 
                 {/* Dark mode toggle */}
-                <IonButton
-                  fill="clear"
-                  onClick={toggleDark}
-                  title={darkMode ? "Light mode" : "Dark mode"}
-                  style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
-                >
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                <IonButton fill="clear" onClick={toggleDark} title={darkMode ? "Light mode" : "Dark mode"} style={{ "--border-radius": "50%" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px", color: "var(--ion-text-color)" }}>
                     <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
@@ -149,39 +137,22 @@ export default function AppLayout({ children, fillHeight = false }) {
           <IonContent>
             {/* Profile card — with top padding to clear header shadow */}
             <div style={{ padding: "20px 8px 12px", flexShrink: 0 }}>
-              <div style={{
-                borderRadius: 10,
-                overflow: "hidden",
-                backgroundColor: "rgba(0, 0, 0, 0.35)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-              }}>
+              <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
                 {/* Business row */}
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 20px",
-                  borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                }}>
-                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#fff", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)" }}>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <img src={MintSlipLogo} alt="MintSlip" style={{ width: 30, height: 30, objectFit: "contain" }} />
                   </div>
                   <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                    <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
-                    <div style={{ fontSize: "0.9rem", color: "rgb(255, 255, 255)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
+                    <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
+                    <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
                   </div>
                 </div>
 
                 {/* User row */}
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 20px",
-                }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px" }}>
                   <div style={{ position: "relative", flexShrink: 0 }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: "50%",
-                      background: "var(--ion-color-primary)", color: "#fff",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "1rem", fontWeight: 700,
-                    }}>
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", fontWeight: 700 }}>
                       {userInfo?.photo
                         ? <img src={userInfo.photo} alt={userInfo?.name || "User"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
                         : userInitials
@@ -189,10 +160,10 @@ export default function AppLayout({ children, fillHeight = false }) {
                     </div>
                   </div>
                   <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                    <div style={{ fontSize: "0.9rem", color: "rgb(255, 255, 255)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
+                    <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                       {userInfo?.name || userInfo?.email || "User"}
                     </div>
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.2 }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2 }}>
                       {userInfo?.subscription?.status === "active" ? "Subscriber" : "Free"}
                     </div>
                   </div>
@@ -200,31 +171,38 @@ export default function AppLayout({ children, fillHeight = false }) {
               </div>
             </div>
 
-            {/* Back to MintSlip link */}
+            {/* Nav links */}
             <IonList lines="none" style={{ padding: "0 0 8px 0", "--background": "transparent" }}>
-              <IonItem
-                button
-                detail={false}
-                onClick={() => navigate("/")}
-                style={{
-                  "--background":            "transparent",
-                  "--background-hover":      "var(--ion-color-step-100)",
-                  "--background-hover-opacity": "1",
-                  "--color":                 "var(--ion-text-color)",
-                  "--border-color":          "var(--app-divider)",
-                  "--min-height":            "48px",
-                  "--padding-start":         "20px",
-                  "--padding-end":           "0",
-                  "--inner-padding-end":     "0",
-                }}
-              >
-                <div slot="start" style={{ position: "relative", display: "flex" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.25rem" }}>
-                    <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </div>
-                <IonLabel>Back to MintSlip</IonLabel>
-              </IonItem>
+              {[
+                { label: "Back to MintSlip", icon: arrowBackOutline, path: "/" },
+                { label: "Terms of Service",  icon: documentTextOutline, path: "/terms" },
+                { label: "Privacy Policy",    icon: shieldOutline,       path: "/privacy" },
+              ].map(({ label, icon, path }) => (
+                <IonItem
+                  key={label}
+                  button
+                  detail={false}
+                  onClick={() => navigate(path)}
+                  style={{
+                    "--background":               "transparent",
+                    "--background-hover":         "var(--ion-color-step-100)",
+                    "--background-hover-opacity": "1",
+                    "--color":                    "var(--ion-text-color)",
+                    "--border-color":             "var(--app-divider)",
+                    "--min-height":               "48px",
+                    "--padding-start":            "20px",
+                    "--padding-end":              "0",
+                    "--inner-padding-end":        "0",
+                  }}
+                >
+                  <div slot="start" style={{ position: "relative", display: "flex" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.25rem" }}>
+                      <IonIcon icon={icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </div>
+                  <IonLabel>{label}</IonLabel>
+                </IonItem>
+              ))}
             </IonList>
           </IonContent>
         </IonMenu>
@@ -338,42 +316,42 @@ export default function AppLayout({ children, fillHeight = false }) {
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", minHeight: 60, flexShrink: 0, borderBottom: "1px solid var(--app-divider)" }}>
             <button onClick={() => setMobileSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
+              <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
             </button>
             <button onClick={() => { navigate("/app/paystub"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
               <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
             </button>
             <button onClick={toggleDark} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
+              <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
             </button>
           </div>
 
           {/* Profile card */}
           <div style={{ padding: "12px 8px", flexShrink: 0 }}>
-            <div style={{ borderRadius: 10, overflow: "hidden", backgroundColor: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
               {/* Business row */}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#fff", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)" }}>
+                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <img src={MintSlipLogo} alt="MintSlip" style={{ width: 30, height: 30, objectFit: "contain" }} />
                 </div>
                 <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                  <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
-                  <div style={{ fontSize: "0.9rem", color: "#fff", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
+                  <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
                 </div>
               </div>
               {/* User row */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px" }}>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#16a34a", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-primary)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {userInfo?.photo
                     ? <img src={userInfo.photo} alt="user" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     : <span style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>{userInitials}</span>
                   }
                 </div>
                 <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                  <div style={{ fontSize: "0.9rem", color: "#fff", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
+                  <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                     {userInfo?.name || userInfo?.email || "User"}
                   </div>
-                  <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2 }}>
                     {userInfo?.subscription?.status === "active" ? "Subscriber" : "Free"}
                   </div>
                 </div>
@@ -381,21 +359,28 @@ export default function AppLayout({ children, fillHeight = false }) {
             </div>
           </div>
 
-          {/* Back to MintSlip */}
+          {/* Nav links */}
           <div style={{ flex: 1, overflowY: "auto" }}>
-            <button
-              onClick={() => { navigate("/"); setMobileSidebarOpen(false); }}
-              style={{
-                width: "100%", background: "none",
-                border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
-                padding: "0 20px", minHeight: 48, textAlign: "left",
-                color: "var(--ion-text-color)",
-                fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
-              }}
-            >
-              <IonIcon icon={arrowBackOutline} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
-              Back to MintSlip
-            </button>
+            {[
+              { label: "Back to MintSlip", icon: arrowBackOutline,    path: "/" },
+              { label: "Terms of Service",  icon: documentTextOutline, path: "/terms" },
+              { label: "Privacy Policy",    icon: shieldOutline,       path: "/privacy" },
+            ].map(({ label, icon, path }) => (
+              <button
+                key={label}
+                onClick={() => { navigate(path); setMobileSidebarOpen(false); }}
+                style={{
+                  width: "100%", background: "none", border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 16,
+                  padding: "0 20px", minHeight: 48, textAlign: "left",
+                  color: "var(--ion-text-color)",
+                  fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
+                }}
+              >
+                <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </>, document.body)}

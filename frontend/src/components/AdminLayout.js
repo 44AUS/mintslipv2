@@ -335,32 +335,20 @@ export default function AdminLayout({ children, fillHeight = false }) {
             <IonToolbar>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", width: "100%" }}>
                 {/* Close sidebar */}
-                <IonButton
-                  fill="clear"
-                  onClick={handleCloseSidebar}
-                  style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
-                >
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                <IonButton fill="clear" onClick={handleCloseSidebar} style={{ "--border-radius": "50%" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px", color: "var(--ion-text-color)" }}>
                     <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
 
                 {/* Logo */}
-                <button
-                  onClick={() => navigate("/admin/calendar")}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
+                <button onClick={() => navigate("/admin/calendar")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
                 </button>
 
                 {/* Dark mode toggle */}
-                <IonButton
-                  fill="clear"
-                  onClick={toggleDark}
-                  title={darkMode ? "Light mode" : "Dark mode"}
-                  style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}
-                >
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                <IonButton fill="clear" onClick={toggleDark} title={darkMode ? "Light mode" : "Dark mode"} style={{ "--border-radius": "50%" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px", color: "var(--ion-text-color)" }}>
                     <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </IonButton>
@@ -371,59 +359,40 @@ export default function AdminLayout({ children, fillHeight = false }) {
           <IonContent>
             {/* Profile card */}
             <div style={{ padding: "12px 8px 12px", flexShrink: 0 }}>
-              <div style={{
-                borderRadius: 10,
-                overflow: "hidden",
-                backgroundColor: "rgba(0, 0, 0, 0.35)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-              }}>
+              <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
                 {/* Business row */}
-                <div id="sidebar-biz-trigger" style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 20px",
-                  cursor: "pointer",
-                  borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-                }}>
+                <div id="sidebar-biz-trigger" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer", borderBottom: "1px solid var(--app-divider)" }}>
                   <IonAvatar style={{ width: 40, height: 40, flexShrink: 0 }}>
-                    <img src={MintSlipLogo} alt="MintSlip" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%", background: "#fff" }} />
+                    <img src={MintSlipLogo} alt="MintSlip" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%", background: "var(--ion-color-step-100)" }} />
                   </IonAvatar>
                   <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                    <div style={{ fontSize: "0.68rem", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
-                    <div style={{ fontSize: "0.9rem", color: "rgb(255, 255, 255)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
+                    <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
+                    <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
                   </div>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "rgba(255, 255, 255, 0.45)" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "var(--ion-color-medium)" }}>
                     <IonIcon icon={chevronForwardOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </div>
 
                 {/* User row */}
-                <div id="sidebar-user-trigger" style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 20px",
-                  cursor: "pointer",
-                }}>
+                <div id="sidebar-user-trigger" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer" }}>
                   <div style={{ position: "relative", flexShrink: 0 }}>
                     <IonAvatar style={{ width: 40, height: 40 }}>
                       {adminProfile?.photo
                         ? <img src={adminProfile.photo} alt={adminProfile?.name || "Admin"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                        : <div style={{
-                            width: "100%", height: "100%", borderRadius: "50%",
-                            background: "var(--ion-color-primary)", color: "#fff",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "1rem", fontWeight: 700,
-                          }}>{adminInitials}</div>
+                        : <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "var(--ion-color-primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", fontWeight: 700 }}>{adminInitials}</div>
                       }
                     </IonAvatar>
                   </div>
                   <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                    <div style={{ fontSize: "0.9rem", color: "rgb(255, 255, 255)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
+                    <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                       {adminProfile?.name || adminProfile?.email || "Admin"}
                     </div>
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255, 255, 255, 0.45)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {adminRole === "admin" ? "Super Admin" : "Moderator"}
                     </div>
                   </div>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "rgba(255, 255, 255, 0.45)" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "var(--ion-color-medium)" }}>
                     <IonIcon icon={chevronForwardOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                   </span>
                 </div>
@@ -762,41 +731,41 @@ export default function AdminLayout({ children, fillHeight = false }) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", minHeight: 60, flexShrink: 0, borderBottom: "1px solid var(--app-divider)" }}>
           <button onClick={() => setMobileSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
+            <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
           </button>
           <button onClick={() => { navigate("/admin/calendar"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
             <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
           </button>
           <button onClick={toggleDark} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
+            <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
           </button>
         </div>
 
         {/* Profile card */}
         <div style={{ padding: "12px 8px", flexShrink: 0 }}>
-          <div style={{ borderRadius: 10, overflow: "hidden", backgroundColor: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <button onClick={() => { navigate("/admin/site-settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "left" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#fff", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-color-step-50)", border: "1px solid var(--app-divider)" }}>
+            <button onClick={() => { navigate("/admin/site-settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)", textAlign: "left" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <img src={MintSlipLogo} alt="MintSlip" style={{ width: 30, height: 30, objectFit: "contain" }} />
               </div>
               <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
-                <div style={{ fontSize: "0.9rem", color: "#fff", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
+                <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
+                <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
               </div>
-              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "rgba(255,255,255,0.45)", flexShrink: 0 }} />
+              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--ion-color-medium)", flexShrink: 0 }} />
             </button>
             <button onClick={() => { navigate("/admin/settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", textAlign: "left" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#16a34a", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-primary)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {adminProfile?.photo
                   ? <img src={adminProfile.photo} alt="admin" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : <span style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>{adminInitials}</span>
                 }
               </div>
               <div style={{ minWidth: 0, flex: "1 1 0%" }}>
-                <div style={{ fontSize: "0.9rem", color: "#fff", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{adminProfile?.name || adminProfile?.email || "Admin"}</div>
-                <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.2 }}>{adminRole === "admin" ? "Super Admin" : "Moderator"}</div>
+                <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{adminProfile?.name || adminProfile?.email || "Admin"}</div>
+                <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2 }}>{adminRole === "admin" ? "Super Admin" : "Moderator"}</div>
               </div>
-              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "rgba(255,255,255,0.45)", flexShrink: 0 }} />
+              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--ion-color-medium)", flexShrink: 0 }} />
             </button>
           </div>
         </div>

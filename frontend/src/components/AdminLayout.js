@@ -7,7 +7,7 @@ import {
   IonList, IonItem, IonAvatar, IonPopover, IonTitle,
 } from "@ionic/react";
 import {
-  menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline,
+  menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline, chevronDownOutline,
   gridOutline, cartOutline, peopleOutline, folderOutline,
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
@@ -109,6 +109,7 @@ export default function AdminLayout({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [notifOpen,     setNotifOpen]     = useState(false);
+  const [isMobile,      setIsMobile]      = useState(window.innerWidth < 768);
 
   const [adminProfile, setAdminProfile] = useState(null);
 
@@ -140,6 +141,12 @@ export default function AdminLayout({ children }) {
     document.body.classList.toggle("dark", darkMode);
     localStorage.setItem("adminDarkMode", darkMode);
   }, [darkMode]);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   /* Apply ionic-active so public pages still scroll when user navigates back */
   useEffect(() => {
@@ -562,43 +569,75 @@ export default function AdminLayout({ children }) {
                 </>
               ) : (
                 <>
-                  {/* Normal: hamburger + segment */}
+                  {/* Hamburger */}
                   <IonButtons slot="start">
-                    <IonButton
-                      fill="clear"
-                      onClick={handleMenuToggle}
-                      style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
-                    >
+                    <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
                       <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
                         <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                       </span>
                     </IonButton>
                   </IonButtons>
-                  <IonSegment
-                    scrollable
-                    value={activeTab}
-                    onIonChange={e => {
-                      const tab = topbarTabs.find(t => t.id === e.detail.value);
-                      if (tab) navigate(tab.path);
-                    }}
-                    style={{
-                      "--background":      "transparent",
-                      "--color":           "rgba(255,255,255,0.65)",
-                      "--color-checked":   "#ffffff",
-                      "--indicator-color": "#ffffff",
-                    }}
-                  >
-                    {topbarTabs.map(tab => (
-                      <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
-                          <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+
+                  {isMobile ? (
+                    <>
+                      {/* Mobile: current tab label button → popover */}
+                      <IonButton id="mobile-nav-trigger" fill="clear" style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.03em" }}>
+                          {topbarTabs.find(t => t.id === activeTab)?.label || "Navigate"}
+                          <IonIcon icon={chevronDownOutline} style={{ fontSize: 14, pointerEvents: "none" }} />
                         </span>
-                        <IonLabel style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                          {tab.label}
-                        </IonLabel>
-                      </IonSegmentButton>
-                    ))}
-                  </IonSegment>
+                      </IonButton>
+                      <IonPopover trigger="mobile-nav-trigger" triggerAction="click" side="bottom" alignment="start" style={{ "--width": "240px" }}>
+                        <IonContent>
+                          <IonList lines="none" style={{ padding: "4px 0" }}>
+                            {topbarTabs.map(tab => (
+                              <IonItem
+                                key={tab.id}
+                                button
+                                detail={false}
+                                onClick={() => { navigate(tab.path); document.querySelectorAll("ion-popover").forEach(p => p.dismiss()); }}
+                                style={{
+                                  "--min-height": "48px",
+                                  "--padding-start": "14px",
+                                  "--inner-padding-end": "14px",
+                                  "--background": activeTab === tab.id ? "var(--ion-color-step-100)" : "transparent",
+                                  "--color": activeTab === tab.id ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+                                  fontWeight: activeTab === tab.id ? 600 : 400,
+                                }}
+                              >
+                                <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                                  <IonIcon icon={tab.icon} style={{ fontSize: 18 }} />
+                                </div>
+                                <IonLabel>{tab.label}</IonLabel>
+                              </IonItem>
+                            ))}
+                          </IonList>
+                        </IonContent>
+                      </IonPopover>
+                    </>
+                  ) : (
+                    /* Desktop: scrollable segment */
+                    <IonSegment
+                      scrollable
+                      value={activeTab}
+                      onIonChange={e => {
+                        const tab = topbarTabs.find(t => t.id === e.detail.value);
+                        if (tab) navigate(tab.path);
+                      }}
+                      style={{ "--background": "transparent", "--color": "rgba(255,255,255,0.65)", "--color-checked": "#ffffff", "--indicator-color": "#ffffff" }}
+                    >
+                      {topbarTabs.map(tab => (
+                        <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>
+                          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+                            <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                          </span>
+                          <IonLabel style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                            {tab.label}
+                          </IonLabel>
+                        </IonSegmentButton>
+                      ))}
+                    </IonSegment>
+                  )}
                 </>
               )}
 

@@ -684,7 +684,7 @@ export default function AppPaystub() {
                           <div
                             key={company.id}
                             onClick={() => handlePayrollCompanySelect(company)}
-                            style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--ion-color-light)", background: selectedPayrollCompany?.id === company.id ? "var(--ion-color-light)" : "transparent" }}
+                            style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--ion-color-light)", background: selectedPayrollCompany?.id === company.id ? "var(--ion-color-step-100)" : "transparent" }}
                           >
                             {company.logo && <img src={company.logo} alt={company.name} style={{ width: 36, height: 36, objectFit: "contain" }} />}
                             <div>
@@ -936,7 +936,7 @@ export default function AppPaystub() {
                   {/* Hours per pay period */}
                   {formData.payType === "hourly" && payPeriods.length > 0 && (
                     <div style={{ marginTop: 16 }}>
-                      <IonItem button detail={false} onClick={() => setHoursExpanded(v => !v)} lines="none" style={{ "--background": "var(--ion-color-light)", borderRadius: 8, marginBottom: 8 }}>
+                      <IonItem button detail={false} onClick={() => setHoursExpanded(v => !v)} lines="none" style={{ "--background": "var(--ion-color-step-100)", borderRadius: 8, marginBottom: 8 }}>
                         <IonLabel><strong>Hours Per Pay Period</strong> <IonNote style={{ fontSize: "0.75rem" }}>click to {hoursExpanded ? "collapse" : "expand"}</IonNote></IonLabel>
                       </IonItem>
                       {hoursExpanded && (
@@ -947,7 +947,7 @@ export default function AppPaystub() {
                             </IonNote>
                           )}
                           {payPeriods.map((period, index) => (
-                            <div key={index} style={{ background: "var(--ion-color-light)", borderRadius: 8, padding: 12, marginBottom: 8 }}>
+                            <div key={index} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 12, marginBottom: 8 }}>
                               <p style={{ fontWeight: 600, marginBottom: 8 }}>Pay Period {index + 1} — {period.label}</p>
                               <IonGrid>
                                 <IonRow>
@@ -1034,7 +1034,7 @@ export default function AppPaystub() {
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
                   {deductions.map(d => (
-                    <div key={d.id} style={{ background: "var(--ion-color-light)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                    <div key={d.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                       <IonGrid>
                         <IonRow>
                           <IonCol size="12" sizeMd="4">
@@ -1080,7 +1080,7 @@ export default function AppPaystub() {
                 </IonItem>
                 <div slot="content" style={{ padding: "12px 16px" }}>
                   {contributions.map(c => (
-                    <div key={c.id} style={{ background: "var(--ion-color-light)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                    <div key={c.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                       <IonGrid>
                         <IonRow>
                           <IonCol size="12" sizeMd="4">
@@ -1127,7 +1127,7 @@ export default function AppPaystub() {
                   </IonItem>
                   <div slot="content" style={{ padding: "12px 16px" }}>
                     {employerBenefits.map(b => (
-                      <div key={b.id} style={{ background: "var(--ion-color-light)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                      <div key={b.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                         <IonGrid>
                           <IonRow>
                             <IonCol size="12" sizeMd="5">
@@ -1180,7 +1180,7 @@ export default function AppPaystub() {
                   </IonItem>
                   <div slot="content" style={{ padding: "12px 16px" }}>
                     {absencePlans.map(p => (
-                      <div key={p.id} style={{ background: "var(--ion-color-light)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
+                      <div key={p.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                         <IonGrid>
                           <IonRow>
                             <IonCol size="12" sizeMd="5">
@@ -1239,7 +1239,7 @@ export default function AppPaystub() {
                   Preview · Click to enlarge · Watermark removed after purchase
                 </p>
                 {isGeneratingPreview ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-light)", borderRadius: 8 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
                     <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
                     <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
                   </div>
@@ -1267,7 +1267,7 @@ export default function AppPaystub() {
                           <IonIcon icon={chevronBackOutline} />
                         </IonButton>
                         {pdfPreviews.map((_, idx) => (
-                          <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "var(--ion-color-success)" : "var(--ion-color-light-shade)", color: idx === previewPageIndex ? "#fff" : "var(--ion-color-dark)" }}>
+                          <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "var(--ion-color-success)" : "var(--ion-color-step-150)", color: idx === previewPageIndex ? "#fff" : "var(--ion-color-dark)" }}>
                             {idx + 1}
                           </button>
                         ))}
@@ -1278,7 +1278,7 @@ export default function AppPaystub() {
                     )}
                   </>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-light)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
                     <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
                     <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>Fill in pay period dates<br />and rate to see a preview</p>
                   </div>
@@ -1287,7 +1287,7 @@ export default function AppPaystub() {
 
               {/* Coupon input */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (
-                <div style={{ marginTop: 12, padding: 12, background: "var(--ion-color-light)", borderRadius: 8 }}>
+                <div style={{ marginTop: 12, padding: 12, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                     <IonIcon icon={pricetagOutline} style={{ color: "var(--ion-color-medium)" }} />
                     <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Have a coupon code?</span>

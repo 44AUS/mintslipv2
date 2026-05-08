@@ -3097,17 +3097,20 @@ async def get_all_purchases(
     """Get all purchases (admin only)"""
     check_permission(session, "view_purchases")
 
+    query = {}
+    if documentType:
+        query["documentType"] = documentType
+
     date_filter = {}
     if startDate:
         date_filter["$gte"] = startDate
     if endDate:
         date_filter["$lte"] = endDate
+    if date_filter:
+        query["createdAt"] = date_filter
 
-
-    # Sort all combined by createdAt desc, then paginate
-    purchases.sort(key=lambda x: x.get("createdAt") or "", reverse=True)
-    total = len(purchases)
-    purchases = purchases[skip: skip + limit]
+    total = await purchases_collection.count_documents(query)
+    purchases = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
 
     return {
         "success": True,

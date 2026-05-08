@@ -1,19 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner,
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButton, IonButtons, IonSpinner,
+  IonFooter, IonButtons,
 } from "@ionic/react";
-import { toast } from "sonner";
 import {
-  Users, UserCheck, Clock, DollarSign, Search, CreditCard, Calendar,
-  ChevronLeft, ChevronRight, MoreVertical, Pencil, Download, Ban,
-  Shield, UserX, MailCheck, X,
+  refreshOutline, downloadOutline, chevronForwardOutline, searchOutline,
+  ellipse, squareOutline,
+} from "ionicons/icons";
+import {
+  MoreVertical, Pencil, CreditCard, Download, Ban, Shield, UserX, MailCheck, X, Clock,
 } from "lucide-react";
+import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-const PAGE_SIZE = 20;
 
 const SUBSCRIPTION_TIERS = {
   starter:      { name: "Starter",      price: 19.99, downloads: 10 },
@@ -21,108 +23,77 @@ const SUBSCRIPTION_TIERS = {
   business:     { name: "Business",     price: 49.99, downloads: -1 },
 };
 
-function StatCard({ title, value, sub, icon: Icon, color }) {
-  const palette = {
-    blue:   { bg: "rgba(59,130,246,0.12)",  fg: "#3b82f6" },
-    green:  { bg: "rgba(22,163,74,0.12)",   fg: "#16a34a" },
-    orange: { bg: "rgba(249,115,22,0.12)",  fg: "#f97316" },
-    purple: { bg: "rgba(139,92,246,0.12)",  fg: "#8b5cf6" },
-  };
-  const c = palette[color] || palette.blue;
-  return (
-    <div className="admin-stat-card">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <p className="admin-stat-label">{title}</p>
-          <p className="admin-stat-value">{value}</p>
-          {sub && <p style={{ fontSize: "0.72rem", color: c.fg, marginTop: 2 }}>{sub}</p>}
-        </div>
-        <div style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: c.bg }}>
-          <Icon size={24} style={{ color: c.fg }} />
-        </div>
-      </div>
-    </div>
-  );
+const TIER_COLORS = {
+  business:     "#8b5cf6",
+  unlimited:    "#8b5cf6",
+  professional: "#3b82f6",
+  pro:          "#3b82f6",
+  starter:      "#16a34a",
+};
+
+const tdBase = {
+  padding: "0 12px",
+  fontSize: "0.875rem",
+  color: "var(--ion-text-color)",
+  borderBottom: "1px solid var(--ion-border-color)",
+  height: 64,
+  verticalAlign: "middle",
+  position: "relative",
+  overflow: "hidden",
+};
+
+const segBtnStyle = {
+  "--color":           "var(--ion-color-medium)",
+  "--color-checked":   "var(--ion-text-color)",
+  "--indicator-color": "var(--ion-text-color)",
+  "--border-radius":   "0",
+  "--padding-top":     "0",
+  "--padding-bottom":  "0",
+  minHeight: 46,
+  flexShrink: 0,
+};
+
+const TABS = [
+  { value: "all",         label: "ALL" },
+  { value: "subscribers", label: "SUBSCRIBERS" },
+  { value: "free",        label: "FREE" },
+  { value: "banned",      label: "BANNED" },
+];
+
+function getInitials(name, email) {
+  const src = name || email || "?";
+  const parts = src.split(/[\s._@-]/);
+  return parts.length >= 2
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : src[0].toUpperCase();
 }
 
 export default function AdminUsers() {
   const navigate = useNavigate();
 
-  // ── data ──────────────────────────────────────────────────────────────────
-  const [users, setUsers]           = useState([]);
-  const [total, setTotal]           = useState(0);
-  const [loading, setLoading]       = useState(true);
-  const [stats, setStats]           = useState(null);
-  const [page, setPage]             = useState(0);
+  const [users, setUsers]     = useState([]);
+  const [total, setTotal]     = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [segment, setSegment] = useState("all");
+  const [search, setSearch]   = useState("");
 
-  // ── filters ───────────────────────────────────────────────────────────────
-  const [search, setSearch]           = useState("");
-  const [searchDebounced, setSearchDebounced] = useState("");
-  const [subFilter, setSubFilter]     = useState("all");
-  const [dateFilter, setDateFilter]   = useState("all");
-  const [mrrPeriod, setMrrPeriod]     = useState("monthly");
-  const searchTimer                   = useRef(null);
-
-  // ── dropdown ──────────────────────────────────────────────────────────────
+  // modals
   const [openMenuId, setOpenMenuId]   = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [subModalOpen, setSubModalOpen] = useState(false);
+  const [selectedTier, setSelectedTier] = useState("");
+  const [dlModalOpen, setDlModalOpen]   = useState(false);
+  const [dlCount, setDlCount]           = useState("");
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editData, setEditData]           = useState({ name: "", email: "", ipAddress: "" });
+  const [editLoading, setEditLoading]     = useState(false);
 
-  // ── modals ────────────────────────────────────────────────────────────────
-  const [selectedUser, setSelectedUser]                 = useState(null);
-  const [subModalOpen, setSubModalOpen]                 = useState(false);
-  const [selectedTier, setSelectedTier]                 = useState("");
-  const [dlModalOpen, setDlModalOpen]                   = useState(false);
-  const [dlCount, setDlCount]                           = useState("");
-  const [editModalOpen, setEditModalOpen]               = useState(false);
-  const [editData, setEditData]                         = useState({ name: "", email: "", ipAddress: "" });
-  const [editLoading, setEditLoading]                   = useState(false);
-
-  // ── auth ──────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) { navigate("/admin/login"); return; }
-    fetchStats();
-  }, []);
-
-  // ── debounce search ───────────────────────────────────────────────────────
-  useEffect(() => {
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => { setSearchDebounced(search); setPage(0); }, 400);
-    return () => clearTimeout(searchTimer.current);
-  }, [search]);
-
-  // ── fetch stats ───────────────────────────────────────────────────────────
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${BACKEND_URL}/api/admin/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) setStats(await res.json());
-    } catch (_) {}
-  };
-
-  // ── fetch users ───────────────────────────────────────────────────────────
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const params = new URLSearchParams({
-        skip: (page * PAGE_SIZE).toString(),
-        limit: PAGE_SIZE.toString(),
-      });
-      if (searchDebounced.trim()) params.append("search", searchDebounced.trim());
-      if (subFilter !== "all")    params.append("subscription_type", subFilter);
-      if (dateFilter !== "all") {
-        const now = new Date();
-        const offsets = { today: 0, week: 7, month: 30, quarter: 90, year: 365 };
-        const days = offsets[dateFilter];
-        if (days === 0) {
-          const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          params.append("date_from", d.toISOString());
-        } else if (days) {
-          params.append("date_from", new Date(now.getTime() - days * 86400000).toISOString());
-        }
-      }
+      const params = new URLSearchParams({ skip: "0", limit: "500" });
+      if (search.trim()) params.append("search", search.trim());
       const res = await fetch(`${BACKEND_URL}/api/admin/users?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -133,18 +104,36 @@ export default function AdminUsers() {
       }
     } catch (_) {}
     setLoading(false);
-  }, [page, searchDebounced, subFilter, dateFilter]);
+  }, [search]);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) { navigate("/admin/login"); return; }
+    fetchUsers();
+  }, [fetchUsers]);
 
-  // ── actions ───────────────────────────────────────────────────────────────
+  const filtered = users.filter(u => {
+    if (segment === "subscribers") return !!u.subscription;
+    if (segment === "free")        return !u.subscription;
+    if (segment === "banned")      return !!u.isBanned;
+    return true;
+  });
+
+  const counts = {
+    all:         users.length,
+    subscribers: users.filter(u => !!u.subscription).length,
+    free:        users.filter(u => !u.subscription).length,
+    banned:      users.filter(u => !!u.isBanned).length,
+  };
+
+  // ── actions ────────────────────────────────────────────────────────────────
   const deleteUser = async (userId) => {
-    if (!window.confirm("Delete this user? This will also remove their subscription and session data.")) return;
+    if (!window.confirm("Delete this user? This will remove their subscription and session data.")) return;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    if (res.ok) { toast.success("User deleted"); fetchUsers(); fetchStats(); }
+    if (res.ok) { toast.success("User deleted"); setUsers(prev => prev.filter(u => u.id !== userId)); }
     else toast.error("Failed to delete user");
   };
 
@@ -154,8 +143,11 @@ export default function AdminUsers() {
     const res = await fetch(`${BACKEND_URL}/api/admin/users/${userId}/ban`, {
       method: "PUT", headers: { Authorization: `Bearer ${token}` },
     });
-    if (res.ok) { const d = await res.json(); toast.success(d.isBanned ? "User banned" : "User unbanned"); fetchUsers(); }
-    else toast.error("Failed");
+    if (res.ok) {
+      const d = await res.json();
+      toast.success(d.isBanned ? "User banned" : "User unbanned");
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, isBanned: d.isBanned } : u));
+    } else toast.error("Failed");
   };
 
   const banIP = async (user) => {
@@ -182,7 +174,6 @@ export default function AdminUsers() {
   };
 
   const updateSubscription = async () => {
-    if (!selectedUser) return;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}/subscription`, {
       method: "PUT",
@@ -190,9 +181,8 @@ export default function AdminUsers() {
       body: JSON.stringify({ tier: selectedTier === "none" ? null : selectedTier }),
     });
     if (res.ok) {
-      toast.success("Subscription updated");
-      setSubModalOpen(false); setSelectedUser(null);
-      fetchUsers(); fetchStats();
+      toast.success("Subscription updated"); setSubModalOpen(false);
+      fetchUsers();
     } else toast.error("Failed to update subscription");
   };
 
@@ -208,8 +198,7 @@ export default function AdminUsers() {
     const data = await res.json();
     if (res.ok) {
       toast.success(data.message || `Added ${n} bonus downloads`);
-      setDlModalOpen(false); setSelectedUser(null); setDlCount("");
-      fetchUsers();
+      setDlModalOpen(false); setDlCount(""); fetchUsers();
     } else toast.error(data.detail || "Failed");
   };
 
@@ -224,246 +213,264 @@ export default function AdminUsers() {
     });
     const data = await res.json();
     if (res.ok) {
-      toast.success("User updated"); setEditModalOpen(false); setSelectedUser(null);
-      setEditData({ name: "", email: "", ipAddress: "" }); fetchUsers();
+      toast.success("User updated"); setEditModalOpen(false); fetchUsers();
     } else toast.error(data.detail || "Failed");
     setEditLoading(false);
   };
 
-  const clearFilters = () => { setSubFilter("all"); setDateFilter("all"); setSearch(""); setPage(0); };
-  const hasFilters = subFilter !== "all" || dateFilter !== "all" || search;
-
-  const fmt = (d) => d ? new Date(d).toLocaleString() : "-";
-  const fmtMoney = (v) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v || 0);
-
-  const s = stats?.stats || {};
-  const ss = stats?.subscriptionStats || {};
-  const mrr = mrrPeriod === "monthly" ? (s.monthlySubscriptionRevenue || 0) : (s.monthlySubscriptionRevenue || 0) * 12;
+  const exportCSV = () => {
+    const rows = [
+      ["Name", "Email", "IP", "Status", "Subscription", "Downloads Remaining", "Joined"],
+      ...filtered.map(u => [
+        u.name || "",
+        u.email || "",
+        u.ipAddress || "",
+        u.isBanned ? "Banned" : u.emailVerified === false ? "Unverified" : "Active",
+        u.subscription?.tier || "None",
+        u.subscription?.downloads_remaining === -1 ? "Unlimited" : u.subscription?.downloads_remaining ?? "",
+        u.createdAt ? new Date(u.createdAt).toISOString() : "",
+      ]),
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = "users.csv";
+    a.click();
+  };
 
   return (
-    <AdminLayout>
-      <div className="max-w-7xl mx-auto">
+    <AdminLayout fillHeight>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "4px 6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", flex: "1 1 0%", overflow: "hidden", background: "var(--ion-card-background)", borderRadius: 6, boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <StatCard title="Total Users"       value={s.totalUsers || 0}       icon={Users}      color="blue" />
-          <StatCard title="Active Subscribers" value={s.totalSubscribers || 0} icon={UserCheck}  color="green" />
-          <StatCard title="Cancelling"         value={s.cancellingSubscribers || 0} sub="Pending cancellation" icon={Clock} color="orange" />
-          <div className="admin-stat-card">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <p className="admin-stat-label">{mrrPeriod === "monthly" ? "Monthly" : "Annual"} Recurring Revenue</p>
-                  <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
-                    <button onClick={() => setMrrPeriod("monthly")} className={`px-2 py-1 text-xs rounded-md transition-colors ${mrrPeriod === "monthly" ? "bg-white text-purple-600 shadow-sm font-medium" : "text-slate-500 hover:text-slate-700"}`}>Mo</button>
-                    <button onClick={() => setMrrPeriod("yearly")}  className={`px-2 py-1 text-xs rounded-md transition-colors ${mrrPeriod === "yearly"  ? "bg-white text-purple-600 shadow-sm font-medium" : "text-slate-500 hover:text-slate-700"}`}>Yr</button>
-                  </div>
+            {/* ── Card header ── */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", flexShrink: 0 }}>
+              <div>
+                <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.1rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>Users</h2>
+                <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--ion-color-medium)" }}>{total} total users</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Search */}
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", display: "inline-flex", fontSize: 16, color: "var(--ion-color-medium)", pointerEvents: "none" }}>
+                    <IonIcon icon={searchOutline} style={{ fontSize: "inherit" }} />
+                  </span>
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search name or email…"
+                    style={{ paddingLeft: 34, paddingRight: 12, height: 34, border: "1px solid var(--ion-border-color)", borderRadius: 6, background: "var(--ion-background-color)", color: "var(--ion-text-color)", fontSize: "0.875rem", outline: "none", width: 220 }}
+                  />
                 </div>
-                <p className="admin-stat-value">{fmtMoney(mrr)}</p>
-                <p style={{ fontSize: "0.72rem", color: "#8b5cf6", marginTop: 2 }}>From active subscriptions</p>
+                <IonButton fill="solid" size="small" onClick={exportCSV} style={{ "--background": "var(--ion-background-color)", "--color": "var(--ion-text-color)" }}>
+                  <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", marginInlineEnd: 6 }}>
+                    <IonIcon icon={downloadOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                  Export
+                </IonButton>
               </div>
-              <div style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(139,92,246,0.12)", marginLeft: 12 }}>
-                <DollarSign size={24} style={{ color: "#8b5cf6" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tier breakdown */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {[
-            { label: "Starter Plan",       tier: "starter",      price: "$19.99/mo", border: "#16a34a", color: "#16a34a" },
-            { label: "Professional Plan",  tier: "professional", price: "$29.99/mo", border: "#3b82f6", color: "#3b82f6" },
-            { label: "Business Plan",      tier: "business",     price: "$49.99/mo", border: "#8b5cf6", color: "#8b5cf6" },
-          ].map(({ label, tier, price, border, color }) => (
-            <div key={tier} className="bg-white rounded-xl shadow-sm p-6" style={{ borderLeft: `4px solid ${border}` }}>
-              <p className="text-sm text-slate-500">{label}</p>
-              <p className="text-2xl font-bold mt-1" style={{ color }}>{ss.byTier?.[tier] || 0}</p>
-              <p className="text-xs text-slate-400 mt-1">{price}</p>
-              {(ss.cancellingByTier?.[tier] > 0) && (
-                <p className="text-xs text-orange-500 mt-1">{ss.cancellingByTier[tier]} cancelling</p>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Users table card */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex flex-col gap-4 mb-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-800">Registered Users</h2>
-              <span className="text-sm text-slate-500">{total} total</span>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 300 }}>
-                <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--admin-text-muted)", pointerEvents: "none" }} />
-                <input className="admin-input" style={{ paddingLeft: 32 }} placeholder="Search name or email…" value={search} onChange={e => setSearch(e.target.value)} />
+            {/* ── Segment row ── */}
+            <div style={{ display: "flex", alignItems: "stretch", background: "var(--ion-card-background)", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+              <IonSegment scrollable value={segment} onIonChange={e => setSegment(e.detail.value)} style={{ "--background": "transparent", flex: "1 1 0%" }}>
+                {TABS.map(tab => (
+                  <IonSegmentButton key={tab.value} value={tab.value} layout="label-only" style={segBtnStyle}>
+                    <IonLabel style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
+                      {tab.label}
+                      <span style={{ background: "var(--ion-background-color)", borderRadius: 4, padding: "1px 5px", fontSize: "0.65rem", fontWeight: 700, color: "var(--ion-color-medium)" }}>
+                        {counts[tab.value]}
+                      </span>
+                    </IonLabel>
+                  </IonSegmentButton>
+                ))}
+              </IonSegment>
+              <div style={{ display: "flex", alignItems: "center", paddingRight: 12, flexShrink: 0 }}>
+                <IonButton title="Refresh" fill="clear" shape="round" color="medium" onClick={fetchUsers}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+                    <IonIcon icon={refreshOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
               </div>
-              <div className="flex items-center gap-2">
-                <CreditCard size={14} style={{ color: "var(--admin-text-muted)" }} />
-                <select className="admin-select" style={{ width: 165 }} value={subFilter} onChange={e => { setSubFilter(e.target.value); setPage(0); }}>
-                  <option value="all">All Subscriptions</option>
-                  <option value="none">No Subscription</option>
-                  <option value="starter">Starter</option>
-                  <option value="professional">Professional</option>
-                  <option value="business">Business</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={14} style={{ color: "var(--admin-text-muted)" }} />
-                <select className="admin-select" style={{ width: 150 }} value={dateFilter} onChange={e => { setDateFilter(e.target.value); setPage(0); }}>
-                  <option value="all">All Time</option>
-                  <option value="today">Joined Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="quarter">This Quarter</option>
-                  <option value="year">This Year</option>
-                </select>
-              </div>
-              {hasFilters && (
-                <IonButton fill="clear" size="small" color="medium" onClick={clearFilters}>Clear Filters</IonButton>
-              )}
             </div>
-            <p className="text-sm text-slate-500">Showing {users.length} of {total} users{hasFilters && " (filtered)"}</p>
-          </div>
 
-          {loading ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 0" }}>
-              <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500">{hasFilters ? "No users match your filters" : "No registered users yet"}</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>IP Address</th>
-                      <th>Status</th>
-                      <th>Subscription</th>
-                      <th>Downloads</th>
-                      <th>Joined</th>
-                      <th style={{ width: 60 }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(user => {
-                      const tier = user.subscription ? SUBSCRIPTION_TIERS[user.subscription.tier] : null;
-                      const isUnlimited = user.subscription?.downloads_remaining === -1 || tier?.downloads === -1;
-                      const remaining = user.subscription?.downloads_remaining ?? 0;
-                      const total_ = user.subscription?.downloads_total || tier?.downloads || 0;
-                      return (
-                        <tr key={user.id} style={user.isBanned ? { background: "rgba(220,38,38,0.04)" } : {}}>
-                          <td style={{ fontWeight: 600 }}>{user.name}</td>
-                          <td style={{ fontSize: "0.875rem" }}>{user.email}</td>
-                          <td><span style={{ fontSize: "0.75rem", fontFamily: "monospace", color: "var(--admin-text-muted)" }}>{user.ipAddress || "-"}</span></td>
-                          <td>
-                            {user.isBanned
-                              ? <span className="admin-badge admin-badge-red">Banned</span>
-                              : user.emailVerified === false
-                                ? <span className="admin-badge admin-badge-amber">Unverified</span>
-                                : <span className="admin-badge admin-badge-green">Active</span>}
-                          </td>
-                          <td>
-                            {user.subscription ? (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                                <span className={`admin-badge ${
-                                  ["business","unlimited"].includes(user.subscription.tier) ? "admin-badge-purple" :
-                                  ["professional","pro"].includes(user.subscription.tier) ? "admin-badge-blue" : "admin-badge-green"
-                                }`}>
-                                  {tier?.name || user.subscription.tier}
-                                </span>
-                                {user.subscription.status === "cancelling" && (
-                                  <span className="admin-badge admin-badge-amber" style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                                    <Clock size={10} /> Cancelling
-                                  </span>
+            {/* ── Table ── */}
+            <div style={{ flex: "1 1 0%", overflow: "auto" }}>
+              {loading ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                  <IonSpinner name="crescent" />
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
+                    <thead>
+                      <tr>
+                        {[["User", 200], ["Status", 90], ["Subscription", 130], ["Downloads", 110], ["IP Address", 130], ["Joined", 150], ["", 60]].map(([h, w]) => (
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.72rem", fontWeight: 400, color: "var(--ion-color-medium)", background: "var(--ion-background-color)", whiteSpace: "nowrap", ...(w ? { width: w, minWidth: w } : {}) }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.length === 0 && (
+                        <tr><td colSpan={7} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>No users found</td></tr>
+                      )}
+                      {filtered.map(u => {
+                        const tier = u.subscription ? SUBSCRIPTION_TIERS[u.subscription.tier] : null;
+                        const isUnlimited = u.subscription?.downloads_remaining === -1 || tier?.downloads === -1;
+                        const remaining = u.subscription?.downloads_remaining ?? 0;
+                        const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
+                        const tierColor  = TIER_COLORS[u.subscription?.tier] || "#16a34a";
+                        return (
+                          <tr key={u.id} style={{ height: 64, cursor: "default" }}>
+
+                            {/* User */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
+                              <ion-ripple-effect />
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <div style={{ width: 30, height: 30, borderRadius: "50%", background: u.isBanned ? "#ef4444" : "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <span style={{ fontSize: "0.6rem", color: "#fff", fontWeight: 700 }}>{getInitials(u.name, u.email)}</span>
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                  <span style={{ fontSize: "0.8rem", fontWeight: 600, display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>{u.name || "—"}</span>
+                                  <span style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>{u.email}</span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Status */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 90 }}>
+                              <ion-ripple-effect />
+                              {u.isBanned
+                                ? <span className="admin-badge admin-badge-red">Banned</span>
+                                : u.emailVerified === false
+                                  ? <span className="admin-badge admin-badge-amber">Unverified</span>
+                                  : <span className="admin-badge admin-badge-green">Active</span>}
+                            </td>
+
+                            {/* Subscription — lane style */}
+                            <td className="ion-activatable" style={{ ...tdBase, padding: 0, minWidth: 130 }}>
+                              <ion-ripple-effect />
+                              {u.subscription ? (
+                                <>
+                                  <div style={{ position: "absolute", left: 0, top: "18%", bottom: "18%", width: 3, background: tierColor }} />
+                                  <div style={{ paddingLeft: 14, display: "flex", alignItems: "stretch", gap: 8, height: "100%" }}>
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                                      <span style={{ display: "inline-flex", fontSize: 8, color: tierColor }}>
+                                        <IonIcon icon={ellipse} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                                      </span>
+                                      <div style={{ width: 1.5, flex: "1 1 0%", background: "var(--ion-border-color)", margin: "2px 0", maxHeight: 14 }} />
+                                      <span style={{ display: "inline-flex", fontSize: 8, color: "var(--ion-color-medium)" }}>
+                                        <IonIcon icon={squareOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                                      </span>
+                                    </div>
+                                    <div style={{ minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                      <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", lineHeight: 1.6 }}>{tier?.name || u.subscription.tier}</span>
+                                      {u.subscription.status === "cancelling" && (
+                                        <span style={{ fontSize: "0.67rem", color: "#f97316", display: "flex", alignItems: "center", gap: 3, lineHeight: 1.4 }}>
+                                          <Clock size={9} /> Cancelling
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <span style={{ paddingLeft: 14, fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>None</span>
+                              )}
+                            </td>
+
+                            {/* Downloads */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 110 }}>
+                              <ion-ripple-effect />
+                              {u.subscription
+                                ? isUnlimited
+                                  ? <span style={{ fontWeight: 700, color: "#8b5cf6" }}>Unlimited</span>
+                                  : <span><span style={{ fontWeight: 700 }}>{remaining}</span><span style={{ color: "var(--ion-color-medium)", fontSize: "0.8rem" }}> / {tierTotal}</span></span>
+                                : <span style={{ color: "var(--ion-color-medium)" }}>—</span>}
+                            </td>
+
+                            {/* IP */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 130 }}>
+                              <ion-ripple-effect />
+                              <span style={{ fontSize: "0.72rem", fontFamily: "monospace", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>{u.ipAddress || "—"}</span>
+                            </td>
+
+                            {/* Joined */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 150 }}>
+                              <ion-ripple-effect />
+                              <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                                {u.createdAt ? new Date(u.createdAt).toLocaleString() : "—"}
+                              </span>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="ion-activatable" style={{ ...tdBase, padding: "0 8px", width: 60 }}>
+                              <ion-ripple-effect />
+                              <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <button
+                                  className="admin-action-btn"
+                                  onClick={e => { e.stopPropagation(); setOpenMenuId(openMenuId === u.id ? null : u.id); }}
+                                >
+                                  <MoreVertical size={16} />
+                                </button>
+                                {openMenuId === u.id && (
+                                  <div className="user-action-menu" style={{ right: 0, left: "auto" }}>
+                                    <button className="profile-menu-item" onClick={() => { setSelectedUser(u); setEditData({ name: u.name || "", email: u.email || "", ipAddress: u.ipAddress || "" }); setEditModalOpen(true); setOpenMenuId(null); }}>
+                                      <Pencil size={13} /> Edit User
+                                    </button>
+                                    <button className="profile-menu-item" style={{ color: "#3b82f6" }} onClick={() => { setSelectedUser(u); setSelectedTier(u.subscription?.tier || ""); setSubModalOpen(true); setOpenMenuId(null); }}>
+                                      <CreditCard size={13} /> Change Subscription
+                                    </button>
+                                    {u.subscription && (
+                                      <button className="profile-menu-item" style={{ color: "var(--ion-color-primary)" }} onClick={() => { setSelectedUser(u); setDlCount(""); setDlModalOpen(true); setOpenMenuId(null); }}>
+                                        <Download size={13} /> Add Bonus Downloads
+                                      </button>
+                                    )}
+                                    {u.emailVerified === false && (
+                                      <button className="profile-menu-item" style={{ color: "#10b981" }} onClick={() => { confirmEmail(u.id); setOpenMenuId(null); }}>
+                                        <MailCheck size={13} /> Confirm Email
+                                      </button>
+                                    )}
+                                    <div className="profile-menu-divider" />
+                                    <button className="profile-menu-item" style={{ color: u.isBanned ? "var(--ion-color-primary)" : "#f97316" }} onClick={() => { toggleBan(u.id, u.isBanned); setOpenMenuId(null); }}>
+                                      <Ban size={13} /> {u.isBanned ? "Unban" : "Ban User"}
+                                    </button>
+                                    {u.ipAddress && u.ipAddress !== "unknown" && (
+                                      <button className="profile-menu-item danger" onClick={() => { banIP(u); setOpenMenuId(null); }}>
+                                        <Shield size={13} /> Ban IP
+                                      </button>
+                                    )}
+                                    <button className="profile-menu-item danger" onClick={() => { deleteUser(u.id); setOpenMenuId(null); }}>
+                                      <UserX size={13} /> Delete User
+                                    </button>
+                                  </div>
                                 )}
                               </div>
-                            ) : <span style={{ color: "var(--admin-text-muted)" }}>None</span>}
-                          </td>
-                          <td>
-                            {user.subscription
-                              ? isUnlimited
-                                ? <span style={{ fontWeight: 600, color: "#8b5cf6" }}>Unlimited</span>
-                                : <span><span style={{ fontWeight: 600 }}>{remaining}</span><span style={{ color: "var(--admin-text-muted)" }}> / {total_}</span></span>
-                              : <span style={{ color: "var(--admin-text-muted)" }}>-</span>}
-                          </td>
-                          <td style={{ fontSize: "0.8125rem" }}>{fmt(user.createdAt)}</td>
-                          <td>
-                            <div style={{ position: "relative" }}>
-                              <button className="admin-action-btn" onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}>
-                                <MoreVertical size={16} />
-                              </button>
-                              {openMenuId === user.id && (
-                                <div className="user-action-menu">
-                                  <button className="profile-menu-item" onClick={() => { setSelectedUser(user); setEditData({ name: user.name || "", email: user.email || "", ipAddress: user.ipAddress || "" }); setEditModalOpen(true); setOpenMenuId(null); }}>
-                                    <Pencil size={13} /> Edit User
-                                  </button>
-                                  <button className="profile-menu-item" style={{ color: "#3b82f6" }} onClick={() => { setSelectedUser(user); setSelectedTier(user.subscription?.tier || ""); setSubModalOpen(true); setOpenMenuId(null); }}>
-                                    <CreditCard size={13} /> Change Subscription
-                                  </button>
-                                  {user.subscription && (
-                                    <button className="profile-menu-item" style={{ color: "var(--ion-color-primary)" }} onClick={() => { setSelectedUser(user); setDlCount(""); setDlModalOpen(true); setOpenMenuId(null); }}>
-                                      <Download size={13} /> Add Bonus Downloads
-                                    </button>
-                                  )}
-                                  {user.emailVerified === false && (
-                                    <button className="profile-menu-item" style={{ color: "#10b981" }} onClick={() => { confirmEmail(user.id); setOpenMenuId(null); }}>
-                                      <MailCheck size={13} /> Confirm Email
-                                    </button>
-                                  )}
-                                  <div className="profile-menu-divider" />
-                                  <button className="profile-menu-item" style={{ color: user.isBanned ? "var(--ion-color-primary)" : "#f97316" }} onClick={() => { toggleBan(user.id, user.isBanned); setOpenMenuId(null); }}>
-                                    <Ban size={13} /> {user.isBanned ? "Unban User" : "Ban User"}
-                                  </button>
-                                  {user.ipAddress && user.ipAddress !== "unknown" && (
-                                    <button className="profile-menu-item danger" onClick={() => { banIP(user); setOpenMenuId(null); }}>
-                                      <Shield size={13} /> Ban IP Address
-                                    </button>
-                                  )}
-                                  <button className="profile-menu-item danger" onClick={() => { deleteUser(user.id); setOpenMenuId(null); }}>
-                                    <UserX size={13} /> Delete User
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="admin-pagination" style={{ marginTop: 16 }}>
-                <span>Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</span>
-                <div className="admin-pagination-btns">
-                  <IonButton fill="outline" size="small" color="medium" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={16} /></IonButton>
-                  <IonButton fill="outline" size="small" color="medium" disabled={(page + 1) * PAGE_SIZE >= total} onClick={() => setPage(p => p + 1)}><ChevronRight size={16} /></IonButton>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              </div>
-            </>
-          )}
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
 
       {/* Change Subscription Modal */}
       <IonModal isOpen={subModalOpen} onDidDismiss={() => setSubModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
         <IonHeader><IonToolbar>
-          <IonTitle>Change User Subscription</IonTitle>
+          <IonTitle>Change Subscription</IonTitle>
           <IonButtons slot="end"><IonButton fill="clear" color="medium" onClick={() => setSubModalOpen(false)}><X size={20} /></IonButton></IonButtons>
         </IonToolbar></IonHeader>
         <IonModalContent className="ion-padding">
-          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>Update subscription for {selectedUser?.name} ({selectedUser?.email})</p>
-          <p style={{ fontSize: "0.875rem", color: "#475569", marginBottom: 12 }}>
-            Current plan: <strong>{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</strong>
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 12 }}>
+            Current plan for {selectedUser?.name} ({selectedUser?.email}): <strong>{selectedUser?.subscription ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</strong>
           </p>
           <div className="admin-form-group">
             <select className="admin-select" value={selectedTier} onChange={e => setSelectedTier(e.target.value)}>
@@ -478,58 +485,50 @@ export default function AdminUsers() {
         <IonFooter><IonToolbar style={{ padding: "8px 16px" }}>
           <IonButtons slot="end">
             <IonButton fill="outline" color="medium" onClick={() => setSubModalOpen(false)}>Cancel</IonButton>
-            <IonButton color="primary" onClick={updateSubscription}>Update Subscription</IonButton>
+            <IonButton color="primary" onClick={updateSubscription}>Update</IonButton>
           </IonButtons>
         </IonToolbar></IonFooter>
       </IonModal>
 
       {/* Bonus Downloads Modal */}
-      <IonModal isOpen={dlModalOpen} onDidDismiss={() => setDlModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
+      <IonModal isOpen={dlModalOpen} onDidDismiss={() => setDlModalOpen(false)} style={{ "--width": "480px", "--max-width": "95vw", "--height": "auto" }}>
         <IonHeader><IonToolbar>
           <IonTitle>Add Bonus Downloads</IonTitle>
           <IonButtons slot="end"><IonButton fill="clear" color="medium" onClick={() => setDlModalOpen(false)}><X size={20} /></IonButton></IonButtons>
         </IonToolbar></IonHeader>
         <IonModalContent className="ion-padding">
-          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>Add extra downloads for {selectedUser?.name} ({selectedUser?.email})</p>
-          {selectedUser?.subscription?.downloads_remaining === -1 ? (
-            <p style={{ color: "#3b82f6", fontSize: "0.875rem" }}>This user already has unlimited downloads.</p>
-          ) : (
-            <>
+          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>Extra downloads for {selectedUser?.name} ({selectedUser?.email})</p>
+          {selectedUser?.subscription?.downloads_remaining === -1
+            ? <p style={{ color: "#3b82f6", fontSize: "0.875rem" }}>This user already has unlimited downloads.</p>
+            : (
               <div className="admin-form-group">
-                <label className="admin-form-label">Bonus Downloads to Add</label>
-                <input className="admin-input" type="number" min="1" value={dlCount} onChange={e => setDlCount(e.target.value)} placeholder="Enter number of downloads to add" />
+                <label className="admin-form-label">Number of downloads to add</label>
+                <input className="admin-input" type="number" min="1" value={dlCount} onChange={e => setDlCount(e.target.value)} placeholder="e.g. 5" />
               </div>
-              {dlCount && parseInt(dlCount) > 0 && (
-                <p style={{ fontSize: "0.875rem", color: "#16a34a" }}>After adding: {(selectedUser?.subscription?.downloads_remaining || 0) + parseInt(dlCount)} downloads</p>
-              )}
-            </>
-          )}
+            )}
         </IonModalContent>
         <IonFooter><IonToolbar style={{ padding: "8px 16px" }}>
           <IonButtons slot="end">
             <IonButton fill="outline" color="medium" onClick={() => setDlModalOpen(false)}>Cancel</IonButton>
-            <IonButton color="primary" onClick={updateDownloads} disabled={selectedUser?.subscription?.downloads_remaining === -1 || !dlCount || parseInt(dlCount) < 1}>
-              Add Downloads
-            </IonButton>
+            <IonButton color="primary" onClick={updateDownloads} disabled={selectedUser?.subscription?.downloads_remaining === -1 || !dlCount || parseInt(dlCount) < 1}>Add</IonButton>
           </IonButtons>
         </IonToolbar></IonFooter>
       </IonModal>
 
       {/* Edit User Modal */}
-      <IonModal isOpen={editModalOpen} onDidDismiss={() => setEditModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
+      <IonModal isOpen={editModalOpen} onDidDismiss={() => setEditModalOpen(false)} style={{ "--width": "480px", "--max-width": "95vw", "--height": "auto" }}>
         <IonHeader><IonToolbar>
           <IonTitle>Edit User</IonTitle>
           <IonButtons slot="end"><IonButton fill="clear" color="medium" onClick={() => setEditModalOpen(false)}><X size={20} /></IonButton></IonButtons>
         </IonToolbar></IonHeader>
         <IonModalContent className="ion-padding">
-          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>Update information for {selectedUser?.email}</p>
           <div className="admin-form-group">
             <label className="admin-form-label">Name</label>
-            <input className="admin-input" type="text" value={editData.name} onChange={e => setEditData(p => ({ ...p, name: e.target.value }))} placeholder="Enter name" />
+            <input className="admin-input" type="text" value={editData.name} onChange={e => setEditData(p => ({ ...p, name: e.target.value }))} placeholder="Name" />
           </div>
           <div className="admin-form-group">
             <label className="admin-form-label">Email</label>
-            <input className="admin-input" type="email" value={editData.email} onChange={e => setEditData(p => ({ ...p, email: e.target.value }))} placeholder="Enter email" />
+            <input className="admin-input" type="email" value={editData.email} onChange={e => setEditData(p => ({ ...p, email: e.target.value }))} placeholder="Email" />
           </div>
           <div className="admin-form-group">
             <label className="admin-form-label">IP Address</label>
@@ -540,7 +539,7 @@ export default function AdminUsers() {
           <IonButtons slot="end">
             <IonButton fill="outline" color="medium" onClick={() => setEditModalOpen(false)}>Cancel</IonButton>
             <IonButton color="primary" onClick={updateUser} disabled={editLoading}>
-              {editLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : "Save Changes"}
+              {editLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : "Save"}
             </IonButton>
           </IonButtons>
         </IonToolbar></IonFooter>

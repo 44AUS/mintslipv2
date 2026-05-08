@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { IonButton, IonSpinner } from "@ionic/react";
+import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner } from "@ionic/react";
+import { refreshOutline, chevronForwardOutline, ellipse, squareOutline } from "ionicons/icons";
+import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { FolderArchive, RefreshCw, Eye, Trash2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-const PAGE_SIZE = 20;
 
 const DOCUMENT_TYPES = {
   "paystub":               "Pay Stub",
@@ -23,31 +23,70 @@ const DOCUMENT_TYPES = {
   "utility-bill":          "Utility Bill",
 };
 
+const DOC_COLORS = {
+  "paystub":               "#16a34a",
+  "canadian-paystub":      "#16a34a",
+  "resume":                "#2563eb",
+  "w2":                    "#7c3aed",
+  "w9":                    "#7c3aed",
+  "1099-nec":              "#d97706",
+  "1099-misc":             "#d97706",
+  "bank-statement":        "#0891b2",
+  "offer-letter":          "#059669",
+  "vehicle-bill-of-sale":  "#dc2626",
+  "schedule-c":            "#92400e",
+  "utility-bill":          "#64748b",
+};
+
+const tdBase = {
+  padding: "0 12px",
+  fontSize: "0.875rem",
+  color: "var(--ion-text-color)",
+  borderBottom: "1px solid var(--ion-border-color)",
+  height: 64,
+  verticalAlign: "middle",
+  position: "relative",
+  overflow: "hidden",
+};
+
+const segBtnStyle = {
+  "--color":           "var(--ion-color-medium)",
+  "--color-checked":   "var(--ion-text-color)",
+  "--indicator-color": "var(--ion-text-color)",
+  "--border-radius":   "0",
+  "--padding-top":     "0",
+  "--padding-bottom":  "0",
+  minHeight: 46,
+  flexShrink: 0,
+};
+
+const TABS = [
+  { value: "all",                  label: "ALL" },
+  { value: "paystub",              label: "PAY STUBS" },
+  { value: "bank-statement",       label: "BANK STMTS" },
+  { value: "resume",               label: "RESUMES" },
+  { value: "w2",                   label: "W-2 / W-9" },
+];
+
+function getInitials(email) {
+  if (!email) return "?";
+  const parts = email.split("@")[0].split(/[._-]/);
+  return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : email[0].toUpperCase();
+}
+
 export default function AdminSavedDocs() {
   const navigate = useNavigate();
 
-  const [docs, setDocs]           = useState([]);
-  const [total, setTotal]         = useState(0);
-  const [loading, setLoading]     = useState(true);
-  const [page, setPage]           = useState(0);
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [userFilter, setUserFilter] = useState("");
-
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) navigate("/admin/login");
-  }, []);
+  const [docs, setDocs]       = useState([]);
+  const [total, setTotal]     = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [segment, setSegment] = useState("all");
 
   const fetchDocs = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const params = new URLSearchParams({
-        skip: (page * PAGE_SIZE).toString(),
-        limit: PAGE_SIZE.toString(),
-      });
-      if (typeFilter !== "all")     params.append("documentType", typeFilter);
-      if (userFilter.trim())        params.append("userId", userFilter.trim());
+      const params = new URLSearchParams({ skip: "0", limit: "500" });
       const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -58,17 +97,36 @@ export default function AdminSavedDocs() {
       }
     } catch (_) {}
     setLoading(false);
-  }, [page, typeFilter, userFilter]);
+  }, []);
 
-  useEffect(() => { fetchDocs(); }, [fetchDocs]);
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) { navigate("/admin/login"); return; }
+    fetchDocs();
+  }, [fetchDocs]);
 
-  const deleteDoc = async (docId) => {
+  const filtered = docs.filter(d => {
+    if (segment === "all") return true;
+    if (segment === "w2")  return d.documentType === "w2" || d.documentType === "w9";
+    return d.documentType === segment;
+  });
+
+  const counts = {
+    all:             docs.length,
+    paystub:         docs.filter(d => d.documentType === "paystub" || d.documentType === "canadian-paystub").length,
+    "bank-statement": docs.filter(d => d.documentType === "bank-statement").length,
+    resume:          docs.filter(d => d.documentType === "resume").length,
+    w2:              docs.filter(d => d.documentType === "w2" || d.documentType === "w9").length,
+  };
+
+  const deleteDoc = async (docId, e) => {
+    e.stopPropagation();
     if (!window.confirm("Delete this saved document? This cannot be undone.")) return;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/${docId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    if (res.ok) { toast.success("Document deleted"); fetchDocs(); }
+    if (res.ok) { toast.success("Document deleted"); setDocs(prev => prev.filter(d => d.id !== docId)); }
     else toast.error("Failed to delete document");
   };
 
@@ -78,133 +136,169 @@ export default function AdminSavedDocs() {
       const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/${doc.id}/download`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `HTTP ${res.status}`);
-      }
-      const blob = await res.blob();
-      window.open(URL.createObjectURL(blob), "_blank");
+      if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.detail || `HTTP ${res.status}`); }
+      window.open(URL.createObjectURL(await res.blob()), "_blank");
     } catch (err) {
-      toast.error(`Failed to open document: ${err.message}`);
+      toast.error(`Failed to open: ${err.message}`);
     }
   };
 
   return (
-    <AdminLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-              <FolderArchive className="w-5 h-5" />
-              Saved Documents ({total})
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <select
-                className="admin-select"
-                value={typeFilter}
-                onChange={e => { setTypeFilter(e.target.value); setPage(0); }}
-              >
-                <option value="all">All Types</option>
-                {Object.entries(DOCUMENT_TYPES).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+    <AdminLayout fillHeight>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "4px 6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", flex: "1 1 0%", overflow: "hidden", background: "var(--ion-card-background)", borderRadius: 6, boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
+
+            {/* ── Card header ── */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", flexShrink: 0 }}>
+              <div>
+                <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.1rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>Saved Documents</h2>
+                <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--ion-color-medium)" }}>{total} total saved documents</p>
+              </div>
+            </div>
+
+            {/* ── Segment row ── */}
+            <div style={{ display: "flex", alignItems: "stretch", background: "var(--ion-card-background)", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+              <IonSegment scrollable value={segment} onIonChange={e => setSegment(e.detail.value)} style={{ "--background": "transparent", flex: "1 1 0%" }}>
+                {TABS.map(tab => (
+                  <IonSegmentButton key={tab.value} value={tab.value} layout="label-only" style={segBtnStyle}>
+                    <IonLabel style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
+                      {tab.label}
+                      <span style={{ background: "var(--ion-background-color)", borderRadius: 4, padding: "1px 5px", fontSize: "0.65rem", fontWeight: 700, color: "var(--ion-color-medium)" }}>
+                        {counts[tab.value]}
+                      </span>
+                    </IonLabel>
+                  </IonSegmentButton>
                 ))}
-              </select>
-              <input
-                className="admin-input"
-                placeholder="Filter by User ID…"
-                value={userFilter}
-                onChange={e => { setUserFilter(e.target.value); setPage(0); }}
-                style={{ width: 200 }}
-              />
-              <IonButton fill="outline" size="small" color="medium" onClick={fetchDocs}>
-                <RefreshCw size={16} />
-              </IonButton>
-            </div>
-          </div>
-
-          {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
-              <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />
-            </div>
-          ) : docs.length === 0 ? (
-            <div className="text-center py-12 text-slate-500">
-              <FolderArchive className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No saved documents found</p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Document Type</th>
-                      <th>File Name</th>
-                      <th>Size</th>
-                      <th>Created</th>
-                      <th style={{ textAlign: "right" }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {docs.map(doc => (
-                      <tr key={doc.id}>
-                        <td>
-                          <p className="font-medium text-slate-800">{doc.userEmail}</p>
-                          {doc.userName && <p className="text-xs text-slate-500">{doc.userName}</p>}
-                        </td>
-                        <td>
-                          <span className="admin-badge admin-badge-slate">
-                            {DOCUMENT_TYPES[doc.documentType] || doc.documentType}
-                          </span>
-                        </td>
-                        <td>
-                          {doc.fileExists === false ? (
-                            <span style={{ color: "#ef4444", fontSize: "0.875rem", display: "flex", alignItems: "center", gap: 4 }}>
-                              <X size={12} style={{ flexShrink: 0 }} />
-                              {doc.fileName}
-                              <span style={{ fontSize: "0.75rem", color: "#f87171" }}>(missing)</span>
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => viewDoc(doc)}
-                              style={{ color: "#3b82f6", fontSize: "0.875rem", display: "flex", alignItems: "center", gap: 4, cursor: "pointer", background: "none", border: "none", padding: 0 }}
-                            >
-                              <Eye size={12} style={{ flexShrink: 0 }} />
-                              {doc.fileName}
-                            </button>
-                          )}
-                        </td>
-                        <td>
-                          <span className="text-sm text-slate-500">
-                            {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "-"}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="text-sm text-slate-500">
-                            {new Date(doc.createdAt).toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: "right" }}>
-                          <button className="admin-action-btn danger" onClick={() => deleteDoc(doc.id)}>
-                            <Trash2 size={14} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              </IonSegment>
+              <div style={{ display: "flex", alignItems: "center", paddingRight: 12, flexShrink: 0 }}>
+                <IonButton title="Refresh" fill="clear" shape="round" color="medium" onClick={fetchDocs}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+                    <IonIcon icon={refreshOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
               </div>
+            </div>
 
-              <div className="admin-pagination" style={{ marginTop: 16 }}>
-                <span>Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</span>
-                <div className="admin-pagination-btns">
-                  <IonButton fill="outline" size="small" color="medium" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft size={16} /></IonButton>
-                  <IonButton fill="outline" size="small" color="medium" disabled={(page + 1) * PAGE_SIZE >= total} onClick={() => setPage(p => p + 1)}><ChevronRight size={16} /></IonButton>
+            {/* ── Table ── */}
+            <div style={{ flex: "1 1 0%", overflow: "auto" }}>
+              {loading ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                  <IonSpinner name="crescent" />
                 </div>
-              </div>
-            </>
-          )}
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
+                    <thead>
+                      <tr>
+                        {[["User", 200], ["Document", 200], ["File", 220], ["Size", 80], ["Created", 110], ["", 60]].map(([h, w]) => (
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.72rem", fontWeight: 400, color: "var(--ion-color-medium)", background: "var(--ion-background-color)", whiteSpace: "nowrap", ...(w ? { width: w, minWidth: w } : {}) }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.length === 0 && (
+                        <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>No saved documents found</td></tr>
+                      )}
+                      {filtered.map(doc => {
+                        const color = DOC_COLORS[doc.documentType] || "#64748b";
+                        const label = DOCUMENT_TYPES[doc.documentType] || doc.documentType || "—";
+                        return (
+                          <tr key={doc.id} style={{ height: 64 }}>
+
+                            {/* User */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
+                              <ion-ripple-effect />
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <span style={{ fontSize: "0.6rem", color: "#fff", fontWeight: 700 }}>{getInitials(doc.userEmail)}</span>
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                  <span style={{ fontSize: "0.78rem", fontWeight: 600, display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>{doc.userEmail || "—"}</span>
+                                  {doc.userName && <span style={{ fontSize: "0.7rem", color: "var(--ion-color-medium)", display: "block" }}>{doc.userName}</span>}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Document — lane style */}
+                            <td className="ion-activatable" style={{ ...tdBase, padding: 0, minWidth: 200 }}>
+                              <ion-ripple-effect />
+                              <div style={{ position: "absolute", left: 0, top: "18%", bottom: "18%", width: 3, background: color }} />
+                              <div style={{ paddingLeft: 16, display: "flex", alignItems: "stretch", gap: 8, height: "100%" }}>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                                  <span style={{ display: "inline-flex", fontSize: 8, color }}>
+                                    <IonIcon icon={ellipse} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                                  </span>
+                                  <div style={{ width: 1.5, flex: "1 1 0%", background: "var(--ion-border-color)", margin: "2px 0", maxHeight: 14 }} />
+                                  <span style={{ display: "inline-flex", fontSize: 8, color: "var(--ion-color-medium)" }}>
+                                    <IonIcon icon={squareOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                                  </span>
+                                </div>
+                                <div style={{ minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                  <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.6 }}>{label}</span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* File */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 220 }}>
+                              <ion-ripple-effect />
+                              {doc.fileExists === false ? (
+                                <span style={{ color: "#ef4444", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: 4 }}>
+                                  <X size={12} style={{ flexShrink: 0 }} />
+                                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 180 }}>{doc.fileName}</span>
+                                  <span style={{ fontSize: "0.72rem", color: "#f87171", flexShrink: 0 }}>(missing)</span>
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => viewDoc(doc)}
+                                  style={{ color: "#3b82f6", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: 4, cursor: "pointer", background: "none", border: "none", padding: 0, maxWidth: "100%", overflow: "hidden" }}
+                                >
+                                  <Eye size={12} style={{ flexShrink: 0 }} />
+                                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{doc.fileName}</span>
+                                </button>
+                              )}
+                            </td>
+
+                            {/* Size */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 80 }}>
+                              <ion-ripple-effect />
+                              <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>
+                                {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "—"}
+                              </span>
+                            </td>
+
+                            {/* Created */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 110 }}>
+                              <ion-ripple-effect />
+                              <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                                {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
+                              </span>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="ion-activatable" style={{ ...tdBase, padding: "0 8px", width: 60 }}>
+                              <ion-ripple-effect />
+                              <button
+                                className="admin-action-btn danger"
+                                onClick={e => deleteDoc(doc.id, e)}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </td>
+
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
     </AdminLayout>

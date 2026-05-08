@@ -427,30 +427,42 @@ export default function AdminLayout({ children }) {
               style={{ "--width": "220px" }}
             >
               <IonContent>
-                <div style={{ padding: "6px 0" }}>
-                  <button
+                <IonList lines="none" style={{ padding: "4px 0" }}>
+                  <IonItem
+                    button
+                    detail={false}
                     onClick={() => { navigate("/admin/settings"); document.querySelector("ion-popover")?.dismiss(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ion-text-color)", fontSize: "0.88rem" }}
+                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
                   >
-                    <IonIcon icon={personOutline} style={{ fontSize: 18, flexShrink: 0 }} />
-                    Profile &amp; Settings
-                  </button>
-                  <button
+                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                      <IonIcon icon={personOutline} style={{ fontSize: 18 }} />
+                    </div>
+                    <IonLabel>Profile &amp; Settings</IonLabel>
+                  </IonItem>
+                  <IonItem
+                    button
+                    detail={false}
                     onClick={() => { navigate("/admin/settings?tab=password"); document.querySelector("ion-popover")?.dismiss(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ion-text-color)", fontSize: "0.88rem" }}
+                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
                   >
-                    <IonIcon icon={lockClosedOutline} style={{ fontSize: 18, flexShrink: 0 }} />
-                    Change Password
-                  </button>
-                  <div style={{ height: 1, background: "var(--app-divider)", margin: "4px 0" }} />
-                  <button
+                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                      <IonIcon icon={lockClosedOutline} style={{ fontSize: 18 }} />
+                    </div>
+                    <IonLabel>Change Password</IonLabel>
+                  </IonItem>
+                  <div style={{ height: 1, background: "var(--app-divider)", margin: "2px 0" }} />
+                  <IonItem
+                    button
+                    detail={false}
                     onClick={() => { document.querySelector("ion-popover")?.dismiss(); handleLogout(); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 16px", background: "none", border: "none", cursor: "pointer", color: "var(--ion-color-danger)", fontSize: "0.88rem" }}
+                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", "--color": "var(--ion-color-danger)", fontSize: "0.88rem" }}
                   >
-                    <IonIcon icon={logOutOutline} style={{ fontSize: 18, flexShrink: 0 }} />
-                    Log Out
-                  </button>
-                </div>
+                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                      <IonIcon icon={logOutOutline} style={{ fontSize: 18, color: "var(--ion-color-danger)" }} />
+                    </div>
+                    <IonLabel>Log Out</IonLabel>
+                  </IonItem>
+                </IonList>
               </IonContent>
             </IonPopover>
 

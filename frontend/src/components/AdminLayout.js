@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
@@ -21,7 +22,6 @@ import {
   Receipt, FileSpreadsheet, FileBarChart,
   Building2, Car, Briefcase,
 } from "lucide-react";
-import { menuController } from "@ionic/core";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
 
@@ -102,7 +102,7 @@ function NavItem({ tab, isActive, onClick }) {
   );
 }
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children, fillHeight = false }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -117,22 +117,21 @@ export default function AdminLayout({ children }) {
     () => localStorage.getItem("adminDarkMode") === "true",
   );
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const handleMenuToggle = async () => {
-    const isDesktop = window.innerWidth >= 768;
-    if (isDesktop) {
-      setSidebarOpen(prev => !prev);
+  const handleMenuToggle = () => {
+    if (window.innerWidth < 768) {
+      setMobileSidebarOpen(v => !v);
     } else {
-      await menuController.toggle("adminSidebar");
+      setSidebarOpen(prev => !prev);
     }
   };
 
-  const handleCloseSidebar = async () => {
-    const isDesktop = window.innerWidth >= 768;
-    if (isDesktop) {
-      setSidebarOpen(false);
+  const handleCloseSidebar = () => {
+    if (window.innerWidth < 768) {
+      setMobileSidebarOpen(false);
     } else {
-      await menuController.close("adminSidebar");
+      setSidebarOpen(false);
     }
   };
 
@@ -329,7 +328,7 @@ export default function AdminLayout({ children }) {
       >
 
         {/* ── Sidebar ── */}
-        <IonMenu contentId="admin-main" type="overlay" menuId="adminSidebar">
+        <IonMenu contentId="admin-main" type="overlay" menuId="adminSidebar" disabled={isMobile}>
           <IonHeader>
             <IonToolbar>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", width: "100%" }}>
@@ -667,9 +666,11 @@ export default function AdminLayout({ children }) {
           </IonHeader>
 
           <IonContent style={{ "--background": "var(--ion-background-color)" }}>
-            <div className="admin-page-content">
-              {children}
-            </div>
+            {fillHeight ? (
+              <div style={{ height: "100%", overflow: "hidden" }}>{children}</div>
+            ) : (
+              <div className="admin-page-content">{children}</div>
+            )}
           </IonContent>
 
         </IonPage>
@@ -737,6 +738,107 @@ export default function AdminLayout({ children }) {
           )}
         </div>
       </div>
+
+      {mobileSidebarOpen && createPortal(<>
+      {/* ── Mobile sidebar overlay ── */}
+      <div
+        className="mob-sidebar-backdrop"
+        onClick={() => setMobileSidebarOpen(false)}
+        style={{ position: "fixed", inset: 0, zIndex: 9996, background: "rgba(0,0,0,0.5)" }}
+      />
+      <div
+        className="mob-sidebar-panel"
+        style={{
+          position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 9997,
+          width: 300, maxWidth: "85vw",
+          background: "var(--app-sidebar-bg, #ffffff)",
+          boxShadow: "4px 0 24px rgba(0,0,0,0.25)",
+          display: "flex", flexDirection: "column",
+          overflowY: "auto",
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 12px", minHeight: 60, flexShrink: 0, borderBottom: "1px solid var(--app-divider)" }}>
+          <button onClick={() => setMobileSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
+          </button>
+          <button onClick={() => { navigate("/admin/overview"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
+          </button>
+          <button onClick={toggleDark} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
+          </button>
+        </div>
+
+        {/* Profile card */}
+        <div style={{ padding: "12px 8px", flexShrink: 0 }}>
+          <div style={{ borderRadius: 10, overflow: "hidden", backgroundColor: "rgba(0,0,0,0.35)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <button onClick={() => { navigate("/admin/site-settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", textAlign: "left" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#fff", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <img src={MintSlipLogo} alt="MintSlip" style={{ width: 30, height: 30, objectFit: "contain" }} />
+              </div>
+              <div style={{ minWidth: 0, flex: "1 1 0%" }}>
+                <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
+                <div style={{ fontSize: "0.9rem", color: "#fff", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
+              </div>
+              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "rgba(255,255,255,0.45)", flexShrink: 0 }} />
+            </button>
+            <button onClick={() => { navigate("/admin/settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", textAlign: "left" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#16a34a", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                {adminProfile?.photo
+                  ? <img src={adminProfile.photo} alt="admin" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  : <span style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>{adminInitials}</span>
+                }
+              </div>
+              <div style={{ minWidth: 0, flex: "1 1 0%" }}>
+                <div style={{ fontSize: "0.9rem", color: "#fff", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{adminProfile?.name || adminProfile?.email || "Admin"}</div>
+                <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.2 }}>{adminRole === "admin" ? "Super Admin" : "Moderator"}</div>
+              </div>
+              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "rgba(255,255,255,0.45)", flexShrink: 0 }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Nav links */}
+        <div style={{ flex: 1, overflowY: "auto" }}>
+          {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => { navigate(tab.path); setMobileSidebarOpen(false); }}
+              style={{
+                width: "100%", background: activeTab === tab.id ? "rgba(0,0,0,0.08)" : "none",
+                border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
+                padding: "0 20px", minHeight: 48, textAlign: "left",
+                color: activeTab === tab.id ? "#16a34a" : "var(--ion-text-color)",
+                fontWeight: activeTab === tab.id ? 600 : 400,
+                fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
+              }}
+            >
+              <IonIcon icon={tab.icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Settings pinned at bottom */}
+        <div style={{ borderTop: "1px solid var(--app-divider)", flexShrink: 0 }}>
+          <button
+            onClick={() => { navigate("/admin/settings"); setMobileSidebarOpen(false); }}
+            style={{
+              width: "100%", background: activeTab === "settings" ? "rgba(0,0,0,0.08)" : "none",
+              border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
+              padding: "0 20px", minHeight: 48, textAlign: "left",
+              color: activeTab === "settings" ? "#16a34a" : "var(--ion-text-color)",
+              fontWeight: activeTab === "settings" ? 600 : 400,
+              fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
+            }}
+          >
+            <IonIcon icon={settingsOutline} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+            Settings
+          </button>
+        </div>
+      </div>
+      </>, document.body)}
 
     </IonApp>
   );

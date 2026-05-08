@@ -41,6 +41,7 @@ import AdminRevenue from "@/pages/AdminRevenue";
 import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminSiteSettings from "@/pages/AdminSiteSettings";
+import AdminPurchases from "@/pages/AdminPurchases";
 import Banned from "@/pages/Banned";
 import UserLogin from "@/pages/UserLogin";
 import UserSignup from "@/pages/UserSignup";
@@ -207,7 +208,7 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/overview" element={<AdminDashboard />} />
-            <Route path="/admin/purchases" element={<AdminDashboard />} />
+            <Route path="/admin/purchases" element={<AdminPurchases />} />
             <Route path="/admin/users" element={<AdminDashboard />} />
             <Route path="/admin/saved-docs" element={<AdminDashboard />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />

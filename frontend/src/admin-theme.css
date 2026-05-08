@@ -815,6 +815,14 @@ ion-searchbar {
   .admin-form-row.cols-3 { grid-template-columns: 1fr; }
 }
 
+/* ── Mobile sidebar portal ── */
+@media (min-width: 768px) {
+  .mob-sidebar-backdrop,
+  .mob-sidebar-panel {
+    display: none !important;
+  }
+}
+
 /* ── Flex utilities ── */
 .admin-flex         { display: flex; align-items: center; }
 .admin-flex-between { display: flex; align-items: center; justify-content: space-between; }

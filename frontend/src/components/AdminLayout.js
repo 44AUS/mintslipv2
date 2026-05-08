@@ -13,7 +13,7 @@ import {
   mailOutline, sendOutline, optionsOutline, personAddOutline,
   listOutline, trendingUpOutline, cardOutline, chatboxOutline,
   downloadOutline, chevronForwardOutline,
-  personOutline, lockClosedOutline, logOutOutline,
+  personOutline, lockClosedOutline, logOutOutline, settingsOutline,
 } from "ionicons/icons";
 import {
   FileText, LogOut, Bell,
@@ -366,7 +366,7 @@ export default function AdminLayout({ children }) {
                 border: "1px solid rgba(255, 255, 255, 0.08)",
               }}>
                 {/* Business row */}
-                <div style={{
+                <div id="sidebar-biz-trigger" style={{
                   display: "flex", alignItems: "center", gap: 12,
                   padding: "12px 20px",
                   cursor: "pointer",
@@ -417,6 +417,31 @@ export default function AdminLayout({ children }) {
                 </div>
               </div>
             </div>
+
+            {/* Business popover */}
+            <IonPopover
+              trigger="sidebar-biz-trigger"
+              triggerAction="click"
+              side="bottom"
+              alignment="start"
+              style={{ "--width": "284px", "--offset-y": "4px" }}
+            >
+              <IonContent>
+                <IonList lines="none" style={{ padding: "4px 0" }}>
+                  <IonItem
+                    button
+                    detail={false}
+                    onClick={() => { navigate("/admin/site-settings"); document.querySelectorAll("ion-popover").forEach(p => p.dismiss()); }}
+                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
+                  >
+                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                      <IonIcon icon={settingsOutline} style={{ fontSize: 18 }} />
+                    </div>
+                    <IonLabel>Site Settings</IonLabel>
+                  </IonItem>
+                </IonList>
+              </IonContent>
+            </IonPopover>
 
             {/* User profile popover */}
             <IonPopover

@@ -175,8 +175,8 @@ export default function AppLayout({ children, fillHeight = false }) {
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
               <IonList lines="none" style={{ padding: "4px 0", "--background": "transparent" }}>
                 {[
-                  { label: "Terms of Service", icon: documentTextOutline, path: "/terms" },
-                  { label: "Privacy Policy",   icon: shieldOutline,       path: "/privacy" },
+                  { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
+                  { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
                 ].map(({ label, icon, path }) => (
                   <IonItem
                     key={label}

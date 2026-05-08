@@ -498,61 +498,6 @@ export default function AdminLayout({ children }) {
           </IonContent>
         </IonMenu>
 
-        {/* ── Notifications drawer (right) ── */}
-        <IonMenu side="end" contentId="admin-main" menuId="notifMenu" type="overlay" style={{ "--width": "340px", "--max-width": "90vw" }} onIonDidOpen={handleMarkRead}>
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonButton fill="clear" onClick={() => menuController.close("notifMenu")} style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}>
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </IonButton>
-              </IonButtons>
-              <IonLabel slot="start" style={{ fontWeight: 600, fontSize: "1rem", paddingLeft: 4 }}>Notifications</IonLabel>
-              <IonButtons slot="end">
-                {unreadCount > 0 && (
-                  <IonButton fill="clear" onClick={handleMarkRead} style={{ "--color": "var(--ion-color-primary)", fontSize: "0.78rem" }}>
-                    Mark all read
-                  </IonButton>
-                )}
-                {notifications.length > 0 && (
-                  <IonButton fill="clear" onClick={handleClearNotifications} style={{ "--color": "var(--ion-color-danger)", fontSize: "0.78rem" }}>
-                    Clear all
-                  </IonButton>
-                )}
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent>
-            {notifications.length === 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", opacity: 0.4, gap: 12 }}>
-                <IonIcon icon={notificationsOutline} style={{ fontSize: 40 }} />
-                <div style={{ fontSize: "0.9rem" }}>No notifications yet</div>
-              </div>
-            ) : (
-              <IonList lines="inset" style={{ padding: 0 }}>
-                {notifications.map(n => {
-                  const Icon = DOC_ICONS[n.docType] || FileText;
-                  return (
-                    <IonItem key={n.id} style={{ "--background": n.read ? "transparent" : "var(--ion-color-step-50)", "--min-height": "64px", "--padding-start": "16px", "--inner-padding-end": "16px" }}>
-                      <div slot="start" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0 }}>
-                        <Icon size={16} />
-                      </div>
-                      <IonLabel style={{ whiteSpace: "normal" }}>
-                        <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{n.docDisplayName} created</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</div>
-                        <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{timeAgo(n.createdAt)}</div>
-                      </IonLabel>
-                      {!n.read && <IonBadge color="primary" slot="end" style={{ width: 8, height: 8, borderRadius: "50%", padding: 0, minWidth: 0 }} />}
-                    </IonItem>
-                  );
-                })}
-              </IonList>
-            )}
-          </IonContent>
-        </IonMenu>
-
         {/* ── Main area ── */}
         <IonPage id="admin-main">
           <IonHeader>
@@ -632,6 +577,62 @@ export default function AdminLayout({ children }) {
         </IonPage>
 
       </IonSplitPane>
+
+      {/* ── Notifications drawer (right, outside IonSplitPane) ── */}
+      <IonMenu side="end" contentId="admin-main" menuId="notifMenu" type="overlay" style={{ "--width": "340px", "--max-width": "90vw" }} onIonDidOpen={handleMarkRead}>
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton fill="clear" onClick={() => menuController.close("notifMenu")} style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}>
+                <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                  <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                </span>
+              </IonButton>
+            </IonButtons>
+            <IonLabel slot="start" style={{ fontWeight: 600, fontSize: "1rem", paddingLeft: 4 }}>Notifications</IonLabel>
+            <IonButtons slot="end">
+              {unreadCount > 0 && (
+                <IonButton fill="clear" onClick={handleMarkRead} style={{ "--color": "var(--ion-color-primary)", fontSize: "0.78rem" }}>
+                  Mark all read
+                </IonButton>
+              )}
+              {notifications.length > 0 && (
+                <IonButton fill="clear" onClick={handleClearNotifications} style={{ "--color": "var(--ion-color-danger)", fontSize: "0.78rem" }}>
+                  Clear all
+                </IonButton>
+              )}
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          {notifications.length === 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", opacity: 0.4, gap: 12 }}>
+              <IonIcon icon={notificationsOutline} style={{ fontSize: 40 }} />
+              <div style={{ fontSize: "0.9rem" }}>No notifications yet</div>
+            </div>
+          ) : (
+            <IonList lines="inset" style={{ padding: 0 }}>
+              {notifications.map(n => {
+                const Icon = DOC_ICONS[n.docType] || FileText;
+                return (
+                  <IonItem key={n.id} style={{ "--background": n.read ? "transparent" : "var(--ion-color-step-50)", "--min-height": "64px", "--padding-start": "16px", "--inner-padding-end": "16px" }}>
+                    <div slot="start" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0 }}>
+                      <Icon size={16} />
+                    </div>
+                    <IonLabel style={{ whiteSpace: "normal" }}>
+                      <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{n.docDisplayName} created</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{timeAgo(n.createdAt)}</div>
+                    </IonLabel>
+                    {!n.read && <IonBadge color="primary" slot="end" style={{ width: 8, height: 8, borderRadius: "50%", padding: 0, minWidth: 0 }} />}
+                  </IonItem>
+                );
+              })}
+            </IonList>
+          )}
+        </IonContent>
+      </IonMenu>
+
     </IonApp>
   );
 }

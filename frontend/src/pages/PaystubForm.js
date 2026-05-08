@@ -198,7 +198,7 @@ export default function PaystubForm() {
       };
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       // Generate and download PDF - request blob if saving is enabled
       const pdfBlob = await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs, shouldSave);

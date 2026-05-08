@@ -618,7 +618,7 @@ const createOrder = (data, actions) => {
       };
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadBankStatement(formDataToSend, selectedTemplate, shouldSave);
       

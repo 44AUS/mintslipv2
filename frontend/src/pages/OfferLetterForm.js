@@ -149,7 +149,7 @@ export default function OfferLetterForm() {
       }
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadOfferLetter(formData, shouldSave);
       

@@ -143,7 +143,7 @@ export default function UtilityBillForm() {
       };
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadUtilityBill(fullFormData, selectedProvider?.id || "custom", shouldSave);
       

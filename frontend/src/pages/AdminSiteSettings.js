@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IonSpinner } from "@ionic/react";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
@@ -73,6 +73,11 @@ export default function AdminSiteSettings() {
   const [psPriceLoading, setPsPriceLoading] = useState(false);
   const [psPriceMsg, setPsPriceMsg] = useState(null);
 
+  // Document retention
+  const [retentionDays, setRetentionDays] = useState(0);
+  const [retentionLoading, setRetentionLoading] = useState(false);
+  const [retentionMsg, setRetentionMsg] = useState(null);
+
   // Site navigation order
   const NAV_ITEMS_DISPLAY = [
     { id: "paystubs",      label: "Pay Stubs" },
@@ -94,7 +99,43 @@ export default function AdminSiteSettings() {
     fetchTierDownloads();
     fetchPSPrices();
     fetchNavOrder();
+    fetchRetention();
   }, []);
+
+  const fetchRetention = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/doc-retention`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setRetentionDays(data.days ?? 0);
+    } catch (e) {}
+  };
+
+  const saveRetention = async () => {
+    setRetentionLoading(true);
+    setRetentionMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/doc-retention`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ days: retentionDays })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setRetentionMsg({ type: "success", text: retentionDays === 0 ? "Documents will be kept permanently." : `Documents older than ${retentionDays} days will be auto-deleted.` });
+        setTimeout(() => setRetentionMsg(null), 4000);
+      } else {
+        setRetentionMsg({ type: "error", text: "Failed to save retention setting." });
+      }
+    } catch (e) {
+      setRetentionMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setRetentionLoading(false);
+    }
+  };
 
   const fetchNavOrder = async () => {
     try {
@@ -489,6 +530,54 @@ export default function AdminSiteSettings() {
             >
               {psPriceLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save People Search Prices
+            </button>
+          </div>
+
+          {/* Document Retention */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-sky-50">
+                <Clock className="w-5 h-5 text-sky-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Document Retention</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  All generated documents are now auto-saved. Set how long to keep them before auto-deleting.
+                  <strong> 0 = keep permanently</strong> (default).
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-1 border-t border-slate-100 space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Retention Period (days)</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="0"
+                    value={retentionDays}
+                    onChange={e => setRetentionDays(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                    className="w-36 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <span className="text-sm text-slate-500">
+                    {retentionDays === 0 ? "Keep forever (permanent)" : `Auto-delete after ${retentionDays} day${retentionDays === 1 ? "" : "s"}`}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1.5">
+                  The cleanup runs hourly. Documents already stored are subject to this setting immediately.
+                </p>
+              </div>
+            </div>
+
+            <Msg msg={retentionMsg} />
+
+            <button
+              onClick={saveRetention}
+              disabled={retentionLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {retentionLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
+              Save Retention Setting
             </button>
           </div>
 

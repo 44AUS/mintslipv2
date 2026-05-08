@@ -136,7 +136,7 @@ export default function VehicleBillOfSaleForm() {
       }
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadVehicleBillOfSale(formData, shouldSave);
       

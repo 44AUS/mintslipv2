@@ -139,7 +139,7 @@ export default function W2Form() {
       }
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadW2(formData, selectedTaxYear, shouldSave);
       

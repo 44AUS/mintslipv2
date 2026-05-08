@@ -155,7 +155,7 @@ USER_DOCUMENTS_DIR = os.path.join(os.path.dirname(__file__), "uploads", "user_do
 os.makedirs(USER_DOCUMENTS_DIR, exist_ok=True)
 
 # Constants for saved documents
-DOCUMENT_EXPIRY_DAYS = 30
+DOCUMENT_EXPIRY_DAYS = 30  # legacy fallback only
 
 # Saved documents limits by subscription tier
 SAVED_DOCS_LIMITS = {
@@ -163,6 +163,13 @@ SAVED_DOCS_LIMITS = {
     "professional": 30,
     "business": -1  # -1 means unlimited
 }
+
+async def get_doc_retention_days() -> int:
+    """Return configured document retention in days. 0 means keep permanently."""
+    setting = await site_settings_collection.find_one({"key": "doc_retention_days"})
+    if setting is None:
+        return 0  # default: permanent
+    return int(setting.get("days", 0))
 
 # Password hashing - Using bcrypt for better security
 def hash_password(password: str) -> str:
@@ -1809,22 +1816,22 @@ async def get_saved_documents(
     """Get user's saved documents"""
     user_id = session["userId"]
     
-    # Clean up expired documents first
-    expiry_date = datetime.now(timezone.utc) - timedelta(days=DOCUMENT_EXPIRY_DAYS)
-    expired_docs = await saved_documents_collection.find({
-        "userId": user_id,
-        "createdAt": {"$lt": expiry_date.isoformat()}
-    }).to_list(100)
-    
-    # Delete expired documents and their files
-    for doc in expired_docs:
-        file_path = os.path.join(USER_DOCUMENTS_DIR, doc.get("storedFileName", ""))
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-            except:
-                pass
-        await saved_documents_collection.delete_one({"id": doc["id"]})
+    # Clean up expired documents first (only if retention period is set)
+    retention_days = await get_doc_retention_days()
+    if retention_days > 0:
+        expiry_date = datetime.now(timezone.utc) - timedelta(days=retention_days)
+        expired_docs = await saved_documents_collection.find({
+            "userId": user_id,
+            "createdAt": {"$lt": expiry_date.isoformat()}
+        }).to_list(100)
+        for doc in expired_docs:
+            file_path = os.path.join(USER_DOCUMENTS_DIR, doc.get("storedFileName", ""))
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+            await saved_documents_collection.delete_one({"id": doc["id"]})
     
     # Get saved documents
     documents = await saved_documents_collection.find(
@@ -1837,11 +1844,14 @@ async def get_saved_documents(
     # Add days remaining for each document
     now = datetime.now(timezone.utc)
     for doc in documents:
-        created_at = datetime.fromisoformat(doc["createdAt"].replace("Z", "+00:00"))
-        expiry_date = created_at + timedelta(days=DOCUMENT_EXPIRY_DAYS)
-        days_remaining = (expiry_date - now).days
-        doc["daysRemaining"] = max(0, days_remaining)
-        doc["expiresAt"] = expiry_date.isoformat()
+        if retention_days > 0:
+            created_at = datetime.fromisoformat(doc["createdAt"].replace("Z", "+00:00"))
+            expiry_date = created_at + timedelta(days=retention_days)
+            doc["daysRemaining"] = max(0, (expiry_date - now).days)
+            doc["expiresAt"] = expiry_date.isoformat()
+        else:
+            doc["daysRemaining"] = -1  # permanent
+            doc["expiresAt"] = None
     
     # Get user's subscription tier to determine max documents
     user = await users_collection.find_one({"id": user_id}, {"_id": 0})
@@ -1863,29 +1873,9 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
     """Save a document for later access"""
     user_id = session["userId"]
     
-    # Check user preference
     user = await users_collection.find_one({"id": user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    # Check if user has save documents enabled
-    if not user.get("preferences", {}).get("saveDocuments", False):
-        raise HTTPException(status_code=400, detail="Document saving is not enabled. Enable it in your settings.")
-    
-    # Get user's subscription tier to determine max documents
-    subscription_tier = user.get("subscription", {}).get("tier", "starter") if user.get("subscription") else None
-    if not subscription_tier:
-        raise HTTPException(status_code=400, detail="Active subscription required to save documents.")
-    
-    max_documents = SAVED_DOCS_LIMITS.get(subscription_tier, 10)
-    
-    # Check document count limit (skip if unlimited)
-    doc_count = await saved_documents_collection.count_documents({"userId": user_id})
-    if max_documents != -1 and doc_count >= max_documents:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"Maximum saved documents limit ({max_documents}) reached for your {subscription_tier.capitalize()} plan. Delete some documents to save new ones."
-        )
     
     # Decode base64 file data
     try:
@@ -1921,10 +1911,18 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
     }
     
     await saved_documents_collection.insert_one(document)
-    
-    # Calculate expiry info
-    expiry_date = datetime.now(timezone.utc) + timedelta(days=DOCUMENT_EXPIRY_DAYS)
-    
+
+    retention_days = await get_doc_retention_days()
+    if retention_days > 0:
+        expiry_date = datetime.now(timezone.utc) + timedelta(days=retention_days)
+        days_remaining = retention_days
+        expires_at = expiry_date.isoformat()
+        msg = f"Document saved. It will be available for {retention_days} days."
+    else:
+        days_remaining = -1
+        expires_at = None
+        msg = "Document saved permanently."
+
     return {
         "success": True,
         "document": {
@@ -1934,10 +1932,10 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
             "fileSize": len(file_content),
             "template": data.template,
             "createdAt": document["createdAt"],
-            "daysRemaining": DOCUMENT_EXPIRY_DAYS,
-            "expiresAt": expiry_date.isoformat()
+            "daysRemaining": days_remaining,
+            "expiresAt": expires_at
         },
-        "message": f"Document saved. It will be available for {DOCUMENT_EXPIRY_DAYS} days."
+        "message": msg
     }
 
 
@@ -1958,14 +1956,15 @@ async def download_saved_document(doc_id: str, session: dict = Depends(get_curre
         raise HTTPException(status_code=404, detail="Document not found")
     
     # Check if expired
-    created_at = datetime.fromisoformat(document["createdAt"].replace("Z", "+00:00"))
-    if datetime.now(timezone.utc) - created_at > timedelta(days=DOCUMENT_EXPIRY_DAYS):
-        # Delete expired document
-        file_path = os.path.join(USER_DOCUMENTS_DIR, document["storedFileName"])
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        await saved_documents_collection.delete_one({"id": doc_id})
-        raise HTTPException(status_code=404, detail="Document has expired and been deleted")
+    retention_days = await get_doc_retention_days()
+    if retention_days > 0:
+        created_at = datetime.fromisoformat(document["createdAt"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) - created_at > timedelta(days=retention_days):
+            file_path = os.path.join(USER_DOCUMENTS_DIR, document.get("storedFileName", ""))
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            await saved_documents_collection.delete_one({"id": doc_id})
+            raise HTTPException(status_code=404, detail="Document has expired and been deleted")
     
     # Determine media type
     file_ext = os.path.splitext(document["fileName"])[1].lower()
@@ -4854,6 +4853,25 @@ async def get_auth_status():
     return {"success": True, "authEnabled": settings.get("isEnabled", True)}
 
 
+@app.get("/api/admin/doc-retention")
+async def get_doc_retention(session: dict = Depends(get_current_admin)):
+    """Get document retention period in days (0 = permanent)."""
+    check_permission(session, "view_site_settings")
+    days = await get_doc_retention_days()
+    return {"success": True, "days": days}
+
+@app.put("/api/admin/doc-retention")
+async def set_doc_retention(data: dict, session: dict = Depends(get_current_admin)):
+    """Set document retention period. days=0 means keep permanently."""
+    check_permission(session, "view_site_settings")
+    days = max(0, int(data.get("days", 0)))
+    await site_settings_collection.update_one(
+        {"key": "doc_retention_days"},
+        {"$set": {"key": "doc_retention_days", "days": days, "updatedAt": datetime.now(timezone.utc).isoformat(), "updatedBy": session.get("email")}},
+        upsert=True
+    )
+    return {"success": True, "days": days}
+
 @app.get("/api/admin/auth-settings")
 async def get_auth_settings(session: dict = Depends(get_current_admin)):
     """Get auth enabled settings (admin only)"""
@@ -6286,10 +6304,35 @@ async def email_scheduler_task():
             print(f"Error in email scheduler: {e}")
         await asyncio.sleep(300)  # Run every 5 minutes
 
+async def doc_cleanup_task():
+    """Background task: delete documents that exceed the configured retention period."""
+    while True:
+        try:
+            retention_days = await get_doc_retention_days()
+            if retention_days > 0:
+                cutoff = (datetime.now(timezone.utc) - timedelta(days=retention_days)).isoformat()
+                expired = await saved_documents_collection.find(
+                    {"createdAt": {"$lt": cutoff}}, {"_id": 0}
+                ).to_list(1000)
+                for doc in expired:
+                    fp = os.path.join(USER_DOCUMENTS_DIR, doc.get("storedFileName", ""))
+                    if os.path.exists(fp):
+                        try:
+                            os.remove(fp)
+                        except Exception:
+                            pass
+                    await saved_documents_collection.delete_one({"id": doc["id"]})
+                if expired:
+                    print(f"[doc_cleanup] Deleted {len(expired)} expired documents")
+        except Exception as e:
+            print(f"Error in doc_cleanup_task: {e}")
+        await asyncio.sleep(3600)  # run every hour
+
 @app.on_event("startup")
 async def start_email_scheduler():
     """Start the email scheduler background task"""
     asyncio.create_task(email_scheduler_task())
+    asyncio.create_task(doc_cleanup_task())
     print("Email scheduler started")
 
 # ===== BLOG IMAGE SERVING (Dynamic with MongoDB fallback) =====

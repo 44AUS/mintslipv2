@@ -127,7 +127,7 @@ export default function ScheduleCForm() {
       }
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadScheduleC(formData, selectedTaxYear, shouldSave);
       

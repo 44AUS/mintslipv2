@@ -126,7 +126,7 @@ export default function Form1099NEC() {
       }
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownload1099NEC(formData, selectedTaxYear, shouldSave);
       

@@ -181,7 +181,7 @@ export default function CanadianPaystubForm() {
       };
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadCanadianPaystub(fullFormData, selectedTemplate, calculateNumStubs, shouldSave);
       

@@ -143,7 +143,7 @@ export default function W9Form() {
       }
       
       // Check if user wants documents saved
-      const shouldSave = user?.preferences?.saveDocuments;
+      const shouldSave = !!user;
       
       const pdfBlob = await generateAndDownloadW9(formData, selectedTaxYear, shouldSave);
       

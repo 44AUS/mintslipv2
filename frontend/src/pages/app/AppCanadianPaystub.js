@@ -1188,25 +1188,57 @@ export default function AppCanadianPaystub() {
                 </div>
               )}
 
-              {/* PDF Preview button */}
-              {calculateNumStubs > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <IonButton
-                    expand="block"
-                    fill="outline"
-                    color="medium"
-                    style={{ "--border-radius": "8px" }}
-                    disabled={isGeneratingPreview || pdfPreviews.length === 0}
-                    onClick={() => { setPreviewPageIndex(0); setPreviewModalOpen(true); }}
-                  >
-                    {isGeneratingPreview ? (
-                      <><IonSpinner name="crescent" style={{ marginRight: 8 }} />Generating Preview…</>
-                    ) : (
-                      <><IonIcon slot="start" icon={eyeOutline} />Preview (Watermarked)</>
+              {/* Inline PDF Preview */}
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginBottom: 6 }}>
+                  Preview · Click to enlarge · Watermark removed after purchase
+                </p>
+                {isGeneratingPreview ? (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-light)", borderRadius: 8 }}>
+                    <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
+                    <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
+                  </div>
+                ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
+                  <>
+                    <div
+                      style={{ position: "relative", cursor: "pointer", borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+                      onClick={() => setPreviewModalOpen(true)}
+                    >
+                      <img
+                        src={pdfPreviews[previewPageIndex]}
+                        alt={`Canadian pay stub preview ${previewPageIndex + 1}`}
+                        style={{ width: "100%", display: "block", background: "#fff" }}
+                      />
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                        <span style={{ fontSize: "2rem", fontWeight: 700, color: "rgba(0,0,0,0.12)", transform: "rotate(-30deg)", userSelect: "none" }}>MintSlip</span>
+                      </div>
+                      <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(255,255,255,0.9)", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", color: "#555" }}>
+                        <IonIcon icon={eyeOutline} style={{ marginRight: 3, fontSize: "0.7rem" }} />Click to enlarge
+                      </div>
+                    </div>
+                    {pdfPreviews.length > 1 && (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
+                        <IonButton fill="clear" size="small" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i - 1))}>
+                          <IonIcon icon={chevronBackOutline} />
+                        </IonButton>
+                        {pdfPreviews.map((_, idx) => (
+                          <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "var(--ion-color-success)" : "var(--ion-color-light-shade)", color: idx === previewPageIndex ? "#fff" : "var(--ion-color-dark)" }}>
+                            {idx + 1}
+                          </button>
+                        ))}
+                        <IonButton fill="clear" size="small" disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i + 1))}>
+                          <IonIcon icon={chevronForwardOutline} />
+                        </IonButton>
+                      </div>
                     )}
-                  </IonButton>
-                </div>
-              )}
+                  </>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-light)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
+                    <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
+                    <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>Fill in pay period dates<br />and rate to see a preview</p>
+                  </div>
+                )}
+              </div>
 
               {/* Coupon input */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (

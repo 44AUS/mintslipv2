@@ -6,10 +6,12 @@ import {
   IonAccordion, IonAccordionGroup, IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonText, IonBadge,
+  IonText, IonBadge, IonModal, IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonContent,
 } from "@ionic/react";
-import { trashOutline, addOutline, cloudDownloadOutline } from "ionicons/icons";
+import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetag, pricetagOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
+import { generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "@/utils/federalTaxCalculator";
@@ -551,6 +553,62 @@ export default function AppPaystub() {
 
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
 
+  // ── PDF preview state ─────────────────────────────────────────────────────
+  const [pdfPreviews,         setPdfPreviews]         = useState([]);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [previewModalOpen,    setPreviewModalOpen]    = useState(false);
+  const [previewPageIndex,    setPreviewPageIndex]    = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
+        setIsGeneratingPreview(true);
+        try {
+          const previewData = {
+            ...formData, deductions, contributions, absencePlans, employerBenefits,
+            logoDataUrl: logoPreview,
+          };
+          const numStubs = Math.max(1, calculateNumStubs || 1);
+          const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, numStubs);
+          setPdfPreviews(previews);
+          if (previewPageIndex >= previews.length) setPreviewPageIndex(0);
+        } catch (err) { console.error("Preview generation failed:", err); }
+        setIsGeneratingPreview(false);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [formData, selectedTemplate, deductions, contributions, absencePlans, employerBenefits, logoPreview]);
+
+  // ── Coupon state ──────────────────────────────────────────────────────────
+  const [couponCode,          setCouponCode]          = useState("");
+  const [isValidatingCoupon,  setIsValidatingCoupon]  = useState(false);
+  const [couponError,         setCouponError]         = useState("");
+
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) { setCouponError("Please enter a coupon code"); return; }
+    setIsValidatingCoupon(true); setCouponError("");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/validate-coupon`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode.trim(), generatorType: "paystub" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid) {
+        const base = calculateNumStubs * 9.99;
+        const discountAmount = base * data.discountPercent / 100;
+        setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, originalPrice: base, discountedPrice: parseFloat((base - discountAmount).toFixed(2)) });
+        toast.success(`Coupon applied: ${data.discountPercent}% off!`);
+      } else {
+        setCouponError(data.detail || "Invalid coupon code");
+        setAppliedDiscount(null);
+      }
+    } catch { setCouponError("Error validating coupon"); setAppliedDiscount(null); }
+    finally { setIsValidatingCoupon(false); }
+  };
+
+  const removeCoupon = () => { setCouponCode(""); setAppliedDiscount(null); setCouponError(""); };
+
   // ── Deductions helpers ────────────────────────────────────────────────────
   const addDeduction    = () => setDeductions(prev => [...prev, { id: Date.now(), type:"other", name:"", amount:"", isPercentage:false, preTax:false }]);
   const removeDeduction = (id) => setDeductions(prev => prev.filter(d => d.id !== id));
@@ -604,6 +662,7 @@ export default function AppPaystub() {
     setIsProcessing(true);
     try {
       const baseAmount = calculateNumStubs * 9.99;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : baseAmount;
       const origin = window.location.origin;
       const fullFormData = { ...formData, deductions, contributions, absencePlans, employerBenefits, companyLogo, logoDataUrl: logoPreview };
       localStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
@@ -614,12 +673,14 @@ export default function AppPaystub() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: baseAmount,
+          amount: finalAmount,
           documentType: "paystub",
           template: selectedTemplate,
           successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${origin}/app/paystub`,
           quantity: calculateNumStubs,
+          discountCode: appliedDiscount?.code || null,
+          discountAmount: appliedDiscount ? baseAmount - finalAmount : 0,
         }),
       });
       const data = await res.json();
@@ -1283,13 +1344,77 @@ export default function AppPaystub() {
                 </>
               )}
 
+              {/* PDF Preview button */}
+              {calculateNumStubs > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <IonButton
+                    expand="block"
+                    fill="outline"
+                    color="medium"
+                    style={{ "--border-radius": "8px" }}
+                    disabled={isGeneratingPreview || pdfPreviews.length === 0}
+                    onClick={() => { setPreviewPageIndex(0); setPreviewModalOpen(true); }}
+                  >
+                    {isGeneratingPreview ? (
+                      <><IonSpinner name="crescent" style={{ marginRight: 8 }} />Generating Preview…</>
+                    ) : (
+                      <><IonIcon slot="start" icon={eyeOutline} />Preview (Watermarked)</>
+                    )}
+                  </IonButton>
+                </div>
+              )}
+
+              {/* Coupon input */}
+              {!hasActiveSubscription && calculateNumStubs > 0 && (
+                <div style={{ marginTop: 12, padding: 12, background: "var(--ion-color-light)", borderRadius: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <IonIcon icon={pricetagOutline} style={{ color: "var(--ion-color-medium)" }} />
+                    <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Have a coupon code?</span>
+                  </div>
+                  {!appliedDiscount ? (
+                    <>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <IonInput
+                          fill="outline"
+                          placeholder="Enter code"
+                          value={couponCode}
+                          onIonInput={e => { setCouponCode(e.detail.value?.toUpperCase() || ""); setCouponError(""); }}
+                          style={{ flex: 1, fontFamily: "monospace" }}
+                        />
+                        <IonButton fill="outline" onClick={validateCoupon} disabled={isValidatingCoupon || !couponCode.trim()} style={{ flexShrink: 0 }}>
+                          {isValidatingCoupon ? <IonSpinner name="crescent" /> : "Apply"}
+                        </IonButton>
+                      </div>
+                      {couponError && <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{couponError}</IonNote>}
+                    </>
+                  ) : (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "rgba(var(--ion-color-success-rgb),0.15)", borderRadius: 6 }}>
+                      <span style={{ color: "var(--ion-color-success-shade)", fontWeight: 600, fontSize: "0.85rem" }}>
+                        {appliedDiscount.code} — {appliedDiscount.discountPercent}% off
+                      </span>
+                      <IonButton fill="clear" color="danger" size="small" onClick={removeCoupon}>
+                        <IonIcon icon={closeOutline} />
+                      </IonButton>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Price */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(var(--ion-color-success-rgb),0.3)", textAlign: "center" }}>
-                  <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)" }}>
-                    ${(calculateNumStubs * 9.99).toFixed(2)}
-                  </p>
-                  <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>${(9.99).toFixed(2)} per stub</p>
+                  {appliedDiscount ? (
+                    <>
+                      <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
+                      <p style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--ion-color-success-shade)" }}>${appliedDiscount.discountedPrice.toFixed(2)}</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-success)" }}>{appliedDiscount.discountPercent}% discount applied</p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>$9.99 per stub</p>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -1320,7 +1445,7 @@ export default function AppPaystub() {
                   : hasActiveSubscription
                     ? `Download ${calculateNumStubs > 0 ? calculateNumStubs : ""} Stub${calculateNumStubs !== 1 ? "s" : ""}`
                     : calculateNumStubs > 0
-                      ? `Pay & Download — $${(calculateNumStubs * 9.99).toFixed(2)}`
+                      ? `Pay & Download — $${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : (calculateNumStubs * 9.99).toFixed(2)}`
                       : "Configure Pay Period First"
                 }
               </IonButton>
@@ -1329,6 +1454,46 @@ export default function AppPaystub() {
 
         </div>
       </div>
+
+      {/* PDF Preview Modal */}
+      <IonModal isOpen={previewModalOpen} onDidDismiss={() => setPreviewModalOpen(false)}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Pay Stub Preview (Watermarked)</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => setPreviewModalOpen(false)}>
+                <IonIcon icon={closeOutline} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <div style={{ padding: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            {pdfPreviews.length > 1 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <IonButton fill="clear" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i-1))}>
+                  <IonIcon icon={chevronBackOutline} />
+                </IonButton>
+                <span>Stub {previewPageIndex + 1} of {pdfPreviews.length}</span>
+                <IonButton fill="clear" disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i+1))}>
+                  <IonIcon icon={chevronForwardOutline} />
+                </IonButton>
+              </div>
+            )}
+            {pdfPreviews[previewPageIndex] && (
+              <img
+                src={pdfPreviews[previewPageIndex]}
+                alt={`Pay stub preview ${previewPageIndex + 1}`}
+                style={{ width: "100%", maxWidth: 680, border: "1px solid var(--ion-color-light)", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+              />
+            )}
+            <IonNote style={{ textAlign: "center", fontSize: "0.8rem" }}>
+              This is a watermarked preview. Purchase to download the final document.
+            </IonNote>
+          </div>
+        </IonContent>
+      </IonModal>
+
     </AppLayout>
   );
 }

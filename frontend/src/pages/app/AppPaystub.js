@@ -1219,13 +1219,13 @@ export default function AppPaystub() {
 
           {/* ── RIGHT: Preview + Download ── */}
           <div style={{ minWidth: 0 }}>
-            <div style={{ background: "rgba(var(--ion-color-success-rgb),0.08)", border: "2px solid var(--ion-color-success)", borderRadius: 12, padding: 20, position: "sticky", top: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--ion-color-success-shade)", marginBottom: 12 }}>
+            <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: 20, position: "sticky", top: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.10)" }}>
+              <h3 style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--ion-text-color)", marginBottom: 12 }}>
                 Pay Preview {formData.workerType === "contractor" && <IonBadge color="warning">1099</IonBadge>}
               </h3>
 
               {calculateNumStubs > 0 && (
-                <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(var(--ion-color-success-rgb),0.3)" }}>
+                <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--ion-color-light-shade)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span>Paystubs to Generate:</span>
                     <strong>{calculateNumStubs}</strong>
@@ -1323,7 +1323,7 @@ export default function AppPaystub() {
 
               {/* Price */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(var(--ion-color-success-rgb),0.3)", textAlign: "center" }}>
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ion-color-light-shade)", textAlign: "center" }}>
                   {appliedDiscount ? (
                     <>
                       <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>

@@ -4,10 +4,10 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
   IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonAvatar, IonPopover,
+  IonList, IonItem, IonAvatar, IonPopover, IonTitle,
 } from "@ionic/react";
 import {
-  menuOutline, closeOutline, moonOutline, sunnyOutline,
+  menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline,
   gridOutline, cartOutline, peopleOutline, folderOutline,
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
@@ -42,16 +42,18 @@ const DOC_ICONS = {
   "utility-bill":         FileText,
 };
 
-// Tabs hidden from the top-bar segment (still visible in sidebar)
+// Tabs hidden from the top-bar segment (shown in sidebar or settings)
 const TOPBAR_EXCLUDE = new Set([
   "saved-docs", "email-templates",
   "site-settings", "banned-ips", "export",
   "moderators", "mass-email", "audit-log", "support",
+  "settings",
 ]);
 
-// Tabs hidden from the sidebar nav (still visible in top-bar)
+// Tabs hidden from the sidebar nav (shown in top-bar)
 const SIDEBAR_EXCLUDE = new Set([
   "overview", "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
+  "site-settings",
 ]);
 
 function timeAgo(dateStr) {
@@ -250,7 +252,11 @@ export default function AdminLayout({ children }) {
     return "overview";
   };
 
-  const activeTab = getActiveTab();
+  const activeTab   = getActiveTab();
+  const isInnerPage = TOPBAR_EXCLUDE.has(activeTab);
+  const pageTitle   = activeTab === "settings"
+    ? "Settings"
+    : allTabs.find(t => t.id === activeTab)?.label || "";
 
   const adminRole        = localStorage.getItem("adminRole") || "admin";
   const adminPermissions = (() => {
@@ -490,17 +496,44 @@ export default function AdminLayout({ children }) {
 
             <IonList
               lines="inset"
-              style={{ flexGrow: 1, overflowY: "auto", padding: "0px", "--background": "transparent" }}
+              style={{ flexGrow: 1, overflowY: "auto", padding: "0 0 8px 0", "--background": "transparent" }}
             >
               {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (
                 <NavItem
                   key={tab.id}
                   tab={tab}
                   isActive={activeTab === tab.id}
-                  onClick={() => navigate(tab.path)}
+                  onClick={() => { navigate(tab.path); handleCloseSidebar(); }}
                 />
               ))}
             </IonList>
+
+            {/* Pinned settings button */}
+            <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg, #fff)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
+              <IonItem
+                button
+                detail={false}
+                onClick={() => { navigate("/admin/settings"); handleCloseSidebar(); }}
+                style={{
+                  "--background":            activeTab === "settings" ? "var(--ion-color-step-100)" : "transparent",
+                  "--background-hover":      "var(--ion-color-step-100)",
+                  "--background-hover-opacity": "1",
+                  "--color":                 activeTab === "settings" ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+                  "--min-height":            "48px",
+                  "--padding-start":         "20px",
+                  "--padding-end":           "0",
+                  "--inner-padding-end":     "0",
+                  fontWeight:                activeTab === "settings" ? 600 : 400,
+                }}
+              >
+                <div slot="start" style={{ position: "relative", display: "flex" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.25rem" }}>
+                    <IonIcon icon={settingsOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </div>
+                <IonLabel>Settings</IonLabel>
+              </IonItem>
+            </div>
           </IonContent>
         </IonMenu>
 
@@ -508,48 +541,67 @@ export default function AdminLayout({ children }) {
         <IonPage id="admin-main">
           <IonHeader>
             <IonToolbar>
+              {isInnerPage ? (
+                <>
+                  {/* Inner page: back arrow + title */}
+                  <IonButtons slot="start">
+                    <IonButton
+                      fill="clear"
+                      onClick={() => navigate(-1)}
+                      style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
+                    >
+                      <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>
+                        <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                      </span>
+                    </IonButton>
+                  </IonButtons>
+                  <IonTitle style={{ color: "#ffffff", fontSize: "1rem", fontWeight: 600 }}>
+                    {pageTitle}
+                  </IonTitle>
+                </>
+              ) : (
+                <>
+                  {/* Normal: hamburger + segment */}
+                  <IonButtons slot="start">
+                    <IonButton
+                      fill="clear"
+                      onClick={handleMenuToggle}
+                      style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
+                    >
+                      <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                        <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                      </span>
+                    </IonButton>
+                  </IonButtons>
+                  <IonSegment
+                    scrollable
+                    value={activeTab}
+                    onIonChange={e => {
+                      const tab = topbarTabs.find(t => t.id === e.detail.value);
+                      if (tab) navigate(tab.path);
+                    }}
+                    style={{
+                      "--background":      "transparent",
+                      "--color":           "rgba(255,255,255,0.65)",
+                      "--color-checked":   "#ffffff",
+                      "--indicator-color": "#ffffff",
+                    }}
+                  >
+                    {topbarTabs.map(tab => (
+                      <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+                          <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                        </span>
+                        <IonLabel style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                          {tab.label}
+                        </IonLabel>
+                      </IonSegmentButton>
+                    ))}
+                  </IonSegment>
+                </>
+              )}
 
-              {/* Left: hamburger + brand */}
-              <IonButtons slot="start">
-                <IonButton
-                  fill="clear"
-                  onClick={handleMenuToggle}
-                  style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
-                >
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </IonButton>
-              </IonButtons>
-
-              {/* Center: scrollable nav tabs (subset) */}
-              <IonSegment
-                scrollable
-                value={activeTab}
-                onIonChange={e => {
-                  const tab = topbarTabs.find(t => t.id === e.detail.value);
-                  if (tab) navigate(tab.path);
-                }}
-                style={{
-                  "--background":      "transparent",
-                  "--color":           "rgba(255,255,255,0.65)",
-                  "--color-checked":   "#ffffff",
-                  "--indicator-color": "#ffffff",
-                }}
-              >
-                {topbarTabs.map(tab => (
-                  <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
-                      <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                    </span>
-                    <IonLabel style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                      {tab.label}
-                    </IonLabel>
-                  </IonSegmentButton>
-                ))}
-              </IonSegment>
-
-              {/* Right: actions */}
+              {/* Right: notifications (always visible) */}
               <IonButtons slot="end" style={{ gap: 0 }}>
 
                 {/* Notifications */}

@@ -422,9 +422,9 @@ export default function AdminLayout({ children }) {
             <IonPopover
               trigger="sidebar-user-trigger"
               triggerAction="click"
-              side="top"
+              side="bottom"
               alignment="start"
-              style={{ "--width": "220px" }}
+              style={{ "--width": "284px", "--offset-y": "4px" }}
             >
               <IonContent>
                 <IonList lines="none" style={{ padding: "4px 0" }}>

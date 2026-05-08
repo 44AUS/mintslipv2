@@ -252,11 +252,7 @@ export default function AdminLayout({ children }) {
     return "overview";
   };
 
-  const activeTab   = getActiveTab();
-  const isInnerPage = TOPBAR_EXCLUDE.has(activeTab);
-  const pageTitle   = activeTab === "settings"
-    ? "Settings"
-    : allTabs.find(t => t.id === activeTab)?.label || "";
+  const activeTab = getActiveTab();
 
   const adminRole        = localStorage.getItem("adminRole") || "admin";
   const adminPermissions = (() => {
@@ -293,6 +289,11 @@ export default function AdminLayout({ children }) {
 
   // Only a subset of tabs appear in the top-bar segment
   const topbarTabs = tabs.filter(t => !TOPBAR_EXCLUDE.has(t.id));
+
+  const isInnerPage = TOPBAR_EXCLUDE.has(activeTab);
+  const pageTitle   = activeTab === "settings"
+    ? "Settings"
+    : allTabs.find(t => t.id === activeTab)?.label || "";
 
   const adminInitials = adminProfile?.name
     ? adminProfile.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)

@@ -496,63 +496,6 @@ export default function AppPaystub() {
     });
   };
 
-  // ── Preview calc ─────────────────────────────────────────────────────────
-  const preview = useMemo(() => {
-    const rate         = parseFloat(formData.rate)         || 0;
-    const annualSalary = parseFloat(formData.annualSalary) || 0;
-    const numStubs     = calculateNumStubs;
-    const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
-    const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
-    const hoursArray    = formData.hoursList    ? formData.hoursList.split(",").map(h => parseFloat(h.trim())||0).slice(0,numStubs) : [];
-    const overtimeArray = formData.overtimeList ? formData.overtimeList.split(",").map(h => parseFloat(h.trim())||0).slice(0,numStubs) : [];
-    const commissionArray = formData.commissionList ? formData.commissionList.split(",").map(c => parseFloat(c.trim())||0).slice(0,numStubs) : [];
-    const tipsArray     = formData.tipsList     ? formData.tipsList.split(",").map(t => parseFloat(t.trim())||0).slice(0,numStubs) : [];
-    const tipsCashArray = formData.tipsCashList ? formData.tipsCashList.split(",").map(t => t.trim()==="1").slice(0,numStubs) : [];
-    const isContractor  = formData.workerType === "contractor";
-    const stateRate     = getStateTaxRate(formData.state);
-    const actualLocalTaxRate = getLocalTaxRate(formData.state, formData.city);
-
-    const stubPreviews = [];
-    for (let i = 0; i < (numStubs || 1); i++) {
-      const hours      = hoursArray[i]     || defaultHours;
-      const overtime   = overtimeArray[i]  || 0;
-      const commission = commissionArray[i]|| 0;
-      const tips       = tipsArray[i]      || 0;
-      const tipsCash   = tipsCashArray[i]  || false;
-      const tipsForPay = tipsCash ? 0 : tips;
-      let grossPay = formData.payType === "salary"
-        ? (annualSalary / periodsPerYear) + commission + tipsForPay
-        : (rate * hours) + (rate * 1.5 * overtime) + commission + tipsForPay;
-
-      const ssTax       = isContractor ? 0 : grossPay * 0.062;
-      const medTax      = isContractor ? 0 : grossPay * 0.0145;
-      let federalTax    = 0;
-      let stateTax      = 0;
-      if (!isContractor) {
-        federalTax = formData.federalFilingStatus
-          ? calculateFederalTax(grossPay, formData.payFrequency, formData.federalFilingStatus)
-          : grossPay * 0.22;
-        stateTax = calculateStateTax(grossPay, formData.state, formData.payFrequency, formData.stateAllowances || 0, stateRate);
-      }
-      const localTax   = isContractor ? 0 : (formData.includeLocalTax && actualLocalTaxRate > 0 ? grossPay * actualLocalTaxRate : 0);
-      const totalTaxes = ssTax + medTax + federalTax + stateTax + localTax;
-      const stubDeductions   = deductions.reduce((s,d)   => s + (d.isPercentage ? grossPay*parseFloat(d.amount||0)/100 : parseFloat(d.amount||0)), 0);
-      const stubContributions= contributions.reduce((s,c) => s + (c.isPercentage ? grossPay*parseFloat(c.amount||0)/100 : parseFloat(c.amount||0)), 0);
-      const netPay = grossPay - totalTaxes - stubDeductions - stubContributions;
-      stubPreviews.push({ grossPay, ssTax, medTax, federalTax, stateTax, localTax, totalTaxes, totalDeductions: stubDeductions, totalContributions: stubContributions, netPay });
-    }
-    return {
-      totalGross: stubPreviews.reduce((s,x)=>s+x.grossPay,0),
-      totalTaxes: stubPreviews.reduce((s,x)=>s+x.totalTaxes,0),
-      netPay:     stubPreviews.reduce((s,x)=>s+x.netPay,0),
-      totalDeductions:    stubPreviews.reduce((s,x)=>s+x.totalDeductions,0),
-      totalContributions: stubPreviews.reduce((s,x)=>s+x.totalContributions,0),
-      numStubs, stubPreviews,
-    };
-  }, [formData, calculateNumStubs, deductions, contributions]);
-
-  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
-
   // ── PDF preview state ─────────────────────────────────────────────────────
   const [pdfPreviews,         setPdfPreviews]         = useState([]);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
@@ -564,14 +507,17 @@ export default function AppPaystub() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
+          const diffTime = Math.abs(new Date(formData.endDate) - new Date(formData.startDate));
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
+          const numStubs = Math.max(1, Math.ceil(diffDays / periodLength));
           const previewData = {
             ...formData, deductions, contributions, absencePlans, employerBenefits,
             logoDataUrl: logoPreview,
           };
-          const numStubs = Math.max(1, calculateNumStubs || 1);
           const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, numStubs);
           setPdfPreviews(previews);
-          if (previewPageIndex >= previews.length) setPreviewPageIndex(0);
+          setPreviewPageIndex(0);
         } catch (err) { console.error("Preview generation failed:", err); }
         setIsGeneratingPreview(false);
       }
@@ -1278,70 +1224,13 @@ export default function AppPaystub() {
                 Pay Preview {formData.workerType === "contractor" && <IonBadge color="warning">1099</IonBadge>}
               </h3>
 
-              {preview.numStubs > 0 && (
+              {calculateNumStubs > 0 && (
                 <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(var(--ion-color-success-rgb),0.3)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span>Paystubs to Generate:</span>
-                    <strong>{preview.numStubs}</strong>
+                    <strong>{calculateNumStubs}</strong>
                   </div>
                 </div>
-              )}
-
-              {preview.stubPreviews && preview.stubPreviews.length > 0 && (
-                <>
-                  {/* Per-stub navigation */}
-                  {preview.stubPreviews.length > 1 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                      <IonButton fill="clear" size="small" disabled={currentPreviewIndex === 0} onClick={() => setCurrentPreviewIndex(i => Math.max(0, i-1))}>‹</IonButton>
-                      <span style={{ fontSize: "0.8rem" }}>Stub {currentPreviewIndex + 1} of {preview.stubPreviews.length}</span>
-                      <IonButton fill="clear" size="small" disabled={currentPreviewIndex === preview.stubPreviews.length - 1} onClick={() => setCurrentPreviewIndex(i => Math.min(preview.stubPreviews.length-1, i+1))}>›</IonButton>
-                    </div>
-                  )}
-
-                  {/* Current stub breakdown */}
-                  {preview.stubPreviews[currentPreviewIndex] && (
-                    <div style={{ background: "var(--ion-card-background)", borderRadius: 8, padding: 12, marginBottom: 12, border: "1px solid rgba(var(--ion-color-success-rgb),0.2)" }}>
-                      {[
-                        ["Gross Pay", preview.stubPreviews[currentPreviewIndex].grossPay, "success"],
-                        ...(formData.workerType === "employee" ? [
-                          ["Federal Tax",     preview.stubPreviews[currentPreviewIndex].federalTax, "danger"],
-                          ["Social Security", preview.stubPreviews[currentPreviewIndex].ssTax, "danger"],
-                          ["Medicare",        preview.stubPreviews[currentPreviewIndex].medTax, "danger"],
-                          ["State Tax",       preview.stubPreviews[currentPreviewIndex].stateTax, "danger"],
-                          ...(preview.stubPreviews[currentPreviewIndex].localTax > 0 ? [["Local Tax", preview.stubPreviews[currentPreviewIndex].localTax, "danger"]] : []),
-                          ["Total Taxes",     preview.stubPreviews[currentPreviewIndex].totalTaxes, "danger"],
-                          ...(preview.stubPreviews[currentPreviewIndex].totalDeductions > 0 ? [["Deductions", preview.stubPreviews[currentPreviewIndex].totalDeductions, "warning"]] : []),
-                          ...(preview.stubPreviews[currentPreviewIndex].totalContributions > 0 ? [["Contributions", preview.stubPreviews[currentPreviewIndex].totalContributions, "tertiary"]] : []),
-                        ] : [["No Taxes Withheld", 0, "warning"]]),
-                        [formData.workerType === "contractor" ? "Payment" : "Net Pay", preview.stubPreviews[currentPreviewIndex].netPay, "success"],
-                      ].map(([label, val, color]) => (
-                        <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0", color: `var(--ion-color-${color})` }}>
-                          <span>{label}:</span>
-                          <strong>${formatCurrency(val)}</strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Totals across all stubs */}
-                  {preview.numStubs > 1 && (
-                    <div style={{ borderTop: "1px solid rgba(var(--ion-color-success-rgb),0.3)", paddingTop: 12 }}>
-                      <p style={{ fontWeight: 700, marginBottom: 8 }}>All {preview.numStubs} Stubs Total</p>
-                      {[
-                        ["Total Gross", preview.totalGross],
-                        ...(formData.workerType === "employee" ? [["Total Taxes", preview.totalTaxes]] : []),
-                        ...(preview.totalDeductions > 0 ? [["Total Deductions", preview.totalDeductions]] : []),
-                        ...(preview.totalContributions > 0 ? [["Total Contributions", preview.totalContributions]] : []),
-                        [formData.workerType === "contractor" ? "Total Payment" : "Total Net Pay", preview.netPay],
-                      ].map(([label, val]) => (
-                        <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0" }}>
-                          <span>{label}:</span>
-                          <strong>${formatCurrency(val)}</strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
               )}
 
               {/* PDF Preview button */}

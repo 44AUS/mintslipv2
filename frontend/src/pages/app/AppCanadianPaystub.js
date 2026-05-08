@@ -13,7 +13,6 @@ import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGener
 import { generateAllCanadianPreviewPDFs } from "@/utils/canadianPaystubPreviewGenerator";
 import {
   CANADIAN_PROVINCES,
-  calculateCanadianTaxes,
   formatSIN, validateSIN,
   formatPostalCode, validatePostalCode,
 } from "@/utils/canadianTaxRates";
@@ -468,9 +467,6 @@ export default function AppCanadianPaystub() {
     });
   };
 
-  // ── Preview calc (Canadian taxes) ────────────────────────────────────────
-  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
-
   // ── PDF preview state ─────────────────────────────────────────────────────
   const [pdfPreviews,         setPdfPreviews]         = useState([]);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
@@ -486,7 +482,10 @@ export default function AppCanadianPaystub() {
             ...formData, deductions, contributions, absencePlans, employerBenefits,
             logoDataUrl: logoPreview,
           };
-          const numStubs = Math.max(1, calculateNumStubs || 1);
+          const diffTime = Math.abs(new Date(formData.endDate) - new Date(formData.startDate));
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
+          const numStubs = Math.max(1, Math.ceil(diffDays / periodLength));
           const previews = await generateAllCanadianPreviewPDFs(previewData, selectedTemplate, numStubs);
           setPdfPreviews(previews);
           if (previewPageIndex >= previews.length) setPreviewPageIndex(0);
@@ -526,66 +525,6 @@ export default function AppCanadianPaystub() {
   };
 
   const removeCoupon = () => { setCouponCode(""); setAppliedDiscount(null); setCouponError(""); };
-
-  const preview = useMemo(() => {
-    const rate         = parseFloat(formData.rate)         || 0;
-    const annualSalary = parseFloat(formData.annualSalary) || 0;
-    const numStubs     = calculateNumStubs;
-    const defaultHours = formData.payFrequency === "weekly" ? 40 : 80;
-    const periodsPerYear = formData.payFrequency === "weekly" ? 52 : 26;
-    const hoursArray    = formData.hoursList    ? formData.hoursList.split(",").map(h => parseFloat(h.trim())||0).slice(0,numStubs) : [];
-    const overtimeArray = formData.overtimeList ? formData.overtimeList.split(",").map(h => parseFloat(h.trim())||0).slice(0,numStubs) : [];
-    const commissionArray = formData.commissionList ? formData.commissionList.split(",").map(c => parseFloat(c.trim())||0).slice(0,numStubs) : [];
-    const isContractor  = formData.workerType === "contractor";
-    const province = formData.province || "ON";
-
-    const stubPreviews = [];
-    for (let i = 0; i < (numStubs || 1); i++) {
-      const hours      = hoursArray[i]     || defaultHours;
-      const overtime   = overtimeArray[i]  || 0;
-      const commission = commissionArray[i]|| 0;
-      let grossPay = formData.payType === "salary"
-        ? (annualSalary / periodsPerYear) + commission
-        : (rate * hours) + (rate * 1.5 * overtime) + commission;
-
-      let cpp = 0, ei = 0, qpip = 0, federalTax = 0, provincialTax = 0, totalTaxes = 0;
-      let cppLabel = "CPP";
-
-      if (!isContractor) {
-        try {
-          const taxes = calculateCanadianTaxes(
-            grossPay,
-            formData.payFrequency,
-            province,
-            0,
-            formData.federalAllowances || "0",
-            formData.provincialAllowances || "0",
-            formData.maritalStatus || "single"
-          );
-          cpp          = taxes.cpp;
-          ei           = taxes.ei;
-          qpip         = taxes.qpip || 0;
-          federalTax   = taxes.federalTax;
-          provincialTax= taxes.provincialTax;
-          totalTaxes   = taxes.totalTax;
-          cppLabel     = taxes.cppLabel || "CPP";
-        } catch {}
-      }
-
-      const stubDeductions    = deductions.reduce((s,d)   => s + (d.isPercentage ? grossPay*parseFloat(d.amount||0)/100 : parseFloat(d.amount||0)), 0);
-      const stubContributions = contributions.reduce((s,c) => s + (c.isPercentage ? grossPay*parseFloat(c.amount||0)/100 : parseFloat(c.amount||0)), 0);
-      const netPay = grossPay - totalTaxes - stubDeductions - stubContributions;
-      stubPreviews.push({ grossPay, cpp, ei, qpip, federalTax, provincialTax, totalTaxes, totalDeductions: stubDeductions, totalContributions: stubContributions, netPay, cppLabel });
-    }
-    return {
-      totalGross: stubPreviews.reduce((s,x)=>s+x.grossPay,0),
-      totalTaxes: stubPreviews.reduce((s,x)=>s+x.totalTaxes,0),
-      netPay:     stubPreviews.reduce((s,x)=>s+x.netPay,0),
-      totalDeductions:    stubPreviews.reduce((s,x)=>s+x.totalDeductions,0),
-      totalContributions: stubPreviews.reduce((s,x)=>s+x.totalContributions,0),
-      numStubs, stubPreviews,
-    };
-  }, [formData, calculateNumStubs, deductions, contributions]);
 
   // ── Deductions helpers ────────────────────────────────────────────────────
   const addDeduction    = () => setDeductions(prev => [...prev, { id: Date.now(), type:"other", name:"", amount:"", isPercentage:false, preTax:false }]);
@@ -1240,71 +1179,13 @@ export default function AppCanadianPaystub() {
                 Pay Preview {formData.province === "QC" && <IonBadge color="tertiary">QPP/QPIP</IonBadge>}
               </h3>
 
-              {preview.numStubs > 0 && (
+              {calculateNumStubs > 0 && (
                 <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(var(--ion-color-success-rgb),0.3)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span>Paystubs to Generate:</span>
-                    <strong>{preview.numStubs}</strong>
+                    <strong>{calculateNumStubs}</strong>
                   </div>
                 </div>
-              )}
-
-              {preview.stubPreviews && preview.stubPreviews.length > 0 && (
-                <>
-                  {preview.stubPreviews.length > 1 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                      <IonButton fill="clear" size="small" disabled={currentPreviewIndex === 0} onClick={() => setCurrentPreviewIndex(i => Math.max(0, i-1))}>‹</IonButton>
-                      <span style={{ fontSize: "0.8rem" }}>Stub {currentPreviewIndex + 1} of {preview.stubPreviews.length}</span>
-                      <IonButton fill="clear" size="small" disabled={currentPreviewIndex === preview.stubPreviews.length - 1} onClick={() => setCurrentPreviewIndex(i => Math.min(preview.stubPreviews.length-1, i+1))}>›</IonButton>
-                    </div>
-                  )}
-
-                  {preview.stubPreviews[currentPreviewIndex] && (() => {
-                    const stub = preview.stubPreviews[currentPreviewIndex];
-                    const rows = [
-                      ["Gross Pay (CAD)", stub.grossPay, "success"],
-                      ...(formData.workerType === "employee" ? [
-                        [stub.cppLabel || "CPP", stub.cpp, "danger"],
-                        ["EI",                   stub.ei, "danger"],
-                        ...(stub.qpip > 0 ? [["QPIP", stub.qpip, "danger"]] : []),
-                        ["Federal Tax",           stub.federalTax, "danger"],
-                        ["Provincial Tax",        stub.provincialTax, "danger"],
-                        ["Total Deductions",      stub.totalTaxes, "danger"],
-                        ...(stub.totalDeductions > 0 ? [["Other Deductions", stub.totalDeductions, "warning"]] : []),
-                        ...(stub.totalContributions > 0 ? [["Contributions", stub.totalContributions, "tertiary"]] : []),
-                      ] : [["No Taxes Withheld", 0, "warning"]]),
-                      [formData.workerType === "contractor" ? "Payment" : "Net Pay", stub.netPay, "success"],
-                    ];
-                    return (
-                      <div style={{ background: "var(--ion-card-background)", borderRadius: 8, padding: 12, marginBottom: 12, border: "1px solid rgba(var(--ion-color-success-rgb),0.2)" }}>
-                        {rows.map(([label, val, color]) => (
-                          <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0", color: `var(--ion-color-${color})` }}>
-                            <span>{label}:</span>
-                            <strong>C${formatCurrency(val)}</strong>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-
-                  {preview.numStubs > 1 && (
-                    <div style={{ borderTop: "1px solid rgba(var(--ion-color-success-rgb),0.3)", paddingTop: 12 }}>
-                      <p style={{ fontWeight: 700, marginBottom: 8 }}>All {preview.numStubs} Stubs Total</p>
-                      {[
-                        ["Total Gross", preview.totalGross],
-                        ...(formData.workerType === "employee" ? [["Total Deductions", preview.totalTaxes]] : []),
-                        ...(preview.totalDeductions > 0 ? [["Other Deductions", preview.totalDeductions]] : []),
-                        ...(preview.totalContributions > 0 ? [["Total Contributions", preview.totalContributions]] : []),
-                        [formData.workerType === "contractor" ? "Total Payment" : "Total Net Pay", preview.netPay],
-                      ].map(([label, val]) => (
-                        <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0" }}>
-                          <span>{label}:</span>
-                          <strong>C${formatCurrency(val)}</strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
               )}
 
               {/* PDF Preview button */}

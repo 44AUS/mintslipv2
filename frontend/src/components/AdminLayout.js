@@ -16,9 +16,9 @@ import {
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
 } from "ionicons/icons";
 import {
-  FileText, LogOut, Bell,
-  Lock, ChevronDown, Receipt, FileSpreadsheet, FileBarChart,
-  Building2, Car, Briefcase, User, ExternalLink,
+  FileText, Bell,
+  Receipt, FileSpreadsheet, FileBarChart,
+  Building2, Car, Briefcase,
 } from "lucide-react";
 import { menuController } from "@ionic/core";
 import MintSlipLogo from "../assests/mintslip-logo.png";
@@ -45,6 +45,7 @@ const DOC_ICONS = {
 const TOPBAR_EXCLUDE = new Set([
   "overview", "saved-docs", "email-templates",
   "site-settings", "banned-ips", "export",
+  "moderators", "mass-email", "audit-log", "support",
 ]);
 
 function timeAgo(dateStr) {
@@ -103,8 +104,6 @@ export default function AdminLayout({ children }) {
   const notifRef = useRef(null);
 
   const [adminProfile, setAdminProfile] = useState(null);
-  const [profileOpen,  setProfileOpen]  = useState(false);
-  const profileRef = useRef(null);
 
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("adminDarkMode") === "true",
@@ -148,8 +147,7 @@ export default function AdminLayout({ children }) {
   /* Close dropdowns on outside click */
   useEffect(() => {
     const handler = (e) => {
-      if (notifRef.current   && !notifRef.current.contains(e.target))   setNotifOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -557,30 +555,6 @@ export default function AdminLayout({ children }) {
               {/* Right: actions */}
               <IonButtons slot="end" style={{ gap: 0 }}>
 
-                {/* Dark mode toggle */}
-                <IonButton
-                  fill="clear"
-                  onClick={toggleDark}
-                  title={darkMode ? "Light mode" : "Dark mode"}
-                  style={{ "--color": "rgba(255,255,255,0.55)", "--border-radius": "50%" }}
-                >
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon icon={darkMode ? sunnyOutline : moonOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </IonButton>
-
-                {/* View site */}
-                <a
-                  href="https://mintslip.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="admin-header-icon-btn"
-                  style={{ textDecoration: "none", gap: 4, fontSize: "0.72rem", fontWeight: 600, padding: "7px 10px" }}
-                >
-                  <ExternalLink size={14} color="rgba(255,255,255,0.8)" />
-                  <span style={{ display: window.innerWidth < 640 ? "none" : "inline" }}>Site</span>
-                </a>
-
                 {/* Notifications */}
                 <div ref={notifRef} style={{ position: "relative" }}>
                   <button
@@ -640,55 +614,6 @@ export default function AdminLayout({ children }) {
                             </div>
                           );
                         })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Profile */}
-                <div ref={profileRef} style={{ position: "relative" }}>
-                  <button className="admin-profile-btn" onClick={() => setProfileOpen(v => !v)}>
-                    {adminProfile?.photo
-                      ? <img src={adminProfile.photo} alt="avatar" className="admin-avatar" />
-                      : <div className="admin-avatar-initials">{adminInitials}</div>}
-                    <span
-                      className="admin-profile-name"
-                      style={{ display: window.innerWidth < 640 ? "none" : undefined }}
-                    >
-                      {adminProfile?.name || adminProfile?.email || "Admin"}
-                    </span>
-                    <ChevronDown size={13} color="rgba(255,255,255,0.7)" />
-                  </button>
-
-                  {profileOpen && (
-                    <div className="admin-dropdown profile-dropdown">
-                      <div className="profile-info">
-                        <p className="profile-name">{adminProfile?.name || "Admin"}</p>
-                        <p className="profile-email">{adminProfile?.email}</p>
-                      </div>
-                      <div className="profile-menu">
-                        <button
-                          className="profile-menu-item"
-                          onClick={() => { navigate("/admin/settings"); setProfileOpen(false); }}
-                        >
-                          <User size={15} color="var(--admin-text-muted)" />
-                          Profile & Settings
-                        </button>
-                        <button
-                          className="profile-menu-item"
-                          onClick={() => { navigate("/admin/settings?tab=password"); setProfileOpen(false); }}
-                        >
-                          <Lock size={15} color="var(--admin-text-muted)" />
-                          Change Password
-                        </button>
-                        <div className="profile-menu-divider" />
-                        <button
-                          className="profile-menu-item danger"
-                          onClick={() => { setProfileOpen(false); handleLogout(); }}
-                        >
-                          <LogOut size={15} />
-                          Logout
-                        </button>
                       </div>
                     </div>
                   )}

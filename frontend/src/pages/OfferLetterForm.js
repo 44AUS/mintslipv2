@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
 import { Upload, X, CheckCircle, Briefcase, Sparkles, Palette, HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
@@ -431,10 +432,13 @@ export default function OfferLetterForm() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `OL-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your offer letter...");
-      
+
       // Generate and download PDF
-      await generateAndDownloadOfferLetter(formData);
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadOfferLetter(formData, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "offer-letter", `offer_letter_${date}.pdf`);
       
       // Track in Google Analytics
       trackDocumentGenerated('offer_letter', formData.template, 9.99, 'paypal');

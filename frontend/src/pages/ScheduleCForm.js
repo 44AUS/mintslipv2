@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadScheduleC } from "@/utils/scheduleCGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateScheduleCPreview } from "@/utils/scheduleCPreviewGenerator";
 import { 
   formatFullSSN, validateFullSSN,
@@ -378,10 +379,13 @@ export default function ScheduleCForm() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `SC-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your Schedule C...");
-      
-      await generateAndDownloadScheduleC(formData, selectedTaxYear);
-      
+
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadScheduleC(formData, selectedTaxYear, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "schedule-c", `schedule_c_${date}.pdf`);
+
       toast.success("Schedule C downloaded successfully!");
       setIsProcessing(false);
       

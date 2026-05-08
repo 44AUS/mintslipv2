@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
+import { saveGuestDocument } from "@/utils/guestSave";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW9 } from "@/utils/w9Generator";
 import { generateW9Preview } from "@/utils/w9PreviewGenerator";
@@ -311,10 +312,13 @@ export default function W9Form() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `W9-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your W-9...");
-      
-      await generateAndDownloadW9(formData, selectedTaxYear);
-      
+
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadW9(formData, selectedTaxYear, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "w9", `w9_${date}.pdf`);
+
       toast.success("W-9 downloaded successfully!");
       setIsProcessing(false);
       

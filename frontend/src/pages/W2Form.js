@@ -15,6 +15,7 @@ import { HelpCircle, CreditCard, Lock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW2, BOX_12_CODES } from "@/utils/w2Generator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateW2Preview } from "@/utils/w2PreviewGenerator";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import { 
@@ -437,8 +438,10 @@ export default function W2Form() {
         console.error("Failed to track purchase:", trackError);
       }
       
-      await generateAndDownloadW2(formData, selectedTaxYear);
-      
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadW2(formData, selectedTaxYear, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "w2", `w2_${date}.pdf`);
+
       toast.success("W-2 downloaded successfully!");
       setIsProcessing(false);
       

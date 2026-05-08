@@ -320,6 +320,13 @@ class SaveDocumentRequest(BaseModel):
     fileData: str  # Base64 encoded file content
     template: Optional[str] = None
 
+class GuestSaveDocumentRequest(BaseModel):
+    guestEmail: str
+    documentType: str
+    fileName: str
+    fileData: str  # Base64 encoded file content
+    template: Optional[str] = None
+
 # ========== PURCHASE TRACKING MODELS ==========
 
 class PurchaseCreate(BaseModel):
@@ -2033,6 +2040,60 @@ async def delete_saved_document(doc_id: str, session: dict = Depends(get_current
     await saved_documents_collection.delete_one({"id": doc_id})
     
     return {"success": True, "message": "Document deleted successfully"}
+
+
+@app.post("/api/guest/saved-documents")
+async def save_guest_document(data: GuestSaveDocumentRequest):
+    """Save a document for a guest (no auth required, uses payer email from PayPal)"""
+    if not data.guestEmail or "@" not in data.guestEmail:
+        raise HTTPException(status_code=400, detail="Valid email required")
+
+    try:
+        file_content = base64.b64decode(data.fileData)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid file data")
+
+    doc_id = str(uuid.uuid4())
+    file_ext = os.path.splitext(data.fileName)[1] or ".pdf"
+    stored_filename = f"guest_{doc_id}{file_ext}"
+
+    file_path = os.path.join(USER_DOCUMENTS_DIR, stored_filename)
+    try:
+        with open(file_path, "wb") as f:
+            f.write(file_content)
+    except Exception as e:
+        logger.warning(f"Failed to save guest file to disk: {e}")
+
+    document = {
+        "id": doc_id,
+        "userId": None,
+        "guestEmail": data.guestEmail,
+        "userEmail": data.guestEmail,
+        "documentType": data.documentType,
+        "fileName": data.fileName,
+        "storedFileName": stored_filename,
+        "fileSize": len(file_content),
+        "template": data.template,
+        "fileContent": data.fileData,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+
+    await saved_documents_collection.insert_one(document)
+
+    retention_days = await get_doc_retention_days()
+    if retention_days > 0:
+        expires_at = (datetime.now(timezone.utc) + timedelta(days=retention_days)).isoformat()
+        days_remaining = retention_days
+    else:
+        expires_at = None
+        days_remaining = -1
+
+    return {
+        "success": True,
+        "documentId": doc_id,
+        "expiresAt": expires_at,
+        "daysRemaining": days_remaining
+    }
 
 
 @app.get("/api/user/saved-documents/count")
@@ -4241,10 +4302,11 @@ async def get_all_saved_documents(
                     except Exception as e:
                         logger.warning(f"Could not auto-restore file: {e}")
         
+        guest_email = doc.get("guestEmail") or doc.get("userEmail", "")
         enriched_documents.append({
             **doc,
-            "userEmail": user.get("email", "Unknown") if user else "Deleted User",
-            "userName": user.get("name", "") if user else "",
+            "userEmail": user.get("email", "Unknown") if user else (guest_email or "Deleted User"),
+            "userName": user.get("name", "") if user else ("Guest" if guest_email else ""),
             "fileExists": file_exists,
             "hasBackup": has_content_backup if not file_exists else True
         })

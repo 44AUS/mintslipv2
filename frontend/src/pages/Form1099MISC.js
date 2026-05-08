@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownload1099MISC } from "@/utils/1099miscGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generate1099MISCPreview } from "@/utils/1099miscPreviewGenerator";
 import { 
   formatFullSSN, validateFullSSN,
@@ -330,10 +331,13 @@ export default function Form1099MISC() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `1099M-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your 1099-MISC...");
-      
-      await generateAndDownload1099MISC(formData, selectedTaxYear);
-      
+
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownload1099MISC(formData, selectedTaxYear, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "1099-misc", `1099_misc_${date}.pdf`);
+
       toast.success("1099-MISC downloaded successfully!");
       setIsProcessing(false);
       

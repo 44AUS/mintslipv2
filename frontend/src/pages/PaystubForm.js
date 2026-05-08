@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generatePreviewPDF, generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
 import { getLocalTaxRate, getCitiesWithLocalTax, stateHasLocalTax, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, stateUsesAllowances, stateHasNoIncomeTax, getStateTaxRate, getStateTaxInfo } from "@/utils/federalTaxCalculator";
@@ -1336,8 +1337,11 @@ export default function PaystubForm() {
       };
       
       // Generate and download PDF
-      await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs);
-      
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs, true);
+      const ext = pdfBlob?.type?.includes("zip") ? ".zip" : ".pdf";
+      await saveGuestDocument(pdfBlob, payerEmail, "paystub", `paystub_${date}${ext}`);
+
       // Clear the uploaded logo from localStorage after successful download
       localStorage.removeItem('paystubCompanyLogo');
       setCompanyLogo(null);

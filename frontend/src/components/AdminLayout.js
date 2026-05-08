@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline, chevronDownOutline,
-  gridOutline, cartOutline, peopleOutline, folderOutline,
+  calendarOutline, cartOutline, peopleOutline, folderOutline,
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
   listOutline, trendingUpOutline, cardOutline, chatboxOutline,
@@ -52,7 +52,7 @@ const TOPBAR_EXCLUDE = new Set([
 
 // Tabs hidden from the sidebar nav (shown in top-bar)
 const SIDEBAR_EXCLUDE = new Set([
-  "overview", "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
+  "calendar", "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
   "site-settings",
 ]);
 
@@ -255,7 +255,9 @@ export default function AdminLayout({ children, fillHeight = false }) {
     if (path.includes("/admin/revenue"))         return "revenue";
     if (path.includes("/admin/subscriptions"))   return "subscriptions";
     if (path.includes("/admin/settings"))        return "settings";
-    return "overview";
+    if (path.includes("/admin/calendar"))        return "calendar";
+    if (path.includes("/admin/calendar"))        return "calendar";
+    return "calendar";
   };
 
   const activeTab = getActiveTab();
@@ -269,7 +271,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const hasPerm = (key) => isFullAdmin || (adminPermissions && adminPermissions[key]);
 
   const allTabs = [
-    { id: "overview",        label: "Overview",        icon: gridOutline,          path: "/admin/overview",        perm: null },
+    { id: "calendar",        label: "Calendar",        icon: calendarOutline,      path: "/admin/calendar",        perm: null },
     { id: "purchases",       label: "Purchases",       icon: cartOutline,          path: "/admin/purchases",       perm: "view_purchases" },
     { id: "users",           label: "Users",           icon: peopleOutline,        path: "/admin/users",           perm: "view_users" },
     { id: "saved-docs",      label: "Saved Docs",      icon: folderOutline,        path: "/admin/saved-docs",      perm: "view_saved_docs" },
@@ -345,7 +347,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
 
                 {/* Logo */}
                 <button
-                  onClick={() => navigate("/admin/overview")}
+                  onClick={() => navigate("/admin/calendar")}
                   style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
                 >
                   <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
@@ -762,7 +764,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
           <button onClick={() => setMobileSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-color-medium)" }} />
           </button>
-          <button onClick={() => { navigate("/admin/overview"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+          <button onClick={() => { navigate("/admin/calendar"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
             <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
           </button>
           <button onClick={toggleDark} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>

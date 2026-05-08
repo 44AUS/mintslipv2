@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownload1099NEC } from "@/utils/1099necGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generate1099NECPreview } from "@/utils/1099necPreviewGenerator";
 import { 
   formatFullSSN, validateFullSSN,
@@ -319,10 +320,13 @@ export default function Form1099NEC() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `1099N-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your 1099-NEC...");
-      
-      await generateAndDownload1099NEC(formData, selectedTaxYear);
-      
+
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownload1099NEC(formData, selectedTaxYear, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "1099-nec", `1099_nec_${date}.pdf`);
+
       toast.success("1099-NEC downloaded successfully!");
       setIsProcessing(false);
       

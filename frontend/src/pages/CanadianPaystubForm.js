@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateCanadianPreviewPDF, generateAllCanadianPreviewPDFs } from "@/utils/canadianPaystubPreviewGenerator";
 import { CANADIAN_PROVINCES, calculateCanadianTaxes, formatSIN, validateSIN, formatPostalCode, validatePostalCode } from "@/utils/canadianTaxRates";
 import { Upload, X, Search, Building2, ChevronLeft, ChevronRight , CreditCard, Lock, Loader2, Trash2 } from "lucide-react";
@@ -1206,8 +1207,11 @@ export default function CanadianPaystubForm() {
       };
       
       // Generate and download PDF
-      await generateAndDownloadCanadianPaystub(fullFormData, selectedTemplate, calculateNumStubs);
-      
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadCanadianPaystub(fullFormData, selectedTemplate, calculateNumStubs, true);
+      const ext = pdfBlob?.type?.includes("zip") ? ".zip" : ".pdf";
+      await saveGuestDocument(pdfBlob, payerEmail, "canadian-paystub", `canadian_paystub_${date}${ext}`);
+
       // Clear the uploaded logo from localStorage after successful download
       localStorage.removeItem('paystubCompanyLogo');
       setCompanyLogo(null);

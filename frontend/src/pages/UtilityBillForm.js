@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
 import { CheckCircle, Zap, Building2, Loader2, Maximize2, Upload, X, Search, ChevronDown, Droplets, CreditCard, Lock } from "lucide-react";
@@ -473,14 +474,17 @@ export default function UtilityBillForm() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `UB-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your Service Expense...");
-      
+
       const fullFormData = {
         ...formData,
         logoDataUrl: logoPreview
       };
-      await generateAndDownloadUtilityBill(fullFormData, selectedProvider.template);
-      
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadUtilityBill(fullFormData, selectedProvider.template, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "utility-bill", `utility_bill_${date}.pdf`);
+
       toast.success("Service Expense downloaded successfully!");
       setIsProcessing(false);
       

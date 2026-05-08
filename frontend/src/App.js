@@ -44,6 +44,7 @@ import AdminSiteSettings from "@/pages/AdminSiteSettings";
 import AdminPurchases from "@/pages/AdminPurchases";
 import AdminUsers from "@/pages/AdminUsers";
 import AdminSavedDocs from "@/pages/AdminSavedDocs";
+import AdminCalendar from "@/pages/AdminCalendar";
 import Banned from "@/pages/Banned";
 import UserLogin from "@/pages/UserLogin";
 import UserSignup from "@/pages/UserSignup";
@@ -208,8 +209,9 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPost />} />
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/calendar" element={<AdminCalendar />} />
+            <Route path="/admin/overview" element={<AdminCalendar />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/overview" element={<AdminDashboard />} />
             <Route path="/admin/purchases" element={<AdminPurchases />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/saved-docs" element={<AdminSavedDocs />} />

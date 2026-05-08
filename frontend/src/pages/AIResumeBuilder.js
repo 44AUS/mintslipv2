@@ -18,6 +18,7 @@ import {
  } from "lucide-react";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { generateAndDownloadResume } from "@/utils/resumeGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import useAuthEnabled from "@/hooks/useAuthEnabled";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -84,6 +85,7 @@ export default function AIResumeBuilder() {
   const [isPaid, setIsPaid] = useState(false);
   const [lockedSections, setLockedSections] = useState({});
   const [appliedDiscount, setAppliedDiscount] = useState(null);
+  const [guestPayerEmail, setGuestPayerEmail] = useState("");
   const [regeneratingSection, setRegeneratingSection] = useState(null);
   const [generatingResponsibilities, setGeneratingResponsibilities] = useState(null); // Track which exp is generating
   
@@ -734,13 +736,15 @@ export default function AIResumeBuilder() {
     }
 
     try {
-      await generateAndDownloadResume({
+      const date = new Date().toISOString().split("T")[0];
+      const zipBlob = await generateAndDownloadResume({
         ...generatedResume,
         template: formData.template,
         font: formData.font,
         sectionLayout: formData.sectionLayout,
         onePage: formData.onePage
-      });
+      }, true);
+      await saveGuestDocument(zipBlob, guestPayerEmail, "resume", `resume_${date}.zip`);
       toast.success("Resume downloaded successfully!");
     } catch (error) {
       console.error("Error downloading:", error);
@@ -816,6 +820,7 @@ export default function AIResumeBuilder() {
       console.log("AIResumeBuilder: Payment captured:", order);
       const orderId = order?.id || `order_${Date.now()}`;
       const payerEmail = order?.payer?.email_address || "";
+      setGuestPayerEmail(payerEmail);
       
       // Track purchase
       const totalAmount = appliedDiscount && appliedDiscount.discountedPrice 

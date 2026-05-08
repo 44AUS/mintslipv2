@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { formatAccountNumber, validateAccountNumber } from "@/utils/validation";
@@ -721,8 +722,10 @@ const createOrder = (data, actions) => {
         bankName: selectedBank?.id === 'other' ? customBankName : (selectedBank?.name || ''),
         bankLogo: uploadedLogo
       };
-      await generateAndDownloadBankStatement(formData, selectedTemplate);
-      
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadBankStatement(formData, selectedTemplate, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "bank-statement", `bank_statement_${date}.pdf`);
+
       // Clear the uploaded logo from localStorage after successful download
       localStorage.removeItem('bankStatementLogo');
       setUploadedLogo(null);

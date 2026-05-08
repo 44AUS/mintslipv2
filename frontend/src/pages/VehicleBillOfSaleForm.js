@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadVehicleBillOfSale } from "@/utils/vehicleBillOfSaleGenerator";
+import { saveGuestDocument } from "@/utils/guestSave";
 import { generateVehicleBillOfSalePreview } from "@/utils/vehicleBillOfSalePreviewGenerator";
 import { formatZipCode } from "@/utils/validation";
 import { CheckCircle, Car, Sparkles, FileText, Palette, Loader2, Maximize2, CreditCard, Lock } from "lucide-react";
@@ -328,10 +329,13 @@ export default function VehicleBillOfSaleForm() {
     try {
       const orderData = await actions.order.capture();
       const orderId = orderData.id || `VBS-${Date.now()}`;
+      const payerEmail = orderData?.payer?.email_address || "";
       toast.success("Payment successful! Generating your bill of sale...");
-      
-      await generateAndDownloadVehicleBillOfSale(formData);
-      
+
+      const date = new Date().toISOString().split("T")[0];
+      const pdfBlob = await generateAndDownloadVehicleBillOfSale(formData, true);
+      await saveGuestDocument(pdfBlob, payerEmail, "vehicle-bill-of-sale", `vehicle_bill_of_sale_${date}.pdf`);
+
       toast.success("Bill of sale downloaded successfully!");
       setIsProcessing(false);
       

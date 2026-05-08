@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
@@ -14,9 +14,10 @@ import {
   listOutline, trendingUpOutline, cardOutline, chatboxOutline,
   downloadOutline, chevronForwardOutline,
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
+  notificationsOutline,
 } from "ionicons/icons";
 import {
-  FileText, Bell,
+  FileText,
   Receipt, FileSpreadsheet, FileBarChart,
   Building2, Car, Briefcase,
 } from "lucide-react";
@@ -100,8 +101,6 @@ export default function AdminLayout({ children }) {
 
   const [notifications, setNotifications] = useState([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
-  const [notifOpen,     setNotifOpen]     = useState(false);
-  const notifRef = useRef(null);
 
   const [adminProfile, setAdminProfile] = useState(null);
 
@@ -144,14 +143,6 @@ export default function AdminLayout({ children }) {
     };
   }, []);
 
-  /* Close dropdowns on outside click */
-  useEffect(() => {
-    const handler = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -507,6 +498,61 @@ export default function AdminLayout({ children }) {
           </IonContent>
         </IonMenu>
 
+        {/* ── Notifications drawer (right) ── */}
+        <IonMenu side="end" contentId="admin-main" menuId="notifMenu" type="overlay" style={{ "--width": "340px", "--max-width": "90vw" }}>
+          <IonHeader>
+            <IonToolbar>
+              <IonButtons slot="start">
+                <IonButton fill="clear" onClick={() => menuController.close("notifMenu")} style={{ "--color": "var(--ion-color-medium)", "--border-radius": "50%" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                    <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
+              </IonButtons>
+              <IonLabel slot="start" style={{ fontWeight: 600, fontSize: "1rem", paddingLeft: 4 }}>Notifications</IonLabel>
+              <IonButtons slot="end">
+                {unreadCount > 0 && (
+                  <IonButton fill="clear" onClick={handleMarkRead} style={{ "--color": "var(--ion-color-primary)", fontSize: "0.78rem" }}>
+                    Mark all read
+                  </IonButton>
+                )}
+                {notifications.length > 0 && (
+                  <IonButton fill="clear" onClick={handleClearNotifications} style={{ "--color": "var(--ion-color-danger)", fontSize: "0.78rem" }}>
+                    Clear all
+                  </IonButton>
+                )}
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            {notifications.length === 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", opacity: 0.4, gap: 12 }}>
+                <IonIcon icon={notificationsOutline} style={{ fontSize: 40 }} />
+                <div style={{ fontSize: "0.9rem" }}>No notifications yet</div>
+              </div>
+            ) : (
+              <IonList lines="inset" style={{ padding: 0 }}>
+                {notifications.map(n => {
+                  const Icon = DOC_ICONS[n.docType] || FileText;
+                  return (
+                    <IonItem key={n.id} style={{ "--background": n.read ? "transparent" : "var(--ion-color-step-50)", "--min-height": "64px", "--padding-start": "16px", "--inner-padding-end": "16px" }}>
+                      <div slot="start" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0 }}>
+                        <Icon size={16} />
+                      </div>
+                      <IonLabel style={{ whiteSpace: "normal" }}>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{n.docDisplayName} created</div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</div>
+                        <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{timeAgo(n.createdAt)}</div>
+                      </IonLabel>
+                      {!n.read && <IonBadge color="primary" slot="end" style={{ width: 8, height: 8, borderRadius: "50%", padding: 0, minWidth: 0 }} />}
+                    </IonItem>
+                  );
+                })}
+              </IonList>
+            )}
+          </IonContent>
+        </IonMenu>
+
         {/* ── Main area ── */}
         <IonPage id="admin-main">
           <IonHeader>
@@ -556,66 +602,20 @@ export default function AdminLayout({ children }) {
               <IonButtons slot="end" style={{ gap: 0 }}>
 
                 {/* Notifications */}
-                <div ref={notifRef} style={{ position: "relative" }}>
-                  <button
-                    className="admin-header-icon-btn"
-                    style={{ position: "relative" }}
-                    onClick={() => { setNotifOpen(v => !v); if (!notifOpen) handleMarkRead(); }}
+                <div style={{ position: "relative" }}>
+                  <IonButton
+                    fill="clear"
+                    onClick={() => { menuController.open("notifMenu"); handleMarkRead(); }}
+                    style={{ "--color": "rgba(255,255,255,0.8)", "--border-radius": "50%" }}
                   >
-                    <Bell size={18} color="rgba(255,255,255,0.8)" />
-                    {unreadCount > 0 && (
-                      <IonBadge
-                        color="danger"
-                        style={{
-                          position: "absolute", top: 2, right: 2,
-                          fontSize: 9, minWidth: 16, height: 16,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          borderRadius: 999, padding: "0 4px",
-                        }}
-                      >
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </IonBadge>
-                    )}
-                  </button>
-
-                  {notifOpen && (
-                    <div className="admin-dropdown notif-dropdown">
-                      <div className="dropdown-header">
-                        <p className="dropdown-header-title">Notifications</p>
-                        <div className="dropdown-header-actions">
-                          {unreadCount > 0 && (
-                            <button className="dropdown-text-btn primary" onClick={handleMarkRead}>
-                              Mark all read
-                            </button>
-                          )}
-                          {notifications.length > 0 && (
-                            <button className="dropdown-text-btn danger" onClick={handleClearNotifications}>
-                              Clear all
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      <div className="notif-list">
-                        {notifications.length === 0 ? (
-                          <div className="notif-empty">
-                            <Bell size={28} style={{ marginBottom: 8, opacity: 0.3 }} />
-                            <div>No notifications yet</div>
-                          </div>
-                        ) : notifications.map(n => {
-                          const Icon = DOC_ICONS[n.docType] || FileText;
-                          return (
-                            <div key={n.id} className={`notif-item${n.read ? "" : " unread"}`}>
-                              <div className="notif-icon"><Icon size={16} /></div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <p className="notif-title">{n.docDisplayName} created</p>
-                                <p className="notif-sub">{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</p>
-                                <p className="notif-time">{timeAgo(n.createdAt)}</p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>
+                      <IonIcon icon={notificationsOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                  {unreadCount > 0 && (
+                    <IonBadge color="danger" style={{ position: "absolute", top: 6, right: 6, fontSize: 9, minWidth: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 999, padding: "0 4px", pointerEvents: "none" }}>
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </IonBadge>
                   )}
                 </div>
 

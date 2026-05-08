@@ -300,13 +300,15 @@ export default function AdminLayout({ children }) {
       : "A";
 
   const segmentBtnStyle = {
-    "--color":           "rgba(255,255,255,0.65)",
-    "--color-checked":   "#ffffff",
-    "--indicator-color": "#ffffff",
-    "--border-radius":   "0",
-    "--padding-top":     "0",
-    "--padding-bottom":  "0",
+    "--color":              "rgba(255,255,255,0.7)",
+    "--color-checked":      "#ffffff",
+    "--indicator-color":    "#ffffff",
+    "--background-checked": "rgba(255,255,255,0.12)",
+    "--border-radius":      "0",
+    "--padding-top":        "0",
+    "--padding-bottom":     "0",
     minHeight: 60,
+    flexShrink: 0,
   };
 
   return (
@@ -541,8 +543,11 @@ export default function AdminLayout({ children }) {
                 }}
               >
                 {topbarTabs.map(tab => (
-                  <IonSegmentButton key={tab.id} value={tab.id} style={segmentBtnStyle}>
-                    <IonLabel style={{ fontSize: "0.72rem", fontWeight: 500, margin: 0 }}>
+                  <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+                      <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                    <IonLabel style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>
                       {tab.label}
                     </IonLabel>
                   </IonSegmentButton>

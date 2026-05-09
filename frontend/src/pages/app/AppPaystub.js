@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
@@ -6,8 +7,7 @@ import {
   IonAccordion, IonAccordionGroup, IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonText, IonBadge, IonModal, IonPage, IonHeader, IonToolbar, IonTitle,
-  IonButtons, IonContent,
+  IonText, IonBadge,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
@@ -496,6 +496,36 @@ export default function AppPaystub() {
     });
   };
 
+  // ── Template card preview images ──────────────────────────────────────────
+  const [templatePreviews, setTemplatePreviews] = useState({});
+  const [loadingPreviews,  setLoadingPreviews]  = useState(true);
+
+  useEffect(() => {
+    const sampleData = {
+      name: "John Smith", ssn: "1234", bank: "5678", bankName: "Chase Bank",
+      address: "123 Main Street", city: "New York", state: "NY", zip: "10001",
+      company: "Acme Corporation", companyAddress: "456 Business Ave",
+      companyCity: "New York", companyState: "NY", companyZip: "10002",
+      companyPhone: "(555) 123-4567",
+      hireDate: "2022-01-01", startDate: "2025-01-06", endDate: "2025-01-19",
+      rate: "25", payFrequency: "biweekly", payDay: "Friday",
+      payType: "hourly", workerType: "employee", annualSalary: "",
+      employeeId: "EMP001", companyCode: "AC001", locDept: "001", checkNumber: "1234567", memo: "",
+      includeLocalTax: true, federalFilingStatus: "single", stateAllowances: "0",
+      hoursList: "80", overtimeList: "0", commissionList: "0", tipsList: "0", tipsCashList: "0",
+      startDateList: "2025-01-06", endDateList: "2025-01-19", payDateList: "2025-01-24",
+      checkNumberList: "", memoList: "",
+    };
+    Promise.all([
+      generateAllPreviewPDFs(sampleData, "template-a", 1),
+      generateAllPreviewPDFs(sampleData, "template-c", 1),
+      generateAllPreviewPDFs(sampleData, "template-h", 1),
+    ]).then(([a, c, h]) => {
+      setTemplatePreviews({ "template-a": a[0], "template-c": c[0], "template-h": h[0] });
+      setLoadingPreviews(false);
+    }).catch(() => setLoadingPreviews(false));
+  }, []);
+
   // ── PDF preview state ─────────────────────────────────────────────────────
   const [pdfPreviews,         setPdfPreviews]         = useState([]);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
@@ -660,57 +690,34 @@ export default function AppPaystub() {
 
   return (
     <AppLayout fillHeight>
-      <div style={{ height: "100%", overflowY: "auto", padding: "16px" }}>
-        <div style={{ marginBottom: 16 }}>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--ion-color-primary)", margin: 0 }}>
-            US Pay Stub Generator
-          </h1>
-          <p style={{ color: "var(--ion-color-medium)", marginTop: 4, fontSize: "0.875rem" }}>
-            Select a template to generate professional pay stubs with accurate tax calculations.
-          </p>
-        </div>
-
-        <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: "24px", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ion-text-color)", marginTop: 0, marginBottom: 4 }}>Choose Your Template</h2>
-          <p style={{ color: "var(--ion-color-medium)", fontSize: "0.85rem", marginTop: 0, marginBottom: 20 }}>
-            Each template matches a popular payroll provider style. Click one to get started.
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
+        <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {PAYROLL_COMPANIES.map(company => (
               <div key={company.id}
                 onClick={() => { setSelectedTemplate(company.template); setFormModalOpen(true); }}
-                style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-background-color, #fff)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-card-background)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
               >
-                <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid var(--app-divider, rgba(0,0,0,0.08))", display: "flex", alignItems: "center", gap: 10, background: "var(--ion-card-background)" }}>
-                  <img src={company.logo} alt={company.name} style={{ height: 28, maxWidth: 80, objectFit: "contain" }} />
+                <div style={{ padding: "12px 16px 10px", borderBottom: "1px solid var(--app-divider, rgba(0,0,0,0.08))", display: "flex", alignItems: "center", gap: 10 }}>
+                  <img src={company.logo} alt={company.name} style={{ height: 26, maxWidth: 80, objectFit: "contain" }} />
                   <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", fontWeight: 500 }}>{company.name}</span>
                 </div>
-                <div style={{ padding: "14px 16px 16px", background: "#fff" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <div>
-                      <div style={{ height: 8, width: 80, borderRadius: 4, background: "#e5e7eb", marginBottom: 4 }} />
-                      <div style={{ height: 6, width: 60, borderRadius: 4, background: "#f3f4f6" }} />
+                <div style={{ background: "#fff", overflow: "hidden", minHeight: 160 }}>
+                  {loadingPreviews ? (
+                    <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
+                      <IonSpinner name="crescent" />
                     </div>
-                    <div>
-                      <div style={{ height: 8, width: 50, borderRadius: 4, background: "#e5e7eb", marginBottom: 4 }} />
-                      <div style={{ height: 6, width: 40, borderRadius: 4, background: "#f3f4f6" }} />
+                  ) : templatePreviews[company.template] ? (
+                    <img src={templatePreviews[company.template]} alt={`${company.name} template`} style={{ width: "100%", display: "block" }} />
+                  ) : (
+                    <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
+                      <span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>Preview unavailable</span>
                     </div>
-                  </div>
-                  <div style={{ height: 1, background: "#f3f4f6", marginBottom: 10 }} />
-                  {[70, 50, 60, 40].map((w, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <div style={{ height: 6, width: w, borderRadius: 4, background: "#e5e7eb" }} />
-                      <div style={{ height: 6, width: 40, borderRadius: 4, background: "#e5e7eb" }} />
-                    </div>
-                  ))}
-                  <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ height: 7, width: 55, borderRadius: 4, background: "#d1d5db" }} />
-                    <div style={{ height: 9, width: 55, borderRadius: 4, background: "#16a34a", opacity: 0.7 }} />
-                  </div>
+                  )}
                 </div>
-                <div style={{ padding: "8px 16px 14px", textAlign: "center", background: "var(--ion-card-background)", borderTop: "1px solid var(--app-divider, rgba(0,0,0,0.06))" }}>
+                <div style={{ padding: "8px 16px 12px", textAlign: "center", borderTop: "1px solid var(--app-divider, rgba(0,0,0,0.06))" }}>
                   <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ion-color-primary)" }}>Select Template →</span>
                 </div>
               </div>
@@ -719,29 +726,20 @@ export default function AppPaystub() {
         </div>
       </div>
 
-      {/* ── Form Modal (full-screen, no border radius) ── */}
-      <IonModal isOpen={formModalOpen} onDidDismiss={() => setFormModalOpen(false)} style={{ "--border-radius": "0" }}>
-        <IonPage>
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonButton fill="clear" onClick={() => setFormModalOpen(false)} style={{ "--color": "rgba(255,255,255,0.85)" }}>
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, fontSize: "20px" }}>
-                    <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </IonButton>
-              </IonButtons>
-              <IonTitle style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>Pay Stub Details</IonTitle>
-              <IonButtons slot="end">
-                <IonButton fill="clear" onClick={handleNext} disabled={isGeneratingPreview} style={{ "--color": "#fff", fontWeight: 700 }}>
-                  {isGeneratingPreview ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : "Next"}
-                </IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent style={{ "--background": "var(--ion-background-color)" }}>
-            <div style={{ padding: "16px 16px 40px" }}>
-              <IonAccordionGroup multiple>
+      {/* ── Form Modal (portalled to ion-app) ── */}
+      {formModalOpen && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column" }}>
+          <div style={{ background: "var(--ion-color-primary, #16a34a)", display: "flex", alignItems: "center", padding: "0 4px", minHeight: 56, flexShrink: 0 }}>
+            <button onClick={() => setFormModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 10, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
+              <IonIcon icon={arrowBackOutline} style={{ fontSize: 22, color: "rgba(255,255,255,0.9)" }} />
+            </button>
+            <span style={{ flex: 1, textAlign: "center", color: "#fff", fontWeight: 700, fontSize: "1rem" }}>Pay Stub Details</span>
+            <button onClick={handleNext} disabled={isGeneratingPreview} style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 14px", color: "#fff", fontWeight: 700, fontSize: "0.95rem", opacity: isGeneratingPreview ? 0.6 : 1, display: "flex", alignItems: "center" }}>
+              {isGeneratingPreview ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : "Next"}
+            </button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 40px" }}>
+            <IonAccordionGroup multiple>
 
               {/* ── Template / Payroll Company ── */}
               <IonAccordion value="template">
@@ -1293,34 +1291,27 @@ export default function AppPaystub() {
 
             </IonAccordionGroup>
 
-              {/* Clear form button */}
-              <div style={{ marginTop: 12, textAlign: "right" }}>
-                <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
-              </div>
+            <div style={{ marginTop: 12, textAlign: "right" }}>
+              <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
             </div>
-          </IonContent>
-        </IonPage>
-      </IonModal>
+          </div>
+        </div>,
+        document.querySelector("ion-app") || document.body
+      )}
 
-      {/* ── Preview Modal (full-screen, no border radius) ── */}
-      <IonModal isOpen={previewModalOpen} onDidDismiss={() => setPreviewModalOpen(false)} style={{ "--border-radius": "0" }}>
-        <IonPage>
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonButton fill="clear" onClick={() => setPreviewModalOpen(false)} style={{ "--color": "rgba(255,255,255,0.85)" }}>
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, fontSize: "20px" }}>
-                    <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </IonButton>
-              </IonButtons>
-              <IonTitle style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>
-                Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
-              </IonTitle>
-            </IonToolbar>
-          </IonHeader>
-          <IonContent style={{ "--background": "var(--ion-background-color)" }}>
-            <div style={{ padding: 16 }}>
+      {/* ── Preview Modal (portalled to ion-app) ── */}
+      {previewModalOpen && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 10001, background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column" }}>
+          <div style={{ background: "var(--ion-color-primary, #16a34a)", display: "flex", alignItems: "center", padding: "0 4px", minHeight: 56, flexShrink: 0 }}>
+            <button onClick={() => setPreviewModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 10, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
+              <IonIcon icon={arrowBackOutline} style={{ fontSize: 22, color: "rgba(255,255,255,0.9)" }} />
+            </button>
+            <span style={{ flex: 1, textAlign: "center", color: "#fff", fontWeight: 700, fontSize: "1rem" }}>
+              Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
+            </span>
+            <div style={{ width: 46 }} />
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
               {isGeneratingPreview ? (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
                   <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
@@ -1437,9 +1428,10 @@ export default function AppPaystub() {
                 }
               </IonButton>
             </div>
-          </IonContent>
-        </IonPage>
-      </IonModal>
+          </div>
+        </div>,
+        document.querySelector("ion-app") || document.body
+      )}
 
     </AppLayout>
   );

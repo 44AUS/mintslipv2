@@ -1,16 +1,15 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonText, IonBadge,
+  IonText, IonBadge, IonToast,
 } from "@ionic/react";
-import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline } from "ionicons/icons";
+import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
@@ -164,6 +163,10 @@ export default function AppPaystub() {
     companyCode: "", locDept: "", checkNumber: "",
   });
 
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  const [toastState, setToastState] = useState({ isOpen: false, message: "", color: "danger" });
+  const showToast = (message, color = "danger") => setToastState({ isOpen: true, message, color });
+
   const formatCurrency = (num) =>
     Number(num).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -202,7 +205,7 @@ export default function AppPaystub() {
   // ── Subscription download ─────────────────────────────────────────────────
   const handleSubscriptionDownload = async () => {
     const token = localStorage.getItem("userToken");
-    if (!token) { toast.error("Please log in to use your subscription"); navigate("/login"); return; }
+    if (!token) { showToast("Please log in to use your subscription"); navigate("/login"); return; }
     setIsProcessing(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/user/subscription-download`, {
@@ -232,7 +235,7 @@ export default function AppPaystub() {
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
               body: JSON.stringify({ documentType: "paystub", fileName, fileData: base64Data, template: selectedTemplate }),
             });
-            toast.success("Document saved to your account!");
+            showToast("Document saved to your account!", "success");
           };
           reader.readAsDataURL(pdfBlob);
         } catch (saveError) { console.error("Failed to save document:", saveError); }
@@ -249,11 +252,11 @@ export default function AppPaystub() {
       localStorage.removeItem("paystubCompanyLogo");
       setCompanyLogo(null); setLogoPreview(null);
       setSelectedPayrollCompany(null); setCompanySearchQuery(""); setSelectedTemplate("template-a");
-      toast.success("Pay stub(s) downloaded successfully!");
+      showToast("Pay stub(s) downloaded successfully!", "success");
       navigate("/user/downloads");
     } catch (err) {
       console.error("Subscription download error:", err);
-      toast.error(err.message || "Failed to download. Please try again.");
+      showToast(err.message || "Failed to download. Please try again.");
     } finally { setIsProcessing(false); }
   };
 
@@ -576,7 +579,7 @@ export default function AppPaystub() {
         const base = calculateNumStubs * 9.99;
         const discountAmount = base * data.discountPercent / 100;
         setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, originalPrice: base, discountedPrice: parseFloat((base - discountAmount).toFixed(2)) });
-        toast.success(`Coupon applied: ${data.discountPercent}% off!`);
+        showToast(`Coupon applied: ${data.discountPercent}% off!`, "success");
       } else {
         setCouponError(data.detail || "Invalid coupon code");
         setAppliedDiscount(null);
@@ -629,12 +632,12 @@ export default function AppPaystub() {
     setDeductions([]); setContributions([]); setAbsencePlans([]); setEmployerBenefits([]); setHoursPerPeriod([]);
     setCompanyLogo(null); setLogoPreview(null); setSelectedPayrollCompany(null); setCompanySearchQuery("");
     localStorage.removeItem(STORAGE_KEY); localStorage.removeItem("usPaystubTemplate"); localStorage.removeItem("paystubCompanyLogo");
-    toast.success("Form cleared successfully");
+    showToast("Form cleared successfully", "success");
   };
 
   // ── Next: open preview modal ──────────────────────────────────────────────
   const handleNext = async () => {
-    if (calculateNumStubs === 0) { toast.error("Please configure at least one pay period"); return; }
+    if (calculateNumStubs === 0) { showToast("Please configure at least one pay period"); return; }
     if (pdfPreviews.length === 0) {
       setIsGeneratingPreview(true);
       try {
@@ -650,7 +653,7 @@ export default function AppPaystub() {
 
   // ── Generate / download ───────────────────────────────────────────────────
   const handleGenerate = async () => {
-    if (calculateNumStubs === 0) { toast.error("Please configure at least one pay period"); return; }
+    if (calculateNumStubs === 0) { showToast("Please configure at least one pay period"); return; }
     if (hasActiveSubscription) { await handleSubscriptionDownload(); return; }
 
     setIsProcessing(true);
@@ -678,7 +681,7 @@ export default function AppPaystub() {
       if (data.url) window.location.href = data.url;
       else throw new Error("No checkout URL received");
     } catch (err) {
-      toast.error(err.message || "Payment failed. Please try again.");
+      showToast(err.message || "Payment failed. Please try again.");
     } finally { setIsProcessing(false); }
   };
 
@@ -730,7 +733,8 @@ export default function AppPaystub() {
 
       {/* ── Form Modal (portalled to ion-app) ── */}
       {formModalOpen && createPortal(
-        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column" }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "center" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
+          <div style={{ background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 600 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", borderRadius: window.innerWidth >= 768 ? 12 : 0, overflow: "hidden" }}>
           <IonHeader>
             <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
               <IonButtons slot="start">
@@ -754,6 +758,29 @@ export default function AppPaystub() {
           </IonHeader>
           <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 40px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+              {/* ── Worker Type ── */}
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Worker Type</span>
+                <div>
+                  {(selectedTemplate === "template-a" || selectedTemplate === "template-h") ? (
+                    <IonSegment mode="ios" value={formData.workerType} onIonChange={e => handleWorkerTypeChange(e.detail.value)}>
+                      <IonSegmentButton value="employee" layout="icon-start">
+                        <IonIcon icon={personOutline} />
+                        <IonLabel>Employee (W-2)</IonLabel>
+                      </IonSegmentButton>
+                      <IonSegmentButton value="contractor" layout="icon-start">
+                        <IonIcon icon={briefcaseOutline} />
+                        <IonLabel>Contractor (1099)</IonLabel>
+                      </IonSegmentButton>
+                    </IonSegment>
+                  ) : (
+                    <IonItem lines="none">
+                      <IonLabel>Employee (W-2) — only option for this template</IonLabel>
+                    </IonItem>
+                  )}
+                </div>
+              </div>
 
               {/* ── Template / Payroll Company ── */}
               <div style={cardStyle}>
@@ -842,23 +869,6 @@ export default function AppPaystub() {
                     </div>
                     {logoError && <p style={{ color: "var(--ion-color-danger)", fontSize: "0.75rem", marginTop: 4 }}>{logoError}</p>}
                   </div>
-                </div>
-              </div>
-
-              {/* ── Worker Type ── */}
-              <div style={cardStyle}>
-                <span style={sectionHeadingStyle}>Worker Type</span>
-                <div>
-                  {(selectedTemplate === "template-a" || selectedTemplate === "template-h") ? (
-                    <IonSegment value={formData.workerType} onIonChange={e => handleWorkerTypeChange(e.detail.value)}>
-                      <IonSegmentButton value="employee"><IonLabel>Employee (W-2)</IonLabel></IonSegmentButton>
-                      <IonSegmentButton value="contractor"><IonLabel>Contractor (1099)</IonLabel></IonSegmentButton>
-                    </IonSegment>
-                  ) : (
-                    <IonItem lines="none">
-                      <IonLabel>Employee (W-2) — only option for this template</IonLabel>
-                    </IonItem>
-                  )}
                 </div>
               </div>
 
@@ -1285,6 +1295,7 @@ export default function AppPaystub() {
               <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
             </div>
           </div>
+          </div>
         </div>,
         document.querySelector("ion-app") || document.body
       )}
@@ -1436,6 +1447,14 @@ export default function AppPaystub() {
         document.querySelector("ion-app") || document.body
       )}
 
+      <IonToast
+        isOpen={toastState.isOpen}
+        message={toastState.message}
+        color={toastState.color}
+        duration={3000}
+        onDidDismiss={() => setToastState(s => ({ ...s, isOpen: false }))}
+        position="bottom"
+      />
     </AppLayout>
   );
 }

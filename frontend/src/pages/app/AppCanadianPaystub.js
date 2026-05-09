@@ -4,12 +4,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 import {
-  IonAccordion, IonAccordionGroup, IonInput, IonSelect, IonSelectOption,
+  IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
   IonBadge,
 } from "@ionic/react";
-import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline } from "ionicons/icons";
+import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline } from "ionicons/icons";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import { generateAllCanadianPreviewPDFs } from "@/utils/canadianPaystubPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
@@ -27,6 +28,8 @@ import WorkdayLogo from "../../assests/workday-logo.png";
 import OnPayLogo from "../../assests/onpayLogo.webp";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
+const sectionHeadingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)" };
 
 const isLocalhost = typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -699,24 +702,34 @@ export default function AppCanadianPaystub() {
       {/* ── Form Modal (portalled to ion-app) ── */}
       {formModalOpen && createPortal(
         <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column" }}>
-          <div style={{ background: "var(--ion-color-primary, #16a34a)", display: "flex", alignItems: "center", padding: "0 4px", minHeight: 56, flexShrink: 0 }}>
-            <button onClick={() => setFormModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 10, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
-              <IonIcon icon={arrowBackOutline} style={{ fontSize: 22, color: "rgba(255,255,255,0.9)" }} />
-            </button>
-            <span style={{ flex: 1, textAlign: "center", color: "#fff", fontWeight: 700, fontSize: "1rem" }}>Canadian Pay Stub Details</span>
-            <button onClick={handleNext} disabled={isGeneratingPreview} style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 14px", color: "#fff", fontWeight: 700, fontSize: "0.95rem", opacity: isGeneratingPreview ? 0.6 : 1, display: "flex", alignItems: "center" }}>
-              {isGeneratingPreview ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : "Next"}
-            </button>
-          </div>
+          <IonHeader>
+            <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
+              <IonButtons slot="start">
+                <IonButton fill="clear" shape="round" onClick={() => setFormModalOpen(false)}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                    <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
+              </IonButtons>
+              <IonTitle style={{ fontWeight: 700 }}>Canadian Pay Stub Details</IonTitle>
+              <IonButtons slot="end">
+                <IonButton fill="clear" shape="round" onClick={handleNext} style={{ opacity: isGeneratingPreview ? 0.6 : 1 }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-color-success)" }}>
+                    {isGeneratingPreview
+                      ? <IonSpinner name="crescent" style={{ width: 18, height: 18, color: "var(--ion-color-medium)" }} />
+                      : <IonIcon icon={checkmarkOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />}
+                  </span>
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
           <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 40px" }}>
-            <IonAccordionGroup multiple>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
               {/* ── Template / Payroll Company ── */}
-              <IonAccordion value="template">
-                <IonItem slot="header">
-                  <IonLabel><strong>Template &amp; Payroll Provider</strong></IonLabel>
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Template &amp; Payroll Provider</span>
+                <div>
                   <div style={{ position: "relative", marginBottom: 12 }} ref={companySearchRef}>
                     <IonInput
                       fill="outline"
@@ -793,14 +806,12 @@ export default function AppCanadianPaystub() {
                     {logoError && <p style={{ color: "var(--ion-color-danger)", fontSize: "0.75rem", marginTop: 4 }}>{logoError}</p>}
                   </div>
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Worker Type ── */}
-              <IonAccordion value="worker">
-                <IonItem slot="header">
-                  <IonLabel><strong>Worker Type</strong></IonLabel>
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Worker Type</span>
+                <div>
                   {(selectedTemplate === "template-a" || selectedTemplate === "template-h") ? (
                     <IonSegment value={formData.workerType} onIonChange={e => handleWorkerTypeChange(e.detail.value)}>
                       <IonSegmentButton value="employee"><IonLabel>Employee</IonLabel></IonSegmentButton>
@@ -812,14 +823,12 @@ export default function AppCanadianPaystub() {
                     </IonItem>
                   )}
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Employee Info ── */}
-              <IonAccordion value="employee">
-                <IonItem slot="header">
-                  <IonLabel><strong>{formData.workerType === "contractor" ? "Contractor" : "Employee"} Information</strong></IonLabel>
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>{formData.workerType === "contractor" ? "Contractor" : "Employee"} Information</span>
+                <div>
                   <IonGrid>
                     <IonRow>
                       <IonCol size="12" sizeMd="6">
@@ -859,14 +868,12 @@ export default function AppCanadianPaystub() {
                     </IonRow>
                   </IonGrid>
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Company Info ── */}
-              <IonAccordion value="company">
-                <IonItem slot="header">
-                  <IonLabel><strong>Company Information</strong></IonLabel>
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Company Information</span>
+                <div>
                   <IonGrid>
                     <IonRow>
                       <IonCol size="12" sizeMd="6">
@@ -922,14 +929,12 @@ export default function AppCanadianPaystub() {
                     </IonRow>
                   </IonGrid>
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Pay Details ── */}
-              <IonAccordion value="pay">
-                <IonItem slot="header">
-                  <IonLabel><strong>Pay Details</strong></IonLabel>
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Pay Details</span>
+                <div>
                   <IonSegment value={formData.payType} onIonChange={e => setFormData(prev => ({ ...prev, payType: e.detail.value }))} style={{ marginBottom: 12 }}>
                     <IonSegmentButton value="hourly"><IonLabel>Hourly</IonLabel></IonSegmentButton>
                     <IonSegmentButton value="salary" disabled={!canUseSalary}><IonLabel>Salary</IonLabel></IonSegmentButton>
@@ -1030,14 +1035,12 @@ export default function AppCanadianPaystub() {
                     </div>
                   )}
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Tax Settings ── */}
-              <IonAccordion value="tax">
-                <IonItem slot="header">
-                  <IonLabel><strong>Tax Settings</strong></IonLabel>
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Tax Settings</span>
+                <div>
                   <IonGrid>
                     <IonRow>
                       <IonCol size="12" sizeMd="6">
@@ -1059,15 +1062,12 @@ export default function AppCanadianPaystub() {
                     </IonRow>
                   </IonGrid>
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Deductions ── */}
-              <IonAccordion value="deductions">
-                <IonItem slot="header">
-                  <IonLabel><strong>Deductions</strong></IonLabel>
-                  {deductions.length > 0 && <IonBadge slot="end" color="primary">{deductions.length}</IonBadge>}
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Deductions {deductions.length > 0 && <IonBadge color="primary">{deductions.length}</IonBadge>}</span>
+                <div>
                   {deductions.map(d => (
                     <div key={d.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                       <IonGrid>
@@ -1105,15 +1105,12 @@ export default function AppCanadianPaystub() {
                     Add Deduction
                   </IonButton>
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Contributions ── */}
-              <IonAccordion value="contributions">
-                <IonItem slot="header">
-                  <IonLabel><strong>Contributions (RRSP, TFSA, etc.)</strong></IonLabel>
-                  {contributions.length > 0 && <IonBadge slot="end" color="secondary">{contributions.length}</IonBadge>}
-                </IonItem>
-                <div slot="content" style={{ padding: "12px 16px" }}>
+              <div style={cardStyle}>
+                <span style={sectionHeadingStyle}>Contributions (RRSP, TFSA, etc.) {contributions.length > 0 && <IonBadge color="secondary">{contributions.length}</IonBadge>}</span>
+                <div>
                   {contributions.map(c => (
                     <div key={c.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                       <IonGrid>
@@ -1151,16 +1148,13 @@ export default function AppCanadianPaystub() {
                     Add Contribution
                   </IonButton>
                 </div>
-              </IonAccordion>
+              </div>
 
               {/* ── Employer Benefits (Template C only) ── */}
               {selectedTemplate === "template-c" && formData.workerType === "employee" && (
-                <IonAccordion value="employer-benefits">
-                  <IonItem slot="header">
-                    <IonLabel><strong>Employer Benefits</strong></IonLabel>
-                    {employerBenefits.length > 0 && <IonBadge slot="end" color="tertiary">{employerBenefits.length}</IonBadge>}
-                  </IonItem>
-                  <div slot="content" style={{ padding: "12px 16px" }}>
+                <div style={cardStyle}>
+                  <span style={sectionHeadingStyle}>Employer Benefits {employerBenefits.length > 0 && <IonBadge color="tertiary">{employerBenefits.length}</IonBadge>}</span>
+                  <div>
                     {employerBenefits.map(b => (
                       <div key={b.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                         <IonGrid>
@@ -1203,17 +1197,14 @@ export default function AppCanadianPaystub() {
                       Add Employer Benefit
                     </IonButton>
                   </div>
-                </IonAccordion>
+                </div>
               )}
 
               {/* ── Absence Plans (Template C / H) ── */}
               {(selectedTemplate === "template-c" || selectedTemplate === "template-h") && formData.workerType === "employee" && (
-                <IonAccordion value="absence">
-                  <IonItem slot="header">
-                    <IonLabel><strong>Absence Plans (PTO, Vacation, Sick)</strong></IonLabel>
-                    {absencePlans.length > 0 && <IonBadge slot="end" color="medium">{absencePlans.length}</IonBadge>}
-                  </IonItem>
-                  <div slot="content" style={{ padding: "12px 16px" }}>
+                <div style={cardStyle}>
+                  <span style={sectionHeadingStyle}>Absence Plans (PTO, Vacation, Sick) {absencePlans.length > 0 && <IonBadge color="medium">{absencePlans.length}</IonBadge>}</span>
+                  <div>
                     {absencePlans.map(p => (
                       <div key={p.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                         <IonGrid>
@@ -1241,10 +1232,10 @@ export default function AppCanadianPaystub() {
                       Add Absence Plan
                     </IonButton>
                   </div>
-                </IonAccordion>
+                </div>
               )}
 
-            </IonAccordionGroup>
+            </div>
 
             <div style={{ marginTop: 12, textAlign: "right" }}>
               <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>

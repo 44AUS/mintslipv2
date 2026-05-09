@@ -650,8 +650,8 @@ export default function AdminLayout({ children, fillHeight = false }) {
       </IonSplitPane>
 
       {/* ── Floating Create button (topbar pages only) ── */}
-      {!isInnerPage && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
+      {!isInnerPage && createPortal(
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9995 }}>
           <IonButton
             onClick={() => setCreateOpen(true)}
             style={{ "--background": "#E65100", "--background-activated": "#E65100", "--background-hover": "#E65100", "--border-color": "#E65100", "--box-shadow": "0 6px 20px rgba(0,0,0,0.3)" }}
@@ -661,7 +661,8 @@ export default function AdminLayout({ children, fillHeight = false }) {
             </span>
             Create
           </IonButton>
-        </div>
+        </div>,
+        document.body
       )}
 
       <IonActionSheet

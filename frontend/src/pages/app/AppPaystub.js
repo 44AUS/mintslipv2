@@ -12,6 +12,7 @@ import {
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
+import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "@/utils/federalTaxCalculator";
@@ -501,6 +502,7 @@ export default function AppPaystub() {
   const [loadingPreviews,  setLoadingPreviews]  = useState(true);
 
   useEffect(() => {
+    if (isNative) { setLoadingPreviews(false); return; }
     const sampleData = {
       name: "John Smith", ssn: "1234", bank: "5678", bankName: "Chase Bank",
       address: "123 Main Street", city: "New York", state: "NY", zip: "10001",
@@ -565,15 +567,9 @@ export default function AppPaystub() {
     if (!couponCode.trim()) { setCouponError("Please enter a coupon code"); return; }
     setIsValidatingCoupon(true); setCouponError("");
     try {
-      const res = await fetch(`${BACKEND_URL}/api/validate-coupon`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode.trim(), generatorType: "paystub" }),
-      });
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { setCouponError("Server error. Please try again."); setAppliedDiscount(null); return; }
-      if (res.ok && data.valid) {
+      const { ok, data } = await nativePost(`${BACKEND_URL}/api/validate-coupon`, { code: couponCode.trim(), generatorType: "paystub" });
+      if (!data) { setCouponError("Server error. Please try again."); setAppliedDiscount(null); return; }
+      if (ok && data.valid) {
         const base = calculateNumStubs * 9.99;
         const discountAmount = base * data.discountPercent / 100;
         setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, originalPrice: base, discountedPrice: parseFloat((base - discountAmount).toFixed(2)) });
@@ -658,30 +654,24 @@ export default function AppPaystub() {
     try {
       const baseAmount = calculateNumStubs * 9.99;
       const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : baseAmount;
-      const origin = window.location.origin;
+      const origin = getStripeOrigin(BACKEND_URL);
       const fullFormData = { ...formData, deductions, contributions, absencePlans, employerBenefits, companyLogo, logoDataUrl: logoPreview };
       localStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
       localStorage.setItem("pendingPaystubTemplate", selectedTemplate);
       localStorage.setItem("pendingPaystubCount", calculateNumStubs.toString());
 
-      const res = await fetch(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: finalAmount,
-          documentType: "paystub",
-          template: selectedTemplate,
-          successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${origin}/app/paystub`,
-          quantity: calculateNumStubs,
-          discountCode: appliedDiscount?.code || null,
-          discountAmount: appliedDiscount ? baseAmount - finalAmount : 0,
-        }),
+      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
+        amount: finalAmount,
+        documentType: "paystub",
+        template: selectedTemplate,
+        successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${origin}/app/paystub`,
+        quantity: calculateNumStubs,
+        discountCode: appliedDiscount?.code || null,
+        discountAmount: appliedDiscount ? baseAmount - finalAmount : 0,
       });
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { throw new Error("Server error. Please try again."); }
-      if (!res.ok) throw new Error(data.detail || "Failed to create checkout session");
+      if (!data) throw new Error("Server error. Please try again.");
+      if (!ok) throw new Error(data.detail || "Failed to create checkout session");
       if (data.url) window.location.href = data.url;
       else throw new Error("No checkout URL received");
     } catch (err) {
@@ -705,17 +695,20 @@ export default function AppPaystub() {
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
               >
                 <div style={{ padding: "12px 16px 10px", borderBottom: "1px solid var(--app-divider, rgba(0,0,0,0.08))", display: "flex", alignItems: "center", gap: 10 }}>
-                  <img src={company.logo} alt={company.name} style={{ height: 26, maxWidth: 80, objectFit: "contain" }} />
                   <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", fontWeight: 500 }}>{company.name}</span>
                 </div>
                 <div style={{ background: "#fff", overflow: "hidden", minHeight: 160 }}>
-                  {loadingPreviews ? (
+                  {isNative ? (
+                    <div style={{ height: 180, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, background: "#f9fafb" }}>
+                      <span style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: 500 }}>Tap to select</span>
+                    </div>
+                  ) : loadingPreviews ? (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
                       <IonSpinner name="crescent" />
                     </div>
                   ) : templatePreviews[company.template] ? (
-                    <div style={{ height: 180, overflow: "hidden", pointerEvents: "none" }}>
-                      <iframe src={templatePreviews[company.template]} title={`${company.name} template`} scrolling="no" tabIndex="-1" style={{ width: "100%", height: "100%", border: "none", display: "block" }} />
+                    <div style={{ position: "relative", paddingTop: "141.4%", overflow: "hidden", pointerEvents: "none" }}>
+                      <iframe src={templatePreviews[company.template]} title={`${company.name} template`} scrolling="no" tabIndex="-1" style={{ position: "absolute", top: 0, left: 0, width: "300%", height: "300%", border: "none", display: "block", transformOrigin: "top left", transform: "scale(0.333)" }} />
                     </div>
                   ) : (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
@@ -1325,13 +1318,26 @@ export default function AppPaystub() {
                 </div>
               ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
                 <>
-                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                    <iframe
-                      src={pdfPreviews[previewPageIndex]}
-                      title={`Pay stub preview ${previewPageIndex + 1}`}
-                      style={{ width: "100%", height: "65vh", border: "none", display: "block" }}
-                    />
-                  </div>
+                  {isNative ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: 32 }}>
+                      <IonIcon icon={cloudDownloadOutline} style={{ fontSize: 56, color: "var(--ion-color-medium)" }} />
+                      <p style={{ textAlign: "center", color: "var(--ion-color-medium)", margin: 0, fontSize: "0.9rem" }}>
+                        PDF preview is not supported on mobile.
+                      </p>
+                      <IonButton onClick={() => { const a = document.createElement("a"); a.href = pdfPreviews[previewPageIndex]; a.download = "paystub_preview.pdf"; a.click(); }}>
+                        <IonIcon slot="start" icon={cloudDownloadOutline} />
+                        Download Preview
+                      </IonButton>
+                    </div>
+                  ) : (
+                    <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                      <iframe
+                        src={pdfPreviews[previewPageIndex]}
+                        title={`Pay stub preview ${previewPageIndex + 1}`}
+                        style={{ width: "100%", height: "65vh", border: "none", display: "block" }}
+                      />
+                    </div>
+                  )}
                   {pdfPreviews.length > 1 && (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
                       <IonButton fill="clear" size="small" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i - 1))}>

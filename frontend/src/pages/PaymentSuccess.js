@@ -21,6 +21,9 @@ import { generateAndDownloadVehicleBillOfSale } from '@/utils/vehicleBillOfSaleG
 // Import email utility for sending PDF attachments
 import { sendDownloadEmailWithPdf } from '@/utils/emailWithPdf';
 
+// Notifications
+import { addGeneratingNotification, markNotificationReady, markNotificationError } from '@/utils/appNotifications';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 export default function PaymentSuccess() {
@@ -157,30 +160,33 @@ export default function PaymentSuccess() {
   const generateDocument = async (email = null) => {
     setIsGenerating(true);
     const emailToUse = email || customerEmail;
-    
+    let notifId = null;
+    let appReturnPath = null;
+
     try {
       let generated = false;
       let pdfBlob = null;
-      
+
       if (orderType === 'paystub') {
         const formDataStr = localStorage.getItem('pendingPaystubData');
         const template = localStorage.getItem('pendingPaystubTemplate') || 'template-a';
         const numStubs = parseInt(localStorage.getItem('pendingPaystubCount') || '1', 10);
-        
+
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
-          console.log('Generating paystub with stored data...', { template, numStubs });
-          
-          // Generate paystub - pass returnBlob=true to get the blob for email
+          notifId = `notif_${Date.now()}`;
+          const notifFileName = numStubs > 1 ? `paystubs_${numStubs}.zip` : 'paystub.pdf';
+          addGeneratingNotification({ id: notifId, type: 'paystub', fileName: notifFileName, fileType: numStubs > 1 ? 'zip' : 'pdf' });
+
           pdfBlob = await generateAndDownloadPaystub(formData, template, numStubs, true);
           generated = true;
-          
-          // Send email with attachment (ZIP if multiple, PDF if single)
+
+          markNotificationReady(notifId);
+          appReturnPath = '/app/paystub';
+
           if (emailToUse && pdfBlob) {
             sendFileEmail(pdfBlob, emailToUse, 'paystub', formData.name, numStubs > 1);
           }
-          
-          toast.success(numStubs > 1 ? `Your ${numStubs} paystubs have been downloaded!` : 'Your paystub has been downloaded!');
         }
       } else if (orderType === 'w2') {
         const formDataStr = localStorage.getItem('pendingW2Data');
@@ -291,20 +297,22 @@ export default function PaymentSuccess() {
         const formDataStr = localStorage.getItem('pendingCanadianPaystubData');
         const template = localStorage.getItem('pendingCanadianPaystubTemplate') || 'template-a';
         const numStubs = parseInt(localStorage.getItem('pendingCanadianPaystubCount') || '1', 10);
-        
+
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
-          console.log('Generating Canadian paystub with stored data...', { template, numStubs });
-          
+          notifId = `notif_${Date.now()}`;
+          const notifFileName = numStubs > 1 ? `canadian_paystubs_${numStubs}.zip` : 'canadian_paystub.pdf';
+          addGeneratingNotification({ id: notifId, type: 'canadian-paystub', fileName: notifFileName, fileType: numStubs > 1 ? 'zip' : 'pdf' });
+
           pdfBlob = await generateAndDownloadCanadianPaystub(formData, template, numStubs, true);
           generated = true;
-          
-          // Send email with attachment (ZIP if multiple, PDF if single)
+
+          markNotificationReady(notifId);
+          appReturnPath = '/app/canadian-paystub';
+
           if (emailToUse && pdfBlob) {
             sendFileEmail(pdfBlob, emailToUse, 'canadian-paystub', formData.name, numStubs > 1);
           }
-          
-          toast.success(numStubs > 1 ? `Your ${numStubs} Canadian paystubs have been downloaded!` : 'Your Canadian paystub has been downloaded!');
         }
       } else if (orderType === 'offer-letter') {
         const formDataStr = localStorage.getItem('pendingOfferLetterData');
@@ -372,8 +380,14 @@ export default function PaymentSuccess() {
       // Add more document types as needed...
       
       if (generated) {
+        // Navigate back to app for app-managed document types
+        if (appReturnPath) {
+          navigate(appReturnPath);
+          return;
+        }
+
         setDocumentGenerated(true);
-        
+
         // Check for stored download URL from the generator (check both localStorage and sessionStorage)
         const storedUrl = localStorage.getItem('lastDownloadUrl') || sessionStorage.getItem('lastDownloadUrl');
         const storedName = localStorage.getItem('lastDownloadFileName') || sessionStorage.getItem('lastDownloadFileName');
@@ -390,6 +404,7 @@ export default function PaymentSuccess() {
       }
     } catch (err) {
       console.error('Error generating document:', err);
+      if (notifId) markNotificationError(notifId);
       setError('There was an issue generating your document. Please contact support.');
     } finally {
       setIsGenerating(false);

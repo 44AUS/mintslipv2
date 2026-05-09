@@ -1,18 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar, IonTitle,
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonPopover, IonActionSheet,
+  IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
-  arrowBackOutline, settingsOutline, addOutline,
+  arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
+  cloudDownloadOutline, trashOutline, archiveOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
+import {
+  getNotifications, markAllRead, removeNotification, clearAllNotifications,
+  countUnread, getPendingToasts, markToastShown,
+} from "../utils/appNotifications";
+import { generateAndDownloadPaystub } from "../utils/paystubGenerator";
+import { generateAndDownloadCanadianPaystub } from "../utils/canadianPaystubGenerator";
 import "../admin-theme.css";
 
 const tabs = [
@@ -22,6 +29,14 @@ const tabs = [
 
 // Persists sidebar state across route-driven remounts
 let _appSidebarOpen = true;
+
+function formatRelativeTime(ts) {
+  const diff = Date.now() - ts;
+  if (diff < 60000) return "Just now";
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  return new Date(ts).toLocaleDateString();
+}
 
 export default function AppLayout({ children, fillHeight = false }) {
   const navigate  = useNavigate();
@@ -39,6 +54,30 @@ export default function AppLayout({ children, fillHeight = false }) {
   };
   const [mobileSidebarOpen, setMobileSidebarOpen]  = useState(false);
   const [createOpen,        setCreateOpen]          = useState(false);
+
+  // Notifications state
+  const [notifications,     setNotifications]       = useState(() => getNotifications());
+  const [notifDrawerOpen,   setNotifDrawerOpen]     = useState(false);
+  const [toastOpen,         setToastOpen]           = useState(false);
+  const [toastMessage,      setToastMessage]        = useState("");
+  const [redownloadingId,   setRedownloadingId]     = useState(null);
+
+  const refreshNotifications = useCallback(() => {
+    setNotifications(getNotifications());
+  }, []);
+
+  // On mount, show toast for any newly ready notifications
+  useEffect(() => {
+    const pending = getPendingToasts();
+    if (pending.length > 0) {
+      const first = pending[0];
+      setToastMessage(`${first.fileName || "Your file"} is ready for download`);
+      setToastOpen(true);
+      pending.forEach(n => markToastShown(n.id));
+      refreshNotifications();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleMenuToggle = () => {
     if (window.innerWidth < 768) {
@@ -105,6 +144,45 @@ export default function AppLayout({ children, fillHeight = false }) {
     : userInfo?.email
       ? userInfo.email[0].toUpperCase()
       : "U";
+
+  const unreadCount = countUnread();
+
+  const openNotifDrawer = () => {
+    setNotifDrawerOpen(true);
+    markAllRead();
+    refreshNotifications();
+  };
+
+  const closeNotifDrawer = () => {
+    setNotifDrawerOpen(false);
+    refreshNotifications();
+  };
+
+  const handleRedownload = async (notif) => {
+    setRedownloadingId(notif.id);
+    try {
+      if (notif.type === "paystub") {
+        const str = localStorage.getItem("pendingPaystubData");
+        if (!str) throw new Error("no data");
+        const data = JSON.parse(str);
+        const template = localStorage.getItem("pendingPaystubTemplate") || "template-a";
+        const count = parseInt(localStorage.getItem("pendingPaystubCount") || "1", 10);
+        await generateAndDownloadPaystub(data, template, count);
+      } else if (notif.type === "canadian-paystub") {
+        const str = localStorage.getItem("pendingCanadianPaystubData");
+        if (!str) throw new Error("no data");
+        const data = JSON.parse(str);
+        const template = localStorage.getItem("pendingCanadianPaystubTemplate") || "template-a";
+        const count = parseInt(localStorage.getItem("pendingCanadianPaystubCount") || "1", 10);
+        await generateAndDownloadCanadianPaystub(data, template, count);
+      }
+    } catch {
+      setToastMessage("Form data no longer available. Please create a new document.");
+      setToastOpen(true);
+    } finally {
+      setRedownloadingId(null);
+    }
+  };
 
   const segmentBtnStyle = {
     "--color":              "rgba(255,255,255,0.7)",
@@ -305,6 +383,26 @@ export default function AppLayout({ children, fillHeight = false }) {
                   ))}
                 </IonSegment>
               )}
+
+              {/* Bell icon — always in end slot */}
+              <IonButtons slot="end">
+                <IonButton fill="clear" onClick={openNotifDrawer} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%", position: "relative" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px", position: "relative" }}>
+                    <IonIcon icon={notificationsOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    {unreadCount > 0 && (
+                      <span style={{
+                        position: "absolute", top: -4, right: -4,
+                        background: "#ef4444", color: "#fff",
+                        borderRadius: "50%", fontSize: 10, fontWeight: 700,
+                        width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center",
+                        lineHeight: 1, pointerEvents: "none",
+                      }}>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </span>
+                </IonButton>
+              </IonButtons>
             </IonToolbar>
           </IonHeader>
 
@@ -319,6 +417,20 @@ export default function AppLayout({ children, fillHeight = false }) {
         </IonPage>
 
       </IonSplitPane>
+
+      {/* ── IonToast for new downloads ── */}
+      <IonToast
+        isOpen={toastOpen}
+        onDidDismiss={() => setToastOpen(false)}
+        message={toastMessage}
+        duration={4000}
+        position="top"
+        color="success"
+        buttons={[{
+          text: "View",
+          handler: () => { openNotifDrawer(); return false; },
+        }]}
+      />
 
       {/* ── Floating Create button (portalled inside ion-app so IonActionSheet stacks above it) ── */}
       {!isSecondaryPage && createPortal(
@@ -347,6 +459,127 @@ export default function AppLayout({ children, fillHeight = false }) {
           { text: "Cancel", role: "cancel" },
         ]}
       />
+
+      {/* ── Notifications drawer ── */}
+      {notifDrawerOpen && createPortal(<>
+        <div
+          onClick={closeNotifDrawer}
+          style={{ position: "fixed", inset: 0, zIndex: 9994, background: "rgba(0,0,0,0.5)" }}
+        />
+        <div style={{
+          position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 9995,
+          width: 320, maxWidth: "90vw",
+          background: "var(--app-sidebar-bg, #ffffff)",
+          boxShadow: "-4px 0 24px rgba(0,0,0,0.25)",
+          display: "flex", flexDirection: "column",
+        }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", padding: "0 12px", minHeight: 60, borderBottom: "1px solid var(--app-divider)", flexShrink: 0, gap: 8 }}>
+            <span style={{ flex: 1, fontSize: "1rem", fontWeight: 700, color: "var(--ion-text-color)" }}>Notifications</span>
+            {notifications.length > 0 && (
+              <button
+                onClick={() => { clearAllNotifications(); setNotifications([]); }}
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.78rem", color: "var(--ion-color-medium)", padding: "4px 8px", borderRadius: 4 }}
+              >
+                Clear all
+              </button>
+            )}
+            <button
+              onClick={closeNotifDrawer}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
+              <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
+            </button>
+          </div>
+
+          {/* Content */}
+          {notifications.length === 0 ? (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, gap: 12 }}>
+              <IonIcon icon={notificationsOutline} style={{ fontSize: 52, color: "var(--ion-color-medium)" }} />
+              <p style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: 0, fontWeight: 500 }}>No notifications yet</p>
+              <p style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.78rem", margin: 0, lineHeight: 1.5 }}>
+                Your completed downloads will appear here
+              </p>
+            </div>
+          ) : (
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {notifications.map(notif => (
+                <div
+                  key={notif.id}
+                  style={{
+                    display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 16px",
+                    borderBottom: "1px solid var(--app-divider)",
+                    background: notif.read ? "transparent" : "rgba(22,163,74,0.05)",
+                  }}
+                >
+                  {/* File icon */}
+                  <div style={{
+                    width: 40, height: 40, borderRadius: 8, flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: notif.fileType === "zip" ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.1)",
+                  }}>
+                    <IonIcon
+                      icon={notif.fileType === "zip" ? archiveOutline : documentTextOutline}
+                      style={{ fontSize: 20, color: notif.fileType === "zip" ? "#d97706" : "#dc2626" }}
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {notif.fileName}
+                    </div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>
+                      {formatRelativeTime(notif.timestamp)}
+                    </div>
+                    {notif.status === "generating" && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                        <IonSpinner name="crescent" style={{ width: 13, height: 13, color: "var(--ion-color-primary)" }} />
+                        <span style={{ fontSize: "0.72rem", color: "var(--ion-color-primary)" }}>Generating...</span>
+                      </div>
+                    )}
+                    {notif.status === "ready" && (
+                      <div style={{ fontSize: "0.72rem", color: "#16a34a", marginTop: 4, fontWeight: 500 }}>Ready to download</div>
+                    )}
+                    {notif.status === "error" && (
+                      <div style={{ fontSize: "0.72rem", color: "#dc2626", marginTop: 4 }}>Generation failed</div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, alignItems: "flex-end" }}>
+                    {notif.status === "ready" && (
+                      <button
+                        onClick={() => handleRedownload(notif)}
+                        disabled={redownloadingId === notif.id}
+                        style={{
+                          background: redownloadingId === notif.id ? "var(--ion-color-step-200)" : "var(--ion-color-primary)",
+                          border: "none", borderRadius: 6, padding: "5px 10px",
+                          cursor: redownloadingId === notif.id ? "default" : "pointer",
+                          display: "flex", alignItems: "center", gap: 4,
+                        }}
+                      >
+                        {redownloadingId === notif.id ? (
+                          <IonSpinner name="crescent" style={{ width: 14, height: 14, color: "#fff" }} />
+                        ) : (
+                          <IonIcon icon={cloudDownloadOutline} style={{ fontSize: 15, color: "#fff" }} />
+                        )}
+                        <span style={{ fontSize: "0.72rem", color: "#fff" }}>Download</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { removeNotification(notif.id); setNotifications(getNotifications()); }}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <IonIcon icon={trashOutline} style={{ fontSize: 15, color: "var(--ion-color-medium)" }} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </>, document.querySelector("ion-app") || document.body)}
 
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && createPortal(<>

@@ -3231,10 +3231,11 @@ export default function PaystubForm() {
                         <div className="relative cursor-pointer group">
                           {/* PDF Preview Thumbnail */}
                           <div className="relative overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <img 
+                            <iframe
                               src={pdfPreviews[currentPreviewIndex]}
-                              alt={`Paystub Preview ${currentPreviewIndex + 1}`}
-                              className="w-full h-96 object-contain bg-white"
+                              title={`Paystub Preview ${currentPreviewIndex + 1}`}
+                              scrolling="no"
+                              style={{ width: "100%", height: "24rem", border: "none", display: "block" }}
                             />
                             {/* Watermark Overlay */}
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -3269,10 +3270,10 @@ export default function PaystubForm() {
                           </DialogTitle>
                         </DialogHeader>
                         <div className="relative flex-1 h-full overflow-auto p-4">
-                          <img
+                          <iframe
                             src={pdfPreviews[currentPreviewIndex]}
-                            alt={`Paystub Preview Full ${currentPreviewIndex + 1}`}
-                            className="w-full h-auto"
+                            title={`Paystub Preview Full ${currentPreviewIndex + 1}`}
+                            style={{ width: "100%", height: "calc(90vh - 100px)", border: "none", display: "block" }}
                           />
                           {/* Large Watermark Overlay */}
                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

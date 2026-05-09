@@ -1247,12 +1247,18 @@ export default function AppCanadianPaystub() {
                   {!appliedDiscount ? (
                     <>
                       <div style={{ display: "flex", gap: 8 }}>
-                        <IonInput
-                          fill="outline"
+                        <input
+                          type="text"
                           placeholder="Coupon code"
                           value={couponCode}
-                          onIonInput={e => { setCouponCode(e.detail.value?.toUpperCase() || ""); setCouponError(""); }}
-                          style={{ flex: 1, fontFamily: "monospace" }}
+                          onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
+                          style={{
+                            flex: 1, fontFamily: "monospace", height: 42,
+                            padding: "0 12px", borderRadius: 4,
+                            border: "1.5px solid var(--ion-color-step-300, rgba(0,0,0,0.2))",
+                            background: "transparent", color: "var(--ion-text-color)",
+                            fontSize: "0.9rem", outline: "none",
+                          }}
                         />
                         <IonButton fill="outline" onClick={validateCoupon} disabled={isValidatingCoupon || !couponCode.trim()} style={{ flexShrink: 0 }}>
                           {isValidatingCoupon ? <IonSpinner name="crescent" /> : "Apply"}

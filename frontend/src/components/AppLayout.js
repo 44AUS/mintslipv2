@@ -5,12 +5,12 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar, IonTitle,
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonPopover,
+  IonList, IonItem, IonPopover, IonActionSheet,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
-  arrowBackOutline, settingsOutline,
+  arrowBackOutline, settingsOutline, addOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -38,6 +38,7 @@ export default function AppLayout({ children, fillHeight = false }) {
     });
   };
   const [mobileSidebarOpen, setMobileSidebarOpen]  = useState(false);
+  const [createOpen,        setCreateOpen]          = useState(false);
 
   const handleMenuToggle = () => {
     if (window.innerWidth < 768) {
@@ -230,7 +231,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             <IonToolbar>
               <IonButtons slot="start">
                 {isSecondaryPage ? (
-                  <IonButton fill="clear" onClick={() => { setSidebarOpen(true); navigate(-1); }} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
+                  <IonButton fill="clear" onClick={() => { _appSidebarOpen = true; navigate(-1); }} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
                     <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
                       <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                     </span>
@@ -320,6 +321,33 @@ export default function AppLayout({ children, fillHeight = false }) {
         </IonPage>
 
       </IonSplitPane>
+
+      {/* ── Floating Create button (main pages only) ── */}
+      {!isSecondaryPage && createPortal(
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9995 }}>
+          <IonButton
+            onClick={() => setCreateOpen(true)}
+            style={{ "--background": "#E65100", "--background-activated": "#E65100", "--background-hover": "#E65100", "--border-color": "#E65100", "--box-shadow": "0 6px 20px rgba(0,0,0,0.3)" }}
+          >
+            <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+              <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+            </span>
+            Create
+          </IonButton>
+        </div>,
+        document.body
+      )}
+
+      <IonActionSheet
+        isOpen={createOpen}
+        mode="ios"
+        onDidDismiss={() => setCreateOpen(false)}
+        buttons={[
+          { text: "Create Pay Stub",        handler: () => navigate("/app/paystub") },
+          { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
+          { text: "Cancel", role: "cancel" },
+        ]}
+      />
 
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && createPortal(<>

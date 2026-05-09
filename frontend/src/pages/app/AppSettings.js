@@ -4,12 +4,13 @@ import AppLayout from "@/components/AppLayout";
 import {
   IonPage, IonContent, IonIcon, IonBadge, IonToggle,
   IonSegment, IonSegmentButton, IonLabel,
+  IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonSearchbar,
 } from "@ionic/react";
 import {
   globeOutline, moonOutline, helpCircleOutline,
-  playCircleOutline, calendarOutline, sendOutline, bugOutline,
-  codeSlashOutline, keyOutline,
+  playCircleOutline, sendOutline, bugOutline,
   documentTextOutline, shieldOutline, chevronForwardOutline,
+  arrowBackOutline, closeOutline,
 } from "ionicons/icons";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -65,6 +66,45 @@ function Row({ icon, label, right, last, clickable, onClick }) {
   );
 }
 
+function getYouTubeThumb(url) {
+  if (!url) return null;
+  const match = url.match(/embed\/([a-zA-Z0-9_-]+)/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null;
+}
+
+function VideoCard({ video, onClick, last }) {
+  const thumb = getYouTubeThumb(video.youtubeUrl);
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: "100%", background: "none", border: "none", cursor: "pointer",
+        display: "flex", alignItems: "center", gap: 12,
+        padding: "12px 16px", textAlign: "left",
+        borderBottom: last ? "none" : "1px solid var(--ion-border-color)",
+      }}
+    >
+      {thumb ? (
+        <img src={thumb} alt={video.title} style={{ width: 72, height: 48, borderRadius: 6, objectFit: "cover", flexShrink: 0, background: "var(--ion-color-step-100)" }} />
+      ) : (
+        <div style={{ width: 72, height: 48, borderRadius: 6, background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <IonIcon icon={playCircleOutline} style={{ fontSize: 24, color: "var(--ion-color-medium)" }} />
+        </div>
+      )}
+      <div style={{ flex: "1 1 0%", minWidth: 0 }}>
+        <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--ion-text-color)", lineHeight: 1.3 }}>{video.title}</div>
+        {video.description && (
+          <div style={{
+            fontSize: "0.78rem", color: "var(--ion-color-medium)", marginTop: 3, lineHeight: 1.4,
+            overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          }}>{video.description}</div>
+        )}
+      </div>
+      <IonIcon icon={playCircleOutline} style={{ fontSize: 22, color: "var(--ion-color-primary)", flexShrink: 0 }} />
+    </button>
+  );
+}
+
 export default function AppSettings() {
   const navigate = useNavigate();
 
@@ -75,19 +115,20 @@ export default function AppSettings() {
   const [darkMode,  setDarkMode]  = useState(() => localStorage.getItem("appDarkMode") === "true");
   const [language,  setLanguage]  = useState(() => localStorage.getItem("appLanguage") || "en");
   const [showHelp,  setShowHelp]  = useState(() => localStorage.getItem("appShowHelp") === "true");
-  const [showToken, setShowToken] = useState(false);
 
-  const userToken = (() => {
-    try {
-      const info = JSON.parse(localStorage.getItem("userInfo") || "{}");
-      return info.token || localStorage.getItem("userToken") || null;
-    } catch { return null; }
-  })();
+  const [tutorialOpen,       setTutorialOpen]       = useState(false);
+  const [tutorialSearch,     setTutorialSearch]     = useState("");
+  const [tutorialCategories, setTutorialCategories] = useState([]);
+  const [tutorialVideo,      setTutorialVideo]      = useState(null);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/app-settings`)
       .then(r => r.json())
       .then(d => { if (d.success && d.settings) setSettings(d.settings); })
+      .catch(() => {});
+    fetch(`${BACKEND_URL}/api/tutorial-categories`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setTutorialCategories(d.categories || []); })
       .catch(() => {});
   }, []);
 
@@ -109,6 +150,12 @@ export default function AppSettings() {
     localStorage.setItem("appShowHelp", String(next));
   };
 
+  const closeTutorialModal = () => {
+    setTutorialOpen(false);
+    setTutorialSearch("");
+    setTutorialVideo(null);
+  };
+
   const statusColor = { normal: "success", degraded: "warning", down: "danger" }[settings.status] || "success";
   const statusLabel = { normal: "Normal", degraded: "Degraded", down: "Down" }[settings.status] || "Normal";
 
@@ -124,6 +171,14 @@ export default function AppSettings() {
     "--indicator-box-shadow": "0 1px 4px rgba(0,0,0,0.15)",
     minHeight: 26, minWidth: 0,
   };
+
+  const searchQuery = tutorialSearch.toLowerCase().trim();
+  const searchResults = searchQuery
+    ? tutorialCategories.flatMap(c => c.videos || []).filter(v =>
+        (v.title || "").toLowerCase().includes(searchQuery) ||
+        (v.description || "").toLowerCase().includes(searchQuery)
+      )
+    : null;
 
   return (
     <AppLayout>
@@ -229,39 +284,9 @@ export default function AppSettings() {
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
                 <div style={cardTitle}>Support</div>
-                <Row icon={playCircleOutline} label="Tutorials" clickable right={<Chevron />} onClick={() => navigate("/faq")} />
-                <Row icon={calendarOutline}    label="Book a Q&A" clickable right={<Chevron />} onClick={() => window.open("mailto:support@mintslip.com?subject=Q%26A%20Session")} />
-                <Row icon={calendarOutline}    label="Book a Demo" clickable right={<Chevron />} onClick={() => window.open("mailto:support@mintslip.com?subject=Demo%20Request")} />
+                <Row icon={playCircleOutline} label="Tutorials" clickable right={<Chevron />} onClick={() => setTutorialOpen(true)} />
                 <Row icon={sendOutline}        label="Feature Request" clickable right={<Chevron />} onClick={() => window.open("mailto:support@mintslip.com?subject=Feature%20Request")} />
                 <Row icon={bugOutline}         label="Report a Problem" clickable last right={<Chevron />} onClick={() => window.open("mailto:support@mintslip.com?subject=Bug%20Report")} />
-              </div>
-            </div>
-
-            {/* Developer */}
-            <div style={{ marginBottom: 28 }}>
-              <div style={cardStyle}>
-                <div style={cardTitle}>Developer</div>
-                <Row icon={codeSlashOutline} label="API Reference" clickable right={<Chevron />} onClick={() => window.open("https://mintslip.com/api-docs")} />
-                <Row
-                  icon={keyOutline}
-                  label="Access Token"
-                  last
-                  right={
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: "0.78rem", color: "var(--ion-color-medium)", fontFamily: "monospace", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {userToken ? (showToken ? userToken : "••••••••••••••••••••••••••••••••••••") : "Not available"}
-                      </span>
-                      {userToken && (
-                        <button
-                          onClick={() => setShowToken(v => !v)}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ion-color-primary)", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "0.05em", fontFamily: "inherit", padding: "4px 8px" }}
-                        >
-                          {showToken ? "HIDE" : "SHOW"}
-                        </button>
-                      )}
-                    </div>
-                  }
-                />
               </div>
             </div>
 
@@ -281,6 +306,93 @@ export default function AppSettings() {
           </div>
         </IonContent>
       </IonPage>
+
+      {/* Tutorials Modal */}
+      <IonModal isOpen={tutorialOpen} onDidDismiss={closeTutorialModal}>
+        <IonHeader>
+          <IonToolbar>
+            {tutorialVideo && (
+              <IonButtons slot="start">
+                <IonButton onClick={() => setTutorialVideo(null)}>
+                  <IonIcon slot="icon-only" icon={arrowBackOutline} />
+                </IonButton>
+              </IonButtons>
+            )}
+            <IonTitle>{tutorialVideo ? tutorialVideo.title : "Tutorials"}</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={closeTutorialModal}>
+                <IonIcon slot="icon-only" icon={closeOutline} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+          {!tutorialVideo && (
+            <IonToolbar>
+              <IonSearchbar
+                value={tutorialSearch}
+                onIonInput={e => setTutorialSearch(e.detail.value || "")}
+                placeholder="Search videos..."
+                style={{ "--background": "var(--ion-color-step-50)", "--border-radius": "10px" }}
+              />
+            </IonToolbar>
+          )}
+        </IonHeader>
+
+        <IonContent>
+          {tutorialVideo ? (
+            <div style={{ padding: 16 }}>
+              <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 10, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+                <iframe
+                  src={tutorialVideo.youtubeUrl}
+                  title={tutorialVideo.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+                />
+              </div>
+              {tutorialVideo.description && (
+                <p style={{ marginTop: 14, fontSize: "0.9rem", color: "var(--ion-color-medium)", lineHeight: 1.6 }}>
+                  {tutorialVideo.description}
+                </p>
+              )}
+            </div>
+          ) : searchResults ? (
+            <div style={{ padding: 16 }}>
+              {searchResults.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ion-color-medium)" }}>
+                  <IonIcon icon={playCircleOutline} style={{ fontSize: 40, marginBottom: 10, display: "block", margin: "0 auto 10px" }} />
+                  <div style={{ fontSize: "0.9rem" }}>No videos found for "{tutorialSearch}"</div>
+                </div>
+              ) : (
+                <div style={{ borderRadius: 12, overflow: "hidden", boxShadow: "rgba(0,0,0,0.1) 0 2px 12px", background: "var(--ion-card-background)" }}>
+                  {searchResults.map((v, i) => (
+                    <VideoCard key={v.id || i} video={v} onClick={() => setTutorialVideo(v)} last={i === searchResults.length - 1} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ padding: 16 }}>
+              {tutorialCategories.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ion-color-medium)" }}>
+                  <IonIcon icon={playCircleOutline} style={{ fontSize: 40, display: "block", margin: "0 auto 10px" }} />
+                  <div style={{ fontSize: "0.9rem" }}>No tutorials available yet.</div>
+                </div>
+              ) : tutorialCategories.map((cat, ci) => (
+                <div key={cat.id || ci} style={{ marginBottom: 28 }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--ion-color-medium)", marginBottom: 10, paddingLeft: 2 }}>
+                    {cat.name}
+                  </div>
+                  <div style={{ borderRadius: 12, overflow: "hidden", boxShadow: "rgba(0,0,0,0.1) 0 2px 12px", background: "var(--ion-card-background)" }}>
+                    {(cat.videos || []).map((v, i) => (
+                      <VideoCard key={v.id || i} video={v} onClick={() => setTutorialVideo(v)} last={i === (cat.videos.length - 1)} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </IonContent>
+      </IonModal>
     </AppLayout>
   );
 }

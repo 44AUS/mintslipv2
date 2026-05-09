@@ -5,7 +5,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
   IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonAvatar, IonPopover, IonTitle, IonActionSheet,
+  IonList, IonItem, IonAvatar, IonPopover, IonTitle,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline, chevronDownOutline,
@@ -15,7 +15,7 @@ import {
   listOutline, trendingUpOutline, cardOutline, chatboxOutline,
   downloadOutline, chevronForwardOutline,
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
-  notificationsOutline, addOutline,
+  notificationsOutline,
 } from "ionicons/icons";
 import {
   FileText,
@@ -105,7 +105,6 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [notifOpen,     setNotifOpen]     = useState(false);
-  const [createOpen,    setCreateOpen]    = useState(false);
   const [isMobile,      setIsMobile]      = useState(window.innerWidth < 768);
 
   const [adminProfile, setAdminProfile] = useState(null);
@@ -648,42 +647,6 @@ export default function AdminLayout({ children, fillHeight = false }) {
         </IonPage>
 
       </IonSplitPane>
-
-      {/* ── Floating Create button (topbar pages only) ── */}
-      {!isInnerPage && createPortal(
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 9995 }}>
-          <IonButton
-            onClick={() => setCreateOpen(true)}
-            style={{ "--background": "#E65100", "--background-activated": "#E65100", "--background-hover": "#E65100", "--border-color": "#E65100", "--box-shadow": "0 6px 20px rgba(0,0,0,0.3)" }}
-          >
-            <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
-              <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-            </span>
-            Create
-          </IonButton>
-        </div>,
-        document.body
-      )}
-
-      <IonActionSheet
-        isOpen={createOpen}
-        mode="ios"
-        onDidDismiss={() => setCreateOpen(false)}
-        buttons={[
-          {
-            text: "Create Pay Stub",
-            handler: () => { navigate("/app/paystub"); },
-          },
-          {
-            text: "Create Canadian Paystub",
-            handler: () => { navigate("/app/canadian-paystub"); },
-          },
-          {
-            text: "Cancel",
-            role: "cancel",
-          },
-        ]}
-      />
 
       {/* ── Notifications drawer (right) ── */}
       {notifOpen && (

@@ -4932,6 +4932,29 @@ async def update_app_settings(request: dict, session: dict = Depends(get_current
     return {"success": True, "settings": data}
 
 
+# ========== TUTORIAL CATEGORIES ==========
+
+@app.get("/api/tutorial-categories")
+async def get_tutorial_categories():
+    doc = await site_settings_collection.find_one({"key": "tutorial_categories"}, {"_id": 0})
+    if not doc:
+        return {"success": True, "categories": []}
+    return {"success": True, "categories": doc.get("categories", [])}
+
+
+@app.put("/api/admin/tutorial-categories")
+async def update_tutorial_categories(request: dict, session: dict = Depends(get_current_admin)):
+    check_permission(session, "manage_site_settings")
+    categories = request.get("categories", [])
+    await site_settings_collection.update_one(
+        {"key": "tutorial_categories"},
+        {"$set": {"key": "tutorial_categories", "categories": categories, "updatedAt": datetime.now(timezone.utc).isoformat(), "updatedBy": session.get("adminId", "")}},
+        upsert=True
+    )
+    await log_action(session, "update_tutorial_categories", "site_settings", "tutorial_categories")
+    return {"success": True, "categories": categories}
+
+
 # ========== AUTH SETTINGS ==========
 
 @app.get("/api/auth-status")

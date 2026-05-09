@@ -83,6 +83,11 @@ export default function AdminSiteSettings() {
   const [appSettingsLoading, setAppSettingsLoading] = useState(false);
   const [appSettingsMsg, setAppSettingsMsg] = useState(null);
 
+  // Tutorial Categories
+  const [tutorialCategories, setTutorialCategories] = useState([]);
+  const [tutorialLoading, setTutorialLoading] = useState(false);
+  const [tutorialMsg, setTutorialMsg] = useState(null);
+
   // Site navigation order
   const NAV_ITEMS_DISPLAY = [
     { id: "paystubs",      label: "Pay Stubs" },
@@ -106,6 +111,7 @@ export default function AdminSiteSettings() {
     fetchNavOrder();
     fetchRetention();
     fetchAppSettings();
+    fetchTutorialCategories();
   }, []);
 
   const fetchAppSettings = async () => {
@@ -146,6 +152,71 @@ export default function AdminSiteSettings() {
     } finally {
       setAppSettingsLoading(false);
     }
+  };
+
+  const fetchTutorialCategories = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/tutorial-categories`);
+      const data = await res.json();
+      if (data.success) setTutorialCategories(data.categories || []);
+    } catch (e) {}
+  };
+
+  const saveTutorialCategories = async () => {
+    setTutorialLoading(true);
+    setTutorialMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/tutorial-categories`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ categories: tutorialCategories }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTutorialMsg({ type: "success", text: "Tutorial categories saved." });
+        setTimeout(() => setTutorialMsg(null), 3000);
+      } else {
+        setTutorialMsg({ type: "error", text: "Failed to save tutorials." });
+      }
+    } catch (e) {
+      setTutorialMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setTutorialLoading(false);
+    }
+  };
+
+  const addCategory = () => {
+    setTutorialCategories(prev => [...prev, { id: crypto.randomUUID(), name: "", videos: [] }]);
+  };
+
+  const removeCategory = (catId) => {
+    setTutorialCategories(prev => prev.filter(c => c.id !== catId));
+  };
+
+  const updateCategoryName = (catId, name) => {
+    setTutorialCategories(prev => prev.map(c => c.id === catId ? { ...c, name } : c));
+  };
+
+  const addVideo = (catId) => {
+    setTutorialCategories(prev => prev.map(c => c.id === catId
+      ? { ...c, videos: [...c.videos, { id: crypto.randomUUID(), title: "", description: "", youtubeUrl: "" }] }
+      : c
+    ));
+  };
+
+  const removeVideo = (catId, vidId) => {
+    setTutorialCategories(prev => prev.map(c => c.id === catId
+      ? { ...c, videos: c.videos.filter(v => v.id !== vidId) }
+      : c
+    ));
+  };
+
+  const updateVideo = (catId, vidId, field, value) => {
+    setTutorialCategories(prev => prev.map(c => c.id === catId
+      ? { ...c, videos: c.videos.map(v => v.id === vidId ? { ...v, [field]: value } : v) }
+      : c
+    ));
   };
 
   const fetchRetention = async () => {
@@ -762,6 +833,110 @@ export default function AdminSiteSettings() {
             >
               {appSettingsLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save App Settings
+            </button>
+          </div>
+
+          {/* Tutorial Categories */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-purple-50">
+                <Smartphone className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-800">Tutorial Categories</p>
+                <p className="text-xs text-slate-500 mt-0.5">Manage tutorial categories and YouTube videos shown in the app's Tutorials section.</p>
+              </div>
+            </div>
+
+            <div className="pt-1 border-t border-slate-100 space-y-4">
+              {tutorialCategories.length === 0 && (
+                <p className="text-xs text-slate-400 italic">No categories yet. Click "Add Category" to get started.</p>
+              )}
+
+              {tutorialCategories.map((cat) => (
+                <div key={cat.id} className="border border-slate-200 rounded-xl overflow-hidden">
+                  {/* Category header */}
+                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200">
+                    <input
+                      value={cat.name}
+                      onChange={e => updateCategoryName(cat.id, e.target.value)}
+                      placeholder="Category name"
+                      className="flex-1 bg-transparent text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => removeCategory(cat.id)}
+                      className="p-1 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Videos */}
+                  <div className="divide-y divide-slate-100">
+                    {cat.videos.map((vid) => (
+                      <div key={vid.id} className="px-4 py-3 space-y-2">
+                        <div className="flex items-start gap-2">
+                          <div className="flex-1 space-y-2">
+                            <input
+                              value={vid.title}
+                              onChange={e => updateVideo(cat.id, vid.id, "title", e.target.value)}
+                              placeholder="Video title"
+                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            />
+                            <input
+                              value={vid.youtubeUrl}
+                              onChange={e => updateVideo(cat.id, vid.id, "youtubeUrl", e.target.value)}
+                              placeholder="YouTube embed URL (https://www.youtube.com/embed/...)"
+                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            />
+                            <textarea
+                              value={vid.description}
+                              onChange={e => updateVideo(cat.id, vid.id, "description", e.target.value)}
+                              placeholder="Description (optional)"
+                              rows={2}
+                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                            />
+                          </div>
+                          <button
+                            onClick={() => removeVideo(cat.id, vid.id)}
+                            className="p-1 text-slate-400 hover:text-red-500 transition-colors flex-shrink-0 mt-1"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add video */}
+                  <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100">
+                    <button
+                      onClick={() => addVideo(cat.id)}
+                      className="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 font-medium"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Add Video
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                onClick={addCategory}
+                className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-slate-300 hover:border-green-400 hover:text-green-600 text-slate-500 text-sm font-medium rounded-xl transition-colors w-full justify-center"
+              >
+                <Plus className="w-4 h-4" /> Add Category
+              </button>
+            </div>
+
+            <Msg msg={tutorialMsg} />
+
+            <button
+              onClick={saveTutorialCategories}
+              disabled={tutorialLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {tutorialLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
+              Save Tutorials
             </button>
           </div>
 

@@ -733,8 +733,8 @@ export default function AppPaystub() {
 
       {/* ── Form Modal (portalled to ion-app) ── */}
       {formModalOpen && createPortal(
-        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "center" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
-          <div style={{ background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 600 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", borderRadius: window.innerWidth >= 768 ? 12 : 0, overflow: "hidden" }}>
+        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10000, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "flex-end" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
+          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 600 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", overflow: "hidden" }}>
           <IonHeader>
             <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
               <IonButtons slot="start">
@@ -1302,7 +1302,8 @@ export default function AppPaystub() {
 
       {/* ── Preview Modal (portalled to ion-app) ── */}
       {previewModalOpen && createPortal(
-        <div style={{ position: "fixed", inset: 0, zIndex: 10001, background: "var(--ion-background-color, #f2f2f7)", display: "flex", flexDirection: "column" }}>
+        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10001, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "flex-end" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
+          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 600 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", overflow: "hidden" }}>
           <div style={{ background: "var(--ion-color-primary, #16a34a)", display: "flex", alignItems: "center", padding: "0 4px", minHeight: 56, flexShrink: 0 }}>
             <button onClick={() => setPreviewModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 10, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
               <IonIcon icon={arrowBackOutline} style={{ fontSize: 22, color: "rgba(255,255,255,0.9)" }} />
@@ -1443,7 +1444,9 @@ export default function AppPaystub() {
                 }
               </IonButton>
             </div>
-          </div>,
+          </div>
+          </div>
+        </div>,
         document.querySelector("ion-app") || document.body
       )}
 

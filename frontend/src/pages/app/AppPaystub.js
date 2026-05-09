@@ -1304,15 +1304,20 @@ export default function AppPaystub() {
       {previewModalOpen && createPortal(
         <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10001, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "center" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
           <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 600 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", overflow: "hidden" }}>
-          <div style={{ background: "var(--ion-color-primary, #16a34a)", display: "flex", alignItems: "center", padding: "0 4px", minHeight: 56, flexShrink: 0 }}>
-            <button onClick={() => setPreviewModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 10, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
-              <IonIcon icon={arrowBackOutline} style={{ fontSize: 22, color: "rgba(255,255,255,0.9)" }} />
-            </button>
-            <span style={{ flex: 1, textAlign: "center", color: "#fff", fontWeight: 700, fontSize: "1rem" }}>
-              Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
-            </span>
-            <div style={{ width: 46 }} />
-          </div>
+          <IonHeader>
+            <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
+              <IonButtons slot="start">
+                <IonButton fill="clear" shape="round" onClick={() => setPreviewModalOpen(false)}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                    <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
+              </IonButtons>
+              <IonTitle style={{ fontWeight: 700 }}>
+                Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
+              </IonTitle>
+            </IonToolbar>
+          </IonHeader>
           <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
               {isGeneratingPreview ? (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>

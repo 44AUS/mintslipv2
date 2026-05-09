@@ -110,7 +110,7 @@ export default function AppTerms() {
               borderRadius: 12,
               padding: "28px 28px 32px",
               boxShadow: "0 2px 12px rgba(0,0,0,0.10)",
-              maxWidth: 780,
+              maxWidth: 1200,
               margin: "0 auto",
             }}>
               <h1 style={{ color: "var(--ion-text-color)", fontSize: "1.6rem", fontWeight: 700, marginTop: 0, marginBottom: 4 }}>

@@ -332,7 +332,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
               <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
             </span>
-            Create
+            CREATE
           </IonButton>
         </div>,
         document.body
@@ -342,6 +342,7 @@ export default function AppLayout({ children, fillHeight = false }) {
         isOpen={createOpen}
         mode="ios"
         onDidDismiss={() => setCreateOpen(false)}
+        style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--backdrop-opacity": "0.5" }}
         buttons={[
           { text: "Create Pay Stub",        handler: () => navigate("/app/paystub") },
           { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },

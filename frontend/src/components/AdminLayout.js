@@ -637,16 +637,6 @@ export default function AdminLayout({ children, fillHeight = false }) {
           </IonHeader>
 
           <IonContent style={{ "--background": "var(--ion-background-color)" }}>
-            {!isInnerPage && (
-              <div slot="fixed" style={{ bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 10 }}>
-                <IonButton style={{ "--background": "#E65100", "--background-activated": "#E65100", "--background-hover": "#E65100", "--border-color": "#E65100", "--box-shadow": "0 6px 20px rgba(0,0,0,0.3)" }}>
-                  <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
-                    <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                  Find
-                </IonButton>
-              </div>
-            )}
             {fillHeight ? (
               <div style={{ height: "100%", overflow: "hidden" }}>{children}</div>
             ) : (
@@ -657,6 +647,18 @@ export default function AdminLayout({ children, fillHeight = false }) {
         </IonPage>
 
       </IonSplitPane>
+
+      {/* ── Floating Find button (topbar pages only) ── */}
+      {!isInnerPage && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
+          <IonButton style={{ "--background": "#E65100", "--background-activated": "#E65100", "--background-hover": "#E65100", "--border-color": "#E65100", "--box-shadow": "0 6px 20px rgba(0,0,0,0.3)" }}>
+            <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+              <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+            </span>
+            Find
+          </IonButton>
+        </div>
+      )}
 
       {/* ── Notifications drawer (right) ── */}
       {notifOpen && (

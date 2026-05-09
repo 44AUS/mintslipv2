@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IonSpinner } from "@ionic/react";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock, Smartphone, Plus, X } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
@@ -78,6 +78,11 @@ export default function AdminSiteSettings() {
   const [retentionLoading, setRetentionLoading] = useState(false);
   const [retentionMsg, setRetentionMsg] = useState(null);
 
+  // App Settings
+  const [appSettings, setAppSettings] = useState({ version: "1.0.0", status: "normal", videoUrl: "", whatsNew: [], knownIssues: [] });
+  const [appSettingsLoading, setAppSettingsLoading] = useState(false);
+  const [appSettingsMsg, setAppSettingsMsg] = useState(null);
+
   // Site navigation order
   const NAV_ITEMS_DISPLAY = [
     { id: "paystubs",      label: "Pay Stubs" },
@@ -100,7 +105,48 @@ export default function AdminSiteSettings() {
     fetchPSPrices();
     fetchNavOrder();
     fetchRetention();
+    fetchAppSettings();
   }, []);
+
+  const fetchAppSettings = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/app-settings`);
+      const data = await res.json();
+      if (data.success && data.settings) {
+        setAppSettings({
+          version:    data.settings.version    || "1.0.0",
+          status:     data.settings.status     || "normal",
+          videoUrl:   data.settings.videoUrl   || "",
+          whatsNew:   data.settings.whatsNew   || [],
+          knownIssues: data.settings.knownIssues || [],
+        });
+      }
+    } catch (e) {}
+  };
+
+  const saveAppSettings = async () => {
+    setAppSettingsLoading(true);
+    setAppSettingsMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/app-settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(appSettings),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAppSettingsMsg({ type: "success", text: "App settings saved." });
+        setTimeout(() => setAppSettingsMsg(null), 3000);
+      } else {
+        setAppSettingsMsg({ type: "error", text: "Failed to save app settings." });
+      }
+    } catch (e) {
+      setAppSettingsMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setAppSettingsLoading(false);
+    }
+  };
 
   const fetchRetention = async () => {
     try {
@@ -578,6 +624,144 @@ export default function AdminSiteSettings() {
             >
               {retentionLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Retention Setting
+            </button>
+          </div>
+
+          {/* App Settings */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-green-50">
+                <Smartphone className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">App Settings</p>
+                <p className="text-xs text-slate-500 mt-0.5">Control what users see in the mobile app — version, status, video, and release notes.</p>
+              </div>
+            </div>
+
+            <div className="pt-1 border-t border-slate-100 space-y-4">
+              {/* Version + Status row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">App Version</label>
+                  <input
+                    value={appSettings.version}
+                    onChange={e => setAppSettings(prev => ({ ...prev, version: e.target.value }))}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="1.0.0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">App Status</label>
+                  <select
+                    value={appSettings.status}
+                    onChange={e => setAppSettings(prev => ({ ...prev, status: e.target.value }))}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="degraded">Degraded</option>
+                    <option value="down">Down</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Video URL */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Video Embed URL <span className="text-slate-400 font-normal">(YouTube embed link, optional)</span></label>
+                <input
+                  value={appSettings.videoUrl}
+                  onChange={e => setAppSettings(prev => ({ ...prev, videoUrl: e.target.value }))}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="https://www.youtube.com/embed/..."
+                />
+              </div>
+
+              {/* What's New */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-slate-700">What's New</label>
+                  <button
+                    onClick={() => setAppSettings(prev => ({ ...prev, whatsNew: [...prev.whatsNew, ""] }))}
+                    className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add item
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {appSettings.whatsNew.length === 0 && (
+                    <p className="text-xs text-slate-400 italic">No items yet.</p>
+                  )}
+                  {appSettings.whatsNew.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        value={item}
+                        onChange={e => setAppSettings(prev => {
+                          const next = [...prev.whatsNew];
+                          next[i] = e.target.value;
+                          return { ...prev, whatsNew: next };
+                        })}
+                        className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder={`Item ${i + 1}`}
+                      />
+                      <button
+                        onClick={() => setAppSettings(prev => ({ ...prev, whatsNew: prev.whatsNew.filter((_, j) => j !== i) }))}
+                        className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Known Issues */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-sm font-medium text-slate-700">Known Issues</label>
+                  <button
+                    onClick={() => setAppSettings(prev => ({ ...prev, knownIssues: [...prev.knownIssues, ""] }))}
+                    className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Add item
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {appSettings.knownIssues.length === 0 && (
+                    <p className="text-xs text-slate-400 italic">No known issues.</p>
+                  )}
+                  {appSettings.knownIssues.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        value={item}
+                        onChange={e => setAppSettings(prev => {
+                          const next = [...prev.knownIssues];
+                          next[i] = e.target.value;
+                          return { ...prev, knownIssues: next };
+                        })}
+                        className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder={`Issue ${i + 1}`}
+                      />
+                      <button
+                        onClick={() => setAppSettings(prev => ({ ...prev, knownIssues: prev.knownIssues.filter((_, j) => j !== i) }))}
+                        className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Msg msg={appSettingsMsg} />
+
+            <button
+              onClick={saveAppSettings}
+              disabled={appSettingsLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {appSettingsLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
+              Save App Settings
             </button>
           </div>
 

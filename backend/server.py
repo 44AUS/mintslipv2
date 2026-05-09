@@ -4902,6 +4902,36 @@ async def update_maintenance_settings(request: dict, session: dict = Depends(get
     return {"success": True, "maintenance": maintenance_settings}
 
 
+# ========== APP SETTINGS ==========
+
+@app.get("/api/app-settings")
+async def get_app_settings_public():
+    """Get app settings (public endpoint for the mobile/app settings page)"""
+    settings = await site_settings_collection.find_one({"key": "app_settings"}, {"_id": 0})
+    if not settings:
+        return {"success": True, "settings": {"version": "1.0.0", "status": "normal", "videoUrl": "", "whatsNew": [], "knownIssues": ["None :)"]}}
+    return {"success": True, "settings": settings}
+
+
+@app.put("/api/admin/app-settings")
+async def update_app_settings(request: dict, session: dict = Depends(get_current_admin)):
+    """Update app settings (admin only)"""
+    check_permission(session, "manage_site_settings")
+    data = {
+        "key": "app_settings",
+        "version": request.get("version", "1.0.0"),
+        "status": request.get("status", "normal"),
+        "videoUrl": request.get("videoUrl", ""),
+        "whatsNew": request.get("whatsNew", []),
+        "knownIssues": request.get("knownIssues", []),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "updatedBy": session.get("adminId", "")
+    }
+    await site_settings_collection.update_one({"key": "app_settings"}, {"$set": data}, upsert=True)
+    await log_action(session, "update_app_settings", "site_settings", "app_settings")
+    return {"success": True, "settings": data}
+
+
 # ========== AUTH SETTINGS ==========
 
 @app.get("/api/auth-status")

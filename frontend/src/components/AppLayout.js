@@ -86,10 +86,11 @@ export default function AppLayout({ children, fillHeight = false }) {
 
   const activeTab = getActiveTab();
 
-  const isSecondaryPage = ["/app/terms", "/app/privacy"].includes(location.pathname);
+  const isSecondaryPage = ["/app/terms", "/app/privacy", "/app/settings"].includes(location.pathname);
   const pageTitle = {
-    "/app/terms":   "Terms of Service",
-    "/app/privacy": "Privacy Policy",
+    "/app/terms":    "Terms of Service",
+    "/app/privacy":  "Privacy Policy",
+    "/app/settings": "Settings",
   }[location.pathname] || "";
 
   // Read user info from localStorage
@@ -191,7 +192,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             {/* Bottom nav links — pinned via slot="fixed" */}
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
               {[
-                { label: "Settings",         icon: settingsOutline,     path: "/user/settings" },
+                { label: "Settings",         icon: settingsOutline,     path: "/app/settings" },
                 { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
                 { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
               ].map(({ label, icon, path }) => (
@@ -390,7 +391,7 @@ export default function AppLayout({ children, fillHeight = false }) {
           {/* Bottom nav links — pinned */}
           <div style={{ flexShrink: 0, borderTop: "1px solid var(--app-divider)" }}>
             {[
-              { label: "Settings",         icon: settingsOutline,     path: "/user/settings" },
+              { label: "Settings",         icon: settingsOutline,     path: "/app/settings" },
               { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
               { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
             ].map(({ label, icon, path }) => (

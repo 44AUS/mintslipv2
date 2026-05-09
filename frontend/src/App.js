@@ -75,6 +75,7 @@ import AppPaystub from "@/pages/app/AppPaystub";
 import AppCanadianPaystub from "@/pages/app/AppCanadianPaystub";
 import AppTerms from "@/pages/app/AppTerms";
 import AppPrivacy from "@/pages/app/AppPrivacy";
+import AppSettings from "@/pages/app/AppSettings";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useState, useEffect } from "react";
@@ -175,6 +176,7 @@ function MobileApp() {
               <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
               <Route path="/app/terms" element={<AppTerms />} />
               <Route path="/app/privacy" element={<AppPrivacy />} />
+              <Route path="/app/settings" element={<AppSettings />} />
               <Route path="*" element={<AppPaystub />} />
             </Routes>
           </BrowserRouter>
@@ -280,6 +282,7 @@ function App() {
             <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
             <Route path="/app/terms" element={<AppTerms />} />
             <Route path="/app/privacy" element={<AppPrivacy />} />
+            <Route path="/app/settings" element={<AppSettings />} />
             <Route path="/user/settings" element={<UserSettings />} />
             <Route path="/mintslip-vs-other-paystub-generators" element={<ComparisonPage />} />
             <Route path="/mintslip-vs-thepaystubs" element={<MintSlipVsThePayStubs />} />

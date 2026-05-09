@@ -1401,7 +1401,6 @@ export default function AppCanadianPaystub() {
               </IonButton>
             </div>
           </div>
-          </div>
         </div>,
         document.querySelector("ion-app") || document.body
       )}

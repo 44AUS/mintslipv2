@@ -228,7 +228,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             <IonToolbar>
               <IonButtons slot="start">
                 {isSecondaryPage ? (
-                  <IonButton fill="clear" onClick={() => navigate(-1)} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
+                  <IonButton fill="clear" onClick={() => { setSidebarOpen(true); navigate(-1); }} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
                     <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
                       <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                     </span>

@@ -525,7 +525,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   <IonButtons slot="start">
                     <IonButton
                       fill="clear"
-                      onClick={() => navigate(-1)}
+                      onClick={() => { setSidebarOpen(true); navigate(-1); }}
                       style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
                     >
                       <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>

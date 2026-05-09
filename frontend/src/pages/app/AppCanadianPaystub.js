@@ -480,7 +480,6 @@ export default function AppCanadianPaystub() {
   const [loadingPreviews,  setLoadingPreviews]  = useState(true);
 
   useEffect(() => {
-    if (isNative) { setLoadingPreviews(false); return; }
     const sampleData = {
       name: "Jane Smith", sin: "123456789", bank: "5678", bankName: "TD Bank",
       address: "123 Maple Street", city: "Toronto", province: "ON", postalCode: "M5H 2N2",
@@ -642,7 +641,7 @@ export default function AppCanadianPaystub() {
         amount: finalAmount,
         documentType: "canadian-paystub",
         discountCode: appliedDiscount?.code || null,
-        discountAmount: appliedDiscount ? baseAmount - finalAmount : 0,
+        discountAmount: appliedDiscount ? parseFloat((baseAmount - finalAmount).toFixed(2)) : 0,
         template: selectedTemplate,
         successUrl: `${origin}/payment-success?type=canadian-paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${origin}/app/canadian-paystub`,
@@ -675,17 +674,13 @@ export default function AppCanadianPaystub() {
                   <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", fontWeight: 500 }}>{company.name}</span>
                 </div>
                 <div style={{ background: "#fff", overflow: "hidden", minHeight: 160 }}>
-                  {isNative ? (
-                    <div style={{ height: 180, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, background: "#f9fafb" }}>
-                      <span style={{ fontSize: "0.75rem", color: "#6b7280", fontWeight: 500 }}>Tap to select</span>
-                    </div>
-                  ) : loadingPreviews ? (
+                  {loadingPreviews ? (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
                       <IonSpinner name="crescent" />
                     </div>
                   ) : templatePreviews[company.template] ? (
                     <div style={{ position: "relative", paddingTop: "141.4%", overflow: "hidden", pointerEvents: "none" }}>
-                      <iframe src={templatePreviews[company.template]} title={`${company.name} template`} scrolling="no" tabIndex="-1" style={{ position: "absolute", top: 0, left: 0, width: "300%", height: "300%", border: "none", display: "block", transformOrigin: "top left", transform: "scale(0.333)" }} />
+                      <img src={templatePreviews[company.template]} alt={`${company.name} template`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", display: "block" }} />
                     </div>
                   ) : (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
@@ -1282,26 +1277,13 @@ export default function AppCanadianPaystub() {
                 </div>
               ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
                 <>
-                  {isNative ? (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: 32 }}>
-                      <IonIcon icon={cloudDownloadOutline} style={{ fontSize: 56, color: "var(--ion-color-medium)" }} />
-                      <p style={{ textAlign: "center", color: "var(--ion-color-medium)", margin: 0, fontSize: "0.9rem" }}>
-                        PDF preview is not supported on mobile.
-                      </p>
-                      <IonButton onClick={() => { const a = document.createElement("a"); a.href = pdfPreviews[previewPageIndex]; a.download = "canadian_paystub_preview.pdf"; a.click(); }}>
-                        <IonIcon slot="start" icon={cloudDownloadOutline} />
-                        Download Preview
-                      </IonButton>
-                    </div>
-                  ) : (
-                    <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                      <iframe
-                        src={pdfPreviews[previewPageIndex]}
-                        title={`Canadian pay stub preview ${previewPageIndex + 1}`}
-                        style={{ width: "100%", height: "65vh", border: "none", display: "block" }}
-                      />
-                    </div>
-                  )}
+                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                    <img
+                      src={pdfPreviews[previewPageIndex]}
+                      alt={`Canadian pay stub preview ${previewPageIndex + 1}`}
+                      style={{ width: "100%", display: "block" }}
+                    />
+                  </div>
                   {pdfPreviews.length > 1 && (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
                       <IonButton fill="clear" size="small" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i - 1))}>

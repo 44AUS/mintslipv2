@@ -199,7 +199,7 @@ export default function AppSettings() {
     <AppLayout>
       <IonPage>
         <IonContent>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "8px 0 48px" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "16px 16px 40px" }}>
 
             {/* Status */}
             <div style={{ marginBottom: 28 }}>

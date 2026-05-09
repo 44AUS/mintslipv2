@@ -436,11 +436,8 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   // Apply template-specific metadata before output
   applyPdfMetadata(doc, template);
 
-  // Convert to image
   const pdfDataUrl = doc.output('dataurlstring');
-  const imageDataUrl = await convertPdfToImage(pdfDataUrl);
-  
-  return imageDataUrl;
+  return pdfDataUrl;
 }
 
 // Generate all preview PDFs as an array of base64 image URLs

@@ -326,11 +326,9 @@ export async function generateCanadianPreviewPDF(formData, template) {
     // Apply metadata before output
     applyPdfMetadata(doc, template);
 
-    // Convert to image for preview
+    // Apply metadata before output
     const pdfDataUrl = doc.output('dataurlstring');
-    const imageDataUrl = await convertPdfToImage(pdfDataUrl);
-    
-    return imageDataUrl;
+    return pdfDataUrl;
   } catch (error) {
     console.error("Error generating Canadian preview:", error);
     throw error;
@@ -543,11 +541,8 @@ async function generateSingleCanadianStubPreview(formData, template, stubIndex, 
   // Apply metadata before output
   applyPdfMetadata(doc, template);
 
-  // Convert to image
   const pdfDataUrl = doc.output('dataurlstring');
-  const imageDataUrl = await convertPdfToImage(pdfDataUrl);
-  
-  return imageDataUrl;
+  return pdfDataUrl;
 }
 
 // Generate all Canadian preview PDFs as an array of base64 image URLs

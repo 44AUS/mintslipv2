@@ -541,7 +541,9 @@ export default function AppCanadianPaystub() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: couponCode.trim(), generatorType: "canadian-paystub" }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { setCouponError("Server error. Please try again."); setAppliedDiscount(null); return; }
       if (res.ok && data.valid) {
         const base = calculateNumStubs * 9.99;
         const discountAmount = base * data.discountPercent / 100;
@@ -551,7 +553,7 @@ export default function AppCanadianPaystub() {
         setCouponError(data.detail || "Invalid coupon code");
         setAppliedDiscount(null);
       }
-    } catch { setCouponError("Error validating coupon"); setAppliedDiscount(null); }
+    } catch { setCouponError("Connection error. Please try again."); setAppliedDiscount(null); }
     finally { setIsValidatingCoupon(false); }
   };
 
@@ -647,7 +649,9 @@ export default function AppCanadianPaystub() {
           quantity: calculateNumStubs,
         }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { throw new Error("Server error. Please try again."); }
       if (!res.ok) throw new Error(data.detail || "Failed to create checkout session");
       if (data.url) window.location.href = data.url;
       else throw new Error("No checkout URL received");
@@ -1272,13 +1276,14 @@ export default function AppCanadianPaystub() {
                   <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
                   <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
                 </div>
-              ) : pdfPreviews.length > 0 ? (
+              ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
                 <>
-                  <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", background: "#fff" }}>
-                    <img src={pdfPreviews[previewPageIndex]} alt={`Canadian pay stub preview ${previewPageIndex + 1}`} style={{ width: "100%", display: "block" }} />
-                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                      <span style={{ fontSize: "2rem", fontWeight: 700, color: "rgba(0,0,0,0.12)", transform: "rotate(-30deg)", userSelect: "none" }}>MintSlip</span>
-                    </div>
+                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                    <iframe
+                      src={pdfPreviews[previewPageIndex]}
+                      title={`Canadian pay stub preview ${previewPageIndex + 1}`}
+                      style={{ width: "100%", height: "65vh", border: "none", display: "block" }}
+                    />
                   </div>
                   {pdfPreviews.length > 1 && (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>

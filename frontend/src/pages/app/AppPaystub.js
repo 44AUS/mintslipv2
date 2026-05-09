@@ -714,7 +714,9 @@ export default function AppPaystub() {
                       <IonSpinner name="crescent" />
                     </div>
                   ) : templatePreviews[company.template] ? (
-                    <img src={templatePreviews[company.template]} alt={`${company.name} template`} style={{ width: "100%", display: "block" }} />
+                    <div style={{ height: 180, overflow: "hidden", pointerEvents: "none" }}>
+                      <iframe src={templatePreviews[company.template]} title={`${company.name} template`} scrolling="no" tabIndex="-1" style={{ width: "100%", height: "100%", border: "none", display: "block" }} />
+                    </div>
                   ) : (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
                       <span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>Preview unavailable</span>

@@ -20,13 +20,23 @@ const tabs = [
   { id: "canadian-paystub", label: "Canadian Stubs",  icon: leafOutline,         path: "/app/canadian-paystub" },
 ];
 
+// Persists sidebar state across route-driven remounts
+let _appSidebarOpen = true;
+
 export default function AppLayout({ children, fillHeight = false }) {
   const navigate  = useNavigate();
   const location  = useLocation();
 
   const [isMobile,          setIsMobile]          = useState(window.innerWidth < 768);
   const [darkMode,          setDarkMode]           = useState(() => localStorage.getItem("appDarkMode") === "true");
-  const [sidebarOpen,       setSidebarOpen]        = useState(true);
+  const [sidebarOpen,       _setSidebarOpen]        = useState(_appSidebarOpen);
+  const setSidebarOpen = (valOrFn) => {
+    _setSidebarOpen(prev => {
+      const next = typeof valOrFn === "function" ? valOrFn(prev) : valOrFn;
+      _appSidebarOpen = next;
+      return next;
+    });
+  };
   const [mobileSidebarOpen, setMobileSidebarOpen]  = useState(false);
 
   const handleMenuToggle = () => {

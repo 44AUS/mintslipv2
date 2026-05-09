@@ -95,6 +95,9 @@ function NavItem({ tab, isActive, onClick }) {
   );
 }
 
+// Persists sidebar state across route-driven remounts
+let _adminSidebarOpen = true;
+
 export default function AdminLayout({ children, fillHeight = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,7 +112,14 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("adminDarkMode") === "true",
   );
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, _setSidebarOpen] = useState(_adminSidebarOpen);
+  const setSidebarOpen = (valOrFn) => {
+    _setSidebarOpen(prev => {
+      const next = typeof valOrFn === "function" ? valOrFn(prev) : valOrFn;
+      _adminSidebarOpen = next;
+      return next;
+    });
+  };
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const handleMenuToggle = () => {

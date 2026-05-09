@@ -1428,8 +1428,7 @@ export default function AppPaystub() {
                 }
               </IonButton>
             </div>
-          </div>
-        </div>,
+          </div>,
         document.querySelector("ion-app") || document.body
       )}
 

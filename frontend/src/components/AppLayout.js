@@ -274,9 +274,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                               fontWeight: activeTab === tab.id ? 600 : 400,
                             }}
                           >
-                            <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
-                              <IonIcon icon={tab.icon} style={{ fontSize: 18 }} />
-                            </div>
+                            <IonIcon icon={tab.icon} slot="start" style={{ fontSize: 18 }} />
                             <IonLabel>{tab.label}</IonLabel>
                           </IonItem>
                         ))}

@@ -76,8 +76,7 @@ export default function AppLayout({ children, fillHeight = false }) {
       pending.forEach(n => markToastShown(n.id));
       refreshNotifications();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // eslint-disable-line
 
   const handleMenuToggle = () => {
     if (window.innerWidth < 768) {

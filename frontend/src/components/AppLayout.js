@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar,
+  IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar, IonTitle,
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem, IonPopover,
@@ -10,6 +10,7 @@ import {
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
+  arrowBackOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -74,6 +75,12 @@ export default function AppLayout({ children, fillHeight = false }) {
   };
 
   const activeTab = getActiveTab();
+
+  const isSecondaryPage = ["/app/terms", "/app/privacy"].includes(location.pathname);
+  const pageTitle = {
+    "/app/terms":   "Terms of Service",
+    "/app/privacy": "Privacy Policy",
+  }[location.pathname] || "";
 
   // Read user info from localStorage
   const userInfo = (() => {
@@ -182,7 +189,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                     key={label}
                     button
                     detail={false}
-                    onClick={() => navigate(path)}
+                    onClick={() => { navigate(path); setSidebarOpen(false); }}
                     style={{
                       "--background":               "transparent",
                       "--background-hover":         "var(--ion-color-step-100)",
@@ -213,16 +220,25 @@ export default function AppLayout({ children, fillHeight = false }) {
         <IonPage id="app-main">
           <IonHeader>
             <IonToolbar>
-              {/* Hamburger */}
               <IonButtons slot="start">
-                <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
-                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                    <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </IonButton>
+                {isSecondaryPage ? (
+                  <IonButton fill="clear" onClick={() => navigate(-1)} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                      <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                ) : (
+                  <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                      <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                )}
               </IonButtons>
 
-              {isMobile ? (
+              {isSecondaryPage ? (
+                <IonTitle style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>{pageTitle}</IonTitle>
+              ) : isMobile ? (
                 <>
                   {/* Mobile: current tab label button → popover */}
                   <IonButton id="app-mobile-nav-trigger" fill="clear" style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
@@ -367,8 +383,8 @@ export default function AppLayout({ children, fillHeight = false }) {
           {/* Bottom nav links — pinned */}
           <div style={{ flexShrink: 0, borderTop: "1px solid var(--app-divider)" }}>
             {[
-              { label: "Terms of Service", icon: documentTextOutline, path: "/terms" },
-              { label: "Privacy Policy",   icon: shieldOutline,       path: "/privacy" },
+              { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
+              { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
             ].map(({ label, icon, path }) => (
               <button
                 key={label}

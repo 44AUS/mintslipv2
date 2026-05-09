@@ -68,37 +68,30 @@ function timeAgo(dateStr) {
 
 function NavItem({ tab, isActive, onClick }) {
   return (
-    <IonItem
-      button
-      detail={false}
+    <button
       onClick={onClick}
+      className="sidebar-nav-btn"
       style={{
-        "--background":            isActive ? "var(--ion-color-step-100)" : "transparent",
-        "--background-hover":      "var(--ion-color-step-100)",
-        "--background-hover-opacity": "1",
-        "--background-activated":  "var(--ion-color-step-150)",
-        "--color":                 isActive ? "var(--ion-color-primary)" : "var(--ion-text-color)",
-        "--border-color":          "var(--app-divider)",
-        "--min-height":            "48px",
-        "--padding-start":         "20px",
-        "--padding-end":           "0",
-        "--inner-padding-end":     "0",
-        fontWeight:                isActive ? 600 : 400,
+        width: "100%",
+        background: isActive ? "var(--ion-color-step-100)" : "transparent",
+        border: "none",
+        borderBottom: "1px solid var(--app-divider)",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        padding: "0 20px",
+        minHeight: 48,
+        textAlign: "left",
+        color: isActive ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+        fontWeight: isActive ? 600 : 400,
+        fontFamily: "var(--ion-font-family, system-ui)",
+        fontSize: "0.9375rem",
       }}
     >
-      <div slot="start" style={{ position: "relative", display: "flex" }}>
-        <span style={{
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          lineHeight: 0, flexShrink: 0, fontSize: "1.25rem",
-        }}>
-          <IonIcon
-            icon={tab.icon}
-            style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }}
-          />
-        </span>
-      </div>
-      <IonLabel>{tab.label}</IonLabel>
-    </IonItem>
+      <IonIcon icon={tab.icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+      {tab.label}
+    </button>
   );
 }
 
@@ -472,10 +465,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
               </IonContent>
             </IonPopover>
 
-            <IonList
-              lines="inset"
-              style={{ flexGrow: 1, overflowY: "auto", padding: "0 0 8px 0", "--background": "transparent" }}
-            >
+            <div style={{ flexGrow: 1, overflowY: "auto", padding: "0 0 8px 0" }}>
               {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (
                 <NavItem
                   key={tab.id}
@@ -484,33 +474,33 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   onClick={() => { navigate(tab.path); handleCloseSidebar(); }}
                 />
               ))}
-            </IonList>
+            </div>
 
             {/* Pinned settings button */}
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg, #fff)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
-              <IonItem
-                button
-                detail={false}
+              <button
                 onClick={() => { navigate("/admin/settings"); handleCloseSidebar(); }}
+                className="sidebar-nav-btn"
                 style={{
-                  "--background":            activeTab === "settings" ? "var(--ion-color-step-100)" : "transparent",
-                  "--background-hover":      "var(--ion-color-step-100)",
-                  "--background-hover-opacity": "1",
-                  "--color":                 activeTab === "settings" ? "var(--ion-color-primary)" : "var(--ion-text-color)",
-                  "--min-height":            "48px",
-                  "--padding-start":         "20px",
-                  "--padding-end":           "0",
-                  "--inner-padding-end":     "0",
-                  fontWeight:                activeTab === "settings" ? 600 : 400,
+                  width: "100%",
+                  background: activeTab === "settings" ? "var(--ion-color-step-100)" : "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  padding: "0 20px",
+                  minHeight: 48,
+                  textAlign: "left",
+                  color: activeTab === "settings" ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+                  fontWeight: activeTab === "settings" ? 600 : 400,
+                  fontFamily: "var(--ion-font-family, system-ui)",
+                  fontSize: "0.9375rem",
                 }}
               >
-                <div slot="start" style={{ position: "relative", display: "flex" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.25rem" }}>
-                    <IonIcon icon={settingsOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                  </span>
-                </div>
-                <IonLabel>Settings</IonLabel>
-              </IonItem>
+                <IonIcon icon={settingsOutline} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+                Settings
+              </button>
             </div>
           </IonContent>
         </IonMenu>

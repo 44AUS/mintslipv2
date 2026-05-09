@@ -180,38 +180,34 @@ export default function AppLayout({ children, fillHeight = false }) {
 
             {/* Bottom nav links — pinned via slot="fixed" */}
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
-              <IonList lines="none" style={{ padding: "4px 0", "--background": "transparent" }}>
-                {[
-                  { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
-                  { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
-                ].map(({ label, icon, path }) => (
-                  <IonItem
-                    key={label}
-                    button
-                    detail={false}
-                    onClick={() => { navigate(path); setSidebarOpen(false); }}
-                    style={{
-                      "--background":               "transparent",
-                      "--background-hover":         "var(--ion-color-step-100)",
-                      "--background-hover-opacity": "1",
-                      "--background-activated":     "var(--ion-color-step-150)",
-                      "--color":                    "var(--ion-text-color)",
-                      "--border-color":             "var(--app-divider)",
-                      "--min-height":               "48px",
-                      "--padding-start":            "20px",
-                      "--padding-end":              "0",
-                      "--inner-padding-end":        "0",
-                    }}
-                  >
-                    <div slot="start" style={{ position: "relative", display: "flex" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.25rem" }}>
-                        <IonIcon icon={icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                      </span>
-                    </div>
-                    <IonLabel>{label}</IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
+              {[
+                { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
+                { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
+              ].map(({ label, icon, path }) => (
+                <button
+                  key={label}
+                  onClick={() => { navigate(path); setSidebarOpen(false); }}
+                  className="sidebar-nav-btn"
+                  style={{
+                    width: "100%",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    padding: "0 20px",
+                    minHeight: 48,
+                    textAlign: "left",
+                    color: "var(--ion-text-color)",
+                    fontFamily: "var(--ion-font-family, system-ui)",
+                    fontSize: "0.9375rem",
+                  }}
+                >
+                  <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+                  {label}
+                </button>
+              ))}
             </div>
           </IonContent>
         </IonMenu>

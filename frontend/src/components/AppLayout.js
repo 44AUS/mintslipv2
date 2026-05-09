@@ -5,7 +5,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar, IonTitle,
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonPopover,
+  IonList, IonItem, IonPopover, IonActionSheet,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -322,73 +322,33 @@ export default function AppLayout({ children, fillHeight = false }) {
 
       </IonSplitPane>
 
-      {/* ── Floating Create button + custom action sheet (both portalled to body) ── */}
-      {createPortal(
-        <>
-          {/* Button — only on main pages */}
-          {!isSecondaryPage && (
-            <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 200 }}>
-              <IonButton
-                onClick={() => setCreateOpen(true)}
-                style={{ "--background": "#16a34a", "--background-activated": "#15803d", "--background-hover": "#15803d", "--box-shadow": "0 6px 20px rgba(0,0,0,0.25)" }}
-              >
-                <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
-                  <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                </span>
-                CREATE
-              </IonButton>
-            </div>
-          )}
-
-          {/* Custom iOS-style action sheet */}
-          {createOpen && (
-            <>
-              <div
-                onClick={() => setCreateOpen(false)}
-                style={{ position: "fixed", inset: 0, zIndex: 9990, background: "rgba(0,0,0,0.45)" }}
-              />
-              <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9991, padding: "0 8px 34px" }}>
-                <div style={{ borderRadius: 14, overflow: "hidden", marginBottom: 8 }}>
-                  {[
-                    { label: "Create Pay Stub",         path: "/app/paystub" },
-                    { label: "Create Canadian Paystub", path: "/app/canadian-paystub" },
-                  ].map(({ label, path }, i, arr) => (
-                    <button
-                      key={label}
-                      onClick={() => { setCreateOpen(false); navigate(path); }}
-                      style={{
-                        width: "100%", display: "block", padding: "17px 16px",
-                        border: "none", borderBottom: i < arr.length - 1 ? "1px solid rgba(0,0,0,0.12)" : "none",
-                        background: "var(--ion-card-background)",
-                        cursor: "pointer", fontSize: "1rem",
-                        color: "var(--ion-text-color)",
-                        fontFamily: "var(--ion-font-family, system-ui)",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div style={{ borderRadius: 14, overflow: "hidden" }}>
-                  <button
-                    onClick={() => setCreateOpen(false)}
-                    style={{
-                      width: "100%", display: "block", padding: "17px 16px",
-                      border: "none", background: "var(--ion-card-background)",
-                      cursor: "pointer", fontSize: "1rem", fontWeight: 700,
-                      color: "var(--ion-text-color)",
-                      fontFamily: "var(--ion-font-family, system-ui)",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </>,
-        document.body
+      {/* ── Floating Create button (portalled inside ion-app so IonActionSheet stacks above it) ── */}
+      {!isSecondaryPage && createPortal(
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 200 }}>
+          <IonButton
+            onClick={() => setCreateOpen(true)}
+            style={{ "--background": "#16a34a", "--background-activated": "#15803d", "--background-hover": "#15803d", "--box-shadow": "0 6px 20px rgba(0,0,0,0.25)" }}
+          >
+            <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+              <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+            </span>
+            CREATE
+          </IonButton>
+        </div>,
+        document.querySelector("ion-app") || document.body
       )}
+
+      <IonActionSheet
+        isOpen={createOpen}
+        mode="ios"
+        onDidDismiss={() => setCreateOpen(false)}
+        style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
+        buttons={[
+          { text: "Create Pay Stub",        handler: () => navigate("/app/paystub") },
+          { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
+          { text: "Cancel", role: "cancel" },
+        ]}
+      />
 
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && createPortal(<>

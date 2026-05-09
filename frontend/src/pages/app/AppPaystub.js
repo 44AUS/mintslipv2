@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
@@ -7,9 +6,10 @@ import {
   IonAccordion, IonAccordionGroup, IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonText, IonBadge,
+  IonText, IonBadge, IonModal, IonPage, IonHeader, IonToolbar, IonTitle,
+  IonButtons, IonContent,
 } from "@ionic/react";
-import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetag, pricetagOutline } from "ionicons/icons";
+import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
 import { saveGuestDocument } from "@/utils/guestSave";
@@ -499,6 +499,7 @@ export default function AppPaystub() {
   // ── PDF preview state ─────────────────────────────────────────────────────
   const [pdfPreviews,         setPdfPreviews]         = useState([]);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [formModalOpen,       setFormModalOpen]       = useState(false);
   const [previewModalOpen,    setPreviewModalOpen]    = useState(false);
   const [previewPageIndex,    setPreviewPageIndex]    = useState(0);
 
@@ -600,6 +601,22 @@ export default function AppPaystub() {
     toast.success("Form cleared successfully");
   };
 
+  // ── Next: open preview modal ──────────────────────────────────────────────
+  const handleNext = async () => {
+    if (calculateNumStubs === 0) { toast.error("Please configure at least one pay period"); return; }
+    if (pdfPreviews.length === 0) {
+      setIsGeneratingPreview(true);
+      try {
+        const previewData = { ...formData, deductions, contributions, absencePlans, employerBenefits, logoDataUrl: logoPreview };
+        const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, calculateNumStubs);
+        setPdfPreviews(previews);
+        setPreviewPageIndex(0);
+      } catch (err) { console.error("Preview generation failed:", err); }
+      setIsGeneratingPreview(false);
+    }
+    setPreviewModalOpen(true);
+  };
+
   // ── Generate / download ───────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (calculateNumStubs === 0) { toast.error("Please configure at least one pay period"); return; }
@@ -644,22 +661,87 @@ export default function AppPaystub() {
   return (
     <AppLayout fillHeight>
       <div style={{ height: "100%", overflowY: "auto", padding: "16px" }}>
-
-        {/* Header */}
         <div style={{ marginBottom: 16 }}>
           <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--ion-color-primary)", margin: 0 }}>
             US Pay Stub Generator
           </h1>
           <p style={{ color: "var(--ion-color-medium)", marginTop: 4, fontSize: "0.875rem" }}>
-            Generate professional pay stubs with accurate tax calculations.
+            Select a template to generate professional pay stubs with accurate tax calculations.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 16 }}>
+        <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: "24px", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", maxWidth: 900, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ion-text-color)", marginTop: 0, marginBottom: 4 }}>Choose Your Template</h2>
+          <p style={{ color: "var(--ion-color-medium)", fontSize: "0.85rem", marginTop: 0, marginBottom: 20 }}>
+            Each template matches a popular payroll provider style. Click one to get started.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            {PAYROLL_COMPANIES.map(company => (
+              <div key={company.id}
+                onClick={() => { setSelectedTemplate(company.template); setFormModalOpen(true); }}
+                style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-background-color, #fff)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
+              >
+                <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid var(--app-divider, rgba(0,0,0,0.08))", display: "flex", alignItems: "center", gap: 10, background: "var(--ion-card-background)" }}>
+                  <img src={company.logo} alt={company.name} style={{ height: 28, maxWidth: 80, objectFit: "contain" }} />
+                  <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", fontWeight: 500 }}>{company.name}</span>
+                </div>
+                <div style={{ padding: "14px 16px 16px", background: "#fff" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                    <div>
+                      <div style={{ height: 8, width: 80, borderRadius: 4, background: "#e5e7eb", marginBottom: 4 }} />
+                      <div style={{ height: 6, width: 60, borderRadius: 4, background: "#f3f4f6" }} />
+                    </div>
+                    <div>
+                      <div style={{ height: 8, width: 50, borderRadius: 4, background: "#e5e7eb", marginBottom: 4 }} />
+                      <div style={{ height: 6, width: 40, borderRadius: 4, background: "#f3f4f6" }} />
+                    </div>
+                  </div>
+                  <div style={{ height: 1, background: "#f3f4f6", marginBottom: 10 }} />
+                  {[70, 50, 60, 40].map((w, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ height: 6, width: w, borderRadius: 4, background: "#e5e7eb" }} />
+                      <div style={{ height: 6, width: 40, borderRadius: 4, background: "#e5e7eb" }} />
+                    </div>
+                  ))}
+                  <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ height: 7, width: 55, borderRadius: 4, background: "#d1d5db" }} />
+                    <div style={{ height: 9, width: 55, borderRadius: 4, background: "#16a34a", opacity: 0.7 }} />
+                  </div>
+                </div>
+                <div style={{ padding: "8px 16px 14px", textAlign: "center", background: "var(--ion-card-background)", borderTop: "1px solid var(--app-divider, rgba(0,0,0,0.06))" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ion-color-primary)" }}>Select Template →</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-          {/* ── LEFT: Form ── */}
-          <div style={{ minWidth: 0 }}>
-            <IonAccordionGroup multiple>
+      {/* ── Form Modal (full-screen, no border radius) ── */}
+      <IonModal isOpen={formModalOpen} onDidDismiss={() => setFormModalOpen(false)} style={{ "--border-radius": "0" }}>
+        <IonPage>
+          <IonHeader>
+            <IonToolbar>
+              <IonButtons slot="start">
+                <IonButton fill="clear" onClick={() => setFormModalOpen(false)} style={{ "--color": "rgba(255,255,255,0.85)" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, fontSize: "20px" }}>
+                    <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
+              </IonButtons>
+              <IonTitle style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>Pay Stub Details</IonTitle>
+              <IonButtons slot="end">
+                <IonButton fill="clear" onClick={handleNext} disabled={isGeneratingPreview} style={{ "--color": "#fff", fontWeight: 700 }}>
+                  {isGeneratingPreview ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : "Next"}
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent style={{ "--background": "var(--ion-background-color)" }}>
+            <div style={{ padding: "16px 16px 40px" }}>
+              <IonAccordionGroup multiple>
 
               {/* ── Template / Payroll Company ── */}
               <IonAccordion value="template">
@@ -1211,83 +1293,73 @@ export default function AppPaystub() {
 
             </IonAccordionGroup>
 
-            {/* Clear form button */}
-            <div style={{ marginTop: 12, textAlign: "right" }}>
-              <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
+              {/* Clear form button */}
+              <div style={{ marginTop: 12, textAlign: "right" }}>
+                <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
+              </div>
             </div>
-          </div>
+          </IonContent>
+        </IonPage>
+      </IonModal>
 
-          {/* ── RIGHT: Preview + Download ── */}
-          <div style={{ minWidth: 0 }}>
-            <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: 20, position: "sticky", top: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.10)" }}>
-              <h3 style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--ion-text-color)", marginBottom: 12 }}>
-                Pay Preview {formData.workerType === "contractor" && <IonBadge color="warning">1099</IonBadge>}
-              </h3>
-
-              {calculateNumStubs > 0 && (
-                <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid var(--ion-color-light-shade)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span>Paystubs to Generate:</span>
-                    <strong>{calculateNumStubs}</strong>
+      {/* ── Preview Modal (full-screen, no border radius) ── */}
+      <IonModal isOpen={previewModalOpen} onDidDismiss={() => setPreviewModalOpen(false)} style={{ "--border-radius": "0" }}>
+        <IonPage>
+          <IonHeader>
+            <IonToolbar>
+              <IonButtons slot="start">
+                <IonButton fill="clear" onClick={() => setPreviewModalOpen(false)} style={{ "--color": "rgba(255,255,255,0.85)" }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, fontSize: "20px" }}>
+                    <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
+              </IonButtons>
+              <IonTitle style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>
+                Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
+              </IonTitle>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent style={{ "--background": "var(--ion-background-color)" }}>
+            <div style={{ padding: 16 }}>
+              {isGeneratingPreview ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
+                  <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
+                  <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
+                </div>
+              ) : pdfPreviews.length > 0 ? (
+                <>
+                  <div style={{ position: "relative", borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", background: "#fff" }}>
+                    <img src={pdfPreviews[previewPageIndex]} alt={`Pay stub preview ${previewPageIndex + 1}`} style={{ width: "100%", display: "block" }} />
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+                      <span style={{ fontSize: "2rem", fontWeight: 700, color: "rgba(0,0,0,0.12)", transform: "rotate(-30deg)", userSelect: "none" }}>MintSlip</span>
+                    </div>
                   </div>
+                  {pdfPreviews.length > 1 && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
+                      <IonButton fill="clear" size="small" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i - 1))}>
+                        <IonIcon icon={chevronBackOutline} />
+                      </IonButton>
+                      {pdfPreviews.map((_, idx) => (
+                        <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "var(--ion-color-success)" : "var(--ion-color-step-150)", color: idx === previewPageIndex ? "#fff" : "var(--ion-color-dark)" }}>
+                          {idx + 1}
+                        </button>
+                      ))}
+                      <IonButton fill="clear" size="small" disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i + 1))}>
+                        <IonIcon icon={chevronForwardOutline} />
+                      </IonButton>
+                    </div>
+                  )}
+                  <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 8 }}>Watermark removed after payment</p>
+                </>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
+                  <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
+                  <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>No preview available yet</p>
                 </div>
               )}
 
-              {/* Inline PDF Preview */}
-              <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginBottom: 6 }}>
-                  Preview · Click to enlarge · Watermark removed after purchase
-                </p>
-                {isGeneratingPreview ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
-                    <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
-                    <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
-                  </div>
-                ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
-                  <>
-                    <div
-                      style={{ position: "relative", cursor: "pointer", borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
-                      onClick={() => setPreviewModalOpen(true)}
-                    >
-                      <img
-                        src={pdfPreviews[previewPageIndex]}
-                        alt={`Pay stub preview ${previewPageIndex + 1}`}
-                        style={{ width: "100%", display: "block", background: "#fff" }}
-                      />
-                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                        <span style={{ fontSize: "2rem", fontWeight: 700, color: "rgba(0,0,0,0.12)", transform: "rotate(-30deg)", userSelect: "none" }}>MintSlip</span>
-                      </div>
-                      <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(255,255,255,0.9)", borderRadius: 4, padding: "2px 8px", fontSize: "0.72rem", color: "#555" }}>
-                        <IonIcon icon={eyeOutline} style={{ marginRight: 3, fontSize: "0.7rem" }} />Click to enlarge
-                      </div>
-                    </div>
-                    {pdfPreviews.length > 1 && (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
-                        <IonButton fill="clear" size="small" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i - 1))}>
-                          <IonIcon icon={chevronBackOutline} />
-                        </IonButton>
-                        {pdfPreviews.map((_, idx) => (
-                          <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "var(--ion-color-success)" : "var(--ion-color-step-150)", color: idx === previewPageIndex ? "#fff" : "var(--ion-color-dark)" }}>
-                            {idx + 1}
-                          </button>
-                        ))}
-                        <IonButton fill="clear" size="small" disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i + 1))}>
-                          <IonIcon icon={chevronForwardOutline} />
-                        </IonButton>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
-                    <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
-                    <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>Fill in pay period dates<br />and rate to see a preview</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Coupon input */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (
-                <div style={{ marginTop: 12 }}>
+                <div style={{ marginTop: 20 }}>
                   {!appliedDiscount ? (
                     <>
                       <div style={{ display: "flex", gap: 8 }}>
@@ -1296,13 +1368,7 @@ export default function AppPaystub() {
                           placeholder="Coupon code"
                           value={couponCode}
                           onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
-                          style={{
-                            flex: 1, fontFamily: "monospace", height: 42,
-                            padding: "0 12px", borderRadius: 4,
-                            border: "1.5px solid var(--ion-color-step-300, rgba(0,0,0,0.2))",
-                            background: "transparent", color: "var(--ion-text-color)",
-                            fontSize: "0.9rem", outline: "none",
-                          }}
+                          style={{ flex: 1, fontFamily: "monospace", height: 42, padding: "0 12px", borderRadius: 4, border: "1.5px solid var(--ion-color-step-300, rgba(0,0,0,0.2))", background: "transparent", color: "var(--ion-text-color)", fontSize: "0.9rem", outline: "none" }}
                         />
                         <IonButton fill="outline" onClick={validateCoupon} disabled={isValidatingCoupon || !couponCode.trim()} style={{ flexShrink: 0 }}>
                           {isValidatingCoupon ? <IonSpinner name="crescent" /> : "Apply"}
@@ -1323,19 +1389,18 @@ export default function AppPaystub() {
                 </div>
               )}
 
-              {/* Price */}
               {!hasActiveSubscription && calculateNumStubs > 0 && (
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ion-color-light-shade)", textAlign: "center" }}>
                   {appliedDiscount ? (
                     <>
-                      <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
-                      <p style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--ion-color-success-shade)" }}>${appliedDiscount.discountedPrice.toFixed(2)}</p>
-                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-success)" }}>{appliedDiscount.discountPercent}% discount applied</p>
+                      <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: "0 0 4px" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
+                      <p style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${appliedDiscount.discountedPrice.toFixed(2)}</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-success)", margin: 0 }}>{appliedDiscount.discountPercent}% discount applied</p>
                     </>
                   ) : (
                     <>
-                      <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
-                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>$9.99 per stub</p>
+                      <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", margin: 0 }}>$9.99 per stub</p>
                     </>
                   )}
                 </div>
@@ -1343,18 +1408,17 @@ export default function AppPaystub() {
 
               {hasActiveSubscription && (
                 <div style={{ marginTop: 12, padding: 8, background: "rgba(var(--ion-color-success-rgb),0.15)", borderRadius: 8, textAlign: "center" }}>
-                  <p style={{ color: "var(--ion-color-success-shade)", fontWeight: 600, fontSize: "0.875rem" }}>Subscription Active — Free Download</p>
+                  <p style={{ color: "var(--ion-color-success-shade)", fontWeight: 600, fontSize: "0.875rem", margin: "0 0 4px" }}>Subscription Active — Free Download</p>
                   {user?.subscription?.downloads_remaining !== -1 && (
-                    <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>{user?.subscription?.downloads_remaining} downloads remaining</p>
+                    <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", margin: 0 }}>{user?.subscription?.downloads_remaining} downloads remaining</p>
                   )}
                 </div>
               )}
 
-              {/* Download / payment button */}
               <IonButton
                 expand="block"
                 color="success"
-                style={{ marginTop: 16, "--border-radius": "8px" }}
+                style={{ marginTop: 20, "--border-radius": "8px" }}
                 disabled={isProcessing || calculateNumStubs === 0}
                 onClick={handleGenerate}
               >
@@ -1373,52 +1437,9 @@ export default function AppPaystub() {
                 }
               </IonButton>
             </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* PDF Preview Portal Overlay */}
-      {previewModalOpen && createPortal(
-        <div
-          onClick={() => setPreviewModalOpen(false)}
-          style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ background: "#fff", borderRadius: 12, width: "100%", maxWidth: 720, maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 8px 40px rgba(0,0,0,0.4)" }}
-          >
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderBottom: "1px solid #e5e7eb" }}>
-              <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "#111" }}>
-                Pay Stub Preview {pdfPreviews.length > 1 ? `(${previewPageIndex + 1} of ${pdfPreviews.length})` : ""}
-              </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: "0.75rem", color: "#d97706", background: "#fef3c7", padding: "2px 8px", borderRadius: 4 }}>Watermark removed after payment</span>
-                <button onClick={() => setPreviewModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, color: "#555" }}>×</button>
-              </div>
-            </div>
-            {/* Image */}
-            <div style={{ flex: 1, overflow: "auto", padding: 16, display: "flex", justifyContent: "center" }}>
-              {pdfPreviews[previewPageIndex] && (
-                <img src={pdfPreviews[previewPageIndex]} alt={`Pay stub preview ${previewPageIndex + 1}`} style={{ width: "100%", height: "auto", borderRadius: 4 }} />
-              )}
-            </div>
-            {/* Pagination */}
-            {pdfPreviews.length > 1 && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 16px", borderTop: "1px solid #e5e7eb" }}>
-                <button disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i-1))} style={{ background: "none", border: "1px solid #d1d5db", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>‹</button>
-                {pdfPreviews.map((_, idx) => (
-                  <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "#16a34a" : "#f3f4f6", color: idx === previewPageIndex ? "#fff" : "#374151" }}>{idx + 1}</button>
-                ))}
-                <button disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i+1))} style={{ background: "none", border: "1px solid #d1d5db", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>›</button>
-              </div>
-            )}
-            <p style={{ textAlign: "center", fontSize: "0.75rem", color: "#9ca3af", padding: "6px 16px 12px" }}>Click outside to close</p>
-          </div>
-        </div>,
-        document.body
-      )}
+          </IonContent>
+        </IonPage>
+      </IonModal>
 
     </AppLayout>
   );

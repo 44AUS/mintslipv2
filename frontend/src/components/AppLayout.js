@@ -10,7 +10,7 @@ import {
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
-  arrowBackOutline,
+  arrowBackOutline, settingsOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -191,6 +191,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             {/* Bottom nav links — pinned via slot="fixed" */}
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
               {[
+                { label: "Settings",         icon: settingsOutline,     path: "/user/settings" },
                 { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
                 { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
               ].map(({ label, icon, path }) => (
@@ -389,6 +390,7 @@ export default function AppLayout({ children, fillHeight = false }) {
           {/* Bottom nav links — pinned */}
           <div style={{ flexShrink: 0, borderTop: "1px solid var(--app-divider)" }}>
             {[
+              { label: "Settings",         icon: settingsOutline,     path: "/user/settings" },
               { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
               { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
             ].map(({ label, icon, path }) => (

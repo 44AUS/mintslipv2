@@ -1,6 +1,13 @@
 // Canadian Template H: Modern Colorful Pay Stub with Blue Headers
 // Identical to US OnPay template, adapted for Canadian taxes
 
+// Deterministic hash so random-looking IDs are stable across all stubs for the same employee
+function stableHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0xffffffff;
+  return Math.abs(h);
+}
+
 export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, margin) {
   const { 
     formData, hours, overtime, commission = 0, regularPay, overtimePay, grossPay, 
@@ -132,8 +139,8 @@ export function generateCanadianTemplateH(doc, data, pageWidth, pageHeight, marg
   // Info section with two rows
   doc.setFontSize(7);
   // Use per-period cheque number if provided, otherwise auto-generate
-  const checkNum = periodCheckNumber || String(Math.floor(1 + Math.random() * 999));
-  const empNum = formData.employeeId || String(Math.floor(1000000 + Math.random() * 9000000));
+  const checkNum = periodCheckNumber || String(1 + (stableHash((formData.name || "emp") + stubNum) % 999));
+  const empNum = formData.employeeId || String(1000000 + (stableHash(formData.name || "emp") % 9000000));
   
   // Row 1: Cheque # and Cheque Date (left side)
   doc.setFont("helvetica", "bold");

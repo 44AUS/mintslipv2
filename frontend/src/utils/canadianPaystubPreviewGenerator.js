@@ -568,7 +568,10 @@ export async function generateAllCanadianPreviewPDFs(formData, template = 'templ
     const endDateArray = (formData.endDateList || "").split(",").map((d) => d.trim()).filter(d => d);
     const payDateArray = (formData.payDateList || "").split(",").map((d) => d.trim()).filter(d => d);
 
-    const hireDate = formData.hireDate ? new Date(formData.hireDate) : new Date();
+    const hireDate = formData.hireDate
+      ? new Date(formData.hireDate + 'T12:00:00')
+      : (startDateArray[0] ? new Date(startDateArray[0] + 'T12:00:00')
+        : (formData.startDate ? new Date(formData.startDate + 'T12:00:00') : new Date()));
 
     const commonData = {
       rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,

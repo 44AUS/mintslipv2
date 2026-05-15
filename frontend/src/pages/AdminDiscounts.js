@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
-  IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButton, IonButtons, IonSpinner,
+  IonButton, IonSpinner,
 } from "@ionic/react";
 import { toast } from "sonner";
 import {
@@ -582,143 +582,150 @@ export default function AdminDiscounts() {
       </div>
 
       {/* Add/Edit Modal */}
-      <IonModal isOpen={isDialogOpen} onDidDismiss={() => { setIsDialogOpen(false); resetForm(); }} style={{ "--width": "520px", "--max-width": "95vw", "--height": "auto" }}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>{editingDiscount ? "Edit Discount Code" : "Create Discount Code"}</IonTitle>
-            <IonButtons slot="end">
-              <IonButton fill="clear" color="medium" onClick={() => { setIsDialogOpen(false); resetForm(); }}><X size={20} /></IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonModalContent className="ion-padding" style={{ maxHeight: "70vh", overflowY: "auto" }}>
-          <form id="discount-form" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Code *</label>
-                <input
-                  className="admin-input"
-                  style={{ fontFamily: "monospace" }}
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  placeholder="SAVE20"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Discount %</label>
-                <input
-                  className="admin-input"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.discountPercent}
-                  onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
-                />
-              </div>
+      {isDialogOpen && createPortal(
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) { setIsDialogOpen(false); resetForm(); } }}
+          style={{ position: "fixed", inset: 0, zIndex: 20000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)", padding: 16 }}
+        >
+          <div style={{ background: "var(--ion-card-background, #fff)", borderRadius: 12, width: "100%", maxWidth: 520, maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--app-divider, #e2e8f0)", flexShrink: 0 }}>
+              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600, color: "var(--ion-text-color)" }}>
+                {editingDiscount ? "Edit Discount Code" : "Create Discount Code"}
+              </h3>
+              <button onClick={() => { setIsDialogOpen(false); resetForm(); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ion-color-medium)" }}>
+                <X size={20} />
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-                <input
-                  className="admin-input"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Expiry Date *</label>
-                <input
-                  className="admin-input"
-                  type="date"
-                  value={formData.expiryDate}
-                  onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Usage Type</label>
-              <select
-                className="admin-select"
-                value={formData.usageType}
-                onChange={(e) => setFormData({ ...formData, usageType: e.target.value })}
-              >
-                <option value="unlimited">Unlimited</option>
-                <option value="limited">Limited Uses</option>
-                <option value="one_per_customer">One Per Customer</option>
-              </select>
-            </div>
-
-            {formData.usageType === "limited" && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Usage Limit</label>
-                <input
-                  className="admin-input"
-                  type="number"
-                  min="1"
-                  value={formData.usageLimit}
-                  onChange={(e) => setFormData({ ...formData, usageLimit: parseInt(e.target.value) })}
-                />
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Applies To</label>
-              <select
-                className="admin-select"
-                value={formData.applicableTo}
-                onChange={(e) => setFormData({ ...formData, applicableTo: e.target.value })}
-              >
-                <option value="all">All Generators</option>
-                <option value="specific">Specific Generators</option>
-              </select>
-            </div>
-
-            {formData.applicableTo === "specific" && (
-              <div className="border rounded-lg p-3 max-h-40 overflow-y-auto mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Select Generators</label>
-                <div className="space-y-2">
-                  {GENERATORS.map((gen) => (
-                    <div key={gen.id} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={gen.id}
-                        checked={formData.specificGenerators.includes(gen.id)}
-                        onChange={() => toggleGenerator(gen.id)}
-                        style={{ width: 16, height: 16, cursor: "pointer" }}
-                      />
-                      <label htmlFor={gen.id} className="text-sm cursor-pointer">{gen.name}</label>
-                    </div>
-                  ))}
+            {/* Content */}
+            <div style={{ padding: 20, overflowY: "auto", flex: 1 }}>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Code *</label>
+                  <input
+                    className="admin-input"
+                    style={{ fontFamily: "monospace" }}
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    placeholder="SAVE20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Discount %</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={formData.discountPercent}
+                    onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
+                  />
                 </div>
               </div>
-            )}
 
-            <div className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                style={{ width: 16, height: 16, cursor: "pointer" }}
-              />
-              <label htmlFor="isActive" className="text-sm cursor-pointer">Active</label>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                  <input
+                    className="admin-input"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Expiry Date *</label>
+                  <input
+                    className="admin-input"
+                    type="date"
+                    value={formData.expiryDate}
+                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Usage Type</label>
+                <select
+                  className="admin-select"
+                  value={formData.usageType}
+                  onChange={(e) => setFormData({ ...formData, usageType: e.target.value })}
+                >
+                  <option value="unlimited">Unlimited</option>
+                  <option value="limited">Limited Uses</option>
+                  <option value="one_per_customer">One Per Customer</option>
+                </select>
+              </div>
+
+              {formData.usageType === "limited" && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Usage Limit</label>
+                  <input
+                    className="admin-input"
+                    type="number"
+                    min="1"
+                    value={formData.usageLimit}
+                    onChange={(e) => setFormData({ ...formData, usageLimit: parseInt(e.target.value) })}
+                  />
+                </div>
+              )}
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Applies To</label>
+                <select
+                  className="admin-select"
+                  value={formData.applicableTo}
+                  onChange={(e) => setFormData({ ...formData, applicableTo: e.target.value })}
+                >
+                  <option value="all">All Generators</option>
+                  <option value="specific">Specific Generators</option>
+                </select>
+              </div>
+
+              {formData.applicableTo === "specific" && (
+                <div className="border rounded-lg p-3 max-h-40 overflow-y-auto mb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Select Generators</label>
+                  <div className="space-y-2">
+                    {GENERATORS.map((gen) => (
+                      <div key={gen.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={gen.id}
+                          checked={formData.specificGenerators.includes(gen.id)}
+                          onChange={() => toggleGenerator(gen.id)}
+                          style={{ width: 16, height: 16, cursor: "pointer" }}
+                        />
+                        <label htmlFor={gen.id} className="text-sm cursor-pointer">{gen.name}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  style={{ width: 16, height: 16, cursor: "pointer" }}
+                />
+                <label htmlFor="isActive" className="text-sm cursor-pointer">Active</label>
+              </div>
             </div>
-          </form>
-        </IonModalContent>
-        <IonFooter>
-          <IonToolbar style={{ padding: "8px 16px" }}>
-            <IonButtons slot="end">
+
+            {/* Footer */}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: "12px 20px", borderTop: "1px solid var(--app-divider, #e2e8f0)", flexShrink: 0 }}>
               <IonButton fill="outline" color="medium" onClick={() => { setIsDialogOpen(false); resetForm(); }}>Cancel</IonButton>
               <IonButton color="primary" onClick={handleSubmit}>
                 {editingDiscount ? "Update" : "Create"}
               </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonFooter>
-      </IonModal>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </AdminLayout>
   );
 }

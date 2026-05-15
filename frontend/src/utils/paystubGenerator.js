@@ -260,11 +260,16 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
 
     // Parse startDate first since hireDate may fall back to it
     let startDate = formData.startDate ? parseLocalDate(formData.startDate) : null;
-    
-    // For hire date: use provided hireDate, or fall back to startDate (first paystub date)
-    // NEVER use current date as fallback - it breaks YTD calculations for past dates
-    const hireDate = parseLocalDate(formData.hireDate) || startDate || new Date();
-    
+
+    // Prefer the first entry in startDateList as the hire-date fallback so YTD
+    // anchors to the actual first pay period instead of today's date.
+    const firstPeriodStart = parseLocalDate(startDateArray[0]) || startDate;
+
+    // For hire date: use provided hireDate → first period start → startDate.
+    // NEVER fall back to new Date() — today's date lands after past pay periods
+    // and triggers the "use Jan 1" safety fix, inflating YTD.
+    const hireDate = parseLocalDate(formData.hireDate) || firstPeriodStart || new Date();
+
     // If startDate wasn't provided, use hireDate
     if (!startDate) {
       startDate = new Date(hireDate);

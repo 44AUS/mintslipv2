@@ -232,8 +232,12 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
       return isNaN(d.getTime()) ? new Date() : d;
     };
 
-    const hireDate = parseLocalDate(formData.hireDate);
-    let startDate = formData.startDate ? parseLocalDate(formData.startDate) : new Date(hireDate);
+    // Parse startDate first; hireDate falls back to first period start to avoid today's date
+    // inflating YTD when pay periods are in the past (same fix as US generator)
+    let startDate = formData.startDate ? parseLocalDate(formData.startDate) : null;
+    const firstPeriodStart = startDate;
+    const hireDate = (formData.hireDate ? parseLocalDate(formData.hireDate) : null) || firstPeriodStart || new Date();
+    if (!startDate) { startDate = new Date(hireDate); }
 
     console.log("Calculated values:", { calculatedNumStubs, rate, payFrequency, payType, workerType, isContractor, province });
 
@@ -250,10 +254,10 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         const pageHeight = doc.internal.pageSize.getHeight();
         
         const stubData = await generateSingleCanadianStub(
-          doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
+          doc, formData, template, stubNum, new Date(currentStartDate), periodLength,
           hoursArray, overtimeArray, defaultHours, rate, province,
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
-          checkNumberArray, memoArray, commissionArray
+          checkNumberArray, memoArray, commissionArray, hireDate
         );
         
         // Template-specific filename with pay date (same as US)
@@ -301,7 +305,7 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, province,
         payDay, pageWidth, pageHeight, 1, payFrequency,
-        checkNumberArray, memoArray, commissionArray
+        checkNumberArray, memoArray, commissionArray, hireDate
       );
       
       // Template-specific filename with pay date (same as US)
@@ -349,7 +353,7 @@ async function generateSingleCanadianStub(
   doc, formData, template, stubNum, startDate, periodLength,
   hoursArray, overtimeArray, defaultHours, rate, province,
   payDay, pageWidth, pageHeight, totalStubs, payFrequency,
-  checkNumberArray = [], memoArray = [], commissionArray = []
+  checkNumberArray = [], memoArray = [], commissionArray = [], consistentHireDate = null
 ) {
   const payType = formData.payType || "hourly";
   const workerType = formData.workerType || "employee";
@@ -377,8 +381,9 @@ async function generateSingleCanadianStub(
   periodEnd.setDate(periodEnd.getDate() + periodLength - 1);
   const payDate = nextWeekday(periodEnd, payDay);
   
-  // Get hire date for YTD calculations
-  const hireDate = formData.hireDate ? (parseLocalDate(formData.hireDate) || periodStart) : periodStart;
+  // Get hire date for YTD calculations — use the consistent hire date from the outer scope
+  // so every stub in the batch anchors YTD from the same date (not each stub's own start)
+  const hireDate = consistentHireDate || (formData.hireDate ? (parseLocalDate(formData.hireDate) || periodStart) : periodStart);
   
   // Calculate number of pay periods from hire/year start to current period for accurate YTD
   const ytdPayPeriods = calculatePayPeriodsFromHireDate(hireDate, periodEnd, periodLength);

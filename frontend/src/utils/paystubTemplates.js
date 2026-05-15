@@ -1,3 +1,10 @@
+// Deterministic hash so random-looking IDs are stable across all stubs for the same employee
+function stableHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0xffffffff;
+  return Math.abs(h);
+}
+
 // Helper to load logo safely
 async function loadImageAsBase64(url) {
   try {
@@ -641,10 +648,11 @@ export function generateTemplateB(doc, data, pageWidth, pageHeight, margin) {
   // Header values row
   y += 10;
   const companyCode = formData.companyCode || "74F";
-  const fileNum = formData.fileNum || String(Math.floor(1000000 + Math.random() * 9000000));
+  const _seed = stableHash(formData.name || "emp");
+  const fileNum = formData.fileNum || String(1000000 + (_seed % 9000000));
   const deptNum = formData.deptNum || "01";
-  const clockNum = formData.clockNum || String(Math.floor(10000000 + Math.random() * 90000000));
-  const vchrNum = formData.voucherNumber || String(Math.floor(100 + Math.random() * 900));
+  const clockNum = formData.clockNum || String(10000000 + ((_seed * 31) % 90000000));
+  const vchrNum = formData.voucherNumber || String(100 + ((_seed * 17) % 900));
   
   doc.setFont("helvetica", "normal");
   doc.text(companyCode, m + 3, y);
@@ -1844,8 +1852,8 @@ export function generateTemplateH(doc, data, pageWidth, pageHeight, margin) {
   // Info section with two rows
   doc.setFontSize(7);
   // Use per-period check number if provided, otherwise auto-generate
-  const checkNum = periodCheckNumber || String(Math.floor(1 + Math.random() * 999));
-  const empNum = formData.employeeId || String(Math.floor(1000000 + Math.random() * 9000000));
+  const checkNum = periodCheckNumber || String(1 + (stableHash((formData.name || "emp") + stubNum) % 999));
+  const empNum = formData.employeeId || String(1000000 + (stableHash(formData.name || "emp") % 9000000));
   
   // Row 1: Check # and Check Date (left side)
   doc.setFont("helvetica", "bold");

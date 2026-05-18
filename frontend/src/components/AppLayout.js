@@ -11,7 +11,7 @@ import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
-  cloudDownloadOutline, trashOutline, archiveOutline,
+  cloudDownloadOutline, trashOutline, archiveOutline, mailOutline, readerOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import {
@@ -20,11 +20,15 @@ import {
 } from "../utils/appNotifications";
 import { generateAndDownloadPaystub } from "../utils/paystubGenerator";
 import { generateAndDownloadCanadianPaystub } from "../utils/canadianPaystubGenerator";
+import { generateAndDownloadOfferLetter } from "../utils/offerLetterGenerator";
+import { generateAndDownloadResume } from "../utils/resumeGenerator";
 import "../admin-theme.css";
 
 const tabs = [
   { id: "paystub",          label: "Pay Stubs",       icon: documentTextOutline, path: "/app/paystub" },
   { id: "canadian-paystub", label: "Canadian Stubs",  icon: leafOutline,         path: "/app/canadian-paystub" },
+  { id: "offer-letter",     label: "Offer Letter",    icon: mailOutline,         path: "/app/offer-letter" },
+  { id: "resume-builder",   label: "AI Resume",       icon: readerOutline,       path: "/app/resume-builder" },
 ];
 
 // Persists sidebar state across route-driven remounts
@@ -119,6 +123,8 @@ export default function AppLayout({ children, fillHeight = false }) {
   const getActiveTab = () => {
     const path = location.pathname;
     if (path.includes("/app/canadian-paystub")) return "canadian-paystub";
+    if (path.includes("/app/offer-letter"))     return "offer-letter";
+    if (path.includes("/app/resume-builder"))   return "resume-builder";
     if (path.includes("/app/paystub"))          return "paystub";
     return "paystub";
   };
@@ -174,6 +180,23 @@ export default function AppLayout({ children, fillHeight = false }) {
         const template = localStorage.getItem("pendingCanadianPaystubTemplate") || "template-a";
         const count = parseInt(localStorage.getItem("pendingCanadianPaystubCount") || "1", 10);
         await generateAndDownloadCanadianPaystub(data, template, count);
+      } else if (notif.type === "offer-letter") {
+        const str = localStorage.getItem("pendingOfferLetterData");
+        if (!str) throw new Error("no data");
+        const data = JSON.parse(str);
+        await generateAndDownloadOfferLetter(data, false);
+      } else if (notif.type === "ai-resume" || notif.type === "resume") {
+        const str = localStorage.getItem("pendingResumeData");
+        if (!str) throw new Error("no data");
+        const { generatedResume, formData } = JSON.parse(str);
+        if (!generatedResume) throw new Error("no resume data");
+        await generateAndDownloadResume({
+          ...generatedResume,
+          template: formData?.template || "ats",
+          font: formData?.font || "Calibri",
+          sectionLayout: formData?.sectionLayout || "standard",
+          onePage: formData?.onePage || false,
+        });
       }
     } catch {
       setToastMessage("Form data no longer available. Please create a new document.");
@@ -453,8 +476,10 @@ export default function AppLayout({ children, fillHeight = false }) {
         onDidDismiss={() => setCreateOpen(false)}
         style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
         buttons={[
-          { text: "Create Pay Stub",        handler: () => navigate("/app/paystub") },
+          { text: "Create Pay Stub",         handler: () => navigate("/app/paystub") },
           { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
+          { text: "Create Offer Letter",     handler: () => navigate("/app/offer-letter") },
+          { text: "Build AI Resume",         handler: () => navigate("/app/resume-builder") },
           { text: "Cancel", role: "cancel" },
         ]}
       />

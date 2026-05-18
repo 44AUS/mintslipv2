@@ -470,12 +470,12 @@ export default function OfferLetterForm() {
       
       // Store form data for after payment
       localStorage.setItem("pendingOfferLetterData", JSON.stringify(formData));
-      localStorage.setItem("pendingOfferLetterTemplate", selectedTemplate);
-      
+      localStorage.setItem("pendingOfferLetterTemplate", formData.template);
+
       const { url } = await createStripeCheckout({
         amount: finalAmount,
         documentType: "offer-letter",
-        template: selectedTemplate,
+        template: formData.template,
         appliedDiscount,
         successPath: "/payment-success",
         cancelPath: "/offer-letter-generator"

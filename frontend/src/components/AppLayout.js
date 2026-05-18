@@ -11,7 +11,7 @@ import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
-  cloudDownloadOutline, trashOutline, archiveOutline, mailOutline, readerOutline,
+  cloudDownloadOutline, trashOutline, archiveOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import {
@@ -22,13 +22,13 @@ import { generateAndDownloadPaystub } from "../utils/paystubGenerator";
 import { generateAndDownloadCanadianPaystub } from "../utils/canadianPaystubGenerator";
 import { generateAndDownloadOfferLetter } from "../utils/offerLetterGenerator";
 import { generateAndDownloadResume } from "../utils/resumeGenerator";
+import AppOfferLetter from "../pages/app/AppOfferLetter";
+import AppResumeBuilder from "../pages/app/AppResumeBuilder";
 import "../admin-theme.css";
 
 const tabs = [
-  { id: "paystub",          label: "Pay Stubs",       icon: documentTextOutline, path: "/app/paystub" },
-  { id: "canadian-paystub", label: "Canadian Stubs",  icon: leafOutline,         path: "/app/canadian-paystub" },
-  { id: "offer-letter",     label: "Offer Letter",    icon: mailOutline,         path: "/app/offer-letter" },
-  { id: "resume-builder",   label: "AI Resume",       icon: readerOutline,       path: "/app/resume-builder" },
+  { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app/paystub" },
+  { id: "canadian-paystub", label: "Canadian Stubs", icon: leafOutline,         path: "/app/canadian-paystub" },
 ];
 
 // Persists sidebar state across route-driven remounts
@@ -58,6 +58,8 @@ export default function AppLayout({ children, fillHeight = false }) {
   };
   const [mobileSidebarOpen, setMobileSidebarOpen]  = useState(false);
   const [createOpen,        setCreateOpen]          = useState(false);
+  const [offerLetterOpen,   setOfferLetterOpen]     = useState(false);
+  const [resumeBuilderOpen, setResumeBuilderOpen]   = useState(false);
 
   // Notifications state
   const [notifications,     setNotifications]       = useState(() => getNotifications());
@@ -123,8 +125,6 @@ export default function AppLayout({ children, fillHeight = false }) {
   const getActiveTab = () => {
     const path = location.pathname;
     if (path.includes("/app/canadian-paystub")) return "canadian-paystub";
-    if (path.includes("/app/offer-letter"))     return "offer-letter";
-    if (path.includes("/app/resume-builder"))   return "resume-builder";
     if (path.includes("/app/paystub"))          return "paystub";
     return "paystub";
   };
@@ -478,8 +478,8 @@ export default function AppLayout({ children, fillHeight = false }) {
         buttons={[
           { text: "Create Pay Stub",         handler: () => navigate("/app/paystub") },
           { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
-          { text: "Create Offer Letter",     handler: () => navigate("/app/offer-letter") },
-          { text: "Build AI Resume",         handler: () => navigate("/app/resume-builder") },
+          { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
+          { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
           { text: "Cancel", role: "cancel" },
         ]}
       />
@@ -697,6 +697,12 @@ export default function AppLayout({ children, fillHeight = false }) {
           </div>
         </div>
       </>, document.body)}
+
+      {/* ── Offer Letter modal ── */}
+      <AppOfferLetter isOpen={offerLetterOpen} onClose={() => setOfferLetterOpen(false)} />
+
+      {/* ── Resume Builder modal ── */}
+      <AppResumeBuilder isOpen={resumeBuilderOpen} onClose={() => setResumeBuilderOpen(false)} />
 
     </IonApp>
   );

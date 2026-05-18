@@ -73,8 +73,6 @@ import AIResumeLanding from "@/pages/AIResumeLanding";
 import PDFEngine from "@/pages/PDFEngine";
 import AppPaystub from "@/pages/app/AppPaystub";
 import AppCanadianPaystub from "@/pages/app/AppCanadianPaystub";
-import AppOfferLetter from "@/pages/app/AppOfferLetter";
-import AppResumeBuilder from "@/pages/app/AppResumeBuilder";
 import AppTerms from "@/pages/app/AppTerms";
 import AppPrivacy from "@/pages/app/AppPrivacy";
 import AppSettings from "@/pages/app/AppSettings";
@@ -176,8 +174,6 @@ function MobileApp() {
             <Routes>
               <Route path="/app/paystub" element={<AppPaystub />} />
               <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
-              <Route path="/app/offer-letter" element={<AppOfferLetter />} />
-              <Route path="/app/resume-builder" element={<AppResumeBuilder />} />
               <Route path="/app/terms" element={<AppTerms />} />
               <Route path="/app/privacy" element={<AppPrivacy />} />
               <Route path="/app/settings" element={<AppSettings />} />

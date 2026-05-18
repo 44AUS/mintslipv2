@@ -1002,22 +1002,25 @@ export default function PaystubForm() {
   // Initialize hoursPerPeriod when pay periods change
   useEffect(() => {
     const defaultHours = formData.payFrequency === "biweekly" ? 80 : 40;
-    
+
     if (payPeriods.length > 0) {
       setHoursPerPeriod(prev => {
-        const newHours = payPeriods.map((period, i) => ({
-          hours: prev[i]?.hours ?? defaultHours,
-          overtime: prev[i]?.overtime ?? 0,
-          commission: prev[i]?.commission ?? 0,
-          tips: prev[i]?.tips ?? 0,
-          tipsCash: prev[i]?.tipsCash ?? false,
-          startDate: prev[i]?.startDate ?? period.start,
-          endDate: prev[i]?.endDate ?? period.end,
-          payDate: prev[i]?.payDate ?? period.pay,
+        // When the period count changes (date range changed), reset dates to newly
+        // computed values so stale cached dates from a previous session don't persist
+        // and cause duplicate pay dates → ZIP filename collisions.
+        const countChanged = prev.length !== payPeriods.length;
+        return payPeriods.map((period, i) => ({
+          hours:       prev[i]?.hours       ?? defaultHours,
+          overtime:    prev[i]?.overtime    ?? 0,
+          commission:  prev[i]?.commission  ?? 0,
+          tips:        prev[i]?.tips        ?? 0,
+          tipsCash:    prev[i]?.tipsCash    ?? false,
+          startDate:   (!countChanged && prev[i]?.startDate) ? prev[i].startDate : period.start,
+          endDate:     (!countChanged && prev[i]?.endDate)   ? prev[i].endDate   : period.end,
+          payDate:     (!countChanged && prev[i]?.payDate)   ? prev[i].payDate   : period.pay,
           checkNumber: prev[i]?.checkNumber ?? '',
-          memo: prev[i]?.memo ?? ''
+          memo:        prev[i]?.memo        ?? ''
         }));
-        return newHours;
       });
     } else {
       setHoursPerPeriod([]);

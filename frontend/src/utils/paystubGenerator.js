@@ -286,39 +286,53 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       console.log("Creating ZIP for multiple stubs...");
       const zip = new JSZip();
       let currentStartDate = new Date(startDate);
-      
+      const usedFileNames = new Set();
+
       for (let stubNum = 0; stubNum < calculatedNumStubs; stubNum++) {
         console.log(`Generating stub ${stubNum + 1}/${calculatedNumStubs}`);
         const doc = new jsPDF({ unit: "pt", format: "letter" });
-        
+
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        
+
         const stubData = await generateSingleStub(
-          doc, formData, template, stubNum, new Date(currentStartDate), periodLength, 
-          hoursArray, overtimeArray, defaultHours, rate, stateRate, 
+          doc, formData, template, stubNum, new Date(currentStartDate), periodLength,
+          hoursArray, overtimeArray, defaultHours, rate, stateRate,
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
           checkNumberArray, memoArray,
           startDateArray, endDateArray, payDateArray, commissionArray, tipsArray, tipsCashArray,
           hireDate  // Pass consistent hire date for YTD calculations
         );
-        
+
         // Template-specific filename with pay date
-        const fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
-        console.log(`Adding ${fileName} to ZIP`);
-        
+        let fileName = getIndividualPaystubFilename(template, formData.name, stubData.payDate);
+
+        // Ensure filename is unique — duplicate payDates can occur when stale cached dates
+        // from a previous session coincide with newly computed dates for later stubs.
+        if (usedFileNames.has(fileName)) {
+          const ext = fileName.slice(fileName.lastIndexOf('.'));
+          const base = fileName.slice(0, fileName.lastIndexOf('.'));
+          let counter = 2;
+          while (usedFileNames.has(`${base}-${counter}${ext}`)) counter++;
+          console.warn(`Duplicate filename detected: ${fileName} → renaming to ${base}-${counter}${ext}`);
+          fileName = `${base}-${counter}${ext}`;
+        }
+        usedFileNames.add(fileName);
+        console.log(`Adding ${fileName} to ZIP (stub ${stubNum + 1}/${calculatedNumStubs})`);
+
         // Apply template-specific metadata right before output
         applyPdfMetadata(doc, template);
-        
+
         // Get PDF blob and clean it via backend (pass payDate for creation date calculation)
         let pdfBlob = doc.output('blob');
         pdfBlob = await cleanPdfViaBackend(pdfBlob, template, stubData.payDate);
-        
+
         // Add cleaned PDF to zip
         zip.file(fileName, pdfBlob);
-        
+
         currentStartDate.setDate(currentStartDate.getDate() + periodLength);
       }
+      console.log(`ZIP will contain ${usedFileNames.size} files (expected ${calculatedNumStubs})`);
       
       // Generate and download ZIP with template-specific naming
       console.log("Generating ZIP file...");

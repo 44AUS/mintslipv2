@@ -2582,11 +2582,17 @@ async def stripe_webhook(request: Request):
         
         elif purchase_type == "one_time_purchase":
             # Handle one-time guest purchase
+            # Dedup: status-check endpoint may have already recorded this
+            existing_purchase = await purchases_collection.find_one({"stripeSessionId": session.id})
+            if existing_purchase:
+                print(f"Purchase already recorded for session {session.id}, skipping webhook duplicate")
+                return {"status": "ok"}
+
             document_type = session.metadata.get("documentType", "unknown")
             template = session.metadata.get("template", "")
             discount_code = session.metadata.get("discountCode", "")
             discount_amount = float(session.metadata.get("discountAmount", 0))
-            
+
             # Get customer email from session if available
             customer_email = ""
             if session.customer_details:
@@ -2647,6 +2653,12 @@ async def stripe_webhook(request: Request):
             if user:
                 tier = user["subscription"].get("tier")
                 tier_downloads = await get_tier_downloads()
+
+                # Dedup: skip if this invoice was already recorded (e.g., Stripe retry or historical import)
+                existing_payment = await subscription_payments_collection.find_one({"stripeInvoiceId": invoice.id})
+                if existing_payment:
+                    print(f"Subscription payment already recorded for invoice {invoice.id}, skipping webhook duplicate")
+                    return {"status": "ok"}
 
                 # Record the subscription payment
                 payment_amount = invoice.amount_paid / 100  # Convert from cents

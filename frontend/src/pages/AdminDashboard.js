@@ -118,6 +118,9 @@ export default function AdminDashboard() {
   
   // Dashboard data
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [statsRefreshedAt, setStatsRefreshedAt] = useState(null);
+  const [isStatsRefreshing, setIsStatsRefreshing] = useState(false);
+  const statsRefreshIntervalRef = useRef(null);
   const [purchases, setPurchases] = useState([]);
   const [purchasesTotal, setPurchasesTotal] = useState(0);
   const [users, setUsers] = useState([]);
@@ -272,7 +275,8 @@ export default function AdminDashboard() {
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setDashboardStats(statsData);
-        
+        setStatsRefreshedAt(new Date());
+
         // Process data for charts (include subscription payments)
         processChartData(statsData.recentPurchases || [], statsData.recentSubscriptionPayments || []);
       }
@@ -293,6 +297,36 @@ export default function AdminDashboard() {
       setIsLoading(false);
     }
   }, []);
+
+  // Lightweight stats refresh (today's revenue stat)
+  const loadStats = useCallback(async (silent = false) => {
+    if (!silent) setIsStatsRefreshing(true);
+    const token = localStorage.getItem("adminToken");
+    try {
+      const statsResponse = await fetch(`${BACKEND_URL}/api/admin/dashboard`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        setDashboardStats(statsData);
+        setStatsRefreshedAt(new Date());
+      }
+    } catch (error) {
+      console.error("Error refreshing stats:", error);
+    } finally {
+      if (!silent) setIsStatsRefreshing(false);
+    }
+  }, []);
+
+  // Auto-refresh stats every 5 minutes while the overview tab is open
+  useEffect(() => {
+    if (activeTab === "overview") {
+      statsRefreshIntervalRef.current = setInterval(() => loadStats(true), 5 * 60 * 1000);
+    }
+    return () => {
+      if (statsRefreshIntervalRef.current) clearInterval(statsRefreshIntervalRef.current);
+    };
+  }, [activeTab, loadStats]);
 
   // Process purchases data for charts
   const processChartData = (purchases, subscriptionPayments = [], period = chartPeriod, typeFilter = chartTypeFilter) => {
@@ -1623,12 +1657,32 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <StatCard
-                title="Today's Revenue"
-                value={formatCurrency(dashboardStats.stats.todayRevenue)}
-                icon={TrendingUp}
-                color="orange"
-              />
+              <div className="admin-stat-card">
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <p className="admin-stat-label">Today's Revenue</p>
+                      <button
+                        onClick={() => loadStats()}
+                        disabled={isStatsRefreshing}
+                        title="Refresh today's stats"
+                        style={{ background: "none", border: "none", cursor: isStatsRefreshing ? "default" : "pointer", padding: 0, display: "flex", alignItems: "center" }}
+                      >
+                        <RefreshCw size={12} className={isStatsRefreshing ? "animate-spin" : ""} style={{ color: "#94a3b8" }} />
+                      </button>
+                    </div>
+                    <p className="admin-stat-value">{formatCurrency(dashboardStats.stats.todayRevenue)}</p>
+                    {statsRefreshedAt && (
+                      <p style={{ fontSize: 10, color: "#94a3b8", marginTop: 2 }}>
+                        Updated {statsRefreshedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    )}
+                  </div>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(249,115,22,0.12)", flexShrink: 0 }}>
+                    <TrendingUp size={24} style={{ color: "#f97316" }} />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Charts Section */}

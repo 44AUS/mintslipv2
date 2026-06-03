@@ -225,7 +225,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
         amount: 9.99,
         documentType: "offer-letter",
         template: formData.template,
-        successUrl: `${origin}/payment-success?type=offer-letter&session_id={CHECKOUT_SESSION_ID}`,
+        successUrl: `${origin}/payment-success?type=offer-letter&source=app&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl:  `${origin}/app/paystub`,
       });
       if (!ok || !data?.url) throw new Error(data?.detail || "Failed to create checkout session");

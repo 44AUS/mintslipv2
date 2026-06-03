@@ -647,7 +647,7 @@ export default function AppCanadianPaystub() {
         discountCode: appliedDiscount?.code || null,
         discountAmount: appliedDiscount ? parseFloat((baseAmount - finalAmount).toFixed(2)) : 0,
         template: selectedTemplate,
-        successUrl: `${origin}/payment-success?type=canadian-paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
+        successUrl: `${origin}/payment-success?type=canadian-paystub&count=${calculateNumStubs}&source=app&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${origin}/app/canadian-paystub`,
         quantity: calculateNumStubs,
       });

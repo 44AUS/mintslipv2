@@ -673,7 +673,7 @@ export default function AppPaystub() {
         amount: finalAmount,
         documentType: "paystub",
         template: selectedTemplate,
-        successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&session_id={CHECKOUT_SESSION_ID}`,
+        successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&source=app&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${origin}/app/paystub`,
         quantity: calculateNumStubs,
         discountCode: appliedDiscount?.code || null,

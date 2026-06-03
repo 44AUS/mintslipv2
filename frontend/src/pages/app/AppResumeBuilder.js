@@ -260,7 +260,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       const origin = getStripeOrigin(BACKEND_URL);
       const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
         amount: 9.99, documentType: "ai-resume", template: formData.template,
-        successUrl: `${origin}/payment-success?type=ai-resume&session_id={CHECKOUT_SESSION_ID}`,
+        successUrl: `${origin}/payment-success?type=ai-resume&source=app&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl:  `${origin}/app/paystub`,
       });
       if (!ok || !data?.url) throw new Error(data?.detail || "Failed to create checkout session");

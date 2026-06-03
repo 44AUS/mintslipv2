@@ -32,6 +32,7 @@ export default function PaymentSuccess() {
   const orderType = searchParams.get('type') || 'paystub';
   const sessionId = searchParams.get('session_id');
   const fileCount = parseInt(searchParams.get('count') || '1', 10);
+  const isFromApp = searchParams.get('source') === 'app';
   
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -182,7 +183,7 @@ export default function PaymentSuccess() {
           generated = true;
 
           markNotificationReady(notifId);
-          appReturnPath = '/app/paystub';
+          if (isFromApp) appReturnPath = '/app/paystub';
 
           if (emailToUse && pdfBlob) {
             sendFileEmail(pdfBlob, emailToUse, 'paystub', formData.name, numStubs > 1);
@@ -252,12 +253,13 @@ export default function PaymentSuccess() {
             
             pdfBlob = await generateAndDownloadResume(resumeData, true);
             generated = true;
-            
+            if (isFromApp) appReturnPath = '/app/paystub';
+
             // Resume is always a ZIP (contains PDF + DOCX)
             if (emailToUse && pdfBlob) {
               sendFileEmail(pdfBlob, emailToUse, 'ai-resume', generatedResume?.personalInfo?.name, true);
             }
-            
+
             toast.success('Your AI resume has been downloaded!');
           }
         }
@@ -308,7 +310,7 @@ export default function PaymentSuccess() {
           generated = true;
 
           markNotificationReady(notifId);
-          appReturnPath = '/app/canadian-paystub';
+          if (isFromApp) appReturnPath = '/app/canadian-paystub';
 
           if (emailToUse && pdfBlob) {
             sendFileEmail(pdfBlob, emailToUse, 'canadian-paystub', formData.name, numStubs > 1);
@@ -322,11 +324,12 @@ export default function PaymentSuccess() {
           
           pdfBlob = await generateAndDownloadOfferLetter(formData, true);
           generated = true;
-          
+          if (isFromApp) appReturnPath = '/app/paystub';
+
           if (emailToUse && pdfBlob) {
             sendFileEmail(pdfBlob, emailToUse, 'offer-letter', formData.recipientName);
           }
-          
+
           toast.success('Your offer letter has been downloaded!');
         }
       } else if (orderType === 'schedule-c') {

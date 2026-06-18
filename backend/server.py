@@ -6414,14 +6414,17 @@ async def use_coupon(data: CouponValidateRequest):
 # Initialize default blog categories
 @app.on_event("startup")
 async def init_blog_categories():
-    for cat in BLOG_CATEGORIES:
-        existing = await blog_categories_collection.find_one({"slug": cat["slug"]})
-        if not existing:
-            await blog_categories_collection.insert_one({
-                "id": str(uuid.uuid4()),
-                **cat,
-                "createdAt": datetime.now(timezone.utc).isoformat()
-            })
+    try:
+        for cat in BLOG_CATEGORIES:
+            existing = await blog_categories_collection.find_one({"slug": cat["slug"]})
+            if not existing:
+                await blog_categories_collection.insert_one({
+                    "id": str(uuid.uuid4()),
+                    **cat,
+                    "createdAt": datetime.now(timezone.utc).isoformat()
+                })
+    except Exception as e:
+        logger.warning(f"Could not init blog categories at startup (will retry on first request): {e}")
 
 # Background task for processing scheduled emails
 async def email_scheduler_task():

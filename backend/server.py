@@ -229,10 +229,12 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://localhost:3000",
+        "http://localhost:3001",
         "https://mintslip.com",
         "https://www.mintslip.com",
         "https://mintslip.vercel.app",
     ],
+    allow_origin_regex=r"https?://(www\.)?mintslip\.com(:\d+)?|https://mintslip-.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

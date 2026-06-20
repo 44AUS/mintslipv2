@@ -81,11 +81,58 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useState, useEffect } from "react";
 import MaintenancePage from "@/pages/MaintenancePage";
+import { MinimizedChatsProvider } from "@/contexts/MinimizedChatsContext";
+import MinimizedChatsFAB from "@/components/MinimizedChatsFAB";
 
 // Stripe Configuration - Use environment variable
 const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM";
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// Messages API for minimized chats — swap out with real endpoints when ready
+const messagesApi = {
+  conversation: async (id) => {
+    const token = localStorage.getItem("userToken") || localStorage.getItem("adminToken");
+    const res = await fetch(`${BACKEND_URL}/api/messages/conversation/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) return { messages: [] };
+    return res.json();
+  },
+  send: async (loadId, recipientId, body) => {
+    const token = localStorage.getItem("userToken") || localStorage.getItem("adminToken");
+    const res = await fetch(`${BACKEND_URL}/api/messages/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ loadId, recipientId, body }),
+    });
+    if (!res.ok) throw new Error("Send failed");
+    return res.json();
+  },
+};
+
+// Resolve current user from localStorage (admin or regular user)
+function useCurrentUser() {
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const u = localStorage.getItem("userInfo");
+      const a = localStorage.getItem("adminInfo");
+      return u ? JSON.parse(u) : a ? JSON.parse(a) : null;
+    } catch { return null; }
+  });
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const u = localStorage.getItem("userInfo");
+        const a = localStorage.getItem("adminInfo");
+        setCurrentUser(u ? JSON.parse(u) : a ? JSON.parse(a) : null);
+      } catch {}
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+  return currentUser;
+}
 
 // Maintenance Mode Check Wrapper
 function MaintenanceCheck({ children }) {
@@ -189,6 +236,7 @@ function MobileApp() {
 
 function App() {
   if (IS_MOBILE_APP) return <MobileApp />;
+  const currentUser = useCurrentUser();
 
   return (
     <HelmetProvider>
@@ -198,6 +246,8 @@ function App() {
             <div className="App">
               <Toaster position="top-center" richColors />
               <BrowserRouter>
+                <MinimizedChatsProvider currentUser={currentUser} messagesApi={messagesApi}>
+                <MinimizedChatsFAB currentUser={currentUser} />
                 <PromoBanner />
                 <ScrollToTop />
                 <Routes>
@@ -290,6 +340,7 @@ function App() {
             <Route path="/generators" element={<DocumentDirectory />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+                </MinimizedChatsProvider>
         </BrowserRouter>
       </div>
     </IPBanCheck>

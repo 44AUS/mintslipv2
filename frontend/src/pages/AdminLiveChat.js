@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import SupportCenter from "@/components/SupportCenter";
+import { useMinimizedChats } from "@/contexts/MinimizedChatsContext";
 
 // ── stub data ──────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,27 @@ export default function AdminLiveChat() {
     setActiveId(contactId);
   }, [conversations]);
 
+  // minimize — move active convo to floating bubble
+  const { minimize } = useMinimizedChats();
+  const handleMinimize = useCallback((convo, msgs) => {
+    minimize(convo, msgs);
+    setActiveId(null);
+  }, [minimize]);
+
+  // restore — bubble expanded back to full message center
+  useEffect(() => {
+    const onRestore = (e) => {
+      const found = e.detail;
+      if (!found) return;
+      setActiveId(found.id);
+      if (found.messages?.length) {
+        setAllMessages(prev => ({ ...prev, [found.id]: found.messages }));
+      }
+    };
+    window.addEventListener('your-app-restore-mini', onRestore);
+    return () => window.removeEventListener('your-app-restore-mini', onRestore);
+  }, []);
+
   return (
     <AdminLayout fillHeight>
       <SupportCenter
@@ -115,6 +137,7 @@ export default function AdminLiveChat() {
         onDeleteConversation={handleDelete}
         onBlockUser={handleBlock}
         onNewConversation={handleNewConversation}
+        onMinimize={handleMinimize}
       />
     </AdminLayout>
   );

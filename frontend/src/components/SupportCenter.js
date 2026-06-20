@@ -150,6 +150,7 @@ export default function SupportCenter({
   onBlockUser,
   onNewConversation,
   onReorderConversations,
+  onMinimize,
 }) {
   const [activeTab, setActiveTab] = useState('open');
   const [showList, setShowList] = useState(true);
@@ -610,7 +611,9 @@ export default function SupportCenter({
                   >
                     <IonIcon slot="icon-only" icon={trashOutline} style={{ fontSize: 18 }} />
                   </IonButton>
-                  <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
+                  <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}
+                    onClick={() => onMinimize?.(activeConv, messages)}
+                  >
                     <IonIcon slot="icon-only" icon={removeOutline} style={{ fontSize: 18 }} />
                   </IonButton>
                   <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>

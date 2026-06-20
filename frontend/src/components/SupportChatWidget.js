@@ -112,6 +112,13 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     try {
       const url = `${BACKEND_URL}/api/support/chat/${id}${markRead ? '?mark_read=true' : ''}`;
       const res = await fetch(url);
+      if (res.status === 404) {
+        // Chat was permanently deleted by admin — reset widget completely
+        setChatId(null); setMessages([]); setView('form');
+        setReason(''); setChatClosed(false); setUnread(0);
+        try { localStorage.removeItem(LS_KEY); } catch {}
+        return;
+      }
       if (!res.ok) return;
       const data = await res.json();
       const chat = data.chat || {};

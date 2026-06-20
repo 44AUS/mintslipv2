@@ -5593,6 +5593,15 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
     return {"success": True}
 
 
+@app.delete("/api/admin/support-chats/{chat_id}")
+async def delete_support_chat(chat_id: str, session: dict = Depends(get_current_admin)):
+    """Permanently delete a live-chat conversation."""
+    result = await support_chats_collection.delete_one({"id": chat_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return {"success": True}
+
+
 # ─────────────────────────────────────────────────────────────
 # CSV Export
 # ─────────────────────────────────────────────────────────────

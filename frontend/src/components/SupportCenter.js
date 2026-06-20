@@ -11,7 +11,7 @@ import {
   closeOutline, banOutline, shieldOutline, folderOutline,
   linkOutline, removeOutline, chevronForwardOutline,
   menuOutline, closeCircleOutline, checkmarkDoneOutline,
-  checkmarkOutline, addOutline,
+  checkmarkOutline, addOutline, checkmarkCircleOutline,
 } from 'ionicons/icons';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -152,6 +152,7 @@ export default function SupportCenter({
   onReorderConversations,
   onMinimize,
   onTyping,
+  onCloseConversation,
 }) {
   const [activeTab, setActiveTab] = useState('open');
   const [showList, setShowList] = useState(true);
@@ -606,9 +607,20 @@ export default function SupportCenter({
                   >
                     <IonIcon slot="icon-only" icon={activeConv.isBlocked ? shieldOutline : banOutline} style={{ fontSize: 18 }} />
                   </IonButton>
+                  {/* Close ticket */}
+                  <IonButton
+                    fill="clear" color="success" size="small"
+                    style={{ '--border-radius': '50%' }}
+                    title="Close ticket"
+                    onClick={() => onCloseConversation?.(activeConv.id)}
+                  >
+                    <IonIcon slot="icon-only" icon={checkmarkCircleOutline} style={{ fontSize: 18 }} />
+                  </IonButton>
+                  {/* Delete ticket */}
                   <IonButton
                     fill="clear" color="danger" size="small"
                     style={{ '--border-radius': '50%' }}
+                    title="Delete ticket"
                     onClick={() => onDeleteConversation?.(activeConv.id)}
                   >
                     <IonIcon slot="icon-only" icon={trashOutline} style={{ fontSize: 18 }} />

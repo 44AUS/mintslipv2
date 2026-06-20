@@ -168,15 +168,25 @@ export default function AdminLiveChat() {
     setChats(prev => prev.map(c => c.id === id ? { ...c, pinned } : c));
   }, []);
 
-  const handleDelete = useCallback(async (id) => {
-    if (!window.confirm("Close this support conversation?")) return;
+  const handleClose = useCallback(async (id) => {
     const token = localStorage.getItem("adminToken");
     await fetch(`${BACKEND_URL}/api/admin/support-chats/${id}/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ status: "closed" }),
     });
-    setChats(prev => prev.map(c => c.id === id ? { ...c, status: "closed" } : c));
+    setChats(prev => prev.map(c => c.id === id ? { ...c, status: "closed", archived: true } : c));
+    if (activeId === id) setActiveId(null);
+  }, [activeId]);
+
+  const handleDelete = useCallback(async (id) => {
+    if (!window.confirm("Permanently delete this conversation? This cannot be undone.")) return;
+    const token = localStorage.getItem("adminToken");
+    await fetch(`${BACKEND_URL}/api/admin/support-chats/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setChats(prev => prev.filter(c => c.id !== id));
     if (activeId === id) setActiveId(null);
   }, [activeId]);
 
@@ -232,6 +242,7 @@ export default function AdminLiveChat() {
         onNewConversation={() => {}}
         onMinimize={handleMinimize}
         onTyping={handleAdminTyping}
+        onCloseConversation={handleClose}
       />
     </AdminLayout>
   );

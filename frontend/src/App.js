@@ -36,6 +36,7 @@ import AdminMassEmail from "@/pages/AdminMassEmail";
 import AdminModerators from "@/pages/AdminModerators";
 import AdminAuditLog from "@/pages/AdminAuditLog";
 import AdminSupport from "@/pages/AdminSupport";
+import AdminLiveChat from "@/pages/AdminLiveChat";
 import AdminExport from "@/pages/AdminExport";
 import AdminRevenue from "@/pages/AdminRevenue";
 import AdminSubscriptions from "@/pages/AdminSubscriptions";
@@ -257,6 +258,7 @@ function App() {
             <Route path="/admin/moderators" element={<AdminModerators />} />
             <Route path="/admin/audit-log" element={<AdminAuditLog />} />
             <Route path="/admin/support" element={<AdminSupport />} />
+            <Route path="/admin/live-chat" element={<AdminLiveChat />} />
             <Route path="/admin/export" element={<AdminExport />} />
             <Route path="/admin/revenue" element={<AdminRevenue />} />
             <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />

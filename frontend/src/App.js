@@ -257,8 +257,7 @@ function App() {
             <Route path="/admin/mass-email" element={<AdminMassEmail />} />
             <Route path="/admin/moderators" element={<AdminModerators />} />
             <Route path="/admin/audit-log" element={<AdminAuditLog />} />
-            <Route path="/admin/support" element={<AdminSupport />} />
-            <Route path="/admin/live-chat" element={<AdminLiveChat />} />
+            <Route path="/admin/support" element={<AdminLiveChat />} />
             <Route path="/admin/export" element={<AdminExport />} />
             <Route path="/admin/revenue" element={<AdminRevenue />} />
             <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />

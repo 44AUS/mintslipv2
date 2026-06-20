@@ -24,6 +24,7 @@ import { generateAndDownloadOfferLetter } from "../utils/offerLetterGenerator";
 import { generateAndDownloadResume } from "../utils/resumeGenerator";
 import AppOfferLetter from "../pages/app/AppOfferLetter";
 import AppResumeBuilder from "../pages/app/AppResumeBuilder";
+import SupportChatWidget from "./SupportChatWidget";
 import "../admin-theme.css";
 
 const tabs = [
@@ -703,6 +704,9 @@ export default function AppLayout({ children, fillHeight = false }) {
 
       {/* ── Resume Builder modal ── */}
       <AppResumeBuilder isOpen={resumeBuilderOpen} onClose={() => setResumeBuilderOpen(false)} />
+
+      {/* ── Support chat widget ── */}
+      <SupportChatWidget bottomOffset={60} />
 
     </IonApp>
   );

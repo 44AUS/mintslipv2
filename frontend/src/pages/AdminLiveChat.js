@@ -1,142 +1,204 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import SupportCenter from "@/components/SupportCenter";
 import { useMinimizedChats } from "@/contexts/MinimizedChatsContext";
+import { toast } from "sonner";
 
-// ── stub data ──────────────────────────────────────────────────────────────────
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+const POLL_MS = 8000;
 
-const NOW = Date.now();
-const mins = (n) => new Date(NOW - n * 60000).toISOString();
-
-const STUB_CONVS = [
-  { id: "c1", name: "James Porter", type: "direct", lastActive: mins(2), lastMessageTime: mins(2), lastMessage: "Got it, thanks!", unread: 2, pinned: true },
-  { id: "c2", name: "Sarah Kim", type: "load", loadNumber: "TX-4821", lastActive: mins(18), lastMessageTime: mins(18), lastMessage: "Where is my pickup?", unread: 0, pinned: false },
-  { id: "c3", name: "Marcus Bell", type: "load", loadNumber: "FL-9034", lastActive: mins(47), lastMessageTime: mins(47), lastMessage: "Documents ready", unread: 1 },
-  { id: "c4", name: "Priya Nair", type: "direct", lastActive: mins(200), lastMessageTime: mins(200), lastMessage: "Please review the update.", unread: 0 },
-  { id: "c5", name: "Truck World LLC", type: "direct", lastActive: mins(800), lastMessageTime: mins(800), lastMessage: "Awaiting confirmation.", unread: 0, archived: true },
-];
-
-const STUB_MESSAGES = {
-  c1: [
-    { id: "m1", senderId: "u1", senderName: "James Porter", text: "Hey, I need help with my last delivery.", timestamp: mins(12) },
-    { id: "m2", senderId: "me", senderName: "Support", text: "Of course! What seems to be the issue?", timestamp: mins(11), read: true },
-    { id: "m3", senderId: "u1", senderName: "James Porter", text: "The pickup address was wrong.\nCan you fix it for load TX-4821?", timestamp: mins(10) },
-    { id: "m4", senderId: "me", senderName: "Support", text: "Let me look that up for you right now.", timestamp: mins(9), read: true },
-    { id: "m5", senderId: "me", senderName: "Support", text: "I've updated the address. You should see it reflected in the app.", timestamp: mins(8, 45), read: true },
-    { id: "m6", senderId: "u1", senderName: "James Porter", text: "Got it, thanks!", timestamp: mins(2) },
-  ],
-  c2: [
-    { id: "m10", senderId: "u2", senderName: "Sarah Kim", text: "Where is my pickup?", timestamp: mins(18) },
-  ],
-  c3: [
-    { id: "m20", senderId: "u3", senderName: "Marcus Bell", text: "Documents ready", timestamp: mins(47) },
-  ],
+const REASON_LABELS = {
+  general: "General Question",
+  technical: "Technical Issue",
+  billing: "Billing",
+  refund: "Refund Request",
+  other: "Other",
 };
 
-const STUB_CONTACTS = [
-  { id: "u1", name: "James Porter", company: "Porter Freight", role: "Driver" },
-  { id: "u2", name: "Sarah Kim", company: "Kim Logistics", role: "Dispatcher" },
-  { id: "u3", name: "Marcus Bell", role: "Owner-Operator" },
-  { id: "u4", name: "Priya Nair", company: "Nair Transport", role: "Fleet Manager" },
-  { id: "u5", name: "Truck World LLC", role: "Carrier" },
-];
+const ADMIN_USER = (() => {
+  try { return JSON.parse(localStorage.getItem("adminInfo") || "{}"); } catch { return {}; }
+})();
 
-const STUB_USER = { id: "me", name: "Support" };
+// Convert a support-chat DB record to SupportCenter's conversation shape
+function chatToConv(chat) {
+  return {
+    id: chat.id,
+    name: chat.guestName || "Guest",
+    avatar: null,
+    type: "direct",
+    lastMessage: chat.messages?.slice(-1)[0]?.text || "",
+    lastMessageTime: chat.updatedAt,
+    lastActive: chat.updatedAt,
+    unread: chat.unreadByAdmin || 0,
+    pinned: chat.pinned || false,
+    isBlocked: chat.isBlocked || false,
+    archived: chat.status === "closed",
+    reason: chat.reason,
+    guestEmail: chat.guestEmail,
+    // raw reference for sends
+    _raw: chat,
+  };
+}
 
-// ── page ───────────────────────────────────────────────────────────────────────
+// Convert DB messages to SupportCenter's message shape
+function dbMsgToMsg(msg, adminUser) {
+  return {
+    id: msg.id,
+    senderId: msg.fromAdmin ? (adminUser?.id || "admin") : "guest",
+    senderName: msg.senderName || (msg.fromAdmin ? "Support" : "Guest"),
+    senderAvatar: null,
+    text: msg.text,
+    timestamp: msg.timestamp,
+    read: msg.read || false,
+    isOwn: msg.fromAdmin,
+  };
+}
 
 export default function AdminLiveChat() {
-  const [conversations, setConversations] = useState(STUB_CONVS);
+  const [chats,    setChats]    = useState([]);   // raw DB records
   const [activeId, setActiveId] = useState(null);
-  const [allMessages, setAllMessages] = useState(STUB_MESSAGES);
-  const [isTyping] = useState(false);
+  const [messages, setMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
+  const [isTyping]  = useState(false);
+  const pollRef     = useRef(null);
+  const activeIdRef = useRef(activeId);
+  useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
 
-  const messages = activeId ? (allMessages[activeId] || []) : [];
+  // ── fetch all chats ──────────────────────────────────────────────────────────
+  const fetchChats = useCallback(async () => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/support-chats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setChats(data.chats || []);
+    } catch {}
+  }, []);
 
+  // ── fetch messages for active chat ──────────────────────────────────────────
+  const fetchMessages = useCallback(async (id) => {
+    if (!id) return;
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/support/chat/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const msgs = (data.chat?.messages || []).map(m => dbMsgToMsg(m, ADMIN_USER));
+      setMessages(msgs);
+      // mark admin unread as 0 for this chat
+      setChats(prev => prev.map(c => c.id === id ? { ...c, unreadByAdmin: 0 } : c));
+    } catch {}
+  }, []);
+
+  // initial load + polling
+  useEffect(() => {
+    fetchChats();
+    pollRef.current = setInterval(() => {
+      fetchChats();
+      if (activeIdRef.current) fetchMessages(activeIdRef.current);
+    }, POLL_MS);
+    return () => clearInterval(pollRef.current);
+  }, [fetchChats, fetchMessages]);
+
+  // reload messages when active chat changes
+  useEffect(() => {
+    if (activeId) fetchMessages(activeId);
+    else setMessages([]);
+  }, [activeId, fetchMessages]);
+
+  // ── actions ──────────────────────────────────────────────────────────────────
   const handleSelect = useCallback((id) => setActiveId(id), []);
 
-  const handleSend = useCallback((text, images) => {
-    if (!activeId) return;
+  const handleSend = useCallback(async (text) => {
+    if (!text?.trim() || !activeId) return;
     setIsSending(true);
-    const msg = {
-      id: `m_${Date.now()}`,
-      senderId: STUB_USER.id,
-      senderName: STUB_USER.name,
-      text,
-      timestamp: new Date().toISOString(),
-      read: false,
-      images: images?.map(f => URL.createObjectURL(f)) || [],
-    };
-    setAllMessages(prev => ({ ...prev, [activeId]: [...(prev[activeId] || []), msg] }));
-    setConversations(prev => prev.map(c => c.id === activeId ? { ...c, lastMessage: text, lastMessageTime: msg.timestamp } : c));
-    setTimeout(() => setIsSending(false), 600);
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/support-chats/${activeId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: text.trim() }),
+      });
+      if (!res.ok) { toast.error("Failed to send"); return; }
+      const data = await res.json();
+      setMessages(prev => [...prev, dbMsgToMsg(data.message, ADMIN_USER)]);
+      setChats(prev => prev.map(c => c.id === activeId
+        ? { ...c, messages: [...(c.messages || []), data.message], updatedAt: data.message.timestamp }
+        : c));
+    } catch { toast.error("Network error"); }
+    finally { setIsSending(false); }
   }, [activeId]);
 
   const handlePin = useCallback((id, pinned) => {
-    setConversations(prev => prev.map(c => c.id === id ? { ...c, pinned } : c));
+    setChats(prev => prev.map(c => c.id === id ? { ...c, pinned } : c));
   }, []);
 
-  const handleDelete = useCallback((id) => {
-    setConversations(prev => prev.filter(c => c.id !== id));
+  const handleDelete = useCallback(async (id) => {
+    if (!window.confirm("Close this support conversation?")) return;
+    const token = localStorage.getItem("adminToken");
+    await fetch(`${BACKEND_URL}/api/admin/support-chats/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ status: "closed" }),
+    });
+    setChats(prev => prev.map(c => c.id === id ? { ...c, status: "closed" } : c));
     if (activeId === id) setActiveId(null);
   }, [activeId]);
 
   const handleBlock = useCallback((id, blocked) => {
-    setConversations(prev => prev.map(c => c.id === id ? { ...c, isBlocked: blocked } : c));
+    setChats(prev => prev.map(c => c.id === id ? { ...c, isBlocked: blocked } : c));
   }, []);
 
-  const handleNewConversation = useCallback((contactId) => {
-    const contact = STUB_CONTACTS.find(c => c.id === contactId);
-    if (!contact) return;
-    const existing = conversations.find(c => c.id === contactId);
-    if (existing) { setActiveId(contactId); return; }
-    const newConv = {
-      id: contactId, name: contact.name, type: 'direct',
-      lastActive: new Date().toISOString(), lastMessageTime: null,
-      lastMessage: '', unread: 0,
-    };
-    setConversations(prev => [newConv, ...prev]);
-    setActiveId(contactId);
-  }, [conversations]);
-
-  // minimize — move active convo to floating bubble
+  // ── minimize ─────────────────────────────────────────────────────────────────
   const { minimize } = useMinimizedChats();
   const handleMinimize = useCallback((convo, msgs) => {
     minimize(convo, msgs);
     setActiveId(null);
   }, [minimize]);
 
-  // restore — bubble expanded back to full message center
+  // ── restore from bubble ───────────────────────────────────────────────────────
   useEffect(() => {
     const onRestore = (e) => {
       const found = e.detail;
       if (!found) return;
       setActiveId(found.id);
-      if (found.messages?.length) {
-        setAllMessages(prev => ({ ...prev, [found.id]: found.messages }));
-      }
+      if (found.messages?.length) setMessages(found.messages);
     };
-    window.addEventListener('your-app-restore-mini', onRestore);
-    return () => window.removeEventListener('your-app-restore-mini', onRestore);
+    window.addEventListener("your-app-restore-mini", onRestore);
+    return () => window.removeEventListener("your-app-restore-mini", onRestore);
   }, []);
+
+  // ── derived ───────────────────────────────────────────────────────────────────
+  const conversations = chats.map(chatToConv);
+  const activeConv    = conversations.find(c => c.id === activeId) || null;
+
+  // Inject guest email as a subtitle hint in the chat header
+  const enrichedConvs = conversations.map(c => ({
+    ...c,
+    name: c.name + (c.guestEmail ? ` (${c.guestEmail})` : ""),
+    lastMessage: c.reason ? `[${REASON_LABELS[c.reason] || c.reason}] ${c.lastMessage}` : c.lastMessage,
+  }));
 
   return (
     <AdminLayout fillHeight>
       <SupportCenter
-        conversations={conversations}
+        conversations={enrichedConvs}
         activeConversationId={activeId}
         messages={messages}
-        currentUser={STUB_USER}
+        currentUser={{ id: ADMIN_USER.id || "admin", name: ADMIN_USER.name || "Support" }}
         isTyping={isTyping}
         isSending={isSending}
-        contacts={STUB_CONTACTS}
+        contacts={[]}
         onSelectConversation={handleSelect}
         onSendMessage={handleSend}
         onPinConversation={handlePin}
         onDeleteConversation={handleDelete}
         onBlockUser={handleBlock}
-        onNewConversation={handleNewConversation}
+        onNewConversation={() => {}}
         onMinimize={handleMinimize}
       />
     </AdminLayout>

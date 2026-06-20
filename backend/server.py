@@ -127,6 +127,7 @@ moderators_collection = db["moderators"]
 moderator_permissions_collection = db["moderator_permissions"]
 audit_logs_collection = db["audit_logs"]
 support_tickets_collection = db["support_tickets"]
+support_chats_collection = db["support_chats"]
 
 # Default permissions per moderator level
 ALL_PERMISSIONS = [
@@ -5439,6 +5440,136 @@ async def delete_support_ticket(ticket_id: str, session: dict = Depends(get_curr
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Ticket not found")
     await log_action(session, "delete_ticket", "support_ticket", ticket_id)
+    return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Live Support Chat  (user-facing widget ↔ admin SupportCenter)
+# ─────────────────────────────────────────────────────────────
+
+@app.post("/api/support/chat/start")
+async def start_support_chat(request: Request):
+    """Create a new live-chat conversation from the site/app widget."""
+    data = await request.json()
+    name    = (data.get("name") or "").strip()
+    email   = (data.get("email") or "").strip().lower()
+    reason  = (data.get("reason") or "general").strip()
+    message = (data.get("message") or "").strip()
+    user_id = data.get("userId") or None
+
+    if not name or not email or not message:
+        raise HTTPException(status_code=400, detail="name, email, and message are required")
+
+    now   = datetime.now(timezone.utc).isoformat()
+    first = {"id": str(uuid.uuid4()), "text": message, "fromAdmin": False,
+             "senderName": name, "timestamp": now, "read": False}
+
+    chat = {
+        "id": str(uuid.uuid4()),
+        "guestName": name,
+        "guestEmail": email,
+        "reason": reason,
+        "status": "open",
+        "userId": user_id,
+        "messages": [first],
+        "createdAt": now,
+        "updatedAt": now,
+        "unreadByAdmin": 1,
+        "unreadByUser": 0,
+    }
+    await support_chats_collection.insert_one(chat)
+    return {"success": True, "chatId": chat["id"], "message": first}
+
+
+@app.get("/api/support/chat/{chat_id}")
+async def get_support_chat(chat_id: str, mark_read: bool = False):
+    """Fetch a support chat conversation (optionally mark admin msgs read)."""
+    chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    if mark_read:
+        await support_chats_collection.update_one(
+            {"id": chat_id}, {"$set": {"unreadByUser": 0}}
+        )
+        chat["unreadByUser"] = 0
+    return {"success": True, "chat": chat}
+
+
+@app.post("/api/support/chat/{chat_id}/message")
+async def send_support_chat_message(chat_id: str, request: Request):
+    """User sends a message in their support chat."""
+    data = await request.json()
+    text = (data.get("text") or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+
+    chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    msg = {"id": str(uuid.uuid4()), "text": text, "fromAdmin": False,
+           "senderName": chat.get("guestName", "User"),
+           "timestamp": datetime.now(timezone.utc).isoformat(), "read": False}
+
+    await support_chats_collection.update_one(
+        {"id": chat_id},
+        {"$push": {"messages": msg},
+         "$set":  {"updatedAt": msg["timestamp"]},
+         "$inc":  {"unreadByAdmin": 1}}
+    )
+    return {"success": True, "message": msg}
+
+
+@app.get("/api/admin/support-chats")
+async def list_support_chats(
+    status: Optional[str] = None,
+    limit: int = 100,
+    session: dict = Depends(get_current_admin),
+):
+    """List all live-chat conversations for the admin SupportCenter."""
+    query: dict = {}
+    if status and status != "all":
+        query["status"] = status
+    chats = await support_chats_collection.find(query, {"_id": 0}).sort("updatedAt", -1).limit(limit).to_list(limit)
+    total_unread = sum(c.get("unreadByAdmin", 0) for c in chats)
+    return {"success": True, "chats": chats, "totalUnread": total_unread}
+
+
+@app.post("/api/admin/support-chats/{chat_id}/reply")
+async def admin_reply_support_chat(chat_id: str, request: Request, session: dict = Depends(get_current_admin)):
+    """Admin sends a reply in a live-chat conversation."""
+    data = await request.json()
+    text = (data.get("text") or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+
+    chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    admin_name = session.get("name") or "Support"
+    msg = {"id": str(uuid.uuid4()), "text": text, "fromAdmin": True,
+           "senderName": admin_name,
+           "timestamp": datetime.now(timezone.utc).isoformat(), "read": False}
+
+    await support_chats_collection.update_one(
+        {"id": chat_id},
+        {"$push": {"messages": msg},
+         "$set":  {"updatedAt": msg["timestamp"], "unreadByAdmin": 0},
+         "$inc":  {"unreadByUser": 1}}
+    )
+    return {"success": True, "message": msg}
+
+
+@app.put("/api/admin/support-chats/{chat_id}/status")
+async def update_support_chat_status(chat_id: str, request: Request, session: dict = Depends(get_current_admin)):
+    """Close or reopen a live-chat conversation."""
+    data = await request.json()
+    new_status = data.get("status", "closed")
+    await support_chats_collection.update_one(
+        {"id": chat_id},
+        {"$set": {"status": new_status, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+    )
     return {"success": True}
 
 

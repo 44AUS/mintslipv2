@@ -83,6 +83,7 @@ import { useState, useEffect } from "react";
 import MaintenancePage from "@/pages/MaintenancePage";
 import { MinimizedChatsProvider } from "@/contexts/MinimizedChatsContext";
 import MinimizedChatsFAB from "@/components/MinimizedChatsFAB";
+import SupportChatWidget from "@/components/SupportChatWidget";
 
 // Stripe Configuration - Use environment variable
 const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM";
@@ -248,6 +249,7 @@ function App() {
               <BrowserRouter>
                 <MinimizedChatsProvider currentUser={currentUser} messagesApi={messagesApi}>
                 <MinimizedChatsFAB currentUser={currentUser} />
+                <SupportChatWidget currentUser={currentUser} />
                 <PromoBanner />
                 <ScrollToTop />
                 <Routes>

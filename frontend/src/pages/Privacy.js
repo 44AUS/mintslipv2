@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { openSupportChat } from "@/utils/openSupportChat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Shield, Lock, Eye, FileText, Users, Mail } from "lucide-react";
@@ -73,8 +73,6 @@ We are committed to resolving any privacy concerns promptly and transparently.`
 ];
 
 export default function Privacy() {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -155,7 +153,7 @@ export default function Privacy() {
             If you have any questions about our privacy practices, we're here to help.
           </p>
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => openSupportChat()}
             className="inline-flex items-center gap-2 px-6 py-3 bg-green-800 text-white rounded-lg font-semibold hover:bg-green-900 transition-colors"
           >
             <Mail className="w-4 h-4" />

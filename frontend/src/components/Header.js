@@ -49,7 +49,6 @@ const DEFAULT_NAV_ITEMS = [
   { id: "paystubs",       type: "dropdown" },
   { id: "resume",         type: "link", path: "/ai-resume-builder",  label: "AI Resume Builder", icon: Sparkles },
   { id: "generators",     type: "link", path: "/generators",         label: "All Generators",    icon: FileText },
-  { id: "contact",        type: "link", path: "/contact",            label: "Contact",            icon: Mail },
 ];
 
 function DesktopNavItem({ item, location, onNavigate }) {
@@ -407,14 +406,6 @@ function MobileNavLinks({ location, onNavigate }) {
         <span className="text-base">FAQ</span>
       </button>
       
-      <button
-        onClick={() => onNavigate("/contact")}
-        className={getButtonClasses("/contact")}
-        data-testid="nav-contact-link-mobile"
-      >
-        <Mail className="w-5 h-5" />
-        <span className="text-base">Contact</span>
-      </button>
     </>
   );
 }

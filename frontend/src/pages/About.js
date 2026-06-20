@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { openSupportChat } from "@/utils/openSupportChat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -248,7 +249,7 @@ export default function About() {
               Create Your Document
             </Button>
             <Button 
-              onClick={() => navigate("/contact")}
+              onClick={() => openSupportChat()}
               size="lg"
               variant="outline"
               className="h-12 px-8 text-base font-semibold border-white text-white hover:bg-white/10"

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { openSupportChat } from "@/utils/openSupportChat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { FileText, AlertCircle, CreditCard, Ban, Scale, RefreshCw, Mail } from "lucide-react";
@@ -88,8 +88,6 @@ We are committed to addressing your concerns promptly and professionally.`
 ];
 
 export default function Terms() {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -169,7 +167,7 @@ export default function Terms() {
             If you have any questions about these Terms of Service, please don't hesitate to reach out.
           </p>
           <button
-            onClick={() => navigate("/contact")}
+            onClick={() => openSupportChat()}
             className="inline-flex items-center gap-2 px-6 py-3 bg-green-800 text-white rounded-lg font-semibold hover:bg-green-900 transition-colors"
           >
             <Mail className="w-4 h-4" />

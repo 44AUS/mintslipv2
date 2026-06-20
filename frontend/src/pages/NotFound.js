@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Home, ArrowLeft, FileText, FileBarChart } from "lucide-react";
+import { openSupportChat } from "@/utils/openSupportChat";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -92,7 +93,7 @@ export default function NotFound() {
                 FAQ
               </Button>
               <Button
-                onClick={() => navigate("/contact")}
+                onClick={() => openSupportChat()}
                 variant="ghost"
                 className="gap-2 text-slate-600 hover:text-green-800"
               >

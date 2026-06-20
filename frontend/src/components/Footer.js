@@ -26,7 +26,6 @@ const FOOTER_LINKS = {
     title: "Company",
     links: [
       { name: "About Us", path: "/about" },
-      { name: "Contact", path: "/contact" },
       { name: "Blog", path: "/blog" },
       { name: "FAQ", path: "/faq" },
       { name: "How to Make a Paystub", path: "/how-to-make-a-paystub" },
@@ -41,7 +40,7 @@ const FOOTER_LINKS = {
     links: [
       { name: "Privacy Policy", path: "/privacy" },
       { name: "Terms of Service", path: "/terms" },
-      { name: "Refund Policy", path: "/contact" },
+      { name: "Refund Policy", path: "/faq" },
     ]
   }
 };

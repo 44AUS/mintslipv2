@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { openSupportChat } from "@/utils/openSupportChat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 
 
 export default function Reviews() {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("general");
 
@@ -48,7 +47,7 @@ export default function Reviews() {
             Can't find the answer you're looking for? Our support team is here to help.
           </p>
           <Button 
-            onClick={() => navigate("/contact")}
+            onClick={() => openSupportChat()}
             size="lg"
             className="h-12 px-8 text-base font-semibold bg-green-800 hover:bg-green-900"
           >

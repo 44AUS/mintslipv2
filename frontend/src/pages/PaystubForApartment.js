@@ -1,5 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { openSupportChat } from "@/utils/openSupportChat";
 import { Helmet } from "react-helmet-async";
 import { 
   FileText, 
@@ -744,7 +745,7 @@ export default function PaystubForApartment() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button
-              onClick={() => navigate("/contact")}
+              onClick={() => openSupportChat()}
               size="lg"
               variant="outline"
               className="gap-2 text-lg px-8 py-6 border-2 border-white/30 text-white hover:bg-white/10"

@@ -7,7 +7,18 @@
       "Bash(yarn add *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const code = fs.readFileSync\\('src/pages/app/AppCanadianPaystub.js', 'utf8'\\); console.log\\('Lines:', code.split\\('\\\\n'\\).length\\); console.log\\('Has generateAndDownloadCanadianPaystub:', code.includes\\('generateAndDownloadCanadianPaystub'\\)\\); console.log\\('Has calculateCanadianTaxes:', code.includes\\('calculateCanadianTaxes'\\)\\); console.log\\('Has AppLayout:', code.includes\\('AppLayout'\\)\\); console.log\\('Has CANADIAN_PROVINCES:', code.includes\\('CANADIAN_PROVINCES'\\)\\);\")",
+      "Bash(node -e \"const fs = require\\('fs'\\); const code = fs.readFileSync\\('src/App.js', 'utf8'\\); console.log\\('Has AppPaystub import:', code.includes\\('import AppPaystub'\\)\\); console.log\\('Has AppCanadianPaystub import:', code.includes\\('import AppCanadianPaystub'\\)\\); console.log\\('Has /app/paystub route:', code.includes\\('/app/paystub'\\)\\); console.log\\('Has /app/canadian-paystub route:', code.includes\\('/app/canadian-paystub'\\)\\);\")",
+      "Bash(ls capacitor*)",
+      "Bash(npx cap *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\austi\\\\Desktop\\\\mintslipv2\\\\frontend\\\\src\\\\pages\\\\app\\\\\" -File | Select-Object Name)",
+      "Bash(npx react-scripts *)",
+      "Bash(npx craco *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X OPTIONS \"https://invigorating-playfulness-production.up.railway.app/api/admin/login\" -H \"Origin: https://mintslip.com\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: Content-Type\" -v)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" \"https://invigorating-playfulness-production.up.railway.app/api/maintenance-status\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\" \"https://invigorating-playfulness-production.up.railway.app/\")",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\" \"https://invigorating-playfulness-production.up.railway.app/api/health\")"
     ]
   }
 }

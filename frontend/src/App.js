@@ -18,7 +18,6 @@ import VehicleBillOfSaleForm from "@/pages/VehicleBillOfSaleForm";
 import UtilityBillForm from "@/pages/UtilityBillForm";
 import HowToMakePaystub from "@/pages/HowToMakePaystub";
 import PaystubForApartment from "@/pages/PaystubForApartment";
-import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
@@ -281,7 +280,6 @@ function App() {
             <Route path="/ai-resume-generator" element={<AIResumeLanding />} />
             <Route path="/how-to-make-a-paystub" element={<HowToMakePaystub />} />
             <Route path="/paystub-for-apartment" element={<PaystubForApartment />} />
-            <Route path="/contact" element={<Contact />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />

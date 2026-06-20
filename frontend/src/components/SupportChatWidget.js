@@ -147,12 +147,18 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   }, [isOpen, view]);
 
   // ── open/close popup ─────────────────────────────────────────────────────────
-  const openChat = () => {
+  const openChat = useCallback(() => {
     setIsOpen(true);
     setUnread(0);
     if (chatId) fetchMessages(chatId, true);
-  };
+  }, [chatId, fetchMessages]);
   const closeChat = () => setIsOpen(false);
+
+  // Listen for global open event so any page can trigger the widget
+  useEffect(() => {
+    window.addEventListener('mintslip-open-support', openChat);
+    return () => window.removeEventListener('mintslip-open-support', openChat);
+  }, [openChat]);
 
   // ── start conversation ───────────────────────────────────────────────────────
   const handleStart = async () => {

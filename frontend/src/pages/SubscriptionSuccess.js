@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { openSupportChat } from "@/utils/openSupportChat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
@@ -194,7 +195,7 @@ export default function SubscriptionSuccess() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate("/contact")}
+                  onClick={() => openSupportChat()}
                 >
                   Contact Support
                 </Button>

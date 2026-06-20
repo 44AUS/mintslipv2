@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo, useRef, useEffect } from "react";
+import { openSupportChat } from "@/utils/openSupportChat";
 import { Helmet } from "react-helmet-async";
 import { 
   Search,
@@ -580,7 +581,7 @@ export default function DocumentDirectory() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => navigate("/contact")}
+              onClick={() => openSupportChat()}
               size="lg"
               className="gap-2 px-8 py-6 bg-white text-green-800 hover:bg-green-50 shadow-lg"
             >

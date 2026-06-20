@@ -138,6 +138,13 @@ export default function AdminLayout({ children, fillHeight = false }) {
     }
   };
 
+  /* Collapse sidebar automatically on pages that need full width */
+  useEffect(() => {
+    if (location.pathname === "/admin/support") {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
   /* Apply/remove dark class on body */
   useEffect(() => {
     document.body.classList.toggle("dark", darkMode);

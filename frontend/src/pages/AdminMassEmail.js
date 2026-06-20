@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { IonSpinner } from "@ionic/react";
-import { Send, Search, Users, Eye, Code2, CheckSquare, Square, AlertCircle, CheckCircle, X } from "lucide-react";
+import {
+  IonButton, IonIcon, IonSpinner, IonSegment, IonSegmentButton, IonLabel,
+  IonModal, IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonContent as IonModalContent,
+} from "@ionic/react";
+import {
+  mailOutline, searchOutline, peopleOutline, sendOutline, eyeOutline,
+  codeSlashOutline, checkmarkCircleOutline, alertCircleOutline,
+  closeOutline, checkboxOutline, squareOutline, refreshOutline,
+} from "ionicons/icons";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -10,54 +18,54 @@ const BASE_PREVIEW_STYLES = `
   .container { max-width: 600px; margin: 0 auto; padding: 20px; }
   .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #e5e7eb; }
   .content { padding: 30px 20px; }
-  .button { display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; }
   .footer { padding: 20px; text-align: center; color: #6b7280; font-size: 12px; border-top: 1px solid #e5e7eb; }
-  .highlight { background-color: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; }
   h1 { color: #111827; margin-bottom: 10px; }
   p { color: #374151; line-height: 1.6; }
-  .text-muted { color: #6b7280; }
 `;
 
 function buildPreviewHtml(htmlBody, previewText) {
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>${BASE_PREVIEW_STYLES}</style>
-</head>
-<body>
-  ${previewText ? `<span style="display:none;max-height:0;overflow:hidden;">${previewText}</span>` : ""}
-  <div class="container">
-    <div class="header">
-      <img src="/mintslip-logo.png" alt="MintSlip" style="height:40px;width:auto;" />
-    </div>
-    <div class="content">${htmlBody}</div>
-    <div class="footer">
-      <p>© ${new Date().getFullYear()} MintSlip. All rights reserved.</p>
-      <p><a href="#" style="color:#6b7280;">Unsubscribe</a></p>
-    </div>
-  </div>
-</body>
-</html>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body>
+    ${previewText ? `<span style="display:none;max-height:0;overflow:hidden;">${previewText}</span>` : ""}
+    <div class="container">
+      <div class="header"><img src="/mintslip-logo.png" alt="MintSlip" style="height:40px;width:auto;" /></div>
+      <div class="content">${htmlBody}</div>
+      <div class="footer"><p>© ${new Date().getFullYear()} MintSlip. All rights reserved.</p><p><a href="#" style="color:#6b7280;">Unsubscribe</a></p></div>
+    </div></body></html>`;
 }
 
+const segBtnStyle = { "--border-radius": "0", "--padding-top": "0", "--padding-bottom": "0" };
+
+const fieldLabel = {
+  display: "block", fontSize: "0.72rem", fontWeight: 600,
+  color: "var(--ion-color-medium)", marginBottom: 6,
+  textTransform: "uppercase", letterSpacing: "0.05em",
+};
+
+const inputStyle = {
+  width: "100%", boxSizing: "border-box",
+  padding: "9px 12px", borderRadius: 8,
+  border: "1px solid var(--ion-border-color)",
+  background: "var(--ion-background-color)",
+  color: "var(--ion-text-color)", fontSize: "0.875rem",
+  outline: "none",
+};
+
 export default function AdminMassEmail() {
-  const [recipients, setRecipients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [excluded, setExcluded] = useState(new Set());
+  const [recipients,   setRecipients]   = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [search,       setSearch]       = useState("");
+  const [excluded,     setExcluded]     = useState(new Set());
 
-  const [subject, setSubject] = useState("");
-  const [previewText, setPreviewText] = useState("");
-  const [htmlBody, setHtmlBody] = useState("");
-  const [editorTab, setEditorTab] = useState("edit"); // "edit" | "preview"
+  const [subject,      setSubject]      = useState("");
+  const [previewText,  setPreviewText]  = useState("");
+  const [htmlBody,     setHtmlBody]     = useState("");
+  const [editorTab,    setEditorTab]    = useState("edit");   // "edit" | "preview"
 
-  const [sending, setSending] = useState(false);
-  const [jobId, setJobId] = useState(null);
-  const [jobStatus, setJobStatus] = useState(null); // { status, total, sent, failed, errors }
-  const [sendError, setSendError] = useState("");
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [sending,      setSending]      = useState(false);
+  const [jobId,        setJobId]        = useState(null);
+  const [jobStatus,    setJobStatus]    = useState(null);
+  const [sendError,    setSendError]    = useState("");
+  const [confirmOpen,  setConfirmOpen]  = useState(false);
 
   const pollRef = useRef(null);
 
@@ -77,47 +85,32 @@ export default function AdminMassEmail() {
         const data = await res.json();
         if (data.success) setRecipients(data.recipients);
       }
-    } catch (e) {}
+    } catch {}
     setLoading(false);
   };
 
-  const filteredRecipients = recipients.filter((r) => {
+  const filteredRecipients = recipients.filter(r => {
     const q = search.toLowerCase();
     return r.email.includes(q) || (r.name || "").toLowerCase().includes(q);
   });
 
-  const allFilteredSelected = filteredRecipients.length > 0 && filteredRecipients.every((r) => !excluded.has(r.email));
+  const allFilteredSelected = filteredRecipients.length > 0 && filteredRecipients.every(r => !excluded.has(r.email));
+  const includedCount = recipients.filter(r => !excluded.has(r.email)).length;
 
-  const toggleExclude = (email) => {
-    setExcluded((prev) => {
-      const next = new Set(prev);
-      if (next.has(email)) next.delete(email);
-      else next.add(email);
-      return next;
-    });
+  const toggleExclude = email => {
+    setExcluded(prev => { const n = new Set(prev); n.has(email) ? n.delete(email) : n.add(email); return n; });
   };
 
   const toggleSelectAll = () => {
-    if (allFilteredSelected) {
-      // Exclude all filtered
-      setExcluded((prev) => {
-        const next = new Set(prev);
-        filteredRecipients.forEach((r) => next.add(r.email));
-        return next;
-      });
-    } else {
-      // Include all filtered
-      setExcluded((prev) => {
-        const next = new Set(prev);
-        filteredRecipients.forEach((r) => next.delete(r.email));
-        return next;
-      });
-    }
+    setExcluded(prev => {
+      const n = new Set(prev);
+      if (allFilteredSelected) filteredRecipients.forEach(r => n.add(r.email));
+      else filteredRecipients.forEach(r => n.delete(r.email));
+      return n;
+    });
   };
 
-  const includedCount = recipients.filter((r) => !excluded.has(r.email)).length;
-
-  const pollStatus = (id) => {
+  const pollStatus = id => {
     pollRef.current = setInterval(async () => {
       try {
         const token = localStorage.getItem("adminToken");
@@ -127,32 +120,20 @@ export default function AdminMassEmail() {
         if (res.ok) {
           const data = await res.json();
           setJobStatus(data);
-          if (data.status === "done") {
-            clearInterval(pollRef.current);
-            setSending(false);
-          }
+          if (data.status === "done") { clearInterval(pollRef.current); setSending(false); }
         }
-      } catch (e) {}
+      } catch {}
     }, 1500);
   };
 
   const handleSend = async () => {
-    setConfirmOpen(false);
-    setSending(true);
-    setSendError("");
-    setJobStatus(null);
-    setJobId(null);
+    setConfirmOpen(false); setSending(true); setSendError(""); setJobStatus(null); setJobId(null);
     try {
       const token = localStorage.getItem("adminToken");
       const res = await fetch(`${BACKEND_URL}/api/admin/mass-email/send`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subject,
-          html_body: htmlBody,
-          preview_text: previewText,
-          excluded_emails: Array.from(excluded),
-        }),
+        body: JSON.stringify({ subject, html_body: htmlBody, preview_text: previewText, excluded_emails: Array.from(excluded) }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -163,314 +144,327 @@ export default function AdminMassEmail() {
         setSendError(data.detail || "Failed to start send job.");
         setSending(false);
       }
-    } catch (e) {
+    } catch {
       setSendError("Network error. Please try again.");
       setSending(false);
     }
   };
 
   const canSend = subject.trim() && htmlBody.trim() && includedCount > 0 && !sending;
+  const progress = jobStatus?.total > 0 ? Math.round((jobStatus.sent / jobStatus.total) * 100) : 0;
 
   return (
-    <AdminLayout>
-      <div className="max-w-7xl mx-auto">
-        {/* Page header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">Mass Email</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Send a custom email to all purchasers. Uncheck recipients to exclude them.
-          </p>
-        </div>
+    <AdminLayout fillHeight>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "4px 6px" }}>
+          <div style={{
+            display: "flex", flex: "1 1 0%", overflow: "hidden",
+            background: "var(--ion-card-background)",
+            borderRadius: 6, boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+          }}>
 
-        <div className="flex gap-5" style={{ minHeight: "calc(100vh - 200px)" }}>
-          {/* ── Left panel: Recipients ── */}
-          <div className="w-72 flex-shrink-0 flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden">
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm font-semibold text-slate-700">Recipients</span>
+            {/* ── LEFT PANEL — Recipients ── */}
+            <div style={{
+              width: 280, flexShrink: 0,
+              borderRight: "1px solid var(--ion-border-color)",
+              display: "flex", flexDirection: "column", height: "100%",
+            }}>
+
+              {/* header */}
+              <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <IonIcon icon={peopleOutline} style={{ fontSize: 18, color: "var(--ion-color-primary)" }} />
+                    <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--ion-text-color)" }}>Recipients</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{
+                      fontSize: "0.7rem", fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                      background: "rgba(var(--ion-color-primary-rgb),0.12)", color: "var(--ion-color-primary)",
+                    }}>
+                      {loading ? "…" : `${includedCount} / ${recipients.length}`}
+                    </span>
+                    <IonButton fill="clear" size="small" color="medium" onClick={fetchRecipients} style={{ "--border-radius": "50%", "--padding-start": "4px", "--padding-end": "4px" }}>
+                      <IonIcon slot="icon-only" icon={refreshOutline} style={{ fontSize: 16 }} />
+                    </IonButton>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-                  {loading ? "…" : `${includedCount} / ${recipients.length}`}
-                </span>
+
+                {/* search */}
+                <div style={{ position: "relative" }}>
+                  <IonIcon icon={searchOutline} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--ion-color-medium)", pointerEvents: "none" }} />
+                  <input
+                    type="text"
+                    placeholder="Search name or email…"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    style={{ ...inputStyle, paddingLeft: 30, fontSize: "0.8rem" }}
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Search email or name…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500 bg-slate-50"
-                />
+
+              {/* select-all row */}
+              {!loading && filteredRecipients.length > 0 && (
+                <div
+                  onClick={toggleSelectAll}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "8px 16px", cursor: "pointer",
+                    borderBottom: "1px solid var(--ion-border-color)",
+                    background: "var(--ion-background-color)",
+                  }}
+                >
+                  <IonIcon
+                    icon={allFilteredSelected ? checkboxOutline : squareOutline}
+                    style={{ fontSize: 18, color: allFilteredSelected ? "var(--ion-color-primary)" : "var(--ion-color-medium)", flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ion-color-medium)" }}>
+                    {allFilteredSelected ? "Deselect all" : "Select all"}{search ? " matching" : ""}
+                  </span>
+                </div>
+              )}
+
+              {/* list */}
+              <div style={{ flex: "1 1 0%", overflowY: "auto" }}>
+                {loading ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                    <IonSpinner name="crescent" color="primary" style={{ width: 24, height: 24 }} />
+                  </div>
+                ) : filteredRecipients.length === 0 ? (
+                  <p style={{ textAlign: "center", padding: "24px 16px", fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
+                    No recipients found.
+                  </p>
+                ) : (
+                  filteredRecipients.map(r => {
+                    const isExcluded = excluded.has(r.email);
+                    return (
+                      <div
+                        key={r.email}
+                        onClick={() => toggleExclude(r.email)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 10,
+                          padding: "9px 16px", cursor: "pointer",
+                          borderBottom: "1px solid var(--ion-border-color)",
+                          opacity: isExcluded ? 0.4 : 1,
+                          background: "transparent",
+                          transition: "background 0.1s",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = isExcluded ? "rgba(0,0,0,0.03)" : "rgba(var(--ion-color-primary-rgb),0.05)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        <IonIcon
+                          icon={isExcluded ? squareOutline : checkboxOutline}
+                          style={{ fontSize: 18, flexShrink: 0, color: isExcluded ? "var(--ion-color-medium)" : "var(--ion-color-primary)" }}
+                        />
+                        <div style={{ minWidth: 0 }}>
+                          {r.name && (
+                            <p style={{ margin: 0, fontSize: "0.78rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {r.name}
+                            </p>
+                          )}
+                          <p style={{ margin: 0, fontSize: "0.72rem", color: "var(--ion-color-medium)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {r.email}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
+
+              {/* excluded footer */}
+              {excluded.size > 0 && (
+                <div style={{ padding: "8px 16px", borderTop: "1px solid var(--ion-border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+                  <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>{excluded.size} excluded</span>
+                  <IonButton fill="clear" size="small" color="primary" onClick={() => setExcluded(new Set())} style={{ "--padding-start": "4px", "--padding-end": "4px" }}>
+                    <IonIcon slot="start" icon={closeOutline} style={{ fontSize: 12 }} />
+                    <span style={{ fontSize: "0.72rem" }}>Clear</span>
+                  </IonButton>
+                </div>
+              )}
             </div>
 
-            {/* Select-all row */}
-            {!loading && filteredRecipients.length > 0 && (
-              <div
-                className="flex items-center gap-2 px-4 py-2 border-b border-slate-100 cursor-pointer hover:bg-slate-50 select-none"
-                onClick={toggleSelectAll}
-              >
-                {allFilteredSelected ? (
-                  <CheckSquare className="w-4 h-4 text-green-600 flex-shrink-0" />
-                ) : (
-                  <Square className="w-4 h-4 text-slate-300 flex-shrink-0" />
-                )}
-                <span className="text-xs font-medium text-slate-600">
-                  {allFilteredSelected ? "Deselect all" : "Select all"}
-                  {search ? " matching" : ""}
-                </span>
-              </div>
-            )}
+            {/* ── RIGHT PANEL — Compose ── */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
 
-            {/* List */}
-            <div className="flex-1 overflow-y-auto">
-              {loading ? (
-                <div className="flex items-center justify-center py-12 text-slate-400">
-                  <IonSpinner name="crescent" style={{ width: 20, height: 20 }} />
+              {/* toolbar */}
+              <div style={{
+                display: "flex", alignItems: "stretch",
+                borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0,
+              }}>
+                <IonSegment
+                  value={editorTab}
+                  onIonChange={e => setEditorTab(e.detail.value)}
+                  style={{ "--background": "transparent", flex: "1 1 0%" }}
+                >
+                  {[
+                    { value: "edit",    label: "HTML Editor", icon: codeSlashOutline },
+                    { value: "preview", label: "Preview",     icon: eyeOutline },
+                  ].map(tab => (
+                    <IonSegmentButton key={tab.value} value={tab.value} layout="label-only" style={segBtnStyle}>
+                      <IonLabel style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+                        <IonIcon icon={tab.icon} style={{ fontSize: 15 }} />
+                        {tab.label}
+                      </IonLabel>
+                    </IonSegmentButton>
+                  ))}
+                </IonSegment>
+
+                {/* send button */}
+                <div style={{ display: "flex", alignItems: "center", padding: "0 12px", flexShrink: 0, borderLeft: "1px solid var(--ion-border-color)" }}>
+                  <IonButton
+                    disabled={!canSend}
+                    onClick={() => setConfirmOpen(true)}
+                    style={{ "--background": "#2dd36f", "--background-activated": "#28ba62", "--border-radius": "8px", "--color": "#fff", fontWeight: 700 }}
+                    size="small"
+                  >
+                    {sending
+                      ? <IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />
+                      : <IonIcon slot="start" icon={sendOutline} style={{ fontSize: 15 }} />}
+                    {sending ? "Sending…" : `Send to ${includedCount}`}
+                  </IonButton>
                 </div>
-              ) : filteredRecipients.length === 0 ? (
-                <p className="px-4 py-6 text-xs text-slate-400 text-center">No recipients found.</p>
-              ) : (
-                filteredRecipients.map((r) => {
-                  const isExcluded = excluded.has(r.email);
-                  return (
-                    <div
-                      key={r.email}
-                      onClick={() => toggleExclude(r.email)}
-                      className={`flex items-center gap-2.5 px-4 py-2.5 cursor-pointer border-b border-slate-50 select-none transition-colors ${
-                        isExcluded ? "opacity-40 hover:bg-slate-50" : "hover:bg-green-50"
-                      }`}
-                    >
-                      {isExcluded ? (
-                        <Square className="w-4 h-4 text-slate-300 flex-shrink-0" />
+              </div>
+
+              {/* compose / preview */}
+              {editorTab === "edit" ? (
+                <div style={{ flex: "1 1 0%", overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+                  <div>
+                    <label style={fieldLabel}>Subject *</label>
+                    <input type="text" value={subject} onChange={e => setSubject(e.target.value)} placeholder="Your email subject…" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={fieldLabel}>
+                      Preview Text{" "}
+                      <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(shows in inbox below subject)</span>
+                    </label>
+                    <input type="text" value={previewText} onChange={e => setPreviewText(e.target.value)} placeholder="Optional short preview…" style={inputStyle} />
+                  </div>
+                  <div style={{ flex: "1 1 0%", display: "flex", flexDirection: "column" }}>
+                    <label style={fieldLabel}>HTML Body *</label>
+                    <textarea
+                      value={htmlBody}
+                      onChange={e => setHtmlBody(e.target.value)}
+                      placeholder="<h1>Hello!</h1>&#10;<p>Your message here...</p>"
+                      style={{
+                        ...inputStyle, flex: "1 1 0%", resize: "none",
+                        fontFamily: "monospace", fontSize: "0.8rem", lineHeight: 1.6,
+                        minHeight: 280,
+                      }}
+                    />
+                    <p style={{ margin: "6px 0 0", fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>
+                      MintSlip logo header and unsubscribe footer are added automatically.
+                    </p>
+                  </div>
+
+                  {/* status banner inside compose panel */}
+                  {(jobStatus || sendError) && (
+                    <div style={{
+                      padding: "12px 16px", borderRadius: 8,
+                      border: `1px solid ${sendError ? "var(--ion-color-danger)" : jobStatus?.status === "done" && jobStatus?.failed === 0 ? "var(--ion-color-success)" : "var(--ion-color-primary)"}`,
+                      background: sendError ? "rgba(235,68,90,0.07)" : jobStatus?.status === "done" && jobStatus?.failed === 0 ? "rgba(45,211,111,0.07)" : "rgba(var(--ion-color-primary-rgb),0.06)",
+                      display: "flex", alignItems: "flex-start", gap: 10,
+                    }}>
+                      {sendError ? (
+                        <IonIcon icon={alertCircleOutline} style={{ color: "var(--ion-color-danger)", fontSize: 20, flexShrink: 0 }} />
+                      ) : jobStatus?.status === "running" ? (
+                        <IonSpinner name="crescent" style={{ width: 20, height: 20, flexShrink: 0 }} />
                       ) : (
-                        <CheckSquare className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <IonIcon icon={checkmarkCircleOutline} style={{ color: "var(--ion-color-success)", fontSize: 20, flexShrink: 0 }} />
                       )}
-                      <div className="min-w-0">
-                        {r.name && (
-                          <p className="text-xs font-medium text-slate-700 truncate">{r.name}</p>
-                        )}
-                        <p className={`text-xs truncate ${r.name ? "text-slate-400" : "text-slate-600 font-medium"}`}>
-                          {r.email}
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 600, color: "var(--ion-text-color)" }}>
+                          {sendError ||
+                            (jobStatus?.status === "running"
+                              ? `Sending… ${jobStatus.sent} / ${jobStatus.total}`
+                              : `Done — ${jobStatus?.sent} sent${jobStatus?.failed > 0 ? `, ${jobStatus.failed} failed` : ""}`)}
                         </p>
+                        {jobStatus?.status === "running" && (
+                          <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: "var(--ion-border-color)", overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${progress}%`, background: "var(--ion-color-primary)", borderRadius: 2, transition: "width 0.4s" }} />
+                          </div>
+                        )}
+                        {jobStatus?.errors?.length > 0 && (
+                          <details style={{ marginTop: 6 }}>
+                            <summary style={{ fontSize: "0.75rem", color: "var(--ion-color-warning)", cursor: "pointer", fontWeight: 600 }}>
+                              {jobStatus.errors.length} error{jobStatus.errors.length !== 1 ? "s" : ""}
+                            </summary>
+                            <ul style={{ margin: "4px 0 0", paddingLeft: 16, maxHeight: 100, overflowY: "auto" }}>
+                              {jobStatus.errors.map((e, i) => (
+                                <li key={i} style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>
+                                  <b>{e.email}</b>: {e.error}
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
                       </div>
                     </div>
-                  );
-                })
+                  )}
+                </div>
+              ) : (
+                <div style={{ flex: "1 1 0%", overflow: "hidden" }}>
+                  {htmlBody ? (
+                    <iframe
+                      srcDoc={buildPreviewHtml(htmlBody, previewText)}
+                      title="Email Preview"
+                      style={{ width: "100%", height: "100%", border: "none" }}
+                      sandbox="allow-same-origin"
+                    />
+                  ) : (
+                    <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
+                      Enter HTML body to see preview
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-
-            {/* Excluded count footer */}
-            {excluded.size > 0 && (
-              <div className="px-4 py-2.5 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs text-slate-500">{excluded.size} excluded</span>
-                <button
-                  onClick={() => setExcluded(new Set())}
-                  className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
-                >
-                  <X className="w-3 h-3" /> Clear
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* ── Right panel: Compose ── */}
-          <div className="flex-1 flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden min-w-0">
-            {/* Toolbar */}
-            <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-              <div className="flex gap-1 bg-slate-100 rounded-lg p-0.5">
-                <button
-                  onClick={() => setEditorTab("edit")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    editorTab === "edit"
-                      ? "bg-white text-slate-800 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
-                  }`}
-                >
-                  <Code2 className="w-3.5 h-3.5" /> Edit
-                </button>
-                <button
-                  onClick={() => setEditorTab("preview")}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    editorTab === "preview"
-                      ? "bg-white text-slate-800 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
-                  }`}
-                >
-                  <Eye className="w-3.5 h-3.5" /> Preview
-                </button>
-              </div>
-
-              <button
-                disabled={!canSend}
-                onClick={() => setConfirmOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-green-600 hover:bg-green-700 text-white"
-              >
-                {sending ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Send className="w-4 h-4" />}
-                {sending ? "Sending…" : `Send to ${includedCount} recipient${includedCount !== 1 ? "s" : ""}`}
-              </button>
-            </div>
-
-            {/* Compose fields */}
-            {editorTab === "edit" && (
-              <div className="flex-1 flex flex-col p-5 gap-4 overflow-auto">
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Subject *</label>
-                  <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Your email subject…"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Preview Text{" "}
-                    <span className="text-slate-400 font-normal">(shows in inbox below subject)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={previewText}
-                    onChange={(e) => setPreviewText(e.target.value)}
-                    placeholder="Optional short preview…"
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <div className="flex-1 flex flex-col">
-                  <label className="block text-xs font-medium text-slate-600 mb-1">HTML Body *</label>
-                  <textarea
-                    value={htmlBody}
-                    onChange={(e) => setHtmlBody(e.target.value)}
-                    placeholder="<h1>Hello!</h1><p>Your message here...</p>"
-                    className="flex-1 w-full px-3 py-2 text-xs font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-                    style={{ minHeight: "320px" }}
-                  />
-                  <p className="mt-1.5 text-xs text-slate-400">
-                    The MintSlip logo header and footer are added automatically.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {editorTab === "preview" && (
-              <div className="flex-1 overflow-hidden">
-                {htmlBody ? (
-                  <iframe
-                    srcDoc={buildPreviewHtml(htmlBody, previewText)}
-                    title="Email Preview"
-                    className="w-full h-full border-0"
-                    sandbox="allow-same-origin"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-                    Enter HTML body to see preview
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
-
-        {/* ── Send status banner ── */}
-        {jobStatus && (
-          <div className={`mt-4 px-5 py-4 rounded-xl border flex items-start gap-3 ${
-            jobStatus.status === "done" && jobStatus.failed === 0
-              ? "bg-green-50 border-green-200"
-              : jobStatus.status === "done"
-              ? "bg-amber-50 border-amber-200"
-              : "bg-blue-50 border-blue-200"
-          }`}>
-            {jobStatus.status === "running" ? (
-              <IonSpinner name="crescent" style={{ width: 20, height: 20, color: "#3b82f6", flexShrink: 0, marginTop: 2 }} />
-            ) : jobStatus.failed === 0 ? (
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            )}
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-slate-800">
-                {jobStatus.status === "running"
-                  ? `Sending… ${jobStatus.sent} / ${jobStatus.total}`
-                  : `Done — ${jobStatus.sent} sent${jobStatus.failed > 0 ? `, ${jobStatus.failed} failed` : ""}`}
-              </p>
-              {jobStatus.status === "running" && (
-                <div className="mt-2 h-1.5 bg-blue-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 rounded-full transition-all"
-                    style={{ width: `${jobStatus.total > 0 ? Math.round((jobStatus.sent / jobStatus.total) * 100) : 0}%` }}
-                  />
-                </div>
-              )}
-              {jobStatus.errors && jobStatus.errors.length > 0 && (
-                <details className="mt-2">
-                  <summary className="text-xs text-amber-700 cursor-pointer font-medium">
-                    {jobStatus.errors.length} error{jobStatus.errors.length !== 1 ? "s" : ""}
-                  </summary>
-                  <ul className="mt-1 space-y-0.5 max-h-28 overflow-y-auto">
-                    {jobStatus.errors.map((e, i) => (
-                      <li key={i} className="text-xs text-slate-600">
-                        <span className="font-medium">{e.email}</span>: {e.error}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </div>
-          </div>
-        )}
-
-        {sendError && (
-          <div className="mt-4 px-5 py-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700">{sendError}</p>
-          </div>
-        )}
       </div>
 
       {/* ── Confirm modal ── */}
-      {confirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-sm mx-4 p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <Send className="w-5 h-5 text-amber-600" />
+      <IonModal isOpen={confirmOpen} onDidDismiss={() => setConfirmOpen(false)} style={{ "--width": "420px", "--max-width": "92vw", "--height": "auto" }}>
+        <IonHeader>
+          <IonToolbar style={{ "--background": "var(--ion-card-background)" }}>
+            <IonTitle style={{ fontWeight: 700 }}>Confirm Mass Send</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" color="medium" onClick={() => setConfirmOpen(false)}>
+                <IonIcon slot="icon-only" icon={closeOutline} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonModalContent style={{ "--background": "var(--ion-card-background)" }}>
+          <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(45,211,111,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <IonIcon icon={sendOutline} style={{ fontSize: 22, color: "#2dd36f" }} />
               </div>
-              <h2 className="text-base font-semibold text-slate-900">Confirm Mass Send</h2>
+              <div>
+                <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--ion-text-color)", lineHeight: 1.5 }}>
+                  You're about to send <strong>"{subject}"</strong> to{" "}
+                  <strong>{includedCount} recipient{includedCount !== 1 ? "s" : ""}</strong>.
+                </p>
+                {excluded.size > 0 && (
+                  <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>
+                    {excluded.size} recipient{excluded.size !== 1 ? "s" : ""} excluded.
+                  </p>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-slate-600 mb-1">
-              You are about to send{" "}
-              <span className="font-semibold text-slate-900">"{subject}"</span> to{" "}
-              <span className="font-semibold text-slate-900">
-                {includedCount} recipient{includedCount !== 1 ? "s" : ""}
-              </span>
-              .
-            </p>
-            {excluded.size > 0 && (
-              <p className="text-xs text-slate-400 mb-4">{excluded.size} recipient{excluded.size !== 1 ? "s" : ""} excluded.</p>
-            )}
-            {excluded.size === 0 && <div className="mb-4" />}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setConfirmOpen(false)}
-                className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-              >
+            <div style={{ display: "flex", gap: 10 }}>
+              <IonButton fill="outline" color="medium" expand="block" onClick={() => setConfirmOpen(false)} style={{ flex: 1 }}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSend}
-                className="flex-1 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors"
-              >
+              </IonButton>
+              <IonButton expand="block" onClick={handleSend} style={{ flex: 1, "--background": "#2dd36f", "--color": "#fff", fontWeight: 700 }}>
+                <IonIcon slot="start" icon={sendOutline} />
                 Send Now
-              </button>
+              </IonButton>
             </div>
           </div>
-        </div>
-      )}
+        </IonModalContent>
+      </IonModal>
     </AdminLayout>
   );
 }

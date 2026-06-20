@@ -5561,6 +5561,26 @@ async def admin_reply_support_chat(chat_id: str, request: Request, session: dict
     return {"success": True, "message": msg}
 
 
+@app.post("/api/support/chat/{chat_id}/typing")
+async def user_typing(chat_id: str, request: Request):
+    """User side sends their typing state."""
+    data = await request.json()
+    is_typing = bool(data.get("isTyping", False))
+    value = datetime.now(timezone.utc).isoformat() if is_typing else None
+    await support_chats_collection.update_one({"id": chat_id}, {"$set": {"userTyping": value}})
+    return {"success": True}
+
+
+@app.post("/api/admin/support-chats/{chat_id}/typing")
+async def admin_typing(chat_id: str, request: Request, session: dict = Depends(get_current_admin)):
+    """Admin side sends their typing state."""
+    data = await request.json()
+    is_typing = bool(data.get("isTyping", False))
+    value = datetime.now(timezone.utc).isoformat() if is_typing else None
+    await support_chats_collection.update_one({"id": chat_id}, {"$set": {"adminTyping": value}})
+    return {"success": True}
+
+
 @app.put("/api/admin/support-chats/{chat_id}/status")
 async def update_support_chat_status(chat_id: str, request: Request, session: dict = Depends(get_current_admin)):
     """Close or reopen a live-chat conversation."""

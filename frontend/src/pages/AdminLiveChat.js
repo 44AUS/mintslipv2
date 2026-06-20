@@ -54,14 +54,21 @@ function dbMsgToMsg(msg, adminUser) {
   };
 }
 
+const TYPING_TTL = 6000;
+function isTypingFresh(ts) {
+  if (!ts) return false;
+  return Date.now() - new Date(ts).getTime() < TYPING_TTL;
+}
+
 export default function AdminLiveChat() {
-  const [chats,    setChats]    = useState([]);   // raw DB records
-  const [activeId, setActiveId] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [chats,     setChats]     = useState([]);
+  const [activeId,  setActiveId]  = useState(null);
+  const [messages,  setMessages]  = useState([]);
   const [isSending, setIsSending] = useState(false);
-  const [isTyping]  = useState(false);
-  const pollRef     = useRef(null);
-  const activeIdRef = useRef(activeId);
+  const [isTyping,  setIsTyping]  = useState(false);  // user is typing
+  const pollRef      = useRef(null);
+  const typingTimer  = useRef(null);
+  const activeIdRef  = useRef(activeId);
   useEffect(() => { activeIdRef.current = activeId; }, [activeId]);
 
   // ── fetch all chats ──────────────────────────────────────────────────────────
@@ -77,7 +84,7 @@ export default function AdminLiveChat() {
     } catch {}
   }, []);
 
-  // ── fetch messages for active chat ──────────────────────────────────────────
+  // ── fetch messages + typing state for active chat ───────────────────────────
   const fetchMessages = useCallback(async (id) => {
     if (!id) return;
     const token = localStorage.getItem("adminToken");
@@ -87,12 +94,36 @@ export default function AdminLiveChat() {
       });
       if (!res.ok) return;
       const data = await res.json();
-      const msgs = (data.chat?.messages || []).map(m => dbMsgToMsg(m, ADMIN_USER));
+      const chat = data.chat || {};
+      const msgs = (chat.messages || []).map(m => dbMsgToMsg(m, ADMIN_USER));
       setMessages(msgs);
-      // mark admin unread as 0 for this chat
+      setIsTyping(isTypingFresh(chat.userTyping));
       setChats(prev => prev.map(c => c.id === id ? { ...c, unreadByAdmin: 0 } : c));
     } catch {}
   }, []);
+
+  // ── send admin typing signal ─────────────────────────────────────────────────
+  const sendAdminTyping = useCallback((isT) => {
+    const id = activeIdRef.current;
+    if (!id) return;
+    const token = localStorage.getItem("adminToken");
+    fetch(`${BACKEND_URL}/api/admin/support-chats/${id}/typing`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ isTyping: isT }),
+    }).catch(() => {});
+  }, []);
+
+  // SupportCenter calls this when the admin's input changes
+  const handleAdminTyping = useCallback((hasText) => {
+    if (hasText) {
+      sendAdminTyping(true);
+      clearTimeout(typingTimer.current);
+      typingTimer.current = setTimeout(() => sendAdminTyping(false), 1500);
+    } else {
+      clearTimeout(typingTimer.current);
+      sendAdminTyping(false);
+    }
+  }, [sendAdminTyping]);
 
   // initial load + polling
   useEffect(() => {
@@ -200,6 +231,7 @@ export default function AdminLiveChat() {
         onBlockUser={handleBlock}
         onNewConversation={() => {}}
         onMinimize={handleMinimize}
+        onTyping={handleAdminTyping}
       />
     </AdminLayout>
   );

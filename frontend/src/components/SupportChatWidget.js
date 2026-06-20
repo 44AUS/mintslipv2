@@ -68,37 +68,45 @@ function UserAvatar({ name = '?', size = 28 }) {
   );
 }
 
+// typing expired if timestamp older than 6 seconds
+const TYPING_TTL = 6000;
+function isTypingFresh(ts) {
+  if (!ts) return false;
+  return Date.now() - new Date(ts).getTime() < TYPING_TTL;
+}
+
 // ── main widget ────────────────────────────────────────────────────────────────
 export default function SupportChatWidget({ currentUser = null, bottomOffset = 0 }) {
   const stored = loadPersistedState();
 
-  const [isOpen,      setIsOpen]      = useState(false);
-  const [view,        setView]        = useState(stored.chatId ? 'chat' : 'form');   // 'form' | 'chat' | 'done'
-  const [chatId,      setChatId]      = useState(stored.chatId || null);
-  const [chatClosed,  setChatClosed]  = useState(stored.closed || false);
-  const [messages,    setMessages]    = useState([]);
-  const [unread,      setUnread]      = useState(0);
+  const [isOpen,        setIsOpen]        = useState(false);
+  const [view,          setView]          = useState(stored.chatId ? 'chat' : 'form');
+  const [chatId,        setChatId]        = useState(stored.chatId || null);
+  const [chatClosed,    setChatClosed]    = useState(stored.closed || false);
+  const [messages,      setMessages]      = useState([]);
+  const [unread,        setUnread]        = useState(0);
+  const [adminTyping,   setAdminTyping]   = useState(false);  // support is typing
 
   // form fields
-  const [reason,   setReason]   = useState(stored.reason   || '');
-  const [name,     setName]     = useState(stored.name     || currentUser?.name  || '');
-  const [email,    setEmail]    = useState(stored.email    || currentUser?.email || '');
-  const [firstMsg, setFirstMsg] = useState('');
-  const [chatInput,setChatInput]= useState('');
+  const [reason,    setReason]    = useState(stored.reason || '');
+  const [name,      setName]      = useState(stored.name   || currentUser?.name  || '');
+  const [email,     setEmail]     = useState(stored.email  || currentUser?.email || '');
+  const [firstMsg,  setFirstMsg]  = useState('');
+  const [chatInput, setChatInput] = useState('');
 
   // loading
   const [starting, setStarting] = useState(false);
   const [sending,  setSending]  = useState(false);
   const [loading,  setLoading]  = useState(false);
 
-  const msgEndRef     = useRef(null);
-  const pollRef       = useRef(null);
-  const prevMsgLen    = useRef(messages.length);
-  const chatInputRef  = useRef(null);
-  const isOpenRef     = useRef(isOpen);
+  const msgEndRef    = useRef(null);
+  const pollRef      = useRef(null);
+  const chatInputRef = useRef(null);
+  const isOpenRef    = useRef(isOpen);
+  const typingTimer  = useRef(null);    // debounce for user typing signal
   useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
 
-  // ── fetch messages ───────────────────────────────────────────────────────────
+  // ── fetch messages + typing state ────────────────────────────────────────────
   const fetchMessages = useCallback(async (id, markRead = false) => {
     if (!id) return;
     try {
@@ -106,16 +114,18 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
       const res = await fetch(url);
       if (!res.ok) return;
       const data = await res.json();
-      const msgs = data.chat?.messages || [];
+      const chat = data.chat || {};
+      const msgs = chat.messages || [];
       setMessages(msgs);
-      setChatClosed(data.chat?.status === 'closed');
+      setChatClosed(chat.status === 'closed');
+      // admin typing indicator
+      setAdminTyping(isTypingFresh(chat.adminTyping));
+      // unread: use server-side counter, zero it when open
       if (!isOpenRef.current) {
-        const newFromAdmin = msgs.filter(m => m.fromAdmin && !m.read).length;
-        if (newFromAdmin > prevMsgLen.current) setUnread(u => u + (newFromAdmin - prevMsgLen.current));
+        setUnread(chat.unreadByUser || 0);
       } else {
         setUnread(0);
       }
-      prevMsgLen.current = msgs.length;
     } catch {}
   }, []);
 
@@ -124,11 +134,11 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     if (!chatId) return;
     clearInterval(pollRef.current);
     const delay = isOpen ? POLL_OPEN : POLL_BG;
-    pollRef.current = setInterval(() => fetchMessages(chatId, isOpen), delay);
+    pollRef.current = setInterval(() => fetchMessages(chatId, false), delay);
     return () => clearInterval(pollRef.current);
   }, [chatId, isOpen, fetchMessages]);
 
-  // initial load if we already have a chatId
+  // initial load
   useEffect(() => {
     if (chatId) {
       setLoading(true);
@@ -136,15 +146,33 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     }
   }, []); // eslint-disable-line
 
-  // scroll to bottom
+  // scroll to bottom when messages arrive or popup opens
   useEffect(() => {
     if (isOpen) msgEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isOpen]);
+  }, [messages, adminTyping, isOpen]);
 
   // focus input when popup opens
   useEffect(() => {
     if (isOpen && view === 'chat') setTimeout(() => chatInputRef.current?.focus(), 120);
   }, [isOpen, view]);
+
+  // ── send user typing signal (debounced 1.5s) ─────────────────────────────────
+  const sendTyping = useCallback((isTyping) => {
+    if (!chatId) return;
+    fetch(`${BACKEND_URL}/api/support/chat/${chatId}/typing`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isTyping }),
+    }).catch(() => {});
+  }, [chatId]);
+
+  const handleChatInputChange = (e) => {
+    setChatInput(e.target.value);
+    if (!chatId) return;
+    // send isTyping=true immediately, then debounce isTyping=false
+    sendTyping(true);
+    clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => sendTyping(false), 1500);
+  };
 
   // ── open/close popup ─────────────────────────────────────────────────────────
   const openChat = useCallback(() => {
@@ -152,9 +180,12 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     setUnread(0);
     if (chatId) fetchMessages(chatId, true);
   }, [chatId, fetchMessages]);
-  const closeChat = () => setIsOpen(false);
+  const closeChat = () => {
+    setIsOpen(false);
+    sendTyping(false); // clear typing on close
+  };
 
-  // Listen for global open event so any page can trigger the widget
+  // global trigger (from other pages)
   useEffect(() => {
     window.addEventListener('mintslip-open-support', openChat);
     return () => window.removeEventListener('mintslip-open-support', openChat);
@@ -194,6 +225,8 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     if (!text || sending || !chatId) return;
     setSending(true);
     setChatInput('');
+    sendTyping(false); // clear typing
+    clearTimeout(typingTimer.current);
     try {
       const res = await fetch(`${BACKEND_URL}/api/support/chat/${chatId}/message`, {
         method:  'POST',
@@ -236,6 +269,12 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
 
   const widget = (
     <>
+      <style>{`
+        @keyframes scw-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+      `}</style>
       {/* floating button */}
       <div
         onClick={isOpen ? closeChat : openChat}
@@ -417,6 +456,27 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                   </div>
                 );
               })}
+              {/* admin typing indicator */}
+              {adminTyping && (
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, padding: '6px 16px 2px' }}>
+                  <BotAvatar size={28} />
+                  <div style={{
+                    background: 'var(--ion-background-color)',
+                    borderRadius: '4px 16px 16px 16px',
+                    padding: '10px 14px',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
+                    {[0,1,2].map(i => (
+                      <div key={i} style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: 'var(--ion-color-medium)',
+                        animation: 'scw-bounce 0.6s infinite',
+                        animationDelay: `${i * 0.2}s`,
+                      }} />
+                    ))}
+                  </div>
+                </div>
+              )}
               <div ref={msgEndRef} />
             </div>
           )}
@@ -457,7 +517,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                     ref={chatInputRef}
                     type="text"
                     value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
+                    onChange={handleChatInputChange}
                     onKeyDown={onChatKey}
                     placeholder="Type a message…"
                     style={{

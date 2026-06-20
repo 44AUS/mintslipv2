@@ -151,6 +151,7 @@ export default function SupportCenter({
   onNewConversation,
   onReorderConversations,
   onMinimize,
+  onTyping,
 }) {
   const [activeTab, setActiveTab] = useState('open');
   const [showList, setShowList] = useState(true);
@@ -200,10 +201,11 @@ export default function SupportCenter({
     const text = inputText.trim();
     if (!text && imageFiles.length === 0) return;
     onSendMessage?.(text, imageFiles);
+    onTyping?.(false);
     setInputText('');
     setImageFiles([]);
     setImagePreviews([]);
-  }, [inputText, imageFiles, onSendMessage]);
+  }, [inputText, imageFiles, onSendMessage, onTyping]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -685,7 +687,7 @@ export default function SupportCenter({
                       rows={3}
                       placeholder="Write your message here"
                       value={inputText}
-                      onIonInput={(e) => setInputText(e.detail.value || '')}
+                      onIonInput={(e) => { const v = e.detail.value || ''; setInputText(v); onTyping?.(v.length > 0); }}
                       style={{
                         '--background': 'transparent',
                         '--padding-start': '16px',

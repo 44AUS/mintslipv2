@@ -301,9 +301,11 @@ export default function AdminDiscounts() {
 
   return (
     <AdminLayout adminInfo={adminInfo} onRefresh={() => fetchDiscounts()}>
+      <div style={{ padding: 10 }}>
+      <div style={{ padding: "4px 6px" }}>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Codes</p>
@@ -314,7 +316,7 @@ export default function AdminDiscounts() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Active Codes</p>
@@ -327,7 +329,7 @@ export default function AdminDiscounts() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">Total Usage</p>
@@ -343,7 +345,7 @@ export default function AdminDiscounts() {
       </div>
 
       {/* Promotional Banner Management */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <div className="bg-white rounded-xl p-6 mb-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white">
@@ -487,7 +489,7 @@ export default function AdminDiscounts() {
       </div>
 
       {/* Discount Codes Table */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-800">All Discount Codes</h2>
           <IonButton color="primary" onClick={() => { resetForm(); setIsDialogOpen(true); }}>
@@ -726,6 +728,8 @@ export default function AdminDiscounts() {
         </div>,
         document.body
       )}
+      </div>
+      </div>
     </AdminLayout>
   );
 }

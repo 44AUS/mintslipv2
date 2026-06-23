@@ -444,7 +444,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                   display: 'flex', alignItems: 'flex-start', gap: 8, lineHeight: 1.45,
                 }}>
                   <IonIcon icon={timeOutline} style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }} />
-                  <span>Our team is offline right now. We've saved your message and will reply by email as soon as we're back — please check back later.</span>
+                  <span>Our team is offline right now. We've saved your message and will reply as soon as we're back — please check back here later.</span>
                 </div>
               )}
 

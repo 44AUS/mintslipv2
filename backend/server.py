@@ -1036,14 +1036,34 @@ async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(
         await sessions_collection.delete_one({"token": token})
         raise HTTPException(status_code=401, detail="Session expired")
 
-    # Sliding session: refresh the timestamp so active admins are never logged
-    # out mid-use. Throttle the DB write to at most once per hour.
+    # Sliding session refresh (throttled hourly) + presence stamp (throttled
+    # ~30s) so we can tell whether any admin/moderator is currently online.
+    now_iso = now.isoformat()
+    updates = {}
     if (now - created_at).total_seconds() > 3600:
-        await sessions_collection.update_one(
-            {"token": token}, {"$set": {"createdAt": now.isoformat()}}
-        )
+        updates["createdAt"] = now_iso
+    last_seen_raw = session.get("lastSeen")
+    last_seen = datetime.fromisoformat(last_seen_raw.replace("Z", "+00:00")) if last_seen_raw else None
+    if not last_seen or (now - last_seen).total_seconds() > 30:
+        updates["lastSeen"] = now_iso
+    if updates:
+        await sessions_collection.update_one({"token": token}, {"$set": updates})
 
     return session
+
+
+# An admin/moderator is considered "online" if they have an active session that
+# was seen within this many seconds.
+ADMIN_ONLINE_WINDOW = 300
+
+async def any_admin_online() -> bool:
+    """True if at least one admin or moderator session is recently active."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(seconds=ADMIN_ONLINE_WINDOW)).isoformat()
+    sess = await sessions_collection.find_one({
+        "type": {"$in": ["admin", "moderator"]},
+        "lastSeen": {"$gte": cutoff},
+    })
+    return sess is not None
 
 async def require_admin_only(session: dict = Depends(get_current_admin)):
     """Only the original admin account may proceed (not moderators)."""
@@ -5486,7 +5506,7 @@ async def start_support_chat(request: Request):
         "unreadByUser": 0,
     }
     await support_chats_collection.insert_one(chat)
-    return {"success": True, "chatId": chat["id"], "message": first}
+    return {"success": True, "chatId": chat["id"], "message": first, "adminOnline": await any_admin_online()}
 
 
 @app.get("/api/support/chat/{chat_id}")
@@ -5500,7 +5520,7 @@ async def get_support_chat(chat_id: str, mark_read: bool = False):
             {"id": chat_id}, {"$set": {"unreadByUser": 0}}
         )
         chat["unreadByUser"] = 0
-    return {"success": True, "chat": chat}
+    return {"success": True, "chat": chat, "adminOnline": await any_admin_online()}
 
 
 @app.post("/api/support/chat/{chat_id}/message")
@@ -5525,7 +5545,7 @@ async def send_support_chat_message(chat_id: str, request: Request):
          "$set":  {"updatedAt": msg["timestamp"]},
          "$inc":  {"unreadByAdmin": 1}}
     )
-    return {"success": True, "message": msg}
+    return {"success": True, "message": msg, "adminOnline": await any_admin_online()}
 
 
 @app.get("/api/admin/support-chats")

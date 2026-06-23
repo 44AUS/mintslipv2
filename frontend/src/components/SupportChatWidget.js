@@ -13,7 +13,7 @@ import { createPortal } from 'react-dom';
 import { IonButton, IonIcon, IonSpinner } from '@ionic/react';
 import {
   chatbubblesOutline, closeOutline, sendOutline,
-  chevronDownOutline, checkmarkCircleOutline, reloadOutline,
+  chevronDownOutline, checkmarkCircleOutline, reloadOutline, timeOutline,
 } from 'ionicons/icons';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
@@ -86,6 +86,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   const [messages,      setMessages]      = useState([]);
   const [unread,        setUnread]        = useState(0);
   const [adminTyping,   setAdminTyping]   = useState(false);  // support is typing
+  const [adminOnline,   setAdminOnline]   = useState(true);   // any admin/mod online
 
   // form fields
   const [reason,    setReason]    = useState(stored.reason || '');
@@ -125,6 +126,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
       const msgs = chat.messages || [];
       setMessages(msgs);
       setChatClosed(chat.status === 'closed');
+      setAdminOnline(data.adminOnline !== false);
       // admin typing indicator
       setAdminTyping(isTypingFresh(chat.adminTyping));
       // unread: use server-side counter, zero it when open
@@ -217,6 +219,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
       const id = data.chatId;
       setChatId(id);
       setMessages([data.message]);
+      setAdminOnline(data.adminOnline !== false);
       setView('chat');
       persist({ chatId: id, reason, name: name.trim(), email: email.trim() });
     } catch {
@@ -243,6 +246,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
       if (!res.ok) throw new Error();
       const data = await res.json();
       setMessages(prev => [...prev, data.message]);
+      setAdminOnline(data.adminOnline !== false);
     } catch {
       setChatInput(text); // restore on failure
     } finally {
@@ -340,7 +344,11 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 <div>
                   <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.2 }}>MintSlip Support</div>
                   <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem' }}>
-                    {chatClosed ? 'Conversation closed' : 'Typically replies in minutes'}
+                    {chatClosed
+                      ? 'Conversation closed'
+                      : adminOnline
+                        ? 'Typically replies in minutes'
+                        : 'Currently offline'}
                   </div>
                 </div>
               </div>
@@ -424,6 +432,19 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 }}>
                   <IonIcon icon={checkmarkCircleOutline} style={{ fontSize: 16 }} />
                   This conversation has been closed. Start a new one if you need further help.
+                </div>
+              )}
+
+              {!chatClosed && !adminOnline && (
+                <div style={{
+                  margin: '8px 16px', padding: '8px 12px', borderRadius: 8,
+                  background: 'rgba(237,108,2,0.10)',
+                  border: '1px solid rgba(237,108,2,0.4)',
+                  fontSize: '0.78rem', color: '#b45309',
+                  display: 'flex', alignItems: 'flex-start', gap: 8, lineHeight: 1.45,
+                }}>
+                  <IonIcon icon={timeOutline} style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }} />
+                  <span>Our team is offline right now. We've saved your message and will reply by email as soon as we're back — please check back later.</span>
                 </div>
               )}
 

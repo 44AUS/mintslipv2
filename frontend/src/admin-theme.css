@@ -584,22 +584,21 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 
 /* ── Badges ── */
 .admin-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 0.6875rem;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.68rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
-.admin-badge-green  { background: rgba(45, 211, 111, 0.14);  color: #1e8449; }
-.admin-badge-red    { background: rgba(235, 68, 90, 0.12);   color: #eb445a; }
-.admin-badge-amber  { background: rgba(255, 196, 9, 0.15);   color: #b8860b; }
-.admin-badge-slate  { background: rgba(146, 148, 156, 0.14); color: #6c6e76; }
-.admin-badge-blue   { background: rgba(22, 163, 74, 0.12);  color: #1565C0; }
-.admin-badge-purple { background: rgba(139, 92, 246, 0.12);  color: #7c3aed; }
+/* All tones use a 0.12-alpha background paired with the same solid text color.
+   No borders, no shadows, no uppercase, no pill shape beyond 8px radius. */
+.admin-badge-green  { background: rgba(46, 125, 50, 0.12);   color: #2e7d32; }
+.admin-badge-red    { background: rgba(211, 47, 47, 0.12);   color: #d32f2f; }
+.admin-badge-amber  { background: rgba(237, 108, 2, 0.12);   color: #ed6c02; }
+.admin-badge-slate  { background: rgba(96, 125, 139, 0.12);  color: #546e7a; }
+.admin-badge-blue   { background: rgba(25, 118, 210, 0.12);  color: #1976d2; }
+.admin-badge-purple { background: rgba(123, 31, 162, 0.12);  color: #7b1fa2; }
 
 /* ── Form helpers ── */
 .admin-form-row { display: grid; gap: 16px; }

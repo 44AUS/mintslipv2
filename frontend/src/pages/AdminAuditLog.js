@@ -12,16 +12,17 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_SIZE = 50;
 
-// Action → colour mapping (all inline, no CSS classes)
+// Action → colour mapping. Same 0.12-alpha background + solid text pattern
+// used by every other admin status badge.
 function getActionStyle(action = "") {
   const a = action.toLowerCase();
   if (/(delete|ban|disable|remove|clear|maintenance_enabled|auth_disabled)/.test(a))
-    return { color: "var(--ion-color-danger)",  bg: "rgba(235,68,90,0.10)"  };
+    return { color: "#d32f2f", bg: "rgba(211,47,47,0.12)" };
   if (/(create|unban|enable|add|auth_enabled|maintenance_disabled)/.test(a))
-    return { color: "var(--ion-color-success)", bg: "rgba(45,211,111,0.10)" };
+    return { color: "#2e7d32", bg: "rgba(46,125,50,0.12)" };
   if (/(send|export|mass|email)/.test(a))
-    return { color: "var(--ion-color-primary)", bg: "rgba(var(--ion-color-primary-rgb),0.10)" };
-  return { color: "var(--ion-color-medium)", bg: "rgba(0,0,0,0.06)" };
+    return { color: "#1976d2", bg: "rgba(25,118,210,0.12)" };
+  return { color: "#546e7a", bg: "rgba(96,125,139,0.12)" };
 }
 
 const thStyle = {
@@ -153,9 +154,9 @@ export default function AdminAuditLog() {
   const visibleLogs = logs.filter(log => {
     if (segment === "all") return true;
     const { color } = getActionStyle(log.action);
-    if (segment === "destructive") return color === "var(--ion-color-danger)";
-    if (segment === "positive")    return color === "var(--ion-color-success)";
-    return color === "var(--ion-color-medium)" || color === "var(--ion-color-primary)";
+    if (segment === "destructive") return color === "#d32f2f";
+    if (segment === "positive")    return color === "#2e7d32";
+    return color === "#546e7a" || color === "#1976d2";
   });
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -290,16 +291,16 @@ export default function AdminAuditLog() {
                             </td>
                             <td style={tdStyle}>
                               <span style={{
-                                display: "inline-block", padding: "2px 8px", borderRadius: 20,
-                                fontSize: "0.7rem", fontWeight: 700, textTransform: "capitalize",
-                                background: isAdmin ? "rgba(var(--ion-color-primary-rgb),0.10)" : "rgba(0,0,0,0.06)",
-                                color: isAdmin ? "var(--ion-color-primary)" : "var(--ion-color-medium)",
+                                display: "inline-block", padding: "2px 8px", borderRadius: 8,
+                                fontSize: "0.68rem", fontWeight: 600, textTransform: "capitalize",
+                                background: isAdmin ? "rgba(25,118,210,0.12)" : "rgba(96,125,139,0.12)",
+                                color: isAdmin ? "#1976d2" : "#546e7a",
                               }}>
                                 {log.role}{log.level ? ` L${log.level}` : ""}
                               </span>
                             </td>
                             <td style={tdStyle}>
-                              <span style={{ display: "inline-block", padding: "2px 9px", borderRadius: 20, fontSize: "0.7rem", fontWeight: 700, background: bg, color }}>
+                              <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 8, fontSize: "0.68rem", fontWeight: 600, background: bg, color }}>
                                 {log.action.replace(/_/g, " ")}
                               </span>
                             </td>

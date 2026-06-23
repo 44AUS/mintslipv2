@@ -12,7 +12,7 @@ import {
   calendarOutline, cartOutline, peopleOutline, folderOutline,
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
-  listOutline, trendingUpOutline, cardOutline, chatboxOutline,
+  listOutline, trendingUpOutline, cardOutline, chatboxOutline, chatbubbleOutline,
   downloadOutline, chevronForwardOutline,
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
   notificationsOutline,
@@ -53,7 +53,7 @@ const TOPBAR_EXCLUDE = new Set([
 // Tabs hidden from the sidebar nav (shown in top-bar)
 const SIDEBAR_EXCLUDE = new Set([
   "calendar", "purchases", "users", "discounts", "blog", "revenue", "subscriptions",
-  "site-settings",
+  "site-settings", "support",
 ]);
 
 function timeAgo(dateStr) {
@@ -106,6 +106,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [notifOpen,     setNotifOpen]     = useState(false);
   const [isMobile,      setIsMobile]      = useState(window.innerWidth < 768);
+  const [supportUnread, setSupportUnread] = useState(0);
 
   const [adminProfile, setAdminProfile] = useState(null);
 
@@ -183,6 +184,26 @@ export default function AdminLayout({ children, fillHeight = false }) {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [navigate]);
+
+  /* Poll unread support-chat count for the Message Center button badge. */
+  useEffect(() => {
+    const fetchSupportUnread = async () => {
+      const token = localStorage.getItem("adminToken");
+      if (!token) return;
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/support-chats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSupportUnread(data.totalUnread || 0);
+        }
+      } catch { /* ignore */ }
+    };
+    fetchSupportUnread();
+    const interval = setInterval(fetchSupportUnread, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   /* Apply ionic-active so public pages still scroll when user navigates back */
   useEffect(() => {
@@ -508,6 +529,29 @@ export default function AdminLayout({ children, fillHeight = false }) {
                 </IonList>
               </IonContent>
             </IonPopover>
+
+            {/* Support Center button */}
+            <div style={{ padding: "0 16px 12px", flexShrink: 0 }}>
+              <IonButton
+                expand="block"
+                fill="outline"
+                onClick={() => { navigate("/admin/support"); handleCloseSidebar(); }}
+                style={{
+                  "--border-radius": "8px",
+                  "--color": darkMode ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.65)",
+                  "--border-color": darkMode ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.18)",
+                  fontWeight: 600,
+                  fontSize: "0.8rem",
+                }}
+              >
+                <IonIcon slot="start" icon={chatbubbleOutline} style={{ marginRight: 6 }} />
+                Support Center
+                {supportUnread > 0 && (
+                  <span slot="end" style={{ width: 8, height: 8, backgroundColor: "var(--ion-color-danger)", borderRadius: "50%", display: "inline-block", flexShrink: 0 }} />
+                )}
+              </IonButton>
+            </div>
+            <hr style={{ margin: 0, border: "none", borderTop: `1px solid ${darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}` }} />
 
             <div style={{ flexGrow: 1, overflowY: "auto", padding: "0 0 8px 0" }}>
               {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (

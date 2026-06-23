@@ -1029,11 +1029,19 @@ async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(
             await sessions_collection.delete_one({"token": token})
             raise HTTPException(status_code=401, detail="Account disabled")
 
-    # Check if session is expired (24 hours)
+    # Session expires after 24 hours of INACTIVITY (sliding window).
     created_at = datetime.fromisoformat(session["createdAt"].replace("Z", "+00:00"))
-    if (datetime.now(timezone.utc) - created_at).total_seconds() > 86400:
+    now = datetime.now(timezone.utc)
+    if (now - created_at).total_seconds() > 86400:
         await sessions_collection.delete_one({"token": token})
         raise HTTPException(status_code=401, detail="Session expired")
+
+    # Sliding session: refresh the timestamp so active admins are never logged
+    # out mid-use. Throttle the DB write to at most once per hour.
+    if (now - created_at).total_seconds() > 3600:
+        await sessions_collection.update_one(
+            {"token": token}, {"$set": {"createdAt": now.isoformat()}}
+        )
 
     return session
 

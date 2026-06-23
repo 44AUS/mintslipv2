@@ -19,10 +19,10 @@ import App from "@/App";
 setupIonicReact({ mode: "md" });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+// NOTE: React.StrictMode intentionally removed — it double-mounts effects in
+// development, which makes sonner's <Toaster> render every toast twice.
 root.render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  </React.StrictMode>,
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>,
 );

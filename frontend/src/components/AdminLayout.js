@@ -157,6 +157,33 @@ export default function AdminLayout({ children, fillHeight = false }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  /* Re-verify the admin session when the tab regains focus. If the token has
+     expired while the tab was idle, redirect to login instead of leaving the
+     admin staring at empty data. */
+  useEffect(() => {
+    const verify = async () => {
+      const token = localStorage.getItem("adminToken");
+      if (!token) return;
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/admin/verify`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 401) {
+          localStorage.removeItem("adminToken");
+          localStorage.removeItem("adminInfo");
+          navigate("/admin/login");
+        }
+      } catch { /* network blip — ignore */ }
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") verify(); };
+    window.addEventListener("focus", verify);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", verify);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [navigate]);
+
   /* Apply ionic-active so public pages still scroll when user navigates back */
   useEffect(() => {
     document.documentElement.classList.add("ionic-active");

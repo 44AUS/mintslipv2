@@ -4,7 +4,7 @@ import {
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline, chevronForwardOutline,
-  funnelOutline, ellipse, squareOutline,
+  funnelOutline,
 } from "ionicons/icons";
 import { CreditCard, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
@@ -271,7 +271,6 @@ export default function AdminPurchases() {
                         </tr>
                       )}
                       {filtered.map(p => {
-                        const color   = DOC_COLORS[p.documentType] || "#64748b";
                         const email   = p.email || p.paypalEmail || "N/A";
                         const docLabel = DOCUMENT_TYPES[p.documentType] || p.documentType || "-";
                         const qty     = p.quantity > 1 ? ` ×${p.quantity}` : "";
@@ -299,29 +298,12 @@ export default function AdminPurchases() {
                               </div>
                             </td>
 
-                            {/* Document — Lane style */}
-                            <td className="ion-activatable" style={{ ...tdBase, padding: 0, minWidth: 180 }}>
+                            {/* Document */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 180 }}>
                               <ion-ripple-effect />
-                              <div style={{ position: "absolute", left: 0, top: "18%", bottom: "18%", width: 3, background: color }} />
-                              <div style={{ paddingLeft: 16, display: "flex", alignItems: "stretch", gap: 8, height: "100%" }}>
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 2, paddingBottom: 2, justifyContent: "center" }}>
-                                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 8, color }}>
-                                    <IonIcon icon={ellipse} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                  </span>
-                                  <div style={{ width: 1.5, flex: "1 1 0%", background: "var(--ion-border-color)", margin: "2px 0", maxHeight: 14 }} />
-                                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 8, color: "var(--ion-color-medium)" }}>
-                                    <IonIcon icon={squareOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                  </span>
-                                </div>
-                                <div style={{ minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                                  <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.6 }}>
-                                    {docLabel}{qty}
-                                  </span>
-                                  <span style={{ fontSize: "0.7rem", color: "var(--ion-color-medium)", display: "block", whiteSpace: "nowrap", lineHeight: 1.6 }}>
-                                    {p.userId ? "Registered" : "Guest"}
-                                  </span>
-                                </div>
-                              </div>
+                              <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {docLabel}{qty}
+                              </span>
                             </td>
 
                             {/* Date */}

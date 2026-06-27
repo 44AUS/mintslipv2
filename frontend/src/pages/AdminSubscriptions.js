@@ -12,7 +12,6 @@ const TIER_COLORS = {
   business: "bg-amber-100 text-amber-700",
 };
 
-const TIER_PRICES = { starter: "$19.99/mo", professional: "$29.99/mo", business: "$49.99/mo" };
 
 function StripeBadge({ status }) {
   if (!status || status === "unknown") return <span className="text-xs text-gray-400">—</span>;
@@ -182,7 +181,6 @@ export default function AdminSubscriptions() {
                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium capitalize ${TIER_COLORS[sub.tier] || "bg-gray-100 text-gray-600"}`}>
                           {sub.tier || "—"}
                         </span>
-                        {sub.tier && <p className="text-xs text-gray-400 mt-0.5">{TIER_PRICES[sub.tier]}</p>}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`admin-badge ${sub.dbStatus === "active" ? "admin-badge-green" : sub.dbStatus === "cancelling" ? "admin-badge-amber" : "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>

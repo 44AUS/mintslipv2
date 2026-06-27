@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner } from "@ionic/react";
-import { refreshOutline, chevronForwardOutline, ellipse, squareOutline } from "ionicons/icons";
+import { refreshOutline, chevronForwardOutline } from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
@@ -203,7 +203,6 @@ export default function AdminSavedDocs() {
                         <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>No saved documents found</td></tr>
                       )}
                       {filtered.map(doc => {
-                        const color = DOC_COLORS[doc.documentType] || "#64748b";
                         const label = DOCUMENT_TYPES[doc.documentType] || doc.documentType || "—";
                         return (
                           <tr key={doc.id} style={{ height: 64 }}>
@@ -222,24 +221,10 @@ export default function AdminSavedDocs() {
                               </div>
                             </td>
 
-                            {/* Document — lane style */}
-                            <td className="ion-activatable" style={{ ...tdBase, padding: 0, minWidth: 200 }}>
+                            {/* Document */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
                               <ion-ripple-effect />
-                              <div style={{ position: "absolute", left: 0, top: "18%", bottom: "18%", width: 3, background: color }} />
-                              <div style={{ paddingLeft: 16, display: "flex", alignItems: "stretch", gap: 8, height: "100%" }}>
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                  <span style={{ display: "inline-flex", fontSize: 8, color }}>
-                                    <IonIcon icon={ellipse} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                  </span>
-                                  <div style={{ width: 1.5, flex: "1 1 0%", background: "var(--ion-border-color)", margin: "2px 0", maxHeight: 14 }} />
-                                  <span style={{ display: "inline-flex", fontSize: 8, color: "var(--ion-color-medium)" }}>
-                                    <IonIcon icon={squareOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                  </span>
-                                </div>
-                                <div style={{ minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                                  <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1.6 }}>{label}</span>
-                                </div>
-                              </div>
+                              <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
                             </td>
 
                             {/* File */}

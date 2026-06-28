@@ -7,7 +7,6 @@ import {
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline, chevronForwardOutline, searchOutline,
-  ellipse, squareOutline,
 } from "ionicons/icons";
 import {
   MoreVertical, Pencil, CreditCard, Download, Ban, Shield, UserX, MailCheck, X, Clock,
@@ -23,13 +22,6 @@ const SUBSCRIPTION_TIERS = {
   business:     { name: "Business",     price: 49.99, downloads: -1 },
 };
 
-const TIER_COLORS = {
-  business:     "#8b5cf6",
-  unlimited:    "#8b5cf6",
-  professional: "#3b82f6",
-  pro:          "#3b82f6",
-  starter:      "#16a34a",
-};
 
 const tdBase = {
   padding: "0 12px",
@@ -322,7 +314,6 @@ export default function AdminUsers() {
                         const isUnlimited = u.subscription?.downloads_remaining === -1 || tier?.downloads === -1;
                         const remaining = u.subscription?.downloads_remaining ?? 0;
                         const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
-                        const tierColor  = TIER_COLORS[u.subscription?.tier] || "#16a34a";
                         return (
                           <tr key={u.id} style={{ height: 64, cursor: "default" }}>
 
@@ -350,34 +341,20 @@ export default function AdminUsers() {
                                   : <span className="admin-badge admin-badge-green">Active</span>}
                             </td>
 
-                            {/* Subscription — lane style */}
-                            <td className="ion-activatable" style={{ ...tdBase, padding: 0, minWidth: 130 }}>
+                            {/* Subscription */}
+                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 130 }}>
                               <ion-ripple-effect />
                               {u.subscription ? (
-                                <>
-                                  <div style={{ position: "absolute", left: 0, top: "18%", bottom: "18%", width: 3, background: tierColor }} />
-                                  <div style={{ paddingLeft: 14, display: "flex", alignItems: "stretch", gap: 8, height: "100%" }}>
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                      <span style={{ display: "inline-flex", fontSize: 8, color: tierColor }}>
-                                        <IonIcon icon={ellipse} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                      </span>
-                                      <div style={{ width: 1.5, flex: "1 1 0%", background: "var(--ion-border-color)", margin: "2px 0", maxHeight: 14 }} />
-                                      <span style={{ display: "inline-flex", fontSize: 8, color: "var(--ion-color-medium)" }}>
-                                        <IonIcon icon={squareOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                      </span>
-                                    </div>
-                                    <div style={{ minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                                      <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", lineHeight: 1.6 }}>{tier?.name || u.subscription.tier}</span>
-                                      {u.subscription.status === "cancelling" && (
-                                        <span style={{ fontSize: "0.67rem", color: "#f97316", display: "flex", alignItems: "center", gap: 3, lineHeight: 1.4 }}>
-                                          <Clock size={9} /> Cancelling
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </>
+                                <div style={{ minWidth: 0 }}>
+                                  <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", lineHeight: 1.6 }}>{tier?.name || u.subscription.tier}</span>
+                                  {u.subscription.status === "cancelling" && (
+                                    <span style={{ fontSize: "0.67rem", color: "#f97316", display: "flex", alignItems: "center", gap: 3, lineHeight: 1.4 }}>
+                                      <Clock size={9} /> Cancelling
+                                    </span>
+                                  )}
+                                </div>
                               ) : (
-                                <span style={{ paddingLeft: 14, fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>None</span>
+                                <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>None</span>
                               )}
                             </td>
 

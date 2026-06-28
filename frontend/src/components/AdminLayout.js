@@ -547,7 +547,9 @@ export default function AdminLayout({ children, fillHeight = false }) {
                 <IonIcon slot="start" icon={chatbubbleOutline} style={{ marginRight: 6 }} />
                 Support Center
                 {supportUnread > 0 && (
-                  <span slot="end" style={{ width: 8, height: 8, backgroundColor: "var(--ion-color-danger)", borderRadius: "50%", display: "inline-block", flexShrink: 0 }} />
+                  <span slot="end" style={{ minWidth: 18, height: 18, padding: "0 5px", marginLeft: 8, backgroundColor: "var(--ion-color-danger)", color: "#fff", borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700, flexShrink: 0, lineHeight: 1 }}>
+                    {supportUnread > 99 ? "99+" : supportUnread}
+                  </span>
                 )}
               </IonButton>
             </div>

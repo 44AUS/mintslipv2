@@ -850,6 +850,31 @@ export default function AdminLayout({ children, fillHeight = false }) {
           </div>
         </div>
 
+        {/* Support Center button */}
+        <div style={{ padding: "0 16px 12px", flexShrink: 0 }}>
+          <IonButton
+            expand="block"
+            fill="outline"
+            onClick={() => { navigate("/admin/support"); setMobileSidebarOpen(false); }}
+            style={{
+              "--border-radius": "8px",
+              "--color": darkMode ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.65)",
+              "--border-color": darkMode ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.18)",
+              fontWeight: 600,
+              fontSize: "0.8rem",
+            }}
+          >
+            <IonIcon slot="start" icon={chatbubbleOutline} style={{ marginRight: 6 }} />
+            Support Center
+            {supportUnread > 0 && (
+              <span slot="end" style={{ minWidth: 18, height: 18, padding: "0 5px", marginLeft: 8, backgroundColor: "var(--ion-color-danger)", color: "#fff", borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700, flexShrink: 0, lineHeight: 1 }}>
+                {supportUnread > 99 ? "99+" : supportUnread}
+              </span>
+            )}
+          </IonButton>
+        </div>
+        <hr style={{ margin: 0, border: "none", borderTop: `1px solid ${darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}` }} />
+
         {/* Nav links */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (

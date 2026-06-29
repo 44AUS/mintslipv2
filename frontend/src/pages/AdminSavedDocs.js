@@ -86,15 +86,27 @@ export default function AdminSavedDocs() {
     setLoading(true);
     try {
       const token = localStorage.getItem("adminToken");
-      const params = new URLSearchParams({ skip: "0", limit: "500" });
-      const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
+      const PAGE = 500;
+      const all = [];
+      let skip = 0;
+      let totalCount = 0;
+      // Page through every saved document (the admin list excludes file
+      // content, so records are lightweight) so nothing is capped at 500.
+      while (true) {
+        const params = new URLSearchParams({ skip: String(skip), limit: String(PAGE) });
+        const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents?${params}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) break;
         const data = await res.json();
-        setDocs(data.documents || []);
-        setTotal(data.total || 0);
+        const batch = data.documents || [];
+        all.push(...batch);
+        totalCount = data.total || all.length;
+        skip += PAGE;
+        if (batch.length < PAGE || all.length >= totalCount) break;
       }
+      setDocs(all);
+      setTotal(totalCount);
     } catch (_) {}
     setLoading(false);
   }, []);

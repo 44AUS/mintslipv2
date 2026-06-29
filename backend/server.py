@@ -3215,10 +3215,22 @@ async def get_all_purchases(
     total = await purchases_collection.count_documents(query)
     purchases = await purchases_collection.find(query, {"_id": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
 
+    # Whole-collection counts per segment (respecting the same filter) so the
+    # admin tab badges are accurate even when more than `limit` rows exist.
+    registered_count = await purchases_collection.count_documents({**query, "userId": {"$nin": [None, ""]}})
+    refunded_count = await purchases_collection.count_documents({**query, "refunded": True})
+    guest_count = total - registered_count
+
     return {
         "success": True,
         "purchases": purchases,
         "total": total,
+        "counts": {
+            "all": total,
+            "registered": registered_count,
+            "guest": guest_count,
+            "refunded": refunded_count,
+        },
         "skip": skip,
         "limit": limit
     }

@@ -106,6 +106,7 @@ const TABS = [
 export default function AdminPurchases() {
   const [purchases, setPurchases] = useState([]);
   const [total, setTotal]         = useState(0);
+  const [counts, setCounts]       = useState({ all: 0, registered: 0, guest: 0, refunded: 0 });
   const [loading, setLoading]     = useState(true);
   const [segment, setSegment]     = useState("all");
 
@@ -120,6 +121,18 @@ export default function AdminPurchases() {
         const data = await res.json();
         setPurchases(data.purchases || []);
         setTotal(data.total || 0);
+        if (data.counts) {
+          setCounts(data.counts);
+        } else {
+          // Fallback for older API responses
+          const list = data.purchases || [];
+          setCounts({
+            all: data.total || list.length,
+            registered: list.filter(p => !!p.userId).length,
+            guest: list.filter(p => !p.userId).length,
+            refunded: list.filter(p => p.refunded).length,
+          });
+        }
       }
     } catch (_) {}
     setLoading(false);
@@ -133,13 +146,6 @@ export default function AdminPurchases() {
     if (segment === "guest")      return !p.userId;
     return true;
   });
-
-  const counts = {
-    all:        purchases.length,
-    registered: purchases.filter(p => !!p.userId).length,
-    guest:      purchases.filter(p => !p.userId).length,
-    refunded:   purchases.filter(p => p.refunded).length,
-  };
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();

@@ -61,6 +61,19 @@
 
         gtag('config', 'G-L409EVV9LG');
         </script>
+
+        <!-- Handwriting font for typed signatures. Declared here rather than in
+             CSS so the browser resolves /fonts/ at runtime (webpack would try to
+             bundle an absolute CSS url). Matches the font embedded in PDFs. -->
+        <style>
+          @font-face {
+            font-family: 'Yellowtail';
+            src: url('%PUBLIC_URL%/fonts/Yellowtail-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+          }
+        </style>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>

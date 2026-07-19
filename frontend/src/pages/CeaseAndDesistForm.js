@@ -15,7 +15,8 @@ import { generateAndDownloadCeaseAndDesist } from "@/utils/ceaseAndDesistGenerat
 import { generateCeaseAndDesistPreview } from "@/utils/ceaseAndDesistPreviewGenerator";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
-import { Upload, X, ShieldAlert, Palette, CreditCard, Lock, Loader2 } from "lucide-react";
+import { Upload, X, ShieldAlert, Palette, CreditCard, Lock, Loader2, PenTool, Type } from "lucide-react";
+import SignaturePad from "@/components/SignaturePad";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { trackDocumentGenerated, trackPaymentInitiated } from "@/utils/analyticsTracker";
 import useAuthEnabled from "@/hooks/useAuthEnabled";
@@ -64,6 +65,7 @@ export default function CeaseAndDesistForm() {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
+  const [signatureMode, setSignatureMode] = useState("draw"); // draw | type | upload
 
   const [formData, setFormData] = useState({
     template: "professional",
@@ -124,6 +126,14 @@ export default function CeaseAndDesistForm() {
   }, []);
 
   const update = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
+
+  // Switching signature mode clears the other mode's value, since the PDF
+  // prefers an image over the typed name.
+  const changeSignatureMode = (mode) => {
+    setSignatureMode(mode);
+    setFormData(prev => ({ ...prev, signatureImage: null }));
+    if (sigInputRef.current) sigInputRef.current.value = "";
+  };
 
   // Debounced live preview
   useEffect(() => {
@@ -513,33 +523,77 @@ export default function CeaseAndDesistForm() {
                 <h2 className="text-2xl font-bold" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>
                   Signature
                 </h2>
-                <div>
-                  <Label>Signature Name</Label>
-                  <Input
-                    value={formData.signatureName}
-                    onChange={e => update("signatureName", e.target.value)}
-                    placeholder={formData.senderName || "Jane Doe"}
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Rendered in a handwriting font. Defaults to your name.</p>
+
+                {/* Mode tabs */}
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+                  {[
+                    { value: "draw",   label: "Draw",   icon: PenTool },
+                    { value: "type",   label: "Type",   icon: Type },
+                    { value: "upload", label: "Upload", icon: Upload },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => changeSignatureMode(value)}
+                      className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        signatureMode === value
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" /> {label}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <Label>Or upload a signature image (optional)</Label>
-                  {formData.signatureImage ? (
-                    <div className="flex items-center gap-3 mt-2">
-                      <img src={formData.signatureImage} alt="Signature" className="h-12 w-auto border border-slate-200 rounded p-1 bg-white" />
-                      <Button type="button" variant="outline" size="sm" onClick={() => { update("signatureImage", null); if (sigInputRef.current) sigInputRef.current.value = ""; }}>
-                        <X className="w-4 h-4 mr-1" /> Remove
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="mt-2">
-                      <input ref={sigInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => handleImageUpload("signatureImage", e.target.files?.[0])} />
-                      <Button type="button" variant="outline" size="sm" onClick={() => sigInputRef.current?.click()}>
-                        <Upload className="w-4 h-4 mr-1" /> Upload Signature
-                      </Button>
-                    </div>
-                  )}
-                </div>
+
+                {/* Draw */}
+                {signatureMode === "draw" && (
+                  <SignaturePad onChange={dataUrl => update("signatureImage", dataUrl)} />
+                )}
+
+                {/* Type */}
+                {signatureMode === "type" && (
+                  <div>
+                    <Label>Signature Name</Label>
+                    <Input
+                      value={formData.signatureName}
+                      onChange={e => update("signatureName", e.target.value)}
+                      placeholder={formData.senderName || "Jane Doe"}
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Rendered in a handwriting font. Defaults to your name.</p>
+                    {(formData.signatureName || formData.senderName) && (
+                      <div className="mt-3 p-4 bg-white border border-slate-200 rounded-lg">
+                        <p className="text-xs text-slate-400 mb-1">Preview</p>
+                        <span style={{ fontFamily: "Yellowtail, cursive", fontSize: "2rem", color: "#1a1a1a" }}>
+                          {formData.signatureName || formData.senderName}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Upload */}
+                {signatureMode === "upload" && (
+                  <div>
+                    <Label>Upload a signature image</Label>
+                    {formData.signatureImage ? (
+                      <div className="flex items-center gap-3 mt-2">
+                        <img src={formData.signatureImage} alt="Signature" className="h-12 w-auto border border-slate-200 rounded p-1 bg-white" />
+                        <Button type="button" variant="outline" size="sm" onClick={() => { update("signatureImage", null); if (sigInputRef.current) sigInputRef.current.value = ""; }}>
+                          <X className="w-4 h-4 mr-1" /> Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mt-2">
+                        <input ref={sigInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => handleImageUpload("signatureImage", e.target.files?.[0])} />
+                        <Button type="button" variant="outline" size="sm" onClick={() => sigInputRef.current?.click()}>
+                          <Upload className="w-4 h-4 mr-1" /> Upload Signature
+                        </Button>
+                        <p className="text-xs text-slate-500 mt-2">PNG with a transparent background works best.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </form>
 

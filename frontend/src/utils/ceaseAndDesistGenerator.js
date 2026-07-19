@@ -320,9 +320,13 @@ export const generateCeaseAndDesistPDF = async (formData, isPreview = false) => 
     if (formData.signatureImage) {
       const sigImg = await embedImage(pdfDoc, formData.signatureImage);
       if (sigImg) {
-        const d = sigImg.scale(0.4);
-        const h = Math.min(d.height, 42);
-        const w = (d.width / d.height) * h;
+        // Fit within a 220x48pt box, preserving aspect ratio. Drawn signatures
+        // can be very wide, so constrain on both axes.
+        const MAX_W = 220, MAX_H = 48;
+        const ratio = sigImg.width / sigImg.height;
+        let h = MAX_H;
+        let w = h * ratio;
+        if (w > MAX_W) { w = MAX_W; h = w / ratio; }
         page.drawImage(sigImg, { x: margin, y: y - h + 10, width: w, height: h });
         y -= h - 2;
       }
@@ -335,11 +339,6 @@ export const generateCeaseAndDesistPDF = async (formData, isPreview = false) => 
       y -= 8;
     }
 
-    y -= 6;
-    page.drawLine({
-      start: { x: margin, y }, end: { x: margin + 200, y },
-      thickness: 0.75, color: rgb(0.5, 0.5, 0.5),
-    });
     y -= 14;
 
     if (formData.senderName) {

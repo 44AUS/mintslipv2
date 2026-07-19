@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
+import SignaturePad from "@/components/SignaturePad";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
@@ -1092,13 +1093,24 @@ export default function OfferLetterForm() {
                         <Label htmlFor="hr-generated" className="cursor-pointer">Computer Generated</Label>
                       </div>
                       <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="draw" id="hr-draw" />
+                        <Label htmlFor="hr-draw" className="cursor-pointer">Draw Signature</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="custom" id="hr-custom" />
                         <Label htmlFor="hr-custom" className="cursor-pointer">Upload Custom Signature</Label>
                       </div>
                     </RadioGroup>
                   </div>
-                  
-                  {formData.hrSignatureType === "generated" ? (
+
+                  {formData.hrSignatureType === "draw" && (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Draw HR Signature</Label>
+                      <SignaturePad onChange={(dataUrl) => setFormData(prev => ({ ...prev, hrSignatureImage: dataUrl }))} />
+                    </div>
+                  )}
+
+                  {formData.hrSignatureType === "generated" && (
                     <div className="space-y-2 md:col-span-2">
                       <Label>Signature Preview</Label>
                       <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
@@ -1108,7 +1120,9 @@ export default function OfferLetterForm() {
                         <p className="text-xs text-slate-500 mt-2">This signature will be auto-generated from the signer name</p>
                       </div>
                     </div>
-                  ) : (
+                  )}
+
+                  {formData.hrSignatureType === "custom" && (
                     <div className="space-y-2 md:col-span-2">
                       <Label>Upload Signature Image</Label>
                       <p className="text-xs text-slate-500 mb-2">PNG with transparent background recommended</p>
@@ -1197,6 +1211,10 @@ export default function OfferLetterForm() {
                         <Label htmlFor="emp-generated" className="cursor-pointer">Computer Generated</Label>
                       </div>
                       <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="draw" id="emp-draw" />
+                        <Label htmlFor="emp-draw" className="cursor-pointer">Draw Signature</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="custom" id="emp-custom" />
                         <Label htmlFor="emp-custom" className="cursor-pointer">Upload Custom Signature</Label>
                       </div>
@@ -1206,7 +1224,14 @@ export default function OfferLetterForm() {
                       </div>
                     </RadioGroup>
                   </div>
-                  
+
+                  {formData.employeeSignatureType === "draw" && (
+                    <div className="space-y-2 md:col-span-2">
+                      <Label>Draw Employee Signature</Label>
+                      <SignaturePad onChange={(dataUrl) => setFormData(prev => ({ ...prev, employeeSignatureImage: dataUrl }))} />
+                    </div>
+                  )}
+
                   {formData.employeeSignatureType === "generated" && (
                     <>
                       <div className="space-y-2">

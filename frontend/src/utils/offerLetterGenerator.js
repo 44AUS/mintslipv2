@@ -456,13 +456,17 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     // First draw the signature line, then position signature above it
     const hrSignatureLineY = y;
     
-    if (formData.hrSignatureType === "custom" && formData.hrSignatureImage) {
-      // Custom signature image - position above the line
+    if ((formData.hrSignatureType === "custom" || formData.hrSignatureType === "draw") && formData.hrSignatureImage) {
+      // Uploaded or hand-drawn signature image - position above the line.
+      // Fit within a 200x40pt box preserving aspect ratio, since drawn
+      // signatures can be much wider than uploaded ones.
       const hrSigImage = await embedImage(pdfDoc, formData.hrSignatureImage);
       if (hrSigImage) {
-        const sigDims = hrSigImage.scale(0.3);
-        const sigHeight = Math.min(sigDims.height, 40);
-        const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
+        const MAX_W = 200, MAX_H = 40;
+        const ratio = hrSigImage.width / hrSigImage.height;
+        let sigHeight = MAX_H;
+        let sigWidth = sigHeight * ratio;
+        if (sigWidth > MAX_W) { sigWidth = MAX_W; sigHeight = sigWidth / ratio; }
         page.drawImage(hrSigImage, {
           x: margin,
           y: hrSignatureLineY + 2, // Position just above the line
@@ -547,14 +551,16 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     const empSigType = formData.employeeSignatureType || 'blank';
     const empSignatureLineY = acceptY - 30;
     
-    if (empSigType === "custom" && formData.employeeSignatureImage) {
-      // Custom signature image - position ABOVE the signature line
+    if ((empSigType === "custom" || empSigType === "draw") && formData.employeeSignatureImage) {
+      // Uploaded or hand-drawn signature image - position ABOVE the signature
+      // line, fitted within a 200x35pt box preserving aspect ratio.
       const empSigImage = await embedImage(pdfDoc, formData.employeeSignatureImage);
       if (empSigImage) {
-        const sigDims = empSigImage.scale(0.3);
-        const sigHeight = Math.min(sigDims.height, 35);
-        const sigWidth = (sigDims.width / sigDims.height) * sigHeight;
-        // Position signature so its bottom aligns just above the signature line
+        const MAX_W = 200, MAX_H = 35;
+        const ratio = empSigImage.width / empSigImage.height;
+        let sigHeight = MAX_H;
+        let sigWidth = sigHeight * ratio;
+        if (sigWidth > MAX_W) { sigWidth = MAX_W; sigHeight = sigWidth / ratio; }
         page.drawImage(empSigImage, {
           x: margin,
           y: empSignatureLineY + 2, // Position just above the line

@@ -22,7 +22,8 @@ import {
   X,
   TreePine,
   ShieldAlert,
-  Scale
+  Scale,
+  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -176,6 +177,16 @@ const generators = [
     price: "$9.99",
     category: "Legal Documents",
     tags: ["power of attorney", "poa", "durable", "legal", "agent", "attorney-in-fact", "estate planning", "incapacity", "notary"]
+  },
+  {
+    id: "commercial-lease",
+    name: "Commercial Lease Agreement",
+    description: "Create a commercial lease for office, retail, warehouse, or restaurant space with NNN, gross, or percentage rent.",
+    path: "/commercial-lease-generator",
+    icon: Building2,
+    price: "$9.99",
+    category: "Business Documents",
+    tags: ["commercial lease", "lease agreement", "nnn", "triple net", "office lease", "retail lease", "warehouse", "landlord", "tenant", "rental"]
   },
   {
     id: "vehicle-bill-of-sale",

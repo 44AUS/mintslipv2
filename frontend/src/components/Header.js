@@ -41,6 +41,7 @@ const OTHER_FORMS = [
   { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
   { name: "Cease & Desist Letter", path: "/cease-and-desist-generator", icon: FileSpreadsheet },
   { name: "Power of Attorney", path: "/power-of-attorney-generator", icon: FileSpreadsheet },
+  { name: "Commercial Lease", path: "/commercial-lease-generator", icon: FileSpreadsheet },
   { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
   { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
   // Add more forms here as needed

@@ -39,6 +39,7 @@ const DOC_ICONS = {
   "offer-letter":         Briefcase,
   "cease-and-desist":     ShieldAlert,
   "power-of-attorney":    Scale,
+  "commercial-lease":     Building2,
   "vehicle-bill-of-sale": Car,
   "schedule-c":           FileBarChart,
   "utility-bill":         FileText,

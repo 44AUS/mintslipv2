@@ -17,6 +17,8 @@ import CeaseAndDesistForm from "@/pages/CeaseAndDesistForm";
 import CeaseAndDesistLanding from "@/pages/CeaseAndDesistLanding";
 import PowerOfAttorneyForm from "@/pages/PowerOfAttorneyForm";
 import PowerOfAttorneyLanding from "@/pages/PowerOfAttorneyLanding";
+import CommercialLeaseForm from "@/pages/CommercialLeaseForm";
+import CommercialLeaseLanding from "@/pages/CommercialLeaseLanding";
 import ScheduleCForm from "@/pages/ScheduleCForm";
 import VehicleBillOfSaleForm from "@/pages/VehicleBillOfSaleForm";
 import UtilityBillForm from "@/pages/UtilityBillForm";
@@ -285,6 +287,11 @@ function App() {
             <Route path="/durable-power-of-attorney" element={<PowerOfAttorneyLanding />} />
             <Route path="/power-of-attorney" element={<PowerOfAttorneyLanding />} />
             <Route path="/power-of-attorney-form" element={<PowerOfAttorneyLanding />} />
+            <Route path="/commercial-lease-generator" element={<CommercialLeaseForm />} />
+            {/* SEO landing pages for the commercial lease */}
+            <Route path="/commercial-lease-agreement" element={<CommercialLeaseLanding />} />
+            <Route path="/commercial-lease" element={<CommercialLeaseLanding />} />
+            <Route path="/commercial-lease-template" element={<CommercialLeaseLanding />} />
             <Route path="/schedule-c-generator" element={<ScheduleCForm />} />
             <Route path="/vehicle-bill-of-sale-generator" element={<VehicleBillOfSaleForm />} />
             <Route path="/service-expense-generator" element={<UtilityBillForm />} />

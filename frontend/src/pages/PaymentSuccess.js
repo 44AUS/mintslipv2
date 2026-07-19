@@ -16,6 +16,7 @@ import { generateAndDownloadResume } from '@/utils/resumeGenerator';
 import { generateAndDownloadOfferLetter } from '@/utils/offerLetterGenerator';
 import { generateAndDownloadCeaseAndDesist } from '@/utils/ceaseAndDesistGenerator';
 import { generateAndDownloadPowerOfAttorney } from '@/utils/powerOfAttorneyGenerator';
+import { generateAndDownloadCommercialLease } from '@/utils/commercialLeaseGenerator';
 import { generateAndDownloadScheduleC } from '@/utils/scheduleCGenerator';
 import { generateAndDownloadUtilityBill } from '@/utils/utilityBillGenerator';
 import { generateAndDownloadVehicleBillOfSale } from '@/utils/vehicleBillOfSaleGenerator';
@@ -364,6 +365,21 @@ export default function PaymentSuccess() {
 
           toast.success('Your power of attorney has been downloaded!');
         }
+      } else if (orderType === 'commercial-lease') {
+        const formDataStr = localStorage.getItem('pendingCommercialLeaseData');
+
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+
+          pdfBlob = await generateAndDownloadCommercialLease(formData, true);
+          generated = true;
+
+          if (emailToUse && pdfBlob) {
+            sendFileEmail(pdfBlob, emailToUse, 'commercial-lease', formData.landlordName);
+          }
+
+          toast.success('Your commercial lease has been downloaded!');
+        }
       } else if (orderType === 'schedule-c') {
         const formDataStr = localStorage.getItem('pendingScheduleCData');
         
@@ -458,6 +474,7 @@ export default function PaymentSuccess() {
       'offer-letter': 'offer_letter.pdf',
       'cease-and-desist': 'cease_and_desist_letter.pdf',
       'power-of-attorney': 'durable_power_of_attorney.pdf',
+      'commercial-lease': 'commercial_lease_agreement.pdf',
       'schedule-c': 'schedule_c.pdf',
       'utility-bill': 'utility_bill.pdf',
       'vehicle-bill-of-sale': 'vehicle_bill_of_sale.pdf',
@@ -478,6 +495,7 @@ export default function PaymentSuccess() {
       'offer-letter': 'Offer Letter',
       'cease-and-desist': 'Cease and Desist Letter',
       'power-of-attorney': 'Power of Attorney',
+      'commercial-lease': 'Commercial Lease Agreement',
       'schedule-c': 'Schedule C',
       'utility-bill': 'Utility Bill',
       'vehicle-bill-of-sale': 'Vehicle Bill of Sale',
@@ -595,6 +613,14 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           await generateAndDownloadPowerOfAttorney(formData);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      } else if (orderType === 'commercial-lease') {
+        const formDataStr = localStorage.getItem('pendingCommercialLeaseData');
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          await generateAndDownloadCommercialLease(formData);
           regenerated = true;
           toast.success('Download started!');
         }

@@ -90,6 +90,7 @@ const DOCUMENT_TYPES = {
   "1099-nec": "1099-NEC",
   "1099-misc": "1099-MISC",
   "offer-letter": "Offer Letter",
+  "cease-and-desist": "Cease and Desist Letter",
   "vehicle-bill-of-sale": "Vehicle Bill of Sale",
   "schedule-c": "Schedule C"
 };

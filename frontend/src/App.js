@@ -13,6 +13,8 @@ import W9Form from "@/pages/W9Form";
 import Form1099NEC from "@/pages/Form1099NEC";
 import Form1099MISC from "@/pages/Form1099MISC";
 import OfferLetterForm from "@/pages/OfferLetterForm";
+import CeaseAndDesistForm from "@/pages/CeaseAndDesistForm";
+import CeaseAndDesistLanding from "@/pages/CeaseAndDesistLanding";
 import ScheduleCForm from "@/pages/ScheduleCForm";
 import VehicleBillOfSaleForm from "@/pages/VehicleBillOfSaleForm";
 import UtilityBillForm from "@/pages/UtilityBillForm";
@@ -271,6 +273,11 @@ function App() {
             <Route path="/1099-nec-generator" element={<Form1099NEC />} />
             <Route path="/1099-misc-generator" element={<Form1099MISC />} />
             <Route path="/offer-letter-generator" element={<OfferLetterForm />} />
+            <Route path="/cease-and-desist-generator" element={<CeaseAndDesistForm />} />
+            {/* SEO landing pages for the cease and desist letter */}
+            <Route path="/cease-and-desist-letter" element={<CeaseAndDesistLanding />} />
+            <Route path="/cease-and-desist" element={<CeaseAndDesistLanding />} />
+            <Route path="/cease-and-desist-template" element={<CeaseAndDesistLanding />} />
             <Route path="/schedule-c-generator" element={<ScheduleCForm />} />
             <Route path="/vehicle-bill-of-sale-generator" element={<VehicleBillOfSaleForm />} />
             <Route path="/service-expense-generator" element={<UtilityBillForm />} />

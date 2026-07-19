@@ -20,7 +20,7 @@ import {
 import {
   FileText,
   Receipt, FileSpreadsheet, FileBarChart,
-  Building2, Car, Briefcase,
+  Building2, Car, Briefcase, ShieldAlert,
 } from "lucide-react";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import "../admin-theme.css";
@@ -37,6 +37,7 @@ const DOC_ICONS = {
   "1099-misc":            FileSpreadsheet,
   "bank-statement":       Building2,
   "offer-letter":         Briefcase,
+  "cease-and-desist":     ShieldAlert,
   "vehicle-bill-of-sale": Car,
   "schedule-c":           FileBarChart,
   "utility-bill":         FileText,

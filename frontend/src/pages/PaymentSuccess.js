@@ -14,6 +14,7 @@ import { generateAndDownload1099MISC } from '@/utils/1099miscGenerator';
 import { generateAndDownloadBankStatement } from '@/utils/bankStatementGenerator';
 import { generateAndDownloadResume } from '@/utils/resumeGenerator';
 import { generateAndDownloadOfferLetter } from '@/utils/offerLetterGenerator';
+import { generateAndDownloadCeaseAndDesist } from '@/utils/ceaseAndDesistGenerator';
 import { generateAndDownloadScheduleC } from '@/utils/scheduleCGenerator';
 import { generateAndDownloadUtilityBill } from '@/utils/utilityBillGenerator';
 import { generateAndDownloadVehicleBillOfSale } from '@/utils/vehicleBillOfSaleGenerator';
@@ -332,6 +333,21 @@ export default function PaymentSuccess() {
 
           toast.success('Your offer letter has been downloaded!');
         }
+      } else if (orderType === 'cease-and-desist') {
+        const formDataStr = localStorage.getItem('pendingCeaseAndDesistData');
+
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+
+          pdfBlob = await generateAndDownloadCeaseAndDesist(formData, true);
+          generated = true;
+
+          if (emailToUse && pdfBlob) {
+            sendFileEmail(pdfBlob, emailToUse, 'cease-and-desist', formData.senderName);
+          }
+
+          toast.success('Your cease and desist letter has been downloaded!');
+        }
       } else if (orderType === 'schedule-c') {
         const formDataStr = localStorage.getItem('pendingScheduleCData');
         
@@ -424,6 +440,7 @@ export default function PaymentSuccess() {
       '1099-nec': '1099_nec.pdf',
       'bank-statement': 'bank_statement.pdf',
       'offer-letter': 'offer_letter.pdf',
+      'cease-and-desist': 'cease_and_desist_letter.pdf',
       'schedule-c': 'schedule_c.pdf',
       'utility-bill': 'utility_bill.pdf',
       'vehicle-bill-of-sale': 'vehicle_bill_of_sale.pdf',
@@ -442,6 +459,7 @@ export default function PaymentSuccess() {
       '1099-nec': '1099-NEC Form',
       'bank-statement': 'Bank Statement',
       'offer-letter': 'Offer Letter',
+      'cease-and-desist': 'Cease and Desist Letter',
       'schedule-c': 'Schedule C',
       'utility-bill': 'Utility Bill',
       'vehicle-bill-of-sale': 'Vehicle Bill of Sale',
@@ -543,6 +561,14 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           await generateAndDownloadOfferLetter(formData);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      } else if (orderType === 'cease-and-desist') {
+        const formDataStr = localStorage.getItem('pendingCeaseAndDesistData');
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          await generateAndDownloadCeaseAndDesist(formData);
           regenerated = true;
           toast.success('Download started!');
         }

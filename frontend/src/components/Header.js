@@ -39,6 +39,7 @@ const OTHER_FORMS = [
   { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
   { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
   { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
+  { name: "Cease & Desist Letter", path: "/cease-and-desist-generator", icon: FileSpreadsheet },
   { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
   { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
   // Add more forms here as needed

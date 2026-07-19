@@ -20,7 +20,8 @@ import {
   Grid3X3,
   List,
   X,
-  TreePine
+  TreePine,
+  ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,6 +155,16 @@ const generators = [
     price: "$9.99",
     category: "Employment Documents",
     tags: ["offer letter", "employment", "job offer", "hiring", "hr", "signature", "template"]
+  },
+  {
+    id: "cease-and-desist",
+    name: "Cease and Desist Letter",
+    description: "Create a formal demand letter to stop harassment, defamation, copyright infringement, or debt collector calls.",
+    path: "/cease-and-desist-generator",
+    icon: ShieldAlert,
+    price: "$9.99",
+    category: "Legal Documents",
+    tags: ["cease and desist", "legal", "demand letter", "harassment", "defamation", "copyright", "infringement", "fdcpa", "debt collector"]
   },
   {
     id: "vehicle-bill-of-sale",

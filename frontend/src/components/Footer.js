@@ -14,6 +14,7 @@ const FOOTER_LINKS = {
       { name: "1099-NEC Form Generator", path: "/1099-nec-generator" },
       { name: "1099-MISC Form Generator", path: "/1099-misc-generator" },
       { name: "Offer Letter Generator", path: "/offer-letter-generator" },
+      { name: "Cease & Desist Letter", path: "/cease-and-desist-generator" },
       { name: "Schedule C Form Generator", path: "/schedule-c-generator" },
       { name: "Vehicle Bill of Sale Generator", path: "/vehicle-bill-of-sale-generator" },
       // { name: "Service Expense Generator", path: "/service-expense-generator" },

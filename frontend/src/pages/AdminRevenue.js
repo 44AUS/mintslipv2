@@ -19,6 +19,7 @@ const DOCUMENT_TYPES = {
   "1099-misc": "1099-MISC",
   "bank-statement": "Bank Statement",
   "offer-letter": "Offer Letter",
+  "cease-and-desist": "Cease and Desist Letter",
   "vehicle-bill-of-sale": "Vehicle Bill of Sale",
   "schedule-c": "Schedule C",
   "utility-bill": "Utility Bill",

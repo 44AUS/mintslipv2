@@ -486,13 +486,6 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
       });
     }
     
-    // Signature line
-    page.drawLine({
-      start: { x: margin, y: hrSignatureLineY },
-      end: { x: margin + 200, y: hrSignatureLineY },
-      thickness: 1,
-      color: rgb(0.3, 0.3, 0.3),
-    });
     y = hrSignatureLineY - 15;
     
     page.drawText(formData.signerName || '[Signer Name]', {

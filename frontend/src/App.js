@@ -15,6 +15,8 @@ import Form1099MISC from "@/pages/Form1099MISC";
 import OfferLetterForm from "@/pages/OfferLetterForm";
 import CeaseAndDesistForm from "@/pages/CeaseAndDesistForm";
 import CeaseAndDesistLanding from "@/pages/CeaseAndDesistLanding";
+import PowerOfAttorneyForm from "@/pages/PowerOfAttorneyForm";
+import PowerOfAttorneyLanding from "@/pages/PowerOfAttorneyLanding";
 import ScheduleCForm from "@/pages/ScheduleCForm";
 import VehicleBillOfSaleForm from "@/pages/VehicleBillOfSaleForm";
 import UtilityBillForm from "@/pages/UtilityBillForm";
@@ -278,6 +280,11 @@ function App() {
             <Route path="/cease-and-desist-letter" element={<CeaseAndDesistLanding />} />
             <Route path="/cease-and-desist" element={<CeaseAndDesistLanding />} />
             <Route path="/cease-and-desist-template" element={<CeaseAndDesistLanding />} />
+            <Route path="/power-of-attorney-generator" element={<PowerOfAttorneyForm />} />
+            {/* SEO landing pages for the durable power of attorney */}
+            <Route path="/durable-power-of-attorney" element={<PowerOfAttorneyLanding />} />
+            <Route path="/power-of-attorney" element={<PowerOfAttorneyLanding />} />
+            <Route path="/power-of-attorney-form" element={<PowerOfAttorneyLanding />} />
             <Route path="/schedule-c-generator" element={<ScheduleCForm />} />
             <Route path="/vehicle-bill-of-sale-generator" element={<VehicleBillOfSaleForm />} />
             <Route path="/service-expense-generator" element={<UtilityBillForm />} />

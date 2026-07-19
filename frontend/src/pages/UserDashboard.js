@@ -33,6 +33,7 @@ const ALL_DOCUMENT_TYPES = {
   "1099-misc": "1099-MISC",
   "offer-letter": "Offer Letter",
   "cease-and-desist": "Cease and Desist Letter",
+  "power-of-attorney": "Power of Attorney",
   "vehicle-bill-of-sale": "Vehicle Bill of Sale",
   "schedule-c": "Schedule C",
   "bank-statement": "Bank Statement",

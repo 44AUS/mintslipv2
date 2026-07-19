@@ -21,7 +21,8 @@ import {
   List,
   X,
   TreePine,
-  ShieldAlert
+  ShieldAlert,
+  Scale
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,6 +166,16 @@ const generators = [
     price: "$9.99",
     category: "Legal Documents",
     tags: ["cease and desist", "legal", "demand letter", "harassment", "defamation", "copyright", "infringement", "fdcpa", "debt collector"]
+  },
+  {
+    id: "power-of-attorney",
+    name: "Durable General Power of Attorney",
+    description: "Appoint an agent to manage your finances and property, with durability, notary, and witness blocks included.",
+    path: "/power-of-attorney-generator",
+    icon: Scale,
+    price: "$9.99",
+    category: "Legal Documents",
+    tags: ["power of attorney", "poa", "durable", "legal", "agent", "attorney-in-fact", "estate planning", "incapacity", "notary"]
   },
   {
     id: "vehicle-bill-of-sale",

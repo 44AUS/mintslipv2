@@ -47,6 +47,75 @@ const PROPERTY_TYPES = [
 
 const ENTITY_TYPES = ["Individual", "Sole Proprietorship", "LLC", "Corporation", "Partnership", "Non-Profit"];
 
+const H2 = ({ children }) => (
+  <h2 className="text-2xl font-bold" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>{children}</h2>
+);
+
+/**
+ * Defined at module scope (not inside the form component) so its identity is
+ * stable across renders. If it were declared inline, every keystroke would
+ * create a new component type and React would remount SignaturePad, wiping
+ * the canvas the moment a stroke updated form state.
+ */
+function SignatureBlock({
+  which, mode, label, nameValue, imageField, inputRef,
+  formData, onModeChange, onUpdate, onUpload,
+}) {
+  return (
+    <div className="space-y-3">
+      <Label>{label}</Label>
+      <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+        {[
+          { value: "draw",   label: "Draw",   icon: PenTool },
+          { value: "type",   label: "Type",   icon: Type },
+          { value: "upload", label: "Upload", icon: Upload },
+        ].map(({ value, label: l, icon: Icon }) => (
+          <button
+            key={value} type="button"
+            onClick={() => onModeChange(which, value)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              mode === value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <Icon className="w-4 h-4" /> {l}
+          </button>
+        ))}
+      </div>
+
+      {mode === "draw" && <SignaturePad height={170} onChange={(d) => onUpdate(imageField, d)} />}
+
+      {mode === "type" && (
+        <div className="p-4 bg-white border border-slate-200 rounded-lg">
+          <p className="text-xs text-slate-400 mb-1">Preview — the name below is rendered on the lease</p>
+          <span style={{ fontFamily: "Yellowtail, cursive", fontSize: "2rem", color: "#1a1a3a" }}>
+            {nameValue || "Name"}
+          </span>
+        </div>
+      )}
+
+      {mode === "upload" && (
+        <div>
+          {formData[imageField] ? (
+            <div className="flex items-center gap-3">
+              <img src={formData[imageField]} alt="Signature" className="h-12 w-auto border border-slate-200 rounded p-1 bg-white" />
+              <Button type="button" variant="outline" size="sm" onClick={() => { onUpdate(imageField, null); if (inputRef.current) inputRef.current.value = ""; }}>
+                <X className="w-4 h-4 mr-1" /> Remove
+              </Button>
+            </div>
+          ) : (
+            <>
+              <input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => onUpload(imageField, e.target.files?.[0])} />
+              <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                <Upload className="w-4 h-4 mr-1" /> Upload Signature
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CommercialLeaseForm() {
   const navigate = useNavigate();
   const authEnabled = useAuthEnabled();
@@ -259,63 +328,7 @@ export default function CommercialLeaseForm() {
 
   const selectedLeaseType = LEASE_TYPES.find(t => t.value === formData.leaseType);
 
-  const SignatureBlock = ({ which, mode, label, nameValue, imageField, inputRef }) => (
-    <div className="space-y-3">
-      <Label>{label}</Label>
-      <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
-        {[
-          { value: "draw",   label: "Draw",   icon: PenTool },
-          { value: "type",   label: "Type",   icon: Type },
-          { value: "upload", label: "Upload", icon: Upload },
-        ].map(({ value, label: l, icon: Icon }) => (
-          <button
-            key={value} type="button"
-            onClick={() => changeSigMode(which, value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              mode === value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <Icon className="w-4 h-4" /> {l}
-          </button>
-        ))}
-      </div>
-
-      {mode === "draw" && <SignaturePad height={170} onChange={(d) => update(imageField, d)} />}
-
-      {mode === "type" && (
-        <div className="p-4 bg-white border border-slate-200 rounded-lg">
-          <p className="text-xs text-slate-400 mb-1">Preview — the name below is rendered on the lease</p>
-          <span style={{ fontFamily: "Yellowtail, cursive", fontSize: "2rem", color: "#1a1a3a" }}>
-            {nameValue || "Name"}
-          </span>
-        </div>
-      )}
-
-      {mode === "upload" && (
-        <div>
-          {formData[imageField] ? (
-            <div className="flex items-center gap-3">
-              <img src={formData[imageField]} alt="Signature" className="h-12 w-auto border border-slate-200 rounded p-1 bg-white" />
-              <Button type="button" variant="outline" size="sm" onClick={() => { update(imageField, null); if (inputRef.current) inputRef.current.value = ""; }}>
-                <X className="w-4 h-4 mr-1" /> Remove
-              </Button>
-            </div>
-          ) : (
-            <>
-              <input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => handleImageUpload(imageField, e.target.files?.[0])} />
-              <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                <Upload className="w-4 h-4 mr-1" /> Upload Signature
-              </Button>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
-  const H2 = ({ children }) => (
-    <h2 className="text-2xl font-bold" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>{children}</h2>
-  );
+  const sigProps = { formData, onModeChange: changeSigMode, onUpdate: update, onUpload: handleImageUpload };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -646,17 +659,17 @@ export default function CommercialLeaseForm() {
                 <H2>Signatures</H2>
                 <p className="text-sm text-slate-500">Sign here, or leave blank and sign by hand after printing.</p>
 
-                <SignatureBlock which="landlord" mode={landlordSigMode} label="Landlord Signature"
+                <SignatureBlock {...sigProps} which="landlord" mode={landlordSigMode} label="Landlord Signature"
                   nameValue={formData.landlordName} imageField="landlordSignatureImage" inputRef={landlordSigRef} />
 
                 <div className="pt-4 border-t border-slate-100">
-                  <SignatureBlock which="tenant" mode={tenantSigMode} label="Tenant Signature"
+                  <SignatureBlock {...sigProps} which="tenant" mode={tenantSigMode} label="Tenant Signature"
                     nameValue={formData.tenantName} imageField="tenantSignatureImage" inputRef={tenantSigRef} />
                 </div>
 
                 {formData.includeGuarantor && (
                   <div className="pt-4 border-t border-slate-100">
-                    <SignatureBlock which="guarantor" mode={guarantorSigMode} label="Guarantor Signature"
+                    <SignatureBlock {...sigProps} which="guarantor" mode={guarantorSigMode} label="Guarantor Signature"
                       nameValue={formData.guarantorName} imageField="guarantorSignatureImage" inputRef={guarantorSigRef} />
                   </div>
                 )}

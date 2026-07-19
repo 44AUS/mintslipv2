@@ -40,6 +40,75 @@ const STATE_ABBR = [
   "OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
 ];
 
+/**
+ * Defined at module scope (not inside the form component) so its identity is
+ * stable across renders. If it were declared inline, every keystroke would
+ * create a new component type and React would remount SignaturePad, wiping
+ * the canvas the moment a stroke updated form state.
+ */
+function SignatureBlock({
+  which, mode, label, imageField, inputRef,
+  formData, onModeChange, onUpdate, onUpload,
+}) {
+  return (
+    <div className="space-y-3">
+      <Label>{label}</Label>
+      <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+        {[
+          { value: "draw",   label: "Draw",   icon: PenTool },
+          { value: "type",   label: "Type",   icon: Type },
+          { value: "upload", label: "Upload", icon: Upload },
+        ].map(({ value, label: l, icon: Icon }) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onModeChange(which, value)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              mode === value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <Icon className="w-4 h-4" /> {l}
+          </button>
+        ))}
+      </div>
+
+      {mode === "draw" && (
+        <SignaturePad height={170} onChange={(dataUrl) => onUpdate(imageField, dataUrl)} />
+      )}
+
+      {mode === "type" && (
+        <div className="p-4 bg-white border border-slate-200 rounded-lg">
+          <p className="text-xs text-slate-400 mb-1">Preview — the name below is rendered on the document</p>
+          <span style={{ fontFamily: "Yellowtail, cursive", fontSize: "2rem", color: "#1a1a3a" }}>
+            {which === "principal" ? (formData.principalName || "Principal Name") : (formData.agentName || "Agent Name")}
+          </span>
+        </div>
+      )}
+
+      {mode === "upload" && (
+        <div>
+          {formData[imageField] ? (
+            <div className="flex items-center gap-3">
+              <img src={formData[imageField]} alt="Signature" className="h-12 w-auto border border-slate-200 rounded p-1 bg-white" />
+              <Button type="button" variant="outline" size="sm" onClick={() => { onUpdate(imageField, null); if (inputRef.current) inputRef.current.value = ""; }}>
+                <X className="w-4 h-4 mr-1" /> Remove
+              </Button>
+            </div>
+          ) : (
+            <>
+              <input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => onUpload(imageField, e.target.files?.[0])} />
+              <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                <Upload className="w-4 h-4 mr-1" /> Upload Signature
+              </Button>
+              <p className="text-xs text-slate-500 mt-2">PNG with a transparent background works best.</p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PowerOfAttorneyForm() {
   const navigate = useNavigate();
   const authEnabled = useAuthEnabled();
@@ -253,64 +322,7 @@ export default function PowerOfAttorneyForm() {
     ? POA_POWERS.length
     : Object.values(formData.powers).filter(Boolean).length;
 
-  // Reusable signature block
-  const SignatureBlock = ({ which, mode, label, imageField, inputRef }) => (
-    <div className="space-y-3">
-      <Label>{label}</Label>
-      <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
-        {[
-          { value: "draw",   label: "Draw",   icon: PenTool },
-          { value: "type",   label: "Type",   icon: Type },
-          { value: "upload", label: "Upload", icon: Upload },
-        ].map(({ value, label: l, icon: Icon }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => changeSigMode(which, value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              mode === value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <Icon className="w-4 h-4" /> {l}
-          </button>
-        ))}
-      </div>
-
-      {mode === "draw" && (
-        <SignaturePad height={170} onChange={(dataUrl) => update(imageField, dataUrl)} />
-      )}
-
-      {mode === "type" && (
-        <div className="p-4 bg-white border border-slate-200 rounded-lg">
-          <p className="text-xs text-slate-400 mb-1">Preview — the name below is rendered on the document</p>
-          <span style={{ fontFamily: "Yellowtail, cursive", fontSize: "2rem", color: "#1a1a3a" }}>
-            {which === "principal" ? (formData.principalName || "Principal Name") : (formData.agentName || "Agent Name")}
-          </span>
-        </div>
-      )}
-
-      {mode === "upload" && (
-        <div>
-          {formData[imageField] ? (
-            <div className="flex items-center gap-3">
-              <img src={formData[imageField]} alt="Signature" className="h-12 w-auto border border-slate-200 rounded p-1 bg-white" />
-              <Button type="button" variant="outline" size="sm" onClick={() => { update(imageField, null); if (inputRef.current) inputRef.current.value = ""; }}>
-                <X className="w-4 h-4 mr-1" /> Remove
-              </Button>
-            </div>
-          ) : (
-            <>
-              <input ref={inputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={e => handleImageUpload(imageField, e.target.files?.[0])} />
-              <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                <Upload className="w-4 h-4 mr-1" /> Upload Signature
-              </Button>
-              <p className="text-xs text-slate-500 mt-2">PNG with a transparent background works best.</p>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  const sigProps = { formData, onModeChange: changeSigMode, onUpdate: update, onUpload: handleImageUpload };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -644,6 +656,7 @@ export default function PowerOfAttorneyForm() {
                 </p>
 
                 <SignatureBlock
+                  {...sigProps}
                   which="principal" mode={principalSigMode}
                   label="Principal Signature"
                   imageField="principalSignatureImage" inputRef={principalSigRef}
@@ -652,6 +665,7 @@ export default function PowerOfAttorneyForm() {
                 {formData.includeAgentAcceptance && (
                   <div className="pt-4 border-t border-slate-100">
                     <SignatureBlock
+                      {...sigProps}
                       which="agent" mode={agentSigMode}
                       label="Agent Signature (acceptance page)"
                       imageField="agentSignatureImage" inputRef={agentSigRef}

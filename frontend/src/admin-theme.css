@@ -756,8 +756,10 @@ ion-modal ion-content {
   overflow-y: auto;
 }
 
+/* relative, not static: the scroll layer must stay positioned so it paints
+   above ion-content's absolutely-positioned background layer */
 ion-modal ion-content::part(scroll) {
-  position: static;
+  position: relative;
 }
 ion-modal ion-footer ion-toolbar {
   --background: var(--admin-card-bg);

@@ -744,6 +744,21 @@ ion-modal ion-header ion-toolbar {
 }
 
 ion-modal ion-content  { --background: var(--admin-card-bg); }
+
+/* With --height:auto, ion-content's default height:100% + contain:size
+   collapses the modal body to 0px (header/footer still render). Let it
+   size to its content and scroll once it outgrows the viewport cap. */
+ion-modal ion-content {
+  height: auto;
+  flex: 0 1 auto;
+  contain: layout style;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+}
+
+ion-modal ion-content::part(scroll) {
+  position: static;
+}
 ion-modal ion-footer ion-toolbar {
   --background: var(--admin-card-bg);
   --color: var(--admin-text);

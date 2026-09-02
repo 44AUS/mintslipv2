@@ -383,8 +383,8 @@ export default function AdminUsers() {
                             </td>
 
                             {/* Actions */}
-                            <td className="ion-activatable" style={{ ...tdBase, padding: "0 8px", width: 60 }}>
-                              <ion-ripple-effect />
+                            {/* overflow must stay visible here or the action menu gets clipped to the 64px row */}
+                            <td style={{ ...tdBase, padding: "0 8px", width: 60, overflow: "visible" }}>
                               <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 <button
                                   className="admin-action-btn"

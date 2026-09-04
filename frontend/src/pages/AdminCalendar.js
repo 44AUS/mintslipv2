@@ -7,24 +7,10 @@ import {
 import {
   chevronBackOutline, chevronForwardOutline, chevronDownOutline,
 } from "ionicons/icons";
-import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
-import AdminDetailModal from "@/components/AdminDetailModal";
+import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-const TEMPLATE_NAMES = {
-  "template-a": "Gusto",
-  "template-b": "ADP",
-  "template-c": "Workday",
-  "template-h": "OnPay",
-};
-
-function templateLabel(t) {
-  if (!t) return null;
-  if (String(t).startsWith("custom:")) return "Custom template";
-  return TEMPLATE_NAMES[t] || t;
-}
 
 const DOC_COLORS = {
   "paystub":               "#16a34a",
@@ -99,7 +85,6 @@ export default function AdminCalendar() {
   const [loading, setLoading] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const [detail, setDetail] = useState(null);
-  const [refunding, setRefunding] = useState(false);
 
   const year = curDate.getFullYear();
   const month = curDate.getMonth();
@@ -158,32 +143,6 @@ export default function AdminCalendar() {
   const prevMonth = () => setCurDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurDate(new Date(year, month + 1, 1));
   const goToday  = () => setCurDate(new Date(today.getFullYear(), today.getMonth(), 1));
-
-  // Full refund of the purchase shown in the detail modal (same endpoint the
-  // dashboard's refund flow uses).
-  const refundDetail = async () => {
-    if (!detail || detail.refunded || !detail.stripePaymentIntentId) return;
-    const amount = Number(detail.amount) || 0;
-    if (!window.confirm(`Refund $${amount.toFixed(2)} to ${detail.email || detail.paypalEmail || "this customer"}?`)) return;
-    setRefunding(true);
-    try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${BACKEND_URL}/api/admin/purchases/${detail.id}/refund`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ amount_dollars: amount, reason: "requested_by_customer" }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.detail || "Refund failed");
-      toast.success(`Refund of $${amount.toFixed(2)} issued`);
-      setPurchases(prev => prev.map(p => p.id === detail.id ? { ...p, refunded: true, refundedAmount: amount } : p));
-      setDetail(d => (d ? { ...d, refunded: true, refundedAmount: amount } : d));
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setRefunding(false);
-    }
-  };
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -461,54 +420,15 @@ export default function AdminCalendar() {
       </div>
 
       {/* ── Payment detail modal (whodat admin payments style) ── */}
-      <AdminDetailModal
-        isOpen={!!detail}
+      <PurchaseDetailModal
+        purchase={detail}
         onClose={() => setDetail(null)}
-        title={detail ? (detail.email || detail.paypalEmail || "Payment") : "Payment"}
-        rows={detail ? [
-          ["Purchase ID", <span style={{ fontFamily: "monospace", fontSize: "0.8rem" }}>{detail.id || detail.stripePaymentIntentId || "—"}</span>],
-          ["Customer", detail.email || detail.paypalEmail || "—"],
-          ["Type", detail.userId
-            ? <span className="admin-badge admin-badge-green">Registered</span>
-            : <span className="admin-badge admin-badge-slate">Guest</span>],
-          ["Document", (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: DOC_COLORS[detail.documentType] || "#64748b", display: "inline-block" }} />
-              {DOC_LABELS[detail.documentType] || detail.documentType || "—"}
-            </span>
-          )],
-          templateLabel(detail.template) && ["Template", templateLabel(detail.template)],
-          ["Amount", <span style={{ fontWeight: 700 }}>{`$${(detail.amount || 0).toFixed(2)}`}</span>],
-          detail.discountCode && ["Discount", `${detail.discountCode}${detail.discountAmount ? ` (−$${Number(detail.discountAmount).toFixed(2)})` : ""}`],
-          ["Status", detail.refunded
-            ? <span className="admin-badge admin-badge-amber">Refunded{detail.refundedAmount ? ` $${Number(detail.refundedAmount).toFixed(2)}` : ""}</span>
-            : <span className="admin-badge admin-badge-green">Paid</span>],
-          detail.ipAddress && ["IP Address", <span style={{ fontFamily: "monospace", fontSize: "0.8rem" }}>{detail.ipAddress}</span>],
-          ["Date", detail.createdAt ? new Date(detail.createdAt).toLocaleString() : "—"],
-        ] : []}
-      >
-        {detail && (
-          <>
-            <IonButton
-              expand="block"
-              color="danger"
-              onClick={refundDetail}
-              disabled={refunding || detail.refunded || !detail.stripePaymentIntentId}
-              title={detail.refunded ? "Already refunded" : !detail.stripePaymentIntentId ? "No payment record to refund" : "Issue a full refund"}
-            >
-              {refunding ? "Refunding…" : detail.refunded ? "Already Refunded" : "Issue Refund"}
-            </IonButton>
-            {(detail.email || detail.paypalEmail) && (
-              <IonButton expand="block" fill="outline" color="medium" href={`mailto:${detail.email || detail.paypalEmail}`}>
-                Email Customer
-              </IonButton>
-            )}
-            <IonButton expand="block" fill="outline" color="medium" onClick={() => { setDetail(null); navigate("/admin/purchases"); }}>
-              View All Purchases
-            </IonButton>
-          </>
-        )}
-      </AdminDetailModal>
+        onRefunded={(p, amount) => {
+          setPurchases(prev => prev.map(x => x.id === p.id ? { ...x, refunded: true, refundedAmount: amount } : x));
+          setDetail(d => (d ? { ...d, refunded: true, refundedAmount: amount } : d));
+        }}
+        onViewAll={() => { setDetail(null); navigate("/admin/purchases"); }}
+      />
     </AdminLayout>
   );
 }

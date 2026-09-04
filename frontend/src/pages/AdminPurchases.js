@@ -8,6 +8,7 @@ import {
 } from "ionicons/icons";
 import { CreditCard, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -115,6 +116,7 @@ export default function AdminPurchases() {
   const [counts, setCounts]       = useState({ all: 0, registered: 0, guest: 0, refunded: 0 });
   const [loading, setLoading]     = useState(true);
   const [segment, setSegment]     = useState("all");
+  const [detail, setDetail]       = useState(null);
 
   const fetchPurchases = useCallback(async () => {
     setLoading(true);
@@ -287,7 +289,7 @@ export default function AdminPurchases() {
                         const docLabel = DOCUMENT_TYPES[p.documentType] || p.documentType || "-";
                         const qty     = p.quantity > 1 ? ` ×${p.quantity}` : "";
                         return (
-                          <tr key={p.id} style={{ cursor: "pointer", height: 64 }}>
+                          <tr key={p.id} onClick={() => setDetail(p)} style={{ cursor: "pointer", height: 64 }}>
 
                             {/* Age */}
                             <td className="ion-activatable" style={tdBase}>
@@ -378,7 +380,7 @@ export default function AdminPurchases() {
                               <div style={{ display: "flex", alignItems: "center" }}>
                                 <button
                                   title="Refund"
-                                  onClick={e => e.stopPropagation()}
+                                  onClick={e => { e.stopPropagation(); setDetail(p); }}
                                   disabled={p.refunded || !p.stripePaymentIntentId}
                                   style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ion-color-primary)", padding: 4, display: "flex", borderRadius: 4, opacity: (p.refunded || !p.stripePaymentIntentId) ? 0.35 : 1 }}
                                 >
@@ -409,6 +411,26 @@ export default function AdminPurchases() {
           </div>
         </div>
       </div>
+
+      {/* ── Payment detail modal (whodat admin payments style) ── */}
+      <PurchaseDetailModal
+        purchase={detail}
+        onClose={() => setDetail(null)}
+        onRefunded={(p, amount) => {
+          setPurchases(prev => prev.map(x => x.id === p.id ? { ...x, refunded: true, refundedAmount: amount } : x));
+          setDetail(d => (d ? { ...d, refunded: true, refundedAmount: amount } : d));
+        }}
+        onDelete={async (p) => {
+          if (!window.confirm("Delete this purchase? This cannot be undone.")) return;
+          const token = localStorage.getItem("adminToken");
+          await fetch(`${BACKEND_URL}/api/admin/purchases/${p.id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setPurchases(prev => prev.filter(x => x.id !== p.id));
+          setDetail(null);
+        }}
+      />
     </AdminLayout>
   );
 }

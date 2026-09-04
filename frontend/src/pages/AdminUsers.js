@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
+import AdminDetailModal from "@/components/AdminDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -70,6 +71,7 @@ export default function AdminUsers() {
   // modals
   const [openMenuId, setOpenMenuId]   = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [detailUserId, setDetailUserId] = useState(null);
   const [dlModalOpen, setDlModalOpen]   = useState(false);
   const [dlCount, setDlCount]           = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -110,15 +112,19 @@ export default function AdminUsers() {
     banned: users.filter(u => !!u.isBanned).length,
   };
 
+  // Detail modal user, derived live so ban/verify actions reflect immediately.
+  const detailUser = users.find(u => u.id === detailUserId) || null;
+
   // ── actions ────────────────────────────────────────────────────────────────
   const deleteUser = async (userId) => {
-    if (!window.confirm("Delete this user? This will remove their subscription and session data.")) return;
+    if (!window.confirm("Delete this user? This will remove their subscription and session data.")) return false;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    if (res.ok) { toast.success("User deleted"); setUsers(prev => prev.filter(u => u.id !== userId)); }
-    else toast.error("Failed to delete user");
+    if (res.ok) { toast.success("User deleted"); setUsers(prev => prev.filter(u => u.id !== userId)); return true; }
+    toast.error("Failed to delete user");
+    return false;
   };
 
   const toggleBan = async (userId, banned) => {
@@ -294,7 +300,7 @@ export default function AdminUsers() {
                         const remaining = u.subscription?.downloads_remaining ?? 0;
                         const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
                         return (
-                          <tr key={u.id} style={{ height: 64, cursor: "default" }}>
+                          <tr key={u.id} onClick={() => setDetailUserId(u.id)} style={{ height: 64, cursor: "pointer" }}>
 
                             {/* User */}
                             <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
@@ -363,7 +369,7 @@ export default function AdminUsers() {
 
                             {/* Actions */}
                             {/* overflow must stay visible here or the action menu gets clipped to the 64px row */}
-                            <td style={{ ...tdBase, padding: "0 8px", width: 60, overflow: "visible" }}>
+                            <td onClick={e => e.stopPropagation()} style={{ ...tdBase, padding: "0 8px", width: 60, overflow: "visible" }}>
                               <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 <button
                                   className="admin-action-btn"
@@ -470,6 +476,62 @@ export default function AdminUsers() {
           </IonButtons>
         </IonToolbar></IonFooter>
       </IonModal>
+
+      {/* ── User detail modal (whodat admin style) ── */}
+      <AdminDetailModal
+        isOpen={!!detailUser}
+        onClose={() => setDetailUserId(null)}
+        title={detailUser ? (detailUser.name || detailUser.email || "User") : "User"}
+        rows={detailUser ? [
+          ["Name", detailUser.name || "—"],
+          ["Email", detailUser.email || "—"],
+          ["Status", detailUser.isBanned
+            ? <span className="admin-badge admin-badge-red">Banned</span>
+            : detailUser.emailVerified === false
+              ? <span className="admin-badge admin-badge-amber">Unverified</span>
+              : <span className="admin-badge admin-badge-green">Active</span>],
+          ["Subscription", detailUser.subscription
+            ? `${SUBSCRIPTION_TIERS[detailUser.subscription.tier]?.name || detailUser.subscription.tier}${detailUser.subscription.status === "cancelling" ? " (cancelling)" : ""}`
+            : "None"],
+          detailUser.subscription && ["Downloads Remaining", detailUser.subscription.downloads_remaining === -1
+            ? "Unlimited"
+            : String(detailUser.subscription.downloads_remaining ?? 0)],
+          detailUser.ipAddress && ["IP Address", <span style={{ fontFamily: "monospace", fontSize: "0.8rem" }}>{detailUser.ipAddress}</span>],
+          ["Joined", detailUser.createdAt ? new Date(detailUser.createdAt).toLocaleString() : "—"],
+        ] : []}
+      >
+        {detailUser && (
+          <>
+            <IonButton expand="block" fill="outline" color="medium" onClick={() => {
+              setSelectedUser(detailUser);
+              setEditData({ name: detailUser.name || "", email: detailUser.email || "", ipAddress: detailUser.ipAddress || "" });
+              setDetailUserId(null);
+              setEditModalOpen(true);
+            }}>
+              Edit User
+            </IonButton>
+            {detailUser.emailVerified === false && (
+              <IonButton expand="block" fill="outline" color="success" onClick={() => confirmEmail(detailUser.id)}>
+                Confirm Email
+              </IonButton>
+            )}
+            <IonButton expand="block" fill="outline" color={detailUser.isBanned ? "primary" : "warning"}
+              onClick={() => toggleBan(detailUser.id, detailUser.isBanned)}>
+              {detailUser.isBanned ? "Unban User" : "Ban User"}
+            </IonButton>
+            {detailUser.ipAddress && detailUser.ipAddress !== "unknown" && (
+              <IonButton expand="block" fill="outline" color="danger" onClick={() => banIP(detailUser)}>
+                Ban IP Address
+              </IonButton>
+            )}
+            <IonButton expand="block" color="danger" onClick={async () => {
+              if (await deleteUser(detailUser.id)) setDetailUserId(null);
+            }}>
+              Delete User
+            </IonButton>
+          </>
+        )}
+      </AdminDetailModal>
     </AdminLayout>
   );
 }

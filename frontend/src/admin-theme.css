@@ -583,24 +583,31 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 .admin-pagination-btns { display: flex; gap: 6px; }
 
 /* ── Badges ── */
-/* whodat status-pill recipe: fully-rounded pill, solid soft pastel background
-   with a deep text tone of the same hue, 12px/500, no border. Colored tones
-   stay fixed in dark mode too (whodat does the same); only the neutral slate
-   tone reads theme tokens so it adapts. */
+/* whodat user-list badge recipe: IonBadge in MD mode with Ionic 8 default
+   semantic colors and the AdminBadge component tweaks (600 weight,
+   capitalize, middle-aligned). Solid fills, 4px radius, 13px/1 text, fixed
+   across light and dark exactly like whodat. Blue and purple have no whodat
+   counterpart; they use Ionic 8's default secondary and tertiary. */
 .admin-badge {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 500;
+  min-width: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-transform: capitalize;
 }
 
-.admin-badge-green  { background: #e8f2ec; color: #1c5c40; }
-.admin-badge-red    { background: #f4e5e4; color: #7a2a28; }
-.admin-badge-amber  { background: #fbf1de; color: #7a5713; }
-.admin-badge-blue   { background: #e6ecf4; color: #274a7a; }
-.admin-badge-purple { background: #ece4f4; color: #55287a; }
-.admin-badge-slate  { background: var(--ion-color-step-100); color: var(--admin-text-muted); }
+.admin-badge-green  { background: #2dd55b; color: #000; }
+.admin-badge-red    { background: #c5000f; color: #fff; }
+.admin-badge-amber  { background: #ffc409; color: #000; }
+.admin-badge-slate  { background: #636469; color: #fff; }
+.admin-badge-blue   { background: #0163aa; color: #fff; }
+.admin-badge-purple { background: #6030ff; color: #fff; }
 
 /* ── Form helpers ── */
 .admin-form-row { display: grid; gap: 16px; }

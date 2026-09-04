@@ -12,17 +12,14 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_SIZE = 50;
 
-// Action → colour mapping. Same 0.12-alpha background + solid text pattern
-// used by every other admin status badge.
-function getActionStyle(action = "") {
+// Action → badge tone. Rendered with the same .admin-badge classes used by
+// every other admin status badge.
+function getActionTone(action = "") {
   const a = action.toLowerCase();
-  if (/(delete|ban|disable|remove|clear|maintenance_enabled|auth_disabled)/.test(a))
-    return { color: "#d32f2f", bg: "rgba(211,47,47,0.12)" };
-  if (/(create|unban|enable|add|auth_enabled|maintenance_disabled)/.test(a))
-    return { color: "#2e7d32", bg: "rgba(46,125,50,0.12)" };
-  if (/(send|export|mass|email)/.test(a))
-    return { color: "#1976d2", bg: "rgba(25,118,210,0.12)" };
-  return { color: "#546e7a", bg: "rgba(96,125,139,0.12)" };
+  if (/(delete|ban|disable|remove|clear|maintenance_enabled|auth_disabled)/.test(a)) return "red";
+  if (/(create|unban|enable|add|auth_enabled|maintenance_disabled)/.test(a)) return "green";
+  if (/(send|export|mass|email)/.test(a)) return "blue";
+  return "slate";
 }
 
 const thStyle = {
@@ -153,10 +150,10 @@ export default function AdminAuditLog() {
   // Apply segment filter on top of server results
   const visibleLogs = logs.filter(log => {
     if (segment === "all") return true;
-    const { color } = getActionStyle(log.action);
-    if (segment === "destructive") return color === "#d32f2f";
-    if (segment === "positive")    return color === "#2e7d32";
-    return color === "#546e7a" || color === "#1976d2";
+    const tone = getActionTone(log.action);
+    if (segment === "destructive") return tone === "red";
+    if (segment === "positive")    return tone === "green";
+    return tone === "slate" || tone === "blue";
   });
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -279,7 +276,7 @@ export default function AdminAuditLog() {
                     </thead>
                     <tbody>
                       {visibleLogs.map(log => {
-                        const { color, bg } = getActionStyle(log.action);
+                        const tone = getActionTone(log.action);
                         const isAdmin = log.role === "admin";
                         return (
                           <tr key={log.id} style={{ height: 52 }}>
@@ -290,17 +287,12 @@ export default function AdminAuditLog() {
                               {log.actorEmail || log.actorId || "—"}
                             </td>
                             <td style={tdStyle}>
-                              <span style={{
-                                display: "inline-block", padding: "2px 8px", borderRadius: 8,
-                                fontSize: "0.68rem", fontWeight: 600, textTransform: "capitalize",
-                                background: isAdmin ? "rgba(25,118,210,0.12)" : "rgba(96,125,139,0.12)",
-                                color: isAdmin ? "#1976d2" : "#546e7a",
-                              }}>
+                              <span className={`admin-badge ${isAdmin ? "admin-badge-blue" : "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>
                                 {log.role}{log.level ? ` L${log.level}` : ""}
                               </span>
                             </td>
                             <td style={tdStyle}>
-                              <span style={{ display: "inline-block", padding: "2px 8px", borderRadius: 8, fontSize: "0.68rem", fontWeight: 600, background: bg, color }}>
+                              <span className={`admin-badge admin-badge-${tone}`}>
                                 {log.action.replace(/_/g, " ")}
                               </span>
                             </td>

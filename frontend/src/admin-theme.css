@@ -583,22 +583,24 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 .admin-pagination-btns { display: flex; gap: 6px; }
 
 /* ── Badges ── */
+/* whodat status-pill recipe: fully-rounded pill, solid soft pastel background
+   with a deep text tone of the same hue, 12px/500, no border. Colored tones
+   stay fixed in dark mode too (whodat does the same); only the neutral slate
+   tone reads theme tokens so it adapts. */
 .admin-badge {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 0.68rem;
-  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
-/* All tones use a 0.12-alpha background paired with the same solid text color.
-   No borders, no shadows, no uppercase, no pill shape beyond 8px radius. */
-.admin-badge-green  { background: rgba(46, 125, 50, 0.12);   color: #2e7d32; }
-.admin-badge-red    { background: rgba(211, 47, 47, 0.12);   color: #d32f2f; }
-.admin-badge-amber  { background: rgba(237, 108, 2, 0.12);   color: #ed6c02; }
-.admin-badge-slate  { background: rgba(96, 125, 139, 0.12);  color: #546e7a; }
-.admin-badge-blue   { background: rgba(25, 118, 210, 0.12);  color: #1976d2; }
-.admin-badge-purple { background: rgba(123, 31, 162, 0.12);  color: #7b1fa2; }
+.admin-badge-green  { background: #e8f2ec; color: #1c5c40; }
+.admin-badge-red    { background: #f4e5e4; color: #7a2a28; }
+.admin-badge-amber  { background: #fbf1de; color: #7a5713; }
+.admin-badge-blue   { background: #e6ecf4; color: #274a7a; }
+.admin-badge-purple { background: #ece4f4; color: #55287a; }
+.admin-badge-slate  { background: var(--ion-color-step-100); color: var(--admin-text-muted); }
 
 /* ── Form helpers ── */
 .admin-form-row { display: grid; gap: 16px; }

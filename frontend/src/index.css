@@ -19,11 +19,31 @@ body:not(.ionic-active) {
 body {
     margin: 0;
     font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+        "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+        "Helvetica Neue", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Respect users who prefer less motion: collapse all animation/transitions */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Consistent, visible keyboard focus on the public site */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid hsl(150 57% 30%);
+    outline-offset: 2px;
+    border-radius: 6px;
 }
 
 code {

@@ -81,7 +81,7 @@ export default function Footer() {
                 href="https://apps.apple.com/us/iphone/today" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity border border-white rounded-xl p-2.5"
+                className="hover:opacity-80 transition-opacity duration-200 border border-slate-600 hover:border-slate-400 rounded-xl p-2.5"
               >
                 <img 
                   src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/ekke591i_685b07d537802a80992e4b58_Group-1538236230.svg" 
@@ -93,7 +93,7 @@ export default function Footer() {
                 href="https://play.google.com/store/apps/details?id=com.mintslip.app&hl=en_US" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity border border-white rounded-xl p-2.5"
+                className="hover:opacity-80 transition-opacity duration-200 border border-slate-600 hover:border-slate-400 rounded-xl p-2.5"
               >
                 <img 
                   src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/g56lcgcv_685b07d5f3fb1a2291ebea9b_Group-1538236231.svg" 
@@ -129,7 +129,7 @@ export default function Footer() {
 
           {/* Document Links */}
           <div>
-            <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">
+            <h4 className="font-semibold text-slate-200 mb-5 text-xs uppercase" style={{ letterSpacing: "0.12em" }}>
               {FOOTER_LINKS.documents.title}
             </h4>
             <ul className="space-y-3">
@@ -137,7 +137,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <button
                     onClick={() => navigate(link.path)}
-                    className="text-slate-400 hover:text-green-400 transition-colors text-sm"
+                    className="text-slate-400 hover:text-white transition-colors duration-200 text-sm text-left"
                   >
                     {link.name}
                   </button>
@@ -148,7 +148,7 @@ export default function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">
+            <h4 className="font-semibold text-slate-200 mb-5 text-xs uppercase" style={{ letterSpacing: "0.12em" }}>
               {FOOTER_LINKS.company.title}
             </h4>
             <ul className="space-y-3">
@@ -156,7 +156,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <button
                     onClick={() => navigate(link.path)}
-                    className="text-slate-400 hover:text-green-400 transition-colors text-sm"
+                    className="text-slate-400 hover:text-white transition-colors duration-200 text-sm text-left"
                   >
                     {link.name}
                   </button>
@@ -167,7 +167,7 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">
+            <h4 className="font-semibold text-slate-200 mb-5 text-xs uppercase" style={{ letterSpacing: "0.12em" }}>
               {FOOTER_LINKS.legal.title}
             </h4>
             <ul className="space-y-3">
@@ -175,7 +175,7 @@ export default function Footer() {
                 <li key={link.name}>
                   <button
                     onClick={() => navigate(link.path)}
-                    className="text-slate-400 hover:text-green-400 transition-colors text-sm"
+                    className="text-slate-400 hover:text-white transition-colors duration-200 text-sm text-left"
                   >
                     {link.name}
                   </button>
@@ -191,7 +191,7 @@ export default function Footer() {
             
             {/* Copyright */}
             <p className="text-slate-500 text-sm">
-              © {currentYear} MintSlip. All rights reserved.
+              Â© {currentYear} MintSlip. All rights reserved.
             </p>
 
             {/* Social Links */}
@@ -204,9 +204,9 @@ export default function Footer() {
                     href={social.href}
                     target="_blank"
                     aria-label={social.label}
-                    className="w-10 h-10 rounded-full bg-slate-800 hover:bg-green-600 flex items-center justify-center transition-colors"
+                    className="group w-10 h-10 rounded-full bg-slate-800 hover:bg-green-700 flex items-center justify-center transition-colors duration-200"
                   >
-                    <IconComponent className="w-4 h-4 text-slate-400 hover:text-white" />
+                    <IconComponent className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors duration-200" />
                   </a>
                 );
               })}

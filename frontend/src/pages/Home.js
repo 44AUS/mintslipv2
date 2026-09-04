@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import select from '../assests/select.png';
@@ -77,7 +83,7 @@ const EnvelopeAnimation = ({ isVisible }) => (
           <rect x="153" y="117" width="8" height="8" rx="2" fill="#1a4731" transform="rotate(45 157 121)"/>
         </g>
         <circle cx="140" cy="105" r="12" fill="#ffffff"/>
-        <text x="140" y="109" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">âš¡</text>
+        <text x="140" y="109" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">⚡</text>
       </g>
 
       {/* Arrow 2 - Processing to Output */}
@@ -121,7 +127,7 @@ const EnvelopeAnimation = ({ isVisible }) => (
       {/* "INSTANT" badge */}
       <g style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 2.3s forwards' : 'none' }}>
         <rect x="105" y="165" width="70" height="24" rx="12" fill="#1a4731"/>
-        <text x="140" y="181" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">âš¡ INSTANT</text>
+        <text x="140" y="181" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">⚡ INSTANT</text>
       </g>
 
       {/* Time indicator */}
@@ -269,12 +275,12 @@ const SpeedServiceAnimation = ({ isVisible }) => (
         {/* Speed badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.5s' : 'none' }}>
           <rect x="170" y="5" width="50" height="20" rx="10" fill="#fbbf24"/>
-          <text x="195" y="18" textAnchor="middle" fill="#1a1a1a" fontSize="7" fontWeight="bold">âš¡ FAST</text>
+          <text x="195" y="18" textAnchor="middle" fill="#1a1a1a" fontSize="7" fontWeight="bold">⚡ FAST</text>
         </g>
         {/* Accurate badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
           <rect x="230" y="15" width="48" height="20" rx="10" fill="#22c55e"/>
-          <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">âœ“ ACCURATE</text>
+          <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✓ ACCURATE</text>
         </g>
       </g>
 
@@ -903,7 +909,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
         animation: isVisible ? 'bounceIn 0.5s ease-out 2.2s forwards' : 'none'
       }}>
         <rect x="105" y="175" width="90" height="28" rx="14" fill="#1a4731"/>
-        <text x="127" y="193" fill="#ffffff" fontSize="9" fontWeight="bold">ðŸ”’ SECURE</text>
+        <text x="127" y="193" fill="#ffffff" fontSize="9" fontWeight="bold">🔒 SECURE</text>
       </g>
 
       {/* Instant badge */}
@@ -912,7 +918,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
         animation: isVisible ? 'bounceIn 0.5s ease-out 2.4s forwards' : 'none'
       }}>
         <rect x="105" y="210" width="90" height="28" rx="14" fill="#22c55e"/>
-        <text x="127" y="228" fill="#ffffff" fontSize="9" fontWeight="bold">âš¡ INSTANT</text>
+        <text x="127" y="228" fill="#ffffff" fontSize="9" fontWeight="bold">⚡ INSTANT</text>
       </g>
 
       {/* Time indicator */}
@@ -1081,7 +1087,7 @@ const FormTypingAnimation = ({ isVisible }) => (
       {/* Generate Button */}
       <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 2.8s forwards' : 'none' }}>
         <rect x="35" y="180" width="210" height="24" rx="12" fill="#1a4731"/>
-        <text x="140" y="196" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">âœ“ GENERATE PAYSTUB</text>
+        <text x="140" y="196" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">✓ GENERATE PAYSTUB</text>
       </g>
       
       {/* Floating elements */}
@@ -1136,9 +1142,133 @@ const useInView = (options = {}) => {
   return [ref, isInView];
 };
 
+// FAQs shown on the landing page Ã¢â‚¬” content mirrors the /faq page verbatim.
+const LANDING_FAQS = [
+  {
+    question: "How will I receive my documents?",
+    answer: "After completing your purchase, your documents will be automatically downloaded to your computer as a PDF file. The download happens instantly after payment confirmation - no waiting required!",
+  },
+  {
+    question: "How long does it take to create a document?",
+    answer: "It only takes a few minutes to create a document with our generator. Simply enter your information, preview your document, complete payment, and download instantly. Our system automatically calculates taxes and formats everything professionally.",
+  },
+  {
+    question: "Will my information be safe on this site?",
+    answer: "Absolutely! We prioritize your privacy and security. All documents are generated directly in your browser - we do not store your personal information on our servers. Your data stays on your device and is never transmitted to third parties.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer: "We accept all major payment methods through Stripe, including credit cards (Visa, Mastercard, American Express, Discover), debit cards, Apple Pay, and Google Pay. All payments are processed securely.",
+  },
+  {
+    question: "Is there a charge to remove the watermark?",
+    answer: "No, there's no additional charge. The watermark appears on the preview only. Once you complete your purchase, your downloaded document will not have any watermark.",
+  },
+  {
+    question: "Can I create documents from my mobile device?",
+    answer: "Yes! Our website is fully responsive and works on all devices including smartphones and tablets. You can create and download your documents on any device with a modern web browser.",
+  },
+];
+
+// Product mockup for the hero: a browser window running the paystub generator
+// with a live preview, built from plain markup so it stays lightweight.
+function HeroProductPreview() {
+  const fieldRow = (label, filled, focused) => (
+    <div>
+      <div className="text-[10px] font-medium text-slate-500 mb-1">{label}</div>
+      <div className={`h-7 rounded-md border px-2 flex items-center ${focused ? "border-green-600 ring-2 ring-green-100 bg-white" : "border-slate-200 bg-slate-50"}`}>
+        <div className={`h-1.5 rounded-full ${filled ? "bg-slate-300" : "bg-transparent"}`} style={{ width: filled }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="relative mx-auto w-full max-w-xl lg:max-w-none select-none" aria-hidden="true">
+      {/* Browser window */}
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_32px_64px_-28px_rgba(16,63,40,0.28)] overflow-hidden">
+        {/* Title bar */}
+        <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
+          <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
+          <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
+          <div className="ml-3 h-6 flex-1 max-w-[210px] rounded-md bg-white border border-slate-200 flex items-center gap-1.5 px-2.5">
+            <Lock className="w-2.5 h-2.5 text-green-700" />
+            <span className="text-[10px] text-slate-500 tracking-wide">mintslip.com/paystub-generator</span>
+          </div>
+        </div>
+        {/* App body */}
+        <div className="grid grid-cols-5">
+          {/* Form column */}
+          <div className="col-span-2 p-4 space-y-3 border-r border-slate-100">
+            <div className="flex items-center gap-1.5">
+              <Receipt className="w-3.5 h-3.5 text-green-700" />
+              <span className="text-[11px] font-semibold text-slate-800">Pay Stub Details</span>
+            </div>
+            {fieldRow("Company name", "80%")}
+            {fieldRow("Employee name", "65%")}
+            {fieldRow("Hourly rate", "40%", true)}
+            {fieldRow("Pay period", "55%")}
+            <div className="h-8 rounded-lg bg-green-700 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+              Generate Pay Stub
+              <ArrowRight className="w-3 h-3" />
+            </div>
+          </div>
+          {/* Live preview column */}
+          <div className="col-span-3 bg-slate-100/70 p-4 sm:p-5">
+            <div className="rounded-lg bg-white border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-green-800 px-3 py-2 flex items-center justify-between">
+                <span className="text-[10px] font-bold tracking-widest text-white">MINTSLIP CORP.</span>
+                <span className="text-[9px] text-green-200">EARNINGS STATEMENT</span>
+              </div>
+              <div className="p-3 space-y-2.5">
+                <div className="flex justify-between gap-3">
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-1.5 w-3/4 rounded-full bg-slate-200" />
+                    <div className="h-1.5 w-1/2 rounded-full bg-slate-100" />
+                  </div>
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-1.5 w-2/3 rounded-full bg-slate-200 ml-auto" />
+                    <div className="h-1.5 w-1/2 rounded-full bg-slate-100 ml-auto" />
+                  </div>
+                </div>
+                <div className="border-t border-slate-100 pt-2 space-y-1.5">
+                  {["w-full", "w-11/12", "w-full", "w-10/12"].map((w, i) => (
+                    <div key={i} className={`h-1.5 ${w} rounded-full ${i % 2 ? "bg-slate-100" : "bg-slate-200"}`} />
+                  ))}
+                </div>
+                <div className="flex items-center justify-between rounded-md bg-green-50 border border-green-100 px-2.5 py-2">
+                  <span className="text-[9px] font-semibold text-green-900 tracking-wide">NET PAY</span>
+                  <span className="text-xs font-bold text-green-800">$2,847.50</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating chip: instant download */}
+      <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white rounded-xl border border-slate-200 shadow-lg px-3.5 py-2.5 flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+          <Download className="w-4 h-4 text-green-700" />
+        </div>
+        <div className="leading-tight">
+          <p className="text-[11px] font-semibold text-slate-800">paystub.pdf</p>
+          <p className="text-[10px] text-slate-500">Downloaded instantly</p>
+        </div>
+        <CheckCircle className="w-4 h-4 text-green-600" />
+      </div>
+
+      {/* Floating chip: secure checkout */}
+      <div className="absolute -top-4 right-2 sm:-right-4 bg-white rounded-xl border border-slate-200 shadow-lg px-3 py-2 flex items-center gap-2">
+        <Shield className="w-3.5 h-3.5 text-green-700" />
+        <span className="text-[11px] font-semibold text-slate-700">Secure checkout</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
-  const [activeFeature, setActiveFeature] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [userCount, setUserCount] = useState("10K+"); // Default fallback
   const [docsCount, setDocsCount] = useState("50K+"); // Default fallback
@@ -1173,18 +1303,10 @@ export default function Home() {
     setIsVisible(true);
   }, []);
 
-  // Auto-rotate features
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 3);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const features = [
-    { icon: CheckCircle, text: "Instant Download", desc: "Get your documents in seconds" },
-    { icon: Shield, text: "Secure Payment", desc: "256-bit SSL encryption" },
-    { icon: Clock, text: "No Sign-Up Required", desc: "Start generating immediately" },
+  const trustPoints = [
+    { icon: CheckCircle, text: "Instant download" },
+    { icon: Shield, text: "Secure payment" },
+    { icon: Clock, text: "No sign-up required" },
   ];
 
   return (
@@ -1207,110 +1329,97 @@ export default function Home() {
       
       <Header title="MintSlip" />
 
-      {/* Hero Section - Centered */}
-      <section className="relative max-w-5xl mx-auto px-6 py-16 md:py-24">
+      {/* Hero Section */}
+      <section className="relative max-w-7xl mx-auto px-6 pt-14 pb-20 md:pt-20 md:pb-28">
         {/* Background Decorations */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
-        
-        <div className={`relative text-center space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-full border border-green-200">
-            <Sparkles className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">Trusted by {userCount} users</span>
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <svg key={i} xmlns="http://www.w3.org/2000/svg" width="12" height="11" viewBox="0 0 27.39 25.547">
-                  <path d="M88.4,376.72l3.246,9.758H102.1l-8.476,6.031,3.226,9.758L88.4,396.236l-8.456,6.031,3.226-9.758-8.456-6.031H85.169Z" transform="translate(-74.71 -376.72)" fill="#ffb600"/>
-                </svg>
-              ))}
-            </div>
-          </div>
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
-          <div>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
-              <span className="block text-slate-800">Generate</span>
-              <span className="block bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">Professional</span>
-              <span className="block text-slate-800">Paystubs in Minutes</span>
+        <div className={`relative grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-16 items-center transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          {/* Left: copy */}
+          <div className="text-center lg:text-left">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-green-700" />
+              <span className="text-sm font-medium text-green-900">Trusted by {userCount} users</span>
+              <div className="flex gap-0.5" aria-hidden="true">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} xmlns="http://www.w3.org/2000/svg" width="11" height="10" viewBox="0 0 27.39 25.547">
+                    <path d="M88.4,376.72l3.246,9.758H102.1l-8.476,6.031,3.226,9.758L88.4,396.236l-8.456,6.031,3.226-9.758-8.456-6.031H85.169Z" transform="translate(-74.71 -376.72)" fill="#ffb600"/>
+                  </svg>
+                ))}
+              </div>
+            </div>
+
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.1 }}>
+              Generate Professional{' '}
+              <span className="text-green-700">Paystubs</span>{' '}
+              in Minutes
             </h1>
-            <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl mx-auto lg:mx-0 mb-8">
               Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.
             </p>
-          </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={() => navigate("/paystub-generator")}
-              size="lg"
-              className="group gap-2 text-lg px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <FileText className="w-5 h-5" />
-              Create Pay Stub
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button
-              onClick={() => navigate("/ai-resume-builder")}
-              size="lg"
-              variant="outline"
-              className="group gap-2 text-lg px-8 py-6 border-2 border-slate-300 hover:border-green-600 hover:bg-green-50 transition-all duration-300"
-            >
-              <Sparkles className="w-5 h-5" />
-              AI Resume Builder
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <Button
+                onClick={() => navigate("/paystub-generator")}
+                size="lg"
+                className="group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg hover:shadow-green-900/15 transition-all duration-200"
+              >
+                <FileText className="w-5 h-5" />
+                Create Pay Stub
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </Button>
+              <Button
+                onClick={() => navigate("/ai-resume-builder")}
+                size="lg"
+                variant="outline"
+                className="group gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-green-50/60 transition-all duration-200"
+              >
+                <Sparkles className="w-5 h-5" />
+                AI Resume Builder
+              </Button>
+            </div>
 
-          {/* Telegram Support Button */}
-          <div className="pt-2">
+            {/* Trust indicators */}
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-6 justify-center lg:justify-start">
+              {trustPoints.map((point) => (
+                <li key={point.text} className="flex items-center gap-1.5 text-sm text-slate-500">
+                  <point.icon className="w-4 h-4 text-green-600" aria-hidden="true" />
+                  {point.text}
+                </li>
+              ))}
+            </ul>
+
+            {/* Telegram Support link */}
             <a
               href="https://t.me/+oV7eIADvNlozYTYx"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0088cc] hover:bg-[#0077b5] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+              className="inline-flex items-center gap-2 mt-6 text-sm font-medium text-slate-500 hover:text-[#0088cc] transition-colors duration-200"
             >
-              <TelegramIcon className="w-5 h-5" />
-              <span className="font-medium">Join Telegram Support</span>
+              <TelegramIcon className="w-4 h-4" />
+              <span>Join our Telegram support community</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
 
-          {/* Interactive Feature Pills */}
-          <div className="flex flex-wrap gap-3 pt-4 justify-center">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                onClick={() => setActiveFeature(index)}
-                className={`cursor-pointer inline-flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all duration-300 ${
-                  activeFeature === index
-                    ? 'bg-green-100 border-green-500 shadow-md scale-105'
-                    : 'bg-white border-slate-200 hover:border-green-300 hover:bg-green-50'
-                }`}
-              >
-                <feature.icon className={`w-5 h-5 ${activeFeature === index ? 'text-green-700' : 'text-slate-500'}`} />
-                <div className="text-left">
-                  <span className={`text-sm font-semibold block ${activeFeature === index ? 'text-green-800' : 'text-slate-700'}`}>
-                    {feature.text}
-                  </span>
-                  <span className={`text-xs ${activeFeature === index ? 'text-green-600' : 'text-slate-500'}`}>
-                    {feature.desc}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Right: product preview */}
+          <HeroProductPreview />
         </div>
 
         {/* Quick Stats Bar */}
-        <div className={`mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className={`relative mt-16 md:mt-24 grid grid-cols-2 md:grid-cols-4 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           {[
             { number: docsCount, label: "Documents Created" },
             { number: userCount, label: "Happy Users" },
             { number: "99.9%", label: "Uptime" },
             { number: "24/7", label: "Support" },
           ].map((stat, index) => (
-            <div key={index} className="text-center p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-green-300 hover:shadow-md transition-all">
-              <p className="text-3xl font-black text-green-700" style={{ fontFamily: 'Outfit, sans-serif' }}>{stat.number}</p>
-              <p className="text-sm text-slate-600 mt-1">{stat.label}</p>
+            <div key={index} className="text-center px-4 py-6 border-slate-100 [&:nth-child(even)]:border-l md:[&:not(:first-child)]:border-l">
+              <p className="font-display text-2xl md:text-3xl font-bold text-green-800">{stat.number}</p>
+              <p className="text-sm text-slate-500 mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -1320,21 +1429,21 @@ export default function Home() {
       {(() => {
         const [paystubRef, paystubInView] = useInView();
         return (
-          <section ref={paystubRef} className="bg-slate-50 border-y border-slate-200 py-20">
+          <section ref={paystubRef} className="bg-slate-50/70 border-y border-slate-200/80 py-20 md:py-24">
             <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-xl border border-slate-200 h-[450px] flex items-center justify-center overflow-hidden">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-100/70 rounded-2xl border border-green-100 shadow-sm h-[450px] flex items-center justify-center overflow-hidden">
                   <PaystubRevealAnimation isVisible={paystubInView} />
                 </div>
                 <div className="space-y-6">
-                  <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
                     What is a Pay Stub?
-                  </h3>
+                  </h2>
                   <p className="text-lg leading-relaxed text-slate-600">
                     A pay stub is a document that summarizes an employee&apos;s pay for a specific pay period. It&apos;s typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
                   </p>
                   <p className="text-base leading-relaxed text-slate-600">
-                    Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay â€” the amount you actually take home.
+                    Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay — the amount you actually take home.
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
@@ -1361,44 +1470,38 @@ export default function Home() {
       {(() => {
         const [docRef, docInView] = useInView();
         return (
-          <section ref={docRef} className="py-20 bg-white">
+          <section ref={docRef} className="py-20 md:py-24 bg-white">
             <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
                 <div className="order-2 md:order-1 space-y-6">
-                  <p className="text-xs uppercase tracking-widest text-slate-500" style={{ letterSpacing: '0.15em' }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-green-700" style={{ letterSpacing: '0.15em' }}>
                     Accurate Income Documentation
                   </p>
-                  <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                  <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
                     Our Paystub Generator Has Your Accurate Income Documentation Needs
-                  </h3>
+                  </h2>
                   <p className="text-lg leading-relaxed text-slate-600">
                     MintSlip provides a wide selection of paystub templates to suit your needs. Whether you&apos;re a freelancer, small business owner, or employee, we&apos;ve got you covered with professional, accurate documents.
                   </p>
                   <div className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                      <FileText className="w-8 h-8 text-green-700 mb-2" />
-                      <h4 className="font-bold text-slate-800">Earnings Record</h4>
-                      <p className="text-sm text-slate-600">Accurate calculations</p>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                      <FileBarChart className="w-8 h-8 text-green-700 mb-2" />
-                      <h4 className="font-bold text-slate-800">Tax Filing</h4>
-                      <p className="text-sm text-slate-600">Accurate tax records</p>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                      <Shield className="w-8 h-8 text-green-700 mb-2" />
-                      <h4 className="font-bold text-slate-800">Business Documentation</h4>
-                      <p className="text-sm text-slate-600">Accurate records for freelancers</p>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                      <Clock className="w-8 h-8 text-green-700 mb-2" />
-                      <h4 className="font-bold text-slate-800">Instant Generation</h4>
-                      <p className="text-sm text-slate-600">Ready in minutes</p>
-                    </div>
+                    {[
+                      { icon: FileText, title: "Earnings Record", desc: "Accurate calculations" },
+                      { icon: FileBarChart, title: "Tax Filing", desc: "Accurate tax records" },
+                      { icon: Shield, title: "Business Documentation", desc: "Accurate records for freelancers" },
+                      { icon: Clock, title: "Instant Generation", desc: "Ready in minutes" },
+                    ].map((item) => (
+                      <div key={item.title} className="p-4 bg-white rounded-xl border border-slate-200 hover:border-green-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                        <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center mb-2.5">
+                          <item.icon className="w-4.5 h-4.5 text-green-700" style={{ width: 18, height: 18 }} />
+                        </div>
+                        <h3 className="font-semibold text-slate-900 text-sm md:text-base">{item.title}</h3>
+                        <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="order-1 md:order-2">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-xl border border-slate-200 h-96 flex items-center justify-center">
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/70 rounded-2xl border border-green-100 shadow-sm h-96 flex items-center justify-center">
                     <FormTypingAnimation isVisible={docInView} />
                   </div>
                 </div>
@@ -1409,27 +1512,31 @@ export default function Home() {
       })()}
 
       {/* Best Pricing Section */}
-      <section className="bg-gradient-to-br from-green-900 to-green-800 py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <p className="text-xs uppercase tracking-widest text-green-300 mb-4" style={{ letterSpacing: '0.15em' }}>
+      <section className="relative bg-gradient-to-br from-green-900 to-green-800 py-20 md:py-24 overflow-hidden">
+        <div aria-hidden="true" className="absolute -top-32 -right-32 w-96 h-96 bg-green-700/30 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-700/20 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold uppercase tracking-widest text-green-300 mb-4" style={{ letterSpacing: '0.15em' }}>
               THE BEST PRICING
             </p>
-            <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-4 text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
               We Offer the Best Pricing in The Paystub Generator Industry
-            </h3>
-            <p className="text-lg text-green-100 max-w-2xl mx-auto">
-              Transparent Pricing, Unmatched Value â€” That&apos;s the MintSlip Promise
+            </h2>
+            <p className="text-lg text-green-100/90 max-w-2xl mx-auto">
+              Transparent Pricing, Unmatched Value Ã¢â‚¬” That&apos;s the MintSlip Promise
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
             {/* Pay Stub Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl">
-              <Receipt className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Pay Stub Generator</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-green-950/20 flex flex-col">
+              <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                <Receipt className="w-7 h-7 text-green-700" />
+              </div>
+              <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">Pay Stub Generator</h3>
+              <div className="mb-5">
+                <span className="font-display text-5xl font-bold text-green-900">$9.99</span>
                 <span className="text-slate-500 ml-2">/ stub</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
@@ -1448,21 +1555,23 @@ export default function Home() {
               </ul>
               <button
                 onClick={() => navigate("/paystub-generator")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
+                className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
               >
                 Generate Now
               </button>
             </div>
 
             {/* Canadian Pay Stub Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-green-950/20 relative flex flex-col">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white border border-green-600 text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                 NEW
               </div>
-              <TreePine className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>Canadian Pay Stub</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+              <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <TreePine className="w-7 h-7 text-red-600" />
+              </div>
+              <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">Canadian Pay Stub</h3>
+              <div className="mb-5">
+                <span className="font-display text-5xl font-bold text-green-900">$9.99</span>
                 <span className="text-slate-500 ml-2">/ stub</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
@@ -1481,21 +1590,23 @@ export default function Home() {
               </ul>
               <button
                 onClick={() => navigate("/canadian-paystub-generator")}
-                className="w-full py-3 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700 transition-colors"
+                className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
               >
                 Generate Now
               </button>
             </div>
 
-            {/* accounting mockups Pricing */}
-            <div className="bg-white rounded-lg p-8 text-center shadow-xl relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            {/* AI Resume Builder Pricing */}
+            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-green-950/20 relative flex flex-col ring-2 ring-green-400/70">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                 POPULAR
               </div>
-              <Sparkles className="w-12 h-12 text-green-700 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold mb-2" style={{ color: '#1a4731' }}>AI Resume Builder</h4>
-              <div className="mb-4">
-                <span className="text-5xl font-black" style={{ color: '#1a4731' }}>$9.99</span>
+              <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-7 h-7 text-green-700" />
+              </div>
+              <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">AI Resume Builder</h3>
+              <div className="mb-5">
+                <span className="font-display text-5xl font-bold text-green-900">$9.99</span>
                 <span className="text-slate-500 ml-2">/ resume</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
@@ -1513,8 +1624,8 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/accounting-mockup-generator")}
-                className="w-full py-3 bg-green-800 text-white rounded-md font-semibold hover:bg-green-900 transition-colors"
+                onClick={() => navigate("/ai-resume-builder")}
+                className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
               >
                 Generate Now
               </button>
@@ -1532,10 +1643,10 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 {/* Left Content - appears below animation on mobile */}
                 <div className="space-y-6 order-2 lg:order-1">
-                  <span className="inline-block text-sm font-semibold text-green-700 bg-green-100 px-4 py-1.5 rounded-full">
+                  <span className="inline-block text-sm font-semibold text-green-800 bg-green-50 border border-green-200/80 px-4 py-1.5 rounded-full">
                     Quick Solution
                   </span>
-                  <h3 className="text-3xl md:text-4xl font-black tracking-tight leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                  <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight leading-tight text-slate-900">
                     How MintSlip Makes{' '}
                     <span className="relative inline-block" style={{ color: '#1a4731' }}>
                       Pay Stubs
@@ -1561,25 +1672,25 @@ export default function Home() {
                       </svg>
                     </span>
                     {' '}Instantly
-                  </h3>
+                  </h2>
                   <p className="text-lg text-slate-600 leading-relaxed">
                     With MintSlip, you can instantly create accurate paycheck stubs for any situation. Our platform simplifies the process, offering customized pay stubs ready for use in minutes. Choose from PDF or other digital file types for fast, secure download.
                   </p>
                   <p className="text-lg text-slate-600 leading-relaxed">
                     Whether you need detailed pay stubs or record keeping, MintSlip makes it quick and easy to create accurate and reliable paycheck documentation anytime.
                   </p>
-                  <button 
+                  <button
                     onClick={() => navigate("/paystub-generator")}
-                    className="inline-flex items-center gap-2 bg-green-800 hover:bg-green-900 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="group inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-green-900/10 hover:shadow-lg"
                   >
                     Get Your Pay Stub Now
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
                   </button>
                 </div>
-                
+
                 {/* Right - Animation - appears above text on mobile */}
                 <div className="flex justify-center items-center order-1 lg:order-2">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl overflow-hidden h-96 w-full shadow-lg flex items-center justify-center">
+                  <div className="bg-gradient-to-br from-green-50 to-green-100/70 rounded-2xl overflow-hidden h-96 w-full border border-green-100 shadow-sm flex items-center justify-center">
                     <EnvelopeAnimation isVisible={quickSolutionInView} />
                   </div>
                 </div>
@@ -1590,69 +1701,37 @@ export default function Home() {
       })()}
 
       {/* Steps to Use Section */}
-      <section className="py-20 bg-slate-50 border-y border-slate-200">
+      <section className="py-20 md:py-24 bg-slate-50/70 border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-6">
-          <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-16 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-            Steps to use our Check Stub Maker
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="flex flex-col">
-              <div className="bg-slate-white rounded-2xl p-6 flex-1">
-                <div className="relative">
-                  <div className="absolute -top-2 -left-2 z-10">
-                    <span className="bg-red-500 text-white font-bold px-4 py-1.5 rounded text-sm shadow-lg">
-                      STEP 1
-                    </span>
-                  </div>
-                  <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
-                    <img src={select} />
-                  </div>
-                </div>
-              </div>
-              <p className="text-lg mt-6 text-center text-slate-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Choose a pay stub template from our meticulously designed templates
-              </p>
-            </div>
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold uppercase tracking-widest text-green-700 mb-4" style={{ letterSpacing: '0.15em' }}>
+              How It Works
+            </p>
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
+              Steps to use our Check Stub Maker
+            </h2>
+          </div>
 
-            {/* Step 2 */}
-            <div className="flex flex-col">
-              <div className="bg-slate-white rounded-2xl p-6 flex-1">
-                <div className="relative">
-                  <div className="absolute -top-2 -left-2 z-10">
-                    <span className="bg-yellow-500 text-white font-bold px-4 py-1.5 rounded text-sm shadow-lg">
-                      STEP 2
-                    </span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {[
+              { img: select, alt: "Choosing a pay stub template in the MintSlip generator", text: "Choose a pay stub template from our meticulously designed templates" },
+              { img: inputInfo, alt: "Entering company and salary details into the pay stub form", text: "Enter Information such as company name, your work schedule and salary details" },
+              { img: download, alt: "Downloading the finished pay stub as a PDF", text: "Download your paycheck stubs directly to your computer or mobile device in PDF format" },
+            ].map((step, i) => (
+              <div key={i} className="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
+                <div className="relative p-6 pb-0">
+                  <div className="absolute top-4 left-4 z-10 w-10 h-10 rounded-xl bg-green-700 text-white font-display font-bold flex items-center justify-center shadow-md shadow-green-900/20">
+                    {i + 1}
                   </div>
-                  <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
-                    <img src={inputInfo} />
-                  </div>
-                </div>
-              </div>
-              <p className="text-lg mt-6 text-center text-slate-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Enter Information such as company name, your work schedule and salary details
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="flex flex-col">
-              <div className="bg-slate-white rounded-2xl p-6 flex-1">
-                <div className="relative">
-                  <div className="absolute -top-2 -left-2 z-10">
-                    <span className="bg-green-500 text-white font-bold px-4 py-1.5 rounded text-sm shadow-lg">
-                      STEP 3
-                    </span>
-                  </div>
-                  <div className="bg-white rounded-lg overflow-hidden h-64 w-full">
-                    <img src={download} />
+                  <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden h-64 w-full">
+                    <img src={step.img} alt={step.alt} className="w-full h-full object-contain" loading="lazy" />
                   </div>
                 </div>
+                <p className="text-base leading-relaxed p-6 text-center text-slate-600">
+                  {step.text}
+                </p>
               </div>
-              <p className="text-lg mt-6 text-center text-slate-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                Download your paycheck stubs directly to your computer or mobile device in PDF format
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -1664,10 +1743,10 @@ export default function Home() {
           <section ref={whyChooseRef} className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-6">
               {/* Top Section - Why Choose Us (Full Width) */}
-              <div className="bg-slate-50 rounded-2xl p-8 md:p-12 mb-8">
+              <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 p-8 md:p-12 mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                   <div className="space-y-6 order-2 md:order-1">
-                    <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+                    <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
                       Why Choose Our{' '}
                       <span className="relative inline-block" style={{ color: '#1a4731' }}>
                         Paystub
@@ -1693,7 +1772,7 @@ export default function Home() {
                         </svg>
                       </span>
                       <br />Generator Vs. Others
-                    </h3>
+                    </h2>
                     <p className="text-lg leading-relaxed text-slate-600">
                       Unlike other paystub generators that rely on generic, outdated templates, our paystub generator delivers meticulously designed paystub templates built for a modern, professional look. Each pay stub template is crafted for clarity, accuracy, and real world usability. Our advanced pay stub calculator makes generating accurate, professional pay stubs fast, easy, and problem-free.
                     </p>
@@ -1709,7 +1788,7 @@ export default function Home() {
                     </ul>
                   </div>
                   <div className="flex justify-center items-center order-1 md:order-2">
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg overflow-hidden h-72 w-full shadow-lg flex items-center justify-center">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100/70 rounded-2xl overflow-hidden h-72 w-full border border-green-100 shadow-sm flex items-center justify-center">
                       <SpeedServiceAnimation isVisible={whyChooseInView} />
                     </div>
                   </div>
@@ -1719,30 +1798,30 @@ export default function Home() {
           {/* Bottom Section - Two Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Instant Download Card */}
-            <div className="bg-green-50 rounded-2xl p-8 overflow-hidden">
-              <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+            <div className="bg-green-50/80 rounded-3xl border border-green-100 p-8 overflow-hidden">
+              <h3 className="font-display text-2xl md:text-3xl font-bold mb-2 text-center text-slate-900">
                 Instant Download
-              </h4>
-              <p className="text-slate-600 mb-4 text-center">
+              </h3>
+              <p className="text-slate-600 mb-5 text-center">
                 Download your generated documents immediately after creation
               </p>
               <div className="relative">
-                <div className="bg-gradient-to-br from-white to-green-50 rounded-lg overflow-hidden shadow-lg h-64 flex items-center justify-center">
+                <div className="bg-white rounded-2xl overflow-hidden border border-green-100 shadow-sm h-64 flex items-center justify-center">
                   <InstantDownloadAnimation isVisible={whyChooseInView} />
                 </div>
               </div>
             </div>
 
             {/* No Data Stored Card */}
-            <div className="bg-red-50 rounded-2xl p-8 overflow-hidden">
-              <h4 className="text-2xl md:text-3xl font-black mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a1a1a' }}>
+            <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-8 overflow-hidden">
+              <h3 className="font-display text-2xl md:text-3xl font-bold mb-2 text-center text-slate-900">
                 No Data Stored
-              </h4>
-              <p className="text-slate-600 mb-4 text-center">
-                We donâ€™t save your personal information or generated documents
+              </h3>
+              <p className="text-slate-600 mb-5 text-center">
+                We don&apos;t save your personal information or generated documents
               </p>
               <div className="relative">
-                <div className="bg-gradient-to-br from-white to-red-50 rounded-lg overflow-hidden shadow-lg h-64 flex items-center justify-center">
+                <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-64 flex items-center justify-center">
                   <NoDataStoredAnimation isVisible={whyChooseInView} />
                 </div>
               </div>
@@ -1766,9 +1845,9 @@ export default function Home() {
                   <span className="text-sm font-medium text-green-800">13+ Document Types</span>
                 </div>
                 
-                <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
+                <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
                   All the Documents You Need
-                </h3>
+                </h2>
                 
                 <p className="text-lg leading-relaxed text-slate-600">
                   From pay stubs to tax forms, we've got you covered with a comprehensive suite of professional document generators designed for accuracy and ease of use.
@@ -1812,10 +1891,10 @@ export default function Home() {
                 <Button
                   onClick={() => navigate("/generators")}
                   size="lg"
-                  className="group gap-2 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="group gap-2 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
                 >
                   Browse All Documents
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
                 </Button>
               </div>
               
@@ -1825,7 +1904,7 @@ export default function Home() {
                   {/* Featured Document Cards */}
                   <button
                     onClick={() => navigate("/paystub-generator")}
-                    className="group p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-lg transition-all duration-300 text-left"
+                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
                     <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
                       <Receipt className="w-5 h-5 text-green-700" />
@@ -1837,7 +1916,7 @@ export default function Home() {
                   
                   <button
                     onClick={() => navigate("/ai-resume-builder")}
-                    className="group p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-lg transition-all duration-300 text-left"
+                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
                     <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
                       <Sparkles className="w-5 h-5 text-green-700" />
@@ -1849,7 +1928,7 @@ export default function Home() {
                   
                   <button
                     onClick={() => navigate("/w2-generator")}
-                    className="group p-5 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-lg transition-all duration-300 text-left"
+                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
                     <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
                       <Calendar className="w-5 h-5 text-green-700" />
@@ -1861,14 +1940,14 @@ export default function Home() {
                   
                   <button
                     onClick={() => navigate("/generators")}
-                    className="group p-5 bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-200 rounded-xl hover:border-green-500 hover:shadow-lg transition-all duration-300 text-left"
+                    className="group p-5 bg-gradient-to-br from-green-50 to-emerald-100/70 border border-green-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
                     <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-3 group-hover:bg-green-50 transition-colors">
                       <ArrowRight className="w-5 h-5 text-green-700 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                     <h4 className="font-bold text-green-800 mb-1">View All</h4>
                     <p className="text-xs text-green-600">13+ Document Types</p>
-                    <p className="text-sm font-medium text-green-700 mt-2">Browse Directory â†’</p>
+                    <p className="text-sm font-medium text-green-700 mt-2">Browse Directory →</p>
                   </button>
                 </div>
                 
@@ -1945,7 +2024,7 @@ export default function Home() {
                   {latestPosts.map((post, index) => (
                     <article
                       key={post.id}
-                      className={`group bg-white border-2 border-slate-200 rounded-xl overflow-hidden hover:border-green-500 hover:shadow-xl transition-all duration-500 cursor-pointer ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                      className={`group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-green-400 hover:shadow-lg transition-all duration-300 cursor-pointer ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                       style={{ transitionDelay: `${index * 100}ms` }}
                       onClick={() => navigate(`/blog/${post.slug}`)}
                     >
@@ -2038,7 +2117,7 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="order-2 md:order-1">
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-xl border border-slate-200 h-[400px] flex items-center justify-center overflow-hidden">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-100/70 rounded-2xl border border-green-100 shadow-sm h-[400px] flex items-center justify-center overflow-hidden">
                     <SecureInstantAnimation isVisible={trustInView} />
                   </div>
                 </div>
@@ -2069,6 +2148,81 @@ export default function Home() {
           </section>
         );
       })()}
+
+      {/* FAQ Section */}
+      <section className="py-20 md:py-24 bg-white">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest text-green-700 mb-4" style={{ letterSpacing: '0.15em' }}>
+              FAQ
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-slate-600">
+              Quick answers about how MintSlip works.
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full">
+            {LANDING_FAQS.map((faq, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border-slate-200">
+                <AccordionTrigger className="text-left text-base font-semibold text-slate-800 hover:text-green-800 hover:no-underline py-5">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-base leading-relaxed text-slate-600 pb-5">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          <div className="text-center mt-10">
+            <Button
+              onClick={() => navigate("/faq")}
+              variant="outline"
+              size="lg"
+              className="group gap-2 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-green-50/60 transition-all duration-200"
+            >
+              View All FAQs
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="pb-20 md:pb-24 px-6 bg-white">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 md:py-16 text-center overflow-hidden">
+          <div aria-hidden="true" className="absolute -top-24 -right-24 w-72 h-72 bg-green-100/70 rounded-full filter blur-3xl pointer-events-none" />
+          <div className="relative">
+            <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-4">
+              Create Your First Document in Minutes
+            </h2>
+            <p className="text-lg text-slate-600 max-w-xl mx-auto mb-8">
+              Professional pay stubs, tax forms, and more — generated instantly, downloaded immediately. No sign-up required.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                onClick={() => navigate("/paystub-generator")}
+                size="lg"
+                className="group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
+              >
+                Create Pay Stub
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </Button>
+              <Button
+                onClick={() => navigate("/generators")}
+                size="lg"
+                variant="outline"
+                className="gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-white transition-all duration-200"
+              >
+                Browse All Generators
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

@@ -58,9 +58,9 @@ function DesktopNavItem({ item, location, onNavigate }) {
   const isActive = (path) => location.pathname === path;
   const isPaystubActive = location.pathname === "/paystub-generator" || location.pathname === "/paystub-samples" || location.pathname === "/canadian-paystub-generator";
 
-  const btnBase = "flex items-center gap-2 px-4 py-2 rounded-md transition-all text-sm";
-  const activeClasses = `${btnBase} bg-green-100 text-green-800 font-semibold`;
-  const idleClasses   = `${btnBase} hover:bg-green-50 text-slate-500 hover:text-green-700`;
+  const btnBase = "flex items-center gap-2 px-3.5 py-2 rounded-lg transition-colors duration-200 text-sm font-medium";
+  const activeClasses = `${btnBase} bg-green-50 text-green-800 font-semibold`;
+  const idleClasses   = `${btnBase} text-slate-600 hover:bg-slate-50 hover:text-green-800`;
 
   if (item.type === "dropdown") {
     return (
@@ -139,13 +139,13 @@ function UserAccountDropdown({ user, onNavigate, onLogout, authEnabled }) {
       <div className="flex items-center gap-2">
         <button
           onClick={() => onNavigate("/login")}
-          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors"
+          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-green-800 hover:bg-slate-50 rounded-lg transition-colors duration-200"
         >
           Log In
         </button>
         <button
           onClick={() => onNavigate("/signup")}
-          className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+          className="px-4 py-2 text-sm font-semibold text-white bg-green-700 hover:bg-green-800 rounded-lg shadow-sm shadow-green-900/10 transition-colors duration-200"
         >
           Sign Up
         </button>
@@ -458,7 +458,7 @@ export default function Header({ title }) {
   return (
     <>
       {/* Support Bar */}
-      <div className="bg-slate-800 text-white py-1.5 px-4 text-center text-sm hidden sm:block">
+      <div className="bg-slate-900 text-white py-1.5 px-4 text-center text-[13px] hidden sm:block">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-6">
           <a 
             href="tel:+18556236746" 
@@ -478,17 +478,18 @@ export default function Header({ title }) {
         </div>
       </div>
       
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_12px_rgba(15,23,42,0.04)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Logo */}
             <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-              <img 
-                src={MintSlip}
-                className="text-xl sm:text-2xl font-black tracking-tight cursor-pointer" 
-                style={{ fontFamily: 'Outfit, sans-serif', height: '40px', width: 'auto' }}
-                onClick={() => navigate("/")}
-              />
+              <button onClick={() => navigate("/")} aria-label="MintSlip home" className="block">
+                <img
+                  src={MintSlip}
+                  alt="MintSlip"
+                  style={{ height: '40px', width: 'auto' }}
+                />
+              </button>
             </div>
             
             {/* Center: Desktop Navigation Links */}

@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
+import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
@@ -587,7 +588,11 @@ async function generateSingleCanadianStub(
   };
   
   // Generate the selected template
-  if (template === "template-b") {
+  if (template && template.startsWith("custom:")) {
+    const customLayout = await fetchPublishedLayout(template.slice(7));
+    if (customLayout) renderLayout(doc, customLayout, templateData, "canadian-paystub");
+    else await generateCanadianTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  } else if (template === "template-b") {
     await generateCanadianTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === "template-c") {
     await generateCanadianTemplateC(doc, templateData, pageWidth, pageHeight, margin);

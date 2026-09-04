@@ -85,6 +85,15 @@ export default function CanadianPaystubForm() {
     }
   }, [selectedTemplate]);
 
+  // Admin-designed custom templates (published in the admin template editor)
+  const [customTemplates, setCustomTemplates] = useState([]);
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_BACKEND_URL || ""}/api/doc-templates?documentType=canadian-paystub`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomTemplates(d.templates || []); })
+      .catch(() => {});
+  }, []);
+
   const [pdfPreviews, setPdfPreviews] = useState([]); // Array of preview images
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0); // Current page being viewed
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
@@ -737,7 +746,11 @@ export default function CanadianPaystubForm() {
   };
 
   // Filter payroll companies based on search
-  const filteredCompanies = PAYROLL_COMPANIES.filter(company =>
+  const allCompanies = [
+    ...PAYROLL_COMPANIES,
+    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, logo: null })),
+  ];
+  const filteredCompanies = allCompanies.filter(company =>
     company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
   );
 

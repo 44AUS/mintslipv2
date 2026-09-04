@@ -5660,7 +5660,7 @@ async def delete_support_chat(chat_id: str, session: dict = Depends(get_current_
 # Custom Document Templates (admin layout engine)
 # ─────────────────────────────────────────────────────────────
 
-TEMPLATE_LIST_PROJECTION = {"_id": 0, "layout": 0, "publishedLayout": 0}
+TEMPLATE_LIST_PROJECTION = {"_id": 0, "layout": 0, "publishedLayout": 0, "layoutHistory": 0}
 
 
 @app.get("/api/admin/doc-templates")
@@ -5692,7 +5692,7 @@ async def create_doc_template(request: Request, session: dict = Depends(get_curr
 
 @app.get("/api/admin/doc-templates/{template_id}")
 async def get_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
-    template = await doc_templates_collection.find_one({"id": template_id}, {"_id": 0})
+    template = await doc_templates_collection.find_one({"id": template_id}, {"_id": 0, "layoutHistory": 0})
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     return {"success": True, "template": template}
@@ -5721,16 +5721,22 @@ async def publish_doc_template(template_id: str, session: dict = Depends(get_cur
         raise HTTPException(status_code=404, detail="Template not found")
     if not (template.get("layout") or {}).get("elements"):
         raise HTTPException(status_code=400, detail="Template has no elements to publish")
+    new_version = int(template.get("version") or 0) + 1
+    now = datetime.now(timezone.utc).isoformat()
     await doc_templates_collection.update_one(
         {"id": template_id},
-        {"$set": {
-            "publishedLayout": template["layout"],
-            "status": "published",
-            "version": int(template.get("version") or 0) + 1,
-            "updatedAt": datetime.now(timezone.utc).isoformat(),
-        }},
+        {
+            "$set": {
+                "publishedLayout": template["layout"],
+                "status": "published",
+                "version": new_version,
+                "updatedAt": now,
+            },
+            # Retain every published version (rollback / audit safety net).
+            "$push": {"layoutHistory": {"$each": [{"version": new_version, "layout": template["layout"], "publishedAt": now}], "$slice": -25}},
+        },
     )
-    return {"success": True}
+    return {"success": True, "version": new_version}
 
 
 @app.post("/api/admin/doc-templates/{template_id}/unpublish")
@@ -5747,7 +5753,7 @@ async def unpublish_doc_template(template_id: str, session: dict = Depends(get_c
 
 @app.post("/api/admin/doc-templates/{template_id}/duplicate")
 async def duplicate_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
-    template = await doc_templates_collection.find_one({"id": template_id}, {"_id": 0})
+    template = await doc_templates_collection.find_one({"id": template_id}, {"_id": 0, "layoutHistory": 0})
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     now = datetime.now(timezone.utc).isoformat()
@@ -5784,13 +5790,20 @@ async def list_published_doc_templates(documentType: Optional[str] = None):
 
 
 @app.get("/api/doc-templates/{template_id}/layout")
-async def get_published_doc_template_layout(template_id: str):
-    """Public: the published layout a customer document is rendered from."""
+async def get_published_doc_template_layout(template_id: str, version: Optional[int] = None):
+    """Public: the published layout a customer document is rendered from.
+    Pass ?version=N to fetch a historical published version."""
     template = await doc_templates_collection.find_one(
-        {"id": template_id, "status": "published"}, {"_id": 0, "publishedLayout": 1, "version": 1}
+        {"id": template_id, "status": "published"},
+        {"_id": 0, "publishedLayout": 1, "version": 1, "layoutHistory": 1},
     )
     if not template or not template.get("publishedLayout"):
         raise HTTPException(status_code=404, detail="Template not found")
+    if version is not None and version != template.get("version"):
+        for entry in template.get("layoutHistory") or []:
+            if entry.get("version") == version:
+                return {"success": True, "layout": entry["layout"], "version": version}
+        raise HTTPException(status_code=404, detail="Template version not found")
     return {"success": True, "layout": template["publishedLayout"], "version": template.get("version", 1)}
 
 

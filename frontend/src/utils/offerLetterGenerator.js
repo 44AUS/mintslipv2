@@ -1,5 +1,7 @@
 import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
+import { jsPDF } from "jspdf";
+import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
 
 // Helper to convert hex color to RGB
 const hexToRgb = (hex) => {
@@ -82,6 +84,29 @@ const embedImage = async (pdfDoc, base64Data) => {
 // Generate offer letter PDF
 export const generateOfferLetterPDF = async (formData, isPreview = false) => {
   try {
+    // Admin-designed template: render through the jsPDF layout engine instead
+    // of the built-in pdf-lib flow. Returns the same byte-array shape.
+    if (formData.template && formData.template.startsWith("custom:")) {
+      const customLayout = await fetchPublishedLayout(formData.template.slice(7));
+      if (customLayout) {
+        const jsDoc = new jsPDF({ unit: "pt", format: "letter" });
+        renderLayout(jsDoc, customLayout, { formData }, "offer-letter");
+        if (isPreview) {
+          const pages = jsDoc.getNumberOfPages();
+          for (let p = 1; p <= pages; p++) {
+            jsDoc.setPage(p);
+            jsDoc.setFont("helvetica", "bold");
+            jsDoc.setFontSize(58);
+            jsDoc.setTextColor(215, 215, 215);
+            jsDoc.text("PREVIEW", 306, 470, { align: "center", angle: 45 });
+          }
+        }
+        return new Uint8Array(jsDoc.output("arraybuffer"));
+      }
+      // Layout unavailable (deleted/unpublished) — fall through to the
+      // built-in professional layout so the customer still gets a document.
+    }
+
     // Create new PDF document
     const pdfDoc = await PDFDocument.create();
     

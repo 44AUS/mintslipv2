@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
+import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker using unpkg CDN with correct version
@@ -310,7 +311,11 @@ export async function generateCanadianPreviewPDF(formData, template) {
     };
 
     // Generate selected template
-    if (template === "template-b") {
+    if (template && template.startsWith("custom:")) {
+    const customLayout = await fetchPublishedLayout(template.slice(7));
+    if (customLayout) renderLayout(doc, customLayout, templateData, "canadian-paystub");
+    else await generateCanadianTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  } else if (template === "template-b") {
       await generateCanadianTemplateB(doc, templateData, pageWidth, pageHeight, margin);
     } else if (template === "template-c") {
       await generateCanadianTemplateC(doc, templateData, pageWidth, pageHeight, margin);
@@ -525,7 +530,11 @@ async function generateSingleCanadianStubPreview(formData, template, stubIndex, 
   };
 
   // Generate selected template
-  if (template === "template-b") {
+  if (template && template.startsWith("custom:")) {
+    const customLayout = await fetchPublishedLayout(template.slice(7));
+    if (customLayout) renderLayout(doc, customLayout, templateData, "canadian-paystub");
+    else await generateCanadianTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  } else if (template === "template-b") {
     await generateCanadianTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === "template-c") {
     await generateCanadianTemplateC(doc, templateData, pageWidth, pageHeight, margin);

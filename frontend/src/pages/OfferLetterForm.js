@@ -64,6 +64,15 @@ export default function OfferLetterForm() {
   const navigate = useNavigate();
   const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Admin-designed custom templates (published in the admin template editor)
+  const [customTemplates, setCustomTemplates] = useState([]);
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_BACKEND_URL || ""}/api/doc-templates?documentType=offer-letter`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomTemplates(d.templates || []); })
+      .catch(() => {});
+  }, []);
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
@@ -597,6 +606,37 @@ export default function OfferLetterForm() {
                     <span className="font-semibold text-slate-800">Custom</span>
                     <span className="text-xs text-slate-500 mt-1 text-center">Choose your own colors</span>
                   </button>
+
+                  {/* Admin-designed templates */}
+                  {customTemplates.map((t) => {
+                    const tid = `custom:${t.id}`;
+                    const active = formData.template === tid;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, template: tid })}
+                        className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
+                          active
+                            ? 'border-green-600 bg-green-50 ring-2 ring-green-200'
+                            : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                        }`}
+                      >
+                        {active && (
+                          <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                            <CheckCircle className="w-4 h-4" />
+                          </div>
+                        )}
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
+                          active ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          <Briefcase className="w-6 h-6" />
+                        </div>
+                        <span className="font-semibold text-slate-800">{t.name}</span>
+                        <span className="text-xs text-slate-500 mt-1 text-center">Designed template</span>
+                      </button>
+                    );
+                  })}
                 </div>
                 
                 {/* Custom template colors */}
@@ -1361,7 +1401,11 @@ export default function OfferLetterForm() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-700">Template:</span>
-                    <span className="font-medium text-slate-900 capitalize">{formData.template}</span>
+                    <span className="font-medium text-slate-900 capitalize">
+                      {formData.template.startsWith("custom:")
+                        ? (customTemplates.find((t) => `custom:${t.id}` === formData.template)?.name || "Custom template")
+                        : formData.template}
+                    </span>
                   </div>
                   <div className="border-t border-green-300 my-2"></div>
                   <div className="flex justify-between">

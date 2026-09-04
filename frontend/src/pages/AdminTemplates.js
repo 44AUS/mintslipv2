@@ -4,17 +4,18 @@ import AdminLayout from "@/components/AdminLayout";
 import { IonButton, IonSpinner } from "@ionic/react";
 import { Plus, Pencil, Copy, Trash2, Upload, Undo2, LayoutTemplate } from "lucide-react";
 import { toast } from "sonner";
-import { DEFAULT_PAYSTUB_LAYOUT } from "@/utils/layoutEngine";
+import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-const DOC_TYPE_LABELS = { paystub: "Pay Stub" };
+const DOC_TYPE_LABELS = { paystub: "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "offer-letter": "Offer Letter" };
 
 export default function AdminTemplates() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
+  const [starterOpen, setStarterOpen] = useState(false);
 
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("adminToken")}` });
 
@@ -34,13 +35,14 @@ export default function AdminTemplates() {
 
   useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
-  const createTemplate = async () => {
+  const createTemplate = async (starter) => {
+    setStarterOpen(false);
     setBusy("create");
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates`, {
         method: "POST",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "New Paystub Template", documentType: "paystub", layout: DEFAULT_PAYSTUB_LAYOUT }),
+        body: JSON.stringify({ name: `New ${starter.name}`, documentType: starter.documentType, layout: starter.layout }),
       });
       if (!res.ok) throw new Error("Failed to create template");
       const data = await res.json();
@@ -51,6 +53,21 @@ export default function AdminTemplates() {
       setBusy(null);
     }
   };
+
+  const StarterMenu = () => (
+    <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50, minWidth: 230, background: "var(--ion-card-background)", borderRadius: 8, boxShadow: "0 8px 30px rgba(0,0,0,0.18)", border: "1px solid var(--ion-border-color)", padding: "6px 0" }}>
+      <p style={{ margin: "4px 12px 6px", fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>Start from</p>
+      {STARTER_LAYOUTS.map((s) => (
+        <button key={s.key} onClick={() => createTemplate(s)}
+          style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", border: "none", background: "transparent", color: "var(--admin-text)", fontSize: "0.85rem", cursor: "pointer" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+          {s.name}
+          <span style={{ display: "block", fontSize: "0.7rem", color: "var(--admin-text-muted)" }}>{DOC_TYPE_LABELS[s.documentType]}</span>
+        </button>
+      ))}
+    </div>
+  );
 
   const act = async (id, action, method = "POST") => {
     setBusy(id + action);
@@ -76,9 +93,12 @@ export default function AdminTemplates() {
             <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
             <p className="text-sm text-gray-500 mt-1">Design, edit, and publish custom document layouts</p>
           </div>
-          <IonButton color="primary" onClick={createTemplate} disabled={busy === "create"}>
-            <Plus size={16} style={{ marginRight: 6 }} />New Template
-          </IonButton>
+          <div style={{ position: "relative" }}>
+            <IonButton color="primary" onClick={() => setStarterOpen((o) => !o)} disabled={busy === "create"}>
+              <Plus size={16} style={{ marginRight: 6 }} />New Template
+            </IonButton>
+            {starterOpen && <StarterMenu />}
+          </div>
         </div>
 
         <div className="table-card">
@@ -93,7 +113,7 @@ export default function AdminTemplates() {
               <p style={{ color: "var(--admin-text-muted)", marginBottom: 16, fontSize: "0.9rem" }}>
                 Create your first template — it starts from a complete paystub layout you can freely rearrange.
               </p>
-              <IonButton color="primary" onClick={createTemplate} disabled={busy === "create"}>
+              <IonButton color="primary" onClick={() => createTemplate(STARTER_LAYOUTS[0])} disabled={busy === "create"}>
                 <Plus size={16} style={{ marginRight: 6 }} />Create Template
               </IonButton>
             </div>

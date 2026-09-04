@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  buildContext, resolveTokens, renderLayout,
-  SAMPLE_TEMPLATE_DATA, TOKEN_GROUPS, TABLE_BINDINGS,
+  buildContext, resolveTokens, renderLayout, evalShowIf,
+  getSampleVariants, getTokenGroups, getTableBindings, getShowIfPresets,
 } from "@/utils/layoutEngine";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -80,11 +80,12 @@ function ColorInput({ value, onChange, allowNone }) {
 
 // ── canvas element previews ──────────────────────────────────────────────────
 
-function CanvasElement({ el, ctx, selected, onMouseDown, onResizeStart }) {
+function CanvasElement({ el, ctx, selected, dimmed, onMouseDown, onResizeStart }) {
   const base = {
     position: "absolute", left: el.x, top: el.y, cursor: "move", userSelect: "none",
-    outline: selected ? "1.5px solid #2563eb" : "1px dashed transparent",
+    outline: selected ? "1.5px solid #2563eb" : dimmed ? "1px dashed #cbd5e1" : "1px dashed transparent",
     outlineOffset: 1,
+    opacity: dimmed ? 0.35 : 1,
   };
   const handle = selected && (
     <div onMouseDown={onResizeStart}
@@ -169,11 +170,21 @@ export default function AdminTemplateEditor() {
   const [saving, setSaving] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [history, setHistory] = useState([]);
+  const [variantKey, setVariantKey] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
 
-  const sampleCtx = useMemo(() => buildContext(SAMPLE_TEMPLATE_DATA), []);
+  const docType = meta?.documentType || "paystub";
+  const variants = useMemo(() => getSampleVariants(docType), [docType]);
+  const activeVariant = variants.find((v) => v.key === variantKey) || variants[0];
+  const sampleData = activeVariant.data;
+  const sampleCtx = useMemo(() => buildContext(sampleData, docType), [sampleData, docType]);
+  const tokenGroups = useMemo(() => getTokenGroups(docType), [docType]);
+  const tableBindings = useMemo(() => getTableBindings(docType), [docType]);
+  const showIfPresets = useMemo(() => getShowIfPresets(docType), [docType]);
+  const pageCount = Math.max(1, ...(layout?.elements || []).map((e) => e.page || 1));
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("adminToken")}` });
 
   useEffect(() => {
@@ -222,7 +233,8 @@ export default function AdminTemplateEditor() {
   };
 
   const addElement = (type) => {
-    const el = NEW_ELEMENTS[type]();
+    const el = { ...NEW_ELEMENTS[type](), ...(currentPage > 1 ? { page: currentPage } : {}) };
+    if (type === "table") el.binding = tableBindings[0]?.binding || "earnings";
     commit((prev) => ({ ...prev, elements: [...prev.elements, el] }));
     setSelectedId(el.id);
   };
@@ -359,7 +371,7 @@ export default function AdminTemplateEditor() {
   const previewPdf = () => {
     try {
       const doc = new jsPDF({ unit: "pt", format: "letter" });
-      renderLayout(doc, layout, SAMPLE_TEMPLATE_DATA);
+      renderLayout(doc, layout, sampleData, docType);
       setPreviewUrl(doc.output("bloburl"));
     } catch (err) {
       toast.error("Preview failed: " + err.message);
@@ -409,6 +421,16 @@ export default function AdminTemplateEditor() {
             : <span className="admin-badge admin-badge-amber">Draft</span>}
           {dirty && <span className="admin-badge admin-badge-slate">Unsaved changes</span>}
           <div style={{ flex: 1 }} />
+          {variants.length > 1 && (
+            <select
+              style={{ ...inputStyle, width: 170 }}
+              value={activeVariant.key}
+              onChange={(e) => setVariantKey(e.target.value)}
+              title="Preview the layout against different sample data"
+            >
+              {variants.map((v) => <option key={v.key} value={v.key}>Preview: {v.label}</option>)}
+            </select>
+          )}
           <IonButton fill="outline" color="medium" size="small" onClick={undo} disabled={!history.length}>
             <Undo2 size={14} style={{ marginRight: 5 }} />Undo
           </IonButton>
@@ -437,7 +459,7 @@ export default function AdminTemplateEditor() {
             </div>
             <div style={{ ...panelCard, maxHeight: 380, overflowY: "auto" }}>
               <p style={{ margin: "0 0 8px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>Data fields</p>
-              {TOKEN_GROUPS.map((g) => (
+              {tokenGroups.map((g) => (
                 <div key={g.group} style={{ marginBottom: 10 }}>
                   <p style={{ margin: "0 0 4px", fontSize: "0.7rem", fontWeight: 600, color: "var(--admin-text)" }}>{g.group}</p>
                   {g.tokens.map(([token, label]) => (
@@ -455,17 +477,31 @@ export default function AdminTemplateEditor() {
 
           {/* Center: canvas */}
           <div style={{ overflow: "auto", paddingBottom: 24 }}>
+            {/* Page switcher */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 10 }}>
+              {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+                <button key={p} onClick={() => setCurrentPage(p)}
+                  style={{ padding: "4px 12px", borderRadius: 6, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", border: "1px solid var(--ion-border-color)", background: currentPage === p ? "var(--ion-color-primary)" : "transparent", color: currentPage === p ? "#fff" : "var(--admin-text-muted)" }}>
+                  Page {p}
+                </button>
+              ))}
+              <button onClick={() => setCurrentPage(pageCount + 1)} title="Elements you add will start a new page"
+                style={{ padding: "4px 10px", borderRadius: 6, fontSize: "0.75rem", cursor: "pointer", border: "1px dashed var(--ion-border-color)", background: "transparent", color: "var(--admin-text-muted)" }}>
+                + Page
+              </button>
+            </div>
             <div
               ref={canvasRef}
               onMouseDown={() => setSelectedId(null)}
               style={{ position: "relative", width: PAGE_W, height: PAGE_H, margin: "0 auto", background: "#ffffff", boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 12px 32px rgba(0,0,0,0.12)", borderRadius: 2 }}
             >
-              {layout.elements.map((el) => (
+              {layout.elements.filter((el) => (el.page || 1) === currentPage).map((el) => (
                 <CanvasElement
                   key={el.id}
                   el={el}
                   ctx={sampleCtx}
                   selected={el.id === selectedId}
+                  dimmed={!evalShowIf(el.showIf, sampleCtx)}
                   onMouseDown={(e) => startDrag(e, el, "move")}
                   onResizeStart={(e) => startDrag(e, el, "resize")}
                 />
@@ -473,6 +509,7 @@ export default function AdminTemplateEditor() {
             </div>
             <p style={{ textAlign: "center", fontSize: "0.72rem", color: "var(--admin-text-muted)", marginTop: 10 }}>
               US Letter (612 × 792 pt) · drag to move · corner handle resizes · arrow keys nudge (Shift = 10) · Delete removes · Ctrl+Z undo
+              · faded elements are hidden for the current preview variant
             </p>
           </div>
 
@@ -501,7 +538,25 @@ export default function AdminTemplateEditor() {
                   {(selected.type === "rect" || selected.type === "image" || selected.type === "line") && (
                     <Field label="Height"><NumInput value={selected.h} onChange={(v) => updateEl({ h: v })} /></Field>
                   )}
+                  <Field label="Page"><NumInput value={selected.page || 1} min={1} max={9} onChange={(v) => updateEl({ page: Math.max(1, Math.round(v)) })} /></Field>
                 </div>
+
+                <Field label="Show when">
+                  <select
+                    style={{ ...inputStyle, marginBottom: 4 }}
+                    value={showIfPresets.some(([v]) => v === (selected.showIf || "")) ? (selected.showIf || "") : "__custom"}
+                    onChange={(e) => { if (e.target.value !== "__custom") updateEl({ showIf: e.target.value || undefined }); }}
+                  >
+                    {showIfPresets.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+                    <option value="__custom">Custom condition…</option>
+                  </select>
+                  <input
+                    style={inputStyle}
+                    placeholder='e.g. payType=salary or !hasLogo'
+                    value={selected.showIf || ""}
+                    onChange={(e) => updateEl({ showIf: e.target.value || undefined })}
+                  />
+                </Field>
 
                 {selected.type === "text" && (
                   <>
@@ -560,7 +615,7 @@ export default function AdminTemplateEditor() {
                   <>
                     <Field label="Rows from">
                       <select style={inputStyle} value={selected.binding} onChange={(e) => updateEl({ binding: e.target.value })}>
-                        {TABLE_BINDINGS.map((b) => <option key={b.binding} value={b.binding}>{b.label}</option>)}
+                        {tableBindings.map((b) => <option key={b.binding} value={b.binding}>{b.label}</option>)}
                       </select>
                     </Field>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -577,7 +632,7 @@ export default function AdminTemplateEditor() {
                       </label>
                     </div>
                     <p style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)", margin: "12px 0 6px" }}>
-                      Columns <span style={{ fontWeight: 400, textTransform: "none" }}>(row tokens: {(TABLE_BINDINGS.find((b) => b.binding === selected.binding)?.rowTokens || []).join(" ")})</span>
+                      Columns <span style={{ fontWeight: 400, textTransform: "none" }}>(row tokens: {(tableBindings.find((b) => b.binding === selected.binding)?.rowTokens || []).join(" ")})</span>
                     </p>
                     {(selected.columns || []).map((col, ci) => (
                       <div key={ci} style={{ border: "1px solid var(--ion-border-color)", borderRadius: 6, padding: 8, marginBottom: 8 }}>

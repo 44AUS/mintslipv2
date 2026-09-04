@@ -9,7 +9,7 @@ import {
   refreshOutline, downloadOutline, chevronForwardOutline, searchOutline,
 } from "ionicons/icons";
 import {
-  MoreVertical, Pencil, CreditCard, Download, Ban, Shield, UserX, MailCheck, X, Clock,
+  MoreVertical, Pencil, Download, Ban, Shield, UserX, MailCheck, X, Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import AdminLayout from "@/components/AdminLayout";
@@ -46,10 +46,8 @@ const segBtnStyle = {
 };
 
 const TABS = [
-  { value: "all",         label: "ALL" },
-  { value: "subscribers", label: "SUBSCRIBERS" },
-  { value: "free",        label: "FREE" },
-  { value: "banned",      label: "BANNED" },
+  { value: "all",    label: "ALL" },
+  { value: "banned", label: "BANNED" },
 ];
 
 function getInitials(name, email) {
@@ -72,8 +70,6 @@ export default function AdminUsers() {
   // modals
   const [openMenuId, setOpenMenuId]   = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [subModalOpen, setSubModalOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState("");
   const [dlModalOpen, setDlModalOpen]   = useState(false);
   const [dlCount, setDlCount]           = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -105,17 +101,13 @@ export default function AdminUsers() {
   }, [fetchUsers]);
 
   const filtered = users.filter(u => {
-    if (segment === "subscribers") return !!u.subscription;
-    if (segment === "free")        return !u.subscription;
-    if (segment === "banned")      return !!u.isBanned;
+    if (segment === "banned") return !!u.isBanned;
     return true;
   });
 
   const counts = {
-    all:         users.length,
-    subscribers: users.filter(u => !!u.subscription).length,
-    free:        users.filter(u => !u.subscription).length,
-    banned:      users.filter(u => !!u.isBanned).length,
+    all:    users.length,
+    banned: users.filter(u => !!u.isBanned).length,
   };
 
   // ── actions ────────────────────────────────────────────────────────────────
@@ -163,19 +155,6 @@ export default function AdminUsers() {
     });
     if (res.ok) { toast.success("Email confirmed"); fetchUsers(); }
     else { const d = await res.json(); toast.error(d.detail || "Failed"); }
-  };
-
-  const updateSubscription = async () => {
-    const token = localStorage.getItem("adminToken");
-    const res = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}/subscription`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ tier: selectedTier === "none" ? null : selectedTier }),
-    });
-    if (res.ok) {
-      toast.success("Subscription updated"); setSubModalOpen(false);
-      fetchUsers();
-    } else toast.error("Failed to update subscription");
   };
 
   const updateDownloads = async () => {
@@ -397,9 +376,6 @@ export default function AdminUsers() {
                                     <button className="profile-menu-item" onClick={() => { setSelectedUser(u); setEditData({ name: u.name || "", email: u.email || "", ipAddress: u.ipAddress || "" }); setEditModalOpen(true); setOpenMenuId(null); }}>
                                       <Pencil size={13} /> Edit User
                                     </button>
-                                    <button className="profile-menu-item" style={{ color: "#3b82f6" }} onClick={() => { setSelectedUser(u); setSelectedTier(u.subscription?.tier || ""); setSubModalOpen(true); setOpenMenuId(null); }}>
-                                      <CreditCard size={13} /> Change Subscription
-                                    </button>
                                     {u.subscription && (
                                       <button className="profile-menu-item" style={{ color: "var(--ion-color-primary)" }} onClick={() => { setSelectedUser(u); setDlCount(""); setDlModalOpen(true); setOpenMenuId(null); }}>
                                         <Download size={13} /> Add Bonus Downloads
@@ -440,33 +416,6 @@ export default function AdminUsers() {
       </div>
 
       {/* Change Subscription Modal */}
-      <IonModal isOpen={subModalOpen} onDidDismiss={() => setSubModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
-        <IonHeader><IonToolbar>
-          <IonTitle>Change Subscription</IonTitle>
-          <IonButtons slot="end"><IonButton fill="clear" color="medium" onClick={() => setSubModalOpen(false)}><X size={20} /></IonButton></IonButtons>
-        </IonToolbar></IonHeader>
-        <IonModalContent className="ion-padding">
-          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 12 }}>
-            Current plan for {selectedUser?.name} ({selectedUser?.email}): <strong>{selectedUser?.subscription ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</strong>
-          </p>
-          <div className="admin-form-group">
-            <select className="admin-select" value={selectedTier} onChange={e => setSelectedTier(e.target.value)}>
-              <option value="">Select a plan</option>
-              <option value="none">No Subscription</option>
-              {Object.entries(SUBSCRIPTION_TIERS).map(([k, t]) => (
-                <option key={k} value={k}>{t.name} – ${t.price}/mo ({t.downloads === -1 ? "Unlimited" : t.downloads} downloads)</option>
-              ))}
-            </select>
-          </div>
-        </IonModalContent>
-        <IonFooter><IonToolbar style={{ padding: "8px 16px" }}>
-          <IonButtons slot="end">
-            <IonButton fill="outline" color="medium" onClick={() => setSubModalOpen(false)}>Cancel</IonButton>
-            <IonButton color="primary" onClick={updateSubscription}>Update</IonButton>
-          </IonButtons>
-        </IonToolbar></IonFooter>
-      </IonModal>
-
       {/* Bonus Downloads Modal */}
       <IonModal isOpen={dlModalOpen} onDidDismiss={() => setDlModalOpen(false)} style={{ "--width": "480px", "--max-width": "95vw", "--height": "auto" }}>
         <IonHeader><IonToolbar>

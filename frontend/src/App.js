@@ -44,7 +44,6 @@ import AdminSupport from "@/pages/AdminSupport";
 import AdminLiveChat from "@/pages/AdminLiveChat";
 import AdminExport from "@/pages/AdminExport";
 import AdminRevenue from "@/pages/AdminRevenue";
-import AdminSubscriptions from "@/pages/AdminSubscriptions";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminSiteSettings from "@/pages/AdminSiteSettings";
 import AdminPurchases from "@/pages/AdminPurchases";
@@ -331,7 +330,6 @@ function App() {
             <Route path="/admin/support" element={<AdminLiveChat />} />
             <Route path="/admin/export" element={<AdminExport />} />
             <Route path="/admin/revenue" element={<AdminRevenue />} />
-            <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/site-settings" element={<AdminSiteSettings />} />
             {/* Banned Page */}

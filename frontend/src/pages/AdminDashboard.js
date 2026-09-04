@@ -90,7 +90,6 @@ const SUBSCRIPTION_TIERS = {
 };
 
 // Admin-assignable tiers (same as SUBSCRIPTION_TIERS)
-const ADMIN_ASSIGNABLE_TIERS = SUBSCRIPTION_TIERS;
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -146,11 +145,8 @@ export default function AdminDashboard() {
   const [chartTypeFilter, setChartTypeFilter] = useState("all"); // "all", "subscription", "guest"
   const pageSize = 20;
   
-  // Subscription change modal state
-  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedTier, setSelectedTier] = useState("");
-  
+
   // Downloads edit modal state
   const [downloadsModalOpen, setDownloadsModalOpen] = useState(false);
   const [editDownloadsCount, setEditDownloadsCount] = useState("");
@@ -908,41 +904,6 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       toast.error("Error confirming user email");
-    }
-  };
-
-  const openSubscriptionModal = (user) => {
-    setSelectedUser(user);
-    setSelectedTier(user.subscription?.tier || "");
-    setSubscriptionModalOpen(true);
-  };
-
-  const updateUserSubscription = async () => {
-    if (!selectedUser) return;
-    
-    const token = localStorage.getItem("adminToken");
-    try {
-      const tierToSend = selectedTier === "none" ? null : selectedTier;
-      const response = await fetch(`${BACKEND_URL}/api/admin/users/${selectedUser.id}/subscription`, {
-        method: "PUT",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ tier: tierToSend })
-      });
-      
-      if (response.ok) {
-        toast.success(tierToSend ? `User subscription updated to ${SUBSCRIPTION_TIERS[tierToSend]?.name}` : "User subscription removed");
-        setSubscriptionModalOpen(false);
-        setSelectedUser(null);
-        loadUsers();
-        loadDashboardData();
-      } else {
-        toast.error("Failed to update user subscription");
-      }
-    } catch (error) {
-      toast.error("Error updating subscription");
     }
   };
 
@@ -2613,9 +2574,6 @@ export default function AdminDashboard() {
                                     <button className="profile-menu-item" onClick={() => { openEditUserModal(user); setOpenUserMenuId(null); }}>
                                       <Pencil size={13} /> Edit User
                                     </button>
-                                    <button className="profile-menu-item" style={{ color: "#3b82f6" }} onClick={() => { openSubscriptionModal(user); setOpenUserMenuId(null); }}>
-                                      <CreditCard size={13} /> Change Subscription
-                                    </button>
                                     {user.subscription && (
                                       <button className="profile-menu-item" style={{ color: "var(--ion-color-primary)" }} onClick={() => { openDownloadsModal(user); setOpenUserMenuId(null); }}>
                                         <Download size={13} /> Add Bonus Downloads
@@ -2818,63 +2776,6 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
-
-      {/* Subscription Change Modal */}
-      <IonModal isOpen={subscriptionModalOpen} onDidDismiss={() => setSubscriptionModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Change User Subscription</IonTitle>
-            <IonButtons slot="end">
-              <IonButton fill="clear" color="medium" onClick={() => setSubscriptionModalOpen(false)}><X size={20} /></IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonModalContent className="ion-padding">
-          <p style={{ color: "#64748b", fontSize: "0.875rem", marginBottom: 16 }}>
-            Update subscription plan for {selectedUser?.name} ({selectedUser?.email})
-          </p>
-          <div style={{ marginBottom: 12, fontSize: "0.875rem", color: "#475569" }}>
-            Current plan: <strong>{selectedUser?.subscription?.tier ? (SUBSCRIPTION_TIERS[selectedUser.subscription.tier]?.name || selectedUser.subscription.tier) : "None"}</strong>
-            {selectedUser?.subscription?.downloads_remaining !== undefined && (
-              <span style={{ marginLeft: 8, color: "#64748b" }}>
-                ({selectedUser.subscription.downloads_remaining === -1 ? "Unlimited" : `${selectedUser.subscription.downloads_remaining} downloads remaining`})
-              </span>
-            )}
-          </div>
-          <div className="admin-form-group">
-            <select className="admin-select" value={selectedTier} onChange={(e) => setSelectedTier(e.target.value)}>
-              <option value="">Select a plan</option>
-              <option value="none">No Subscription</option>
-              {Object.entries(ADMIN_ASSIGNABLE_TIERS).map(([key, tier]) => (
-                <option key={key} value={key}>
-                  {tier.name} - ${tier.price}/mo ({tier.downloads === -1 ? "Unlimited" : tier.downloads} downloads)
-                </option>
-              ))}
-            </select>
-          </div>
-          {selectedTier && selectedTier !== "none" && (
-            <div style={{ padding: 12, background: "rgba(59,130,246,0.08)", borderRadius: 8, fontSize: "0.875rem", color: "#3b82f6", marginTop: 12 }}>
-              <p><strong>{ADMIN_ASSIGNABLE_TIERS[selectedTier]?.name || SUBSCRIPTION_TIERS[selectedTier]?.name}</strong></p>
-              <p>${ADMIN_ASSIGNABLE_TIERS[selectedTier]?.price || SUBSCRIPTION_TIERS[selectedTier]?.price}/month</p>
-              <p>{(ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads ?? SUBSCRIPTION_TIERS[selectedTier]?.downloads) === -1 ? "Unlimited" : (ADMIN_ASSIGNABLE_TIERS[selectedTier]?.downloads || SUBSCRIPTION_TIERS[selectedTier]?.downloads)} downloads per month</p>
-            </div>
-          )}
-          {selectedTier === "none" && (
-            <div style={{ padding: 12, background: "rgba(249,115,22,0.08)", borderRadius: 8, fontSize: "0.875rem", color: "#f97316", marginTop: 12 }}>
-              <p><strong>Remove Subscription</strong></p>
-              <p>User will no longer have access to subscription features</p>
-            </div>
-          )}
-        </IonModalContent>
-        <IonFooter>
-          <IonToolbar style={{ padding: "8px 16px" }}>
-            <IonButtons slot="end">
-              <IonButton fill="outline" color="medium" onClick={() => setSubscriptionModalOpen(false)}>Cancel</IonButton>
-              <IonButton color="primary" onClick={updateUserSubscription}>Update Subscription</IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonFooter>
-      </IonModal>
 
       {/* Add Bonus Downloads Modal */}
       <IonModal isOpen={downloadsModalOpen} onDidDismiss={() => setDownloadsModalOpen(false)} style={{ "--width": "540px", "--max-width": "95vw", "--height": "auto" }}>

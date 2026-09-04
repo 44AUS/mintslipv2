@@ -12,7 +12,7 @@ import {
   calendarOutline, cartOutline, peopleOutline, folderOutline,
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
-  listOutline, trendingUpOutline, cardOutline, chatboxOutline, chatbubbleOutline,
+  listOutline, trendingUpOutline, chatboxOutline, chatbubbleOutline,
   downloadOutline, chevronForwardOutline,
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
   notificationsOutline,
@@ -345,7 +345,6 @@ export default function AdminLayout({ children, fillHeight = false }) {
     { id: "moderators",      label: "Moderators",      icon: personAddOutline,     path: "/admin/moderators",      perm: "admin_only" },
     { id: "audit-log",       label: "Audit Log",       icon: listOutline,          path: "/admin/audit-log",       perm: "admin_only" },
     { id: "revenue",         label: "Revenue",         icon: trendingUpOutline,    path: "/admin/revenue",         perm: "view_purchases" },
-    { id: "subscriptions",   label: "Subscriptions",   icon: cardOutline,          path: "/admin/subscriptions",   perm: "admin_only" },
     { id: "support",         label: "Support",         icon: chatboxOutline,       path: "/admin/support",         perm: null },
     { id: "export",          label: "Export",          icon: downloadOutline,      path: "/admin/export",          perm: "view_purchases" },
   ];

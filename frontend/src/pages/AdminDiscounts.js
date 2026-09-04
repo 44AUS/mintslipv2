@@ -10,11 +10,8 @@ import {
   Trash2,
   Edit2,
   Tag,
-  Percent,
-  Check,
   Megaphone,
   Sparkles,
-  Eye,
   EyeOff,
   Palette,
   X,
@@ -303,49 +300,22 @@ export default function AdminDiscounts() {
     <AdminLayout adminInfo={adminInfo} onRefresh={() => fetchDiscounts()}>
       <div style={{ padding: 10 }}>
       <div style={{ padding: "4px 6px" }}>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500">Total Codes</p>
-              <p className="text-2xl font-bold text-slate-800">{discounts.length}</p>
-            </div>
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-100 text-blue-600">
-              <Tag size={24} />
-            </div>
+      {/* Stats Cards — whodat analytics kpi treatment */}
+      <div className="kpi-grid kpi-grid-3">
+        {[
+          { label: "Total Codes", value: discounts.length },
+          { label: "Active Codes", value: discounts.filter(d => d.isActive && !isExpired(d.expiryDate)).length },
+          { label: "Total Usage", value: discounts.reduce((sum, d) => sum + (d.usageCount || 0), 0) },
+        ].map(({ label, value }) => (
+          <div key={label} className="kpi">
+            <div className="label">{label}</div>
+            <div className="value">{value.toLocaleString()}</div>
           </div>
-        </div>
-        <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500">Active Codes</p>
-              <p className="text-2xl font-bold text-slate-800">
-                {discounts.filter(d => d.isActive && !isExpired(d.expiryDate)).length}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-100 text-green-600">
-              <Check size={24} />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500">Total Usage</p>
-              <p className="text-2xl font-bold text-slate-800">
-                {discounts.reduce((sum, d) => sum + (d.usageCount || 0), 0)}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-purple-100 text-purple-600">
-              <Percent size={24} />
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Promotional Banner Management */}
-      <div className="bg-white rounded-xl p-6 mb-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
+      <div className="chart-card" style={{ marginBottom: 20 }}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 text-white">
@@ -489,7 +459,7 @@ export default function AdminDiscounts() {
       </div>
 
       {/* Discount Codes Table */}
-      <div className="bg-white rounded-xl p-6" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
+      <div className="chart-card">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-800">All Discount Codes</h2>
           <IonButton color="primary" onClick={() => { resetForm(); setIsDialogOpen(true); }}>

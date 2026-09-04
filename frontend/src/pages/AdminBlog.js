@@ -6,7 +6,7 @@ import {
 } from "@ionic/react";
 import { toast } from "sonner";
 import {
-  FileText, Plus, Pencil, Trash2, Eye, Search, Filter,
+  FileText, Plus, Pencil, Trash2, Search, Filter,
   Calendar, Clock, MoreVertical, ExternalLink, X,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
@@ -102,30 +102,23 @@ export default function AdminBlog() {
         </IonButton>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      {/* Stats Cards — whodat analytics kpi treatment */}
+      <div className="kpi-grid">
         {[
-          { label: "Total Posts", value: posts.length, bg: "rgba(22,163,74,0.12)", color: "#16a34a", icon: FileText },
-          { label: "Published", value: posts.filter(p => p.status === "published").length, bg: "rgba(59,130,246,0.12)", color: "#3b82f6", icon: Eye },
-          { label: "Drafts", value: posts.filter(p => p.status === "draft").length, bg: "rgba(234,179,8,0.12)", color: "#ca8a04", icon: Pencil },
-          { label: "Total Views", value: posts.reduce((s, p) => s + (p.views || 0), 0), bg: "rgba(139,92,246,0.12)", color: "#8b5cf6", icon: Eye },
-        ].map(({ label, value, bg, color, icon: Icon }) => (
-          <div key={label} className="admin-stat-card">
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Icon size={20} style={{ color }} />
-              </div>
-              <div>
-                <p className="admin-stat-label">{label}</p>
-                <p className="admin-stat-value">{value}</p>
-              </div>
-            </div>
+          { label: "Total Posts", value: posts.length },
+          { label: "Published", value: posts.filter(p => p.status === "published").length },
+          { label: "Drafts", value: posts.filter(p => p.status === "draft").length },
+          { label: "Total Views", value: posts.reduce((s, p) => s + (p.views || 0), 0) },
+        ].map(({ label, value }) => (
+          <div key={label} className="kpi">
+            <div className="label">{label}</div>
+            <div className="value">{value.toLocaleString()}</div>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+      <div className="chart-card" style={{ marginBottom: 20 }}>
         <div className="flex flex-wrap items-center gap-4">
           <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 400 }}>
             <Search size={16} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
@@ -149,7 +142,7 @@ export default function AdminBlog() {
       </div>
 
       {/* Posts Table */}
-      <div className="bg-white rounded-xl shadow-sm" style={{ overflow: "hidden" }}>
+      <div className="table-card">
         {isLoading ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 0" }}>
             <IonSpinner name="crescent" color="primary" style={{ width: 32, height: 32 }} />

@@ -125,15 +125,15 @@ function CanvasElement({ el, ctx, selected, dimmed, onMouseDown, onResizeStart }
       <div onMouseDown={onMouseDown} style={{ ...base, width: el.w }}>
         <div style={{ display: "flex", height: rowH, background: el.headerFill === "none" ? "transparent" : el.headerFill, alignItems: "center" }}>
           {(el.columns || []).map((c, i) => (
-            <div key={i} style={{ width: `${(c.width || 0) * 100}%`, padding: "0 6px", fontSize: el.fontSize || 8, fontWeight: 700, color: el.headerColor || "#334155", textAlign: c.align || "left", overflow: "hidden", whiteSpace: "nowrap" }}>
+            <div key={i} style={{ width: `${(c.width || 0) * 100}%`, padding: "0 6px", boxSizing: "border-box", fontSize: el.fontSize || 8, fontWeight: 700, color: el.headerColor || "#334155", textAlign: c.align || "left", overflow: "hidden", whiteSpace: "nowrap", borderLeft: el.colLines && i > 0 ? "0.5px solid #c8c8c8" : "none" }}>
               {c.header}
             </div>
           ))}
         </div>
         {rows.map((row, ri) => (
-          <div key={ri} style={{ display: "flex", height: rowH, alignItems: "center", background: el.zebra && ri % 2 === 1 ? "#f8fafc" : "transparent", borderBottom: el.rowLines !== false ? "0.5px solid #e2e8f0" : "none" }}>
+          <div key={ri} style={{ display: "flex", height: rowH, alignItems: "center", background: el.zebra && ri % 2 === 1 ? (el.zebraFill || "#f8fafc") : "transparent", borderBottom: el.rowLines !== false ? "0.5px solid #e2e8f0" : "none" }}>
             {(el.columns || []).map((c, i) => (
-              <div key={i} style={{ width: `${(c.width || 0) * 100}%`, padding: "0 6px", fontSize: el.fontSize || 8, color: el.color || "#1a1a1a", textAlign: c.align || "left", overflow: "hidden", whiteSpace: "nowrap" }}>
+              <div key={i} style={{ width: `${(c.width || 0) * 100}%`, padding: "0 6px", boxSizing: "border-box", fontSize: el.fontSize || 8, color: el.color || "#1a1a1a", textAlign: c.align || "left", overflow: "hidden", whiteSpace: "nowrap", borderLeft: el.colLines && i > 0 ? "0.5px solid #c8c8c8" : "none" }}>
                 {resolveTokens(c.token, row)}
               </div>
             ))}
@@ -629,6 +629,9 @@ export default function AdminTemplateEditor() {
                       </label>
                       <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
                         <input type="checkbox" checked={selected.rowLines !== false} onChange={(e) => updateEl({ rowLines: e.target.checked })} />Row lines
+                      </label>
+                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
+                        <input type="checkbox" checked={!!selected.colLines} onChange={(e) => updateEl({ colLines: e.target.checked })} />Column lines
                       </label>
                     </div>
                     <p style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)", margin: "12px 0 6px" }}>

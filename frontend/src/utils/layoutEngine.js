@@ -61,6 +61,14 @@ function titleCase(s) {
   return String(s || "").replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
+// Deterministic hash so generated check/employee numbers are stable per person
+// (mirrors the behaviour of the built-in OnPay template).
+function stableHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0xffffffff;
+  return Math.abs(h);
+}
+
 function hexToRgb(hex) {
   const h = String(hex || "#000000").replace("#", "");
   const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -119,6 +127,13 @@ function buildPaystubContext(td) {
     hasOvertime: Number(td.overtime) > 0 ? "true" : "",
     hasCommission: Number(td.commission) > 0 ? "true" : "",
     workerLabel: td.isContractor ? "CONTRACTOR" : "EMPLOYEE",
+    workerLabelTitle: td.isContractor ? "Contractor" : "Employee",
+    statementTitle: td.isContractor ? "Contractor Payment Statement" : "Earnings Statement",
+    earningsTitle: td.isContractor ? "Contractor Gross Earnings" : "Employee Gross Earnings",
+    bankLast4: String(f.bank || "").slice(-4) || "0000",
+    checkNumber: td.periodCheckNumber || String(1 + (stableHash((f.name || "emp") + (td.stubNum || 1)) % 999)),
+    employeeNumber: f.employeeId || String(1000000 + (stableHash(f.name || "emp") % 9000000)),
+    memo: td.periodMemo || "Thank you for your hard work.",
   };
 
   const ytdPeriods = td.ytdPayPeriods || 1;
@@ -126,20 +141,88 @@ function buildPaystubContext(td) {
 
   const earnings = [];
   if (isSalary) {
-    earnings.push({ name: "Salary", rate: "—", hours: "—", current: money(td.regularPay), ytd: money(td.ytdRegularPay) });
+    earnings.push({
+      name: "Salary", nameDetailed: "Salary | Per Period",
+      rate: "—", rateDetailed: `$${money(td.annualSalary)}/yr`,
+      hours: "—", current: money(td.regularPay), ytd: money(td.ytdRegularPay),
+    });
   } else {
-    earnings.push({ name: "Regular", rate: money(td.rate), hours: String(td.hours ?? ""), current: money(td.regularPay), ytd: money(td.ytdRegularPay) });
+    earnings.push({
+      name: "Regular", nameDetailed: "Regular Hours | Hourly",
+      rate: money(td.rate), rateDetailed: `$${money(td.rate)}`,
+      hours: String(td.hours ?? ""), current: money(td.regularPay), ytd: money(td.ytdRegularPay),
+    });
   }
   if (Number(td.overtime) > 0) {
-    earnings.push({ name: "Overtime", rate: money(td.rate * 1.5), hours: String(td.overtime), current: money(td.overtimePay), ytd: money(td.ytdOvertimePay) });
+    earnings.push({
+      name: "Overtime", nameDetailed: "Overtime Hours | 1.5x",
+      rate: money(td.rate * 1.5), rateDetailed: `$${money(td.rate * 1.5)}`,
+      hours: String(td.overtime), current: money(td.overtimePay), ytd: money(td.ytdOvertimePay),
+    });
   }
   if (Number(td.commission) > 0) {
-    earnings.push({ name: "Commission", rate: "—", hours: "—", current: money(td.commission), ytd: money(td.ytdCommission) });
+    earnings.push({ name: "Commission", nameDetailed: "Commission", rate: "—", rateDetailed: "—", hours: "—", current: money(td.commission), ytd: money(td.ytdCommission) });
   }
   if (Number(td.tips) > 0) {
-    earnings.push({ name: td.tipsCash ? "Tips (cash)" : "Tips", rate: "—", hours: "—", current: money(td.tips), ytd: money(td.ytdTips) });
+    const tl = td.tipsCash ? "Cash Tips" : "Tips";
+    earnings.push({ name: tl, nameDetailed: tl, rate: "—", rateDetailed: "—", hours: "—", current: money(td.tips), ytd: money(td.ytdTips) });
   }
   ctx.earnings = earnings;
+
+  // ── Gusto-style row groups (employee vs employer taxes, itemized
+  //    deductions/contributions with tax-type labels, and a summary table) ──
+  const fedStatus = f.federalFilingStatus === "married_jointly" ? " (MFJ)" : f.federalFilingStatus === "head_of_household" ? " (HOH)" : f.federalFilingStatus ? " (S)" : "";
+  const employeeTaxes = [
+    { name: `Federal Income Tax${fedStatus}`, current: money(td.federalTax), ytd: money(td.ytdFederalTax) },
+    { name: "Social Security (6.2%)", current: money(td.ssTax), ytd: money(td.ytdSsTax) },
+    { name: "Medicare (1.45%)", current: money(td.medTax), ytd: money(td.ytdMedTax) },
+  ];
+  if (Number(td.stateTax) > 0 || td.stateRate !== undefined) {
+    const allow = parseInt(f.stateAllowances) > 0 ? ` (${f.stateAllowances} allow.)` : "";
+    employeeTaxes.push({ name: `${(f.state || "State").toUpperCase()} Tax${allow}`, current: money(td.stateTax), ytd: money(td.ytdStateTax) });
+  }
+  if (f.includeLocalTax && Number(td.localTax) > 0) {
+    employeeTaxes.push({ name: `${f.city || "Local"} Tax`, current: money(td.localTax), ytd: money(td.ytdLocalTax) });
+  }
+  ctx.employeeTaxes = employeeTaxes;
+
+  const gp = Number(td.grossPay) || 0;
+  const ygp = Number(td.ytdGrossPay) || 0;
+  const suta = td.sutaRate || 0.027;
+  ctx.employerTaxes = [
+    { name: "Social Security (6.2%)", current: money(gp * 0.062), ytd: money(ygp * 0.062) },
+    { name: "Medicare (1.45%)", current: money(gp * 0.0145), ytd: money(ygp * 0.0145) },
+    { name: "FUTA (0.6%)", current: money(gp * 0.006), ytd: money(ygp * 0.006) },
+    { name: `${(f.state || "State").toUpperCase()} Unemp. (${(suta * 100).toFixed(2)}%)`, current: money(gp * suta), ytd: money(ygp * suta) },
+  ];
+
+  const itemize = (items, fallbackLabel) => {
+    const rows = (items || []).map((d) => ({
+      name: d.name || fallbackLabel,
+      taxType: d.preTax ? "Pre-Tax" : "Post-Tax",
+      current: money(d.currentAmount),
+      ytd: money((d.currentAmount || 0) * ytdPeriods),
+    }));
+    return rows.length ? rows : [{ name: "None", taxType: "–", current: "0.00", ytd: "0.00" }];
+  };
+  ctx.deductionItems = itemize(td.deductionsData, "Deduction");
+  ctx.contributionItems = itemize(td.contributionsData, "Contribution");
+
+  const summary = [{ name: "Gross Earnings", current: money(td.grossPay), ytd: money(td.ytdGrossPay) }];
+  if (td.isContractor) {
+    summary.push({ name: "Taxes Withheld", current: "0.00", ytd: "0.00" });
+    summary.push({ name: "Total Payment", current: money(td.grossPay), ytd: money(td.ytdGrossPay) });
+  } else {
+    summary.push({ name: "Pre-Tax Deductions/Contributions", current: money(td.totalPreTax), ytd: money(td.ytdPreTax) });
+    summary.push({ name: "Taxes", current: money(td.totalTax), ytd: money(td.ytdTotalTax) });
+    summary.push({ name: "Post-Tax Deductions/Contributions", current: money(td.totalPostTax), ytd: money(td.ytdPostTax) });
+    summary.push({ name: "Net Pay", current: money(td.netPay), ytd: money(td.ytdNetPay) });
+    summary.push({ name: "Check Amount", current: money(td.netPay), ytd: money(td.ytdNetPay) });
+  }
+  if (!isSalary) {
+    summary.push({ name: "Hours Worked", current: String((Number(td.hours) || 0) + (Number(td.overtime) || 0)), ytd: String(td.ytdHours ?? "") });
+  }
+  ctx.summary = summary;
 
   const isCanadian = td.cpp !== undefined || td.ei !== undefined;
   const deductions = [];
@@ -327,6 +410,13 @@ function drawTable(doc, el, ctx, pager) {
     else doc.text(String(text), colX[colIdx] + padX, baseY);
   };
 
+  const drawColLines = () => {
+    if (!el.colLines) return;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    for (let i = 1; i < colX.length; i++) doc.line(colX[i], y, colX[i], y + rowH);
+  };
+
   const drawHeader = () => {
     if (el.headerFill && el.headerFill !== "none") {
       const [r, g, b] = hexToRgb(el.headerFill);
@@ -334,6 +424,7 @@ function drawTable(doc, el, ctx, pager) {
       doc.rect(el.x, y, el.w, rowH, "F");
     }
     cols.forEach((c, i) => cellText(c.header || "", i, c, true, el.headerColor || "#334155"));
+    drawColLines();
     y += rowH;
   };
 
@@ -345,10 +436,12 @@ function drawTable(doc, el, ctx, pager) {
       drawHeader();
     }
     if (el.zebra && ri % 2 === 1) {
-      doc.setFillColor(248, 250, 252);
+      const [zr, zg, zb] = hexToRgb(el.zebraFill || "#f8fafc");
+      doc.setFillColor(zr, zg, zb);
       doc.rect(el.x, y, el.w, rowH, "F");
     }
     cols.forEach((c, i) => cellText(resolveTokens(c.token, row), i, c, false, el.color || "#1a1a1a"));
+    drawColLines();
     if (el.rowLines !== false) {
       doc.setDrawColor(226, 232, 240);
       doc.setLineWidth(0.4);
@@ -511,8 +604,13 @@ const OFFER_LETTER_TOKEN_GROUPS = [
 ];
 
 const PAYSTUB_TABLE_BINDINGS = [
-  { binding: "earnings", label: "Earnings rows", rowTokens: ["{name}", "{rate}", "{hours}", "{current}", "{ytd}"] },
-  { binding: "deductions", label: "Deduction rows", rowTokens: ["{name}", "{current}", "{ytd}"] },
+  { binding: "earnings", label: "Earnings rows", rowTokens: ["{name}", "{nameDetailed}", "{rate}", "{rateDetailed}", "{hours}", "{current}", "{ytd}"] },
+  { binding: "deductions", label: "Deduction rows (taxes + items)", rowTokens: ["{name}", "{current}", "{ytd}"] },
+  { binding: "employeeTaxes", label: "Employee taxes", rowTokens: ["{name}", "{current}", "{ytd}"] },
+  { binding: "employerTaxes", label: "Employer taxes", rowTokens: ["{name}", "{current}", "{ytd}"] },
+  { binding: "deductionItems", label: "Deduction items (with tax type)", rowTokens: ["{name}", "{taxType}", "{current}", "{ytd}"] },
+  { binding: "contributionItems", label: "Contribution items (with tax type)", rowTokens: ["{name}", "{taxType}", "{current}", "{ytd}"] },
+  { binding: "summary", label: "Summary rows", rowTokens: ["{name}", "{current}", "{ytd}"] },
 ];
 
 const OFFER_LETTER_TABLE_BINDINGS = [
@@ -820,8 +918,226 @@ export const DEFAULT_OFFER_LETTER_LAYOUT = {
   ],
 };
 
+// Port of the built-in Gusto template (generateTemplateA): teal section bars,
+// gray company/worker boxes, split employee/employer tax tables, itemized
+// deduction/contribution tables and the summary block.
+const GUSTO_TEAL = "#00a8a1";
+const GUSTO_HDR = "#6a6a6a";
+export const GUSTO_PAYSTUB_LAYOUT = {
+  page: { width: 612, height: 792 },
+  elements: [
+    // Header: logo (or teal wordmark), statement title, period line, name+bank
+    { id: "g-logo", type: "image", x: 40, y: 40, w: 110, h: 33, src: "{logoDataUrl}", showIf: "hasLogo" },
+    { id: "g-wordmark", type: "text", x: 40, y: 44, w: 200, content: "{company}", fontSize: 18, bold: true, color: GUSTO_TEAL, showIf: "!hasLogo" },
+    { id: "g-title", type: "text", x: 40, y: 85, w: 300, content: "{statementTitle}", fontSize: 18, bold: true, color: "#000000" },
+    { id: "g-period", type: "text", x: 40, y: 122, w: 320, content: "Pay period: {startDate} – {endDate}   Pay Day: {payDate}", fontSize: 9, color: "#000000" },
+    { id: "g-namebank", type: "text", x: 40, y: 134, w: 320, content: "{employeeName} (...******{bankLast4})", fontSize: 9, color: "#000000" },
+
+    // Company / worker boxes
+    { id: "g-box1", type: "rect", x: 310, y: 70, w: 130, h: 70, fill: "#f8f8f8", stroke: "none" },
+    { id: "g-box2", type: "rect", x: 450, y: 70, w: 130, h: 70, fill: "#f8f8f8", stroke: "none" },
+    { id: "g-box1-h", type: "text", x: 318, y: 77, w: 114, content: "Company", fontSize: 8, bold: true, color: "#000000" },
+    { id: "g-box2-h", type: "text", x: 458, y: 77, w: 114, content: "{workerLabelTitle}", fontSize: 8, bold: true, color: "#000000" },
+    { id: "g-box1-l1", type: "text", x: 318, y: 92, w: 114, content: "{company}", fontSize: 7, color: "#000000" },
+    { id: "g-box1-l2", type: "text", x: 318, y: 104, w: 114, content: "{companyAddress}", fontSize: 7, color: "#000000" },
+    { id: "g-box1-l3", type: "text", x: 318, y: 116, w: 114, content: "{companyCityStateZip}", fontSize: 7, color: "#000000" },
+    { id: "g-box1-l4", type: "text", x: 318, y: 128, w: 114, content: "{companyPhone}", fontSize: 7, color: "#000000" },
+    { id: "g-box2-l1", type: "text", x: 458, y: 92, w: 114, content: "{employeeName}", fontSize: 7, color: "#000000" },
+    { id: "g-box2-l2", type: "text", x: 458, y: 104, w: 114, content: "{ssn}", fontSize: 7, color: "#000000" },
+    { id: "g-box2-l3", type: "text", x: 458, y: 116, w: 114, content: "{employeeAddress}", fontSize: 7, color: "#000000" },
+    { id: "g-box2-l4", type: "text", x: 458, y: 128, w: 114, content: "{employeeCityStateZip}", fontSize: 7, color: "#000000" },
+
+    // Earnings
+    { id: "g-earn-h", type: "text", x: 40, y: 164, w: 300, content: "{earningsTitle}", fontSize: 10, bold: true, color: GUSTO_HDR },
+    { id: "g-earn-bar", type: "rect", x: 40, y: 176, w: 532, h: 1, fill: GUSTO_TEAL, stroke: "none" },
+    {
+      id: "g-earn-table", type: "table", x: 40, y: 184, w: 532, binding: "earnings",
+      rowHeight: 16, fontSize: 9, headerFill: "none", headerColor: "#000000", color: "#000000",
+      zebra: true, zebraFill: "#f5f5f5", rowLines: false, colLines: true,
+      columns: [
+        { header: "Description", token: "{nameDetailed}", width: 0.45, align: "left" },
+        { header: "Rate", token: "{rateDetailed}", width: 0.13, align: "right" },
+        { header: "Hours", token: "{hours}", width: 0.1, align: "right" },
+        { header: "Current", token: "${current}", width: 0.14, align: "right" },
+        { header: "Year-To-Date", token: "${ytd}", width: 0.18, align: "right" },
+      ],
+    },
+
+    // Employee / employer taxes (two columns) — employees only
+    { id: "g-emptax-h", type: "text", x: 40, y: 292, w: 240, content: "Employee Taxes Withheld", fontSize: 10, bold: true, color: GUSTO_HDR, showIf: "!isContractor" },
+    { id: "g-emptax-bar", type: "rect", x: 40, y: 304, w: 261, h: 1, fill: GUSTO_TEAL, stroke: "none", showIf: "!isContractor" },
+    { id: "g-ertax-h", type: "text", x: 311, y: 292, w: 240, content: "Employer Tax", fontSize: 10, bold: true, color: GUSTO_HDR, showIf: "!isContractor" },
+    { id: "g-ertax-bar", type: "rect", x: 311, y: 304, w: 261, h: 1, fill: GUSTO_TEAL, stroke: "none", showIf: "!isContractor" },
+    {
+      id: "g-emptax-table", type: "table", x: 40, y: 312, w: 261, binding: "employeeTaxes", showIf: "!isContractor",
+      rowHeight: 16, fontSize: 8, headerFill: "none", headerColor: "#000000", color: "#000000",
+      zebra: true, zebraFill: "#f5f5f5", rowLines: false, colLines: true,
+      columns: [
+        { header: "Description", token: "{name}", width: 0.6, align: "left" },
+        { header: "Current", token: "${current}", width: 0.2, align: "right" },
+        { header: "YTD", token: "${ytd}", width: 0.2, align: "right" },
+      ],
+    },
+    {
+      id: "g-ertax-table", type: "table", x: 311, y: 312, w: 261, binding: "employerTaxes", showIf: "!isContractor",
+      rowHeight: 16, fontSize: 8, headerFill: "none", headerColor: "#000000", color: "#000000",
+      zebra: true, zebraFill: "#f5f5f5", rowLines: false, colLines: true,
+      columns: [
+        { header: "Company Tax", token: "{name}", width: 0.6, align: "left" },
+        { header: "Current", token: "${current}", width: 0.2, align: "right" },
+        { header: "YTD", token: "${ytd}", width: 0.2, align: "right" },
+      ],
+    },
+
+    // Contractor notice (replaces tax section)
+    { id: "g-notax-h", type: "text", x: 40, y: 292, w: 300, content: "Tax Information", fontSize: 10, bold: true, color: GUSTO_HDR, showIf: "isContractor" },
+    { id: "g-notax-bar", type: "rect", x: 40, y: 304, w: 532, h: 1, fill: GUSTO_TEAL, stroke: "none", showIf: "isContractor" },
+    {
+      id: "g-notax-text", type: "text", x: 40, y: 314, w: 532, wrap: true, fontSize: 9, color: "#666666", showIf: "isContractor",
+      content: "No taxes withheld. As an independent contractor (1099), you are responsible for paying self-employment taxes and any applicable federal/state income taxes.",
+    },
+
+    // Deductions / contributions — employees only
+    { id: "g-ded-h", type: "text", x: 40, y: 418, w: 300, content: "Employee Deductions", fontSize: 10, bold: true, color: GUSTO_HDR, showIf: "!isContractor" },
+    { id: "g-ded-bar", type: "rect", x: 40, y: 430, w: 532, h: 1, fill: GUSTO_TEAL, stroke: "none", showIf: "!isContractor" },
+    {
+      id: "g-ded-table", type: "table", x: 40, y: 438, w: 532, binding: "deductionItems", showIf: "!isContractor",
+      rowHeight: 16, fontSize: 9, headerFill: "none", headerColor: "#000000", color: "#000000",
+      zebra: true, zebraFill: "#f5f5f5", rowLines: false, colLines: true,
+      columns: [
+        { header: "Description", token: "{name}", width: 0.55, align: "left" },
+        { header: "Tax Type", token: "{taxType}", width: 0.15, align: "right" },
+        { header: "Current", token: "${current}", width: 0.15, align: "right" },
+        { header: "Year-To-Date", token: "${ytd}", width: 0.15, align: "right" },
+      ],
+    },
+    { id: "g-con-h", type: "text", x: 40, y: 494, w: 300, content: "Employee Contributions", fontSize: 10, bold: true, color: GUSTO_HDR, showIf: "!isContractor" },
+    { id: "g-con-bar", type: "rect", x: 40, y: 506, w: 532, h: 1, fill: GUSTO_TEAL, stroke: "none", showIf: "!isContractor" },
+    {
+      id: "g-con-table", type: "table", x: 40, y: 514, w: 532, binding: "contributionItems", showIf: "!isContractor",
+      rowHeight: 16, fontSize: 9, headerFill: "none", headerColor: "#000000", color: "#000000",
+      zebra: true, zebraFill: "#f5f5f5", rowLines: false, colLines: true,
+      columns: [
+        { header: "Description", token: "{name}", width: 0.55, align: "left" },
+        { header: "Tax Type", token: "{taxType}", width: 0.15, align: "right" },
+        { header: "Current", token: "${current}", width: 0.15, align: "right" },
+        { header: "Year-To-Date", token: "${ytd}", width: 0.15, align: "right" },
+      ],
+    },
+
+    // Summary
+    { id: "g-sum-h", type: "text", x: 40, y: 572, w: 300, content: "Summary", fontSize: 10, bold: true, color: GUSTO_HDR },
+    { id: "g-sum-bar", type: "rect", x: 40, y: 584, w: 532, h: 1, fill: GUSTO_TEAL, stroke: "none" },
+    {
+      id: "g-sum-table", type: "table", x: 40, y: 592, w: 532, binding: "summary",
+      rowHeight: 16, fontSize: 9, headerFill: "none", headerColor: "#000000", color: "#000000",
+      zebra: true, zebraFill: "#f5f5f5", rowLines: false, colLines: true,
+      columns: [
+        { header: "Description", token: "{name}", width: 0.55, align: "left" },
+        { header: "Current", token: "{current}", width: 0.225, align: "right" },
+        { header: "Year-To-Date", token: "{ytd}", width: 0.225, align: "right" },
+      ],
+    },
+  ],
+};
+
+// Port of the built-in OnPay check-stub template (generateTemplateH): blue
+// banner, check-info bar, three side-by-side tables. Structural port — the
+// original's fixed ruled grid is approximated with bordered boxes.
+const ONPAY_BLUE = "#2580d8";
+export const ONPAY_PAYSTUB_LAYOUT = {
+  page: { width: 612, height: 792 },
+  elements: [
+    { id: "h-name-top", type: "text", x: 65, y: 14, w: 260, content: "{employeeName}", fontSize: 12, bold: true, color: "#000000" },
+    { id: "h-dd-badge", type: "rect", x: 562, y: 10, w: 40, h: 12, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-dd-badge-t", type: "text", x: 562, y: 12, w: 40, content: "***DD***", fontSize: 7, bold: true, color: "#ffffff", align: "center" },
+    { id: "h-banner", type: "rect", x: 15, y: 27, w: 582, h: 20, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-banner-t", type: "text", x: 25, y: 32, w: 560, content: "DIRECT DEPOSIT *** DIRECT DEPOSIT **************************************************************", fontSize: 11, color: "#ffffff" },
+
+    { id: "h-addr1", type: "text", x: 20, y: 60, w: 260, content: "{employeeName}", fontSize: 9, color: "#000000" },
+    { id: "h-addr2", type: "text", x: 20, y: 72, w: 260, content: "{employeeAddress}", fontSize: 9, color: "#000000" },
+    { id: "h-addr3", type: "text", x: 20, y: 84, w: 260, content: "{employeeCityStateZip}", fontSize: 9, color: "#000000" },
+    { id: "h-thanks", type: "text", x: 20, y: 104, w: 260, content: "{memo}", fontSize: 8, color: "#000000" },
+    { id: "h-void", type: "text", x: 420, y: 92, w: 170, content: "*** VOID ***", fontSize: 18, bold: true, color: "#000000", align: "right" },
+
+    // Check-info bar
+    { id: "h-nameband", type: "rect", x: 17, y: 128, w: 155, h: 12, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-nameband-t", type: "text", x: 21, y: 130, w: 150, content: "{employeeName}", fontSize: 9, bold: true, color: "#ffffff" },
+    { id: "h-check-l", type: "text", x: 20, y: 146, w: 60, content: "Check #:", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-check-v", type: "text", x: 50, y: 146, w: 60, content: "{checkNumber}", fontSize: 7, color: "#000000" },
+    { id: "h-cdate-l", type: "text", x: 105, y: 146, w: 60, content: "Check Date:", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-cdate-v", type: "text", x: 160, y: 146, w: 70, content: "{payDate}", fontSize: 7, color: "#000000" },
+    { id: "h-pstart-l", type: "text", x: 20, y: 158, w: 60, content: "Period Start:", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-pstart-v", type: "text", x: 65, y: 158, w: 70, content: "{startDate}", fontSize: 7, color: "#000000" },
+    { id: "h-pend-l", type: "text", x: 105, y: 158, w: 60, content: "Period Ending:", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-pend-v", type: "text", x: 160, y: 158, w: 70, content: "{endDate}", fontSize: 7, color: "#000000" },
+    { id: "h-memo-l", type: "text", x: 272, y: 137, w: 40, content: "MEMO:", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-memo-v", type: "text", x: 302, y: 137, w: 200, content: "{memo}", fontSize: 7, color: "#000000" },
+    { id: "h-emp-l", type: "text", x: 272, y: 148, w: 40, content: "EMP#:", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-emp-v", type: "text", x: 302, y: 148, w: 200, content: "{employeeNumber}", fontSize: 7, color: "#000000" },
+
+    // Three side-by-side tables
+    { id: "h-t1-hdr", type: "rect", x: 15, y: 176, w: 233, h: 12, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-t1-hdr-t", type: "text", x: 15, y: 178, w: 233, content: "Gross Wages", fontSize: 8, bold: true, color: "#ffffff", align: "center" },
+    { id: "h-t1-box", type: "rect", x: 15, y: 188, w: 233, h: 210, fill: "none", stroke: "#c8c8c8", lineWidth: 0.5 },
+    {
+      id: "h-t1", type: "table", x: 15, y: 188, w: 233, binding: "earnings",
+      rowHeight: 12, fontSize: 7, headerFill: "#d7d7d7", headerColor: "#000000", color: "#000000",
+      zebra: false, rowLines: true, colLines: true,
+      columns: [
+        { header: "Description", token: "{name}", width: 0.34, align: "left" },
+        { header: "Rate", token: "{rate}", width: 0.22, align: "right" },
+        { header: "Hours", token: "{hours}", width: 0.18, align: "right" },
+        { header: "Current", token: "{current}", width: 0.26, align: "right" },
+      ],
+    },
+    { id: "h-t2-hdr", type: "rect", x: 248, y: 176, w: 163, h: 12, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-t2-hdr-t", type: "text", x: 248, y: 178, w: 163, content: "Withholding Taxes", fontSize: 8, bold: true, color: "#ffffff", align: "center" },
+    { id: "h-t2-box", type: "rect", x: 248, y: 188, w: 163, h: 210, fill: "none", stroke: "#c8c8c8", lineWidth: 0.5 },
+    {
+      id: "h-t2", type: "table", x: 248, y: 188, w: 163, binding: "employeeTaxes", showIf: "!isContractor",
+      rowHeight: 12, fontSize: 7, headerFill: "#d7d7d7", headerColor: "#000000", color: "#000000",
+      zebra: false, rowLines: true, colLines: true,
+      columns: [
+        { header: "Tax", token: "{name}", width: 0.56, align: "left" },
+        { header: "Current", token: "{current}", width: 0.22, align: "right" },
+        { header: "YTD", token: "{ytd}", width: 0.22, align: "right" },
+      ],
+    },
+    { id: "h-t3-hdr", type: "rect", x: 411, y: 176, w: 186, h: 12, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-t3-hdr-t", type: "text", x: 411, y: 178, w: 186, content: "Deductions / Benefits", fontSize: 8, bold: true, color: "#ffffff", align: "center" },
+    { id: "h-t3-box", type: "rect", x: 411, y: 188, w: 186, h: 210, fill: "none", stroke: "#c8c8c8", lineWidth: 0.5 },
+    {
+      id: "h-t3", type: "table", x: 411, y: 188, w: 186, binding: "deductionItems", showIf: "!isContractor",
+      rowHeight: 12, fontSize: 7, headerFill: "#d7d7d7", headerColor: "#000000", color: "#000000",
+      zebra: false, rowLines: true, colLines: true,
+      columns: [
+        { header: "Description", token: "{name}", width: 0.56, align: "left" },
+        { header: "Current", token: "{current}", width: 0.22, align: "right" },
+        { header: "YTD", token: "{ytd}", width: 0.22, align: "right" },
+      ],
+    },
+
+    // Totals strip
+    { id: "h-totals-bg", type: "rect", x: 15, y: 412, w: 582, h: 34, fill: "#f0f0f0", stroke: "#c8c8c8", lineWidth: 0.5 },
+    { id: "h-tot-gross-l", type: "text", x: 25, y: 418, w: 100, content: "GROSS WAGES", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-tot-gross-v", type: "text", x: 25, y: 428, w: 100, content: "${grossPay}", fontSize: 9, bold: true, color: "#000000" },
+    { id: "h-tot-tax-l", type: "text", x: 165, y: 418, w: 100, content: "TAXES", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-tot-tax-v", type: "text", x: 165, y: 428, w: 100, content: "${totalTax}", fontSize: 9, bold: true, color: "#000000" },
+    { id: "h-tot-ded-l", type: "text", x: 295, y: 418, w: 110, content: "DEDUCTIONS", fontSize: 7, bold: true, color: "#000000" },
+    { id: "h-tot-ded-v", type: "text", x: 295, y: 428, w: 110, content: "${totalDeductions}", fontSize: 9, bold: true, color: "#000000" },
+    { id: "h-tot-net-bg", type: "rect", x: 440, y: 415, w: 150, h: 28, fill: ONPAY_BLUE, stroke: "none" },
+    { id: "h-tot-net-l", type: "text", x: 448, y: 419, w: 80, content: "NET PAY", fontSize: 7, bold: true, color: "#ffffff" },
+    { id: "h-tot-net-v", type: "text", x: 448, y: 427, w: 134, content: "${netPay}", fontSize: 11, bold: true, color: "#ffffff" },
+
+    { id: "h-ytd-strip", type: "text", x: 15, y: 460, w: 582, content: "YTD — Gross: ${ytdGrossPay}   Taxes: ${ytdTotalTax}   Net: ${ytdNetPay}   Hours: {ytdHours}", fontSize: 8, color: "#555555" },
+  ],
+};
+
 // Starter library shown when creating a new template.
 export const STARTER_LAYOUTS = [
+  { key: "paystub-gusto", name: "Gusto-Style Paystub (ported)", documentType: "paystub", layout: GUSTO_PAYSTUB_LAYOUT },
+  { key: "paystub-onpay", name: "OnPay-Style Paystub (ported)", documentType: "paystub", layout: ONPAY_PAYSTUB_LAYOUT },
   { key: "paystub-classic", name: "Classic Green Paystub", documentType: "paystub", layout: DEFAULT_PAYSTUB_LAYOUT },
   { key: "paystub-minimal", name: "Minimal Ruled Paystub", documentType: "paystub", layout: MINIMAL_PAYSTUB_LAYOUT },
   { key: "canadian-classic", name: "Canadian Paystub", documentType: "canadian-paystub", layout: DEFAULT_CANADIAN_PAYSTUB_LAYOUT },

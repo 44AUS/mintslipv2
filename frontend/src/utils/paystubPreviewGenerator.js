@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "./paystubTemplates";
+import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 import { getLocalTaxRate } from "./taxRates";
 import * as pdfjsLib from 'pdfjs-dist';
@@ -414,7 +415,11 @@ async function generateSingleStubPreview(formData, template, stubIndex, totalStu
   };
 
   // Generate the template
-  switch (template) {
+  if (template && template.startsWith('custom:')) {
+    const customLayout = await fetchPublishedLayout(template.slice(7));
+    if (customLayout) renderLayout(doc, customLayout, templateData);
+    else await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  } else switch (template) {
     case 'template-b':
       generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
       break;
@@ -761,7 +766,11 @@ export const generatePreviewPDF = async (formData, template = 'template-a') => {
     };
 
     // Generate the template based on selection
-    switch (template) {
+    if (template && template.startsWith('custom:')) {
+      const customLayout = await fetchPublishedLayout(template.slice(7));
+      if (customLayout) renderLayout(doc, customLayout, templateData);
+      else await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    } else switch (template) {
       case 'template-b':
         generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
         break;

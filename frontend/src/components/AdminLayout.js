@@ -12,7 +12,7 @@ import {
   calendarOutline, cartOutline, peopleOutline, folderOutline,
   pricetagOutline, shieldOutline, documentTextOutline,
   mailOutline, sendOutline, optionsOutline, personAddOutline,
-  listOutline, trendingUpOutline, chatboxOutline, chatbubbleOutline,
+  listOutline, trendingUpOutline, chatboxOutline, chatbubbleOutline, brushOutline,
   downloadOutline, chevronForwardOutline,
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
   notificationsOutline,
@@ -47,7 +47,7 @@ const DOC_ICONS = {
 
 // Tabs hidden from the top-bar segment (shown in sidebar or settings)
 const TOPBAR_EXCLUDE = new Set([
-  "saved-docs", "email-templates",
+  "saved-docs", "email-templates", "templates",
   "site-settings", "banned-ips", "export",
   "moderators", "mass-email", "audit-log", "support",
   "settings",
@@ -306,6 +306,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
     if (path.includes("/admin/discounts"))       return "discounts";
     if (path.includes("/admin/banned-ips"))      return "banned-ips";
     if (path.includes("/admin/email-templates")) return "email-templates";
+    if (path.includes("/admin/templates"))       return "templates";
     if (path.includes("/admin/mass-email"))      return "mass-email";
     if (path.includes("/admin/blog"))            return "blog";
     if (path.includes("/admin/site-settings"))   return "site-settings";
@@ -340,6 +341,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
     { id: "banned-ips",      label: "Banned IPs",      icon: shieldOutline,        path: "/admin/banned-ips",      perm: "view_banned_ips" },
     { id: "blog",            label: "Blog",            icon: documentTextOutline,  path: "/admin/blog",            perm: "view_blog" },
     { id: "email-templates", label: "Email Templates", icon: mailOutline,          path: "/admin/email-templates", perm: "view_email_templates" },
+    { id: "templates",       label: "Doc Templates",   icon: brushOutline,         path: "/admin/templates",       perm: "admin_only" },
     { id: "mass-email",      label: "Mass Email",      icon: sendOutline,          path: "/admin/mass-email",      perm: "send_mass_email" },
     { id: "site-settings",   label: "Site Settings",   icon: optionsOutline,       path: "/admin/site-settings",   perm: "view_site_settings" },
     { id: "moderators",      label: "Moderators",      icon: personAddOutline,     path: "/admin/moderators",      perm: "admin_only" },

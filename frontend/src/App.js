@@ -37,6 +37,8 @@ import AdminBlog from "@/pages/AdminBlog";
 import AdminBlogEditor from "@/pages/AdminBlogEditor";
 import AdminBannedIPs from "@/pages/AdminBannedIPs";
 import AdminEmailTemplates from "@/pages/AdminEmailTemplates";
+import AdminTemplates from "@/pages/AdminTemplates";
+import AdminTemplateEditor from "@/pages/AdminTemplateEditor";
 import AdminMassEmail from "@/pages/AdminMassEmail";
 import AdminModerators from "@/pages/AdminModerators";
 import AdminAuditLog from "@/pages/AdminAuditLog";
@@ -324,6 +326,8 @@ function App() {
             <Route path="/admin/blog/new" element={<AdminBlogEditor />} />
             <Route path="/admin/blog/edit/:id" element={<AdminBlogEditor />} />
             <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
+            <Route path="/admin/templates" element={<AdminTemplates />} />
+            <Route path="/admin/templates/edit/:id" element={<AdminTemplateEditor />} />
             <Route path="/admin/mass-email" element={<AdminMassEmail />} />
             <Route path="/admin/moderators" element={<AdminModerators />} />
             <Route path="/admin/audit-log" element={<AdminAuditLog />} />

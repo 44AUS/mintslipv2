@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "./paystubTemplates";
+import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
 import { getLocalTaxRate, getSUTARate } from "./taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "./federalTaxCalculator";
 
@@ -785,7 +786,16 @@ async function generateSingleStub(
   };
 
   // Call the appropriate template
-  if (template === 'template-b') {
+  if (template && template.startsWith('custom:')) {
+    // Admin-designed template: render its published layout; fall back to
+    // Template A if the layout is unavailable (deleted/unpublished).
+    const customLayout = await fetchPublishedLayout(template.slice(7));
+    if (customLayout) {
+      renderLayout(doc, customLayout, templateData);
+    } else {
+      await generateTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    }
+  } else if (template === 'template-b') {
     generateTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === 'template-c') {
     await generateTemplateC(doc, templateData, pageWidth, pageHeight, margin);

@@ -78,12 +78,12 @@ export default function PaystubForm() {
   
   // Load saved template from localStorage (URL param takes priority)
   const [selectedTemplate, setSelectedTemplate] = useState(() => {
-    if (templateFromUrl && ['template-a', 'template-b', 'template-c', 'template-h'].includes(templateFromUrl)) {
+    if (templateFromUrl && (['template-a', 'template-b', 'template-c', 'template-h'].includes(templateFromUrl) || templateFromUrl.startsWith('custom:'))) {
       return templateFromUrl;
     }
     try {
       const saved = localStorage.getItem('usPaystubTemplate');
-      if (saved && ['template-a', 'template-b', 'template-c', 'template-h'].includes(saved)) {
+      if (saved && (['template-a', 'template-b', 'template-c', 'template-h'].includes(saved) || saved.startsWith('custom:'))) {
         return saved;
       }
     } catch {}
@@ -105,7 +105,16 @@ export default function PaystubForm() {
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-  
+
+  // Admin-designed custom templates (published in the admin template editor)
+  const [customTemplates, setCustomTemplates] = useState([]);
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/doc-templates?documentType=paystub`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomTemplates(d.templates || []); })
+      .catch(() => {});
+  }, []);
+
   // Check user subscription on mount
   useEffect(() => {
     checkUserSubscription();
@@ -771,8 +780,12 @@ export default function PaystubForm() {
     setValidationErrors(prev => ({ ...prev, checkNumber: error }));
   };
 
-  // Filter payroll companies based on search
-  const filteredCompanies = PAYROLL_COMPANIES.filter(company =>
+  // Filter payroll companies based on search (built-in + published custom templates)
+  const allCompanies = [
+    ...PAYROLL_COMPANIES,
+    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, logo: null })),
+  ];
+  const filteredCompanies = allCompanies.filter(company =>
     company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
   );
 

@@ -122,6 +122,7 @@ phone_entries_collection = db["phone_entries"]
 address_entries_collection = db["address_entries"]
 banned_ips_collection = db["banned_ips"]
 email_templates_collection = db["email_templates"]
+doc_templates_collection = db["doc_templates"]
 admin_notifications_collection = db["admin_notifications"]
 moderators_collection = db["moderators"]
 moderator_permissions_collection = db["moderator_permissions"]
@@ -5653,6 +5654,144 @@ async def delete_support_chat(chat_id: str, session: dict = Depends(get_current_
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Chat not found")
     return {"success": True}
+
+
+# ─────────────────────────────────────────────────────────────
+# Custom Document Templates (admin layout engine)
+# ─────────────────────────────────────────────────────────────
+
+TEMPLATE_LIST_PROJECTION = {"_id": 0, "layout": 0, "publishedLayout": 0}
+
+
+@app.get("/api/admin/doc-templates")
+async def list_doc_templates(session: dict = Depends(get_current_admin)):
+    """List all custom document templates (metadata only)."""
+    templates = await doc_templates_collection.find({}, TEMPLATE_LIST_PROJECTION).sort("updatedAt", -1).to_list(500)
+    return {"success": True, "templates": templates}
+
+
+@app.post("/api/admin/doc-templates")
+async def create_doc_template(request: Request, session: dict = Depends(get_current_admin)):
+    """Create a new template (starts as an unpublished draft)."""
+    data = await request.json()
+    now = datetime.now(timezone.utc).isoformat()
+    template = {
+        "id": str(uuid.uuid4()),
+        "name": (data.get("name") or "Untitled Template").strip()[:120],
+        "documentType": data.get("documentType") or "paystub",
+        "status": "draft",
+        "version": 0,
+        "layout": data.get("layout") or {},
+        "publishedLayout": None,
+        "createdAt": now,
+        "updatedAt": now,
+    }
+    await doc_templates_collection.insert_one({**template})
+    return {"success": True, "template": template}
+
+
+@app.get("/api/admin/doc-templates/{template_id}")
+async def get_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
+    template = await doc_templates_collection.find_one({"id": template_id}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"success": True, "template": template}
+
+
+@app.put("/api/admin/doc-templates/{template_id}")
+async def update_doc_template(template_id: str, request: Request, session: dict = Depends(get_current_admin)):
+    """Save draft changes (name and/or layout). Does not touch the published copy."""
+    data = await request.json()
+    updates = {"updatedAt": datetime.now(timezone.utc).isoformat()}
+    if "name" in data:
+        updates["name"] = str(data["name"]).strip()[:120] or "Untitled Template"
+    if "layout" in data:
+        updates["layout"] = data["layout"]
+    result = await doc_templates_collection.update_one({"id": template_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"success": True}
+
+
+@app.post("/api/admin/doc-templates/{template_id}/publish")
+async def publish_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
+    """Copy the draft layout to the published copy customers generate against."""
+    template = await doc_templates_collection.find_one({"id": template_id})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    if not (template.get("layout") or {}).get("elements"):
+        raise HTTPException(status_code=400, detail="Template has no elements to publish")
+    await doc_templates_collection.update_one(
+        {"id": template_id},
+        {"$set": {
+            "publishedLayout": template["layout"],
+            "status": "published",
+            "version": int(template.get("version") or 0) + 1,
+            "updatedAt": datetime.now(timezone.utc).isoformat(),
+        }},
+    )
+    return {"success": True}
+
+
+@app.post("/api/admin/doc-templates/{template_id}/unpublish")
+async def unpublish_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
+    """Take a template off the public picker without deleting it."""
+    result = await doc_templates_collection.update_one(
+        {"id": template_id},
+        {"$set": {"status": "draft", "updatedAt": datetime.now(timezone.utc).isoformat()}},
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"success": True}
+
+
+@app.post("/api/admin/doc-templates/{template_id}/duplicate")
+async def duplicate_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
+    template = await doc_templates_collection.find_one({"id": template_id}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    now = datetime.now(timezone.utc).isoformat()
+    copy = {
+        **template,
+        "id": str(uuid.uuid4()),
+        "name": f"{template['name']} (copy)"[:120],
+        "status": "draft",
+        "version": 0,
+        "publishedLayout": None,
+        "createdAt": now,
+        "updatedAt": now,
+    }
+    await doc_templates_collection.insert_one({**copy})
+    return {"success": True, "template": {k: v for k, v in copy.items() if k not in ("layout", "publishedLayout")}}
+
+
+@app.delete("/api/admin/doc-templates/{template_id}")
+async def delete_doc_template(template_id: str, session: dict = Depends(get_current_admin)):
+    result = await doc_templates_collection.delete_one({"id": template_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"success": True}
+
+
+@app.get("/api/doc-templates")
+async def list_published_doc_templates(documentType: Optional[str] = None):
+    """Public: published templates for the generator template pickers."""
+    query: dict = {"status": "published"}
+    if documentType:
+        query["documentType"] = documentType
+    templates = await doc_templates_collection.find(query, TEMPLATE_LIST_PROJECTION).sort("name", 1).to_list(200)
+    return {"success": True, "templates": templates}
+
+
+@app.get("/api/doc-templates/{template_id}/layout")
+async def get_published_doc_template_layout(template_id: str):
+    """Public: the published layout a customer document is rendered from."""
+    template = await doc_templates_collection.find_one(
+        {"id": template_id, "status": "published"}, {"_id": 0, "publishedLayout": 1, "version": 1}
+    )
+    if not template or not template.get("publishedLayout"):
+        raise HTTPException(status_code=404, detail="Template not found")
+    return {"success": True, "layout": template["publishedLayout"], "version": template.get("version", 1)}
 
 
 # ─────────────────────────────────────────────────────────────

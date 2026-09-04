@@ -1365,7 +1365,7 @@ export default function Home() {
               <Button
                 onClick={() => navigate("/paystub-generator")}
                 size="lg"
-                className="group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg hover:shadow-green-900/15 transition-all duration-200"
+                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg hover:shadow-green-900/15 transition-all duration-200"
               >
                 <FileText className="w-5 h-5" />
                 Create Pay Stub
@@ -2206,7 +2206,7 @@ export default function Home() {
               <Button
                 onClick={() => navigate("/paystub-generator")}
                 size="lg"
-                className="group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
+                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
               >
                 Create Pay Stub
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />

@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from "recharts";
 import { IonButton } from "@ionic/react";
-import { DollarSign, ShoppingCart, TrendingUp, TrendingDown, BarChart2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -45,21 +45,17 @@ function fmt(n) {
   return `$${Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function MetricCard({ icon: Icon, label, value, sub, subPositive }) {
+// KPI card matching the whodat analytics page (.kpi): uppercase label,
+// serif value, optional green/red delta line.
+function MetricCard({ label, value, sub, subPositive }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-medium text-gray-500">{label}</p>
-        <div className="p-2 bg-emerald-50 rounded-lg">
-          <Icon className="w-4 h-4 text-emerald-600" />
-        </div>
-      </div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
+    <div className="kpi">
+      <div className="label">{label}</div>
+      <div className="value">{value}</div>
       {sub && (
-        <p className={`text-xs mt-1 flex items-center gap-1 ${subPositive ? "text-emerald-600" : "text-red-500"}`}>
-          {subPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-          {sub}
-        </p>
+        <div className={`delta${subPositive ? "" : " down"}`}>
+          {subPositive ? "▲" : "▼"} {sub}
+        </div>
       )}
     </div>
   );
@@ -114,9 +110,9 @@ export default function AdminRevenue() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div>
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between" style={{ marginBottom: 24 }}>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Revenue</h1>
             <p className="text-sm text-gray-500 mt-1">One-time purchase analytics</p>
@@ -127,40 +123,35 @@ export default function AdminRevenue() {
         </div>
 
         {/* Metric cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="kpi-grid kpi-grid-5">
           <MetricCard
-            icon={DollarSign}
             label="Total Revenue"
             value={data ? fmt(data.totalRevenue) : "—"}
           />
           <MetricCard
-            icon={TrendingUp}
             label="This Month"
             value={data ? fmt(data.thisMonthRevenue) : "—"}
-            sub={momChange !== null ? `${momPositive ? "+" : ""}${momChange}% vs last month` : null}
+            sub={momChange !== null ? `${Math.abs(Number(momChange))}% vs last month` : null}
             subPositive={momPositive}
           />
           <MetricCard
-            icon={BarChart2}
             label="Last Month"
             value={data ? fmt(data.lastMonthRevenue) : "—"}
           />
           <MetricCard
-            icon={DollarSign}
             label="Avg Order Value"
             value={data ? fmt(data.avgOrderValue) : "—"}
           />
           <MetricCard
-            icon={ShoppingCart}
             label="Total Purchases"
             value={data ? data.totalPurchases.toLocaleString() : "—"}
           />
         </div>
 
         {/* Revenue over time chart */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="chart-card" style={{ marginBottom: 32 }}>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-gray-900">Revenue Over Time</h2>
+            <h2 className="chart-title" style={{ marginBottom: 0 }}>Revenue Over Time</h2>
             <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
               {[["7", "7D"], ["30", "30D"], ["90", "90D"]].map(([val, label]) => (
                 <button
@@ -207,10 +198,10 @@ export default function AdminRevenue() {
         </div>
 
         {/* Revenue by document type */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="chart-grid-even">
           {/* Pie chart */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Revenue by Document Type</h2>
+          <div className="chart-card">
+            <h2 className="chart-title" style={{ marginBottom: 16 }}>Revenue by Document Type</h2>
             <div className="h-[280px]">
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -244,8 +235,8 @@ export default function AdminRevenue() {
           </div>
 
           {/* Breakdown table */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Breakdown by Document</h2>
+          <div className="chart-card">
+            <h2 className="chart-title" style={{ marginBottom: 16 }}>Breakdown by Document</h2>
             <div className="overflow-auto">
               <table className="min-w-full text-sm">
                 <thead>

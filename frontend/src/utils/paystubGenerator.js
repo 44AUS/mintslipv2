@@ -164,6 +164,8 @@ const TEMPLATE_METADATA = {
 
 // Apply template-specific PDF metadata - must be called right before output/save
 function applyPdfMetadata(doc, template) {
+  // Custom templates carry their own metadata (applied by renderLayout).
+  if (template && template.startsWith("custom:")) return;
   const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
   // Set properties including creator to override jsPDF default
   const props = {

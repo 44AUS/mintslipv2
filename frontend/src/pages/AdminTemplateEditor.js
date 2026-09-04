@@ -193,7 +193,7 @@ export default function AdminTemplateEditor() {
         const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, { headers: authHeaders() });
         if (!res.ok) throw new Error("Template not found");
         const data = await res.json();
-        setMeta({ id: data.template.id, name: data.template.name, status: data.template.status, version: data.template.version, documentType: data.template.documentType });
+        setMeta({ id: data.template.id, name: data.template.name, description: data.template.description || "", status: data.template.status, version: data.template.version, documentType: data.template.documentType });
         setLayout(data.template.layout && data.template.layout.elements ? data.template.layout : { page: { width: PAGE_W, height: PAGE_H }, elements: [] });
       } catch (err) {
         toast.error(err.message);
@@ -341,7 +341,7 @@ export default function AdminTemplateEditor() {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, {
         method: "PUT",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ name: meta.name, layout }),
+        body: JSON.stringify({ name: meta.name, description: meta.description || "", layout }),
       });
       if (!res.ok) throw new Error("Failed to save");
       setDirty(false);
@@ -516,9 +516,39 @@ export default function AdminTemplateEditor() {
           {/* Right: properties */}
           <div style={{ ...panelCard, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
             {!selected ? (
-              <p style={{ fontSize: "0.8rem", color: "var(--admin-text-muted)", margin: 0 }}>
-                Select an element on the page to edit it — or add one from the left. Preview shows sample employee data; customer data fills in at purchase.
-              </p>
+              <>
+                <p style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)", margin: "0 0 14px" }}>
+                  Select an element on the page to edit it — or add one from the left. Preview shows sample employee data; customer data fills in at purchase.
+                </p>
+                <p style={{ margin: "0 0 10px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
+                  Template settings
+                </p>
+                <Field label="Description (shown in the template picker)">
+                  <textarea
+                    rows={2}
+                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
+                    placeholder='e.g. "Workday Style Inspired Template"'
+                    value={meta.description || ""}
+                    onChange={(e) => { setMeta((m) => ({ ...m, description: e.target.value })); setDirty(true); }}
+                  />
+                </Field>
+                <p style={{ margin: "14px 0 8px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
+                  PDF metadata
+                </p>
+                <p style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", margin: "0 0 10px" }}>
+                  Embedded in the generated file's document properties.
+                </p>
+                {[["title", "Title"], ["author", "Author"], ["subject", "Subject"], ["keywords", "Keywords"], ["creator", "Creator"], ["producer", "Producer"]].map(([key, label]) => (
+                  <Field key={key} label={label}>
+                    <input
+                      style={inputStyle}
+                      value={(layout.metadata && layout.metadata[key]) || ""}
+                      placeholder={key === "creator" ? "e.g. wkhtmltopdf 0.12.6.1" : ""}
+                      onChange={(e) => commit((prev) => ({ ...prev, metadata: { ...(prev.metadata || {}), [key]: e.target.value } }), false)}
+                    />
+                  </Field>
+                ))}
+              </>
             ) : (
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>

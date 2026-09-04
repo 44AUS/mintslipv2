@@ -17,6 +17,8 @@ const TEMPLATE_METADATA = {
 
 // Apply template-specific PDF metadata
 function applyPdfMetadata(doc, template) {
+  // Custom templates carry their own metadata (applied by renderLayout).
+  if (template && template.startsWith("custom:")) return;
   const metadata = TEMPLATE_METADATA[template] || TEMPLATE_METADATA['template-a'];
   const props = { creator: metadata.creator, producer: metadata.producer };
   if (metadata.title) {

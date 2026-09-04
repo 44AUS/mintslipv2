@@ -5678,6 +5678,7 @@ async def create_doc_template(request: Request, session: dict = Depends(get_curr
     template = {
         "id": str(uuid.uuid4()),
         "name": (data.get("name") or "Untitled Template").strip()[:120],
+        "description": str(data.get("description") or "").strip()[:300],
         "documentType": data.get("documentType") or "paystub",
         "status": "draft",
         "version": 0,
@@ -5705,6 +5706,8 @@ async def update_doc_template(template_id: str, request: Request, session: dict 
     updates = {"updatedAt": datetime.now(timezone.utc).isoformat()}
     if "name" in data:
         updates["name"] = str(data["name"]).strip()[:120] or "Untitled Template"
+    if "description" in data:
+        updates["description"] = str(data["description"] or "").strip()[:300]
     if "layout" in data:
         updates["layout"] = data["layout"]
     result = await doc_templates_collection.update_one({"id": template_id}, {"$set": updates})

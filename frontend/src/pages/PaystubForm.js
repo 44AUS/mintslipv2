@@ -783,7 +783,7 @@ export default function PaystubForm() {
   // Filter payroll companies based on search (built-in + published custom templates)
   const allCompanies = [
     ...PAYROLL_COMPANIES,
-    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, logo: null })),
+    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, logo: null, description: t.description || "Custom designed template" })),
   ];
   const filteredCompanies = allCompanies.filter(company =>
     company.name.toLowerCase().includes(companySearchQuery.toLowerCase())
@@ -1532,7 +1532,7 @@ export default function PaystubForm() {
                             <div>
                               <span className="font-medium text-slate-700 block">{company.name}</span>
                               <span className="text-xs text-slate-500">
-                                {company.template === 'template-a' ? 'Gusto Style Inspired Template' : company.template === 'template-b' ? 'ADP Style Inspired Template' : company.template === 'template-h' ? 'OnPay Style Inspired Template' : 'Workday Style Inspired Template'}
+                                {company.description ? company.description : company.template === 'template-a' ? 'Gusto Style Inspired Template' : company.template === 'template-b' ? 'ADP Style Inspired Template' : company.template === 'template-h' ? 'OnPay Style Inspired Template' : 'Workday Style Inspired Template'}
                               </span>
                             </div>
                           </div>

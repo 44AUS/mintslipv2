@@ -633,7 +633,7 @@ export default function OfferLetterForm() {
                           <Briefcase className="w-6 h-6" />
                         </div>
                         <span className="font-semibold text-slate-800">{t.name}</span>
-                        <span className="text-xs text-slate-500 mt-1 text-center">Designed template</span>
+                        <span className="text-xs text-slate-500 mt-1 text-center">{t.description || "Designed template"}</span>
                       </button>
                     );
                   })}

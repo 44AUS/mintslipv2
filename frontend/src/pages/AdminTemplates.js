@@ -42,7 +42,7 @@ export default function AdminTemplates() {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates`, {
         method: "POST",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ name: `New ${starter.name}`, documentType: starter.documentType, layout: starter.layout }),
+        body: JSON.stringify({ name: `New ${starter.name}`, description: starter.description || "", documentType: starter.documentType, layout: starter.layout }),
       });
       if (!res.ok) throw new Error("Failed to create template");
       const data = await res.json();
@@ -133,7 +133,10 @@ export default function AdminTemplates() {
                 <tbody>
                   {templates.map((t) => (
                     <tr key={t.id}>
-                      <td style={{ fontWeight: 500 }}>{t.name}</td>
+                      <td>
+                        <span style={{ fontWeight: 500, display: "block" }}>{t.name}</span>
+                        {t.description && <span style={{ fontSize: "0.75rem", color: "var(--admin-text-muted)" }}>{t.description}</span>}
+                      </td>
                       <td><span className="admin-badge admin-badge-slate">{DOC_TYPE_LABELS[t.documentType] || t.documentType}</span></td>
                       <td>
                         {t.status === "published"

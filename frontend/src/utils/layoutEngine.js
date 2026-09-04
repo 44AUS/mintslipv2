@@ -454,6 +454,17 @@ function drawTable(doc, el, ctx, pager) {
 // Renders a full layout onto a jsPDF document. Elements are grouped by their
 // `page` number; pages are appended as needed (including table overflow).
 export function renderLayout(doc, layout, templateData, documentType = "paystub") {
+  // Apply the template's own PDF metadata (title/author/creator/producer…);
+  // generators skip their built-in metadata for custom templates.
+  if (layout.metadata) {
+    const props = {};
+    ["title", "subject", "author", "keywords", "creator", "producer"].forEach((k) => {
+      if (layout.metadata[k]) props[k] = layout.metadata[k];
+    });
+    if (Object.keys(props).length) {
+      try { doc.setProperties(props); } catch (e) { /* metadata must never break rendering */ }
+    }
+  }
   const ctx = buildContext(templateData, documentType);
   const pageHeight = (layout.page && layout.page.height) || 792;
   const elements = (layout.elements || []).filter((el) => evalShowIf(el.showIf, ctx));
@@ -925,6 +936,7 @@ const GUSTO_TEAL = "#00a8a1";
 const GUSTO_HDR = "#6a6a6a";
 export const GUSTO_PAYSTUB_LAYOUT = {
   page: { width: 612, height: 792 },
+  metadata: { title: "Gusto", creator: "wkhtmltopdf 0.12.6.1", producer: "Qt 4.8.7" },
   elements: [
     // Header: logo (or teal wordmark), statement title, period line, name+bank
     { id: "g-logo", type: "image", x: 40, y: 40, w: 110, h: 33, src: "{logoDataUrl}", showIf: "hasLogo" },
@@ -1047,6 +1059,7 @@ export const GUSTO_PAYSTUB_LAYOUT = {
 const ONPAY_BLUE = "#2580d8";
 export const ONPAY_PAYSTUB_LAYOUT = {
   page: { width: 612, height: 792 },
+  metadata: { creator: "wkhtmltopdf 0.12.6.1", producer: "Qt 4.8.7" },
   elements: [
     { id: "h-name-top", type: "text", x: 65, y: 14, w: 260, content: "{employeeName}", fontSize: 12, bold: true, color: "#000000" },
     { id: "h-dd-badge", type: "rect", x: 562, y: 10, w: 40, h: 12, fill: ONPAY_BLUE, stroke: "none" },
@@ -1136,10 +1149,10 @@ export const ONPAY_PAYSTUB_LAYOUT = {
 
 // Starter library shown when creating a new template.
 export const STARTER_LAYOUTS = [
-  { key: "paystub-gusto", name: "Gusto-Style Paystub (ported)", documentType: "paystub", layout: GUSTO_PAYSTUB_LAYOUT },
-  { key: "paystub-onpay", name: "OnPay-Style Paystub (ported)", documentType: "paystub", layout: ONPAY_PAYSTUB_LAYOUT },
-  { key: "paystub-classic", name: "Classic Green Paystub", documentType: "paystub", layout: DEFAULT_PAYSTUB_LAYOUT },
-  { key: "paystub-minimal", name: "Minimal Ruled Paystub", documentType: "paystub", layout: MINIMAL_PAYSTUB_LAYOUT },
-  { key: "canadian-classic", name: "Canadian Paystub", documentType: "canadian-paystub", layout: DEFAULT_CANADIAN_PAYSTUB_LAYOUT },
-  { key: "offer-letter", name: "Offer Letter", documentType: "offer-letter", layout: DEFAULT_OFFER_LETTER_LAYOUT },
+  { key: "paystub-gusto", name: "Gusto-Style Paystub (ported)", description: "Gusto Style Inspired Template", documentType: "paystub", layout: GUSTO_PAYSTUB_LAYOUT },
+  { key: "paystub-onpay", name: "OnPay-Style Paystub (ported)", description: "OnPay Style Inspired Template", documentType: "paystub", layout: ONPAY_PAYSTUB_LAYOUT },
+  { key: "paystub-classic", name: "Classic Green Paystub", description: "Clean MintSlip paystub with header band", documentType: "paystub", layout: DEFAULT_PAYSTUB_LAYOUT },
+  { key: "paystub-minimal", name: "Minimal Ruled Paystub", description: "Minimal ruled pay statement", documentType: "paystub", layout: MINIMAL_PAYSTUB_LAYOUT },
+  { key: "canadian-classic", name: "Canadian Paystub", description: "Canadian statement of earnings", documentType: "canadian-paystub", layout: DEFAULT_CANADIAN_PAYSTUB_LAYOUT },
+  { key: "offer-letter", name: "Offer Letter", description: "Professional offer of employment", documentType: "offer-letter", layout: DEFAULT_OFFER_LETTER_LAYOUT },
 ];

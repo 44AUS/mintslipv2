@@ -175,7 +175,7 @@ export default function AdminLiveChat() {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ status: "closed" }),
     });
-    setChats(prev => prev.map(c => c.id === id ? { ...c, status: "closed", archived: true } : c));
+    setChats(prev => prev.map(c => c.id === id ? { ...c, status: "closed", archived: true, unreadByAdmin: 0 } : c));
     if (activeId === id) setActiveId(null);
   }, [activeId]);
 

@@ -257,20 +257,20 @@ export default function SupportCenter({
           '--background-hover': 'rgba(var(--ion-color-primary-rgb),0.05)',
         }}
       >
-        {/* avatar slot */}
+        {/* avatar slot — closed tickets show no presence dot */}
         <div slot="start" style={{ position: 'relative', marginRight: 12 }}>
-          <AvatarWithPresence name={conv.name} src={conv.avatar} size={42} lastActive={conv.lastActive} />
+          <AvatarWithPresence name={conv.name} src={conv.avatar} size={42} lastActive={conv.archived ? null : conv.lastActive} />
         </div>
 
         {/* label */}
         <IonLabel style={{ overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {conv.unread > 0 && (
+            {conv.unread > 0 && !conv.archived && (
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--ion-color-primary)', flexShrink: 0 }} />
             )}
             <span style={{
               fontSize: '0.95rem',
-              fontWeight: conv.unread > 0 ? 700 : 500,
+              fontWeight: conv.unread > 0 && !conv.archived ? 700 : 500,
               color: isActive ? 'var(--ion-color-primary)' : 'var(--ion-text-color)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>

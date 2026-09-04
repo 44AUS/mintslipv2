@@ -5577,7 +5577,9 @@ async def list_support_chats(
     if status and status != "all":
         query["status"] = status
     chats = await support_chats_collection.find(query, {"_id": 0}).sort("updatedAt", -1).limit(limit).to_list(limit)
-    total_unread = sum(c.get("unreadByAdmin", 0) for c in chats)
+    # Closed tickets don't count toward the badge, even if they still carry a
+    # stale unreadByAdmin from before they were closed.
+    total_unread = sum(c.get("unreadByAdmin", 0) for c in chats if c.get("status") != "closed")
     return {"success": True, "chats": chats, "totalUnread": total_unread}
 
 
@@ -5632,9 +5634,14 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
     """Close or reopen a live-chat conversation."""
     data = await request.json()
     new_status = data.get("status", "closed")
+    updates = {"status": new_status, "updatedAt": datetime.now(timezone.utc).isoformat()}
+    if new_status == "closed":
+        # A closed ticket no longer needs attention: clear its unread count so
+        # it stops feeding the sidebar badge and unread indicators.
+        updates["unreadByAdmin"] = 0
     await support_chats_collection.update_one(
         {"id": chat_id},
-        {"$set": {"status": new_status, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+        {"$set": updates}
     )
     return {"success": True}
 

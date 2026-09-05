@@ -675,6 +675,31 @@ body.dark .table-card {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
+/* ── Permission matrix (whodat admin permissions layout) ── */
+.perm-card {
+  background: #fff;
+  border-radius: 6px;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+body.dark .perm-card { background: var(--ion-card-background); box-shadow: 0 1px 2px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5); }
+.perm-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+.perm-table thead th { padding: 18px 20px; border-bottom: 1px solid var(--ion-border-color); }
+.perm-head-name { text-align: left; font-size: 16px; font-weight: 700; color: var(--admin-text); }
+.perm-head-role { text-align: center; font-size: 14px; font-weight: 700; color: var(--admin-text); white-space: nowrap; }
+.perm-group td {
+  background: var(--ion-color-step-50); color: var(--admin-text-muted);
+  font-size: 13px; font-weight: 600; padding: 10px 20px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.perm-row { border-top: 1px solid var(--ion-border-color); }
+.perm-name { padding: 16px 20px; font-size: 14px; color: var(--admin-text); }
+.perm-cell { text-align: center; padding: 12px 20px; }
+.perm-toggle {
+  --track-background-checked: var(--ion-color-primary);
+  --handle-background-checked: #ffffff;
+}
+
 /* ── Form helpers ── */
 .admin-form-row { display: grid; gap: 16px; }
 .admin-form-row.cols-2 { grid-template-columns: 1fr 1fr; }

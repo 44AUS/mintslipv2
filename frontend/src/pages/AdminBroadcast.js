@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import BroadcastUserPicker from "@/components/BroadcastUserPicker";
-import { IonButton, IonIcon, IonSpinner } from "@ionic/react";
-import { mailOutline, peopleOutline, eyeOutline, sendOutline, closeOutline } from "ionicons/icons";
+import EmailTemplateModal from "@/components/EmailTemplateModal";
+import { IonButton, IonIcon } from "@ionic/react";
+import { mailOutline, peopleOutline, eyeOutline, sendOutline, closeOutline, chevronForwardOutline } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -37,7 +38,26 @@ export default function AdminBroadcast() {
   const [previewBusy, setPreviewBusy] = useState(false);
   const [result, setResult] = useState(null);
 
+  const [templates, setTemplates] = useState([]);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("adminToken")}` });
+
+  const fetchTemplates = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/email-templates`, { headers: authHeaders() });
+      const data = await res.json();
+      if (data.success) setTemplates(data.templates || []);
+    } catch { /* ignore */ }
+  }, []);
+  useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
+
+  const formatDelay = (m) => {
+    if (m == null || m <= 0) return "Sent immediately";
+    if (m < 60) return `Sent ${m} min after trigger`;
+    if (m < 1440) return `Sent ${Math.round(m / 60)}h after trigger`;
+    return `Sent ${Math.round(m / 1440)}d after trigger`;
+  };
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -177,8 +197,53 @@ export default function AdminBroadcast() {
               </IonButton>
             </div>
           </div>
+
+          {/* Automatic emails — editable transactional templates (whodat's
+              "Automatic notifications" list below the send form) */}
+          <div className="table-card" style={{ marginTop: 24 }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--ion-border-color)" }}>
+              <h2 style={{ margin: 0, fontWeight: 700, fontSize: "1rem", color: "var(--admin-text)" }}>Automatic emails</h2>
+              <p style={{ margin: "2px 0 0", fontSize: "0.8rem", color: "var(--admin-text-muted)" }}>
+                Transactional emails MintSlip sends on its own. Click one to edit its subject, body, timing, and on/off.
+              </p>
+            </div>
+            <div>
+              {templates.map((t) => (
+                <button
+                  key={t.name}
+                  onClick={() => setEditingTemplate(t)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "12px 20px", background: "none", border: "none", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--admin-text)" }}>{t.display_name || t.name}</span>
+                      {t.is_custom && <span className="admin-badge admin-badge-green">Custom</span>}
+                      {t.enabled === false && <span className="admin-badge admin-badge-amber">Disabled</span>}
+                      {t.is_system && <span className="admin-badge admin-badge-slate">System</span>}
+                    </div>
+                    <span style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)" }}>
+                      {t.is_scheduled ? formatDelay(t.delay_minutes) : "Sent on trigger"}
+                    </span>
+                  </div>
+                  <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--admin-text-muted)", flexShrink: 0 }} />
+                </button>
+              ))}
+              {templates.length === 0 && (
+                <div style={{ padding: "32px 20px", textAlign: "center", color: "var(--admin-text-muted)", fontSize: "0.875rem" }}>No email templates found</div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
+
+      <EmailTemplateModal
+        template={editingTemplate}
+        isOpen={!!editingTemplate}
+        onClose={() => setEditingTemplate(null)}
+        onSaved={fetchTemplates}
+      />
 
       <BroadcastUserPicker
         isOpen={pickerOpen}

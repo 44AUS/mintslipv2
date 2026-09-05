@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { IonSpinner } from "@ionic/react";
+import { useState, useEffect, Fragment } from "react";
+import { IonSpinner, IonToggle } from "@ionic/react";
 import {
-  UserPlus, Edit2, Trash2, Shield, Check, X, ChevronRight,
-  Eye, EyeOff, AlertCircle, CheckCircle,
+  UserPlus, Edit2, Trash2, Shield, X, Eye, EyeOff, AlertCircle,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 
@@ -93,9 +92,6 @@ export default function AdminModerators() {
   // Permissions state per level
   const [permissions, setPermissions] = useState({ 1: {}, 2: {}, 3: {} });
   const [loadingPerms, setLoadingPerms] = useState(true);
-  const [permTab, setPermTab] = useState(1);
-  const [savingPerms, setSavingPerms] = useState(false);
-  const [permsMsg, setPermsMsg] = useState(null);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -210,32 +206,22 @@ export default function AdminModerators() {
     setDeleting(false);
   };
 
-  const handleSavePermissions = async () => {
-    setSavingPerms(true);
-    setPermsMsg(null);
+  // Matrix cell toggle — flips optimistically and saves that level immediately,
+  // reverting on failure (like the whodat permissions matrix).
+  const togglePerm = async (level, key, on) => {
+    const prev = permissions;
+    const nextLevel = { ...prev[level], [key]: on };
+    setPermissions({ ...prev, [level]: nextLevel });
     try {
-      const res = await fetch(`${BACKEND_URL}/api/admin/moderator-permissions/${permTab}`, {
+      const res = await fetch(`${BACKEND_URL}/api/admin/moderator-permissions/${level}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ permissions: permissions[permTab] }),
+        body: JSON.stringify({ permissions: nextLevel }),
       });
-      if (res.ok) {
-        setPermsMsg({ type: "success", text: `Level ${permTab} permissions saved.` });
-      } else {
-        setPermsMsg({ type: "error", text: "Failed to save permissions." });
-      }
+      if (!res.ok) throw new Error();
     } catch (e) {
-      setPermsMsg({ type: "error", text: "Network error." });
+      setPermissions(prev); // revert
     }
-    setSavingPerms(false);
-    setTimeout(() => setPermsMsg(null), 3000);
-  };
-
-  const togglePerm = (key) => {
-    setPermissions((prev) => ({
-      ...prev,
-      [permTab]: { ...prev[permTab], [key]: !prev[permTab][key] },
-    }));
   };
 
   return (
@@ -311,28 +297,11 @@ export default function AdminModerators() {
           )}
         </div>
 
-        {/* ── Permission Levels ── */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-slate-100">
-            <p className="text-sm font-semibold text-slate-700">Permission Levels</p>
-            <p className="text-xs text-slate-400 mt-0.5">Configure what each level can access. Changes apply to all moderators of that level.</p>
-          </div>
-
-          {/* Level tabs */}
-          <div className="flex border-b border-slate-100">
-            {[1, 2, 3].map((lvl) => (
-              <button
-                key={lvl}
-                onClick={() => setPermTab(lvl)}
-                className={`flex-1 px-4 py-2.5 text-sm font-medium transition-colors ${
-                  permTab === lvl
-                    ? "border-b-2 border-green-600 text-green-700 bg-green-50"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                {LEVEL_LABELS[lvl]}
-              </button>
-            ))}
+        {/* ── Permission matrix (whodat permissions layout) ── */}
+        <div>
+          <div style={{ marginBottom: 12 }}>
+            <p className="text-sm font-semibold text-slate-700">Permissions</p>
+            <p className="text-xs text-slate-400 mt-0.5">Choose what each moderator level can do. Every toggle saves immediately and applies to all moderators of that level.</p>
           </div>
 
           {loadingPerms ? (
@@ -340,40 +309,40 @@ export default function AdminModerators() {
               <IonSpinner name="crescent" style={{ width: 20, height: 20, color: "#94a3b8" }} />
             </div>
           ) : (
-            <div className="p-5 space-y-5">
-              {PERMISSION_GROUPS.map((group) => (
-                <div key={group.label}>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{group.label}</p>
-                  <div className="space-y-1">
-                    {group.perms.map((perm) => (
-                      <div key={perm.key} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50">
-                        <span className="text-sm text-slate-700">{perm.label}</span>
-                        <Toggle
-                          on={!!permissions[permTab]?.[perm.key]}
-                          onClick={() => togglePerm(perm.key)}
-                        />
-                      </div>
+            <div className="perm-card">
+              <table className="perm-table">
+                <thead>
+                  <tr>
+                    <th className="perm-head-name">Permissions</th>
+                    {[1, 2, 3].map((lvl) => (
+                      <th key={lvl} className="perm-head-role">{LEVEL_LABELS[lvl]}</th>
                     ))}
-                  </div>
-                </div>
-              ))}
-
-              <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
-                <button
-                  onClick={handleSavePermissions}
-                  disabled={savingPerms}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  {savingPerms ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Check className="w-4 h-4" />}
-                  Save Level {permTab} Permissions
-                </button>
-                {permsMsg && (
-                  <span className={`flex items-center gap-1.5 text-sm ${permsMsg.type === "success" ? "text-green-600" : "text-red-600"}`}>
-                    {permsMsg.type === "success" ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                    {permsMsg.text}
-                  </span>
-                )}
-              </div>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERMISSION_GROUPS.map((group) => (
+                    <Fragment key={group.label}>
+                      <tr className="perm-group"><td colSpan={4}>{group.label}</td></tr>
+                      {group.perms.map((perm) => (
+                        <tr key={perm.key} className="perm-row">
+                          <td className="perm-name">{perm.label}</td>
+                          {[1, 2, 3].map((lvl) => (
+                            <td key={lvl} className="perm-cell">
+                              <IonToggle
+                                mode="md"
+                                className="perm-toggle"
+                                checked={!!permissions[lvl]?.[perm.key]}
+                                onIonChange={(e) => togglePerm(lvl, perm.key, e.detail.checked)}
+                                aria-label={`${LEVEL_LABELS[lvl]} — ${perm.label}`}
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

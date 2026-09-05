@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonContent, IonIcon,
+  IonInput, IonTextarea,
 } from "@ionic/react";
 import { closeOutline } from "ionicons/icons";
 import { toast } from "@/utils/toast";
@@ -21,12 +22,6 @@ const TEMPLATE_VARS = {
   password_reset: ["user_name", "reset_link", "reset_code"],
 };
 
-const label = { display: "block", fontSize: "0.72rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)", marginBottom: 6 };
-const input = {
-  width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 8,
-  border: "1px solid var(--ion-border-color)", background: "var(--ion-background-color)",
-  color: "var(--ion-text-color)", fontSize: "0.9rem", outline: "none",
-};
 
 // Edit one transactional email template — mintslip's counterpart to whodat's
 // NotifTemplateModal. Save writes the template (and delay/enabled); Reset
@@ -127,23 +122,25 @@ export default function EmailTemplateModal({ template, isOpen, onClose, onSaved 
           )}
 
           {template.is_scheduled && (
-            <div style={{ marginBottom: 16 }}>
-              <span style={label}>Send delay (minutes after trigger)</span>
-              <input type="number" min="0" style={{ ...input, width: 160 }} value={delay} onChange={(e) => setDelay(e.target.value)} placeholder="e.g. 15" />
+            <div style={{ marginBottom: 16, maxWidth: 220 }}>
+              <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Send delay (min after trigger)"
+                type="number" min="0" value={delay} onIonInput={(e) => setDelay(e.detail.value)} placeholder="e.g. 15" />
             </div>
           )}
 
           <div style={{ marginBottom: 16 }}>
-            <span style={label}>Subject</span>
-            <input style={input} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject line" />
+            <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Subject"
+              value={subject} onIonInput={(e) => setSubject(e.detail.value)} placeholder="Subject line" />
           </div>
           <div style={{ marginBottom: 16 }}>
-            <span style={label}>Email body (HTML — goes inside the base template)</span>
-            <textarea style={{ ...input, resize: "vertical", fontFamily: "monospace", fontSize: "0.82rem", minHeight: 200 }} rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
+            <IonTextarea className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+              label="Email body (HTML — goes inside the base template)"
+              autoGrow rows={10} value={body} onIonInput={(e) => setBody(e.detail.value)}
+              style={{ "--placeholder-color": "var(--ion-color-medium)", fontFamily: "monospace", fontSize: "0.82rem" }} />
           </div>
           <div style={{ marginBottom: 18 }}>
-            <span style={label}>Preview text (inbox snippet, optional)</span>
-            <input style={input} value={previewText} onChange={(e) => setPreviewText(e.target.value)} placeholder="Shown after the subject in the inbox" />
+            <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Preview text (inbox snippet, optional)"
+              value={previewText} onIonInput={(e) => setPreviewText(e.detail.value)} placeholder="Shown after the subject in the inbox" />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

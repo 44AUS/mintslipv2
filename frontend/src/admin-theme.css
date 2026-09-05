@@ -675,6 +675,29 @@ body.dark .table-card {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
+/* ── Whodat-style form fields (Ionic MD, outline fill, floating label) ──
+   Applied to IonInput / IonTextarea / IonSelect as className="admin-field".
+   Transparent field, 10px radius, green focus border + label, 14px text. */
+.admin-field {
+  --background: transparent;
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
+  --placeholder-opacity: 1;
+  --border-color: var(--ion-border-color);
+  --border-radius: 10px;
+  --highlight-color-focused: var(--ion-color-primary);
+  --highlight-color-valid: var(--ion-color-primary);
+  --highlight-color-invalid: var(--ion-color-danger);
+  font-size: 14px;
+  color: var(--ion-text-color);
+}
+/* The *-fill-outline host class pins --border-radius at higher specificity,
+   so override input/textarea/select together to share one radius. */
+ion-input.admin-field.input-fill-outline,
+ion-textarea.admin-field.textarea-fill-outline,
+ion-select.admin-field.select-fill-outline { --border-radius: 10px; }
+body.dark .admin-field { --border-color: rgba(255, 255, 255, 0.22); }
+
 /* ── Permission matrix (whodat admin permissions layout) ── */
 .perm-card {
   background: #fff;

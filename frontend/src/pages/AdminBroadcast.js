@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import BroadcastUserPicker from "@/components/BroadcastUserPicker";
 import EmailTemplateModal from "@/components/EmailTemplateModal";
-import { IonButton, IonIcon } from "@ionic/react";
+import { IonButton, IonIcon, IonInput, IonTextarea, IonSelect, IonSelectOption } from "@ionic/react";
 import { mailOutline, peopleOutline, eyeOutline, sendOutline, closeOutline, chevronForwardOutline } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 
@@ -15,11 +15,6 @@ const AUDIENCE_OPTIONS = [
 ];
 
 const fieldLabel = { display: "block", fontSize: "0.72rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)", marginBottom: 6 };
-const inputStyle = {
-  width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 8,
-  border: "1px solid var(--ion-border-color)", background: "var(--ion-background-color)",
-  color: "var(--ion-text-color)", fontSize: "0.9rem", outline: "none",
-};
 
 export default function AdminBroadcast() {
   const [counts, setCounts] = useState({ all: 0, registered: 0, guests: 0 });
@@ -154,9 +149,10 @@ export default function AdminBroadcast() {
                 </div>
               ) : (
                 <>
-                  <select style={inputStyle} value={audience} onChange={(e) => setAudience(e.target.value)}>
-                    {AUDIENCE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label} ({counts[o.value] || 0})</option>)}
-                  </select>
+                  <IonSelect className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Audience"
+                    value={audience} onIonChange={(e) => setAudience(e.detail.value)} interface="popover">
+                    {AUDIENCE_OPTIONS.map((o) => <IonSelectOption key={o.value} value={o.value}>{o.label} ({counts[o.value] || 0})</IonSelectOption>)}
+                  </IonSelect>
                   <button type="button" onClick={() => setPickerOpen(true)}
                     style={{ background: "none", border: "none", padding: 0, marginTop: 8, color: "var(--ion-color-primary)", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <IonIcon icon={peopleOutline} /> Pick specific users…
@@ -166,25 +162,24 @@ export default function AdminBroadcast() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <span style={fieldLabel}>Subject</span>
-              <input style={inputStyle} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject line" />
+              <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Subject"
+                value={subject} onIonInput={(e) => setSubject(e.detail.value)} placeholder="Subject line" />
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <span style={fieldLabel}>Message</span>
-              <textarea style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit", minHeight: 140 }} rows={6} value={message}
-                onChange={(e) => setMessage(e.target.value)}
+              <IonTextarea className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Message"
+                autoGrow rows={6} value={message} onIonInput={(e) => setMessage(e.detail.value)}
                 placeholder="Write your message… (leave a blank line to start a new paragraph)" />
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 18 }}>
               <div style={{ flex: "1 1 160px" }}>
-                <span style={fieldLabel}>Button text (optional)</span>
-                <input style={inputStyle} value={btnText} onChange={(e) => setBtnText(e.target.value)} placeholder="Create a document" />
+                <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Button text (optional)"
+                  value={btnText} onIonInput={(e) => setBtnText(e.detail.value)} placeholder="Create a document" />
               </div>
               <div style={{ flex: "1 1 200px" }}>
-                <span style={fieldLabel}>Button link (optional)</span>
-                <input style={inputStyle} value={btnUrl} onChange={(e) => setBtnUrl(e.target.value)} placeholder="https://mintslip.com/…" />
+                <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Button link (optional)"
+                  value={btnUrl} onIonInput={(e) => setBtnUrl(e.detail.value)} placeholder="https://mintslip.com/…" />
               </div>
             </div>
 

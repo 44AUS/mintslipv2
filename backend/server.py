@@ -6084,6 +6084,49 @@ async def refund_purchase(purchase_id: str, request: dict, session: dict = Depen
     return {"success": True, "refund_id": refund.id, "amount": amount_dollars}
 
 
+@app.get("/api/admin/purchases/{purchase_id}/documents")
+async def get_purchase_documents(purchase_id: str, session: dict = Depends(get_current_admin)):
+    """List the saved documents generated for a purchase.
+
+    Purchases and saved documents aren't hard-linked, so they're matched by the
+    customer's email plus document type — the same identity the generator uses
+    when archiving. Returns metadata only (no file content)."""
+    check_permission(session, "view_purchases")
+    purchase = await purchases_collection.find_one({"id": purchase_id}, {"_id": 0})
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+
+    email = purchase.get("email") or purchase.get("paypalEmail")
+    doc_type = purchase.get("documentType")
+    if not email:
+        return {"success": True, "documents": []}
+
+    query = {
+        "$or": [{"userEmail": email}, {"guestEmail": email}],
+    }
+    if doc_type:
+        query["documentType"] = doc_type
+
+    docs = await saved_documents_collection.find(
+        query, {"_id": 0, "fileContent": 0}
+    ).sort("createdAt", -1).limit(50).to_list(50)
+
+    documents = []
+    for doc in docs:
+        stored = doc.get("storedFileName", "")
+        file_exists = bool(stored) and os.path.exists(os.path.join(USER_DOCUMENTS_DIR, stored))
+        documents.append({
+            "id": doc.get("id"),
+            "fileName": doc.get("fileName"),
+            "documentType": doc.get("documentType"),
+            "template": doc.get("template"),
+            "fileSize": doc.get("fileSize"),
+            "createdAt": doc.get("createdAt"),
+            "fileExists": file_exists or bool(doc.get("fileContent")),
+        })
+    return {"success": True, "documents": documents}
+
+
 # ─────────────────────────────────────────────────────────────
 # Admin Subscription Management
 # ─────────────────────────────────────────────────────────────

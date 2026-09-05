@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IonButton } from "@ionic/react";
 import { toast } from "@/utils/toast";
 import AdminDetailModal from "@/components/AdminDetailModal";
@@ -50,7 +50,38 @@ function templateLabel(t) {
 // `onViewAll` add their buttons only when provided.
 export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onDelete, onViewAll }) {
   const [refunding, setRefunding] = useState(false);
+  const [docs, setDocs] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(false);
   const p = purchase;
+
+  // Load the documents generated for this purchase whenever it opens.
+  useEffect(() => {
+    if (!p?.id) { setDocs([]); return; }
+    let cancelled = false;
+    setDocsLoading(true);
+    const token = localStorage.getItem("adminToken");
+    fetch(`${BACKEND_URL}/api/admin/purchases/${p.id}/documents`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setDocs(d.documents || []); })
+      .catch(() => { if (!cancelled) setDocs([]); })
+      .finally(() => { if (!cancelled) setDocsLoading(false); });
+    return () => { cancelled = true; };
+  }, [p?.id]);
+
+  const viewDoc = async (docId) => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/${docId}/download`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      window.open(URL.createObjectURL(await res.blob()), "_blank");
+    } catch (err) {
+      toast.error(`Failed to open document: ${err.message}`);
+    }
+  };
 
   const refund = async () => {
     if (!p || p.refunded || !p.stripePaymentIntentId) return;
@@ -101,6 +132,33 @@ export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onD
           : <span className="admin-badge admin-badge-green">Paid</span>],
         p.ipAddress && ["IP Address", <span style={{ fontFamily: "monospace", fontSize: "0.8rem" }}>{p.ipAddress}</span>],
         ["Date", p.createdAt ? new Date(p.createdAt).toLocaleString() : "—"],
+        ["Documents", docsLoading ? (
+          <span style={{ color: "var(--ion-color-medium)" }}>Loading…</span>
+        ) : docs.length === 0 ? (
+          <span style={{ color: "var(--ion-color-medium)" }}>No saved documents found</span>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 2 }}>
+            {docs.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => d.fileExists && viewDoc(d.id)}
+                disabled={!d.fileExists}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, textAlign: "left",
+                  background: "none", border: "none", padding: "2px 0",
+                  cursor: d.fileExists ? "pointer" : "default",
+                  color: d.fileExists ? "var(--ion-color-primary)" : "var(--ion-color-medium)",
+                  fontSize: "0.85rem",
+                }}
+              >
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.fileName}</span>
+                <span style={{ color: "var(--ion-color-medium)", fontSize: "0.72rem", flexShrink: 0 }}>
+                  {d.fileSize ? `${(d.fileSize / 1024).toFixed(0)} KB` : ""}{d.fileExists ? "" : " · missing"}
+                </span>
+              </button>
+            ))}
+          </div>
+        )],
       ] : []}
     >
       {p && (

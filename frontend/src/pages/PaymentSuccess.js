@@ -160,6 +160,40 @@ export default function PaymentSuccess() {
     }
   };
 
+  // Archive the generated document so it appears in the admin Saved Docs and
+  // the purchase's detail modal. Uses the logged-in user endpoint when a token
+  // is present, otherwise the guest endpoint keyed by the payer's email.
+  const archiveDocument = async (blob, docType, email) => {
+    if (!blob) return;
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      const isZip = blob.type?.includes("zip");
+      const fileName = `${docType}_${new Date().toISOString().split("T")[0]}${isZip ? ".zip" : ".pdf"}`;
+      const template = localStorage.getItem(`pending${docType.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase())}Template`) || null;
+      const token = localStorage.getItem("userToken");
+      if (token) {
+        await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ documentType: docType, fileName, fileData: base64, template }),
+        });
+      } else if (email && email.includes("@")) {
+        await fetch(`${BACKEND_URL}/api/guest/saved-documents`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guestEmail: email, documentType: docType, fileName, fileData: base64, template }),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to archive document:", err);
+    }
+  };
+
   // Generate document based on type
   const generateDocument = async (email = null) => {
     setIsGenerating(true);
@@ -431,6 +465,10 @@ export default function PaymentSuccess() {
       // Add more document types as needed...
       
       if (generated) {
+        // Archive the paid document (admin Saved Docs + purchase modal).
+        // 'ai-resume' is stored under the 'resume' document type used elsewhere.
+        await archiveDocument(pdfBlob, orderType === 'ai-resume' ? 'resume' : orderType, emailToUse);
+
         // Navigate back to app for app-managed document types
         if (appReturnPath) {
           navigate(appReturnPath);

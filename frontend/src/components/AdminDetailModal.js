@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
   IonContent, IonList, IonItem, IonLabel, IonIcon,
@@ -9,36 +10,61 @@ import { closeOutline } from "ionicons/icons";
 // 600x500 size, an IonList of label/value items (value may be a node, e.g. a
 // status badge), and optional `children` rendered below the list as action
 // buttons. `rows` is an array of [label, value]; falsy rows are skipped.
-const AdminDetailModal = ({ isOpen, onClose, title, rows = [], children }) => (
-  <IonModal isOpen={isOpen} onDidDismiss={onClose} className="admin-detail-modal">
-    <IonHeader>
-      <IonToolbar>
-        <IonTitle>{title}</IonTitle>
-        <IonButtons slot="end">
-          <IonButton onClick={onClose} aria-label="Close">
-            <IonIcon icon={closeOutline} slot="icon-only" />
-          </IonButton>
-        </IonButtons>
-      </IonToolbar>
-    </IonHeader>
-    <IonContent>
-      <IonList lines="full">
-        {rows.filter(Boolean).map(([label, value], i) => (
-          <IonItem key={`${label}-${i}`}>
-            <IonLabel>
-              <p>{label}</p>
-              <h3 style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{value ?? "—"}</h3>
-            </IonLabel>
-          </IonItem>
-        ))}
-      </IonList>
-      {children && (
-        <div style={{ padding: "14px 16px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
-          {children}
-        </div>
-      )}
-    </IonContent>
-  </IonModal>
-);
+//
+// Reliability note: rather than keeping one <IonModal> permanently mounted and
+// toggling its `isOpen` prop, we mount a *fresh* IonModal each time the modal
+// opens and fully unmount it after it closes. Ionic's controlled-`isOpen`
+// modal tracks its own internal "presented" flag, and under heavy parent
+// re-rendering (the admin layout polls notifications/support every 15–30s) that
+// flag can desync from the prop — after which flipping `isOpen` back to true no
+// longer presents anything and clicking a row appears to "do nothing" until a
+// full page reload. Mounting a brand-new element per open removes any stale
+// controller state, so opening is always reliable. `render` outlives `isOpen`
+// briefly so the close animation still plays before the element unmounts.
+const AdminDetailModal = ({ isOpen, onClose, title, rows = [], children }) => {
+  const [render, setRender] = useState(isOpen);
+
+  useEffect(() => {
+    if (isOpen) setRender(true);
+  }, [isOpen]);
+
+  if (!render) return null;
+
+  return (
+    <IonModal
+      isOpen={isOpen}
+      onDidDismiss={() => { onClose?.(); setRender(false); }}
+      className="admin-detail-modal"
+    >
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>{title}</IonTitle>
+          <IonButtons slot="end">
+            <IonButton onClick={onClose} aria-label="Close">
+              <IonIcon icon={closeOutline} slot="icon-only" />
+            </IonButton>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent>
+        <IonList lines="full">
+          {rows.filter(Boolean).map(([label, value], i) => (
+            <IonItem key={`${label}-${i}`}>
+              <IonLabel>
+                <p>{label}</p>
+                <h3 style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{value ?? "—"}</h3>
+              </IonLabel>
+            </IonItem>
+          ))}
+        </IonList>
+        {children && (
+          <div style={{ padding: "14px 16px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {children}
+          </div>
+        )}
+      </IonContent>
+    </IonModal>
+  );
+};
 
 export default AdminDetailModal;

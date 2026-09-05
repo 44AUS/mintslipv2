@@ -69,6 +69,7 @@ export default function AdminUsers() {
   // modals
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailUserId, setDetailUserId] = useState(null);
+  const [detailUserSnapshot, setDetailUserSnapshot] = useState(null);
   const [dlModalOpen, setDlModalOpen]   = useState(false);
   const [dlCount, setDlCount]           = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -109,8 +110,12 @@ export default function AdminUsers() {
     banned: users.filter(u => !!u.isBanned).length,
   };
 
-  // Detail modal user, derived live so ban/verify actions reflect immediately.
-  const detailUser = users.find(u => u.id === detailUserId) || null;
+  // Detail modal user: prefer the live list entry (so ban/verify actions
+  // reflect immediately), but fall back to the snapshot captured at click time
+  // so the modal still opens/stays open if the list is refetched, filtered, or
+  // paginated away while it's open.
+  const detailUser = users.find(u => u.id === detailUserId) || detailUserSnapshot;
+  const closeDetail = () => { setDetailUserId(null); setDetailUserSnapshot(null); };
 
   // ── actions ────────────────────────────────────────────────────────────────
   const deleteUser = async (userId) => {
@@ -297,7 +302,7 @@ export default function AdminUsers() {
                         const remaining = u.subscription?.downloads_remaining ?? 0;
                         const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
                         return (
-                          <tr key={u.id} onClick={() => setDetailUserId(u.id)} style={{ position: "relative", height: 64, cursor: "pointer" }}>
+                          <tr key={u.id} onClick={() => { setDetailUserSnapshot(u); setDetailUserId(u.id); }} style={{ position: "relative", height: 64, cursor: "pointer" }}>
 
                             {/* User — also hosts the row-wide ripple overlay, which
                                 spans the whole row because the <tr> is its
@@ -439,7 +444,7 @@ export default function AdminUsers() {
       {/* ── User detail modal (whodat admin style) ── */}
       <AdminDetailModal
         isOpen={!!detailUser}
-        onClose={() => setDetailUserId(null)}
+        onClose={closeDetail}
         title={detailUser ? (detailUser.name || detailUser.email || "User") : "User"}
         rows={detailUser ? [
           ["Name", detailUser.name || "—"],
@@ -464,14 +469,14 @@ export default function AdminUsers() {
             <IonButton expand="block" fill="outline" color="medium" onClick={() => {
               setSelectedUser(detailUser);
               setEditData({ name: detailUser.name || "", email: detailUser.email || "", ipAddress: detailUser.ipAddress || "" });
-              setDetailUserId(null);
+              closeDetail();
               setEditModalOpen(true);
             }}>
               Edit User
             </IonButton>
             {detailUser.subscription && (
               <IonButton expand="block" fill="outline" color="primary" onClick={() => {
-                setSelectedUser(detailUser); setDlCount(""); setDetailUserId(null); setDlModalOpen(true);
+                setSelectedUser(detailUser); setDlCount(""); closeDetail(); setDlModalOpen(true);
               }}>
                 Add Bonus Downloads
               </IonButton>
@@ -491,7 +496,7 @@ export default function AdminUsers() {
               </IonButton>
             )}
             <IonButton expand="block" color="danger" onClick={async () => {
-              if (await deleteUser(detailUser.id)) setDetailUserId(null);
+              if (await deleteUser(detailUser.id)) closeDetail();
             }}>
               Delete User
             </IonButton>

@@ -24,6 +24,8 @@ const SUBSCRIPTION_TIERS = {
 };
 
 
+// Cells stay unpositioned so the row-wide ripple overlay (inside the first
+// cell) resolves its 100% width/height against the position:relative <tr>.
 const tdBase = {
   padding: "0 12px",
   fontSize: "0.875rem",
@@ -31,8 +33,6 @@ const tdBase = {
   borderBottom: "1px solid var(--ion-border-color)",
   height: 64,
   verticalAlign: "middle",
-  position: "relative",
-  overflow: "hidden",
 };
 
 const segBtnStyle = {
@@ -300,11 +300,19 @@ export default function AdminUsers() {
                         const remaining = u.subscription?.downloads_remaining ?? 0;
                         const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
                         return (
-                          <tr key={u.id} onClick={() => setDetailUserId(u.id)} style={{ height: 64, cursor: "pointer" }}>
+                          <tr key={u.id} style={{ position: "relative", height: 64 }}>
 
-                            {/* User */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
-                              <ion-ripple-effect />
+                            {/* User — also hosts the row-wide click/ripple overlay,
+                                which spans the whole row because the <tr> is its
+                                containing block */}
+                            <td style={{ ...tdBase, minWidth: 200 }}>
+                              <div
+                                className="ion-activatable"
+                                onClick={() => setDetailUserId(u.id)}
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                              >
+                                <ion-ripple-effect />
+                              </div>
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: u.isBanned ? "#ef4444" : "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                   <span style={{ fontSize: "0.6rem", color: "#fff", fontWeight: 700 }}>{getInitials(u.name, u.email)}</span>
@@ -317,8 +325,7 @@ export default function AdminUsers() {
                             </td>
 
                             {/* Status */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 90 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 90 }}>
                               {u.isBanned
                                 ? <span className="admin-badge admin-badge-red">Banned</span>
                                 : u.emailVerified === false
@@ -327,8 +334,7 @@ export default function AdminUsers() {
                             </td>
 
                             {/* Subscription */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 130 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 130 }}>
                               {u.subscription ? (
                                 <div style={{ minWidth: 0 }}>
                                   <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", lineHeight: 1.6 }}>{tier?.name || u.subscription.tier}</span>
@@ -344,8 +350,7 @@ export default function AdminUsers() {
                             </td>
 
                             {/* Downloads */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 110 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 110 }}>
                               {u.subscription
                                 ? isUnlimited
                                   ? <span style={{ fontWeight: 700, color: "#8b5cf6" }}>Unlimited</span>
@@ -354,22 +359,22 @@ export default function AdminUsers() {
                             </td>
 
                             {/* IP */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 130 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 130 }}>
                               <span style={{ fontSize: "0.72rem", fontFamily: "monospace", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>{u.ipAddress || "—"}</span>
                             </td>
 
                             {/* Joined */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 150 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 150 }}>
                               <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>
                                 {u.createdAt ? new Date(u.createdAt).toLocaleString() : "—"}
                               </span>
                             </td>
 
                             {/* Actions */}
-                            {/* overflow must stay visible here or the action menu gets clipped to the 64px row */}
-                            <td onClick={e => e.stopPropagation()} style={{ ...tdBase, padding: "0 8px", width: 60, overflow: "visible" }}>
+                            {/* overflow must stay visible here or the action menu gets clipped
+                                to the 64px row; raised above the row overlay so the menu works
+                                without opening the detail modal */}
+                            <td onClick={e => e.stopPropagation()} style={{ ...tdBase, padding: "0 8px", width: 60, overflow: "visible", position: "relative", zIndex: 2 }}>
                               <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 <button
                                   className="admin-action-btn"

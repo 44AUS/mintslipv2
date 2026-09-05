@@ -5,6 +5,7 @@ import { refreshOutline, chevronForwardOutline } from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
+import AdminDetailModal from "@/components/AdminDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -44,6 +45,8 @@ const DOC_COLORS = {
   "utility-bill":          "#64748b",
 };
 
+// Cells stay unpositioned so the row-wide ripple overlay (inside the first
+// cell) resolves its 100% width/height against the position:relative <tr>.
 const tdBase = {
   padding: "0 12px",
   fontSize: "0.875rem",
@@ -51,8 +54,6 @@ const tdBase = {
   borderBottom: "1px solid var(--ion-border-color)",
   height: 64,
   verticalAlign: "middle",
-  position: "relative",
-  overflow: "hidden",
 };
 
 const segBtnStyle = {
@@ -87,6 +88,7 @@ export default function AdminSavedDocs() {
   const [total, setTotal]     = useState(0);
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState("all");
+  const [detail, setDetail]   = useState(null);
 
   const fetchDocs = useCallback(async () => {
     setLoading(true);
@@ -138,14 +140,15 @@ export default function AdminSavedDocs() {
   };
 
   const deleteDoc = async (docId, e) => {
-    e.stopPropagation();
-    if (!window.confirm("Delete this saved document? This cannot be undone.")) return;
+    e?.stopPropagation();
+    if (!window.confirm("Delete this saved document? This cannot be undone.")) return false;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/${docId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    if (res.ok) { toast.success("Document deleted"); setDocs(prev => prev.filter(d => d.id !== docId)); }
-    else toast.error("Failed to delete document");
+    if (res.ok) { toast.success("Document deleted"); setDocs(prev => prev.filter(d => d.id !== docId)); return true; }
+    toast.error("Failed to delete document");
+    return false;
   };
 
   const viewDoc = async (doc) => {
@@ -223,11 +226,19 @@ export default function AdminSavedDocs() {
                       {filtered.map(doc => {
                         const label = DOCUMENT_TYPES[doc.documentType] || doc.documentType || "—";
                         return (
-                          <tr key={doc.id} style={{ height: 64 }}>
+                          <tr key={doc.id} style={{ position: "relative", height: 64 }}>
 
-                            {/* User */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
-                              <ion-ripple-effect />
+                            {/* User — also hosts the row-wide click/ripple overlay,
+                                which spans the whole row because the <tr> is its
+                                containing block */}
+                            <td style={{ ...tdBase, minWidth: 200 }}>
+                              <div
+                                className="ion-activatable"
+                                onClick={() => setDetail(doc)}
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                              >
+                                <ion-ripple-effect />
+                              </div>
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                 <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                   <span style={{ fontSize: "0.6rem", color: "#fff", fontWeight: 700 }}>{getInitials(doc.userEmail)}</span>
@@ -240,14 +251,13 @@ export default function AdminSavedDocs() {
                             </td>
 
                             {/* Document */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 200 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 200 }}>
                               <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</span>
                             </td>
 
-                            {/* File */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 220 }}>
-                              <ion-ripple-effect />
+                            {/* File — raised above the row overlay so the view
+                                link opens the PDF instead of the modal */}
+                            <td style={{ ...tdBase, minWidth: 220, position: "relative", zIndex: 2 }}>
                               {doc.fileExists === false ? (
                                 <span style={{ color: "#ef4444", fontSize: "0.8rem", display: "flex", alignItems: "center", gap: 4 }}>
                                   <X size={12} style={{ flexShrink: 0 }} />
@@ -266,24 +276,21 @@ export default function AdminSavedDocs() {
                             </td>
 
                             {/* Size */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 80 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 80 }}>
                               <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>
                                 {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "—"}
                               </span>
                             </td>
 
                             {/* Created */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 110 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 110 }}>
                               <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>
                                 {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
                               </span>
                             </td>
 
-                            {/* Actions */}
-                            <td className="ion-activatable" style={{ ...tdBase, padding: "0 8px", width: 60 }}>
-                              <ion-ripple-effect />
+                            {/* Actions — raised above the row overlay */}
+                            <td style={{ ...tdBase, padding: "0 8px", width: 60, position: "relative", zIndex: 2 }}>
                               <button
                                 className="admin-action-btn danger"
                                 onClick={e => deleteDoc(doc.id, e)}
@@ -304,6 +311,54 @@ export default function AdminSavedDocs() {
           </div>
         </div>
       </div>
+
+      {/* ── Saved document detail modal (whodat admin style) ── */}
+      <AdminDetailModal
+        isOpen={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail ? (detail.fileName || "Saved Document") : "Saved Document"}
+        rows={detail ? [
+          ["User", (
+            <span>
+              {detail.userEmail || "—"}
+              {detail.userName ? <span style={{ color: "var(--ion-color-medium)" }}> · {detail.userName}</span> : null}
+            </span>
+          )],
+          ["Document", (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: DOC_COLORS[detail.documentType] || "#64748b", display: "inline-block" }} />
+              {DOCUMENT_TYPES[detail.documentType] || detail.documentType || "—"}
+            </span>
+          )],
+          detail.template && ["Template", String(detail.template).startsWith("custom:") ? "Custom template" : detail.template],
+          ["File", (
+            <span style={{ fontFamily: "monospace", fontSize: "0.8rem" }}>
+              {detail.fileName || "—"}
+              {detail.fileExists === false && <span className="admin-badge admin-badge-red" style={{ marginLeft: 8 }}>Missing</span>}
+            </span>
+          )],
+          ["Size", detail.fileSize ? `${(detail.fileSize / 1024).toFixed(1)} KB` : "—"],
+          ["Saved", detail.createdAt ? new Date(detail.createdAt).toLocaleString() : "—"],
+        ] : []}
+      >
+        {detail && (
+          <>
+            <IonButton expand="block" color="primary" onClick={() => viewDoc(detail)} disabled={detail.fileExists === false}>
+              {detail.fileExists === false ? "File Missing" : "View Document"}
+            </IonButton>
+            {detail.userEmail && (
+              <IonButton expand="block" fill="outline" color="medium" href={`mailto:${detail.userEmail}`}>
+                Email User
+              </IonButton>
+            )}
+            <IonButton expand="block" fill="outline" color="danger" onClick={async () => {
+              if (await deleteDoc(detail.id)) setDetail(null);
+            }}>
+              Delete Document
+            </IonButton>
+          </>
+        )}
+      </AdminDetailModal>
     </AdminLayout>
   );
 }

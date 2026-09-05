@@ -8,6 +8,7 @@ import {
   chevronBackOutline, chevronForwardOutline, filterOutline,
 } from "ionicons/icons";
 import { toast } from "@/utils/toast";
+import AdminDetailModal from "@/components/AdminDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_SIZE = 50;
@@ -102,6 +103,7 @@ export default function AdminAuditLog() {
   const [clearing,       setClearing]       = useState(false);
   // Segment: "all" | "destructive" | "positive" | "neutral"
   const [segment,        setSegment]        = useState("all");
+  const [detail,         setDetail]         = useState(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -279,8 +281,17 @@ export default function AdminAuditLog() {
                         const tone = getActionTone(log.action);
                         const isAdmin = log.role === "admin";
                         return (
-                          <tr key={log.id} style={{ height: 52 }}>
+                          <tr key={log.id} style={{ position: "relative", height: 52 }}>
+                            {/* First cell hosts the row-wide click/ripple overlay
+                                (the <tr> is its containing block) */}
                             <td style={{ ...tdStyle, fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>
+                              <div
+                                className="ion-activatable"
+                                onClick={() => setDetail(log)}
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                              >
+                                <ion-ripple-effect />
+                              </div>
                               {new Date(log.timestamp).toLocaleString()}
                             </td>
                             <td style={{ ...tdStyle, fontWeight: 500, whiteSpace: "nowrap" }}>
@@ -344,6 +355,34 @@ export default function AdminAuditLog() {
           </div>
         </div>
       </div>
+
+      {/* ── Audit entry detail modal (whodat admin style) ── */}
+      <AdminDetailModal
+        isOpen={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail ? (detail.action || "Audit Entry").replace(/_/g, " ") : "Audit Entry"}
+        rows={detail ? [
+          ["Timestamp", new Date(detail.timestamp).toLocaleString()],
+          ["Actor", detail.actorEmail || detail.actorId || "—"],
+          ["Role", (
+            <span className={`admin-badge ${detail.role === "admin" ? "admin-badge-blue" : "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>
+              {detail.role}{detail.level ? ` L${detail.level}` : ""}
+            </span>
+          )],
+          ["Action", (
+            <span className={`admin-badge admin-badge-${getActionTone(detail.action)}`}>
+              {(detail.action || "—").replace(/_/g, " ")}
+            </span>
+          )],
+          detail.resourceType && ["Resource", (
+            <span style={{ textTransform: "capitalize" }}>
+              {detail.resourceType.replace(/_/g, " ")}
+              {detail.resourceId && <span style={{ marginLeft: 6, fontFamily: "monospace", fontSize: "0.75rem", color: "var(--ion-color-medium)", textTransform: "none" }}>({detail.resourceId})</span>}
+            </span>
+          )],
+          ["Details", detail.details || "—"],
+        ] : []}
+      />
     </AdminLayout>
   );
 }

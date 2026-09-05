@@ -129,7 +129,7 @@ export default function AdminBroadcast() {
           </p>
         </div>
 
-        <div style={{ maxWidth: 640 }}>
+        <div>
           <div className="chart-card">
             <h2 className="chart-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <IonIcon icon={mailOutline} style={{ color: "var(--ion-color-primary)" }} /> Send email

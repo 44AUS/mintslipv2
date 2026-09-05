@@ -1,83 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  IonApp, IonPage, IonContent, IonButton, IonInput,
-  IonSpinner, IonCard, IonCardContent, setupIonicReact,
-} from "@ionic/react";
 import { toast } from "@/utils/toast";
-import { Lock, Mail, ShieldCheck } from "lucide-react";
-import "../admin-theme.css";
+import MintSlipLogo from "../assests/mintslip-logo.png";
+import "../login.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-const loginStyles = {
-  page: {
-    background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    "--background": "transparent",
-  },
-  wrap: {
-    width: "100%",
-    maxWidth: 420,
-  },
-  brand: {
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  iconWrap: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 64,
-    height: 64,
-    background: "linear-gradient(135deg, #16a34a, #15803d)",
-    borderRadius: 18,
-    boxShadow: "0 8px 24px rgba(22,163,74,0.35)",
-    marginBottom: 16,
-  },
-  heading: {
-    color: "#fff",
-    fontSize: "1.5rem",
-    fontWeight: 700,
-    margin: "0 0 4px",
-  },
-  sub: {
-    color: "#94a3b8",
-    fontSize: "0.875rem",
-    margin: 0,
-  },
-  card: {
-    "--background": "rgba(255,255,255,0.07)",
-    backdropFilter: "blur(12px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 18,
-    boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-    margin: 0,
-  },
-  inputWrap: {
-    position: "relative",
-    marginBottom: 16,
-  },
-  inputIcon: {
-    position: "absolute",
-    left: 12,
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: "#64748b",
-    zIndex: 2,
-    pointerEvents: "none",
-  },
-  footer: {
-    textAlign: "center",
-    color: "#475569",
-    fontSize: "0.8125rem",
-    marginTop: 20,
-  },
-};
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -140,119 +67,55 @@ export default function AdminLogin() {
 
   if (isCheckingAuth) {
     return (
-      <div style={{ ...loginStyles.page, flexDirection: "column", gap: 12 }}>
-        <IonSpinner name="crescent" style={{ color: "#22c55e", width: 36, height: 36 }} />
+      <div className="ms-login-page">
+        <span className="ms-spin" style={{ width: 34, height: 34, borderColor: "rgba(22,163,74,0.25)", borderTopColor: "#16a34a" }} />
       </div>
     );
   }
 
   return (
-    <div style={loginStyles.page}>
-      <div style={loginStyles.wrap}>
-        {/* Brand */}
-        <div style={loginStyles.brand}>
-          <div style={loginStyles.iconWrap}>
-            <ShieldCheck size={30} color="#fff" />
-          </div>
-          <h1 style={loginStyles.heading}>MintSlip Admin</h1>
-          <p style={loginStyles.sub}>Sign in to access the dashboard</p>
+    <div className="ms-login-page">
+      <div className="ms-login-wrap">
+        <div className="ms-login-card">
+          <img src={MintSlipLogo} alt="MintSlip" className="ms-login-logo" />
+          <h1 className="ms-login-title">Admin sign in</h1>
+          <p className="ms-login-sub">Sign in to access the MintSlip dashboard.</p>
+
+          <form onSubmit={handleLogin}>
+            <div className="ms-login-field">
+              <label className="ms-login-label" htmlFor="admin-email">Email</label>
+              <input
+                id="admin-email"
+                className="ms-login-input"
+                type="email"
+                inputMode="email"
+                autoComplete="username"
+                placeholder="admin@mintslip.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="ms-login-field">
+              <label className="ms-login-label" htmlFor="admin-password">Password</label>
+              <input
+                id="admin-password"
+                className="ms-login-input"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <button type="submit" className="ms-login-btn" disabled={isLoading}>
+              {isLoading ? (<><span className="ms-spin" /> Signing in…</>) : "Sign In"}
+            </button>
+          </form>
+
+          <p className="ms-login-foot">Secure admin access only</p>
         </div>
-
-        {/* Login card */}
-        <IonCard style={loginStyles.card}>
-          <IonCardContent style={{ padding: 28 }}>
-            <form
-              onSubmit={handleLogin}
-              onKeyDown={e => e.key === "Enter" && handleLogin(e)}
-            >
-              {/* Email */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: "block", color: "#cbd5e1", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 6 }}>
-                  Email
-                </label>
-                <div style={loginStyles.inputWrap}>
-                  <span style={loginStyles.inputIcon}><Mail size={16} /></span>
-                  <input
-                    type="email"
-                    placeholder="admin@mintslip.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      padding: "10px 12px 10px 38px",
-                      background: "rgba(255,255,255,0.07)",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      borderRadius: 8,
-                      color: "#f1f5f9",
-                      fontSize: "0.9375rem",
-                      outline: "none",
-                    }}
-                    onFocus={e => { e.target.style.borderColor = "#22c55e"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.15)"; }}
-                    onBlur={e =>  { e.target.style.borderColor = "rgba(255,255,255,0.15)"; e.target.style.boxShadow = "none"; }}
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: "block", color: "#cbd5e1", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 6 }}>
-                  Password
-                </label>
-                <div style={loginStyles.inputWrap}>
-                  <span style={loginStyles.inputIcon}><Lock size={16} /></span>
-                  <input
-                    type="password"
-                    placeholder="••••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      padding: "10px 12px 10px 38px",
-                      background: "rgba(255,255,255,0.07)",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      borderRadius: 8,
-                      color: "#f1f5f9",
-                      fontSize: "0.9375rem",
-                      outline: "none",
-                    }}
-                    onFocus={e => { e.target.style.borderColor = "#22c55e"; e.target.style.boxShadow = "0 0 0 3px rgba(34,197,94,0.15)"; }}
-                    onBlur={e =>  { e.target.style.borderColor = "rgba(255,255,255,0.15)"; e.target.style.boxShadow = "none"; }}
-                  />
-                </div>
-              </div>
-
-              <IonButton
-                type="submit"
-                expand="block"
-                color="primary"
-                disabled={isLoading}
-                style={{
-                  "--border-radius": "10px",
-                  "--box-shadow": "0 4px 16px rgba(22,163,74,0.35)",
-                  height: 48,
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  letterSpacing: 0,
-                  textTransform: "none",
-                }}
-                onClick={handleLogin}
-              >
-                {isLoading ? (
-                  <>
-                    <IonSpinner name="crescent" style={{ width: 18, height: 18, marginRight: 8 }} />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </IonButton>
-            </form>
-          </IonCardContent>
-        </IonCard>
-
-        <p style={loginStyles.footer}>Secure admin access only</p>
       </div>
     </div>
   );

@@ -837,6 +837,19 @@ ion-modal ion-content::part(scroll) {
   position: relative;
 }
 
+/* Detail modals are stock Ionic MD inline modals like whodat's: near-square
+   2px radius, the default MD elevation shadow, and a seamless transparent
+   toolbar — resetting the rounded/custom-shadow overrides above. */
+ion-modal.admin-detail-modal {
+  --border-radius: 2px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+  --background: var(--ion-card-background);
+}
+ion-modal.admin-detail-modal ion-toolbar {
+  --background: transparent;
+  --border-color: transparent;
+}
+
 /* Fixed-height detail modals (whodat style, 600x500): restore Ionic's native
    fill-and-scroll content behavior that the auto-height fix above disables,
    so long detail lists scroll inside the modal instead of clipping. */

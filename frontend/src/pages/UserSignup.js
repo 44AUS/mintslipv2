@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { User, Mail, Lock, Loader2, ArrowRight, FolderArchive } from "lucide-react";
 import AuthHeader from "@/components/AuthHeader";
 

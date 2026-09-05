@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import SupportCenter from "@/components/SupportCenter";
 import { useMinimizedChats } from "@/contexts/MinimizedChatsContext";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const POLL_MS = 8000;

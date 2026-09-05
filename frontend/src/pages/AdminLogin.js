@@ -4,7 +4,7 @@ import {
   IonApp, IonPage, IonContent, IonButton, IonInput,
   IonSpinner, IonCard, IonCardContent, setupIonicReact,
 } from "@ionic/react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { Lock, Mail, ShieldCheck } from "lucide-react";
 import "../admin-theme.css";
 

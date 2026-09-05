@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,

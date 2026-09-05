@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadScheduleC } from "@/utils/scheduleCGenerator";

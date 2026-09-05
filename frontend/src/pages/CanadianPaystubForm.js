@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";

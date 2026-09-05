@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IonButton } from "@ionic/react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import AdminDetailModal from "@/components/AdminDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

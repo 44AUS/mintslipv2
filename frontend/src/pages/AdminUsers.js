@@ -11,7 +11,7 @@ import {
 import {
   MoreVertical, Pencil, Download, Ban, Shield, UserX, MailCheck, X, Clock,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
 import AdminDetailModal from "@/components/AdminDetailModal";
 

@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle , CreditCard, Lock, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownload1099NEC } from "@/utils/1099necGenerator";

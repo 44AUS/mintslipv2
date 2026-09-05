@@ -21,7 +21,7 @@ import {
   Eye
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 

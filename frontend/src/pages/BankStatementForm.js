@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";

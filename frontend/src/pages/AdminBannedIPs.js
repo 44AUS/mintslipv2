@@ -9,7 +9,7 @@ import {
   shieldOutline, addOutline, checkmarkOutline, refreshOutline,
   alertCircleOutline, closeOutline, globeOutline,
 } from "ionicons/icons";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

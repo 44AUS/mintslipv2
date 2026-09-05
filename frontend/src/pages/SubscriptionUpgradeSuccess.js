@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { Check, Loader2, TrendingUp, Sparkles } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

@@ -46,6 +46,28 @@ button:focus-visible {
     border-radius: 6px;
 }
 
+/* Ionic toast styling — same recipe as the whodat app: dark slab with white
+   text, 14px radius, soft shadow; red error and green success variants. */
+.wd-toast {
+    --background: #1f202d;
+    --color: #fff;
+    --border-radius: 14px;
+    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+    --button-color: var(--ion-color-primary, #16a34a);
+    font-weight: 500;
+}
+.wd-toast::part(message) { font-size: 14.5px; }
+.wd-toast-error {
+    --background: rgb(251, 54, 64);
+    --color: #ffffff;
+    --button-color: #ffffff;
+}
+.wd-toast-success {
+    --background: #23c400;
+    --color: #ffffff;
+    --button-color: #ffffff;
+}
+
 /* Looping shine that glides across primary CTAs (same effect as whodat's
    "Upload a photo" button: skewed white stripe, 3.4s sweep-and-rest loop) */
 .cta-shine {

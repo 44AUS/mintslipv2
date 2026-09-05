@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner } from "@ionic/react";
 import { refreshOutline, chevronForwardOutline } from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

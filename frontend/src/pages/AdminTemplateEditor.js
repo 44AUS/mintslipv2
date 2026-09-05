@@ -7,7 +7,7 @@ import {
   ArrowLeft, Type, Square, Minus, Table, Image as ImageIcon, Trash2, Copy,
   Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import {
   buildContext, resolveTokens, renderLayout, evalShowIf,
   getSampleVariants, getTokenGroups, getTableBindings, getShowIfPresets,

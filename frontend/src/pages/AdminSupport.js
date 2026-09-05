@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { IonButton, IonSpinner } from "@ionic/react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { RefreshCw, Trash2, ChevronDown, ChevronUp, Mail, Clock } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

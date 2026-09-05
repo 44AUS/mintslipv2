@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import UserNavTabs from "@/components/UserNavTabs";

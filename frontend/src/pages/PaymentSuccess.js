@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Download, Mail, HelpCircle, ArrowLeft, FileText, FolderArchive, Loader2, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from "@/utils/toast";
 
 // Import all generators
 import { generateAndDownloadPaystub } from '@/utils/paystubGenerator';

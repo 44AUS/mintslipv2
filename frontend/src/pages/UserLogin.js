@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { Mail, Lock, Loader2, ArrowRight, Sparkles } from "lucide-react";
 import AuthHeader from "@/components/AuthHeader";
 

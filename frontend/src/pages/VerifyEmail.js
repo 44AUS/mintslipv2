@@ -4,7 +4,7 @@ import { Mail, Loader2, CheckCircle, RefreshCw, ShieldCheck, ArrowRight } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 

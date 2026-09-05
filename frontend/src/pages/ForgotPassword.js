@@ -4,7 +4,7 @@ import { Mail, ArrowLeft, Loader2, CheckCircle, KeyRound, ArrowRight } from "luc
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import AuthHeader from "@/components/AuthHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useStripe, useElements, PaymentRequestButtonElement } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard, Lock } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 

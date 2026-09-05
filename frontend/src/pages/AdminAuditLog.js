@@ -7,7 +7,7 @@ import {
   clipboardOutline, refreshOutline, trashOutline, searchOutline,
   chevronBackOutline, chevronForwardOutline, filterOutline,
 } from "ionicons/icons";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_SIZE = 50;

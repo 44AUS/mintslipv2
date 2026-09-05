@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HelpCircle, CreditCard, Lock, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadW2, BOX_12_CODES } from "@/utils/w2Generator";
 import { saveGuestDocument } from "@/utils/guestSave";

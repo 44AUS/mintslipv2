@@ -4,7 +4,7 @@ import {
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
   IonFooter, IonButton, IonButtons, IonSpinner,
 } from "@ionic/react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import {
   ArrowLeft,
   Save,

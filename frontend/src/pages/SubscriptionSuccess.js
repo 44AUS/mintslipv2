@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { openSupportChat } from "@/utils/openSupportChat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { Check, Loader2, PartyPopper, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

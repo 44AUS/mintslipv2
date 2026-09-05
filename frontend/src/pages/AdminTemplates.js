@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { IonButton, IonSpinner } from "@ionic/react";
 import { Plus, Pencil, Copy, Trash2, Upload, Undo2, LayoutTemplate } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";

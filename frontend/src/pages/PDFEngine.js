@@ -39,7 +39,7 @@ import {
   Settings2,
   Wand2
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 

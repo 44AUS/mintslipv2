@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   IonButton, IonSpinner,
 } from "@ionic/react";
-import { toast } from "sonner";
+import { toast } from "@/utils/toast";
 import {
   Plus,
   Trash2,

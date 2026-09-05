@@ -71,7 +71,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import ScrollToTop from "@/components/ScrollToTop";
 import PromoBanner from "@/components/PromoBanner";
-import { Toaster } from "sonner";
+import IonToaster from "@/components/IonToaster";
 import Reviews from "@/pages/Reviews";
 import ComparisonPage from "@/pages/ComparisonPage";
 import DocumentDirectory from "@/pages/DocumentDirectory";
@@ -224,7 +224,7 @@ function MobileApp() {
     <HelmetProvider>
       <Elements stripe={stripePromise}>
         <div className="App">
-          <Toaster position="top-center" richColors />
+          <IonToaster />
           <BrowserRouter>
             <Routes>
               <Route path="/app/paystub" element={<AppPaystub />} />
@@ -251,7 +251,7 @@ function App() {
         <MaintenanceCheck>
           <IPBanCheck>
             <div className="App">
-              <Toaster position="top-center" richColors />
+              <IonToaster />
               <BrowserRouter>
                 <MinimizedChatsProvider currentUser={currentUser} messagesApi={messagesApi}>
                 <MinimizedChatsFAB currentUser={currentUser} />

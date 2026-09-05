@@ -5253,6 +5253,123 @@ async def reset_email_template(name: str, session: dict = Depends(get_current_ad
 
 
 # ─────────────────────────────────────────────────────────────
+# Broadcast (whodat-style: send email to an audience or picked users)
+# ─────────────────────────────────────────────────────────────
+
+async def _broadcast_recipient_list():
+    """Combined recipient list: every registered user, plus guest purchasers
+    (purchase emails with no matching account). Each: {email, name, type}."""
+    users = await users_collection.find({}, {"_id": 0, "email": 1, "name": 1}).to_list(20000)
+    registered = {}
+    for u in users:
+        em = (u.get("email") or "").lower().strip()
+        if em:
+            registered[em] = {"email": em, "name": u.get("name") or "", "type": "registered"}
+
+    pipeline = [
+        {"$match": {"email": {"$exists": True, "$nin": [None, ""]}}},
+        {"$group": {"_id": {"$toLower": "$email"}, "latest": {"$max": "$createdAt"}}},
+    ]
+    purchase_docs = await purchases_collection.aggregate(pipeline).to_list(20000)
+    guests = {}
+    for d in purchase_docs:
+        em = d["_id"]
+        if em and em not in registered:
+            guests[em] = {"email": em, "name": "", "type": "guest"}
+
+    return list(registered.values()) + list(guests.values())
+
+
+@app.get("/api/admin/broadcast/recipients")
+async def get_broadcast_recipients(session: dict = Depends(get_current_admin)):
+    """All possible email recipients (registered users + guest purchasers)."""
+    check_permission(session, "send_mass_email")
+    recipients = await _broadcast_recipient_list()
+    registered = sum(1 for r in recipients if r["type"] == "registered")
+    return {
+        "success": True,
+        "recipients": recipients,
+        "counts": {"all": len(recipients), "registered": registered, "guests": len(recipients) - registered},
+    }
+
+
+def _broadcast_html(message: str, button_text: str = "", button_url: str = "") -> str:
+    """Wrap a plain-text message (blank line = new paragraph) plus an optional
+    call-to-action button in the site's base email template."""
+    paragraphs = [p.strip() for p in (message or "").split("\n\n") if p.strip()]
+    body = "".join(
+        f'<p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155;">{p.replace(chr(10), "<br>")}</p>'
+        for p in paragraphs
+    )
+    if button_text and button_url:
+        body += (
+            f'<div style="text-align:center;margin:28px 0 8px;">'
+            f'<a href="{button_url}" style="display:inline-block;background:#16a34a;color:#ffffff;'
+            f'text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;">'
+            f'{button_text}</a></div>'
+        )
+    return get_base_template(body)
+
+
+async def _resolve_broadcast_targets(request: dict) -> list:
+    """Resolve a broadcast body to a de-duplicated list of recipient emails,
+    from an explicit `emails` list or an `audience` segment."""
+    emails = request.get("emails")
+    if emails:
+        return sorted({(e or "").lower().strip() for e in emails if e})
+    audience = request.get("audience", "all")
+    recipients = await _broadcast_recipient_list()
+    if audience == "registered":
+        recipients = [r for r in recipients if r["type"] == "registered"]
+    elif audience == "guests":
+        recipients = [r for r in recipients if r["type"] == "guest"]
+    return sorted({r["email"] for r in recipients})
+
+
+@app.post("/api/admin/broadcast/preview")
+async def preview_broadcast_email(request: dict, session: dict = Depends(get_current_admin)):
+    """Return the rendered HTML for a broadcast email (for the preview modal)."""
+    check_permission(session, "send_mass_email")
+    html = _broadcast_html(request.get("message", ""), request.get("button_text", ""), request.get("button_url", ""))
+    return {"success": True, "html": html}
+
+
+@app.post("/api/admin/broadcast/email")
+async def send_broadcast_email(request: dict, background_tasks: BackgroundTasks, session: dict = Depends(get_current_admin)):
+    """Send a broadcast email to an audience segment or a hand-picked set of
+    users. Body: { subject, message, button_text?, button_url?,
+    audience?: all|registered|guests, emails?: [] }."""
+    check_permission(session, "send_mass_email")
+    subject = (request.get("subject") or "").strip()
+    message = (request.get("message") or "").strip()
+    if not subject or not message:
+        raise HTTPException(status_code=400, detail="subject and message are required")
+
+    targets = await _resolve_broadcast_targets(request)
+    if not targets:
+        raise HTTPException(status_code=400, detail="No recipients match this audience")
+
+    full_html = _broadcast_html(message, request.get("button_text", ""), request.get("button_url", ""))
+    job_id = str(uuid.uuid4())
+    _mass_email_jobs[job_id] = {"status": "running", "total": len(targets), "sent": 0, "failed": 0, "errors": []}
+
+    async def _do_send():
+        job = _mass_email_jobs[job_id]
+        for addr in targets:
+            try:
+                await send_email(addr, subject, full_html, email_type="broadcast")
+                job["sent"] += 1
+            except Exception as ex:
+                job["failed"] += 1
+                job["errors"].append({"email": addr, "error": str(ex)})
+        job["status"] = "done"
+
+    background_tasks.add_task(_do_send)
+    await log_action(session, "send_broadcast", "mass_email", job_id, f"subject={subject}, recipients={len(targets)}")
+    return {"success": True, "job_id": job_id, "total": len(targets)}
+
+
+# ─────────────────────────────────────────────────────────────
 # Mass Email
 # ─────────────────────────────────────────────────────────────
 

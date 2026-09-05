@@ -2343,7 +2343,7 @@ async def create_checkout_session(data: CreateCheckoutSession, session: dict = D
 
 
 @app.post("/api/stripe/create-payment-intent")
-async def create_payment_intent(request: dict):
+async def create_payment_intent(request: dict, req: Request):
     """Create a Stripe payment intent for one-time purchase"""
     amount = request.get("amount")  # Amount in dollars
     document_type = request.get("documentType")
@@ -2351,14 +2351,15 @@ async def create_payment_intent(request: dict):
     email = request.get("email")
     discount_code = request.get("discountCode")
     discount_amount = request.get("discountAmount", 0)
-    
+    client_ip = get_client_ip(req)  # customer IP, carried through to the webhook
+
     if not amount:
         raise HTTPException(status_code=400, detail="Amount is required")
-    
+
     try:
         # Convert to cents
         amount_cents = int(float(amount) * 100)
-        
+
         # Create payment intent
         intent = stripe.PaymentIntent.create(
             amount=amount_cents,
@@ -2368,7 +2369,8 @@ async def create_payment_intent(request: dict):
                 "template": template or "",
                 "email": email or "",
                 "discountCode": discount_code or "",
-                "discountAmount": str(discount_amount)
+                "discountAmount": str(discount_amount),
+                "clientIp": client_ip
             }
         )
         
@@ -2540,6 +2542,9 @@ async def get_checkout_status(session_id: str):
                     if not customer_email and hasattr(session, 'customer_details') and session.customer_details:
                         customer_email = getattr(session.customer_details, 'email', "") or ""
                     
+                    # Customer IP captured at checkout creation (stored in the
+                    # session metadata), not the polling request's IP.
+                    client_ip = session.metadata.get("clientIp", "") if session.metadata else ""
                     purchase = {
                         "id": str(uuid.uuid4()),
                         "documentType": document_type,
@@ -2553,6 +2558,7 @@ async def get_checkout_status(session_id: str):
                         "template": template if template else None,
                         "quantity": quantity,
                         "isGuest": not bool(user_id),
+                        "ipAddress": client_ip,
                         "createdAt": datetime.now(timezone.utc).isoformat()
                     }
                     await purchases_collection.insert_one(purchase)
@@ -2845,6 +2851,7 @@ async def stripe_webhook(request: Request):
                 "discountCode": metadata.get("discountCode"),
                 "discountAmount": float(metadata.get("discountAmount", 0)),
                 "template": metadata.get("template"),
+                "ipAddress": metadata.get("clientIp", ""),
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await purchases_collection.insert_one(purchase)
@@ -4020,7 +4027,7 @@ class SubscriptionDownloadRequest(BaseModel):
 
 
 @app.post("/api/user/subscription-download")
-async def subscription_download(data: SubscriptionDownloadRequest, session: dict = Depends(get_current_user)):
+async def subscription_download(data: SubscriptionDownloadRequest, request: Request, session: dict = Depends(get_current_user)):
     """
     Validate and track a subscription-based download.
     Returns success if user can download, decrements remaining count.
@@ -4088,6 +4095,7 @@ async def subscription_download(data: SubscriptionDownloadRequest, session: dict
         "subscriptionDownload": True,  # Flag to identify subscription downloads
         "subscriptionTier": tier,
         "downloadCount": download_count,  # Track how many documents were downloaded
+        "ipAddress": get_client_ip(request),
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "downloadedAt": datetime.now(timezone.utc).isoformat()
     }
@@ -5029,34 +5037,6 @@ async def get_app_settings_public():
     return {"success": True, "settings": settings}
 
 
-@app.get("/api/admin/doc-retention")
-async def get_doc_retention_setting(session: dict = Depends(get_current_admin)):
-    """Get the saved-document retention age (days; 0 = keep permanently)."""
-    check_permission(session, "view_site_settings")
-    return {"success": True, "days": await get_doc_retention_days(), "default": DOC_MAX_AGE_DAYS_DEFAULT}
-
-
-@app.put("/api/admin/doc-retention")
-async def update_doc_retention_setting(request: dict, session: dict = Depends(get_current_admin)):
-    """Set the saved-document retention age (days; 0 keeps documents forever)."""
-    check_permission(session, "manage_site_settings")
-    try:
-        days = max(0, int(request.get("days", DOC_MAX_AGE_DAYS_DEFAULT)))
-    except (TypeError, ValueError):
-        raise HTTPException(status_code=400, detail="days must be a whole number")
-    if days > 3650:
-        raise HTTPException(status_code=400, detail="days must be 3650 or fewer")
-    await site_settings_collection.update_one(
-        {"key": "doc_retention_days"},
-        {"$set": {"key": "doc_retention_days", "days": days, "updatedAt": datetime.now(timezone.utc).isoformat()}},
-        upsert=True,
-    )
-    await log_action(session, "update_doc_retention", "site_settings", "doc_retention_days", f"{days} days")
-    # Apply immediately so existing over-age documents are removed now.
-    removed = await prune_old_documents(days) if days > 0 else 0
-    return {"success": True, "days": days, "removed": removed}
-
-
 @app.put("/api/admin/app-settings")
 async def update_app_settings(request: dict, session: dict = Depends(get_current_admin)):
     """Update app settings (admin only)"""
@@ -5123,13 +5103,21 @@ async def get_doc_retention(session: dict = Depends(get_current_admin)):
 async def set_doc_retention(data: dict, session: dict = Depends(get_current_admin)):
     """Set document retention period. days=0 means keep permanently."""
     check_permission(session, "view_site_settings")
-    days = max(0, int(data.get("days", 0)))
+    try:
+        days = max(0, int(data.get("days", DOC_MAX_AGE_DAYS_DEFAULT)))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="days must be a whole number")
+    if days > 3650:
+        raise HTTPException(status_code=400, detail="days must be 3650 or fewer")
     await site_settings_collection.update_one(
         {"key": "doc_retention_days"},
         {"$set": {"key": "doc_retention_days", "days": days, "updatedAt": datetime.now(timezone.utc).isoformat(), "updatedBy": session.get("email")}},
         upsert=True
     )
-    return {"success": True, "days": days}
+    await log_action(session, "update_doc_retention", "site_settings", "doc_retention_days", f"{days} days")
+    # Apply immediately so existing over-age documents are removed now.
+    removed = await prune_old_documents(days) if days > 0 else 0
+    return {"success": True, "days": days, "removed": removed}
 
 @app.get("/api/admin/auth-settings")
 async def get_auth_settings(session: dict = Depends(get_current_admin)):

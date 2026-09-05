@@ -5304,8 +5304,10 @@ def _broadcast_html(message: str, button_text: str = "", button_url: str = "") -
     if button_text and button_url:
         body += (
             f'<div style="text-align:center;margin:28px 0 8px;">'
-            f'<a href="{button_url}" style="display:inline-block;background:#16a34a;color:#ffffff;'
-            f'text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;">'
+            f'<a href="{button_url}" style="display:inline-block;box-sizing:border-box;'
+            f'background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e,#16a34a 60%,#15803d);'
+            f'color:#ffffff;text-decoration:none;padding:14px 30px;border-radius:10px;font-weight:700;'
+            f'font-size:15px;box-shadow:0 4px 14px rgba(22,163,74,0.32);">'
             f'{button_text}</a></div>'
         )
     return get_base_template(body)

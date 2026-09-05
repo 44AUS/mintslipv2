@@ -210,21 +210,34 @@ const TEMPLATE_META = {
   password_reset:        { variables: ["user_name", "reset_link", "reset_code"],                                   defaultSubject: "Reset your password - MintSlip",                                     defaultHtmlBody: DEFAULT_BODIES.password_reset,        defaultDelayMinutes: null },
 };
 
+// Mirror of backend email_service.get_base_template so this preview shows
+// exactly what recipients receive: whodat-style frame in MintSlip green.
 const BASE_PREVIEW_STYLES = `
   body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
-  .container{max-width:600px;margin:0 auto;padding:20px;}
-  .header{text-align:center;padding:20px 0;border-bottom:1px solid #e5e7eb;}
-  .content{padding:30px 20px;}
-  .button{display:inline-block;padding:12px 24px;background-color:#10b981;color:white;text-decoration:none;border-radius:6px;font-weight:500;}
-  .footer{padding:20px;text-align:center;color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;}
-  .highlight{background-color:#f0fdf4;padding:15px;border-radius:8px;border-left:4px solid #10b981;}
-  h1{color:#111827;margin-bottom:10px;}
-  p{color:#374151;line-height:1.6;}
-  .text-muted{color:#6b7280;}
+  .button{display:inline-block;box-sizing:border-box;padding:14px 30px;background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e,#16a34a 60%,#15803d);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(22,163,74,0.32);}
+  .highlight{background-color:#f0fdf4;padding:16px;border-radius:10px;border-left:4px solid #16a34a;}
+  h1{color:#0f172a;margin:0 0 12px;font-size:22px;font-weight:800;letter-spacing:-0.01em;}
+  h2{color:#0f172a;margin:0 0 12px;font-size:19px;font-weight:700;}
+  p{color:#334155;line-height:1.65;font-size:15px;}
+  ul{color:#334155;line-height:1.8;font-size:15px;}
+  a{color:#16a34a;}
+  .text-muted{color:#64748b;}
 `;
 
 function buildPreviewHtml(htmlBody) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="background-color:#f9fafb;"><div class="container"><div class="header"><img src="/mintslip-logo.png" alt="MintSlip" style="height:40px;width:auto;" /></div><div class="content">${htmlBody}</div><div class="footer"><p>© ${new Date().getFullYear()} MintSlip. All rights reserved.</p></div></div></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="margin:0;padding:0;background:#f0fdf4;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;"><tr><td align="center" style="padding:36px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
+      <tr><td style="background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e 0%,#16a34a 55%,#15803d 100%);padding:28px 32px;text-align:center;">
+        <span style="display:inline-block;background:#fff;border-radius:12px;padding:10px 18px;"><img src="/mintslip-logo.png" alt="MintSlip" style="height:30px;width:auto;display:block;" /></span>
+      </td></tr>
+      <tr><td style="padding:36px 32px 34px;color:#0f172a;">${htmlBody}</td></tr>
+    </table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;"><tr><td style="padding:20px 12px 0;text-align:center;color:#94a3b8;font-size:12px;line-height:1.6;">
+      © ${new Date().getFullYear()} MintSlip · You're receiving this because you have a MintSlip account.<br><a href="#" style="color:#94a3b8;text-decoration:underline;">mintslip.com</a>
+    </td></tr></table>
+  </td></tr></table>
+  </body></html>`;
 }
 
 function formatDelay(minutes) {

@@ -836,6 +836,26 @@ ion-modal ion-content {
 ion-modal ion-content::part(scroll) {
   position: relative;
 }
+
+/* Fixed-height detail modals (whodat style, 600x500): restore Ionic's native
+   fill-and-scroll content behavior that the auto-height fix above disables,
+   so long detail lists scroll inside the modal instead of clipping. */
+ion-modal.admin-detail-modal ion-content {
+  height: 100%;
+  flex: 1;
+  contain: size style;
+  max-height: none;
+  overflow-y: visible;
+}
+ion-modal.admin-detail-modal ion-content::part(scroll) {
+  position: absolute;
+}
+ion-modal.admin-detail-modal ion-list {
+  background: transparent;
+}
+ion-modal.admin-detail-modal ion-item {
+  --background: transparent;
+}
 ion-modal ion-footer ion-toolbar {
   --background: var(--admin-card-bg);
   --color: var(--admin-text);

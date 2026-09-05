@@ -181,22 +181,29 @@ SAVED_DOCS_LIMITS = {
     "business": -1  # -1 means unlimited
 }
 
+# Default saved-document retention (days). Admin-configurable via the
+# doc_retention_days site setting; 0 keeps documents permanently.
+DOC_MAX_AGE_DAYS_DEFAULT = 60
+
+
 async def get_doc_retention_days() -> int:
-    """Return configured document retention in days. 0 means keep permanently."""
+    """Configured saved-document retention in days (0 = keep permanently)."""
     setting = await site_settings_collection.find_one({"key": "doc_retention_days"})
     if setting is None:
-        return 0  # default: permanent
-    return int(setting.get("days", 0))
+        return DOC_MAX_AGE_DAYS_DEFAULT
+    try:
+        return max(0, int(setting.get("days", DOC_MAX_AGE_DAYS_DEFAULT)))
+    except (TypeError, ValueError):
+        return DOC_MAX_AGE_DAYS_DEFAULT
 
 
-# Hard cap: saved documents older than this are auto-deleted (files + records),
-# so admins never see or store anything past 60 days.
-DOC_MAX_AGE_DAYS = 60
-
-
-async def prune_old_documents(max_age_days: int = DOC_MAX_AGE_DAYS) -> int:
-    """Delete saved documents (records + on-disk files) older than max_age_days.
-    Returns the number of documents removed."""
+async def prune_old_documents(max_age_days: Optional[int] = None) -> int:
+    """Delete saved documents (records + on-disk files) older than the
+    configured retention age. Returns the number of documents removed."""
+    if max_age_days is None:
+        max_age_days = await get_doc_retention_days()
+    if max_age_days <= 0:
+        return 0  # retention disabled (keep permanently)
     cutoff = (datetime.now(timezone.utc) - timedelta(days=max_age_days)).isoformat()
     old_docs = await saved_documents_collection.find(
         {"createdAt": {"$lt": cutoff}}, {"id": 1, "storedFileName": 1}
@@ -5020,6 +5027,34 @@ async def get_app_settings_public():
     if not settings:
         return {"success": True, "settings": {"version": "1.0.0", "status": "normal", "videoUrl": "", "whatsNew": [], "knownIssues": ["None :)"]}}
     return {"success": True, "settings": settings}
+
+
+@app.get("/api/admin/doc-retention")
+async def get_doc_retention_setting(session: dict = Depends(get_current_admin)):
+    """Get the saved-document retention age (days; 0 = keep permanently)."""
+    check_permission(session, "view_site_settings")
+    return {"success": True, "days": await get_doc_retention_days(), "default": DOC_MAX_AGE_DAYS_DEFAULT}
+
+
+@app.put("/api/admin/doc-retention")
+async def update_doc_retention_setting(request: dict, session: dict = Depends(get_current_admin)):
+    """Set the saved-document retention age (days; 0 keeps documents forever)."""
+    check_permission(session, "manage_site_settings")
+    try:
+        days = max(0, int(request.get("days", DOC_MAX_AGE_DAYS_DEFAULT)))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="days must be a whole number")
+    if days > 3650:
+        raise HTTPException(status_code=400, detail="days must be 3650 or fewer")
+    await site_settings_collection.update_one(
+        {"key": "doc_retention_days"},
+        {"$set": {"key": "doc_retention_days", "days": days, "updatedAt": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    await log_action(session, "update_doc_retention", "site_settings", "doc_retention_days", f"{days} days")
+    # Apply immediately so existing over-age documents are removed now.
+    removed = await prune_old_documents(days) if days > 0 else 0
+    return {"success": True, "days": days, "removed": removed}
 
 
 @app.put("/api/admin/app-settings")

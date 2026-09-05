@@ -659,8 +659,8 @@ export default function AdminSiteSettings() {
               <div>
                 <p className="text-sm font-semibold text-slate-800">Document Retention</p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  All generated documents are now auto-saved. Set how long to keep them before auto-deleting.
-                  <strong> 0 = keep permanently</strong> (default).
+                  All generated documents are auto-saved. Set how long to keep them before auto-deleting.
+                  Default is <strong>60 days</strong>; set <strong>0</strong> to keep permanently.
                 </p>
               </div>
             </div>

@@ -837,13 +837,30 @@ ion-modal ion-content::part(scroll) {
   position: relative;
 }
 
-/* Detail modals are stock Ionic MD inline modals like whodat's: near-square
-   2px radius, the default MD elevation shadow, and a seamless transparent
-   toolbar — resetting the rounded/custom-shadow overrides above. */
+/* Detail modals are stock Ionic MD inline modals like whodat's: fullscreen on
+   phones, 600x500 (600x600 on tall screens) with a 2px radius and the MD
+   elevation shadow on desktop, and a seamless transparent toolbar — resetting
+   the rounded/custom-shadow/auto-height overrides above at Ionic's own
+   breakpoints. */
 ion-modal.admin-detail-modal {
-  --border-radius: 2px;
-  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+  --width: 100%;
+  --height: 100%;
+  --max-width: none;
+  --max-height: none;
+  --border-radius: 0;
+  --box-shadow: none;
   --background: var(--ion-card-background);
+}
+@media only screen and (min-width: 768px) and (min-height: 600px) {
+  ion-modal.admin-detail-modal {
+    --width: 600px;
+    --height: 500px;
+    --border-radius: 2px;
+    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+  }
+}
+@media only screen and (min-width: 768px) and (min-height: 768px) {
+  ion-modal.admin-detail-modal { --height: 600px; }
 }
 ion-modal.admin-detail-modal ion-toolbar {
   --background: transparent;

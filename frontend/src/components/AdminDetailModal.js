@@ -10,12 +10,7 @@ import { closeOutline } from "ionicons/icons";
 // status badge), and optional `children` rendered below the list as action
 // buttons. `rows` is an array of [label, value]; falsy rows are skipped.
 const AdminDetailModal = ({ isOpen, onClose, title, rows = [], children }) => (
-  <IonModal
-    isOpen={isOpen}
-    onDidDismiss={onClose}
-    className="admin-detail-modal"
-    style={{ "--width": "600px", "--max-width": "95vw", "--height": "500px" }}
-  >
+  <IonModal isOpen={isOpen} onDidDismiss={onClose} className="admin-detail-modal">
     <IonHeader>
       <IonToolbar>
         <IonTitle>{title}</IonTitle>

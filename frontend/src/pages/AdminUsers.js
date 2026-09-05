@@ -8,9 +8,7 @@ import {
 import {
   refreshOutline, downloadOutline, chevronForwardOutline, searchOutline,
 } from "ionicons/icons";
-import {
-  MoreVertical, Pencil, Download, Ban, Shield, UserX, MailCheck, X, Clock,
-} from "lucide-react";
+import { X, Clock } from "lucide-react";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
 import AdminDetailModal from "@/components/AdminDetailModal";
@@ -69,7 +67,6 @@ export default function AdminUsers() {
   const [search, setSearch]   = useState("");
 
   // modals
-  const [openMenuId, setOpenMenuId]   = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailUserId, setDetailUserId] = useState(null);
   const [dlModalOpen, setDlModalOpen]   = useState(false);
@@ -283,7 +280,7 @@ export default function AdminUsers() {
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
                     <thead>
                       <tr>
-                        {[["User", 200], ["Status", 90], ["Subscription", 130], ["Downloads", 110], ["IP Address", 130], ["Joined", 150], ["", 60]].map(([h, w]) => (
+                        {[["User", 200], ["Status", 90], ["Subscription", 130], ["Downloads", 110], ["IP Address", 130], ["Joined", 150]].map(([h, w]) => (
                           <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.72rem", fontWeight: 400, color: "var(--ion-color-medium)", background: "var(--ion-background-color)", whiteSpace: "nowrap", ...(w ? { width: w, minWidth: w } : {}) }}>
                             {h}
                           </th>
@@ -292,7 +289,7 @@ export default function AdminUsers() {
                     </thead>
                     <tbody>
                       {filtered.length === 0 && (
-                        <tr><td colSpan={7} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>No users found</td></tr>
+                        <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>No users found</td></tr>
                       )}
                       {filtered.map(u => {
                         const tier = u.subscription ? SUBSCRIPTION_TIERS[u.subscription.tier] : null;
@@ -300,16 +297,17 @@ export default function AdminUsers() {
                         const remaining = u.subscription?.downloads_remaining ?? 0;
                         const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
                         return (
-                          <tr key={u.id} style={{ position: "relative", height: 64 }}>
+                          <tr key={u.id} onClick={() => setDetailUserId(u.id)} style={{ position: "relative", height: 64, cursor: "pointer" }}>
 
-                            {/* User — also hosts the row-wide click/ripple overlay,
-                                which spans the whole row because the <tr> is its
-                                containing block */}
+                            {/* User — also hosts the row-wide ripple overlay, which
+                                spans the whole row because the <tr> is its
+                                containing block. The overlay receives the press
+                                (so the ripple fires) and the click bubbles up to
+                                the <tr>'s onClick, which opens the modal. */}
                             <td style={{ ...tdBase, minWidth: 200 }}>
                               <div
                                 className="ion-activatable"
-                                onClick={() => setDetailUserId(u.id)}
-                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: 1 }}
                               >
                                 <ion-ripple-effect />
                               </div>
@@ -368,50 +366,6 @@ export default function AdminUsers() {
                               <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>
                                 {u.createdAt ? new Date(u.createdAt).toLocaleString() : "—"}
                               </span>
-                            </td>
-
-                            {/* Actions */}
-                            {/* overflow must stay visible here or the action menu gets clipped
-                                to the 64px row; raised above the row overlay so the menu works
-                                without opening the detail modal */}
-                            <td onClick={e => e.stopPropagation()} style={{ ...tdBase, padding: "0 8px", width: 60, overflow: "visible", position: "relative", zIndex: 2 }}>
-                              <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <button
-                                  className="admin-action-btn"
-                                  onClick={e => { e.stopPropagation(); setOpenMenuId(openMenuId === u.id ? null : u.id); }}
-                                >
-                                  <MoreVertical size={16} />
-                                </button>
-                                {openMenuId === u.id && (
-                                  <div className="user-action-menu" style={{ right: 0, left: "auto" }}>
-                                    <button className="profile-menu-item" onClick={() => { setSelectedUser(u); setEditData({ name: u.name || "", email: u.email || "", ipAddress: u.ipAddress || "" }); setEditModalOpen(true); setOpenMenuId(null); }}>
-                                      <Pencil size={13} /> Edit User
-                                    </button>
-                                    {u.subscription && (
-                                      <button className="profile-menu-item" style={{ color: "var(--ion-color-primary)" }} onClick={() => { setSelectedUser(u); setDlCount(""); setDlModalOpen(true); setOpenMenuId(null); }}>
-                                        <Download size={13} /> Add Bonus Downloads
-                                      </button>
-                                    )}
-                                    {u.emailVerified === false && (
-                                      <button className="profile-menu-item" style={{ color: "#10b981" }} onClick={() => { confirmEmail(u.id); setOpenMenuId(null); }}>
-                                        <MailCheck size={13} /> Confirm Email
-                                      </button>
-                                    )}
-                                    <div className="profile-menu-divider" />
-                                    <button className="profile-menu-item" style={{ color: u.isBanned ? "var(--ion-color-primary)" : "#f97316" }} onClick={() => { toggleBan(u.id, u.isBanned); setOpenMenuId(null); }}>
-                                      <Ban size={13} /> {u.isBanned ? "Unban" : "Ban User"}
-                                    </button>
-                                    {u.ipAddress && u.ipAddress !== "unknown" && (
-                                      <button className="profile-menu-item danger" onClick={() => { banIP(u); setOpenMenuId(null); }}>
-                                        <Shield size={13} /> Ban IP
-                                      </button>
-                                    )}
-                                    <button className="profile-menu-item danger" onClick={() => { deleteUser(u.id); setOpenMenuId(null); }}>
-                                      <UserX size={13} /> Delete User
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
                             </td>
                           </tr>
                         );
@@ -515,6 +469,13 @@ export default function AdminUsers() {
             }}>
               Edit User
             </IonButton>
+            {detailUser.subscription && (
+              <IonButton expand="block" fill="outline" color="primary" onClick={() => {
+                setSelectedUser(detailUser); setDlCount(""); setDetailUserId(null); setDlModalOpen(true);
+              }}>
+                Add Bonus Downloads
+              </IonButton>
+            )}
             {detailUser.emailVerified === false && (
               <IonButton expand="block" fill="outline" color="success" onClick={() => confirmEmail(detailUser.id)}>
                 Confirm Email

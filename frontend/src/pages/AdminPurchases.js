@@ -3,10 +3,9 @@ import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner,
 } from "@ionic/react";
 import {
-  refreshOutline, downloadOutline, chevronForwardOutline,
+  refreshOutline, downloadOutline,
   funnelOutline,
 } from "ionicons/icons";
-import { CreditCard, Trash2 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 
@@ -155,16 +154,6 @@ export default function AdminPurchases() {
     return true;
   });
 
-  const handleDelete = async (id, e) => {
-    e.stopPropagation();
-    if (!window.confirm("Delete this purchase?")) return;
-    const token = localStorage.getItem("adminToken");
-    await fetch(`${BACKEND_URL}/api/admin/purchases/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setPurchases(prev => prev.filter(p => p.id !== id));
-  };
 
   const exportCSV = () => {
     const rows = [
@@ -268,7 +257,6 @@ export default function AdminPurchases() {
                           ["Status",   90],
                           ["Discount", 80],
                           ["IP",       120],
-                          ["",         60],
                         ].map(([h, w]) => (
                           <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.72rem", fontWeight: 400, color: "var(--ion-color-medium)", background: "var(--ion-background-color)", whiteSpace: "nowrap", ...(w ? { width: w, minWidth: w } : {}) }}>
                             {h}
@@ -279,7 +267,7 @@ export default function AdminPurchases() {
                     <tbody>
                       {filtered.length === 0 && (
                         <tr>
-                          <td colSpan={10} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
+                          <td colSpan={9} style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
                             No purchases found
                           </td>
                         </tr>
@@ -289,16 +277,17 @@ export default function AdminPurchases() {
                         const docLabel = DOCUMENT_TYPES[p.documentType] || p.documentType || "-";
                         const qty     = p.quantity > 1 ? ` ×${p.quantity}` : "";
                         return (
-                          <tr key={p.id} style={{ position: "relative", height: 64 }}>
+                          <tr key={p.id} onClick={() => setDetail(p)} style={{ position: "relative", height: 64, cursor: "pointer" }}>
 
-                            {/* Age — also hosts the row-wide click/ripple overlay,
-                                which spans the whole row because the <tr> is its
-                                containing block */}
+                            {/* Age — also hosts the row-wide ripple overlay, which
+                                spans the whole row because the <tr> is its
+                                containing block. The overlay receives the press
+                                (so the ripple fires) and the click bubbles up to
+                                the <tr>'s onClick, which opens the modal. */}
                             <td style={tdBase}>
                               <div
                                 className="ion-activatable"
-                                onClick={() => setDetail(p)}
-                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: 1 }}
                               >
                                 <ion-ripple-effect />
                               </div>
@@ -372,31 +361,6 @@ export default function AdminPurchases() {
                               <span style={{ fontSize: "0.72rem", fontFamily: "monospace", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>
                                 {p.ipAddress || "-"}
                               </span>
-                            </td>
-
-                            {/* Actions — raised above the row overlay so its
-                                buttons stay clickable without opening the modal */}
-                            <td style={{ ...tdBase, padding: "0 6px 0 0", width: 60, position: "relative", zIndex: 2 }}>
-                              <div style={{ display: "flex", alignItems: "center" }}>
-                                <button
-                                  title="Refund"
-                                  onClick={e => { e.stopPropagation(); setDetail(p); }}
-                                  disabled={p.refunded || !p.stripePaymentIntentId}
-                                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ion-color-primary)", padding: 4, display: "flex", borderRadius: 4, opacity: (p.refunded || !p.stripePaymentIntentId) ? 0.35 : 1 }}
-                                >
-                                  <CreditCard size={14} />
-                                </button>
-                                <button
-                                  title="Delete"
-                                  onClick={e => handleDelete(p.id, e)}
-                                  style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ion-color-danger)", padding: 4, display: "flex", borderRadius: 4 }}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 18, color: "var(--ion-color-medium)" }}>
-                                  <IonIcon icon={chevronForwardOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                                </span>
-                              </div>
                             </td>
 
                           </tr>

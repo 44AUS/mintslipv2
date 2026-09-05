@@ -90,6 +90,21 @@ except ImportError:
 
 app = FastAPI()
 
+
+@app.on_event("startup")
+async def _start_doc_prune_loop():
+    """Auto-delete saved documents older than 60 days, hourly, so retention is
+    enforced even when no admin opens the Saved Docs page."""
+    async def loop():
+        while True:
+            try:
+                await prune_old_documents()
+            except Exception as e:
+                logger.warning(f"doc prune loop error: {e}")
+            await asyncio.sleep(3600)
+    asyncio.create_task(loop())
+
+
 # Create uploads directory if not exists
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads", "blog")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -172,6 +187,35 @@ async def get_doc_retention_days() -> int:
     if setting is None:
         return 0  # default: permanent
     return int(setting.get("days", 0))
+
+
+# Hard cap: saved documents older than this are auto-deleted (files + records),
+# so admins never see or store anything past 60 days.
+DOC_MAX_AGE_DAYS = 60
+
+
+async def prune_old_documents(max_age_days: int = DOC_MAX_AGE_DAYS) -> int:
+    """Delete saved documents (records + on-disk files) older than max_age_days.
+    Returns the number of documents removed."""
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=max_age_days)).isoformat()
+    old_docs = await saved_documents_collection.find(
+        {"createdAt": {"$lt": cutoff}}, {"id": 1, "storedFileName": 1}
+    ).to_list(5000)
+    removed = 0
+    for doc in old_docs:
+        stored = doc.get("storedFileName")
+        if stored:
+            fpath = os.path.join(USER_DOCUMENTS_DIR, stored)
+            if os.path.exists(fpath):
+                try:
+                    os.remove(fpath)
+                except Exception as e:
+                    logger.warning(f"prune_old_documents: could not remove {fpath}: {e}")
+        await saved_documents_collection.delete_one({"id": doc["id"]})
+        removed += 1
+    if removed:
+        logger.info(f"prune_old_documents: removed {removed} documents older than {max_age_days} days")
+    return removed
 
 # Password hashing - Using bcrypt for better security
 def hash_password(password: str) -> str:
@@ -4319,6 +4363,9 @@ async def get_all_saved_documents(
 ):
     """Get all saved documents (admin only)"""
     check_permission(session, "view_saved_docs")
+    # Enforce the 60-day retention cap before listing so old documents are
+    # gone from both the list and disk.
+    await prune_old_documents()
     query = {}
 
     if userId:
@@ -6101,6 +6148,7 @@ async def get_purchase_documents(purchase_id: str, session: dict = Depends(get_c
     if not email:
         return {"success": True, "documents": []}
 
+    await prune_old_documents()
     query = {
         "$or": [{"userEmail": email}, {"guestEmail": email}],
     }

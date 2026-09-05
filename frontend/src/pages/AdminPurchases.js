@@ -81,6 +81,8 @@ function getInitials(email) {
     : email[0].toUpperCase();
 }
 
+// Cells stay unpositioned so the row-wide ripple overlay (inside the first
+// cell) resolves its 100% width/height against the position:relative <tr>.
 const tdBase = {
   padding: "0 12px",
   fontSize: "0.875rem",
@@ -88,8 +90,6 @@ const tdBase = {
   borderBottom: "1px solid var(--ion-border-color)",
   height: 64,
   verticalAlign: "middle",
-  position: "relative",
-  overflow: "hidden",
 };
 
 const segBtnStyle = {
@@ -289,19 +289,26 @@ export default function AdminPurchases() {
                         const docLabel = DOCUMENT_TYPES[p.documentType] || p.documentType || "-";
                         const qty     = p.quantity > 1 ? ` ×${p.quantity}` : "";
                         return (
-                          <tr key={p.id} onClick={() => setDetail(p)} style={{ cursor: "pointer", height: 64 }}>
+                          <tr key={p.id} style={{ position: "relative", height: 64 }}>
 
-                            {/* Age */}
-                            <td className="ion-activatable" style={tdBase}>
-                              <ion-ripple-effect />
+                            {/* Age — also hosts the row-wide click/ripple overlay,
+                                which spans the whole row because the <tr> is its
+                                containing block */}
+                            <td style={tdBase}>
+                              <div
+                                className="ion-activatable"
+                                onClick={() => setDetail(p)}
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                              >
+                                <ion-ripple-effect />
+                              </div>
                               <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>
                                 {timeAgo(p.createdAt)}
                               </span>
                             </td>
 
                             {/* Customer */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 160 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 160 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                 <div style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                   <span style={{ fontSize: "0.58rem", color: "#fff", fontWeight: 700 }}>{getInitials(email)}</span>
@@ -313,22 +320,19 @@ export default function AdminPurchases() {
                             </td>
 
                             {/* Document */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 180 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 180 }}>
                               <span style={{ fontSize: "0.78rem", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                 {docLabel}{qty}
                               </span>
                             </td>
 
                             {/* Date */}
-                            <td className="ion-activatable" style={tdBase}>
-                              <ion-ripple-effect />
+                            <td style={tdBase}>
                               <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>{formatDate(p.createdAt)}</span>
                             </td>
 
                             {/* Amount */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 90 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 90 }}>
                               <span style={{ fontSize: "0.875rem", fontWeight: 700, display: "block", whiteSpace: "nowrap", color: p.refunded ? "var(--ion-color-warning)" : "var(--ion-color-success)" }}>
                                 ${Number(p.amount || 0).toFixed(2)}
                               </span>
@@ -340,16 +344,14 @@ export default function AdminPurchases() {
                             </td>
 
                             {/* Template */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 100 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 100 }}>
                               <span style={{ fontSize: "0.75rem", display: "block", whiteSpace: "nowrap" }}>
                                 {TEMPLATE_NAMES[p.template] || p.template || "-"}
                               </span>
                             </td>
 
                             {/* Status */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 90 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 90 }}>
                               <span style={{ fontSize: "0.75rem", display: "block", whiteSpace: "nowrap" }}>
                                 {p.userId ? "Registered" : "Guest"}
                               </span>
@@ -359,24 +361,22 @@ export default function AdminPurchases() {
                             </td>
 
                             {/* Discount */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 80 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 80 }}>
                               <span style={{ fontSize: "0.75rem", color: p.discountCode ? "var(--ion-color-primary)" : "var(--ion-color-medium)" }}>
                                 {p.discountCode || "-"}
                               </span>
                             </td>
 
                             {/* IP */}
-                            <td className="ion-activatable" style={{ ...tdBase, minWidth: 120 }}>
-                              <ion-ripple-effect />
+                            <td style={{ ...tdBase, minWidth: 120 }}>
                               <span style={{ fontSize: "0.72rem", fontFamily: "monospace", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>
                                 {p.ipAddress || "-"}
                               </span>
                             </td>
 
-                            {/* Actions */}
-                            <td className="ion-activatable" style={{ ...tdBase, padding: "0 6px 0 0", width: 60 }}>
-                              <ion-ripple-effect />
+                            {/* Actions — raised above the row overlay so its
+                                buttons stay clickable without opening the modal */}
+                            <td style={{ ...tdBase, padding: "0 6px 0 0", width: 60, position: "relative", zIndex: 2 }}>
                               <div style={{ display: "flex", alignItems: "center" }}>
                                 <button
                                   title="Refund"

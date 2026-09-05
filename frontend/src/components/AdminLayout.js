@@ -23,6 +23,7 @@ import {
   Building2, Car, Briefcase, ShieldAlert, Scale,
 } from "lucide-react";
 import MintSlipLogo from "../assests/mintslip-logo.png";
+import { toast } from "@/utils/toast";
 import "../admin-theme.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -142,6 +143,20 @@ export default function AdminLayout({ children, fillHeight = false }) {
     }
   };
 
+  /* When any admin request comes back 401 the session has expired (24h sliding
+     window). Rather than silently leaving the admin staring at empty data,
+     clear the session and bounce to login with a message. Guarded so the two
+     pollers firing near-simultaneously only redirect once. */
+  const handleExpiredSession = () => {
+    if (!localStorage.getItem("adminToken")) return;
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminInfo");
+    localStorage.removeItem("adminRole");
+    localStorage.removeItem("adminPermissions");
+    toast.error("Your session expired. Please sign in again.");
+    navigate("/admin/login", { replace: true });
+  };
+
   /* Collapse sidebar automatically on pages that need full width */
   useEffect(() => {
     if (location.pathname === "/admin/support") {
@@ -172,11 +187,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
         const res = await fetch(`${BACKEND_URL}/api/admin/verify`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.status === 401) {
-          localStorage.removeItem("adminToken");
-          localStorage.removeItem("adminInfo");
-          navigate("/admin/login");
-        }
+        if (res.status === 401) handleExpiredSession();
       } catch { /* network blip — ignore */ }
     };
     const onVisible = () => { if (document.visibilityState === "visible") verify(); };
@@ -197,6 +208,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
         const res = await fetch(`${BACKEND_URL}/api/admin/support-chats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        if (res.status === 401) { handleExpiredSession(); return; }
         if (res.ok) {
           const data = await res.json();
           setSupportUnread(data.totalUnread || 0);
@@ -233,6 +245,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
       const res = await fetch(`${BACKEND_URL}/api/admin/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401) { handleExpiredSession(); return; }
       if (res.ok) {
         const data = await res.json();
         if (data.success) {

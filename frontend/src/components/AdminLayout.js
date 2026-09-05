@@ -102,6 +102,29 @@ function NavItem({ tab, isActive, onClick }) {
 // Persists sidebar state across route-driven remounts
 let _adminSidebarOpen = true;
 
+// A controlled IonPopover that mounts fresh on open and fully unmounts on
+// close, anchored to the click event. Trigger-based popovers here would leave
+// Ionic's overlay controller in a stuck "presented" state after the first use
+// (their dismiss logic grabbed the wrong ion-popover), so the card became
+// unclickable until reload. Mounting a fresh element per open — the same fix
+// used for the admin detail modals — keeps opening reliable; `render` outlives
+// `open` briefly so the close still animates.
+function FreshPopover({ open, event, onClose, children, ...rest }) {
+  const [render, setRender] = useState(open);
+  useEffect(() => { if (open) setRender(true); }, [open]);
+  if (!render) return null;
+  return (
+    <IonPopover
+      isOpen={open}
+      event={event}
+      onDidDismiss={() => { onClose?.(); setRender(false); }}
+      {...rest}
+    >
+      {children}
+    </IonPopover>
+  );
+}
+
 export default function AdminLayout({ children, fillHeight = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -111,6 +134,9 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [notifOpen,     setNotifOpen]     = useState(false);
   const [isMobile,      setIsMobile]      = useState(window.innerWidth < 768);
   const [supportUnread, setSupportUnread] = useState(0);
+  const [bizMenu,       setBizMenu]       = useState({ open: false, event: undefined });
+  const [userMenu,      setUserMenu]      = useState({ open: false, event: undefined });
+  const [navMenu,       setNavMenu]       = useState({ open: false, event: undefined });
 
   const [adminProfile, setAdminProfile] = useState(null);
 
@@ -436,7 +462,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
             <div style={{ padding: "12px 8px 12px", flexShrink: 0 }}>
               <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-card-background)", border: "1px solid var(--app-divider)" }}>
                 {/* Business row */}
-                <div id="sidebar-biz-trigger" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer", borderBottom: "1px solid var(--app-divider)" }}>
+                <div onClick={(e) => setBizMenu({ open: true, event: e.nativeEvent })} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer", borderBottom: "1px solid var(--app-divider)" }}>
                   <IonAvatar style={{ width: 40, height: 40, flexShrink: 0 }}>
                     <img src={MintSlipLogo} alt="MintSlip" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%", background: "var(--ion-color-step-100)" }} />
                   </IonAvatar>
@@ -450,7 +476,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                 </div>
 
                 {/* User row */}
-                <div id="sidebar-user-trigger" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer" }}>
+                <div onClick={(e) => setUserMenu({ open: true, event: e.nativeEvent })} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer" }}>
                   <div style={{ position: "relative", flexShrink: 0 }}>
                     <IonAvatar style={{ width: 40, height: 40 }}>
                       {adminProfile?.photo
@@ -475,9 +501,10 @@ export default function AdminLayout({ children, fillHeight = false }) {
             </div>
 
             {/* Business popover */}
-            <IonPopover
-              trigger="sidebar-biz-trigger"
-              triggerAction="click"
+            <FreshPopover
+              open={bizMenu.open}
+              event={bizMenu.event}
+              onClose={() => setBizMenu({ open: false, event: undefined })}
               side="bottom"
               alignment="start"
               style={{ "--width": "284px", "--offset-y": "4px" }}
@@ -487,7 +514,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   <IonItem
                     button
                     detail={false}
-                    onClick={() => { navigate("/admin/site-settings"); document.querySelectorAll("ion-popover").forEach(p => p.dismiss()); }}
+                    onClick={() => { setBizMenu({ open: false, event: undefined }); navigate("/admin/site-settings"); }}
                     style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
                   >
                     <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
@@ -497,12 +524,13 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   </IonItem>
                 </IonList>
               </IonContent>
-            </IonPopover>
+            </FreshPopover>
 
             {/* User profile popover */}
-            <IonPopover
-              trigger="sidebar-user-trigger"
-              triggerAction="click"
+            <FreshPopover
+              open={userMenu.open}
+              event={userMenu.event}
+              onClose={() => setUserMenu({ open: false, event: undefined })}
               side="bottom"
               alignment="start"
               style={{ "--width": "284px", "--offset-y": "4px" }}
@@ -512,7 +540,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   <IonItem
                     button
                     detail={false}
-                    onClick={() => { navigate("/admin/settings"); document.querySelector("ion-popover")?.dismiss(); }}
+                    onClick={() => { setUserMenu({ open: false, event: undefined }); navigate("/admin/settings"); }}
                     style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
                   >
                     <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
@@ -523,7 +551,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   <IonItem
                     button
                     detail={false}
-                    onClick={() => { navigate("/admin/settings?tab=password"); document.querySelector("ion-popover")?.dismiss(); }}
+                    onClick={() => { setUserMenu({ open: false, event: undefined }); navigate("/admin/settings?tab=password"); }}
                     style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
                   >
                     <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
@@ -535,7 +563,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   <IonItem
                     button
                     detail={false}
-                    onClick={() => { document.querySelector("ion-popover")?.dismiss(); handleLogout(); }}
+                    onClick={() => { setUserMenu({ open: false, event: undefined }); handleLogout(); }}
                     style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", "--color": "var(--ion-color-danger)", fontSize: "0.88rem" }}
                   >
                     <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
@@ -545,7 +573,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   </IonItem>
                 </IonList>
               </IonContent>
-            </IonPopover>
+            </FreshPopover>
 
             {/* Support Center button */}
             <div style={{ padding: "0 16px 12px", flexShrink: 0 }}>
@@ -648,13 +676,13 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   {isMobile ? (
                     <>
                       {/* Mobile: current tab label button → popover */}
-                      <IonButton id="mobile-nav-trigger" fill="clear" style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
+                      <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })} style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.03em" }}>
                           {topbarTabs.find(t => t.id === activeTab)?.label || "Navigate"}
                           <IonIcon icon={chevronDownOutline} style={{ fontSize: 14, pointerEvents: "none" }} />
                         </span>
                       </IonButton>
-                      <IonPopover trigger="mobile-nav-trigger" triggerAction="click" side="bottom" alignment="start" style={{ "--width": "240px" }}>
+                      <FreshPopover open={navMenu.open} event={navMenu.event} onClose={() => setNavMenu({ open: false, event: undefined })} side="bottom" alignment="start" style={{ "--width": "240px" }}>
                         <IonContent>
                           <IonList lines="none" style={{ padding: "4px 0" }}>
                             {topbarTabs.map(tab => (
@@ -662,7 +690,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                                 key={tab.id}
                                 button
                                 detail={false}
-                                onClick={() => { navigate(tab.path); document.querySelectorAll("ion-popover").forEach(p => p.dismiss()); }}
+                                onClick={() => { setNavMenu({ open: false, event: undefined }); navigate(tab.path); }}
                                 style={{
                                   "--min-height": "48px",
                                   "--padding-start": "14px",
@@ -680,7 +708,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                             ))}
                           </IonList>
                         </IonContent>
-                      </IonPopover>
+                      </FreshPopover>
                     </>
                   ) : (
                     /* Desktop: scrollable segment */

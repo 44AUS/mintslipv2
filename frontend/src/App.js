@@ -227,6 +227,7 @@ function MobileApp() {
           <IonToaster />
           <BrowserRouter>
             <Routes>
+              <Route path="/app" element={<AppPaystub />} />
               <Route path="/app/paystub" element={<AppPaystub />} />
               <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
               <Route path="/app/terms" element={<AppTerms />} />
@@ -354,6 +355,8 @@ function App() {
             <Route path="/user/dashboard" element={<UserDashboard />} />
             <Route path="/user/downloads" element={<UserDownloads />} />
             <Route path="/user/pdf-engine" element={<PDFEngine />} />
+            {/* /app is the main app link; /app/paystub kept as an alias */}
+            <Route path="/app" element={<AppPaystub />} />
             <Route path="/app/paystub" element={<AppPaystub />} />
             <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
             <Route path="/app/terms" element={<AppTerms />} />

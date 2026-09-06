@@ -28,7 +28,7 @@ import SupportChatWidget from "./SupportChatWidget";
 import "../admin-theme.css";
 
 const tabs = [
-  { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app/paystub" },
+  { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app" },
   { id: "canadian-paystub", label: "Canadian Stubs", icon: leafOutline,         path: "/app/canadian-paystub" },
 ];
 
@@ -240,7 +240,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                 </IonButton>
 
                 {/* Logo */}
-                <button onClick={() => navigate("/app/paystub")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                <button onClick={() => navigate("/app")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
                 </button>
 
@@ -477,7 +477,7 @@ export default function AppLayout({ children, fillHeight = false }) {
         onDidDismiss={() => setCreateOpen(false)}
         style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
         buttons={[
-          { text: "Create Pay Stub",         handler: () => navigate("/app/paystub") },
+          { text: "Create Pay Stub",         handler: () => navigate("/app") },
           { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
           { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
           { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
@@ -629,7 +629,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             <button onClick={() => setMobileSidebarOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
             </button>
-            <button onClick={() => { navigate("/app/paystub"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <button onClick={() => { navigate("/app"); setMobileSidebarOpen(false); }} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
               <img src={MintSlipLogo} alt="MintSlip" style={{ height: 30, width: "auto" }} />
             </button>
             <button onClick={toggleDark} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/utils/toast";
 import {
-  buildContext, resolveTokens, renderLayout, evalShowIf,
+  buildContext, resolveTokens, renderLayout, evalShowIf, clearLayoutCache,
   getSampleVariants, getTokenGroups, getTableBindings, getShowIfPresets,
 } from "@/utils/layoutEngine";
 
@@ -424,6 +424,9 @@ export default function AdminTemplateEditor() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Failed to publish");
       setMeta((m) => ({ ...m, status: "published", version: (m.version || 0) + 1 }));
+      // Drop cached layouts so this session's user-facing pages (template
+      // cards, form previews) pick up the newly published design immediately.
+      clearLayoutCache();
       toast.success("Template published — live on the generator");
     } catch (err) {
       toast.error(err.message);

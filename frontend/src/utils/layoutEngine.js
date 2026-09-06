@@ -607,21 +607,30 @@ export function renderLayout(doc, layout, templateData, documentType = "paystub"
 
 // ── published-layout fetching (used by the public generators) ────────────────
 
+// Cached with a short TTL: the cache exists so debounced previews don't
+// refetch on every keystroke, but a republished design must reach long-lived
+// SPA sessions (including the admin's own tab navigating from the editor to
+// the user-facing pages) without a hard reload. Pinned-version fetches are
+// immutable and cached forever.
 const layoutCache = new Map();
+const LAYOUT_CACHE_TTL = 60 * 1000;
 
 export async function fetchPublishedLayout(templateId, version) {
   const key = version ? `${templateId}@${version}` : templateId;
-  if (layoutCache.has(key)) return layoutCache.get(key);
+  const hit = layoutCache.get(key);
+  if (hit && (version || Date.now() - hit.at < LAYOUT_CACHE_TTL)) return hit.layout;
   try {
-    const q = version ? `?version=${version}` : "";
+    // The timestamp busts any intermediary HTTP cache; the Map above already
+    // limits this to one network request per template per TTL window.
+    const q = version ? `?version=${version}` : `?_=${Date.now()}`;
     const res = await fetch(`${BACKEND_URL}/api/doc-templates/${templateId}/layout${q}`);
-    if (!res.ok) return null;
+    if (!res.ok) return hit ? hit.layout : null;
     const data = await res.json();
     const layout = data.layout || null;
-    layoutCache.set(key, layout);
+    layoutCache.set(key, { layout, at: Date.now() });
     return layout;
   } catch {
-    return null;
+    return hit ? hit.layout : null;
   }
 }
 

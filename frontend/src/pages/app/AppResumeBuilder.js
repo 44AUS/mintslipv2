@@ -97,6 +97,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
   });
 
   const [currentStep, setCurrentStep]                       = useState(1);
+  const [customTemplates, setCustomTemplates]               = useState([]);
   const [user, setUser]                                     = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription]   = useState(false);
   const [isGenerating, setIsGenerating]                     = useState(false);
@@ -116,6 +117,19 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
   useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(formData)); } catch {} }, [formData]);
   useEffect(() => { try { if (generatedResume) localStorage.setItem(GENERATED_KEY, JSON.stringify(generatedResume)); } catch {} }, [generatedResume]);
   useEffect(() => { checkSub(); }, []); // eslint-disable-line
+
+  // Admin-published custom resume templates (from the doc template editor)
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/doc-templates?documentType=resume`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomTemplates(d.templates || []); })
+      .catch(() => {});
+  }, []);
+
+  const templateOptions = [
+    ...TEMPLATES,
+    ...customTemplates.map((t) => ({ value: `custom:${t.id}`, label: t.name, desc: t.description || "Custom design", color: t.badgeColor || "#16a34a" })),
+  ];
 
   const checkSub = async () => {
     const token = localStorage.getItem("userToken");
@@ -431,7 +445,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       <div>
         <span style={labelStyle}>Template</span>
         <div style={{ display: "flex", gap: 8 }}>
-          {TEMPLATES.map(t => (
+          {templateOptions.map(t => (
             <button key={t.value} onClick={() => setField("template", t.value)}
               style={{ flex: 1, padding: "10px 6px", borderRadius: 8, border: `2px solid ${formData.template === t.value ? t.color : "var(--ion-color-step-200)"}`, background: formData.template === t.value ? `${t.color}15` : "transparent", cursor: "pointer", textAlign: "center" }}>
               <div style={{ fontSize: "0.78rem", fontWeight: 700, color: formData.template === t.value ? t.color : "var(--ion-text-color)" }}>{t.label}</div>

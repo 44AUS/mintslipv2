@@ -16,6 +16,7 @@ const DOC_LABELS = {
   "bank-statement": "Bank Statement",
   "offer-letter": "Offer Letter",
   "cease-and-desist": "Cease and Desist",
+  "legal-document": "Legal Document",
   "power-of-attorney": "Power of Attorney",
   "commercial-lease": "Commercial Lease",
   "vehicle-bill-of-sale": "Vehicle Bill of Sale",
@@ -27,7 +28,7 @@ const DOC_COLORS = {
   "paystub": "#16a34a", "canadian-paystub": "#16a34a", "resume": "#2563eb",
   "w2": "#7c3aed", "w9": "#7c3aed", "1099-nec": "#d97706", "1099-misc": "#d97706",
   "bank-statement": "#0891b2", "offer-letter": "#059669", "cease-and-desist": "#b91c1c",
-  "power-of-attorney": "#7c3aed", "commercial-lease": "#0891b2",
+  "legal-document": "#14532d", "power-of-attorney": "#7c3aed", "commercial-lease": "#0891b2",
   "vehicle-bill-of-sale": "#dc2626", "schedule-c": "#92400e", "utility-bill": "#64748b",
 };
 

@@ -52,6 +52,15 @@ function fmtLongDate(dateStr) {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
+function fmtMonthYear(s) {
+  if (!s) return "";
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const m = String(s).match(/^(\d{4})-(\d{2})/);
+  if (m) return `${months[Number(m[2]) - 1]} ${m[1]}`;
+  const d = new Date(s);
+  return isNaN(d) ? String(s) : `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function maskSSN(ssn) {
   const digits = String(ssn || "").replace(/\D/g, "");
   return digits.length >= 4 ? `XXX-XX-${digits.slice(-4)}` : "";
@@ -300,10 +309,103 @@ function buildOfferLetterContext(td) {
   };
 }
 
+function buildLegalDocumentContext(td) {
+  const f = td.formData || {};
+  const csz = (c, s, z) => [c, s, z].filter(Boolean).join(", ");
+  return {
+    documentTitle: f.documentTitle || "Agreement",
+    effectiveDate: fmtLongDate(f.effectiveDate) || fmtLongDate(new Date().toISOString()),
+    governingState: f.governingState || "",
+    todayDate: fmtLongDate(new Date().toISOString()),
+    partyAName: f.partyAName || "",
+    partyATitle: f.partyATitle || "",
+    partyAAddress: f.partyAAddress || "",
+    partyACityStateZip: csz(f.partyACity, f.partyAState, f.partyAZip),
+    partyAEmail: f.partyAEmail || "",
+    partyAPhone: f.partyAPhone || "",
+    partyBName: f.partyBName || "",
+    partyBTitle: f.partyBTitle || "",
+    partyBAddress: f.partyBAddress || "",
+    partyBCityStateZip: csz(f.partyBCity, f.partyBState, f.partyBZip),
+    partyBEmail: f.partyBEmail || "",
+    partyBPhone: f.partyBPhone || "",
+    recitals: f.recitals || "",
+    terms: f.terms || "",
+    additionalTerms: f.additionalTerms || "",
+    // signatures — image (drawn/uploaded) or typed name in script style
+    partyASignature: f.partyASignatureImage || "",
+    partyASignatureName: f.partyASignatureName || f.partyAName || "",
+    partyASignDate: fmtLongDate(f.partyASignDate) || "",
+    partyBSignature: f.partyBSignatureImage || "",
+    partyBSignatureName: f.partyBSignatureName || f.partyBName || "",
+    partyBSignDate: fmtLongDate(f.partyBSignDate) || "",
+    notaryState: f.notaryState || f.governingState || "",
+    notaryCounty: f.notaryCounty || "",
+    // condition flags
+    hasPartyASignatureImage: f.partyASignatureImage ? "true" : "",
+    hasPartyBSignatureImage: f.partyBSignatureImage ? "true" : "",
+    hasRecitals: f.recitals ? "true" : "",
+    hasAdditionalTerms: f.additionalTerms ? "true" : "",
+    hasGoverningState: f.governingState ? "true" : "",
+    parties: [
+      { role: "Party A", name: f.partyAName || "", address: f.partyAAddress || "", cityStateZip: csz(f.partyACity, f.partyAState, f.partyAZip) },
+      { role: "Party B", name: f.partyBName || "", address: f.partyBAddress || "", cityStateZip: csz(f.partyBCity, f.partyBState, f.partyBZip) },
+    ],
+  };
+}
+
+function buildResumeContext(td) {
+  const r = td.formData || {};
+  const p = r.personalInfo || {};
+  const skills = [
+    ...((r.optimizedSkills && r.optimizedSkills.technical) || []),
+    ...((r.optimizedSkills && r.optimizedSkills.soft) || []),
+    ...((r.optimizedSkills && r.optimizedSkills.other) || []),
+  ].filter(Boolean);
+  const experience = (r.optimizedExperience || []).map((e) => ({
+    position: e.position || "",
+    company: e.company || "",
+    location: e.location || "",
+    companyLine: [e.company, e.location].filter(Boolean).join(" | "),
+    dates: `${fmtMonthYear(e.startDate)} - ${e.current ? "Present" : fmtMonthYear(e.endDate)}`,
+    bulletsText: (e.bullets || []).filter(Boolean).map((b) => `• ${b}`).join("\n"),
+  }));
+  const education = (r.education || []).map((e) => ({
+    degree: [e.degree, e.field].filter(Boolean).join(" in "),
+    institution: e.institution || "",
+    gpa: e.gpa || "",
+    institutionLine: e.gpa ? `${e.institution} | GPA: ${e.gpa}` : (e.institution || ""),
+    date: fmtMonthYear(e.graduationDate),
+  }));
+  return {
+    fullName: p.fullName || "",
+    email: p.email || "", phone: p.phone || "", location: p.location || "",
+    linkedin: p.linkedin || "", website: p.website || "",
+    contactLine: [p.email, p.phone, p.location, p.linkedin, p.website].filter(Boolean).join("  •  "),
+    summary: r.professionalSummary || "",
+    skillsLine: skills.join("  •  "),
+    experienceText: experience
+      .map((e) => [`${e.position}${e.dates.trim() !== "-" ? `  (${e.dates})` : ""}`, e.companyLine, e.bulletsText].filter(Boolean).join("\n"))
+      .join("\n\n"),
+    educationText: education
+      .map((e) => [`${e.degree}${e.date ? `  (${e.date})` : ""}`, e.institutionLine].filter(Boolean).join("\n"))
+      .join("\n\n"),
+    hasSummary: r.professionalSummary ? "true" : "",
+    hasSkills: skills.length ? "true" : "",
+    hasLinkedin: p.linkedin ? "true" : "",
+    hasWebsite: p.website ? "true" : "",
+    experience,
+    education,
+    skillRows: skills.map((s) => ({ name: s })),
+  };
+}
+
 const CONTEXT_BUILDERS = {
   paystub: buildPaystubContext,
   "canadian-paystub": buildPaystubContext,
   "offer-letter": buildOfferLetterContext,
+  "legal-document": buildLegalDocumentContext,
+  resume: buildResumeContext,
 };
 
 export function buildContext(templateData, documentType = "paystub") {
@@ -614,6 +716,67 @@ const OFFER_LETTER_TOKEN_GROUPS = [
   },
 ];
 
+const LEGAL_DOCUMENT_TOKEN_GROUPS = [
+  {
+    group: "Document",
+    tokens: [
+      ["{documentTitle}", "Document title"], ["{effectiveDate}", "Effective date"],
+      ["{governingState}", "Governing state"], ["{todayDate}", "Today's date"],
+    ],
+  },
+  {
+    group: "Party A",
+    tokens: [
+      ["{partyAName}", "Party A name"], ["{partyATitle}", "Party A title"],
+      ["{partyAAddress}", "Party A address"], ["{partyACityStateZip}", "Party A city/state/zip"],
+      ["{partyAEmail}", "Party A email"], ["{partyAPhone}", "Party A phone"],
+    ],
+  },
+  {
+    group: "Party B",
+    tokens: [
+      ["{partyBName}", "Party B name"], ["{partyBTitle}", "Party B title"],
+      ["{partyBAddress}", "Party B address"], ["{partyBCityStateZip}", "Party B city/state/zip"],
+      ["{partyBEmail}", "Party B email"], ["{partyBPhone}", "Party B phone"],
+    ],
+  },
+  {
+    group: "Content",
+    tokens: [
+      ["{recitals}", "Recitals (multiline)"], ["{terms}", "Terms (multiline)"],
+      ["{additionalTerms}", "Additional terms"],
+    ],
+  },
+  {
+    group: "Signatures",
+    tokens: [
+      ["{partyASignature}", "Party A drawn signature (image src)"], ["{partyASignatureName}", "Party A typed signature"],
+      ["{partyASignDate}", "Party A sign date"],
+      ["{partyBSignature}", "Party B drawn signature (image src)"], ["{partyBSignatureName}", "Party B typed signature"],
+      ["{partyBSignDate}", "Party B sign date"],
+      ["{notaryState}", "Notary state"], ["{notaryCounty}", "Notary county"],
+    ],
+  },
+];
+
+const RESUME_TOKEN_GROUPS = [
+  {
+    group: "Contact",
+    tokens: [
+      ["{fullName}", "Full name"], ["{contactLine}", "Contact line (joined)"],
+      ["{email}", "Email"], ["{phone}", "Phone"], ["{location}", "Location"],
+      ["{linkedin}", "LinkedIn"], ["{website}", "Website"],
+    ],
+  },
+  {
+    group: "Sections",
+    tokens: [
+      ["{summary}", "Professional summary"], ["{skillsLine}", "Skills (joined)"],
+      ["{experienceText}", "Experience (full text block)"], ["{educationText}", "Education (full text block)"],
+    ],
+  },
+];
+
 const PAYSTUB_TABLE_BINDINGS = [
   { binding: "earnings", label: "Earnings rows", rowTokens: ["{name}", "{nameDetailed}", "{rate}", "{rateDetailed}", "{hours}", "{current}", "{ytd}"] },
   { binding: "deductions", label: "Deduction rows (taxes + items)", rowTokens: ["{name}", "{current}", "{ytd}"] },
@@ -628,14 +791,29 @@ const OFFER_LETTER_TABLE_BINDINGS = [
   { binding: "offerDetails", label: "Offer detail rows", rowTokens: ["{label}", "{value}"] },
 ];
 
+const LEGAL_DOCUMENT_TABLE_BINDINGS = [
+  { binding: "parties", label: "Party rows", rowTokens: ["{role}", "{name}", "{address}", "{cityStateZip}"] },
+];
+
+const RESUME_TABLE_BINDINGS = [
+  { binding: "experience", label: "Experience rows", rowTokens: ["{position}", "{company}", "{location}", "{companyLine}", "{dates}"] },
+  { binding: "education", label: "Education rows", rowTokens: ["{degree}", "{institution}", "{institutionLine}", "{gpa}", "{date}"] },
+  { binding: "skillRows", label: "Skill rows", rowTokens: ["{name}"] },
+];
+
 export function getTokenGroups(documentType) {
   if (documentType === "offer-letter") return OFFER_LETTER_TOKEN_GROUPS;
+  if (documentType === "legal-document") return LEGAL_DOCUMENT_TOKEN_GROUPS;
+  if (documentType === "resume") return RESUME_TOKEN_GROUPS;
   if (documentType === "canadian-paystub") return [...PAYSTUB_TOKEN_GROUPS, CANADIAN_EXTRA_GROUP];
   return PAYSTUB_TOKEN_GROUPS;
 }
 
 export function getTableBindings(documentType) {
-  return documentType === "offer-letter" ? OFFER_LETTER_TABLE_BINDINGS : PAYSTUB_TABLE_BINDINGS;
+  if (documentType === "offer-letter") return OFFER_LETTER_TABLE_BINDINGS;
+  if (documentType === "legal-document") return LEGAL_DOCUMENT_TABLE_BINDINGS;
+  if (documentType === "resume") return RESUME_TABLE_BINDINGS;
+  return PAYSTUB_TABLE_BINDINGS;
 }
 
 // "Show when" presets offered in the editor per document type.
@@ -646,6 +824,27 @@ export function getShowIfPresets(documentType) {
       ["hasLogo", "Has company logo"],
       ["hasBenefits", "Has benefits text"],
       ["hasDeadline", "Has response deadline"],
+    ];
+  }
+  if (documentType === "legal-document") {
+    return [
+      ["", "Always"],
+      ["hasRecitals", "Has recitals"],
+      ["hasAdditionalTerms", "Has additional terms"],
+      ["hasGoverningState", "Has governing state"],
+      ["hasPartyASignatureImage", "Party A drew/uploaded signature"],
+      ["!hasPartyASignatureImage", "Party A typed signature"],
+      ["hasPartyBSignatureImage", "Party B drew/uploaded signature"],
+      ["!hasPartyBSignatureImage", "Party B typed signature"],
+    ];
+  }
+  if (documentType === "resume") {
+    return [
+      ["", "Always"],
+      ["hasSummary", "Has summary"],
+      ["hasSkills", "Has skills"],
+      ["hasLinkedin", "Has LinkedIn"],
+      ["hasWebsite", "Has website"],
     ];
   }
   return [
@@ -717,10 +916,83 @@ const OFFER_LETTER_SAMPLE = {
   },
 };
 
+const LEGAL_DOCUMENT_SAMPLE = {
+  formData: {
+    documentTitle: "Mutual Non-Disclosure Agreement",
+    effectiveDate: "2026-09-06",
+    governingState: "Texas",
+    partyAName: "Jordan Michaels", partyATitle: "Founder",
+    partyAAddress: "48 Maplewood Drive", partyACity: "Dallas", partyAState: "TX", partyAZip: "75218",
+    partyAEmail: "jordan@example.com", partyAPhone: "(214) 555-0148",
+    partyBName: "Casey Nguyen", partyBTitle: "Consultant",
+    partyBAddress: "1200 Commerce Street, Suite 400", partyBCity: "Dallas", partyBState: "TX", partyBZip: "75201",
+    partyBEmail: "casey@example.com", partyBPhone: "(214) 555-0182",
+    recitals: "WHEREAS, the parties wish to explore a potential business relationship; and\nWHEREAS, in connection with that relationship each party may disclose confidential information to the other;",
+    terms: "1. Confidential Information. Each party agrees to hold the other party's confidential information in strict confidence and not to disclose it to any third party.\n\n2. Term. The obligations under this Agreement shall remain in effect for a period of three (3) years from the Effective Date.\n\n3. Return of Materials. Upon written request, each party shall promptly return or destroy all confidential materials received from the other party.",
+    additionalTerms: "This Agreement may be executed in counterparts, each of which shall be deemed an original.",
+    partyASignatureName: "Jordan Michaels", partyASignDate: "2026-09-06",
+    partyBSignatureName: "Casey Nguyen", partyBSignDate: "2026-09-06",
+  },
+};
+
+const RESUME_SAMPLE = {
+  formData: {
+    personalInfo: {
+      fullName: "Jordan Michaels",
+      email: "jordan.michaels@example.com", phone: "(214) 555-0148",
+      location: "Dallas, TX", linkedin: "linkedin.com/in/jordanmichaels", website: "",
+    },
+    professionalSummary: "Operations analyst with 7+ years of experience turning messy data into clear decisions. Led cross-functional projects that cut fulfillment costs 18% while improving on-time delivery.",
+    optimizedSkills: {
+      technical: ["SQL", "Excel / Power Query", "Tableau", "Python"],
+      soft: ["Stakeholder communication", "Process design"],
+      other: [],
+    },
+    optimizedExperience: [
+      {
+        position: "Senior Operations Analyst", company: "Acme Industries LLC", location: "Dallas, TX",
+        startDate: "2022-03", endDate: "", current: true,
+        bullets: [
+          "Built the weekly S&OP dashboard used by 40+ managers, replacing three manual reports",
+          "Cut fulfillment costs 18% by redesigning the carrier selection process",
+          "Mentored two junior analysts through their first automation projects",
+        ],
+      },
+      {
+        position: "Operations Analyst", company: "Lonestar Logistics", location: "Fort Worth, TX",
+        startDate: "2019-01", endDate: "2022-02", current: false,
+        bullets: [
+          "Automated daily volume forecasting, saving 10 hours per week",
+          "Ran root-cause analysis that reduced mis-ships by 32%",
+        ],
+      },
+    ],
+    education: [
+      { degree: "B.B.A.", field: "Supply Chain Management", institution: "University of North Texas", gpa: "3.7", graduationDate: "2018-12" },
+    ],
+  },
+};
+
 // Variant samples the editor can switch between to test conditionals.
 export function getSampleVariants(documentType) {
   if (documentType === "offer-letter") {
     return [{ key: "default", label: "Sample offer", data: OFFER_LETTER_SAMPLE }];
+  }
+  if (documentType === "legal-document") {
+    const unsigned = {
+      formData: {
+        ...LEGAL_DOCUMENT_SAMPLE.formData,
+        partyASignatureName: "", partyASignDate: "", partyBSignatureName: "", partyBSignDate: "",
+        partyAName: LEGAL_DOCUMENT_SAMPLE.formData.partyAName,
+      },
+    };
+    return [
+      { key: "signed", label: "Typed signatures", data: LEGAL_DOCUMENT_SAMPLE },
+      { key: "unsigned", label: "Before signing", data: unsigned },
+    ];
+  }
+  if (documentType === "resume") {
+    return [{ key: "default", label: "Sample resume", data: RESUME_SAMPLE }];
   }
   const salary = {
     ...BASE_SAMPLE,
@@ -1148,6 +1420,68 @@ export const ONPAY_PAYSTUB_LAYOUT = {
 };
 
 // Starter library shown when creating a new template.
+export const DEFAULT_LEGAL_DOCUMENT_LAYOUT = {
+  page: { width: 612, height: 792 },
+  elements: [
+    { id: "l-title", type: "text", x: 40, y: 48, w: 532, content: "{documentTitle}", fontSize: 17, bold: true, color: "#1a1a1a", align: "center" },
+    { id: "l-eff", type: "text", x: 40, y: 74, w: 532, content: "Effective as of {effectiveDate}", fontSize: 9, color: "#475569", align: "center" },
+    { id: "l-rule", type: "rect", x: 226, y: 92, w: 160, h: 2, fill: "#14532d", stroke: "none" },
+    {
+      id: "l-intro", type: "text", x: 40, y: 112, w: 532, wrap: true, fontSize: 9.5, color: "#1f2937",
+      content: 'This agreement ("Agreement") is entered into as of {effectiveDate}, by and between {partyAName}, of {partyAAddress}, {partyACityStateZip} ("Party A"), and {partyBName}, of {partyBAddress}, {partyBCityStateZip} ("Party B").',
+    },
+    { id: "l-rec-h", type: "text", x: 40, y: 168, w: 300, content: "RECITALS", fontSize: 10, bold: true, color: "#14532d", showIf: "hasRecitals" },
+    { id: "l-rec-bar", type: "rect", x: 40, y: 181, w: 532, h: 1, fill: "#d1d5db", stroke: "none", showIf: "hasRecitals" },
+    { id: "l-rec", type: "text", x: 40, y: 190, w: 532, wrap: true, fontSize: 9, color: "#334155", content: "{recitals}", showIf: "hasRecitals" },
+    { id: "l-terms-h", type: "text", x: 40, y: 258, w: 300, content: "TERMS AND CONDITIONS", fontSize: 10, bold: true, color: "#14532d" },
+    { id: "l-terms-bar", type: "rect", x: 40, y: 271, w: 532, h: 1, fill: "#d1d5db", stroke: "none" },
+    { id: "l-terms", type: "text", x: 40, y: 280, w: 532, wrap: true, fontSize: 9, color: "#1f2937", content: "{terms}" },
+    { id: "l-add-h", type: "text", x: 40, y: 470, w: 300, content: "ADDITIONAL TERMS", fontSize: 10, bold: true, color: "#14532d", showIf: "hasAdditionalTerms" },
+    { id: "l-add-bar", type: "rect", x: 40, y: 483, w: 532, h: 1, fill: "#d1d5db", stroke: "none", showIf: "hasAdditionalTerms" },
+    { id: "l-add", type: "text", x: 40, y: 492, w: 532, wrap: true, fontSize: 9, color: "#334155", content: "{additionalTerms}", showIf: "hasAdditionalTerms" },
+    {
+      id: "l-law", type: "text", x: 40, y: 546, w: 532, wrap: true, fontSize: 9, color: "#334155", showIf: "hasGoverningState",
+      content: "This Agreement shall be governed by and construed in accordance with the laws of the State of {governingState}.",
+    },
+    {
+      id: "l-witness", type: "text", x: 40, y: 584, w: 532, wrap: true, fontSize: 9, bold: true, color: "#1f2937",
+      content: "IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.",
+    },
+    // Party A signature block
+    { id: "l-siga-img", type: "image", x: 40, y: 622, w: 150, h: 34, src: "{partyASignature}", showIf: "hasPartyASignatureImage" },
+    { id: "l-siga-typed", type: "text", x: 40, y: 634, w: 220, content: "{partyASignatureName}", fontSize: 16, italic: true, color: "#1a1a1a", showIf: "!hasPartyASignatureImage" },
+    { id: "l-siga-line", type: "line", x: 40, y: 660, w: 220, h: 0, color: "#1a1a1a", lineWidth: 0.8 },
+    { id: "l-siga-name", type: "text", x: 40, y: 666, w: 220, content: "{partyAName} — Party A", fontSize: 8.5, bold: true, color: "#1a1a1a" },
+    { id: "l-siga-date", type: "text", x: 40, y: 679, w: 220, content: "Date: {partyASignDate}", fontSize: 8, color: "#475569" },
+    // Party B signature block
+    { id: "l-sigb-img", type: "image", x: 332, y: 622, w: 150, h: 34, src: "{partyBSignature}", showIf: "hasPartyBSignatureImage" },
+    { id: "l-sigb-typed", type: "text", x: 332, y: 634, w: 220, content: "{partyBSignatureName}", fontSize: 16, italic: true, color: "#1a1a1a", showIf: "!hasPartyBSignatureImage" },
+    { id: "l-sigb-line", type: "line", x: 332, y: 660, w: 220, h: 0, color: "#1a1a1a", lineWidth: 0.8 },
+    { id: "l-sigb-name", type: "text", x: 332, y: 666, w: 220, content: "{partyBName} — Party B", fontSize: 8.5, bold: true, color: "#1a1a1a" },
+    { id: "l-sigb-date", type: "text", x: 332, y: 679, w: 220, content: "Date: {partyBSignDate}", fontSize: 8, color: "#475569" },
+  ],
+};
+
+export const DEFAULT_RESUME_LAYOUT = {
+  page: { width: 612, height: 792 },
+  elements: [
+    { id: "r-name", type: "text", x: 50, y: 46, w: 512, content: "{fullName}", fontSize: 22, bold: true, color: "#14532d" },
+    { id: "r-contact", type: "text", x: 50, y: 76, w: 512, content: "{contactLine}", fontSize: 8.5, color: "#64748b" },
+    { id: "r-rule", type: "rect", x: 50, y: 92, w: 512, h: 2, fill: "#14532d", stroke: "none" },
+    { id: "r-sum-h", type: "text", x: 50, y: 106, w: 300, content: "PROFESSIONAL SUMMARY", fontSize: 10, bold: true, color: "#14532d", showIf: "hasSummary" },
+    { id: "r-sum", type: "text", x: 50, y: 122, w: 512, wrap: true, fontSize: 9, color: "#334155", content: "{summary}", showIf: "hasSummary" },
+    { id: "r-exp-h", type: "text", x: 50, y: 176, w: 300, content: "PROFESSIONAL EXPERIENCE", fontSize: 10, bold: true, color: "#14532d" },
+    { id: "r-exp-bar", type: "rect", x: 50, y: 189, w: 512, h: 1, fill: "#d1d5db", stroke: "none" },
+    { id: "r-exp", type: "text", x: 50, y: 198, w: 512, wrap: true, fontSize: 9, color: "#1f2937", content: "{experienceText}" },
+    { id: "r-edu-h", type: "text", x: 50, y: 520, w: 300, content: "EDUCATION", fontSize: 10, bold: true, color: "#14532d" },
+    { id: "r-edu-bar", type: "rect", x: 50, y: 533, w: 512, h: 1, fill: "#d1d5db", stroke: "none" },
+    { id: "r-edu", type: "text", x: 50, y: 542, w: 512, wrap: true, fontSize: 9, color: "#1f2937", content: "{educationText}" },
+    { id: "r-skills-h", type: "text", x: 50, y: 600, w: 300, content: "SKILLS", fontSize: 10, bold: true, color: "#14532d", showIf: "hasSkills" },
+    { id: "r-skills-bar", type: "rect", x: 50, y: 613, w: 512, h: 1, fill: "#d1d5db", stroke: "none", showIf: "hasSkills" },
+    { id: "r-skills", type: "text", x: 50, y: 622, w: 512, wrap: true, fontSize: 9, color: "#334155", content: "{skillsLine}", showIf: "hasSkills" },
+  ],
+};
+
 export const STARTER_LAYOUTS = [
   { key: "paystub-gusto", name: "Gusto-Style Paystub (ported)", description: "Gusto Style Inspired Template", documentType: "paystub", layout: GUSTO_PAYSTUB_LAYOUT },
   { key: "paystub-onpay", name: "OnPay-Style Paystub (ported)", description: "OnPay Style Inspired Template", documentType: "paystub", layout: ONPAY_PAYSTUB_LAYOUT },
@@ -1155,4 +1489,6 @@ export const STARTER_LAYOUTS = [
   { key: "paystub-minimal", name: "Minimal Ruled Paystub", description: "Minimal ruled pay statement", documentType: "paystub", layout: MINIMAL_PAYSTUB_LAYOUT },
   { key: "canadian-classic", name: "Canadian Paystub", description: "Canadian statement of earnings", documentType: "canadian-paystub", layout: DEFAULT_CANADIAN_PAYSTUB_LAYOUT },
   { key: "offer-letter", name: "Offer Letter", description: "Professional offer of employment", documentType: "offer-letter", layout: DEFAULT_OFFER_LETTER_LAYOUT },
+  { key: "legal-document", name: "Legal Document", description: "Two-party agreement with signature blocks", documentType: "legal-document", layout: DEFAULT_LEGAL_DOCUMENT_LAYOUT },
+  { key: "resume", name: "Resume", description: "Custom AI resume design", documentType: "resume", layout: DEFAULT_RESUME_LAYOUT },
 ];

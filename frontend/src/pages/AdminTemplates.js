@@ -8,7 +8,7 @@ import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-const DOC_TYPE_LABELS = { paystub: "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "offer-letter": "Offer Letter" };
+const DOC_TYPE_LABELS = { paystub: "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "offer-letter": "Offer Letter", "legal-document": "Legal Document", resume: "Resume" };
 
 export default function AdminTemplates() {
   const navigate = useNavigate();

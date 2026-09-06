@@ -14,6 +14,7 @@ import Form1099NEC from "@/pages/Form1099NEC";
 import Form1099MISC from "@/pages/Form1099MISC";
 import OfferLetterForm from "@/pages/OfferLetterForm";
 import CeaseAndDesistForm from "@/pages/CeaseAndDesistForm";
+import LegalDocumentForm from "@/pages/LegalDocumentForm";
 import CeaseAndDesistLanding from "@/pages/CeaseAndDesistLanding";
 import PowerOfAttorneyForm from "@/pages/PowerOfAttorneyForm";
 import PowerOfAttorneyLanding from "@/pages/PowerOfAttorneyLanding";
@@ -288,6 +289,7 @@ function App() {
             <Route path="/1099-misc-generator" element={<Form1099MISC />} />
             <Route path="/offer-letter-generator" element={<OfferLetterForm />} />
             <Route path="/cease-and-desist-generator" element={<CeaseAndDesistForm />} />
+            <Route path="/legal-document-generator" element={<LegalDocumentForm />} />
             {/* SEO landing pages for the cease and desist letter */}
             <Route path="/cease-and-desist-letter" element={<CeaseAndDesistLanding />} />
             <Route path="/cease-and-desist" element={<CeaseAndDesistLanding />} />

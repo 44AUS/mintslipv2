@@ -5,7 +5,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { IonButton, IonSpinner } from "@ionic/react";
 import {
   ArrowLeft, Type, Square, Minus, Table, Image as ImageIcon, Trash2, Copy,
-  Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X, Sparkles, Send,
+  Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X, Sparkles, Send, PenTool,
 } from "lucide-react";
 import { toast } from "@/utils/toast";
 import {
@@ -284,6 +284,23 @@ export default function AdminTemplateEditor() {
     setSelectedId(el.id);
   };
 
+  // Legal documents: drop in a complete signature area for a party — drawn/
+  // uploaded signature image with a typed-name fallback, rule, name, and date.
+  const addSignatureBlock = (party) => {
+    const px = party === "A" ? 40 : 332;
+    const base = currentPage > 1 ? { page: currentPage } : {};
+    const y = 620;
+    const els = [
+      { id: newId("sig-img"), type: "image", x: px, y, w: 150, h: 34, src: `{party${party}Signature}`, showIf: `hasParty${party}SignatureImage`, ...base },
+      { id: newId("sig-typed"), type: "text", x: px, y: y + 12, w: 220, content: `{party${party}SignatureName}`, fontSize: 16, italic: true, color: "#1a1a1a", showIf: `!hasParty${party}SignatureImage`, ...base },
+      { id: newId("sig-line"), type: "line", x: px, y: y + 38, w: 220, h: 0, color: "#1a1a1a", lineWidth: 0.8, ...base },
+      { id: newId("sig-name"), type: "text", x: px, y: y + 44, w: 220, content: `{party${party}Name} — Party ${party}`, fontSize: 8.5, bold: true, color: "#1a1a1a", ...base },
+      { id: newId("sig-date"), type: "text", x: px, y: y + 57, w: 220, content: `Date: {party${party}SignDate}`, fontSize: 8, color: "#475569", ...base },
+    ];
+    commit((prev) => ({ ...prev, elements: [...prev.elements, ...els] }));
+    setSelectedId(els[0].id);
+  };
+
   const deleteSelected = useCallback(() => {
     if (!selectedId) return;
     commit((prev) => ({ ...prev, elements: prev.elements.filter((e) => e.id !== selectedId) }));
@@ -502,6 +519,13 @@ export default function AdminTemplateEditor() {
                 <button key={type} onClick={() => addElement(type)}
                   style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 9px", marginBottom: 4, borderRadius: 6, border: "1px solid var(--ion-border-color)", background: "transparent", color: "var(--admin-text)", fontSize: "0.8rem", cursor: "pointer", textAlign: "left" }}>
                   <Icon size={14} style={{ color: "var(--ion-color-primary)" }} />{label}
+                </button>
+              ))}
+              {docType === "legal-document" && ["A", "B"].map((party) => (
+                <button key={party} onClick={() => addSignatureBlock(party)}
+                  title="Adds a signature area: drawn/uploaded signature with typed-name fallback, line, name, and date"
+                  style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "7px 9px", marginBottom: 4, borderRadius: 6, border: "1px solid var(--ion-border-color)", background: "transparent", color: "var(--admin-text)", fontSize: "0.8rem", cursor: "pointer", textAlign: "left" }}>
+                  <PenTool size={14} style={{ color: "var(--ion-color-primary)" }} />Party {party} Signature
                 </button>
               ))}
             </div>

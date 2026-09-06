@@ -92,13 +92,27 @@ export default function AIResumeBuilder() {
   // User subscription state
   const [user, setUser] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  
+  const [customTemplates, setCustomTemplates] = useState([]);
+
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-  
+
   // Check user subscription on mount
   useEffect(() => {
     checkUserSubscription();
   }, []);
+
+  // Admin-published custom resume templates (from the doc template editor)
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/doc-templates?documentType=resume`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomTemplates(d.templates || []); })
+      .catch(() => {});
+  }, []); // eslint-disable-line
+
+  const templateOptions = [
+    ...TEMPLATES,
+    ...customTemplates.map((t) => ({ value: `custom:${t.id}`, label: t.name, description: t.description || "Custom design", color: t.badgeColor || "#16a34a" })),
+  ];
   
   const checkUserSubscription = async () => {
     const token = localStorage.getItem("userToken");
@@ -1554,7 +1568,7 @@ export default function AIResumeBuilder() {
           onValueChange={(value) => handleChange("template", value)}
           className="grid grid-cols-1 md:grid-cols-3 gap-4"
         >
-          {TEMPLATES.map((template) => (
+          {templateOptions.map((template) => (
             <div
               key={template.value}
               className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${

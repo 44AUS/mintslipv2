@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import JSZip from "jszip";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { saveAs } from "file-saver";
+import { fetchPublishedLayout, renderLayout } from "./layoutEngine";
 
 // Map font names to jsPDF built-in font families
 // jsPDF supports: helvetica, times, courier
@@ -58,8 +59,30 @@ const TEMPLATE_COLORS = {
 };
 
 export const generateResumePDF = async (data, addWatermark = false) => {
+  // Admin-designed custom resume templates (from the doc template editor)
+  if (String(data.template || "").startsWith("custom:")) {
+    const layout = await fetchPublishedLayout(String(data.template).slice(7));
+    if (layout) {
+      const customDoc = new jsPDF({ unit: "pt", format: "letter" });
+      renderLayout(customDoc, layout, { formData: data }, "resume");
+      if (addWatermark) {
+        const w = customDoc.internal.pageSize.getWidth();
+        const h = customDoc.internal.pageSize.getHeight();
+        for (let i = 1; i <= customDoc.getNumberOfPages(); i++) {
+          customDoc.setPage(i);
+          customDoc.setFont("helvetica", "bold");
+          customDoc.setFontSize(60);
+          customDoc.setTextColor(200, 200, 200);
+          customDoc.text("PREVIEW", w / 2, h / 2, { align: "center", angle: 45 });
+        }
+      }
+      return customDoc;
+    }
+    // layout unavailable — fall through to the default renderer
+  }
+
   const doc = new jsPDF({ unit: "pt", format: "letter" });
-  
+
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
   const margin = 50;

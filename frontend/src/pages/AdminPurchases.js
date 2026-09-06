@@ -22,6 +22,7 @@ const DOCUMENT_TYPES = {
   "bank-statement":      "Bank Statement",
   "offer-letter":        "Offer Letter",
   "cease-and-desist":    "Cease and Desist",
+  "legal-document":      "Legal Document",
   "power-of-attorney":   "Power of Attorney",
   "commercial-lease":    "Commercial Lease",
   "vehicle-bill-of-sale":"Vehicle Bill of Sale",

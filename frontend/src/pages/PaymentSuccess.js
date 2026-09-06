@@ -19,6 +19,7 @@ import { generateAndDownloadBankStatement } from '@/utils/bankStatementGenerator
 import { generateAndDownloadResume } from '@/utils/resumeGenerator';
 import { generateAndDownloadOfferLetter } from '@/utils/offerLetterGenerator';
 import { generateAndDownloadCeaseAndDesist } from '@/utils/ceaseAndDesistGenerator';
+import { generateAndDownloadLegalDocument } from '@/utils/legalDocumentGenerator';
 import { generateAndDownloadPowerOfAttorney } from '@/utils/powerOfAttorneyGenerator';
 import { generateAndDownloadCommercialLease } from '@/utils/commercialLeaseGenerator';
 import { generateAndDownloadScheduleC } from '@/utils/scheduleCGenerator';
@@ -398,6 +399,21 @@ export default function PaymentSuccess() {
 
           toast.success('Your cease and desist letter has been downloaded!');
         }
+      } else if (orderType === 'legal-document') {
+        const formDataStr = localStorage.getItem('pendingLegalDocumentData');
+
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+
+          pdfBlob = await generateAndDownloadLegalDocument(formData, true);
+          generated = true;
+
+          if (emailToUse && pdfBlob) {
+            sendFileEmail(pdfBlob, emailToUse, 'legal-document', formData.partyAName);
+          }
+
+          toast.success('Your legal document has been downloaded!');
+        }
       } else if (orderType === 'power-of-attorney') {
         const formDataStr = localStorage.getItem('pendingPowerOfAttorneyData');
 
@@ -525,6 +541,7 @@ export default function PaymentSuccess() {
       'bank-statement': 'bank_statement.pdf',
       'offer-letter': 'offer_letter.pdf',
       'cease-and-desist': 'cease_and_desist_letter.pdf',
+      'legal-document': 'legal_document.pdf',
       'power-of-attorney': 'durable_power_of_attorney.pdf',
       'commercial-lease': 'commercial_lease_agreement.pdf',
       'schedule-c': 'schedule_c.pdf',
@@ -546,6 +563,7 @@ export default function PaymentSuccess() {
       'bank-statement': 'Bank Statement',
       'offer-letter': 'Offer Letter',
       'cease-and-desist': 'Cease and Desist Letter',
+      'legal-document': 'Legal Document',
       'power-of-attorney': 'Power of Attorney',
       'commercial-lease': 'Commercial Lease Agreement',
       'schedule-c': 'Schedule C',
@@ -657,6 +675,14 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           await generateAndDownloadCeaseAndDesist(formData);
+          regenerated = true;
+          toast.success('Download started!');
+        }
+      } else if (orderType === 'legal-document') {
+        const formDataStr = localStorage.getItem('pendingLegalDocumentData');
+        if (formDataStr) {
+          const formData = JSON.parse(formDataStr);
+          await generateAndDownloadLegalDocument(formData);
           regenerated = true;
           toast.success('Download started!');
         }

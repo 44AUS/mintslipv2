@@ -6068,6 +6068,30 @@ _TEMPLATE_ASSISTANT_TOKENS = {
         "showIf flags: hasLogo, hasBenefits, hasDeadline\n"
         "Table bindings: offerDetails — row fields {label} {value}"
     ),
+    "legal-document": (
+        "Scalar tokens: {documentTitle} {effectiveDate} {governingState} {todayDate} "
+        "{partyAName} {partyATitle} {partyAAddress} {partyACityStateZip} {partyAEmail} {partyAPhone} "
+        "{partyBName} {partyBTitle} {partyBAddress} {partyBCityStateZip} {partyBEmail} {partyBPhone} "
+        "{recitals} {terms} {additionalTerms} (all three are multiline free text) "
+        "{partyASignature} {partyASignatureName} {partyASignDate} "
+        "{partyBSignature} {partyBSignatureName} {partyBSignDate} {notaryState} {notaryCounty}\n"
+        "showIf flags: hasRecitals, hasAdditionalTerms, hasGoverningState, "
+        "hasPartyASignatureImage, hasPartyBSignatureImage\n"
+        "Table bindings: parties — row fields {role} {name} {address} {cityStateZip}\n"
+        "Signature areas: pair an image element (src \"{partyASignature}\", showIf \"hasPartyASignatureImage\") "
+        "with an italic ~16pt text \"{partyASignatureName}\" (showIf \"!hasPartyASignatureImage\") above a "
+        "signature line, name label, and \"Date: {partyASignDate}\" — same pattern for party B."
+    ),
+    "resume": (
+        "Scalar tokens: {fullName} {email} {phone} {location} {linkedin} {website} {contactLine} "
+        "{summary} {skillsLine} {experienceText} {educationText} — experienceText/educationText are "
+        "preformatted multiline blocks (position, dates, company, bullet lines); render them as wrapped "
+        "text elements with generous height.\n"
+        "showIf flags: hasSummary, hasSkills, hasLinkedin, hasWebsite\n"
+        "Table bindings: experience — {position} {company} {location} {companyLine} {dates}; "
+        "education — {degree} {institution} {institutionLine} {gpa} {date}; skillRows — {name}. "
+        "Tables render one line per row (no wrapping), so prefer the text blocks for bullets."
+    ),
 }
 
 

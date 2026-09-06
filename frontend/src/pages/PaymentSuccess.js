@@ -5,8 +5,12 @@ import { CheckCircle, Download, Mail, HelpCircle, ArrowLeft, FileText, FolderArc
 import { toast } from "@/utils/toast";
 
 // Import all generators
-import { generateAndDownloadPaystub } from '@/utils/paystubGenerator';
-import { generateAndDownloadCanadianPaystub } from '@/utils/canadianPaystubGenerator';
+import { generateAndDownloadPaystub, getIndividualPaystubFilename, getMultiplePaystubsZipFilename } from '@/utils/paystubGenerator';
+import {
+  generateAndDownloadCanadianPaystub,
+  getIndividualPaystubFilename as getCanadianPaystubFilename,
+  getMultiplePaystubsZipFilename as getCanadianPaystubsZipFilename,
+} from '@/utils/canadianPaystubGenerator';
 import { generateAndDownloadW2 } from '@/utils/w2Generator';
 import { generateAndDownloadW9 } from '@/utils/w9Generator';
 import { generateAndDownload1099NEC } from '@/utils/1099necGenerator';
@@ -213,7 +217,12 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           notifId = `notif_${Date.now()}`;
-          const notifFileName = numStubs > 1 ? `paystubs_${numStubs}.zip` : 'paystub.pdf';
+          // Mirror the generator's real download names so the notification
+          // matches the file that actually lands in Downloads.
+          const firstPayDate = (formData.payDateList || '').split(',')[0]?.trim() || formData.payDate || new Date();
+          const notifFileName = numStubs > 1
+            ? getMultiplePaystubsZipFilename(template, formData.name)
+            : getIndividualPaystubFilename(template, formData.name, firstPayDate);
           addGeneratingNotification({ id: notifId, type: 'paystub', fileName: notifFileName, fileType: numStubs > 1 ? 'zip' : 'pdf' });
 
           pdfBlob = await generateAndDownloadPaystub(formData, template, numStubs, true);
@@ -340,7 +349,12 @@ export default function PaymentSuccess() {
         if (formDataStr) {
           const formData = JSON.parse(formDataStr);
           notifId = `notif_${Date.now()}`;
-          const notifFileName = numStubs > 1 ? `canadian_paystubs_${numStubs}.zip` : 'canadian_paystub.pdf';
+          // Mirror the generator's real download names so the notification
+          // matches the file that actually lands in Downloads.
+          const firstPayDate = (formData.payDateList || '').split(',')[0]?.trim() || formData.payDate || new Date();
+          const notifFileName = numStubs > 1
+            ? getCanadianPaystubsZipFilename(template, formData.name)
+            : getCanadianPaystubFilename(template, formData.name, firstPayDate);
           addGeneratingNotification({ id: notifId, type: 'canadian-paystub', fileName: notifFileName, fileType: numStubs > 1 ? 'zip' : 'pdf' });
 
           pdfBlob = await generateAndDownloadCanadianPaystub(formData, template, numStubs, true);

@@ -1,13 +1,8 @@
 import AppLayout from "@/components/AppLayout";
-import { IonContent, IonPage, IonIcon } from "@ionic/react";
-import {
-  shieldOutline, lockClosedOutline, eyeOutline,
-  documentTextOutline, peopleOutline, mailOutline,
-} from "ionicons/icons";
+import { IonContent, IonPage } from "@ionic/react";
 
 const PRIVACY_SECTIONS = [
   {
-    icon: documentTextOutline,
     title: "Information We Collect",
     content: `When you use MintSlip, we may collect certain information to provide our services effectively:
 
@@ -18,7 +13,6 @@ const PRIVACY_SECTIONS = [
 • **Usage Data**: General analytics about how you interact with our website to improve our services.`,
   },
   {
-    icon: lockClosedOutline,
     title: "How We Use Your Information",
     content: `We use the information we collect for the following purposes:
 
@@ -31,7 +25,6 @@ const PRIVACY_SECTIONS = [
 We do NOT sell, rent, or share your personal information with third parties for marketing purposes.`,
   },
   {
-    icon: shieldOutline,
     title: "Data Security",
     content: `We take the security of your information seriously:
 
@@ -41,7 +34,6 @@ We do NOT sell, rent, or share your personal information with third parties for 
 • **Optional Data Retention**: We only retain copies of documents if you choose to save them. Otherwise, once downloaded, the data exists only on your device.`,
   },
   {
-    icon: eyeOutline,
     title: "Your Privacy Rights",
     content: `You have the following rights regarding your personal information:
 
@@ -53,7 +45,6 @@ We do NOT sell, rent, or share your personal information with third parties for 
 To exercise any of these rights, please contact us at support@mintslip.com.`,
   },
   {
-    icon: peopleOutline,
     title: "Third-Party Services",
     content: `We use the following third-party services:
 
@@ -63,7 +54,6 @@ To exercise any of these rights, please contact us at support@mintslip.com.`,
 We carefully select our partners and require them to maintain appropriate security measures.`,
   },
   {
-    icon: mailOutline,
     title: "Contact Us",
     content: `If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
 
@@ -112,20 +102,8 @@ export default function AppPrivacy() {
 
               {PRIVACY_SECTIONS.map((section, index) => (
                 <div key={index}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24 }}>
-                    <div style={{
-                      flexShrink: 0,
-                      width: 44,
-                      height: 44,
-                      borderRadius: 10,
-                      background: "var(--ion-color-step-100)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      <IonIcon icon={section.icon} style={{ fontSize: "1.3rem", color: "var(--ion-color-primary)" }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: 24 }}>
+                    <div>
                       <h2 style={{ color: "var(--ion-text-color)", fontSize: "1.1rem", fontWeight: 600, marginTop: 0, marginBottom: 10 }}>
                         {section.title}
                       </h2>

@@ -1,13 +1,8 @@
 import AppLayout from "@/components/AppLayout";
-import { IonContent, IonPage, IonIcon } from "@ionic/react";
-import {
-  documentTextOutline, alertCircleOutline, scaleOutline,
-  cardOutline, refreshOutline, banOutline, mailOutline,
-} from "ionicons/icons";
+import { IonContent, IonPage } from "@ionic/react";
 
 const TERMS_SECTIONS = [
   {
-    icon: documentTextOutline,
     title: "Acceptance of Terms",
     content: `By accessing and using MintSlip's services, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
 
@@ -17,7 +12,6 @@ const TERMS_SECTIONS = [
 • You must be at least 18 years old to use our services.`,
   },
   {
-    icon: alertCircleOutline,
     title: "Service Description",
     content: `MintSlip provides online document generation services including:
 
@@ -28,7 +22,6 @@ const TERMS_SECTIONS = [
 All documents are generated directly in your browser. We do not store your personal or financial information on our servers.`,
   },
   {
-    icon: scaleOutline,
     title: "Acceptable Use",
     content: `You agree to use MintSlip's services only for lawful purposes. Specifically, you agree NOT to:
 
@@ -41,7 +34,6 @@ All documents are generated directly in your browser. We do not store your perso
 **Important**: Documents generated through MintSlip should only be used for legitimate purposes. You are solely responsible for the accuracy of information you enter and how you use the generated documents.`,
   },
   {
-    icon: cardOutline,
     title: "Payment Terms",
     content: `Our payment terms are as follows:
 
@@ -52,7 +44,6 @@ All documents are generated directly in your browser. We do not store your perso
 • **No Hidden Fees**: The price shown is the total price you pay.`,
   },
   {
-    icon: refreshOutline,
     title: "Refund Policy",
     content: `Due to the digital nature of our products:
 
@@ -64,7 +55,6 @@ All documents are generated directly in your browser. We do not store your perso
 To request assistance, contact us at support@mintslip.com with your PayPal transaction ID.`,
   },
   {
-    icon: banOutline,
     title: "Limitation of Liability",
     content: `To the fullest extent permitted by law:
 
@@ -77,7 +67,6 @@ To request assistance, contact us at support@mintslip.com with your PayPal trans
 You agree to use our services at your own risk and to verify all information in generated documents.`,
   },
   {
-    icon: mailOutline,
     title: "Contact Information",
     content: `For questions about these Terms of Service or our services:
 
@@ -127,20 +116,8 @@ export default function AppTerms() {
 
               {TERMS_SECTIONS.map((section, index) => (
                 <div key={index}>
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24 }}>
-                    <div style={{
-                      flexShrink: 0,
-                      width: 44,
-                      height: 44,
-                      borderRadius: 10,
-                      background: "var(--ion-color-step-100)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      <IonIcon icon={section.icon} style={{ fontSize: "1.3rem", color: "var(--ion-color-primary)" }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: 24 }}>
+                    <div>
                       <h2 style={{ color: "var(--ion-text-color)", fontSize: "1.1rem", fontWeight: 600, marginTop: 0, marginBottom: 10 }}>
                         {section.title}
                       </h2>

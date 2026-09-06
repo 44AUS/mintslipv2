@@ -87,7 +87,7 @@ function formatNameForFilename(name) {
 }
 
 // Helper to get template-specific individual paystub filename
-function getIndividualPaystubFilename(template, name, payDate) {
+export function getIndividualPaystubFilename(template, name, payDate) {
   // Handle timezone issues by parsing the date string directly if it's in YYYY-MM-DD format
   let year, month, day;
   
@@ -127,7 +127,7 @@ function getIndividualPaystubFilename(template, name, payDate) {
 }
 
 // Helper to get template-specific ZIP filename for multiple paystubs
-function getMultiplePaystubsZipFilename(template, name) {
+export function getMultiplePaystubsZipFilename(template, name) {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');

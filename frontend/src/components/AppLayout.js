@@ -42,6 +42,25 @@ function formatRelativeTime(ts) {
   return new Date(ts).toLocaleDateString();
 }
 
+// Fresh-mount action sheet — same reliability pattern as AdminDetailModal:
+// a controlled-isOpen Ionic overlay left permanently mounted can desync its
+// internal "presented" flag under the layout's polling re-renders, after which
+// flipping isOpen no longer presents anything and the button appears dead.
+// Mounting a brand-new element per open removes any stale controller state;
+// `render` outlives `isOpen` briefly so the close animation still plays.
+function FreshActionSheet({ isOpen, onClose, ...rest }) {
+  const [render, setRender] = useState(isOpen);
+  useEffect(() => { if (isOpen) setRender(true); }, [isOpen]);
+  if (!render) return null;
+  return (
+    <IonActionSheet
+      isOpen={isOpen}
+      onDidDismiss={() => { onClose?.(); setRender(false); }}
+      {...rest}
+    />
+  );
+}
+
 export default function AppLayout({ children, fillHeight = false }) {
   const navigate  = useNavigate();
   const location  = useLocation();
@@ -470,10 +489,10 @@ export default function AppLayout({ children, fillHeight = false }) {
         document.querySelector("ion-app") || document.body
       )}
 
-      <IonActionSheet
+      <FreshActionSheet
         isOpen={createOpen}
         mode="ios"
-        onDidDismiss={() => setCreateOpen(false)}
+        onClose={() => setCreateOpen(false)}
         style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
         buttons={[
           { text: "Create Pay Stub",         handler: () => navigate("/app") },

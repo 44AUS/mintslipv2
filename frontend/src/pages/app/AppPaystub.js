@@ -33,6 +33,23 @@ const sectionHeadingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(
 const isLocalhost = typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
+// Sample data used to render the template card previews
+const PREVIEW_SAMPLE_DATA = {
+  name: "John Smith", ssn: "1234", bank: "5678", bankName: "Chase Bank",
+  address: "123 Main Street", city: "New York", state: "NY", zip: "10001",
+  company: "Acme Corporation", companyAddress: "456 Business Ave",
+  companyCity: "New York", companyState: "NY", companyZip: "10002",
+  companyPhone: "(555) 123-4567",
+  hireDate: "2022-01-01", startDate: "2025-01-06", endDate: "2025-01-19",
+  rate: "25", payFrequency: "biweekly", payDay: "Friday",
+  payType: "hourly", workerType: "employee", annualSalary: "",
+  employeeId: "EMP001", companyCode: "AC001", locDept: "001", checkNumber: "1234567", memo: "",
+  includeLocalTax: true, federalFilingStatus: "single", stateAllowances: "0",
+  hoursList: "80", overtimeList: "0", commissionList: "0", tipsList: "0", tipsCashList: "0",
+  startDateList: "2025-01-06", endDateList: "2025-01-19", payDateList: "2025-01-24",
+  checkNumberList: "", memoList: "",
+};
+
 const PAYROLL_COMPANIES = [
   { id: "gusto",   name: "Gusto",   template: "template-a", logo: GustoLogo,   color: "#F4A460" },
   { id: "workday", name: "Workday", template: "template-c", logo: WorkdayLogo, color: "#0066cc" },
@@ -511,31 +528,41 @@ export default function AppPaystub() {
   const [templatePreviews, setTemplatePreviews] = useState({});
   const [loadingPreviews,  setLoadingPreviews]  = useState(true);
 
+  // Admin-published custom templates (from the admin Doc Templates editor)
+  const [customTemplates, setCustomTemplates] = useState([]);
   useEffect(() => {
-    const sampleData = {
-      name: "John Smith", ssn: "1234", bank: "5678", bankName: "Chase Bank",
-      address: "123 Main Street", city: "New York", state: "NY", zip: "10001",
-      company: "Acme Corporation", companyAddress: "456 Business Ave",
-      companyCity: "New York", companyState: "NY", companyZip: "10002",
-      companyPhone: "(555) 123-4567",
-      hireDate: "2022-01-01", startDate: "2025-01-06", endDate: "2025-01-19",
-      rate: "25", payFrequency: "biweekly", payDay: "Friday",
-      payType: "hourly", workerType: "employee", annualSalary: "",
-      employeeId: "EMP001", companyCode: "AC001", locDept: "001", checkNumber: "1234567", memo: "",
-      includeLocalTax: true, federalFilingStatus: "single", stateAllowances: "0",
-      hoursList: "80", overtimeList: "0", commissionList: "0", tipsList: "0", tipsCashList: "0",
-      startDateList: "2025-01-06", endDateList: "2025-01-19", payDateList: "2025-01-24",
-      checkNumberList: "", memoList: "",
-    };
+    fetch(`${BACKEND_URL}/api/doc-templates?documentType=paystub`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomTemplates(d.templates || []); })
+      .catch(() => {});
+  }, []);
+
+  // Landing cards: built-in styles plus admin-published custom templates
+  const templateCards = [
+    ...PAYROLL_COMPANIES,
+    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: "#16a34a" })),
+  ];
+
+  useEffect(() => {
     Promise.all([
-      generateAllPreviewImages(sampleData, "template-a", 1),
-      generateAllPreviewImages(sampleData, "template-c", 1),
-      generateAllPreviewImages(sampleData, "template-h", 1),
+      generateAllPreviewImages(PREVIEW_SAMPLE_DATA, "template-a", 1),
+      generateAllPreviewImages(PREVIEW_SAMPLE_DATA, "template-c", 1),
+      generateAllPreviewImages(PREVIEW_SAMPLE_DATA, "template-h", 1),
     ]).then(([a, c, h]) => {
-      setTemplatePreviews({ "template-a": a[0], "template-c": c[0], "template-h": h[0] });
+      setTemplatePreviews((prev) => ({ ...prev, "template-a": a[0], "template-c": c[0], "template-h": h[0] }));
       setLoadingPreviews(false);
     }).catch(() => setLoadingPreviews(false));
   }, []);
+
+  // Previews for admin-published templates, merged in as each one renders
+  useEffect(() => {
+    customTemplates.forEach((t) => {
+      const key = `custom:${t.id}`;
+      generateAllPreviewImages(PREVIEW_SAMPLE_DATA, key, 1)
+        .then(([img]) => { if (img) setTemplatePreviews((prev) => ({ ...prev, [key]: img })); })
+        .catch(() => {});
+    });
+  }, [customTemplates]);
 
   // ── PDF preview state ─────────────────────────────────────────────────────
   const [pdfPreviews,         setPdfPreviews]         = useState([]);
@@ -696,7 +723,7 @@ export default function AppPaystub() {
       <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
         <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {PAYROLL_COMPANIES.map(company => (
+            {templateCards.map(company => (
               <div key={company.id}
                 onClick={() => { setSelectedTemplate(company.template); setFormModalOpen(true); }}
                 style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-card-background)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}

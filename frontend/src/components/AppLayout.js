@@ -9,9 +9,9 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
-  chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
+  chevronDownOutline, documentTextOutline, leafOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
-  trashOutline, archiveOutline,
+  trashOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import {
@@ -294,9 +294,9 @@ export default function AppLayout({ children, fillHeight = false }) {
             {/* Bottom nav links — pinned via slot="fixed" */}
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
               {[
-                { label: "Settings",         icon: settingsOutline,     path: "/app/settings" },
-                { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
-                { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
+                { label: "Settings",         icon: settingsOutline, path: "/app/settings" },
+                { label: "Terms of Service", path: "/app/terms" },
+                { label: "Privacy Policy",   path: "/app/privacy" },
               ].map(({ label, icon, path }) => (
                 <button
                   key={label}
@@ -311,14 +311,14 @@ export default function AppLayout({ children, fillHeight = false }) {
                     alignItems: "center",
                     gap: 16,
                     padding: "0 20px",
-                    minHeight: 48,
+                    minHeight: icon ? 48 : 40,
                     textAlign: "left",
-                    color: "var(--ion-text-color)",
+                    color: icon ? "var(--ion-text-color)" : "var(--ion-color-medium)",
                     fontFamily: "var(--ion-font-family, system-ui)",
-                    fontSize: "0.9375rem",
+                    fontSize: icon ? "0.9375rem" : "0.85rem",
                   }}
                 >
-                  <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+                  {icon && <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />}
                   {label}
                 </button>
               ))}
@@ -537,18 +537,6 @@ export default function AppLayout({ children, fillHeight = false }) {
                     background: notif.read ? "transparent" : "rgba(22,163,74,0.05)",
                   }}
                 >
-                  {/* File icon */}
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 8, flexShrink: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: notif.fileType === "zip" ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.1)",
-                  }}>
-                    <IonIcon
-                      icon={notif.fileType === "zip" ? archiveOutline : documentTextOutline}
-                      style={{ fontSize: 20, color: notif.fileType === "zip" ? "#d97706" : "#dc2626" }}
-                    />
-                  </div>
-
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -674,9 +662,9 @@ export default function AppLayout({ children, fillHeight = false }) {
           {/* Bottom nav links — pinned */}
           <div style={{ flexShrink: 0, borderTop: "1px solid var(--app-divider)" }}>
             {[
-              { label: "Settings",         icon: settingsOutline,     path: "/app/settings" },
-              { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
-              { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
+              { label: "Settings",         icon: settingsOutline, path: "/app/settings" },
+              { label: "Terms of Service", path: "/app/terms" },
+              { label: "Privacy Policy",   path: "/app/privacy" },
             ].map(({ label, icon, path }) => (
               <button
                 key={label}
@@ -684,12 +672,12 @@ export default function AppLayout({ children, fillHeight = false }) {
                 style={{
                   width: "100%", background: "none", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 16,
-                  padding: "0 20px", minHeight: 48, textAlign: "left",
-                  color: "var(--ion-text-color)",
-                  fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
+                  padding: "0 20px", minHeight: icon ? 48 : 40, textAlign: "left",
+                  color: icon ? "var(--ion-text-color)" : "var(--ion-color-medium)",
+                  fontFamily: "var(--ion-font-family)", fontSize: icon ? "0.9375rem" : "0.85rem",
                 }}
               >
-                <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
+                {icon && <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />}
                 {label}
               </button>
             ))}

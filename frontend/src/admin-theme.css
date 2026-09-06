@@ -546,7 +546,12 @@ ion-card-subtitle { font-size: 0.8125rem; color: var(--admin-text-muted); }
 }
 
 .admin-table tbody td {
-  padding: 0;
+  /* Horizontal padding matches the header cells (10px 12px) so row content
+     lines up with the column labels instead of sitting flush against the card
+     edge. Pages that need a different inset (Purchases/Users) use their own
+     inline-styled tables, so this only affects the class-based tables
+     (Blog, Templates, Dashboard, Discounts). */
+  padding: 0 12px;
   color: var(--admin-text);
   border-bottom: 1px solid var(--admin-border);
   height: 64px;

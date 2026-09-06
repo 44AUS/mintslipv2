@@ -456,9 +456,9 @@ export default function AdminDiscounts() {
         </div>
       </div>
 
-      {/* Discount Codes Table */}
-      <div className="chart-card">
-        <div className="flex items-center justify-between mb-6">
+      {/* Discount Codes Table — full-width table-card like the Users list */}
+      <div className="table-card">
+        <div className="flex items-center justify-between" style={{ padding: "16px 20px" }}>
           <h2 className="text-lg font-semibold text-slate-800">All Discount Codes</h2>
           <IonButton color="primary" onClick={() => { resetForm(); setIsDialogOpen(true); }}>
             <Plus size={16} style={{ marginRight: 6 }} />Add Discount Code

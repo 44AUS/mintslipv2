@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
-  chevronDownOutline, documentTextOutline, leafOutline,
+  chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
@@ -293,9 +293,9 @@ export default function AppLayout({ children, fillHeight = false }) {
             {/* Bottom nav links — pinned via slot="fixed" */}
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
               {[
-                { label: "Settings",         icon: settingsOutline, path: "/app/settings" },
-                { label: "Terms of Service", path: "/app/terms" },
-                { label: "Privacy Policy",   path: "/app/privacy" },
+                { label: "Settings",         icon: settingsOutline,     path: "/app/settings" },
+                { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
+                { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
               ].map(({ label, icon, path }) => (
                 <button
                   key={label}
@@ -310,14 +310,14 @@ export default function AppLayout({ children, fillHeight = false }) {
                     alignItems: "center",
                     gap: 16,
                     padding: "0 20px",
-                    minHeight: icon ? 48 : 40,
+                    minHeight: 48,
                     textAlign: "left",
-                    color: icon ? "var(--ion-text-color)" : "var(--ion-color-medium)",
+                    color: "var(--ion-text-color)",
                     fontFamily: "var(--ion-font-family, system-ui)",
-                    fontSize: icon ? "0.9375rem" : "0.85rem",
+                    fontSize: "0.9375rem",
                   }}
                 >
-                  {icon && <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />}
+                  <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
                   {label}
                 </button>
               ))}
@@ -664,9 +664,9 @@ export default function AppLayout({ children, fillHeight = false }) {
           {/* Bottom nav links — pinned */}
           <div style={{ flexShrink: 0, borderTop: "1px solid var(--app-divider)" }}>
             {[
-              { label: "Settings",         icon: settingsOutline, path: "/app/settings" },
-              { label: "Terms of Service", path: "/app/terms" },
-              { label: "Privacy Policy",   path: "/app/privacy" },
+              { label: "Settings",         icon: settingsOutline,     path: "/app/settings" },
+              { label: "Terms of Service", icon: documentTextOutline, path: "/app/terms" },
+              { label: "Privacy Policy",   icon: shieldOutline,       path: "/app/privacy" },
             ].map(({ label, icon, path }) => (
               <button
                 key={label}
@@ -674,12 +674,12 @@ export default function AppLayout({ children, fillHeight = false }) {
                 style={{
                   width: "100%", background: "none", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 16,
-                  padding: "0 20px", minHeight: icon ? 48 : 40, textAlign: "left",
-                  color: icon ? "var(--ion-text-color)" : "var(--ion-color-medium)",
-                  fontFamily: "var(--ion-font-family)", fontSize: icon ? "0.9375rem" : "0.85rem",
+                  padding: "0 20px", minHeight: 48, textAlign: "left",
+                  color: "var(--ion-text-color)",
+                  fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
                 }}
               >
-                {icon && <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />}
+                <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
                 {label}
               </button>
             ))}

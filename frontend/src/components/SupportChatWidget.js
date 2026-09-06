@@ -369,6 +369,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-4px); }
         }
+        .scw-msg-input textarea { caret-color: #2dd36f !important; }
       `}</style>
       {/* floating button — draggable; a short press without movement toggles the chat */}
       <div
@@ -617,39 +618,56 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
               </p>
             </div>
           ) : (
-            <div style={{
-              borderTop: '1px solid var(--ion-border-color)',
-              flexShrink: 0, padding: '6px 8px 8px',
-            }}>
+            <div style={{ borderTop: '1px solid var(--ion-border-color)', flexShrink: 0 }}>
               {chatClosed ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
                   <IonButton fill="outline" size="small" color="primary" onClick={handleReset} style={{ '--border-radius': '8px' }}>
                     <IonIcon slot="start" icon={reloadOutline} style={{ fontSize: 14 }} />
                     Start New Conversation
                   </IonButton>
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <IonInput
-                    ref={chatInputRef}
-                    className="admin-field" mode="md" fill="outline"
-                    placeholder="Type a message…"
-                    value={chatInput}
-                    onIonInput={handleChatInputChange}
-                    onKeyDown={onChatKey}
-                    style={{ flex: 1, minWidth: 0, minHeight: 42 }}
-                  />
-                  <IonButton
-                    fill="clear" size="small"
-                    disabled={sending || !chatInput.trim()}
-                    onClick={handleSend}
-                    style={{ '--color': '#2dd36f', '--border-radius': '50%' }}
-                  >
-                    {sending
-                      ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} />
-                      : <IonIcon slot="icon-only" icon={sendOutline} style={{ fontSize: 20 }} />}
-                  </IonButton>
-                </div>
+                <>
+                  {/* textarea — same composer as the whodat-style admin Support Center */}
+                  <div className="scw-msg-input" onKeyDown={onChatKey} style={{ padding: '4px 8px 0' }}>
+                    <IonTextarea
+                      ref={chatInputRef}
+                      autoGrow
+                      rows={2}
+                      placeholder="Write your message here"
+                      value={chatInput}
+                      onIonInput={handleChatInputChange}
+                      style={{
+                        '--background': 'transparent',
+                        '--color': 'var(--ion-text-color)',
+                        '--placeholder-color': 'var(--ion-color-medium)',
+                        '--padding-start': '16px',
+                        '--highlight-height': '0px',
+                      }}
+                    />
+                  </div>
+                  {/* bottom row */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '4px 8px 8px' }}>
+                    <IonButton
+                      size="small"
+                      disabled={sending || !chatInput.trim()}
+                      onClick={handleSend}
+                      style={{
+                        '--background': '#2dd36f',
+                        '--background-activated': '#28ba62',
+                        '--color': '#fff',
+                        '--border-radius': '8px',
+                      }}
+                    >
+                      {sending
+                        ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
+                        : <>
+                            <IonIcon slot="start" icon={sendOutline} style={{ fontSize: 14 }} />
+                            <span style={{ fontWeight: 700, letterSpacing: '0.05em', fontSize: '0.8rem' }}>SEND</span>
+                          </>}
+                    </IonButton>
+                  </div>
+                </>
               )}
             </div>
           )}

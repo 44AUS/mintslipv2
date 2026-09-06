@@ -11,7 +11,7 @@ import {
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
-import { generateAllPreviewPDFs } from "@/utils/paystubPreviewGenerator";
+import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
@@ -34,9 +34,9 @@ const isLocalhost = typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
 const PAYROLL_COMPANIES = [
-  { id: "gusto",   name: "Gusto",   template: "template-a", logo: GustoLogo },
-  { id: "workday", name: "Workday", template: "template-c", logo: WorkdayLogo },
-  { id: "onpay",   name: "OnPay",   template: "template-h", logo: OnPayLogo },
+  { id: "gusto",   name: "Gusto",   template: "template-a", logo: GustoLogo,   color: "#F4A460" },
+  { id: "workday", name: "Workday", template: "template-c", logo: WorkdayLogo, color: "#0066cc" },
+  { id: "onpay",   name: "OnPay",   template: "template-h", logo: OnPayLogo,   color: "#0f172a" },
 ];
 
 const US_STATES = [
@@ -528,9 +528,9 @@ export default function AppPaystub() {
       checkNumberList: "", memoList: "",
     };
     Promise.all([
-      generateAllPreviewPDFs(sampleData, "template-a", 1),
-      generateAllPreviewPDFs(sampleData, "template-c", 1),
-      generateAllPreviewPDFs(sampleData, "template-h", 1),
+      generateAllPreviewImages(sampleData, "template-a", 1),
+      generateAllPreviewImages(sampleData, "template-c", 1),
+      generateAllPreviewImages(sampleData, "template-h", 1),
     ]).then(([a, c, h]) => {
       setTemplatePreviews({ "template-a": a[0], "template-c": c[0], "template-h": h[0] });
       setLoadingPreviews(false);
@@ -557,7 +557,7 @@ export default function AppPaystub() {
             ...formData, deductions, contributions, absencePlans, employerBenefits,
             logoDataUrl: logoPreview,
           };
-          const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, numStubs);
+          const previews = await generateAllPreviewImages(previewData, selectedTemplate, numStubs);
           setPdfPreviews(previews);
           setPreviewPageIndex(0);
         } catch (err) { console.error("Preview generation failed:", err); }
@@ -645,7 +645,7 @@ export default function AppPaystub() {
       setIsGeneratingPreview(true);
       try {
         const previewData = { ...formData, deductions, contributions, absencePlans, employerBenefits, logoDataUrl: logoPreview };
-        const previews = await generateAllPreviewPDFs(previewData, selectedTemplate, calculateNumStubs);
+        const previews = await generateAllPreviewImages(previewData, selectedTemplate, calculateNumStubs);
         setPdfPreviews(previews);
         setPreviewPageIndex(0);
       } catch (err) { console.error("Preview generation failed:", err); }
@@ -703,10 +703,11 @@ export default function AppPaystub() {
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
               >
-                <div style={{ padding: "12px 16px 10px", borderBottom: "1px solid var(--app-divider, rgba(0,0,0,0.08))", display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", fontWeight: 500 }}>{company.name}</span>
-                </div>
-                <div style={{ background: "#fff", overflow: "hidden", minHeight: 160 }}>
+                <div style={{ position: "relative", background: "#fff", overflow: "hidden", minHeight: 160 }}>
+                  {/* Template name badge over the preview (whodat/sample style) */}
+                  <div style={{ position: "absolute", top: 10, left: 10, zIndex: 2, background: company.color, color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, boxShadow: "0 2px 8px rgba(0,0,0,0.28)" }}>
+                    {company.name}
+                  </div>
                   {loadingPreviews ? (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
                       <IonSpinner name="crescent" />
@@ -714,6 +715,7 @@ export default function AppPaystub() {
                   ) : templatePreviews[company.template] ? (
                     <div style={{ position: "relative", paddingTop: "141.4%", overflow: "hidden", pointerEvents: "none" }}>
                       <img src={templatePreviews[company.template]} alt={`${company.name} template`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", display: "block" }} />
+                      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: "linear-gradient(to top, rgba(0,0,0,0.28), transparent)" }} />
                     </div>
                   ) : (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>

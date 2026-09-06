@@ -605,3 +605,20 @@ export async function generateAllCanadianPreviewPDFs(formData, template = 'templ
     return [null];
   }
 }
+
+// Same as generateAllCanadianPreviewPDFs but rasterizes each stub to a PNG
+// image data URL (via pdf.js), for surfaces that render previews in an <img>
+// (the app's template cards and preview modal).
+export async function generateAllCanadianPreviewImages(formData, template = 'template-a', numStubs = 1) {
+  const pdfs = await generateAllCanadianPreviewPDFs(formData, template, numStubs);
+  const images = [];
+  for (const pdf of pdfs) {
+    try {
+      images.push(pdf ? await convertPdfToImage(pdf) : null);
+    } catch (error) {
+      console.error("Error converting Canadian preview to image:", error);
+      images.push(null);
+    }
+  }
+  return images;
+}

@@ -508,6 +508,24 @@ export const generateAllPreviewPDFs = async (formData, template = 'template-a', 
   }
 };
 
+// Same as generateAllPreviewPDFs but rasterizes each stub to a PNG image data
+// URL (via pdf.js), for surfaces that render previews in an <img> — e.g. the
+// app's template cards and preview modal. (The web generator keeps the PDF form
+// because it renders previews in an <iframe>.)
+export const generateAllPreviewImages = async (formData, template = 'template-a', numStubs = 1) => {
+  const pdfs = await generateAllPreviewPDFs(formData, template, numStubs);
+  const images = [];
+  for (const pdf of pdfs) {
+    try {
+      images.push(pdf ? await convertPdfToImage(pdf) : null);
+    } catch (error) {
+      console.error("Error converting preview to image:", error);
+      images.push(null);
+    }
+  }
+  return images;
+};
+
 // Generate preview PDF as base64 data URL (legacy - returns first stub only)
 export const generatePreviewPDF = async (formData, template = 'template-a') => {
   try {

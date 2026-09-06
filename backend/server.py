@@ -6038,6 +6038,117 @@ async def list_published_doc_templates(documentType: Optional[str] = None):
     return {"success": True, "templates": templates}
 
 
+# ── AI template design assistant ─────────────────────────────
+# The token/binding vocabulary below mirrors frontend/src/utils/layoutEngine.js
+# (buildPaystubContext / buildOfferLetterContext) — keep them in sync.
+
+_PAYSTUB_TOKENS = (
+    "Scalar tokens: {company} {companyAddress} {companyCityStateZip} {companyPhone} "
+    "{employeeName} {employeeAddress} {employeeCityStateZip} {ssn} {employeeId} {filingStatus} "
+    "{startDate} {endDate} {payDate} {payPeriod} {payFrequency} {stubLabel} {rate} {hours} {overtime} "
+    "{regularPay} {overtimePay} {grossPay} {netPay} {federalTax} {stateTax} {localTax} {ssTax} {medTax} "
+    "{totalTax} {totalDeductions} {ytdGrossPay} {ytdNetPay} {ytdTotalTax} {ytdFederalTax} {ytdStateTax} "
+    "{ytdSsTax} {ytdMedTax} {ytdHours} {logoDataUrl} {bankLast4} {checkNumber} {employeeNumber} {memo} "
+    "{workerLabel} {workerLabelTitle} {statementTitle} {earningsTitle}\n"
+    "showIf flags: isContractor, hasLogo, hasOvertime, hasCommission, payType (hourly|salary), workerType\n"
+    "Table bindings and their row fields:\n"
+    "- earnings: {name} {nameDetailed} {rate} {rateDetailed} {hours} {current} {ytd}\n"
+    "- employeeTaxes / employerTaxes / summary / deductions: {name} {current} {ytd}\n"
+    "- deductionItems / contributionItems: {name} {taxType} {current} {ytd}"
+)
+
+_TEMPLATE_ASSISTANT_TOKENS = {
+    "paystub": _PAYSTUB_TOKENS,
+    "canadian-paystub": _PAYSTUB_TOKENS + "\nCanadian extras: {cpp} {ei} {qpip} {provincialTax} {cppLabel} {ytdCpp} {ytdEi} {ytdProvincialTax}",
+    "offer-letter": (
+        "Scalar tokens: {companyName} {companyAddress} {companyCityStateZip} {companyPhone} {companyEmail} "
+        "{letterDate} {candidateName} {candidateAddress} {candidateCityStateZip} {jobTitle} {department} "
+        "{employmentType} {workLocation} {startDate} {compensation} {payFrequency} {benefits} "
+        "{additionalTerms} {responseDeadline} {signerName} {signerTitle} {logoDataUrl}\n"
+        "showIf flags: hasLogo, hasBenefits, hasDeadline\n"
+        "Table bindings: offerDetails — row fields {label} {value}"
+    ),
+}
+
+
+def _template_assistant_system(document_type: str) -> str:
+    tokens = _TEMPLATE_ASSISTANT_TOKENS.get(document_type, _PAYSTUB_TOKENS)
+    return f"""You are the MintSlip template design assistant, embedded in the admin document-template editor. You design and edit document layouts ({document_type}) from natural-language instructions, like a designer pair-programming with the admin.
+
+A layout is pure JSON: {{"page": {{"width": 612, "height": 792}}, "elements": [...]}} — US Letter in points, origin top-left, keep ~40pt margins. Elements render in array order (later elements draw on top).
+
+Element types:
+- text: {{"id","type":"text","x","y","w","content","fontSize","bold","italic","color","align","wrap"}} — align is "left"|"center"|"right"; wrap:true wraps long content; content mixes static text with {{tokens}}, e.g. "Net Pay: ${{netPay}}"
+- rect: {{"id","type":"rect","x","y","w","h","fill","stroke","lineWidth","radius"}} — hex colors, "none" disables fill/stroke; a rect with h:1 makes an accent bar
+- line: {{"id","type":"line","x","y","w","h","color","lineWidth"}} — drawn from (x,y) to (x+w,y+h)
+- image: {{"id","type":"image","x","y","w","h","src"}} — src is a token resolving to a data URL, usually "{{logoDataUrl}}" with "showIf":"hasLogo"
+- table: {{"id","type":"table","x","y","w","binding","columns":[{{"header","token","width","align"}}],"fontSize","rowHeight","headerFill","headerColor","color","zebra","rowLines"}} — column width is a fraction of the table width (sum ≈ 1); each column token pulls a field from the bound rows
+
+Every element may also set "page" (1-based page number, default 1) and "showIf" — visibility condition: "flag", "!flag", "key=value", "key!=value" (e.g. "isContractor", "!hasLogo", "payType=salary").
+
+{tokens}
+
+Rules:
+- When asked to create or change a design, reply with a SHORT explanation of what you did, then the COMPLETE updated layout in exactly one fenced ```json code block. Always output the whole layout object — it replaces the current layout wholesale, never a fragment or diff.
+- Keep the ids of elements you are not changing; give new elements short kebab-case ids.
+- Make designs professional and realistic for the document type: aligned columns, consistent font sizes (7-11pt body, 14-26pt titles), restrained color palettes, clear section headings, and sensible use of showIf (e.g. hide tax tables for contractors).
+- When the user only asks a question, answer it without a JSON block."""
+
+
+@app.post("/api/admin/doc-templates/assistant")
+async def doc_template_assistant(request: Request, session: dict = Depends(get_current_admin)):
+    """Conversational AI design assistant for the template editor.
+
+    Takes the chat history plus the current layout, returns a reply and,
+    when the model produced one, a complete replacement layout."""
+    data = await request.json()
+    doc_type = data.get("documentType") or "paystub"
+    layout = data.get("layout") or {}
+
+    messages = []
+    for m in (data.get("messages") or [])[-20:]:
+        role = m.get("role")
+        content = str(m.get("content") or "").strip()
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    if not messages or messages[-1]["role"] != "user":
+        raise HTTPException(status_code=400, detail="messages must end with a user message")
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+
+    system = _template_assistant_system(doc_type) + "\n\nCurrent layout JSON:\n" + json.dumps(layout)
+    client = anthropic.AsyncAnthropic(api_key=api_key)
+    try:
+        message = await client.messages.create(
+            model="claude-sonnet-5",
+            max_tokens=16000,
+            system=system,
+            messages=messages,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI request failed: {e}")
+
+    text = "".join(b.text for b in message.content if getattr(b, "type", "") == "text")
+
+    new_layout = None
+    for block in reversed(re.findall(r"```json\s*(.*?)```", text, re.DOTALL)):
+        try:
+            candidate = json.loads(block)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(candidate, dict) and isinstance(candidate.get("elements"), list):
+            candidate.setdefault("page", {"width": 612, "height": 792})
+            new_layout = candidate
+            break
+
+    reply = re.sub(r"```json\s*.*?```", "", text, flags=re.DOTALL).strip()
+    if not reply:
+        reply = "Done — the design has been updated." if new_layout else "I couldn't produce a response. Please try rephrasing."
+    return {"success": True, "reply": reply, "layout": new_layout}
+
+
 @app.get("/api/doc-templates/{template_id}/layout")
 async def get_published_doc_template_layout(template_id: str, version: Optional[int] = None):
     """Public: the published layout a customer document is rendered from.

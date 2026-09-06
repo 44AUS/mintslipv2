@@ -5,7 +5,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { IonButton, IonSpinner } from "@ionic/react";
 import {
   ArrowLeft, Type, Square, Minus, Table, Image as ImageIcon, Trash2, Copy,
-  Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X,
+  Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X, Sparkles, Send,
 } from "lucide-react";
 import { toast } from "@/utils/toast";
 import {
@@ -224,6 +224,51 @@ export default function AdminTemplateEditor() {
     });
   }, []);
 
+  // ── AI design assistant ────────────────────────────────────────────────────
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiMessages, setAiMessages] = useState([]);
+  const [aiInput, setAiInput] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const aiEndRef = useRef(null);
+
+  useEffect(() => {
+    if (aiOpen) aiEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiMessages, aiBusy, aiOpen]);
+
+  const sendAi = async () => {
+    const text = aiInput.trim();
+    if (!text || aiBusy || !layout) return;
+    const nextMsgs = [...aiMessages, { role: "user", content: text }];
+    setAiMessages(nextMsgs);
+    setAiInput("");
+    setAiBusy(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/assistant`, {
+        method: "POST",
+        headers: { ...authHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: nextMsgs, layout, documentType: docType }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Assistant request failed");
+      if (data.layout) {
+        commit(() => data.layout); // snapshots first, so Undo reverts the AI change
+        setSelectedId(null);
+      }
+      setAiMessages((m) => [...m, {
+        role: "assistant",
+        content: (data.reply || "Done.") + (data.layout ? "\n\n✓ Applied to the canvas — Undo reverts it." : ""),
+      }]);
+    } catch (err) {
+      setAiMessages((m) => [...m, { role: "assistant", content: `Something went wrong: ${err.message}` }]);
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
+  const onAiKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAi(); }
+  };
+
   const updateEl = (patch, snapshot = true) => {
     if (!selectedId) return;
     commit((prev) => ({
@@ -431,6 +476,9 @@ export default function AdminTemplateEditor() {
               {variants.map((v) => <option key={v.key} value={v.key}>Preview: {v.label}</option>)}
             </select>
           )}
+          <IonButton fill={aiOpen ? "solid" : "outline"} color="tertiary" size="small" onClick={() => setAiOpen((o) => !o)}>
+            <Sparkles size={14} style={{ marginRight: 5 }} />AI Assistant
+          </IonButton>
           <IonButton fill="outline" color="medium" size="small" onClick={undo} disabled={!history.length}>
             <Undo2 size={14} style={{ marginRight: 5 }} />Undo
           </IonButton>
@@ -732,6 +780,77 @@ export default function AdminTemplateEditor() {
               <button className="admin-action-btn" onClick={() => setPreviewUrl(null)}><X size={16} /></button>
             </div>
             <iframe title="Template preview" src={previewUrl} style={{ flex: 1, border: "none", width: "100%" }} />
+          </div>
+        </div>
+      )}
+
+      {/* AI design assistant panel */}
+      {aiOpen && (
+        <div style={{
+          position: "fixed", right: 24, bottom: 24, width: 390, height: 540, zIndex: 2500,
+          display: "flex", flexDirection: "column", overflow: "hidden",
+          background: "var(--ion-card-background)", borderRadius: 14,
+          border: "1px solid var(--ion-border-color)", boxShadow: "0 14px 44px rgba(0,0,0,0.30)",
+        }}>
+          {/* header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "linear-gradient(135deg,#22c55e,#15803d)", flexShrink: 0 }}>
+            <Sparkles size={18} style={{ color: "#fff", flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem", lineHeight: 1.2 }}>AI Design Assistant</div>
+              <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.7rem" }}>Designs straight onto the canvas</div>
+            </div>
+            <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, lineHeight: 0 }}>
+              <X size={18} style={{ color: "rgba(255,255,255,0.85)" }} />
+            </button>
+          </div>
+
+          {/* messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "12px 12px 4px", display: "flex", flexDirection: "column", gap: 8 }}>
+            {aiMessages.length === 0 && (
+              <div style={{ background: "var(--ion-color-step-50, rgba(0,0,0,0.04))", borderRadius: "4px 12px 12px 12px", padding: "10px 12px", fontSize: "0.82rem", lineHeight: 1.55, color: "var(--admin-text)", whiteSpace: "pre-wrap" }}>
+                Tell me what to design and I'll build it on the canvas. Try:
+                {"\n"}• "Create a clean, modern pay stub with a navy header"
+                {"\n"}• "Add a YTD summary table at the bottom"
+                {"\n"}• "Make all section headings dark green and add zebra striping to the tables"
+                {"\n\n"}Every change applies instantly — Undo reverts it, and nothing is permanent until you Save.
+              </div>
+            )}
+            {aiMessages.map((m, i) => (
+              <div key={i} style={{
+                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                maxWidth: "85%",
+                background: m.role === "user" ? "#16a34a" : "var(--ion-color-step-50, rgba(0,0,0,0.04))",
+                color: m.role === "user" ? "#fff" : "var(--admin-text)",
+                borderRadius: m.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px",
+                padding: "8px 12px", fontSize: "0.82rem", lineHeight: 1.55,
+                whiteSpace: "pre-wrap", wordBreak: "break-word",
+              }}>
+                {m.content}
+              </div>
+            ))}
+            {aiBusy && (
+              <div style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--ion-color-step-50, rgba(0,0,0,0.04))", borderRadius: "4px 12px 12px 12px" }}>
+                <IonSpinner name="dots" style={{ width: 26, height: 16, color: "var(--ion-color-primary)" }} />
+                <span style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)" }}>Designing…</span>
+              </div>
+            )}
+            <div ref={aiEndRef} />
+          </div>
+
+          {/* composer */}
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, padding: "8px 10px 10px", borderTop: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+            <textarea
+              rows={2}
+              value={aiInput}
+              onChange={(e) => setAiInput(e.target.value)}
+              onKeyDown={onAiKey}
+              placeholder='e.g. "Design a minimalist pay stub with a charcoal header"'
+              style={{ ...inputStyle, flex: 1, resize: "none", fontFamily: "inherit", lineHeight: 1.45 }}
+            />
+            <IonButton size="small" onClick={sendAi} disabled={aiBusy || !aiInput.trim()}
+              style={{ "--background": "#16a34a", "--background-activated": "#15803d", "--color": "#fff", "--border-radius": "8px", margin: 0 }}>
+              <Send size={14} />
+            </IonButton>
           </div>
         </div>
       )}

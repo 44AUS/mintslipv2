@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Home from "@/pages/Home";
 import PaystubForm from "@/pages/PaystubForm";
@@ -32,7 +32,6 @@ import NotFound from "@/pages/NotFound";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminDiscounts from "@/pages/AdminDiscounts";
 import AdminLogin from "@/pages/AdminLogin";
-import AdminDashboard from "@/pages/AdminDashboard";
 import AdminBlog from "@/pages/AdminBlog";
 import AdminBlogEditor from "@/pages/AdminBlogEditor";
 import AdminBannedIPs from "@/pages/AdminBannedIPs";
@@ -316,7 +315,8 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/calendar" element={<AdminCalendar />} />
             <Route path="/admin/overview" element={<AdminCalendar />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            {/* Dashboard removed — redirect old links to the calendar overview */}
+            <Route path="/admin/dashboard" element={<Navigate to="/admin/calendar" replace />} />
             <Route path="/admin/purchases" element={<AdminPurchases />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/saved-docs" element={<AdminSavedDocs />} />

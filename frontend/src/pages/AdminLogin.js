@@ -22,7 +22,7 @@ export default function AdminLogin() {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (response.ok) {
-            navigate("/admin/dashboard", { replace: true });
+            navigate("/admin/calendar", { replace: true });
             return;
           }
         } catch (_) {
@@ -57,7 +57,7 @@ export default function AdminLogin() {
       localStorage.setItem("adminPermissions", JSON.stringify(data.permissions || null));
 
       toast.success("Login successful!");
-      navigate("/admin/dashboard");
+      navigate("/admin/calendar");
     } catch (error) {
       toast.error(error.message || "Login failed. Please check your credentials.");
     } finally {

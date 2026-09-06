@@ -543,7 +543,7 @@ export default function AppPaystub() {
   // Landing cards: built-in styles plus admin-published custom templates
   const templateCards = [
     ...PAYROLL_COMPANIES,
-    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: "#16a34a" })),
+    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#16a34a" })),
   ];
 
   useEffect(() => {

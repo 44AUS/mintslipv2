@@ -193,7 +193,7 @@ export default function AdminTemplateEditor() {
         const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, { headers: authHeaders() });
         if (!res.ok) throw new Error("Template not found");
         const data = await res.json();
-        setMeta({ id: data.template.id, name: data.template.name, description: data.template.description || "", status: data.template.status, version: data.template.version, documentType: data.template.documentType });
+        setMeta({ id: data.template.id, name: data.template.name, description: data.template.description || "", badgeColor: data.template.badgeColor || "#16a34a", status: data.template.status, version: data.template.version, documentType: data.template.documentType });
         setLayout(data.template.layout && data.template.layout.elements ? data.template.layout : { page: { width: PAGE_W, height: PAGE_H }, elements: [] });
       } catch (err) {
         toast.error(err.message);
@@ -341,7 +341,7 @@ export default function AdminTemplateEditor() {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, {
         method: "PUT",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ name: meta.name, description: meta.description || "", layout }),
+        body: JSON.stringify({ name: meta.name, description: meta.description || "", badgeColor: meta.badgeColor || "#16a34a", layout }),
       });
       if (!res.ok) throw new Error("Failed to save");
       setDirty(false);
@@ -531,6 +531,25 @@ export default function AdminTemplateEditor() {
                     value={meta.description || ""}
                     onChange={(e) => { setMeta((m) => ({ ...m, description: e.target.value })); setDirty(true); }}
                   />
+                </Field>
+                <Field label="Badge color (shown on the template card in the app)">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="color"
+                      value={/^#[0-9a-fA-F]{6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#16a34a"}
+                      onChange={(e) => { setMeta((m) => ({ ...m, badgeColor: e.target.value })); setDirty(true); }}
+                      style={{ width: 40, height: 30, padding: 2, border: "1px solid var(--admin-border)", borderRadius: 6, background: "transparent", cursor: "pointer", flexShrink: 0 }}
+                    />
+                    <input
+                      style={{ ...inputStyle, flex: 1 }}
+                      value={meta.badgeColor || "#16a34a"}
+                      placeholder="#16a34a"
+                      onChange={(e) => { setMeta((m) => ({ ...m, badgeColor: e.target.value })); setDirty(true); }}
+                    />
+                    <span style={{ background: /^#[0-9a-fA-F]{3,6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#16a34a", color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {meta.name || "Template"}
+                    </span>
+                  </div>
                 </Field>
                 <p style={{ margin: "14px 0 8px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
                   PDF metadata

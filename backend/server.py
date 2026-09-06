@@ -5897,6 +5897,14 @@ async def delete_support_chat(chat_id: str, session: dict = Depends(get_current_
 
 TEMPLATE_LIST_PROJECTION = {"_id": 0, "layout": 0, "publishedLayout": 0, "layoutHistory": 0}
 
+DEFAULT_BADGE_COLOR = "#16a34a"
+
+
+def _clean_badge_color(value) -> Optional[str]:
+    """Return a normalized #hex color, or None if the value isn't one."""
+    value = str(value or "").strip()
+    return value.lower() if re.fullmatch(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", value) else None
+
 
 @app.get("/api/admin/doc-templates")
 async def list_doc_templates(session: dict = Depends(get_current_admin)):
@@ -5915,6 +5923,7 @@ async def create_doc_template(request: Request, session: dict = Depends(get_curr
         "name": (data.get("name") or "Untitled Template").strip()[:120],
         "description": str(data.get("description") or "").strip()[:300],
         "documentType": data.get("documentType") or "paystub",
+        "badgeColor": _clean_badge_color(data.get("badgeColor")) or DEFAULT_BADGE_COLOR,
         "status": "draft",
         "version": 0,
         "layout": data.get("layout") or {},
@@ -5943,6 +5952,8 @@ async def update_doc_template(template_id: str, request: Request, session: dict 
         updates["name"] = str(data["name"]).strip()[:120] or "Untitled Template"
     if "description" in data:
         updates["description"] = str(data["description"] or "").strip()[:300]
+    if "badgeColor" in data:
+        updates["badgeColor"] = _clean_badge_color(data["badgeColor"]) or DEFAULT_BADGE_COLOR
     if "layout" in data:
         updates["layout"] = data["layout"]
     result = await doc_templates_collection.update_one({"id": template_id}, {"$set": updates})

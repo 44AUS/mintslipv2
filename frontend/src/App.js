@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Home from "@/pages/Home";
 import PaystubForm from "@/pages/PaystubForm";
@@ -242,6 +242,14 @@ function MobileApp() {
   );
 }
 
+// The /app experience renders its own SupportChatWidget in AppLayout, so
+// suppress the site-wide one on /app routes to avoid two chat buttons.
+function GlobalSupportWidget({ currentUser }) {
+  const { pathname } = useLocation();
+  if (pathname === "/app" || pathname.startsWith("/app/")) return null;
+  return <SupportChatWidget currentUser={currentUser} />;
+}
+
 function App() {
   if (IS_MOBILE_APP) return <MobileApp />;
   const currentUser = useCurrentUser();
@@ -256,7 +264,7 @@ function App() {
               <BrowserRouter>
                 <MinimizedChatsProvider currentUser={currentUser} messagesApi={messagesApi}>
                 <MinimizedChatsFAB currentUser={currentUser} />
-                <SupportChatWidget currentUser={currentUser} />
+                <GlobalSupportWidget currentUser={currentUser} />
                 <PromoBanner />
                 <ScrollToTop />
                 <Routes>

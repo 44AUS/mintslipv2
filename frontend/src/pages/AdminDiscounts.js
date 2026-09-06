@@ -298,8 +298,6 @@ export default function AdminDiscounts() {
 
   return (
     <AdminLayout adminInfo={adminInfo} onRefresh={() => fetchDiscounts()}>
-      <div style={{ padding: 10 }}>
-      <div style={{ padding: "4px 6px" }}>
       {/* Stats Cards — whodat analytics kpi treatment */}
       <div className="kpi-grid kpi-grid-3">
         {[
@@ -698,8 +696,6 @@ export default function AdminDiscounts() {
         </div>,
         document.body
       )}
-      </div>
-      </div>
     </AdminLayout>
   );
 }

@@ -6362,6 +6362,16 @@ async def get_purchase_documents(purchase_id: str, session: dict = Depends(get_c
     for doc in docs:
         stored = doc.get("storedFileName", "")
         file_exists = bool(stored) and os.path.exists(os.path.join(USER_DOCUMENTS_DIR, stored))
+        if not file_exists:
+            # The list projection above drops fileContent, so probe the MongoDB
+            # backup with its own query (existence only, content never loaded).
+            # The admin download endpoint restores/serves from that backup, so
+            # a doc with one is viewable — same rule the Saved Docs page uses.
+            backup = await saved_documents_collection.find_one(
+                {"id": doc.get("id"), "fileContent": {"$exists": True, "$nin": [None, ""]}},
+                {"_id": 1},
+            )
+            file_exists = bool(backup)
         documents.append({
             "id": doc.get("id"),
             "fileName": doc.get("fileName"),
@@ -6369,7 +6379,7 @@ async def get_purchase_documents(purchase_id: str, session: dict = Depends(get_c
             "template": doc.get("template"),
             "fileSize": doc.get("fileSize"),
             "createdAt": doc.get("createdAt"),
-            "fileExists": file_exists or bool(doc.get("fileContent")),
+            "fileExists": file_exists,
         })
     return {"success": True, "documents": documents}
 

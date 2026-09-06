@@ -6116,6 +6116,7 @@ Rules:
 - When asked to create or change a design, reply with a SHORT explanation of what you did, then the COMPLETE updated layout in exactly one fenced ```json code block. Always output the whole layout object — it replaces the current layout wholesale, never a fragment or diff.
 - Keep the ids of elements you are not changing; give new elements short kebab-case ids.
 - Make designs professional and realistic for the document type: aligned columns, consistent font sizes (7-11pt body, 14-26pt titles), restrained color palettes, clear section headings, and sensible use of showIf (e.g. hide tax tables for contractors).
+- The admin may attach reference images (screenshots of documents or designs). Study them closely and recreate the look with the layout schema: match the arrangement, section order, colors, font weights/sizes, rules/bars, and table structures as faithfully as the element types allow, substituting the appropriate {{tokens}} for the data shown in the reference.
 - When the user only asks a question, answer it without a JSON block."""
 
 
@@ -6133,8 +6134,31 @@ async def doc_template_assistant(request: Request, session: dict = Depends(get_c
     for m in (data.get("messages") or [])[-20:]:
         role = m.get("role")
         content = str(m.get("content") or "").strip()
-        if role in ("user", "assistant") and content:
+        images = m.get("images") or []
+        if role not in ("user", "assistant"):
+            continue
+        blocks = []
+        if role == "user":
+            # Reference images ride along as vision blocks ahead of the text.
+            for img in images[:8]:
+                if not isinstance(img, str) or not img.startswith("data:image/"):
+                    continue
+                try:
+                    header, b64 = img.split(",", 1)
+                    media_type = header.split(":", 1)[1].split(";", 1)[0]
+                except (ValueError, IndexError):
+                    continue
+                if media_type not in ("image/jpeg", "image/png", "image/gif", "image/webp"):
+                    continue
+                blocks.append({"type": "image", "source": {"type": "base64", "media_type": media_type, "data": b64}})
+        if content:
+            blocks.append({"type": "text", "text": content})
+        if not blocks:
+            continue
+        if len(blocks) == 1 and blocks[0]["type"] == "text":
             messages.append({"role": role, "content": content})
+        else:
+            messages.append({"role": role, "content": blocks})
     if not messages or messages[-1]["role"] != "user":
         raise HTTPException(status_code=400, detail="messages must end with a user message")
 

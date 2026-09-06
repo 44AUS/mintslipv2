@@ -20,6 +20,34 @@ const PAGE_H = 792;
 let idCounter = 0;
 const newId = (prefix) => `${prefix}-${Date.now().toString(36)}-${idCounter++}`;
 
+// Reads a reference image for the AI assistant. Files of any size are
+// accepted; anything larger than 1600px is downscaled (and re-encoded as
+// JPEG) so the vision payload stays within what the model API accepts
+// without ever rejecting an upload.
+const readReferenceImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onerror = () => reject(new Error("Failed to read image"));
+  reader.onload = () => {
+    const img = new Image();
+    img.onerror = () => reject(new Error("Not a readable image"));
+    img.onload = () => {
+      const maxDim = 1600;
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      if (scale === 1 && file.size < 3 * 1024 * 1024) { resolve(reader.result); return; }
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", 0.88));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
 const NEW_ELEMENTS = {
   text: () => ({ id: newId("text"), type: "text", x: 60, y: 60, w: 200, content: "New text", fontSize: 10, bold: false, italic: false, color: "#1a1a1a", align: "left" }),
   rect: () => ({ id: newId("rect"), type: "rect", x: 60, y: 60, w: 200, h: 60, fill: "#f1f5f9", stroke: "#cbd5e1", lineWidth: 0.75, radius: 4 }),
@@ -229,7 +257,22 @@ export default function AdminTemplateEditor() {
   const [aiMessages, setAiMessages] = useState([]);
   const [aiInput, setAiInput] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
+  const [aiImages, setAiImages] = useState([]); // downscaled data URLs queued for the next message
   const aiEndRef = useRef(null);
+  const aiFileRef = useRef(null);
+
+  const handleAiImageAdd = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    for (const f of files) {
+      try {
+        const dataUrl = await readReferenceImage(f);
+        setAiImages((prev) => [...prev, dataUrl]);
+      } catch (err) {
+        toast.error(`Couldn't read ${f.name}: ${err.message}`);
+      }
+    }
+  };
 
   useEffect(() => {
     if (aiOpen) aiEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -237,10 +280,13 @@ export default function AdminTemplateEditor() {
 
   const sendAi = async () => {
     const text = aiInput.trim();
-    if (!text || aiBusy || !layout) return;
-    const nextMsgs = [...aiMessages, { role: "user", content: text }];
+    if ((!text && aiImages.length === 0) || aiBusy || !layout) return;
+    const userMsg = { role: "user", content: text };
+    if (aiImages.length) userMsg.images = aiImages;
+    const nextMsgs = [...aiMessages, userMsg];
     setAiMessages(nextMsgs);
     setAiInput("");
+    setAiImages([]);
     setAiBusy(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/assistant`, {
@@ -838,8 +884,8 @@ export default function AdminTemplateEditor() {
                 Tell me what to design and I'll build it on the canvas. Try:
                 {"\n"}• "Create a clean, modern pay stub with a navy header"
                 {"\n"}• "Add a YTD summary table at the bottom"
-                {"\n"}• "Make all section headings dark green and add zebra striping to the tables"
-                {"\n\n"}Every change applies instantly — Undo reverts it, and nothing is permanent until you Save.
+                {"\n"}• Attach a screenshot of any document and say "make it look like this"
+                {"\n\n"}Use the image button to add reference images (any size). Every change applies instantly — Undo reverts it, and nothing is permanent until you Save.
               </div>
             )}
             {aiMessages.map((m, i) => (
@@ -852,6 +898,14 @@ export default function AdminTemplateEditor() {
                 padding: "8px 12px", fontSize: "0.82rem", lineHeight: 1.55,
                 whiteSpace: "pre-wrap", wordBreak: "break-word",
               }}>
+                {m.images?.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: m.content ? 6 : 0 }}>
+                    {m.images.map((src, j) => (
+                      <img key={j} src={src} alt="" onClick={() => window.open(src, "_blank", "noopener")}
+                        style={{ width: 84, height: 64, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(255,255,255,0.35)", cursor: "pointer" }} />
+                    ))}
+                  </div>
+                )}
                 {m.content}
               </div>
             ))}
@@ -864,17 +918,38 @@ export default function AdminTemplateEditor() {
             <div ref={aiEndRef} />
           </div>
 
+          {/* queued reference images */}
+          {aiImages.length > 0 && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", padding: "8px 12px 0", flexShrink: 0 }}>
+              {aiImages.map((src, i) => (
+                <div key={i} style={{ position: "relative", width: 52, height: 52 }}>
+                  <img src={src} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, border: "1px solid var(--ion-border-color)" }} />
+                  <button onClick={() => setAiImages((prev) => prev.filter((_, j) => j !== i))}
+                    style={{ position: "absolute", top: -6, right: -6, padding: 0, background: "var(--ion-card-background)", border: "none", borderRadius: "50%", cursor: "pointer", lineHeight: 0 }}>
+                    <X size={16} style={{ color: "var(--ion-color-danger)", background: "var(--ion-card-background)", borderRadius: "50%" }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* composer */}
           <div style={{ display: "flex", alignItems: "flex-end", gap: 6, padding: "8px 10px 10px", borderTop: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+            <input ref={aiFileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleAiImageAdd} />
+            <IonButton fill="clear" color="medium" size="small" onClick={() => aiFileRef.current?.click()}
+              title="Attach reference images — the assistant designs the document to match them"
+              style={{ margin: 0, "--border-radius": "50%" }}>
+              <ImageIcon size={16} />
+            </IonButton>
             <textarea
               rows={2}
               value={aiInput}
               onChange={(e) => setAiInput(e.target.value)}
               onKeyDown={onAiKey}
-              placeholder='e.g. "Design a minimalist pay stub with a charcoal header"'
+              placeholder='e.g. "Make it look like the attached screenshot"'
               style={{ ...inputStyle, flex: 1, resize: "none", fontFamily: "inherit", lineHeight: 1.45 }}
             />
-            <IonButton size="small" onClick={sendAi} disabled={aiBusy || !aiInput.trim()}
+            <IonButton size="small" onClick={sendAi} disabled={aiBusy || (!aiInput.trim() && aiImages.length === 0)}
               style={{ "--background": "#16a34a", "--background-activated": "#15803d", "--color": "#fff", "--border-radius": "8px", margin: 0 }}>
               <Send size={14} />
             </IonButton>

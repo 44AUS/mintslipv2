@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { IonButton, IonIcon, IonSpinner } from '@ionic/react';
+import { IonButton, IonIcon, IonInput, IonSpinner, IonTextarea } from '@ionic/react';
 import {
   chatbubblesOutline, closeOutline, sendOutline,
   chevronDownOutline, checkmarkCircleOutline, reloadOutline, timeOutline,
@@ -178,7 +178,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
 
   // focus input when popup opens
   useEffect(() => {
-    if (isOpen && view === 'chat') setTimeout(() => chatInputRef.current?.focus(), 120);
+    if (isOpen && view === 'chat') setTimeout(() => chatInputRef.current?.setFocus(), 120);
   }, [isOpen, view]);
 
   // ── send user typing signal (debounced 1.5s) ─────────────────────────────────
@@ -191,7 +191,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   }, [chatId]);
 
   const handleChatInputChange = (e) => {
-    setChatInput(e.target.value);
+    setChatInput(e.detail.value || '');
     if (!chatId) return;
     // send isTyping=true immediately, then debounce isTyping=false
     sendTyping(true);
@@ -483,27 +483,29 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 ))}
               </div>
 
-              {/* name + email */}
+              {/* name + email — same admin-field Ionic inputs as the admin dashboard */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                <input
-                  value={name} onChange={e => setName(e.target.value)}
-                  placeholder="Your name *"
-                  style={inputStyle}
+                <IonInput
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="Your name *"
+                  value={name} onIonInput={e => setName(e.detail.value || '')}
+                  style={{ flex: 1, minWidth: 0 }}
                 />
-                <input
-                  type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="Email address *"
-                  style={inputStyle}
+                <IonInput
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="Email address *" type="email"
+                  value={email} onIonInput={e => setEmail(e.detail.value || '')}
+                  style={{ flex: 1, minWidth: 0 }}
                 />
               </div>
 
               {/* first message */}
-              <textarea
-                value={firstMsg} onChange={e => setFirstMsg(e.target.value)}
+              <IonTextarea
+                className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                label="How can we help you? *"
+                autoGrow rows={3}
+                value={firstMsg} onIonInput={e => setFirstMsg(e.detail.value || '')}
                 onKeyDown={onFormKey}
-                placeholder="How can we help you? *"
-                rows={3}
-                style={{ ...inputStyle, width: '100%', resize: 'none', lineHeight: 1.5, fontFamily: 'inherit' }}
               />
             </div>
           ) : (
@@ -628,20 +630,14 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <input
+                  <IonInput
                     ref={chatInputRef}
-                    type="text"
-                    value={chatInput}
-                    onChange={handleChatInputChange}
-                    onKeyDown={onChatKey}
+                    className="admin-field" mode="md" fill="outline"
                     placeholder="Type a message…"
-                    style={{
-                      flex: 1, background: 'var(--ion-background-color)',
-                      border: '1px solid var(--ion-border-color)',
-                      borderRadius: 20, padding: '8px 14px',
-                      fontSize: '0.875rem', color: 'var(--ion-text-color)',
-                      outline: 'none', caretColor: '#2dd36f',
-                    }}
+                    value={chatInput}
+                    onIonInput={handleChatInputChange}
+                    onKeyDown={onChatKey}
+                    style={{ flex: 1, minWidth: 0, minHeight: 42 }}
                   />
                   <IonButton
                     fill="clear" size="small"
@@ -664,18 +660,3 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
 
   return createPortal(widget, document.body);
 }
-
-// shared input style
-const inputStyle = {
-  flex: 1,
-  padding: '8px 12px',
-  borderRadius: 10,
-  border: '1px solid var(--ion-border-color)',
-  background: 'var(--ion-background-color)',
-  color: 'var(--ion-text-color)',
-  fontSize: '0.85rem',
-  outline: 'none',
-  caretColor: '#2dd36f',
-  width: '100%',
-  boxSizing: 'border-box',
-};

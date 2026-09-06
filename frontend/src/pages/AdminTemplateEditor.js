@@ -672,6 +672,66 @@ export default function AdminTemplateEditor() {
                     </span>
                   </div>
                 </Field>
+                <Field label="Customer color choice">
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.8rem", color: "var(--admin-text)", cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!layout.accentOption?.enabled}
+                      onChange={(e) => commit((prev) => ({
+                        ...prev,
+                        accentOption: {
+                          baseColor: "#14532d",
+                          swatches: ["#14532d", "#0066cc", "#b91c1c", "#7c3aed", "#0f172a"],
+                          ...(prev.accentOption || {}),
+                          enabled: e.target.checked,
+                        },
+                      }))}
+                    />
+                    Let customers pick a document color
+                  </label>
+                  {layout.accentOption?.enabled && (
+                    <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", flexShrink: 0 }}>Color to swap</span>
+                        <input
+                          type="color"
+                          value={/^#[0-9a-fA-F]{6}$/.test(layout.accentOption.baseColor || "") ? layout.accentOption.baseColor : "#14532d"}
+                          onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: e.target.value } }))}
+                          style={{ width: 34, height: 26, padding: 2, border: "1px solid var(--admin-border)", borderRadius: 6, background: "transparent", cursor: "pointer", flexShrink: 0 }}
+                        />
+                        <input
+                          style={{ ...inputStyle, flex: 1 }}
+                          value={layout.accentOption.baseColor || ""}
+                          placeholder="#14532d"
+                          onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: e.target.value } }))}
+                        />
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", display: "block", marginBottom: 4 }}>Colors customers can choose</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                          {(layout.accentOption.swatches || []).map((c, i) => (
+                            <button
+                              key={`${c}-${i}`}
+                              title={`${c} — click to remove`}
+                              onClick={() => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, swatches: prev.accentOption.swatches.filter((_, j) => j !== i) } }))}
+                              style={{ width: 24, height: 24, borderRadius: "50%", background: c, border: "2px solid var(--ion-border-color)", cursor: "pointer", padding: 0 }}
+                            />
+                          ))}
+                          <input
+                            type="color"
+                            title="Add a color choice"
+                            value="#0ea5e9"
+                            onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, swatches: [...(prev.accentOption.swatches || []), e.target.value] } }))}
+                            style={{ width: 26, height: 26, padding: 2, border: "1px dashed var(--admin-border)", borderRadius: "50%", background: "transparent", cursor: "pointer" }}
+                          />
+                        </div>
+                      </div>
+                      <p style={{ margin: 0, fontSize: "0.7rem", color: "var(--admin-text-muted)", lineHeight: 1.5 }}>
+                        Every element painted with the swap color follows the customer's pick; all other colors stay as designed.
+                      </p>
+                    </div>
+                  )}
+                </Field>
                 <p style={{ margin: "14px 0 8px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
                   PDF metadata
                 </p>

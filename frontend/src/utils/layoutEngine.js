@@ -553,9 +553,39 @@ function drawTable(doc, el, ctx, pager) {
   });
 }
 
+// ── customer accent color ────────────────────────────────────────────────────
+// A layout may declare `accentOption: { enabled, baseColor, swatches: [] }`.
+// When enabled and the customer picked a color (formData.accentColor), every
+// element field that uses baseColor is swapped to the chosen color at render
+// time — the designed layout itself is never mutated.
+const ACCENT_FIELDS = ["color", "fill", "stroke", "headerFill", "headerColor", "zebraFill"];
+
+function applyAccentColor(layout, chosen) {
+  const opt = layout.accentOption;
+  if (!opt || !opt.enabled || !chosen) return layout;
+  if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(chosen))) return layout;
+  const base = String(opt.baseColor || "").toLowerCase();
+  if (!base) return layout;
+  return {
+    ...layout,
+    elements: (layout.elements || []).map((el) => {
+      let swapped = null;
+      for (const f of ACCENT_FIELDS) {
+        if (String(el[f] || "").toLowerCase() === base) {
+          swapped = swapped || { ...el };
+          swapped[f] = chosen;
+        }
+      }
+      return swapped || el;
+    }),
+  };
+}
+
 // Renders a full layout onto a jsPDF document. Elements are grouped by their
 // `page` number; pages are appended as needed (including table overflow).
-export function renderLayout(doc, layout, templateData, documentType = "paystub") {
+export function renderLayout(doc, rawLayout, templateData, documentType = "paystub") {
+  const chosenAccent = (templateData && (templateData.formData?.accentColor || templateData.accentColor)) || "";
+  const layout = applyAccentColor(rawLayout, chosenAccent);
   // Apply the template's own PDF metadata (title/author/creator/producer…);
   // generators skip their built-in metadata for custom templates.
   if (layout.metadata) {

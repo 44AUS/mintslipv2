@@ -6110,6 +6110,8 @@ Element types:
 
 Every element may also set "page" (1-based page number, default 1) and "showIf" — visibility condition: "flag", "!flag", "key=value", "key!=value" (e.g. "isContractor", "!hasLogo", "payType=salary").
 
+The layout may carry top-level "metadata" (PDF document properties) and "accentOption" ({{"enabled", "baseColor", "swatches"}} — lets customers recolor every element painted with baseColor). Preserve both when present; if accentOption is enabled, paint the design's themable parts with exactly its baseColor so the customer's choice applies cleanly.
+
 {tokens}
 
 Rules:
@@ -6188,6 +6190,12 @@ async def doc_template_assistant(request: Request, session: dict = Depends(get_c
             continue
         if isinstance(candidate, dict) and isinstance(candidate.get("elements"), list):
             candidate.setdefault("page", {"width": 612, "height": 792})
+            # Settings that live on the layout but aren't part of the visual
+            # design survive an AI rewrite that omitted them.
+            if isinstance(layout, dict):
+                for carry in ("accentOption", "metadata"):
+                    if layout.get(carry) and carry not in candidate:
+                        candidate[carry] = layout[carry]
             new_layout = candidate
             break
 

@@ -11,6 +11,7 @@ import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
 import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadLegalDocument, generateLegalDocumentPreview } from "@/utils/legalDocumentGenerator";
+import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
 import { Upload, X, Scale, CreditCard, Lock, Loader2, PenTool, Type, FileSignature } from "lucide-react";
 import SignaturePad from "@/components/SignaturePad";
@@ -31,6 +32,7 @@ const emptyForm = {
   documentTitle: "",
   effectiveDate: new Date().toISOString().slice(0, 10),
   governingState: "",
+  accentColor: "",
 
   partyAName: "", partyATitle: "", partyAAddress: "",
   partyACity: "", partyAState: "", partyAZip: "",
@@ -183,6 +185,24 @@ export default function LegalDocumentForm() {
       .catch(() => {})
       .finally(() => setTemplatesLoading(false));
   }, []);
+
+  // Customer color choice, when the selected template offers one
+  const [accentOption, setAccentOption] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!formData.templateId) { setAccentOption(null); return; }
+    fetchPublishedLayout(formData.templateId).then((layout) => {
+      if (cancelled) return;
+      const opt = layout?.accentOption;
+      setAccentOption(opt && opt.enabled ? opt : null);
+      setFormData((prev) => {
+        if (!prev.accentColor) return prev;
+        const ok = opt && opt.enabled && (opt.swatches || []).includes(prev.accentColor);
+        return ok ? prev : { ...prev, accentColor: "" };
+      });
+    });
+    return () => { cancelled = true; };
+  }, [formData.templateId]);
 
   // Debounced live preview
   useEffect(() => {
@@ -372,6 +392,24 @@ export default function LegalDocumentForm() {
                     </Select>
                   </div>
                 </div>
+                {accentOption?.enabled && (
+                  <div>
+                    <Label>Document color</Label>
+                    <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                      {[["", accentOption.baseColor || "#14532d", "Default"],
+                        ...(accentOption.swatches || [])
+                          .filter((c) => String(c).toLowerCase() !== String(accentOption.baseColor || "").toLowerCase())
+                          .map((c) => [c, c, c])].map(([val, color, label]) => (
+                        <button key={label} type="button" title={label}
+                          onClick={() => update("accentColor", val)}
+                          className="rounded-full transition-transform"
+                          style={{ width: 30, height: 30, background: color, padding: 0, cursor: "pointer",
+                            border: (formData.accentColor || "") === val ? "3px solid #16a34a" : "2px solid rgba(0,0,0,0.15)",
+                            transform: (formData.accentColor || "") === val ? "scale(1.1)" : "none" }} />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Parties */}

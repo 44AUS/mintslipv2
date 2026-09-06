@@ -12,6 +12,7 @@ import {
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
+import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
@@ -83,6 +84,7 @@ const defaultFormData = {
   workerType: "employee", payType: "hourly", annualSalary: "",
   federalFilingStatus: "", stateAllowances: "0",
   employeeId: "", companyCode: "", locDept: "", checkNumber: "", memo: "",
+  accentColor: "",
 };
 
 const deductionTypes = [
@@ -143,6 +145,28 @@ export default function AppPaystub() {
 
   useEffect(() => {
     try { localStorage.setItem("usPaystubTemplate", selectedTemplate); } catch {}
+  }, [selectedTemplate]);
+
+  // Customer color choice, when the selected custom template offers one
+  const [accentOption, setAccentOption] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!String(selectedTemplate).startsWith("custom:")) {
+      setAccentOption(null);
+      setFormData((prev) => (prev.accentColor ? { ...prev, accentColor: "" } : prev));
+      return;
+    }
+    fetchPublishedLayout(selectedTemplate.slice(7)).then((layout) => {
+      if (cancelled) return;
+      const opt = layout?.accentOption;
+      setAccentOption(opt && opt.enabled ? opt : null);
+      setFormData((prev) => {
+        if (!prev.accentColor) return prev;
+        const ok = opt && opt.enabled && (opt.swatches || []).includes(prev.accentColor);
+        return ok ? prev : { ...prev, accentColor: "" };
+      });
+    });
+    return () => { cancelled = true; };
   }, [selectedTemplate]);
 
   // ── Company logo ─────────────────────────────────────────────────────────
@@ -873,6 +897,24 @@ export default function AppPaystub() {
                     {isLocalhost && <IonSelectOption value="template-b">ADP Style (Template B)</IonSelectOption>}
                     {customTemplates.map(t => <IonSelectOption key={t.id} value={`custom:${t.id}`}>{t.name}</IonSelectOption>)}
                   </IonSelect>
+
+                  {/* Customer color choice (offered by some custom templates) */}
+                  {accentOption?.enabled && (
+                    <div style={{ marginTop: 12 }}>
+                      <p style={{ fontWeight: 600, marginBottom: 8 }}>Document Color</p>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        {[["", accentOption.baseColor || "#14532d", "Default"],
+                          ...(accentOption.swatches || [])
+                            .filter(c => String(c).toLowerCase() !== String(accentOption.baseColor || "").toLowerCase())
+                            .map(c => [c, c, c])].map(([val, color, label]) => (
+                          <button key={label} type="button" title={label}
+                            onClick={() => setFormData(prev => ({ ...prev, accentColor: val }))}
+                            style={{ width: 30, height: 30, borderRadius: "50%", background: color, padding: 0, cursor: "pointer",
+                              border: (formData.accentColor || "") === val ? "3px solid var(--ion-color-primary)" : "2px solid var(--app-divider, rgba(0,0,0,0.15))" }} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Logo upload */}
                   <div style={{ marginTop: 12 }}>

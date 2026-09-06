@@ -11,7 +11,6 @@ import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
-  trashOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import {
@@ -504,7 +503,8 @@ export default function AppLayout({ children, fillHeight = false }) {
             {notifications.length > 0 && (
               <button
                 onClick={() => { clearAllNotifications(); setNotifications([]); }}
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.78rem", color: "var(--ion-color-medium)", padding: "4px 8px", borderRadius: 4 }}
+                className="admin-badge admin-badge-red"
+                style={{ border: "none", cursor: "pointer", fontFamily: "inherit" }}
               >
                 Clear all
               </button>
@@ -559,30 +559,32 @@ export default function AppLayout({ children, fillHeight = false }) {
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, alignItems: "flex-end" }}>
+                  {/* Actions — Ionic badge buttons: success Download, danger Delete */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignItems: "stretch" }}>
                     {notif.status === "ready" && (
                       <button
                         onClick={() => handleRedownload(notif)}
                         disabled={redownloadingId === notif.id}
+                        className="admin-badge admin-badge-green"
                         style={{
-                          background: redownloadingId === notif.id ? "var(--ion-color-step-200)" : "var(--ion-color-primary)",
-                          border: "none", borderRadius: 6, padding: "5px 10px",
+                          border: "none", fontFamily: "inherit",
                           cursor: redownloadingId === notif.id ? "default" : "pointer",
-                          display: "flex", alignItems: "center", gap: 4,
+                          opacity: redownloadingId === notif.id ? 0.7 : 1,
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
                         }}
                       >
                         {redownloadingId === notif.id && (
-                          <IonSpinner name="crescent" style={{ width: 14, height: 14, color: "#fff" }} />
+                          <IonSpinner name="crescent" style={{ width: 12, height: 12, color: "#000" }} />
                         )}
-                        <span style={{ fontSize: "0.72rem", color: "#fff" }}>Download</span>
+                        Download
                       </button>
                     )}
                     <button
                       onClick={() => { removeNotification(notif.id); setNotifications(getNotifications()); }}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}
+                      className="admin-badge admin-badge-red"
+                      style={{ border: "none", cursor: "pointer", fontFamily: "inherit" }}
                     >
-                      <IonIcon icon={trashOutline} style={{ fontSize: 15, color: "var(--ion-color-medium)" }} />
+                      Delete
                     </button>
                   </div>
                 </div>

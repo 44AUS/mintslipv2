@@ -254,15 +254,29 @@ code {
 .dark .hover\:bg-gray-50:hover, .dark .hover\:bg-slate-50:hover { background-color: rgb(39 39 42) !important; }
 .dark .hover\:bg-slate-100:hover { background-color: rgb(63 63 70) !important; }
 
-/* Inputs & textareas */
-.dark input:not([class*="bg-"]),
-.dark textarea:not([class*="bg-"]),
-.dark select:not([class*="bg-"]) {
+/* Inputs & textareas — plain Tailwind-styled fields only. Ionic components
+   (classes contain "sc-ion") theme their own native inputs via CSS variables;
+   forcing a background here paints a visible slab inside ion-input fields. */
+.dark input:not([class*="bg-"]):not([class*="sc-ion"]),
+.dark textarea:not([class*="bg-"]):not([class*="sc-ion"]),
+.dark select:not([class*="bg-"]):not([class*="sc-ion"]) {
   background-color: rgb(39 39 42) !important;
   color: rgb(226 232 240) !important;
   border-color: rgb(63 63 70) !important;
 }
-.dark input::placeholder, .dark textarea::placeholder { color: rgb(100 116 139) !important; }
+.dark input:not([class*="sc-ion"])::placeholder,
+.dark textarea:not([class*="sc-ion"])::placeholder { color: rgb(100 116 139) !important; }
+
+/* Chrome paints its own fill color on focused autofill-eligible fields, which
+   shows as a wrong-colored box over themed inputs (worst in dark mode). The
+   long transition defers that paint indefinitely without changing the theme. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  transition: background-color 999999s ease-in-out 0s, color 999999s ease-in-out 0s;
+}
 
 /* Shadow elevation cards */
 .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }

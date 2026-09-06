@@ -21,6 +21,15 @@ const LS_KEY      = 'support-chat-state';
 const POLL_OPEN   = 5000;
 const POLL_BG     = 20000;
 
+const FAB_SIZE = 56;   // floating bubble diameter
+const POP_H    = 520;  // popup height
+const EDGE_PAD = 8;    // min gap the bubble/popup keep from the viewport edges
+
+const clampFabPos = (x, y) => ({
+  x: Math.min(Math.max(x, EDGE_PAD), window.innerWidth  - FAB_SIZE - EDGE_PAD),
+  y: Math.min(Math.max(y, EDGE_PAD), window.innerHeight - FAB_SIZE - EDGE_PAD),
+});
+
 const REASONS = [
   { id: 'general',   label: 'General Question' },
   { id: 'technical', label: 'Technical Issue'  },
@@ -87,6 +96,13 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   const [unread,        setUnread]        = useState(0);
   const [adminTyping,   setAdminTyping]   = useState(false);  // support is typing
   const [adminOnline,   setAdminOnline]   = useState(true);   // any admin/mod online
+
+  // draggable bubble position ({x,y} = top-left corner); null = default bottom-right anchor
+  const [fabPos, setFabPos] = useState(() => {
+    const p = stored.fabPos;
+    return p && typeof p.x === 'number' && typeof p.y === 'number' ? clampFabPos(p.x, p.y) : null;
+  });
+  const fabDrag = useRef({ active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0, lastPos: null });
 
   // form fields
   const [reason,    setReason]    = useState(stored.reason || '');
@@ -200,6 +216,56 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     return () => window.removeEventListener('mintslip-open-support', openChat);
   }, [openChat]);
 
+  // ── bubble dragging ──────────────────────────────────────────────────────────
+  // Pointer-based so it works for both mouse and touch. A press that moves less
+  // than 6px counts as a click (toggle); anything further drags the bubble.
+  useEffect(() => {
+    const onResize = () => setFabPos(p => (p ? clampFabPos(p.x, p.y) : p));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const onFabPointerDown = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    fabDrag.current = {
+      active: true, moved: false,
+      startX: e.clientX, startY: e.clientY,
+      originX: rect.left, originY: rect.top,
+      lastPos: null,
+    };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+  };
+
+  const onFabPointerMove = (e) => {
+    const d = fabDrag.current;
+    if (!d.active) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.moved && Math.hypot(dx, dy) < 6) return;
+    d.moved = true;
+    d.lastPos = clampFabPos(d.originX + dx, d.originY + dy);
+    setFabPos(d.lastPos);
+  };
+
+  const onFabPointerUp = () => {
+    const d = fabDrag.current;
+    if (!d.active) return;
+    d.active = false;
+    if (d.moved) {
+      if (d.lastPos) persist({ fabPos: d.lastPos });
+    } else if (isOpen) {
+      closeChat();
+    } else {
+      openChat();
+    }
+  };
+
+  const onFabPointerCancel = () => {
+    const d = fabDrag.current;
+    if (d.active && d.moved && d.lastPos) persist({ fabPos: d.lastPos });
+    d.active = false;
+  };
+
   // ── start conversation ───────────────────────────────────────────────────────
   const handleStart = async () => {
     if (!name.trim() || !email.trim() || !firstMsg.trim() || !reason) return;
@@ -276,6 +342,24 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   const popBottom = btnBottom + 64 + 8;
   const popRight  = btnRight;
 
+  // Bubble: default bottom-right anchor until the user drags it somewhere.
+  const fabPosStyle = fabPos
+    ? { top: fabPos.y, left: fabPos.x }
+    : { bottom: btnBottom, right: btnRight };
+
+  // Popup follows the bubble: opens above it when the bubble sits in the lower
+  // half of the screen, below it otherwise, clamped inside the viewport.
+  let popPosStyle;
+  if (fabPos) {
+    const left = Math.min(Math.max(fabPos.x + FAB_SIZE - popW, EDGE_PAD), window.innerWidth - popW - EDGE_PAD);
+    const top = fabPos.y > window.innerHeight / 2
+      ? Math.max(EDGE_PAD, fabPos.y - EDGE_PAD - POP_H)
+      : Math.min(fabPos.y + FAB_SIZE + EDGE_PAD, Math.max(EDGE_PAD, window.innerHeight - POP_H - EDGE_PAD));
+    popPosStyle = { top, left };
+  } else {
+    popPosStyle = { bottom: popBottom, right: popRight };
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
 
   const widget = (
@@ -286,19 +370,22 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
           50% { transform: translateY(-4px); }
         }
       `}</style>
-      {/* floating button */}
+      {/* floating button — draggable; a short press without movement toggles the chat */}
       <div
-        onClick={isOpen ? closeChat : openChat}
+        onPointerDown={onFabPointerDown}
+        onPointerMove={onFabPointerMove}
+        onPointerUp={onFabPointerUp}
+        onPointerCancel={onFabPointerCancel}
         style={{
-          position: 'fixed', bottom: btnBottom, right: btnRight,
+          position: 'fixed', ...fabPosStyle,
           zIndex: 99990,
-          width: 56, height: 56, borderRadius: '50%',
+          width: FAB_SIZE, height: FAB_SIZE, borderRadius: '50%',
           background: 'linear-gradient(135deg,#2dd36f,#10b14a)',
           boxShadow: '0 4px 20px rgba(45,211,111,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', transition: 'transform 0.18s ease',
           transform: isOpen ? 'rotate(0deg) scale(0.92)' : 'scale(1)',
-          userSelect: 'none',
+          userSelect: 'none', touchAction: 'none',
         }}
       >
         <IonIcon
@@ -322,8 +409,8 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
       {/* popup */}
       {isOpen && (
         <div style={{
-          position: 'fixed', bottom: popBottom, right: popRight,
-          width: popW, height: 520,
+          position: 'fixed', ...popPosStyle,
+          width: popW, height: POP_H,
           zIndex: 99991,
           borderRadius: 16, overflow: 'hidden',
           display: 'flex', flexDirection: 'column',

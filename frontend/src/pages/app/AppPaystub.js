@@ -129,11 +129,14 @@ export default function AppPaystub() {
   const [appliedDiscount,       setAppliedDiscount]       = useState(null);
 
   // ── Template ─────────────────────────────────────────────────────────────
+  const isKnownTemplate = (v) =>
+    ["template-a","template-b","template-c","template-h"].includes(v) || (typeof v === "string" && v.startsWith("custom:"));
+
   const [selectedTemplate, setSelectedTemplate] = useState(() => {
-    if (templateFromUrl && ["template-a","template-b","template-c","template-h"].includes(templateFromUrl)) return templateFromUrl;
+    if (templateFromUrl && isKnownTemplate(templateFromUrl)) return templateFromUrl;
     try {
       const saved = localStorage.getItem("usPaystubTemplate");
-      if (saved && ["template-a","template-b","template-c","template-h"].includes(saved)) return saved;
+      if (saved && isKnownTemplate(saved)) return saved;
     } catch {}
     return "template-a";
   });
@@ -868,6 +871,7 @@ export default function AppPaystub() {
                     <IonSelectOption value="template-c">Workday Style (Template C)</IonSelectOption>
                     <IonSelectOption value="template-h">OnPay Style (Template H)</IonSelectOption>
                     {isLocalhost && <IonSelectOption value="template-b">ADP Style (Template B)</IonSelectOption>}
+                    {customTemplates.map(t => <IonSelectOption key={t.id} value={`custom:${t.id}`}>{t.name}</IonSelectOption>)}
                   </IonSelect>
 
                   {/* Logo upload */}

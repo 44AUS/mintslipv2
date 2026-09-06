@@ -13,7 +13,8 @@ import { createPortal } from 'react-dom';
 import { IonButton, IonIcon, IonInput, IonSpinner, IonTextarea } from '@ionic/react';
 import {
   chatbubblesOutline, closeOutline, sendOutline,
-  chevronDownOutline, checkmarkCircleOutline, reloadOutline, timeOutline,
+  chevronDownOutline, checkmarkCircleOutline, closeCircleOutline,
+  imageOutline, reloadOutline, timeOutline,
 } from 'ionicons/icons';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
@@ -28,6 +29,14 @@ const EDGE_PAD = 8;    // min gap the bubble/popup keep from the viewport edges
 const clampFabPos = (x, y) => ({
   x: Math.min(Math.max(x, EDGE_PAD), window.innerWidth  - FAB_SIZE - EDGE_PAD),
   y: Math.min(Math.max(y, EDGE_PAD), window.innerHeight - FAB_SIZE - EDGE_PAD),
+});
+
+// Read a File into a data URL so it can travel in the JSON message body
+const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = () => reject(new Error('Failed to read image'));
+  reader.readAsDataURL(file);
 });
 
 const REASONS = [
@@ -110,6 +119,11 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   const [email,     setEmail]     = useState(stored.email  || currentUser?.email || '');
   const [firstMsg,  setFirstMsg]  = useState('');
   const [chatInput, setChatInput] = useState('');
+
+  // image attachments queued in the composer
+  const [imageFiles,    setImageFiles]    = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const fileInputRef = useRef(null);
 
   // loading
   const [starting, setStarting] = useState(false);
@@ -295,26 +309,48 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     }
   };
 
+  // ── image attachments ────────────────────────────────────────────────────────
+  const handleImageAdd = (e) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles(prev => [...prev, ...files]);
+    files.forEach(f => {
+      const url = URL.createObjectURL(f);
+      setImagePreviews(prev => [...prev, url]);
+    });
+    e.target.value = '';
+  };
+
+  const handleImageRemove = (idx) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== idx));
+    setImagePreviews(prev => {
+      URL.revokeObjectURL(prev[idx]);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
   // ── send message ─────────────────────────────────────────────────────────────
   const handleSend = async () => {
     const text = chatInput.trim();
-    if (!text || sending || !chatId) return;
+    if ((!text && imageFiles.length === 0) || sending || !chatId) return;
     setSending(true);
     setChatInput('');
     sendTyping(false); // clear typing
     clearTimeout(typingTimer.current);
     try {
+      const images = await Promise.all(imageFiles.map(fileToDataUrl));
       const res = await fetch(`${BACKEND_URL}/api/support/chat/${chatId}/message`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, images }),
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setMessages(prev => [...prev, data.message]);
       setAdminOnline(data.adminOnline !== false);
+      imagePreviews.forEach(u => URL.revokeObjectURL(u));
+      setImageFiles([]); setImagePreviews([]);
     } catch {
-      setChatInput(text); // restore on failure
+      setChatInput(text); // restore on failure (attachments stay queued)
     } finally {
       setSending(false);
     }
@@ -570,6 +606,17 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                         </div>
                       )}
                       {msg.text}
+                      {msg.images?.length > 0 && (
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: msg.text ? 6 : 2 }}>
+                          {msg.images.map((u, j) => {
+                            const src = u.startsWith('data:') ? u : BACKEND_URL + u;
+                            return (
+                              <img key={j} src={src} alt="" onClick={() => window.open(src, '_blank', 'noopener')}
+                                style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 8, border: '1px solid rgba(0,0,0,0.15)', cursor: 'pointer' }} />
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -628,6 +675,24 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 </div>
               ) : (
                 <>
+                  {/* image previews */}
+                  {imagePreviews.length > 0 && (
+                    <div style={{ display: 'flex', gap: 8, padding: '8px 16px 0', flexWrap: 'wrap' }}>
+                      {imagePreviews.map((url, i) => (
+                        <div key={i} style={{ position: 'relative', width: 56, height: 56 }}>
+                          <img src={url} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--ion-border-color)' }} />
+                          <button onClick={() => handleImageRemove(i)} style={{
+                            position: 'absolute', top: -6, right: -6, padding: 0,
+                            background: 'var(--ion-card-background)', border: 'none', borderRadius: '50%',
+                            cursor: 'pointer', lineHeight: 0,
+                          }}>
+                            <IonIcon icon={closeCircleOutline} style={{ fontSize: 18, color: 'var(--ion-color-danger)' }} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* textarea — same composer as the whodat-style admin Support Center */}
                   <div className="scw-msg-input" onKeyDown={onChatKey} style={{ padding: '4px 8px 0' }}>
                     <IonTextarea
@@ -647,10 +712,16 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                     />
                   </div>
                   {/* bottom row */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '4px 8px 8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px 8px' }}>
+                    <div>
+                      <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleImageAdd} />
+                      <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }} onClick={() => fileInputRef.current?.click()}>
+                        <IonIcon slot="icon-only" icon={imageOutline} style={{ fontSize: 20 }} />
+                      </IonButton>
+                    </div>
                     <IonButton
                       size="small"
-                      disabled={sending || !chatInput.trim()}
+                      disabled={sending || (!chatInput.trim() && imageFiles.length === 0)}
                       onClick={handleSend}
                       style={{
                         '--background': '#2dd36f',

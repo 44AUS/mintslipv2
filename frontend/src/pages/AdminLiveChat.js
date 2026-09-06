@@ -19,14 +19,23 @@ const ADMIN_USER = (() => {
   try { return JSON.parse(localStorage.getItem("adminInfo") || "{}"); } catch { return {}; }
 })();
 
+// Read a File into a data URL so it can travel in the JSON message body
+const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = () => reject(new Error("Failed to read image"));
+  reader.readAsDataURL(file);
+});
+
 // Convert a support-chat DB record to SupportCenter's conversation shape
 function chatToConv(chat) {
+  const last = chat.messages?.slice(-1)[0];
   return {
     id: chat.id,
     name: chat.guestName || "Guest",
     avatar: null,
     type: "direct",
-    lastMessage: chat.messages?.slice(-1)[0]?.text || "",
+    lastMessage: last?.text || (last?.images?.length ? "📷 Photo" : ""),
     lastMessageTime: chat.updatedAt,
     lastActive: chat.updatedAt,
     unread: chat.unreadByAdmin || 0,
@@ -48,6 +57,7 @@ function dbMsgToMsg(msg, adminUser) {
     senderName: msg.senderName || (msg.fromAdmin ? "Support" : "Guest"),
     senderAvatar: null,
     text: msg.text,
+    images: (msg.images || []).map(u => (u.startsWith("data:") ? u : BACKEND_URL + u)),
     timestamp: msg.timestamp,
     read: msg.read || false,
     isOwn: msg.fromAdmin,
@@ -144,15 +154,17 @@ export default function AdminLiveChat() {
   // ── actions ──────────────────────────────────────────────────────────────────
   const handleSelect = useCallback((id) => setActiveId(id), []);
 
-  const handleSend = useCallback(async (text) => {
-    if (!text?.trim() || !activeId) return;
+  const handleSend = useCallback(async (text, imageFiles = []) => {
+    const trimmed = (text || "").trim();
+    if ((!trimmed && imageFiles.length === 0) || !activeId) return;
     setIsSending(true);
     const token = localStorage.getItem("adminToken");
     try {
+      const images = await Promise.all(imageFiles.map(fileToDataUrl));
       const res = await fetch(`${BACKEND_URL}/api/admin/support-chats/${activeId}/reply`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ text: text.trim() }),
+        body: JSON.stringify({ text: trimmed, images }),
       });
       if (!res.ok) { toast.error("Failed to send"); return; }
       const data = await res.json();

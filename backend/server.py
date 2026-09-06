@@ -144,6 +144,7 @@ moderator_permissions_collection = db["moderator_permissions"]
 audit_logs_collection = db["audit_logs"]
 support_tickets_collection = db["support_tickets"]
 support_chats_collection = db["support_chats"]
+support_chat_images_collection = db["support_chat_images"]
 
 # Default permissions per moderator level
 ALL_PERMISSIONS = [
@@ -5731,13 +5732,50 @@ async def get_support_chat(chat_id: str, mark_read: bool = False):
     return {"success": True, "chat": chat, "adminOnline": await any_admin_online()}
 
 
+async def _store_chat_images(chat_id: str, images) -> list:
+    """Persist data-URL images in their own collection and return URL paths.
+
+    Images live outside the chat document so attachments never push the
+    conversation toward MongoDB's 16MB document cap."""
+    urls = []
+    for data_url in (images or []):
+        if not isinstance(data_url, str) or not data_url.startswith("data:image/"):
+            continue
+        try:
+            header, content = data_url.split(",", 1)
+            content_type = header.split(":", 1)[1].split(";", 1)[0]
+        except (ValueError, IndexError):
+            continue
+        image_id = str(uuid.uuid4())
+        await support_chat_images_collection.insert_one({
+            "id": image_id,
+            "chatId": chat_id,
+            "contentType": content_type,
+            "content": content,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        })
+        urls.append(f"/api/support/chat-image/{image_id}")
+    return urls
+
+
+@app.get("/api/support/chat-image/{image_id}")
+async def get_support_chat_image(image_id: str):
+    """Serve an image attached to a support chat message."""
+    doc = await support_chat_images_collection.find_one({"id": image_id})
+    if not doc or not doc.get("content"):
+        raise HTTPException(status_code=404, detail="Image not found")
+    content = base64.b64decode(doc["content"])
+    return Response(content=content, media_type=doc.get("contentType", "image/png"))
+
+
 @app.post("/api/support/chat/{chat_id}/message")
 async def send_support_chat_message(chat_id: str, request: Request):
-    """User sends a message in their support chat."""
+    """User sends a message (text and/or images) in their support chat."""
     data = await request.json()
     text = (data.get("text") or "").strip()
-    if not text:
-        raise HTTPException(status_code=400, detail="text is required")
+    images = data.get("images") or []
+    if not text and not images:
+        raise HTTPException(status_code=400, detail="text or images required")
 
     chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
     if not chat:
@@ -5746,6 +5784,9 @@ async def send_support_chat_message(chat_id: str, request: Request):
     msg = {"id": str(uuid.uuid4()), "text": text, "fromAdmin": False,
            "senderName": chat.get("guestName", "User"),
            "timestamp": datetime.now(timezone.utc).isoformat(), "read": False}
+    image_urls = await _store_chat_images(chat_id, images)
+    if image_urls:
+        msg["images"] = image_urls
 
     await support_chats_collection.update_one(
         {"id": chat_id},
@@ -5775,11 +5816,12 @@ async def list_support_chats(
 
 @app.post("/api/admin/support-chats/{chat_id}/reply")
 async def admin_reply_support_chat(chat_id: str, request: Request, session: dict = Depends(get_current_admin)):
-    """Admin sends a reply in a live-chat conversation."""
+    """Admin sends a reply (text and/or images) in a live-chat conversation."""
     data = await request.json()
     text = (data.get("text") or "").strip()
-    if not text:
-        raise HTTPException(status_code=400, detail="text is required")
+    images = data.get("images") or []
+    if not text and not images:
+        raise HTTPException(status_code=400, detail="text or images required")
 
     chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
     if not chat:
@@ -5789,6 +5831,9 @@ async def admin_reply_support_chat(chat_id: str, request: Request, session: dict
     msg = {"id": str(uuid.uuid4()), "text": text, "fromAdmin": True,
            "senderName": admin_name,
            "timestamp": datetime.now(timezone.utc).isoformat(), "read": False}
+    image_urls = await _store_chat_images(chat_id, images)
+    if image_urls:
+        msg["images"] = image_urls
 
     await support_chats_collection.update_one(
         {"id": chat_id},
@@ -5838,10 +5883,11 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
 
 @app.delete("/api/admin/support-chats/{chat_id}")
 async def delete_support_chat(chat_id: str, session: dict = Depends(get_current_admin)):
-    """Permanently delete a live-chat conversation."""
+    """Permanently delete a live-chat conversation and its image attachments."""
     result = await support_chats_collection.delete_one({"id": chat_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Chat not found")
+    await support_chat_images_collection.delete_many({"chatId": chat_id})
     return {"success": True}
 
 

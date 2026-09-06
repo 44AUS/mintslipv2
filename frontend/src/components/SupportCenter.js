@@ -364,7 +364,8 @@ export default function SupportCenter({
           {msg.images?.length > 0 && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
               {msg.images.map((url, i) => (
-                <img key={i} src={url} alt="" style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--ion-border-color)' }} />
+                <img key={i} src={url} alt="" onClick={() => window.open(url, '_blank', 'noopener')}
+                  style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--ion-border-color)', cursor: 'pointer' }} />
               ))}
             </div>
           )}

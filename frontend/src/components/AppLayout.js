@@ -11,7 +11,7 @@ import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
   chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
-  cloudDownloadOutline, trashOutline, archiveOutline,
+  trashOutline, archiveOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import {
@@ -584,10 +584,8 @@ export default function AppLayout({ children, fillHeight = false }) {
                           display: "flex", alignItems: "center", gap: 4,
                         }}
                       >
-                        {redownloadingId === notif.id ? (
+                        {redownloadingId === notif.id && (
                           <IonSpinner name="crescent" style={{ width: 14, height: 14, color: "#fff" }} />
-                        ) : (
-                          <IonIcon icon={cloudDownloadOutline} style={{ fontSize: 15, color: "#fff" }} />
                         )}
                         <span style={{ fontSize: "0.72rem", color: "#fff" }}>Download</span>
                       </button>

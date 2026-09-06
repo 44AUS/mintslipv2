@@ -10,7 +10,7 @@ import {
 import {
   globeOutline, moonOutline, helpCircleOutline,
   playCircleOutline, sendOutline, bugOutline,
-  documentTextOutline, shieldOutline, chevronForwardOutline,
+  chevronForwardOutline,
   arrowBackOutline, closeOutline, searchOutline,
 } from "ionicons/icons";
 
@@ -309,8 +309,8 @@ export default function AppSettings() {
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
                 <div style={cardTitle}>About</div>
-                <Row icon={documentTextOutline} label="Terms of Service" clickable right={<Chevron />} onClick={() => navigate("/app/terms")} />
-                <Row icon={shieldOutline}       label="Privacy Policy"   clickable last right={<Chevron />} onClick={() => navigate("/app/privacy")} />
+                <Row label="Terms of Service" clickable right={<Chevron />} onClick={() => navigate("/app/terms")} />
+                <Row label="Privacy Policy"   clickable last right={<Chevron />} onClick={() => navigate("/app/privacy")} />
               </div>
             </div>
 

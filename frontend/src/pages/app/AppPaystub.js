@@ -30,7 +30,7 @@ import OnPayLogo from "../../assests/onpayLogo.webp";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
-const sectionHeadingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)" };
+const sectionHeadingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)", display: "flex", alignItems: "center", gap: 8 };
 
 const isLocalhost = typeof window !== "undefined" &&
   (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -1053,32 +1053,32 @@ export default function AppPaystub() {
                               <p style={{ fontWeight: 600, marginBottom: 8 }}>Pay Period {index + 1} — {period.label}</p>
                               <IonGrid>
                                 <IonRow>
-                                  <IonCol size="6" sizeMd="3">
+                                  <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Period Start" type="date" value={hoursPerPeriod[index]?.startDate || period.start} onIonInput={e => handlePeriodHoursChange(index, "startDate", e.detail.value)} style={ionInputStyle} />
                                   </IonCol>
-                                  <IonCol size="6" sizeMd="3">
+                                  <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Period End" type="date" value={hoursPerPeriod[index]?.endDate || period.end} onIonInput={e => handlePeriodHoursChange(index, "endDate", e.detail.value)} style={ionInputStyle} />
                                   </IonCol>
-                                  <IonCol size="6" sizeMd="3">
+                                  <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Pay Date" type="date" value={hoursPerPeriod[index]?.payDate || period.pay} onIonInput={e => handlePeriodHoursChange(index, "payDate", e.detail.value)} style={ionInputStyle} />
                                   </IonCol>
-                                  <IonCol size="6" sizeMd="3">
+                                  <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Regular Hours" type="number" value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === "biweekly" ? 80 : 40)} onIonInput={e => handlePeriodHoursChange(index, "hours", e.detail.value)} style={ionInputStyle} />
                                   </IonCol>
                                   {formData.workerType === "employee" && (
-                                    <IonCol size="6" sizeMd="3">
+                                    <IonCol size="6">
                                       <IonInput fill="outline" labelPlacement="floating" label="Overtime Hours" type="number" value={hoursPerPeriod[index]?.overtime ?? 0} onIonInput={e => handlePeriodHoursChange(index, "overtime", e.detail.value)} style={ionInputStyle} />
                                     </IonCol>
                                   )}
-                                  <IonCol size="6" sizeMd="3">
+                                  <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Commission ($)" type="number" value={hoursPerPeriod[index]?.commission ?? 0} onIonInput={e => handlePeriodHoursChange(index, "commission", e.detail.value)} style={ionInputStyle} />
                                   </IonCol>
-                                  <IonCol size="6" sizeMd="3">
+                                  <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Tips ($)" type="number" value={hoursPerPeriod[index]?.tips ?? 0} onIonInput={e => handlePeriodHoursChange(index, "tips", e.detail.value)} style={ionInputStyle} />
                                   </IonCol>
                                   {(selectedTemplate === "template-h") && (
                                     <>
-                                      <IonCol size="6" sizeMd="3">
+                                      <IonCol size="6">
                                         <IonInput fill="outline" labelPlacement="floating" label="Check Number" value={hoursPerPeriod[index]?.checkNumber ?? ""} onIonInput={e => handlePeriodHoursChange(index, "checkNumber", e.detail.value)} style={ionInputStyle} />
                                       </IonCol>
                                       <IonCol size="12" sizeMd="6">
@@ -1134,22 +1134,22 @@ export default function AppPaystub() {
                     <div key={d.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                       <IonGrid>
                         <IonRow>
-                          <IonCol size="12" sizeMd="4">
+                          <IonCol size="12">
                             <IonSelect fill="outline" labelPlacement="floating" label="Type" value={d.type} onIonChange={e => updateDeduction(d.id, "type", e.detail.value)} style={ionInputStyle}>
                               {deductionTypes.map(t => <IonSelectOption key={t.value} value={t.value}>{t.label}</IonSelectOption>)}
                             </IonSelect>
                           </IonCol>
-                          <IonCol size="12" sizeMd="4">
+                          <IonCol size="12">
                             <IonInput fill="outline" labelPlacement="floating" label="Name / Description" value={d.name} onIonInput={e => updateDeduction(d.id, "name", e.detail.value)} style={ionInputStyle} />
                           </IonCol>
-                          <IonCol size="8" sizeMd="3">
+                          <IonCol size="8">
                             <IonInput fill="outline" labelPlacement="floating" label={d.isPercentage ? "Amount (%)" : "Amount ($)"} type="number" value={d.amount} onIonInput={e => updateDeduction(d.id, "amount", e.detail.value)} style={ionInputStyle} />
                           </IonCol>
-                          <IonCol size="4" sizeMd="1" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                          <IonCol size="4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                             <IonCheckbox checked={d.isPercentage} onIonChange={e => updateDeduction(d.id, "isPercentage", e.detail.checked)} style={{ marginRight: 4 }} />
                             <span style={{ fontSize: "0.75rem" }}>%</span>
                             <IonButton fill="clear" color="danger" size="small" onClick={() => removeDeduction(d.id)}>
-                              <IonIcon icon={trashOutline} />
+                              <IonIcon slot="icon-only" icon={trashOutline} />
                             </IonButton>
                           </IonCol>
                           <IonCol size="12">
@@ -1179,22 +1179,22 @@ export default function AppPaystub() {
                     <div key={c.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                       <IonGrid>
                         <IonRow>
-                          <IonCol size="12" sizeMd="4">
+                          <IonCol size="12">
                             <IonSelect fill="outline" labelPlacement="floating" label="Type" value={c.type} onIonChange={e => updateContribution(c.id, "type", e.detail.value)} style={ionInputStyle}>
                               {contributionTypes.map(t => <IonSelectOption key={t.value} value={t.value}>{t.label}</IonSelectOption>)}
                             </IonSelect>
                           </IonCol>
-                          <IonCol size="12" sizeMd="4">
+                          <IonCol size="12">
                             <IonInput fill="outline" labelPlacement="floating" label="Name / Description" value={c.name} onIonInput={e => updateContribution(c.id, "name", e.detail.value)} style={ionInputStyle} />
                           </IonCol>
-                          <IonCol size="8" sizeMd="3">
+                          <IonCol size="8">
                             <IonInput fill="outline" labelPlacement="floating" label={c.isPercentage ? "Amount (%)" : "Amount ($)"} type="number" value={c.amount} onIonInput={e => updateContribution(c.id, "amount", e.detail.value)} style={ionInputStyle} />
                           </IonCol>
-                          <IonCol size="4" sizeMd="1" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                          <IonCol size="4" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
                             <IonCheckbox checked={c.isPercentage} onIonChange={e => updateContribution(c.id, "isPercentage", e.detail.checked)} style={{ marginRight: 4 }} />
                             <span style={{ fontSize: "0.75rem" }}>%</span>
                             <IonButton fill="clear" color="danger" size="small" onClick={() => removeContribution(c.id)}>
-                              <IonIcon icon={trashOutline} />
+                              <IonIcon slot="icon-only" icon={trashOutline} />
                             </IonButton>
                           </IonCol>
                           <IonCol size="12">
@@ -1225,33 +1225,33 @@ export default function AppPaystub() {
                       <div key={b.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                         <IonGrid>
                           <IonRow>
-                            <IonCol size="12" sizeMd="5">
+                            <IonCol size="12">
                               <IonSelect fill="outline" labelPlacement="floating" label="Benefit Type" value={b.type} onIonChange={e => updateEmployerBenefit(b.id, "type", e.detail.value)} style={ionInputStyle}>
                                 {employerBenefitTypes.map(t => <IonSelectOption key={t.value} value={t.value}>{t.label}</IonSelectOption>)}
                               </IonSelect>
                             </IonCol>
                             {b.type !== "401k_match" && (
-                              <IonCol size="12" sizeMd="4">
+                              <IonCol size="12">
                                 <IonInput fill="outline" labelPlacement="floating" label="Description" value={b.name} onIonInput={e => updateEmployerBenefit(b.id, "name", e.detail.value)} style={ionInputStyle} />
                               </IonCol>
                             )}
                             {b.type === "401k_match" ? (
                               <>
-                                <IonCol size="6" sizeMd="3">
+                                <IonCol size="6">
                                   <IonInput fill="outline" labelPlacement="floating" label="Match %" type="number" value={b.matchPercent || 50} onIonInput={e => updateEmployerBenefit(b.id, "matchPercent", e.detail.value)} style={ionInputStyle} />
                                 </IonCol>
-                                <IonCol size="6" sizeMd="3">
+                                <IonCol size="6">
                                   <IonInput fill="outline" labelPlacement="floating" label="Up to % of Pay" type="number" value={b.matchUpTo || 6} onIonInput={e => updateEmployerBenefit(b.id, "matchUpTo", e.detail.value)} style={ionInputStyle} />
                                 </IonCol>
                               </>
                             ) : (
-                              <IonCol size="8" sizeMd="3">
+                              <IonCol size="8">
                                 <IonInput fill="outline" labelPlacement="floating" label={b.isPercentage ? "Amount (%)" : "Amount ($)"} type="number" value={b.amount} onIonInput={e => updateEmployerBenefit(b.id, "amount", e.detail.value)} style={ionInputStyle} />
                               </IonCol>
                             )}
-                            <IonCol size="4" sizeMd="1" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <IonCol size="4" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <IonButton fill="clear" color="danger" size="small" onClick={() => removeEmployerBenefit(b.id)}>
-                                <IonIcon icon={trashOutline} />
+                                <IonIcon slot="icon-only" icon={trashOutline} />
                               </IonButton>
                             </IonCol>
                           </IonRow>
@@ -1275,18 +1275,18 @@ export default function AppPaystub() {
                       <div key={p.id} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10, marginBottom: 8 }}>
                         <IonGrid>
                           <IonRow>
-                            <IonCol size="12" sizeMd="5">
+                            <IonCol size="12">
                               <IonInput fill="outline" labelPlacement="floating" label="Plan Name" value={p.description} onIonInput={e => updateAbsencePlan(p.id, "description", e.detail.value)} placeholder="e.g., PTO Plan" style={ionInputStyle} />
                             </IonCol>
-                            <IonCol size="5" sizeMd="3">
+                            <IonCol size="5">
                               <IonInput fill="outline" labelPlacement="floating" label="Accrued (hrs)" type="number" value={p.accrued} onIonInput={e => updateAbsencePlan(p.id, "accrued", e.detail.value)} style={ionInputStyle} />
                             </IonCol>
-                            <IonCol size="5" sizeMd="3">
+                            <IonCol size="5">
                               <IonInput fill="outline" labelPlacement="floating" label="Reduced (hrs)" type="number" value={p.reduced} onIonInput={e => updateAbsencePlan(p.id, "reduced", e.detail.value)} style={ionInputStyle} />
                             </IonCol>
-                            <IonCol size="2" sizeMd="1" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <IonCol size="2" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <IonButton fill="clear" color="danger" size="small" onClick={() => removeAbsencePlan(p.id)}>
-                                <IonIcon icon={trashOutline} />
+                                <IonIcon slot="icon-only" icon={trashOutline} />
                               </IonButton>
                             </IonCol>
                           </IonRow>

@@ -380,7 +380,7 @@ export default function Header({ title }) {
             ) : authEnabled ? (
               <button className="navbar-secondary" onClick={() => handleNavigation("/login")}>Log in</button>
             ) : null}
-            <button className="navbar-cta" onClick={() => handleNavigation("/paystub-generator")}>
+            <button className="navbar-cta" onClick={() => handleNavigation("/app")}>
               <FileText size={18} />
               <span>Create a paystub</span>
             </button>

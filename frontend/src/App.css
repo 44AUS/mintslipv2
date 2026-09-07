@@ -136,6 +136,11 @@ h1, h2, h3, h4, h5, h6 {
   --indicator-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
+/* Cancel buttons in the select (radio) alert popups use the danger color */
+ion-alert .alert-button-role-cancel {
+  color: var(--ion-color-danger) !important;
+}
+
 /* Hover feedback on every modal button, matching the toolbar X/checkmark —
    the default 4% overlay is nearly invisible on light backgrounds. */
 @media (any-hover: hover) {

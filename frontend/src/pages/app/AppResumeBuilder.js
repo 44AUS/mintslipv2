@@ -467,16 +467,11 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
               <IonIcon icon={refreshOutline} slot="icon-only" style={{ fontSize: 16 }} />
             </IonButton>
           </div>
-          <IonButton fill="outline" size="small" onClick={() => setShowPreview(v => !v)} disabled={isGeneratingPreview}
+          <IonButton fill="outline" size="small" onClick={() => setShowPreview(true)} disabled={isGeneratingPreview}
             style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)", alignSelf: "flex-start" }}>
             {isGeneratingPreview ? <IonSpinner name="crescent" slot="start" style={{ width: 16, height: 16 }} /> : <IonIcon icon={eyeOutline} slot="start" />}
-            {showPreview ? "Hide Preview" : "Show Preview"}
+            Preview
           </IonButton>
-          {showPreview && pdfPreview && (
-            <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-step-200)" }}>
-              <iframe src={pdfPreview} style={{ width: "100%", height: 420, border: "none" }} title="Resume Preview" />
-            </div>
-          )}
           {hasActiveSubscription ? (
             <IonButton expand="block" onClick={handleSubscriptionDownload} disabled={isProcessing}
               style={{ "--background": "#16a34a", "--background-activated": "#15803d" }}>
@@ -552,6 +547,55 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Preview modal — same layout as the paystub preview: full-screen on
+          mobile, centered panel on desktop, download CTA at the bottom */}
+      {showPreview && (
+        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10002, background: isMobile ? "var(--ion-background-color, #f2f2f7)" : "rgba(0,0,0,0.5)", display: "flex", alignItems: isMobile ? "stretch" : "center", justifyContent: isMobile ? "stretch" : "center" }}>
+          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: isMobile ? "100%" : 600, height: isMobile ? "100%" : "auto", maxHeight: isMobile ? "100%" : "90vh", overflow: "hidden" }}>
+            <IonHeader>
+              <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
+                <IonButtons slot="start">
+                  <IonButton fill="clear" shape="round" onClick={() => setShowPreview(false)}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                      <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                </IonButtons>
+                <IonTitle style={{ fontWeight: 700 }}>Preview</IonTitle>
+              </IonToolbar>
+            </IonHeader>
+            <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+              {isGeneratingPreview ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
+                  <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
+                  <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
+                </div>
+              ) : pdfPreview ? (
+                <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                  <img src={pdfPreview} alt="Resume preview" style={{ width: "100%", display: "block" }} />
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
+                  <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
+                  <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>No preview available yet</p>
+                </div>
+              )}
+              {hasActiveSubscription ? (
+                <IonButton expand="block" onClick={handleSubscriptionDownload} disabled={isProcessing}
+                  style={{ marginTop: 20, "--background": "#16a34a", "--background-activated": "#15803d" }}>
+                  {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
+                </IonButton>
+              ) : (
+                <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
+                  style={{ marginTop: 20, "--background": "#16a34a", "--background-activated": "#15803d" }}>
+                  {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
+                </IonButton>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <IonToast isOpen={toastOpen} onDidDismiss={() => setToastOpen(false)}
         message={toastMessage} duration={3500} position="top" color={toastColor} />

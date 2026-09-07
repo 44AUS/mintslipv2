@@ -144,7 +144,7 @@ export default function Blog() {
 
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-green-800 to-emerald-700 text-white py-16">
+        <div className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-r from-green-800 to-emerald-700 text-white py-16 mt-4">
           <div className="max-w-7xl mx-auto px-6">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">MintSlip Blog</h1>
             <p className="text-xl text-green-100 max-w-2xl">

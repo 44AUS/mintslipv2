@@ -123,7 +123,7 @@ export default function CommercialLeaseLanding() {
       <Header />
 
       {/* HERO */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-green-900 to-slate-900 text-white">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-green-900 to-slate-900 text-white mt-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/20 rounded-full filter blur-3xl animate-pulse" />
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-emerald-400/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
@@ -335,7 +335,7 @@ export default function CommercialLeaseLanding() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="py-20 px-6 bg-gradient-to-br from-green-900 to-slate-900 text-white text-center">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 px-6 bg-gradient-to-br from-green-900 to-slate-900 text-white text-center">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "Outfit, sans-serif" }}>
             Get it in writing before the keys change hands

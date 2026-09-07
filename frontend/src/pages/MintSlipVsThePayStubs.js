@@ -485,7 +485,7 @@ export default function MintSlipVsThePayStubs() {
         </section>
 
         {/* Quick Stats Section */}
-        <section className="py-12 bg-gradient-to-r from-green-800 to-green-700">
+        <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-12 bg-gradient-to-r from-green-800 to-green-700">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
               <div>
@@ -760,7 +760,7 @@ export default function MintSlipVsThePayStubs() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-r from-green-800 to-green-700">
+        <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-16 md:py-24 bg-gradient-to-r from-green-800 to-green-700">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Ready to Save 50% on Your Next Paystub?

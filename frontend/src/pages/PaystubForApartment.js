@@ -204,7 +204,7 @@ export default function PaystubForApartment() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white py-16 md:py-24 overflow-hidden">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl relative bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white py-16 md:py-24 overflow-hidden mt-4">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255,255,255,0.15) 2px, transparent 0)',
@@ -725,7 +725,7 @@ export default function PaystubForApartment() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-16 md:py-20 bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-16 md:py-20 bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Create Your Professional Paystub?

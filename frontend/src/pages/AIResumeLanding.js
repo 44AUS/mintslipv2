@@ -303,7 +303,7 @@ export default function AIResumeLanding() {
       {/* Hero Section */}
       <section 
         ref={heroRef}
-        className="relative overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-slate-900 text-white"
+        className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl relative overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-slate-900 text-white mt-4"
       >
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -568,7 +568,7 @@ export default function AIResumeLanding() {
       </section>
 
       {/* AI Demo Section */}
-      <section className="py-20 bg-gradient-to-br from-green-900 to-green-800 text-white">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 bg-gradient-to-br from-green-900 to-green-800 text-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -762,7 +762,7 @@ export default function AIResumeLanding() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-green-800 to-green-700 text-white">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 bg-gradient-to-br from-green-800 to-green-700 text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-5xl font-black mb-6">
             Ready to Build Your Winning Resume?

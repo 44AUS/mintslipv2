@@ -932,7 +932,7 @@ export default function ComparisonPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-green-800 to-emerald-900">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 bg-gradient-to-br from-green-800 to-emerald-900">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-black text-white mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Experience the Difference?

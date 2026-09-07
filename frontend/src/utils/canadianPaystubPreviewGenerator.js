@@ -79,7 +79,9 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
   const ytdStartDate = hireDate > startOfYear ? hireDate : startOfYear;
   const diffTime = currentPeriodEnd.getTime() - ytdStartDate.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return Math.max(1, Math.ceil(diffDays / periodLength));
+  const numPeriods = Math.max(1, Math.ceil(diffDays / periodLength));
+  console.log(`[CA Preview YTD Debug] hireDate=${hireDate?.toISOString()}, endDate=${currentPeriodEnd?.toISOString()}, ytdStartDate=${ytdStartDate?.toISOString()}, diffDays=${diffDays}, numPeriods=${numPeriods}`);
+  return numPeriods;
 }
 
 // Add watermark to all pages
@@ -579,10 +581,25 @@ export async function generateAllCanadianPreviewPDFs(formData, template = 'templ
     const endDateArray = (formData.endDateList || "").split(",").map((d) => d.trim()).filter(d => d);
     const payDateArray = (formData.payDateList || "").split(",").map((d) => d.trim()).filter(d => d);
 
-    const hireDate = formData.hireDate
+    let hireDate = formData.hireDate
       ? new Date(formData.hireDate + 'T12:00:00')
       : (startDateArray[0] ? new Date(startDateArray[0] + 'T12:00:00')
         : (formData.startDate ? new Date(formData.startDate + 'T12:00:00') : new Date()));
+
+    // Match the US generators: a hire date after the first period ends is
+    // contradictory input — anchor YTD at Jan 1 for every stub.
+    const firstPeriodEnd = endDateArray[0]
+      ? new Date(endDateArray[0] + 'T12:00:00')
+      : (() => {
+          const base = startDateArray[0] || formData.startDate;
+          if (!base) return null;
+          const d = new Date(base + 'T12:00:00');
+          d.setDate(d.getDate() + periodLength - 1);
+          return d;
+        })();
+    if (firstPeriodEnd && hireDate > firstPeriodEnd) {
+      hireDate = new Date(firstPeriodEnd.getFullYear(), 0, 1);
+    }
 
     const commonData = {
       rate, annualSalary, payFrequency, periodLength, defaultHours, payDay,

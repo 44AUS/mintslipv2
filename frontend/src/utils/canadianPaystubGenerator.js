@@ -242,6 +242,15 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
     const hireDate = (formData.hireDate ? parseLocalDate(formData.hireDate) : null) || firstPeriodStart || new Date();
     if (!startDate) { startDate = new Date(hireDate); }
 
+    // Match the US generator: a hire date after the first period ends is
+    // contradictory input — anchor YTD at Jan 1 for every stub so YTD
+    // accumulates consistently instead of restarting mid-batch.
+    const firstPeriodEnd = new Date(startDate);
+    firstPeriodEnd.setDate(firstPeriodEnd.getDate() + periodLength - 1);
+    const effectiveHireDate = hireDate > firstPeriodEnd
+      ? new Date(firstPeriodEnd.getFullYear(), 0, 1)
+      : hireDate;
+
     console.log("Calculated values:", { calculatedNumStubs, rate, payFrequency, payType, workerType, isContractor, province });
 
     // If multiple stubs, create ZIP
@@ -261,7 +270,7 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
           doc, formData, template, stubNum, new Date(currentStartDate), periodLength,
           hoursArray, overtimeArray, defaultHours, rate, province,
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
-          checkNumberArray, memoArray, commissionArray, hireDate
+          checkNumberArray, memoArray, commissionArray, effectiveHireDate
         );
 
         // Template-specific filename with pay date (same as US)
@@ -322,7 +331,7 @@ export const generateAndDownloadCanadianPaystub = async (formData, template = 't
         doc, formData, template, 0, startDate, periodLength,
         hoursArray, overtimeArray, defaultHours, rate, province,
         payDay, pageWidth, pageHeight, 1, payFrequency,
-        checkNumberArray, memoArray, commissionArray, hireDate
+        checkNumberArray, memoArray, commissionArray, effectiveHireDate
       );
       
       // Template-specific filename with pay date (same as US)

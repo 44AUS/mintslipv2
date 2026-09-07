@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { addPreviewWatermarkJsPdf } from "./previewWatermark";
 import { generateCanadianTemplateA, generateCanadianTemplateB, generateCanadianTemplateC, generateCanadianTemplateH } from "./canadianPaystubTemplates";
 import { calculateCanadianTaxes } from "./canadianTaxRates";
 import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
@@ -84,25 +85,6 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
   return numPeriods;
 }
 
-// Add watermark to all pages
-function addWatermarkToAllPages(doc, pageWidth, pageHeight) {
-  const totalPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.saveGraphicsState();
-    doc.setTextColor(200, 200, 200);
-    doc.setFontSize(60);
-    doc.setFont("helvetica", "bold");
-    const text = "MintSlip";
-    const centerX = pageWidth / 2;
-    const centerY = pageHeight / 2;
-    doc.text(text, centerX, centerY, { align: "center", angle: 45 });
-    doc.setFontSize(14);
-    doc.setTextColor(180, 180, 180);
-    doc.text("Watermark removed after payment", centerX, centerY + 40, { align: "center" });
-    doc.restoreGraphicsState();
-  }
-}
 
 export async function generateCanadianPreviewPDF(formData, template) {
   try {
@@ -330,7 +312,7 @@ export async function generateCanadianPreviewPDF(formData, template) {
     }
 
     // Add watermark
-    addWatermarkToAllPages(doc, pageWidth, pageHeight);
+    await addPreviewWatermarkJsPdf(doc, pageWidth, pageHeight);
 
     // Apply metadata before output
     applyPdfMetadata(doc, template);
@@ -549,7 +531,7 @@ async function generateSingleCanadianStubPreview(formData, template, stubIndex, 
   }
 
   // Add watermark
-  addWatermarkToAllPages(doc, pageWidth, pageHeight);
+  await addPreviewWatermarkJsPdf(doc, pageWidth, pageHeight);
 
   // Apply metadata before output
   applyPdfMetadata(doc, template);

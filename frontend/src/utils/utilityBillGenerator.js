@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { addPreviewWatermarkPdfLib } from "./previewWatermark";
 
 // Helper to format date
 const formatDate = (dateStr) => {
@@ -259,18 +260,6 @@ const generateTemplateA = async (doc, formData, fonts, isPreview = false) => {
   page.drawText(`Account: ${formData.accountNumber || '—'}`, { x: 50, y, size: 9, font: regular, color: darkGray });
   page.drawText(`Amount Due: ${formatCurrency(totals.totalDue)}`, { x: 250, y, size: 9, font: bold, color: darkGray });
   page.drawText(`Due Date: ${formatDate(formData.dueDate)}`, { x: 420, y, size: 9, font: regular, color: darkGray });
-  
-  // Preview watermark
-  if (isPreview) {
-    page.drawText('PREVIEW', {
-      x: width / 2 - 100,
-      y: height / 2,
-      size: 60,
-      font: bold,
-      color: rgb(0.9, 0.9, 0.9),
-      rotate: { type: 'degrees', angle: -45 },
-    });
-  }
 };
 
 // Template B: Traditional Water/Utility Bill - Matches Cobb County Water System style
@@ -718,18 +707,6 @@ const generateTemplateB = async (doc, formData, fonts, isPreview = false) => {
   page.drawText(`${formData.companyName || 'COUNTY WATER SYSTEM'}`, { x: 360, y: y + 22, size: 8, font: bold, color: black });
   page.drawText(formData.companyMailingAddress || 'PO BOX 580440', { x: 360, y: y + 11, size: 8, font: regular, color: black });
   page.drawText(formData.companyMailingCity || 'CHARLOTTE NC 28258-0440', { x: 360, y: y, size: 8, font: regular, color: black });
-  
-  // Preview watermark
-  if (isPreview) {
-    page.drawText('PREVIEW', {
-      x: width / 2 - 100,
-      y: height / 2,
-      size: 60,
-      font: bold,
-      color: rgb(0.9, 0.9, 0.9),
-      rotate: { type: 'degrees', angle: -45 },
-    });
-  }
 };
 
 // Template C: Modern Minimal - Green accents, clean design
@@ -874,17 +851,6 @@ const generateTemplateC = async (doc, formData, fonts, isPreview = false) => {
   if (formData.companyWebsite) {
     page.drawText(formData.companyWebsite, { x: 350, y, size: 8, font: regular, color: lightGray });
   }
-  
-  if (isPreview) {
-    page.drawText('PREVIEW', {
-      x: width / 2 - 100,
-      y: height / 2,
-      size: 60,
-      font: bold,
-      color: rgb(0.9, 0.9, 0.9),
-      rotate: { type: 'degrees', angle: -45 },
-    });
-  }
 };
 
 // Main generator function
@@ -909,6 +875,10 @@ export const generateUtilityBillPDF = async (formData, template, isPreview = fal
       await generateTemplateA(doc, formData, fonts, isPreview);
   }
   
+  if (isPreview) {
+    await addPreviewWatermarkPdfLib(doc, boldFont);
+  }
+
   return await doc.save();
 };
 

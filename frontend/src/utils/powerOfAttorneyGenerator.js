@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { addPreviewWatermarkPdfLib } from "./previewWatermark";
 import fontkit from "@pdf-lib/fontkit";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -454,13 +455,10 @@ export const generatePowerOfAttorneyPDF = async (formData, isPreview = false) =>
       p.drawText(`Page ${i + 1} of ${total}`, {
         x: PAGE_W / 2 - 28, y: 30, size: 8.5, font, color: rgb(0.55, 0.55, 0.55),
       });
-      if (isPreview) {
-        p.drawText("PREVIEW", {
-          x: PAGE_W / 2 - 150, y: PAGE_H / 2, size: 72, font: boldFont,
-          color: rgb(0.85, 0.85, 0.85), opacity: 0.45, rotate: { type: "degrees", angle: 45 },
-        });
-      }
     });
+    if (isPreview) {
+      await addPreviewWatermarkPdfLib(pdfDoc, boldFont);
+    }
 
     return await pdfDoc.save();
   } catch (error) {

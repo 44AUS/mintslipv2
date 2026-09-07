@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { addPreviewWatermarkJsPdf } from "./previewWatermark";
 import JSZip from "jszip";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { saveAs } from "file-saver";
@@ -68,13 +69,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
       if (addWatermark) {
         const w = customDoc.internal.pageSize.getWidth();
         const h = customDoc.internal.pageSize.getHeight();
-        for (let i = 1; i <= customDoc.getNumberOfPages(); i++) {
-          customDoc.setPage(i);
-          customDoc.setFont("helvetica", "bold");
-          customDoc.setFontSize(60);
-          customDoc.setTextColor(200, 200, 200);
-          customDoc.text("PREVIEW", w / 2, h / 2, { align: "center", angle: 45 });
-        }
+        await addPreviewWatermarkJsPdf(customDoc, w, h);
       }
       return customDoc;
     }
@@ -362,17 +357,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
 
   // Add watermark if preview
   if (addWatermark) {
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFont(fontFamily, "bold");
-      doc.setFontSize(60);
-      doc.setTextColor(200, 200, 200);
-      doc.text("PREVIEW", width / 2, height / 2, {
-        align: "center",
-        angle: 45
-      });
-    }
+    await addPreviewWatermarkJsPdf(doc, width, height);
   }
 
   return doc;

@@ -50,7 +50,7 @@ const RESUME_SAMPLE = {
   education: [
     { degree: "B.B.A.", field: "Business Administration", institution: "New York University", gpa: "3.7", graduationDate: "2018-05" },
   ],
-  font: "Calibri", sectionLayout: "standard", onePage: false, isPaid: true,
+  font: "Calibri", sectionLayout: "standard", onePage: false, isPaid: false,
 };
 
 export default function AppResumes() {

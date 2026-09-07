@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { addPreviewWatermarkPdfLib } from "./previewWatermark";
 import fontkit from "@pdf-lib/fontkit";
 
 // Helper to convert hex color to RGB
@@ -352,14 +353,7 @@ export const generateCeaseAndDesistPDF = async (formData, isPreview = false) => 
 
     // ── PREVIEW WATERMARK ───────────────────────────────────────────────────
     if (isPreview) {
-      const pages = pdfDoc.getPages();
-      for (const p of pages) {
-        const { width: w, height: h } = p.getSize();
-        p.drawText("PREVIEW", {
-          x: w / 2 - 150, y: h / 2, size: 72, font: boldFont,
-          color: rgb(0.85, 0.85, 0.85), opacity: 0.45, rotate: { type: "degrees", angle: 45 },
-        });
-      }
+      await addPreviewWatermarkPdfLib(pdfDoc, boldFont);
     }
 
     return await pdfDoc.save();

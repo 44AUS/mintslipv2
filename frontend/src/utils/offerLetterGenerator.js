@@ -1,4 +1,5 @@
-import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { addPreviewWatermarkJsPdf, addPreviewWatermarkPdfLib } from "./previewWatermark";
 import fontkit from "@pdf-lib/fontkit";
 import { jsPDF } from "jspdf";
 import { renderLayout, fetchPublishedLayout } from "./layoutEngine";
@@ -92,14 +93,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
         const jsDoc = new jsPDF({ unit: "pt", format: "letter" });
         renderLayout(jsDoc, customLayout, { formData }, "offer-letter");
         if (isPreview) {
-          const pages = jsDoc.getNumberOfPages();
-          for (let p = 1; p <= pages; p++) {
-            jsDoc.setPage(p);
-            jsDoc.setFont("helvetica", "bold");
-            jsDoc.setFontSize(58);
-            jsDoc.setTextColor(215, 215, 215);
-            jsDoc.text("PREVIEW", 306, 470, { align: "center", angle: 45 });
-          }
+          await addPreviewWatermarkJsPdf(jsDoc, jsDoc.internal.pageSize.getWidth(), jsDoc.internal.pageSize.getHeight());
         }
         return new Uint8Array(jsDoc.output("arraybuffer"));
       }
@@ -662,25 +656,7 @@ export const generateOfferLetterPDF = async (formData, isPreview = false) => {
     
     // === WATERMARK (preview only) ===
     if (isPreview) {
-      page.drawText('MintSlip', {
-        x: width / 2 - 100,
-        y: height / 2,
-        size: 60,
-        font: boldFont,
-        color: rgb(0.85, 0.85, 0.85),
-        rotate: degrees(-35),
-        opacity: 0.5,
-      });
-      
-      page.drawText('PREVIEW', {
-        x: width / 2 - 60,
-        y: height / 2 - 50,
-        size: 24,
-        font: boldFont,
-        color: rgb(0.85, 0.85, 0.85),
-        rotate: degrees(-35),
-        opacity: 0.5,
-      });
+      await addPreviewWatermarkPdfLib(pdfDoc, boldFont);
     }
     
     // Save the PDF

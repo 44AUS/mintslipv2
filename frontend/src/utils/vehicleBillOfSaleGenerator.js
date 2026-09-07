@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { addPreviewWatermarkPdfLib } from "./previewWatermark";
 
 // Helper to convert hex color to RGB
 const hexToRgb = (hex) => {
@@ -429,16 +430,7 @@ export const generateVehicleBillOfSalePDF = async (formData, isPreview = false) 
     
     // === WATERMARK (Preview only) ===
     if (isPreview) {
-      const watermarkText = 'PREVIEW - MINTSLIP';
-      page.drawText(watermarkText, {
-        x: 150,
-        y: height / 2,
-        size: 50,
-        font: boldFont,
-        color: rgb(0.9, 0.9, 0.9),
-        rotate: { type: 'degrees', angle: 45 },
-        opacity: 0.5,
-      });
+      await addPreviewWatermarkPdfLib(pdfDoc, boldFont);
     }
     
     const pdfBytes = await pdfDoc.save();

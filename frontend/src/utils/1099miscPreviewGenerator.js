@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { addPreviewWatermarkPdfLib } from "./previewWatermark";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker using unpkg CDN with correct version
@@ -168,26 +169,7 @@ export const generate1099MISCPreview = async (formData, taxYear) => {
     drawText(formatCurrency(formData.stateIncome2), FIELD_POSITIONS.stateIncome2);
     drawText(formatCurrency(formData.stateTaxWithheld2), FIELD_POSITIONS.stateTaxWithheld2);
     
-    // Add WATERMARK
-    page.drawText("MintSlip", {
-      x: width / 2 - 100,
-      y: height / 2,
-      size: 60,
-      font: boldFont,
-      color: rgb(0.8, 0.8, 0.8),
-      rotate: { type: 'degrees', angle: -35 },
-      opacity: 0.5,
-    });
-    
-    page.drawText("PREVIEW", {
-      x: width / 2 - 60,
-      y: height / 2 - 50,
-      size: 24,
-      font: boldFont,
-      color: rgb(0.8, 0.8, 0.8),
-      rotate: { type: 'degrees', angle: -35 },
-      opacity: 0.5,
-    });
+    await addPreviewWatermarkPdfLib(pdfDoc, boldFont);
     
     // Save and return as image
     const pdfBytes = await pdfDoc.save();

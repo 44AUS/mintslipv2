@@ -230,7 +230,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     if (!resume) return;
     setIsGeneratingPreview(true);
     try {
-      const url = await generateResumePreview({ ...resume, template: formData.template, font: formData.font, sectionLayout: formData.sectionLayout, onePage: formData.onePage, isPaid: true });
+      const url = await generateResumePreview({ ...resume, template: formData.template, font: formData.font, sectionLayout: formData.sectionLayout, onePage: formData.onePage, isPaid: false });
       setPdfPreview(url);
     } catch {}
     setIsGeneratingPreview(false);

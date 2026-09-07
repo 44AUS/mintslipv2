@@ -356,6 +356,10 @@ export default function Header({ title }) {
 
   return (
     <>
+      {/* Green wash behind the navbar — whodat's purple top wash, in green.
+          Anchored to the page top so it scrolls away while the pill sticks. */}
+      <div aria-hidden="true" className="nav-wash" />
+
       {/* Floating glass pill header (whodat marketing nav) */}
       <div className="navbar">
         <nav className="navbar-pill">

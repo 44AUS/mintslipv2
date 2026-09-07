@@ -2,6 +2,22 @@
 
 /* Marketing header — whodat's floating glass pill, in MintSlip green.
    Ported from whodat frontend/src/styles/nav.css. */
+/* Green wash confined to the top band, fading into the white page — the
+   whodat purple wash in MintSlip green. The Header renders a .nav-wash
+   marker div; the gradient is painted on the page root's own background
+   (like whodat's .landing-page) so it sits under all content, runs behind
+   the sticky pill, and scrolls away with the page. */
+div:has(> .nav-wash) {
+  background-image: linear-gradient(180deg,
+    rgba(22, 163, 74, 0.28) 0%,
+    rgba(34, 197, 94, 0.17) 34%,
+    rgba(134, 239, 172, 0.09) 68%,
+    transparent 100%);
+  background-repeat: no-repeat;
+  background-size: 100% 40vh;
+}
+.nav-wash { display: none; }
+
 .navbar {
   position: sticky;
   top: 0;

@@ -728,6 +728,39 @@ body.dark .perm-card { background: var(--ion-card-background); box-shadow: 0 1px
   --handle-background-checked: #ffffff;
 }
 
+/* ── Condensed admin list rows (whodat AdminItem port) ──
+   IonItem-based rows used instead of tables on mobile: title + badges,
+   muted subtitle, and a meta line summarising the table's columns. */
+.adm-item {
+  --background: transparent;
+  --padding-start: 16px; --inner-padding-end: 14px;
+  --padding-top: 12px; --padding-bottom: 12px;
+  --min-height: 66px;
+  --border-color: var(--ion-border-color);
+  font-size: 14px;
+  color: var(--ion-text-color);
+}
+.adm-item ion-label.adm-label { white-space: normal; overflow: visible; margin: 0; }
+.adm-row { display: flex; gap: 10px 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.adm-main { min-width: 0; flex: 1 1 220px; }
+.adm-item .adm-title {
+  margin: 0; font-size: 15px; font-weight: 600; color: var(--ion-text-color); line-height: 1.3;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; white-space: normal;
+}
+.adm-item .adm-sub { margin: 3px 0 0; font-size: 13px; color: var(--ion-color-medium); line-height: 1.4; white-space: normal; word-break: break-word; }
+.adm-item .adm-meta { margin: 5px 0 0; font-size: 12.5px; color: var(--ion-color-medium); line-height: 1.5; white-space: normal; }
+.adm-end { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; justify-content: flex-end; flex: 0 0 auto; }
+.adm-status { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.adm-empty { text-align: center; padding: 40px; color: var(--ion-color-medium); font-size: 0.875rem; }
+@media (max-width: 640px) {
+  .adm-item { --padding-start: 14px; --inner-padding-end: 12px; }
+  .adm-main { flex-basis: 100%; }
+  .adm-end {
+    width: 100%; justify-content: flex-start; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--ion-border-color);
+  }
+}
+
 /* ── Form helpers ── */
 .admin-form-row { display: grid; gap: 16px; }
 .admin-form-row.cols-2 { grid-template-columns: 1fr 1fr; }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner,
+  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner, IonList,
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline,
@@ -8,6 +8,7 @@ import {
 } from "ionicons/icons";
 import AdminLayout from "@/components/AdminLayout";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -54,6 +55,12 @@ const TEMPLATE_NAMES = {
   "chase": "Chase", "standard": "Standard", "detailed": "Detailed",
   "modern": "Modern", "classic": "Classic", "minimal": "Minimal",
 };
+
+function templateLabel(t) {
+  if (!t) return null;
+  if (String(t).startsWith("custom:")) return "Custom template";
+  return TEMPLATE_NAMES[t] || t;
+}
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -117,6 +124,13 @@ export default function AdminPurchases() {
   const [loading, setLoading]     = useState(true);
   const [segment, setSegment]     = useState("all");
   const [detail, setDetail]       = useState(null);
+  const [isMobile, setIsMobile]   = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const fetchPurchases = useCallback(async () => {
     setLoading(true);
@@ -243,6 +257,42 @@ export default function AdminPurchases() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
                   <IonSpinner name="crescent" />
                 </div>
+              ) : isMobile ? (
+                /* Condensed whodat-style rows: everything readable without
+                   sideways scrolling, native per-row taps. */
+                filtered.length === 0 ? (
+                  <div className="adm-empty">No purchases found</div>
+                ) : (
+                  <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+                    {filtered.map(p => {
+                      const email    = p.email || p.paypalEmail || "N/A";
+                      const docLabel = DOCUMENT_TYPES[p.documentType] || p.documentType || "-";
+                      const qty      = p.quantity > 1 ? ` ×${p.quantity}` : "";
+                      const tpl      = templateLabel(p.template);
+                      return (
+                        <AdminListItem
+                          key={p.id}
+                          onClick={() => setDetail(p)}
+                          start={
+                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ fontSize: "0.65rem", color: "#fff", fontWeight: 700 }}>{getInitials(email)}</span>
+                            </div>
+                          }
+                          title={`$${Number(p.amount || 0).toFixed(2)}`}
+                          badges={<>
+                            {p.refunded
+                              ? <span className="admin-badge admin-badge-amber">Refunded</span>
+                              : <span className="admin-badge admin-badge-green">Paid</span>}
+                            {!p.userId && <span className="admin-badge admin-badge-slate">Guest</span>}
+                          </>}
+                          subtitle={email}
+                          meta={[`${docLabel}${qty}`, tpl, formatDate(p.createdAt), timeAgo(p.createdAt), p.discountCode]
+                            .filter(Boolean).join(" · ")}
+                        />
+                      );
+                    })}
+                  </IonList>
+                )
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
@@ -278,7 +328,7 @@ export default function AdminPurchases() {
                         const docLabel = DOCUMENT_TYPES[p.documentType] || p.documentType || "-";
                         const qty     = p.quantity > 1 ? ` ×${p.quantity}` : "";
                         return (
-                          <tr key={p.id} onClick={() => setDetail(p)} style={{ position: "relative", height: 64, cursor: "pointer" }}>
+                          <tr key={p.id} onClick={() => setDetail(p)} style={{ position: "relative", transform: "translateZ(0)", height: 64, cursor: "pointer" }}>
 
                             {/* Age — also hosts the row-wide ripple overlay, which
                                 spans the whole row because the <tr> is its
@@ -336,7 +386,7 @@ export default function AdminPurchases() {
                             {/* Template */}
                             <td style={{ ...tdBase, minWidth: 100 }}>
                               <span style={{ fontSize: "0.75rem", display: "block", whiteSpace: "nowrap" }}>
-                                {TEMPLATE_NAMES[p.template] || p.template || "-"}
+                                {templateLabel(p.template) || "-"}
                               </span>
                             </td>
 

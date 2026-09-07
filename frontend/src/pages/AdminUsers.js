@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner,
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButtons,
+  IonFooter, IonButtons, IonList,
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline, chevronForwardOutline, searchOutline,
@@ -12,6 +12,7 @@ import { X, Clock } from "lucide-react";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
 import AdminDetailModal from "@/components/AdminDetailModal";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -65,6 +66,13 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState("all");
   const [search, setSearch]   = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // modals
   const [selectedUser, setSelectedUser] = useState(null);
@@ -280,6 +288,46 @@ export default function AdminUsers() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
                   <IonSpinner name="crescent" />
                 </div>
+              ) : isMobile ? (
+                /* Condensed whodat-style rows: everything readable without
+                   sideways scrolling, native per-row taps. */
+                filtered.length === 0 ? (
+                  <div className="adm-empty">No users found</div>
+                ) : (
+                  <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+                    {filtered.map(u => {
+                      const tier = u.subscription ? SUBSCRIPTION_TIERS[u.subscription.tier] : null;
+                      const isUnlimited = u.subscription?.downloads_remaining === -1 || tier?.downloads === -1;
+                      const remaining = u.subscription?.downloads_remaining ?? 0;
+                      const tierTotal = u.subscription?.downloads_total || tier?.downloads || 0;
+                      const subLabel = u.subscription
+                        ? `${tier?.name || u.subscription.tier} · ${isUnlimited ? "Unlimited" : `${remaining}/${tierTotal} downloads`}`
+                        : "No subscription";
+                      return (
+                        <AdminListItem
+                          key={u.id}
+                          onClick={() => { setDetailUserSnapshot(u); setDetailUserId(u.id); }}
+                          start={
+                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: u.isBanned ? "#ef4444" : "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ fontSize: "0.65rem", color: "#fff", fontWeight: 700 }}>{getInitials(u.name, u.email)}</span>
+                            </div>
+                          }
+                          title={u.name || "—"}
+                          badges={u.isBanned
+                            ? <span className="admin-badge admin-badge-red">Banned</span>
+                            : u.emailVerified === false
+                              ? <span className="admin-badge admin-badge-amber">Unverified</span>
+                              : <span className="admin-badge admin-badge-green">Active</span>}
+                          subtitle={u.email}
+                          meta={[subLabel,
+                            u.subscription?.status === "cancelling" ? "Cancelling" : null,
+                            u.createdAt ? `Joined ${new Date(u.createdAt).toLocaleDateString()}` : null]
+                            .filter(Boolean).join(" · ")}
+                        />
+                      );
+                    })}
+                  </IonList>
+                )
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
@@ -302,7 +350,7 @@ export default function AdminUsers() {
                         const remaining = u.subscription?.downloads_remaining ?? 0;
                         const tierTotal  = u.subscription?.downloads_total || tier?.downloads || 0;
                         return (
-                          <tr key={u.id} onClick={() => { setDetailUserSnapshot(u); setDetailUserId(u.id); }} style={{ position: "relative", height: 64, cursor: "pointer" }}>
+                          <tr key={u.id} onClick={() => { setDetailUserSnapshot(u); setDetailUserId(u.id); }} style={{ position: "relative", transform: "translateZ(0)", height: 64, cursor: "pointer" }}>
 
                             {/* User — also hosts the row-wide ripple overlay, which
                                 spans the whole row because the <tr> is its

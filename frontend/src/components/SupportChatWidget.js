@@ -532,18 +532,16 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
               </div>
 
               {/* name + email — same admin-field Ionic inputs as the admin dashboard */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
                 <IonInput
                   className="admin-field" mode="md" fill="outline" labelPlacement="floating"
                   label="Your name *"
                   value={name} onIonInput={e => setName(e.detail.value || '')}
-                  style={{ flex: 1, minWidth: 0 }}
                 />
                 <IonInput
                   className="admin-field" mode="md" fill="outline" labelPlacement="floating"
                   label="Email address *" type="email"
                   value={email} onIonInput={e => setEmail(e.detail.value || '')}
-                  style={{ flex: 1, minWidth: 0 }}
                 />
               </div>
 

@@ -981,7 +981,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
       }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", padding: "0 8px 0 16px", minHeight: 60, borderBottom: "1px solid var(--app-divider)", flexShrink: 0, gap: 8 }}>
-          <div style={{ flex: 1, fontWeight: 600, fontSize: "1rem" }}>Notifications</div>
+          <div style={{ flex: 1, fontWeight: 600, fontSize: "1rem", color: "var(--admin-text)" }}>Notifications</div>
           {unreadCount > 0 && (
             <IonButton fill="clear" onClick={handleMarkRead} style={{ "--color": "var(--ion-color-primary)", fontSize: "0.78rem" }}>
               Mark all read

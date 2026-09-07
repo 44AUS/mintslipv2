@@ -467,8 +467,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
               <IonIcon icon={refreshOutline} slot="icon-only" style={{ fontSize: 16 }} />
             </IonButton>
           </div>
-          <IonButton fill="outline" size="small" onClick={() => setShowPreview(true)} disabled={isGeneratingPreview}
-            style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)", alignSelf: "flex-start" }}>
+          <IonButton expand="block" fill="outline" onClick={() => setShowPreview(true)} disabled={isGeneratingPreview}
+            style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
             {isGeneratingPreview ? <IonSpinner name="crescent" slot="start" style={{ width: 16, height: 16 }} /> : <IonIcon icon={eyeOutline} slot="start" />}
             Preview
           </IonButton>

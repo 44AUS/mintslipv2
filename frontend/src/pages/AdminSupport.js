@@ -17,6 +17,8 @@ const REASON_LABELS = {
   technical: "Technical Issue",
   general: "General Question",
   refund: "Refund Request",
+  feature: "Feature Request",
+  bug: "Report a Problem",
   other: "Other",
 };
 

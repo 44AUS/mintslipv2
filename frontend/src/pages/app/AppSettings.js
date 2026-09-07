@@ -10,7 +10,7 @@ import {
 import {
   globeOutline, moonOutline, helpCircleOutline,
   playCircleOutline, sendOutline, bugOutline,
-  chevronForwardOutline,
+  chevronForwardOutline, documentTextOutline, shieldOutline,
   arrowBackOutline, closeOutline, searchOutline,
 } from "ionicons/icons";
 
@@ -300,8 +300,8 @@ export default function AppSettings() {
               <div style={cardStyle}>
                 <div style={cardTitle}>Support</div>
                 <Row icon={playCircleOutline} label="Tutorials" clickable right={<Chevron />} onClick={() => setTutorialOpen(true)} />
-                <Row icon={sendOutline}        label="Feature Request" clickable right={<Chevron />} onClick={() => window.open("mailto:support@mintslip.com?subject=Feature%20Request")} />
-                <Row icon={bugOutline}         label="Report a Problem" clickable last right={<Chevron />} onClick={() => window.open("mailto:support@mintslip.com?subject=Bug%20Report")} />
+                <Row icon={sendOutline}        label="Feature Request" clickable right={<Chevron />} onClick={() => window.dispatchEvent(new CustomEvent("mintslip-open-support", { detail: { reason: "feature" } }))} />
+                <Row icon={bugOutline}         label="Report a Problem" clickable last right={<Chevron />} onClick={() => window.dispatchEvent(new CustomEvent("mintslip-open-support", { detail: { reason: "bug" } }))} />
               </div>
             </div>
 
@@ -309,8 +309,8 @@ export default function AppSettings() {
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
                 <div style={cardTitle}>About</div>
-                <Row label="Terms of Service" clickable right={<Chevron />} onClick={() => navigate("/app/terms")} />
-                <Row label="Privacy Policy"   clickable last right={<Chevron />} onClick={() => navigate("/app/privacy")} />
+                <Row icon={documentTextOutline} label="Terms of Service" clickable right={<Chevron />} onClick={() => navigate("/app/terms")} />
+                <Row icon={shieldOutline}       label="Privacy Policy"   clickable last right={<Chevron />} onClick={() => navigate("/app/privacy")} />
               </div>
             </div>
 

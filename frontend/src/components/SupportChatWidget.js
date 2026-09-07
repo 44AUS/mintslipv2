@@ -44,6 +44,8 @@ const REASONS = [
   { id: 'technical', label: 'Technical Issue'  },
   { id: 'billing',   label: 'Billing'          },
   { id: 'refund',    label: 'Refund Request'   },
+  { id: 'feature',   label: 'Feature Request'  },
+  { id: 'bug',       label: 'Report a Problem' },
   { id: 'other',     label: 'Other'            },
 ];
 
@@ -224,10 +226,15 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     sendTyping(false); // clear typing on close
   };
 
-  // global trigger (from other pages)
+  // global trigger (from other pages); detail.reason preselects a contact reason
   useEffect(() => {
-    window.addEventListener('mintslip-open-support', openChat);
-    return () => window.removeEventListener('mintslip-open-support', openChat);
+    const handler = (e) => {
+      const r = e?.detail?.reason;
+      if (r && REASONS.some(x => x.id === r)) setReason(r);
+      openChat();
+    };
+    window.addEventListener('mintslip-open-support', handler);
+    return () => window.removeEventListener('mintslip-open-support', handler);
   }, [openChat]);
 
   // Deep link from support-reply emails: ?support=open opens the chat, then
@@ -670,7 +677,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 </>}
               </IonButton>
               <p style={{ textAlign: 'center', fontSize: '0.68rem', color: 'var(--ion-color-medium)', margin: '8px 0 0' }}>
-                We store your info to respond to you. See our <a href="/privacy" style={{ color: 'var(--ion-color-primary)' }}>Privacy Policy</a>.
+                We store your info to respond to you. See our <a href={window.location.pathname.startsWith('/app') ? '/app/privacy' : '/privacy'} style={{ color: 'var(--ion-color-primary)' }}>Privacy Policy</a>.
               </p>
             </div>
           ) : (

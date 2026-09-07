@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
@@ -7,7 +7,7 @@ import {
   IonSegment, IonSegmentButton, IonLabel, IonCheckbox,
 } from "@ionic/react";
 import {
-  cloudDownloadOutline, eyeOutline, trashOutline, addOutline,
+  cloudDownloadOutline, cloudUploadOutline, documentTextOutline, eyeOutline, trashOutline, addOutline,
   closeOutline, chevronBackOutline, chevronForwardOutline, sparklesOutline,
   refreshOutline, personOutline, briefcaseOutline, schoolOutline,
   bulbOutline, searchOutline,
@@ -107,6 +107,76 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
 
   const showToast = (msg, color = "success") => { setToastMessage(msg); setToastColor(color); setToastOpen(true); };
   const setField = (f, v) => setFormData(p => ({ ...p, [f]: v }));
+
+  // ── Upload + parse an existing resume to auto-fill (same endpoint as web) ──
+  const resumeFileRef = useRef(null);
+  const [isParsingResume, setIsParsingResume] = useState(false);
+  const [uploadedResumeName, setUploadedResumeName] = useState(null);
+
+  const handleResumeUpload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const validTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!validTypes.includes(file.type) && !/\.(pdf|docx)$/i.test(file.name)) {
+      showToast("Please upload a PDF or DOCX file", "danger");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showToast("File size must be less than 10MB", "danger");
+      return;
+    }
+    setIsParsingResume(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`${BACKEND_URL}/api/parse-resume`, { method: "POST", body: fd });
+      if (!res.ok) {
+        let msg = "Failed to parse resume";
+        try { msg = (await res.json()).detail || msg; } catch {}
+        throw new Error(msg);
+      }
+      const result = await res.json();
+      if (result.success && result.data) {
+        const parsed = result.data;
+        setFormData(prev => ({
+          ...prev,
+          personalInfo: {
+            fullName: parsed.personalInfo?.fullName || prev.personalInfo.fullName,
+            email: parsed.personalInfo?.email || prev.personalInfo.email,
+            phone: parsed.personalInfo?.phone || prev.personalInfo.phone,
+            location: parsed.personalInfo?.location || prev.personalInfo.location,
+            linkedin: parsed.personalInfo?.linkedin || prev.personalInfo.linkedin,
+            website: parsed.personalInfo?.website || prev.personalInfo.website,
+          },
+          workExperience: parsed.workExperience?.length > 0
+            ? parsed.workExperience.map((exp, i) => ({
+                id: `work_parsed_${Date.now()}_${i}`,
+                company: exp.company || "", position: exp.position || "", location: exp.location || "",
+                startDate: exp.startDate || "", endDate: exp.endDate || "", current: exp.current || false,
+                responsibilities: exp.responsibilities?.length ? exp.responsibilities : [""],
+              }))
+            : prev.workExperience,
+          education: parsed.education?.length > 0
+            ? parsed.education.map((edu, i) => ({
+                id: `edu_parsed_${Date.now()}_${i}`,
+                institution: edu.institution || "", degree: edu.degree || "", field: edu.field || "",
+                graduationDate: edu.graduationDate || "", gpa: edu.gpa || "",
+              }))
+            : prev.education,
+          skills: parsed.skills?.length > 0 ? parsed.skills : prev.skills,
+        }));
+        setUploadedResumeName(file.name);
+        showToast("Resume parsed — your details have been filled in.", "success");
+      } else {
+        showToast("Could not extract information from the resume", "danger");
+      }
+    } catch (err) {
+      showToast(err.message || "Failed to parse resume", "danger");
+    } finally {
+      setIsParsingResume(false);
+    }
+  };
 
   useEffect(() => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(formData)); } catch {} }, [formData]);
   useEffect(() => { try { if (generatedResume) localStorage.setItem(GENERATED_KEY, JSON.stringify(generatedResume)); } catch {} }, [generatedResume]);
@@ -291,6 +361,33 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
 
   const renderStep1 = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Upload an existing resume to auto-fill every step */}
+      <div>
+        <span style={labelStyle}>Have a resume already?</span>
+        {uploadedResumeName && !isParsingResume ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.35)" }}>
+            <IonIcon icon={documentTextOutline} style={{ fontSize: 18, color: "#16a34a", flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{uploadedResumeName}</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>Parsed — your details were filled in below</div>
+            </div>
+            <IonButton fill="clear" size="small" onClick={() => resumeFileRef.current?.click()} style={{ flexShrink: 0 }}>Replace</IonButton>
+          </div>
+        ) : (
+          <div onClick={() => !isParsingResume && resumeFileRef.current?.click()}
+            style={{ padding: 14, borderRadius: 8, border: "2px dashed var(--ion-color-step-200)", textAlign: "center", cursor: isParsingResume ? "default" : "pointer", color: "var(--ion-color-medium)", fontSize: "0.82rem" }}>
+            {isParsingResume ? (
+              <><IonSpinner name="crescent" style={{ width: 18, height: 18, verticalAlign: "middle", marginRight: 8 }} />Parsing your resume…</>
+            ) : (
+              <><IonIcon icon={cloudUploadOutline} style={{ fontSize: 22, display: "block", margin: "0 auto 4px" }} />Upload your current resume (PDF or DOCX) to auto-fill</>
+            )}
+          </div>
+        )}
+        <input ref={resumeFileRef} type="file" style={{ display: "none" }}
+          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={handleResumeUpload} />
+      </div>
+
       <div style={headingStyle}>Personal Information</div>
       <Field label="Full Name *" value={formData.personalInfo.fullName} onChange={v => setFormData(p => ({ ...p, personalInfo: { ...p.personalInfo, fullName: v } }))} />
       <Field label="Email" value={formData.personalInfo.email} onChange={v => setFormData(p => ({ ...p, personalInfo: { ...p.personalInfo, email: v } }))} type="email" />

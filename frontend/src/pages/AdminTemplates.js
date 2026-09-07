@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { IonButton, IonSpinner } from "@ionic/react";
+import { IonButton, IonRippleEffect, IonSpinner } from "@ionic/react";
 import { Plus, Pencil, Copy, Trash2, Upload, Undo2, LayoutTemplate } from "lucide-react";
 import { toast } from "@/utils/toast";
 import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
@@ -149,27 +149,27 @@ export default function AdminTemplates() {
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                          <button className="admin-action-btn primary" title="Edit" onClick={() => navigate(`/admin/templates/edit/${t.id}`)}>
-                            <Pencil size={15} />
+                          <button className="ion-activatable admin-action-btn primary" title="Edit" onClick={() => navigate(`/admin/templates/edit/${t.id}`)}>
+                            <Pencil size={15} /><IonRippleEffect />
                           </button>
-                          <button className="admin-action-btn" title="Duplicate" disabled={busy === t.id + "/duplicate"}
+                          <button className="ion-activatable admin-action-btn" title="Duplicate" disabled={busy === t.id + "/duplicate"}
                             onClick={() => act(t.id, "/duplicate")}>
-                            <Copy size={15} />
+                            <Copy size={15} /><IonRippleEffect />
                           </button>
                           {t.status === "published" ? (
-                            <button className="admin-action-btn warning" title="Unpublish" disabled={busy === t.id + "/unpublish"}
+                            <button className="ion-activatable admin-action-btn warning" title="Unpublish" disabled={busy === t.id + "/unpublish"}
                               onClick={() => act(t.id, "/unpublish")}>
-                              <Undo2 size={15} />
+                              <Undo2 size={15} /><IonRippleEffect />
                             </button>
                           ) : (
-                            <button className="admin-action-btn primary" title="Publish" disabled={busy === t.id + "/publish"}
+                            <button className="ion-activatable admin-action-btn primary" title="Publish" disabled={busy === t.id + "/publish"}
                               onClick={async () => { if (await act(t.id, "/publish")) toast.success("Template published"); }}>
-                              <Upload size={15} />
+                              <Upload size={15} /><IonRippleEffect />
                             </button>
                           )}
-                          <button className="admin-action-btn danger" title="Delete"
+                          <button className="ion-activatable admin-action-btn danger" title="Delete"
                             onClick={() => { if (window.confirm(`Delete "${t.name}"? This cannot be undone.`)) act(t.id, "", "DELETE"); }}>
-                            <Trash2 size={15} />
+                            <Trash2 size={15} /><IonRippleEffect />
                           </button>
                         </div>
                       </td>

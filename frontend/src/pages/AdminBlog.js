@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButton, IonButtons, IonSpinner,
+  IonFooter, IonButton, IonButtons, IonRippleEffect, IonSpinner,
 } from "@ionic/react";
 import { toast } from "@/utils/toast";
 import {
@@ -208,8 +208,8 @@ export default function AdminBlog() {
                     </td>
                     <td>
                       <div style={{ position: "relative" }}>
-                        <button className="admin-action-btn" onClick={() => setOpenMenuPostId(openMenuPostId === post.id ? null : post.id)}>
-                          <MoreVertical size={14} />
+                        <button className="ion-activatable admin-action-btn" onClick={() => setOpenMenuPostId(openMenuPostId === post.id ? null : post.id)}>
+                          <MoreVertical size={14} /><IonRippleEffect />
                         </button>
                         {openMenuPostId === post.id && (
                           <div className="user-action-menu">

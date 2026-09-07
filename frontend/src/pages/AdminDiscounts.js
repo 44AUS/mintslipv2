@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
-  IonButton, IonSpinner,
+  IonButton, IonRippleEffect, IonSpinner,
 } from "@ionic/react";
 import { toast } from "@/utils/toast";
 import {
@@ -529,17 +529,17 @@ export default function AdminDiscounts() {
                       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                         <button
                           onClick={() => handleEdit(discount)}
-                          className="admin-action-btn"
+                          className="ion-activatable admin-action-btn"
                           title="Edit"
                         >
-                          <Edit2 size={14} />
+                          <Edit2 size={14} /><IonRippleEffect />
                         </button>
                         <button
                           onClick={() => handleDelete(discount.id)}
-                          className="admin-action-btn danger"
+                          className="ion-activatable admin-action-btn danger"
                           title="Delete"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={14} /><IonRippleEffect />
                         </button>
                       </div>
                     </td>

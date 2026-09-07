@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner } from "@ionic/react";
+import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonRippleEffect, IonSpinner } from "@ionic/react";
 import { refreshOutline, chevronForwardOutline } from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "@/utils/toast";
@@ -292,10 +292,10 @@ export default function AdminSavedDocs() {
                             {/* Actions — raised above the row overlay */}
                             <td style={{ ...tdBase, padding: "0 8px", width: 60, position: "relative", zIndex: 2 }}>
                               <button
-                                className="admin-action-btn danger"
+                                className="ion-activatable admin-action-btn danger"
                                 onClick={e => deleteDoc(doc.id, e)}
                               >
-                                <Trash2 size={14} />
+                                <Trash2 size={14} /><IonRippleEffect />
                               </button>
                             </td>
 

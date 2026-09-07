@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import AdminLayout from "@/components/AdminLayout";
-import { IonButton, IonSpinner } from "@ionic/react";
+import { IonButton, IonRippleEffect, IonSpinner } from "@ionic/react";
 import {
   ArrowLeft, Type, Square, Minus, Table, Image as ImageIcon, Trash2, Copy,
   Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X, Sparkles, Send, PenTool,
@@ -516,11 +516,11 @@ export default function AdminTemplateEditor() {
       <div>
         {/* Toolbar */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
-          <button className="admin-action-btn" title="Back to templates" onClick={() => {
+          <button className="ion-activatable admin-action-btn" title="Back to templates" onClick={() => {
             if (dirty && !window.confirm("You have unsaved changes. Leave anyway?")) return;
             navigate("/admin/templates");
           }}>
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} /><IonRippleEffect />
           </button>
           <input
             style={{ ...inputStyle, width: 260, fontWeight: 600, fontSize: "0.95rem" }}
@@ -754,10 +754,10 @@ export default function AdminTemplateEditor() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <span className="admin-badge admin-badge-blue" style={{ textTransform: "capitalize" }}>{selected.type}</span>
                   <div style={{ display: "flex", gap: 2 }}>
-                    <button className="admin-action-btn" title="Bring forward" onClick={() => reorderSelected(1)}><ChevronUp size={14} /></button>
-                    <button className="admin-action-btn" title="Send backward" onClick={() => reorderSelected(-1)}><ChevronDown size={14} /></button>
-                    <button className="admin-action-btn" title="Duplicate" onClick={duplicateSelected}><Copy size={14} /></button>
-                    <button className="admin-action-btn danger" title="Delete" onClick={deleteSelected}><Trash2 size={14} /></button>
+                    <button className="ion-activatable admin-action-btn" title="Bring forward" onClick={() => reorderSelected(1)}><ChevronUp size={14} /><IonRippleEffect /></button>
+                    <button className="ion-activatable admin-action-btn" title="Send backward" onClick={() => reorderSelected(-1)}><ChevronDown size={14} /><IonRippleEffect /></button>
+                    <button className="ion-activatable admin-action-btn" title="Duplicate" onClick={duplicateSelected}><Copy size={14} /><IonRippleEffect /></button>
+                    <button className="ion-activatable admin-action-btn danger" title="Delete" onClick={deleteSelected}><Trash2 size={14} /><IonRippleEffect /></button>
                   </div>
                 </div>
 
@@ -883,9 +883,9 @@ export default function AdminTemplateEditor() {
                             onChange={(e) => updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, align: e.target.value } : c)) })}>
                             <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
                           </select>
-                          <button className="admin-action-btn danger" title="Remove column"
+                          <button className="ion-activatable admin-action-btn danger" title="Remove column"
                             onClick={() => updateEl({ columns: selected.columns.filter((_, i) => i !== ci) })}>
-                            <X size={13} />
+                            <X size={13} /><IonRippleEffect />
                           </button>
                         </div>
                       </div>
@@ -910,7 +910,7 @@ export default function AdminTemplateEditor() {
           <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--ion-card-background)", borderRadius: 8, width: "min(760px, 95vw)", height: "90vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", borderBottom: "1px solid var(--ion-border-color)" }}>
               <span style={{ fontWeight: 700, color: "var(--admin-text)" }}>PDF Preview — sample data</span>
-              <button className="admin-action-btn" onClick={() => setPreviewUrl(null)}><X size={16} /></button>
+              <button className="ion-activatable admin-action-btn" onClick={() => setPreviewUrl(null)}><X size={16} /><IonRippleEffect /></button>
             </div>
             <iframe title="Template preview" src={previewUrl} style={{ flex: 1, border: "none", width: "100%" }} />
           </div>

@@ -265,10 +265,14 @@ export default function AppLayout({ children, fillHeight = false }) {
 
   return (
     <IonApp className="admin-app">
+      {/* Active discount banner — full width, above the sidebar and top bar.
+          ion-app already lays out as a flex column; the split pane just needs
+          to flow (relative + flex) instead of absolutely covering the banner. */}
+      <PromoBanner inApp />
       <IonSplitPane
         contentId="app-main"
         when={sidebarOpen ? "md" : "(max-width: -1px)"}
-        style={{ "--side-width": "300px", "--side-max-width": "300px", "--side-min-width": "300px" }}
+        style={{ "--side-width": "300px", "--side-max-width": "300px", "--side-min-width": "300px", position: "relative", flex: "1 1 0%", width: "100%" }}
       >
 
         {/* ── Sidebar ── */}
@@ -373,8 +377,6 @@ export default function AppLayout({ children, fillHeight = false }) {
         {/* ── Main area ── */}
         <IonPage id="app-main">
           <IonHeader>
-            {/* Active discount banner sits above the top bar */}
-            <PromoBanner inApp />
             <IonToolbar>
               <IonButtons slot="start">
                 {isSecondaryPage ? (

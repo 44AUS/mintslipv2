@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import SupportCenter from "@/components/SupportCenter";
 import { useMinimizedChats } from "@/contexts/MinimizedChatsContext";
@@ -71,6 +72,8 @@ function isTypingFresh(ts) {
 }
 
 export default function AdminLiveChat() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [chats,     setChats]     = useState([]);
   const [activeId,  setActiveId]  = useState(null);
   const [messages,  setMessages]  = useState([]);
@@ -150,6 +153,15 @@ export default function AdminLiveChat() {
     if (activeId) fetchMessages(activeId);
     else setMessages([]);
   }, [activeId, fetchMessages]);
+
+  // Deep link from the topbar search: /admin/support?chat=<id> opens that
+  // conversation once the list has loaded, then cleans the URL.
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("chat");
+    if (!id || !chats.length) return;
+    if (chats.some((c) => c.id === id)) setActiveId(id);
+    navigate(location.pathname, { replace: true });
+  }, [chats, location.search]); // eslint-disable-line
 
   // ── actions ──────────────────────────────────────────────────────────────────
   const handleSelect = useCallback((id) => setActiveId(id), []);

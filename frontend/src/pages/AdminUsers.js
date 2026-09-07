@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner,
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
@@ -60,6 +60,7 @@ function getInitials(name, email) {
 
 export default function AdminUsers() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [users, setUsers]     = useState([]);
   const [total, setTotal]     = useState(0);
@@ -107,6 +108,18 @@ export default function AdminUsers() {
     if (!token) { navigate("/admin/login"); return; }
     fetchUsers();
   }, [fetchUsers]);
+
+  // Deep link from the topbar search: /admin/users?open=<id> opens that
+  // user's detail modal once the list has loaded, then cleans the URL so a
+  // refresh doesn't re-open it.
+  useEffect(() => {
+    if (loading) return;
+    const id = new URLSearchParams(location.search).get("open");
+    if (!id) return;
+    const record = users.find(u => u.id === id);
+    if (record) { setDetailUserSnapshot(record); setDetailUserId(record.id); }
+    navigate(location.pathname, { replace: true });
+  }, [loading, location.search]); // eslint-disable-line
 
   const filtered = users.filter(u => {
     if (segment === "banned") return !!u.isBanned;

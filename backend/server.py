@@ -5906,6 +5906,66 @@ def _clean_badge_color(value) -> Optional[str]:
     return value.lower() if re.fullmatch(r"#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", value) else None
 
 
+@app.get("/api/admin/search")
+async def admin_global_search(q: str = "", session: dict = Depends(get_current_admin)):
+    """Topbar global search (whodat admin port): users, purchases, support
+    chats and doc templates matched by name/email/id, each with the route to
+    jump to — list routes carry ?open=/?chat= so the page opens the record."""
+    q = (q or "").strip()
+    if len(q) < 2:
+        return {"results": []}
+    rx = {"$regex": re.escape(q), "$options": "i"}
+    results = []
+
+    users = await users_collection.find(
+        {"$or": [{"email": rx}, {"name": rx}]},
+        {"_id": 0, "id": 1, "email": 1, "name": 1, "subscription": 1, "isBanned": 1},
+    ).limit(6).to_list(6)
+    for u in users:
+        sub = u.get("email") or ""
+        tier = (u.get("subscription") or {}).get("tier")
+        if tier:
+            sub += f" · {tier}"
+        if u.get("isBanned"):
+            sub += " · banned"
+        results.append({"type": "user", "title": u.get("name") or u.get("email"),
+                        "subtitle": sub, "photo": None,
+                        "route": f"/admin/users?open={u.get('id')}"})
+
+    pays = await purchases_collection.find(
+        {"$or": [{"email": rx}, {"paypalEmail": rx}, {"id": rx}]},
+        {"_id": 0, "id": 1, "email": 1, "paypalEmail": 1, "amount": 1, "documentType": 1, "refunded": 1, "createdAt": 1},
+    ).sort("createdAt", -1).limit(4).to_list(4)
+    for p in pays:
+        doc_label = (p.get("documentType") or "purchase").replace("-", " ")
+        results.append({"type": "payment",
+                        "title": f"${float(p.get('amount') or 0):.2f} · {doc_label}",
+                        "subtitle": f"{p.get('email') or p.get('paypalEmail') or ''} · {'refunded' if p.get('refunded') else 'paid'}",
+                        "photo": None,
+                        "route": f"/admin/purchases?open={p.get('id')}"})
+
+    chats = await support_chats_collection.find(
+        {"$or": [{"guestName": rx}, {"guestEmail": rx}]},
+        {"_id": 0, "id": 1, "guestName": 1, "guestEmail": 1, "status": 1},
+    ).sort("updatedAt", -1).limit(4).to_list(4)
+    for c in chats:
+        results.append({"type": "ticket", "title": c.get("guestName") or "Support chat",
+                        "subtitle": f"{c.get('guestEmail') or ''} · {c.get('status') or 'open'}",
+                        "photo": None,
+                        "route": f"/admin/support?chat={c.get('id')}"})
+
+    tpls = await doc_templates_collection.find(
+        {"$or": [{"name": rx}, {"description": rx}]}, TEMPLATE_LIST_PROJECTION,
+    ).limit(4).to_list(4)
+    for t in tpls:
+        results.append({"type": "template", "title": t.get("name") or "Template",
+                        "subtitle": f"{(t.get('documentType') or '').replace('-', ' ')} · {t.get('status') or 'draft'}",
+                        "photo": None,
+                        "route": f"/admin/templates/edit/{t.get('id')}"})
+
+    return {"results": results}
+
+
 @app.get("/api/admin/doc-templates")
 async def list_doc_templates(session: dict = Depends(get_current_admin)):
     """List all custom document templates (metadata only)."""

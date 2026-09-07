@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner, IonList,
 } from "@ionic/react";
@@ -161,6 +162,20 @@ export default function AdminPurchases() {
   }, []);
 
   useEffect(() => { fetchPurchases(); }, [fetchPurchases]);
+
+  // Deep link from the topbar search: /admin/purchases?open=<id> opens that
+  // record's detail modal once the list has loaded, then cleans the URL so a
+  // refresh doesn't re-open it.
+  const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (loading) return;
+    const id = new URLSearchParams(location.search).get("open");
+    if (!id) return;
+    const record = purchases.find(p => p.id === id);
+    if (record) setDetail(record);
+    navigate(location.pathname, { replace: true });
+  }, [loading, location.search]); // eslint-disable-line
 
   const filtered = purchases.filter(p => {
     if (segment === "refunded")   return p.refunded;

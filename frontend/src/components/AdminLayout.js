@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -6,6 +6,7 @@ import {
   IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem, IonAvatar, IonPopover, IonTitle,
+  IonSearchbar, IonSpinner,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline, chevronDownOutline,
@@ -15,7 +16,7 @@ import {
   listOutline, trendingUpOutline, chatboxOutline, chatbubbleOutline, brushOutline,
   downloadOutline, chevronForwardOutline,
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
-  notificationsOutline,
+  notificationsOutline, searchOutline, arrowForwardOutline,
 } from "ionicons/icons";
 import {
   FileText,
@@ -45,6 +46,32 @@ const DOC_ICONS = {
   "schedule-c":           FileBarChart,
   "utility-bill":         FileText,
 };
+
+// ── Topbar global search (whodat admin port) ─────────────────────────────────
+const SEARCH_META = {
+  user: { label: "Users" },
+  payment: { label: "Purchases" },
+  ticket: { label: "Support" },
+  template: { label: "Templates" },
+};
+// The render order above, used to flatten grouped results for arrow-key nav.
+const SEARCH_ORDER = Object.keys(SEARCH_META);
+
+// Recently-viewed results, kept per admin (keyed by their id) so one admin's
+// history never shows for another on a shared machine.
+const recentsKey = (uid) => `mintslip:adminRecent:${uid || "anon"}`;
+const loadRecents = (uid) => {
+  try { return JSON.parse(localStorage.getItem(recentsKey(uid)) || "[]"); } catch { return []; }
+};
+const saveRecent = (uid, r) => {
+  try {
+    const list = [{ type: r.type, title: r.title, subtitle: r.subtitle, route: r.route },
+      ...loadRecents(uid).filter((x) => x.route !== r.route)].slice(0, 8);
+    localStorage.setItem(recentsKey(uid), JSON.stringify(list));
+    return list;
+  } catch { return []; }
+};
+const initialOf = (s) => ((s || "").trim().charAt(0) || "?").toUpperCase();
 
 // Tabs hidden from the top-bar segment (shown in sidebar or settings)
 const TOPBAR_EXCLUDE = new Set([
@@ -137,6 +164,111 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [bizMenu,       setBizMenu]       = useState({ open: false, event: undefined });
   const [userMenu,      setUserMenu]      = useState({ open: false, event: undefined });
   const [navMenu,       setNavMenu]       = useState({ open: false, event: undefined });
+
+  // ── Topbar global search (whodat admin port) ──
+  const [searchOpen,    setSearchOpen]    = useState(false);
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching,     setSearching]     = useState(false);
+  const [recents,       setRecents]       = useState([]);
+  const [activeIdx,     setActiveIdx]     = useState(0);
+  const [panelRect,     setPanelRect]     = useState(null);
+  const searchInputRef = useRef(null);
+  const searchMidRef   = useRef(null);
+
+  const adminIdForRecents = (() => {
+    try { return JSON.parse(localStorage.getItem("adminInfo") || "{}").id; } catch { return null; }
+  })();
+
+  // The results panel is portaled to <body> (ion-toolbar clips overflow), so
+  // it tracks the search box's on-screen rect instead of using absolute CSS.
+  const measureSearchPanel = () => {
+    const r = searchMidRef.current?.getBoundingClientRect();
+    if (r) setPanelRect({ top: r.bottom + 10, left: r.left, width: r.width });
+  };
+
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    setRecents(loadRecents(adminIdForRecents));
+    measureSearchPanel();
+    const t = setTimeout(() => searchInputRef.current?.setFocus?.(), 80);
+    const onResize = () => measureSearchPanel();
+    window.addEventListener("resize", onResize);
+    return () => { clearTimeout(t); window.removeEventListener("resize", onResize); };
+  }, [searchOpen]); // eslint-disable-line
+
+  // Cmd/Ctrl+K opens search from anywhere in the dashboard
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Live global search, debounced. Results come pre-grouped by type from
+  // /api/admin/search (users, purchases, support chats, templates).
+  useEffect(() => {
+    const q = searchQuery.trim();
+    setActiveIdx(0);
+    if (q.length < 2) { setSearchResults([]); setSearching(false); return undefined; }
+    setSearching(true);
+    const t = setTimeout(() => {
+      fetch(`${BACKEND_URL}/api/admin/search?q=${encodeURIComponent(q)}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      })
+        .then((r) => r.json())
+        .then((d) => setSearchResults(d.results || []))
+        .catch(() => setSearchResults([]))
+        .finally(() => setSearching(false));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [searchQuery]); // eslint-disable-line
+
+  // What the panel is currently listing: live results while typing, the
+  // recently-viewed list while the box is focused but empty. Flattened in
+  // render order so arrow keys/Enter address the same rows the user sees.
+  const showingRecents = searchQuery.trim().length < 2;
+  const searchFlatRows = showingRecents
+    ? recents
+    : SEARCH_ORDER.flatMap((type) => searchResults.filter((r) => r.type === type));
+
+  const closeSearch = () => { setSearchOpen(false); setSearchQuery(""); };
+
+  const openSearchResult = (r) => {
+    setRecents(saveRecent(adminIdForRecents, r));
+    setSearchOpen(false); setSearchQuery(""); setSearchResults([]);
+    navigate(r.route);
+  };
+
+  const onSearchKeyDown = (e) => {
+    if (e.key === "Escape") { closeSearch(); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setActiveIdx((i) => Math.min(i + 1, searchFlatRows.length - 1)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, 0)); }
+    if (e.key === "Enter" && searchFlatRows.length) openSearchResult(searchFlatRows[Math.min(activeIdx, searchFlatRows.length - 1)]);
+  };
+
+  // One search-result row: an initials circle (no category icon chips);
+  // `is-active` tracks the arrow-key/hover selection, Enter opens it.
+  const renderSearchRow = (r, idx) => (
+    <button
+      key={`${r.type}-${idx}`}
+      type="button"
+      className={`admin-search-row${idx === activeIdx ? " is-active" : ""}`}
+      onMouseEnter={() => setActiveIdx(idx)}
+      onClick={() => openSearchResult(r)}
+    >
+      <span className="admin-search-row-fallback">{initialOf(r.title)}</span>
+      <span className="admin-search-row-main">
+        <span className="admin-search-row-title">{r.title}</span>
+        {r.subtitle && <span className="admin-search-row-sub">{r.subtitle}</span>}
+      </span>
+      <IonIcon icon={arrowForwardOutline} className="admin-search-row-go" />
+    </button>
+  );
 
   const [adminProfile, setAdminProfile] = useState(null);
 
@@ -644,36 +776,35 @@ export default function AdminLayout({ children, fillHeight = false }) {
         <IonPage id="admin-main">
           <IonHeader>
             <IonToolbar>
-              {isInnerPage ? (
-                <>
-                  {/* Inner page: back arrow + title */}
-                  <IonButtons slot="start">
-                    <IonButton
-                      fill="clear"
-                      onClick={() => { setSidebarOpen(true); navigate(-1); }}
-                      style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
-                    >
-                      <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>
-                        <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                      </span>
-                    </IonButton>
-                  </IonButtons>
-                  <IonTitle style={{ color: "#ffffff", fontSize: "1rem", fontWeight: 600 }}>
-                    {pageTitle}
-                  </IonTitle>
-                </>
-              ) : (
-                <>
-                  {/* Hamburger */}
-                  <IonButtons slot="start">
-                    <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
-                      <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
-                        <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                      </span>
-                    </IonButton>
-                  </IonButtons>
+              <IonButtons slot="start">
+                {isInnerPage ? (
+                  <IonButton
+                    fill="clear"
+                    onClick={() => { setSidebarOpen(true); navigate(-1); }}
+                    style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
+                  >
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>
+                      <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                ) : (
+                  <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                      <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                )}
+              </IonButtons>
 
-                  {isMobile ? (
+              {/* Middle: title/tabs that fade out when the search input scales
+                  in over the same space (whodat topbar behavior). */}
+              <div className="admin-topbar-mid" ref={searchMidRef}>
+                <div className={`admin-topbar-mid-content${searchOpen ? " is-hidden" : ""}`}>
+                  {isInnerPage ? (
+                    <span style={{ color: "#ffffff", fontSize: "1rem", fontWeight: 600, paddingLeft: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {pageTitle}
+                    </span>
+                  ) : isMobile ? (
                     <>
                       {/* Mobile: current tab label button → popover */}
                       <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })} style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
@@ -733,11 +864,44 @@ export default function AdminLayout({ children, fillHeight = false }) {
                       ))}
                     </IonSegment>
                   )}
-                </>
-              )}
+                </div>
+                <div className={`admin-topbar-search${searchOpen ? " is-open" : ""}`}>
+                  <IonSearchbar
+                    ref={searchInputRef}
+                    value={searchQuery}
+                    onIonInput={(e) => setSearchQuery(e.detail.value ?? "")}
+                    onKeyDown={onSearchKeyDown}
+                    onIonCancel={closeSearch}
+                    showCancelButton="always"
+                    placeholder="Search users, purchases, support…"
+                    style={{
+                      "--background": darkMode ? "#16161f" : "#ffffff",
+                      "--color": darkMode ? "#ffffff" : "#000000",
+                      "--placeholder-color": darkMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
+                      "--icon-color": darkMode ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)",
+                      "--cancel-button-color": darkMode ? "#ffffff" : "var(--ion-color-primary)",
+                      "--border-radius": "10px",
+                      "--box-shadow": "0 4px 24px rgba(0,0,0,0.18)",
+                      padding: "0 4px",
+                    }}
+                  />
+                </div>
+              </div>
 
-              {/* Right: notifications (always visible) */}
+              {/* Right: search + notifications (always visible) */}
               <IonButtons slot="end" style={{ gap: 0 }}>
+
+                {/* Search */}
+                <IonButton
+                  fill="clear"
+                  aria-label="Search"
+                  onClick={() => setSearchOpen(true)}
+                  style={{ "--color": "rgba(255,255,255,0.8)", "--border-radius": "50%", opacity: searchOpen ? 0 : 1, pointerEvents: searchOpen ? "none" : "auto" }}
+                >
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
+                    <IonIcon icon={searchOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
 
                 {/* Notifications */}
                 <div style={{ position: "relative" }}>
@@ -760,6 +924,35 @@ export default function AdminLayout({ children, fillHeight = false }) {
               </IonButtons>
             </IonToolbar>
           </IonHeader>
+
+          {/* Live results (or recently viewed, while empty) below the search
+              box — portaled to <body> because ion-toolbar clips overflow. */}
+          {searchOpen && panelRect && (searchQuery.trim().length >= 2 || recents.length > 0) && createPortal(
+            <div className="admin-search-panel" style={{ top: panelRect.top, left: panelRect.left, width: panelRect.width }}>
+              {showingRecents ? (
+                <>
+                  <div className="admin-search-group">Recently viewed</div>
+                  {recents.map((r, i) => renderSearchRow(r, i))}
+                </>
+              ) : searching && searchResults.length === 0 ? (
+                <div className="admin-search-empty"><IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> Searching…</div>
+              ) : searchResults.length === 0 ? (
+                <div className="admin-search-empty">No matches for “{searchQuery.trim()}”</div>
+              ) : (
+                SEARCH_ORDER.map((type) => {
+                  const group = searchResults.filter((r) => r.type === type);
+                  if (!group.length) return null;
+                  return (
+                    <Fragment key={type}>
+                      <div className="admin-search-group">{SEARCH_META[type].label}</div>
+                      {group.map((r) => renderSearchRow(r, searchFlatRows.indexOf(r)))}
+                    </Fragment>
+                  );
+                })
+              )}
+            </div>,
+            document.body
+          )}
 
           <IonContent style={{ "--background": "var(--ion-background-color)" }}>
             {fillHeight ? (

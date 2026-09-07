@@ -155,17 +155,29 @@ body.dark ion-alert .alert-checkbox-label {
   color: #ffffff !important;
 }
 
-/* Visible hover on the modal toolbar icon buttons (X / checkmark): a
-   host-level background, since the shadow-DOM hover overlay is invisible
-   on light backgrounds. */
+/* Icon-only buttons app-wide follow the whodat admin pattern: circular
+   shape with equal padding and a soft round hover fill. The fill uses
+   currentColor so it adapts to any surface (white glow on the green
+   toolbars, dark tint on light cards). */
+ion-button.button-clear:has([slot="icon-only"]) {
+  --border-radius: 50%;
+  --padding-start: 9px;
+  --padding-end: 9px;
+  --padding-top: 9px;
+  --padding-bottom: 9px;
+}
 @media (any-hover: hover) {
-  .modal-slide-up ion-toolbar ion-buttons ion-button {
-    border-radius: 999px;
-    transition: background-color 0.15s ease;
+  ion-button.button-clear:has([slot="icon-only"]):hover {
+    --background: color-mix(in srgb, currentColor 13%, transparent);
   }
-  .modal-slide-up ion-toolbar ion-buttons ion-button:hover {
-    background-color: var(--ion-color-step-100, rgba(0, 0, 0, 0.08));
-  }
+}
+
+/* The portal modals' toolbars sit on the card background, but the theme
+   sets --ion-toolbar-color to white for the green top bars, and toolbar
+   buttons read that for their text/hover color. Use the theme text color
+   here so the hover circle is visible in light mode too. */
+.modal-slide-up ion-toolbar {
+  --ion-toolbar-color: var(--ion-text-color);
 }
 
 /* Hover feedback on every modal button, matching the toolbar X/checkmark —

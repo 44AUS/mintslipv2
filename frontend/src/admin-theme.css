@@ -277,7 +277,7 @@ ion-app.admin-app {
   border: none;
   cursor: pointer;
   padding: 7px;
-  border-radius: var(--admin-radius);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -286,7 +286,7 @@ ion-app.admin-app {
 }
 
 .admin-header-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
 }
 
@@ -1049,7 +1049,7 @@ ion-modal ion-footer ion-toolbar {
   background: none;
   border: none;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 50%;
   color: var(--admin-text-muted);
   transition: background 0.12s, color 0.12s;
   padding: 0;

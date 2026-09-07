@@ -808,6 +808,22 @@ async def send_support_reply_email(user_email: str, user_name: str, admin_name: 
     return await send_email(user_email, template["subject"], template["html"], "support_reply")
 
 
+def _pretty_date(iso_str: str) -> str:
+    """Render an ISO date like 2026-09-07T00:00:00Z as 'September 7th, 2026'."""
+    if not iso_str:
+        return ""
+    try:
+        dt = datetime.fromisoformat(str(iso_str).replace("Z", "+00:00"))
+    except ValueError:
+        return iso_str
+    day = dt.day
+    if 11 <= day % 100 <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    return f"{dt.strftime('%B')} {day}{suffix}, {dt.year}"
+
+
 def template_discount_announcement(code: str, discount_percent, custom_message: str = "", expiry_date: str = "") -> Dict[str, str]:
     """Announce a new discount code, with an optional custom note from the admin."""
     safe_msg = (custom_message or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
@@ -842,6 +858,7 @@ async def send_discount_announcement_email(to_email: str, code: str, discount_pe
     config = await get_email_config("discount_announcement")
     if not config["enabled"]:
         return {"success": True, "skipped": True}
+    expiry_date = _pretty_date(expiry_date)
     default = template_discount_announcement(code, discount_percent, custom_message, expiry_date)
     template = await resolve_template("discount_announcement", default, {
         "code": code, "discount_percent": discount_percent,

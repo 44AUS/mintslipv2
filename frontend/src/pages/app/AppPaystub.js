@@ -1162,10 +1162,12 @@ export default function AppPaystub() {
                       </IonGrid>
                     </div>
                   ))}
-                  <IonButton fill="outline" size="small" onClick={addDeduction}>
-                    <IonIcon slot="start" icon={addOutline} />
-                    Add Deduction
-                  </IonButton>
+                  <div style={{ textAlign: "center" }}>
+                    <IonButton fill="outline" size="small" onClick={addDeduction}>
+                      <IonIcon slot="start" icon={addOutline} />
+                      Add Deduction
+                    </IonButton>
+                  </div>
                 </div>
               </div>
 
@@ -1205,10 +1207,12 @@ export default function AppPaystub() {
                       </IonGrid>
                     </div>
                   ))}
-                  <IonButton fill="outline" size="small" onClick={addContribution}>
-                    <IonIcon slot="start" icon={addOutline} />
-                    Add Contribution
-                  </IonButton>
+                  <div style={{ textAlign: "center" }}>
+                    <IonButton fill="outline" size="small" onClick={addContribution}>
+                      <IonIcon slot="start" icon={addOutline} />
+                      Add Contribution
+                    </IonButton>
+                  </div>
                 </div>
               </div>
 
@@ -1289,18 +1293,20 @@ export default function AppPaystub() {
                         </IonGrid>
                       </div>
                     ))}
-                    <IonButton fill="outline" size="small" onClick={addAbsencePlan}>
-                      <IonIcon slot="start" icon={addOutline} />
-                      Add Absence Plan
-                    </IonButton>
+                    <div style={{ textAlign: "center" }}>
+                      <IonButton fill="outline" size="small" onClick={addAbsencePlan}>
+                        <IonIcon slot="start" icon={addOutline} />
+                        Add Absence Plan
+                      </IonButton>
+                    </div>
                   </div>
                 </div>
               )}
 
             </div>
 
-            <div style={{ marginTop: 12, textAlign: "right" }}>
-              <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
+            <div style={{ marginTop: 12 }}>
+              <IonButton expand="block" fill="outline" color="medium" onClick={clearForm}>Clear Form</IonButton>
             </div>
           </div>
           </div>

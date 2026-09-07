@@ -342,7 +342,7 @@ export default function AIResumeLanding() {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
-                  onClick={() => navigate("/ai-resume-builder")}
+                  onClick={() => navigate("/app/resumes")}
                   size="lg"
                   className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
                 >
@@ -351,7 +351,7 @@ export default function AIResumeLanding() {
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button
-                  onClick={() => navigate("/ai-resume-builder")}
+                  onClick={() => navigate("/app/resumes")}
                   size="lg"
                   variant="outline"
                   className="group gap-2 text-lg px-8 py-6 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-300"
@@ -520,7 +520,7 @@ export default function AIResumeLanding() {
 
           <div className="text-center mt-12">
             <Button
-              onClick={() => navigate("/ai-resume-builder")}
+              onClick={() => navigate("/app/resumes")}
               size="lg"
               className="gap-2 bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 shadow-lg"
             >
@@ -600,7 +600,7 @@ export default function AIResumeLanding() {
               </div>
 
               <Button
-                onClick={() => navigate("/ai-resume-builder")}
+                onClick={() => navigate("/app/resumes")}
                 size="lg"
                 className="cta-shine mt-8 gap-2 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
               >
@@ -663,7 +663,7 @@ export default function AIResumeLanding() {
               <div 
                 key={index} 
                 className="cursor-pointer"
-                onClick={() => navigate("/ai-resume-builder")}
+                onClick={() => navigate("/app/resumes")}
               >
                 <TemplateCard {...template} />
               </div>
@@ -672,7 +672,7 @@ export default function AIResumeLanding() {
 
           <div className="text-center mt-12">
             <Button
-              onClick={() => navigate("/ai-resume-builder")}
+              onClick={() => navigate("/app/resumes")}
               size="lg"
               variant="outline"
               className="gap-2 border-2 border-green-700 text-green-700 hover:bg-green-50"
@@ -777,7 +777,7 @@ export default function AIResumeLanding() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => navigate("/ai-resume-builder")}
+              onClick={() => navigate("/app/resumes")}
               size="lg"
               className="cta-shine gap-2 text-lg px-10 py-7 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >

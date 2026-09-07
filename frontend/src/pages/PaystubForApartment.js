@@ -113,7 +113,7 @@ export default function PaystubForApartment() {
     {
       title: "Pay Stub Generator",
       description: "Create professional paystubs instantly with accurate tax calculations",
-      path: "/paystub-generator",
+      path: "/app",
       icon: FileText
     },
     {
@@ -233,7 +233,7 @@ export default function PaystubForApartment() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 size="lg"
                 className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
               >
@@ -529,7 +529,7 @@ export default function PaystubForApartment() {
                 MintSlip helps you create professional paystubs with accurate calculations. Our templates are designed to include all the information landlords look for when reviewing rental applications.
               </p>
               <Button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 className="bg-green-700 hover:bg-green-800 gap-2"
               >
                 Create Your Paystub Now
@@ -732,7 +732,7 @@ export default function PaystubForApartment() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => navigate("/paystub-generator")}
+              onClick={() => navigate("/app")}
               size="lg"
               className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >

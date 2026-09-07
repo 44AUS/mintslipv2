@@ -464,7 +464,7 @@ export default function HowToMakePaystub() {
     {
       title: "Pay Stub Generator",
       description: "Create professional paystubs instantly with accurate tax calculations",
-      path: "/paystub-generator",
+      path: "/app",
       icon: FileText
     },
     {
@@ -482,7 +482,7 @@ export default function HowToMakePaystub() {
     {
       title: "Canadian Paystub Generator",
       description: "Generate paystubs with Canadian tax calculations",
-      path: "/canadian-paystub-generator",
+      path: "/app/canadian-paystub",
       icon: Building2
     },
     {
@@ -614,7 +614,7 @@ export default function HowToMakePaystub() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 size="lg"
                 className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
               >
@@ -939,7 +939,7 @@ export default function HowToMakePaystub() {
                   </div>
 
                   <Button
-                    onClick={() => navigate("/paystub-generator")}
+                    onClick={() => navigate("/app")}
                     size="lg"
                     className="w-full gap-2 bg-green-700 hover:bg-green-800"
                   >
@@ -1103,7 +1103,7 @@ export default function HowToMakePaystub() {
                 MintSlip makes it easy to create professional, accurate paystubs in under 5 minutes. Our platform handles all the complex tax calculations so you can focus on what matters.
               </p>
               <Button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 className="bg-green-700 hover:bg-green-800 gap-2"
               >
                 Create Your Paystub Now
@@ -1183,7 +1183,7 @@ export default function HowToMakePaystub() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => navigate("/paystub-generator")}
+              onClick={() => navigate("/app")}
               size="lg"
               className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >

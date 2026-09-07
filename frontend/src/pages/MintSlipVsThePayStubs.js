@@ -460,7 +460,7 @@ export default function MintSlipVsThePayStubs() {
 
                 <div className="flex flex-wrap gap-4">
                   <Button 
-                    onClick={() => navigate('/paystub-generator')}
+                    onClick={() => navigate('/app')}
                     className="bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
                   >
                     Try MintSlip Today
@@ -769,7 +769,7 @@ export default function MintSlipVsThePayStubs() {
               Join thousands who've switched from ThePayStubs to MintSlip. Better quality, more features, lower price.
             </p>
             <Button
-              onClick={() => navigate('/paystub-generator')}
+              onClick={() => navigate('/app')}
               className="cta-shine bg-green-700 hover:bg-green-800 text-white px-10 py-6 text-lg rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all"
             >
               Create Your Paystub Now

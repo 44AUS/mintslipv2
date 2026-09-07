@@ -1305,6 +1305,17 @@ export default function Home() {
     setIsVisible(true);
   }, []);
 
+  // Scroll to the section named in the URL hash (nav links from other pages
+  // land here as /#how-it-works or /#faq)
+  useEffect(() => {
+    const id = window.location.hash.replace("#", "");
+    if (!id) return;
+    const t = setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
+
   const trustPoints = [
     { icon: CheckCircle, text: "Instant download" },
     { icon: Shield, text: "Secure payment" },
@@ -1368,7 +1379,7 @@ export default function Home() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
               <Button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 size="lg"
                 className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg hover:shadow-green-900/15 transition-all duration-200"
               >
@@ -1377,7 +1388,7 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
               <Button
-                onClick={() => navigate("/ai-resume-builder")}
+                onClick={() => navigate("/app/resumes")}
                 size="lg"
                 variant="outline"
                 className="group gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-green-50/60 transition-all duration-200"
@@ -1559,7 +1570,7 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
               >
                 Generate Now
@@ -1594,7 +1605,7 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/canadian-paystub-generator")}
+                onClick={() => navigate("/app/canadian-paystub")}
                 className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
               >
                 Generate Now
@@ -1629,7 +1640,7 @@ export default function Home() {
                 </li>
               </ul>
               <button
-                onClick={() => navigate("/ai-resume-builder")}
+                onClick={() => navigate("/app/resumes")}
                 className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
               >
                 Generate Now
@@ -1643,7 +1654,7 @@ export default function Home() {
       {(() => {
         const [quickSolutionRef, quickSolutionInView] = useInView();
         return (
-          <section ref={quickSolutionRef} className="py-20 bg-white">
+          <section id="how-it-works" ref={quickSolutionRef} className="py-20 bg-white scroll-mt-24">
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 {/* Left Content - appears below animation on mobile */}
@@ -1685,7 +1696,7 @@ export default function Home() {
                     Whether you need detailed pay stubs or record keeping, MintSlip makes it quick and easy to create accurate and reliable paycheck documentation anytime.
                   </p>
                   <button
-                    onClick={() => navigate("/paystub-generator")}
+                    onClick={() => navigate("/app")}
                     className="group inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-green-900/10 hover:shadow-lg"
                   >
                     Get Your Pay Stub Now
@@ -1908,7 +1919,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-4">
                   {/* Featured Document Cards */}
                   <button
-                    onClick={() => navigate("/paystub-generator")}
+                    onClick={() => navigate("/app")}
                     className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
                     <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
@@ -1920,7 +1931,7 @@ export default function Home() {
                   </button>
                   
                   <button
-                    onClick={() => navigate("/ai-resume-builder")}
+                    onClick={() => navigate("/app/resumes")}
                     className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
                     <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
@@ -2155,7 +2166,7 @@ export default function Home() {
       })()}
 
       {/* FAQ Section */}
-      <section className="py-20 md:py-24 bg-white">
+      <section id="faq" className="py-20 md:py-24 bg-white scroll-mt-24">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold uppercase tracking-widest text-green-700 mb-4" style={{ letterSpacing: '0.15em' }}>
@@ -2209,7 +2220,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
-                onClick={() => navigate("/paystub-generator")}
+                onClick={() => navigate("/app")}
                 size="lg"
                 className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
               >

@@ -364,7 +364,7 @@ export default function Blog() {
               Generate accurate, professional pay stubs in minutes with our easy-to-use generator.
             </p>
             <Button
-              onClick={() => navigate("/paystub-generator")}
+              onClick={() => navigate("/app")}
               size="lg"
               className="bg-white text-green-700 hover:bg-green-50 gap-2"
             >

@@ -699,7 +699,7 @@ export default function ComparisonPage() {
 
               <div className="flex flex-wrap gap-4">
                 <Button
-                  onClick={() => navigate("/paystub-generator")}
+                  onClick={() => navigate("/app")}
                   size="lg"
                   className="gap-2 px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all"
                 >
@@ -923,7 +923,7 @@ export default function ComparisonPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={() => navigate("/paystub-generator")}
+              onClick={() => navigate("/app")}
               size="lg"
               className="cta-shine gap-2 px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all"
             >

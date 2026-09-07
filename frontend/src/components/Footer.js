@@ -8,27 +8,27 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
-      { name: "Pay Stub Generator", path: "/paystub-generator" },
-      { name: "Canadian Pay Stubs", path: "/canadian-paystub-generator" },
+      { name: "Pay Stub Generator", path: "/app" },
+      { name: "Canadian Pay Stubs", path: "/app/canadian-paystub" },
       { name: "Sample Templates", path: "/paystub-samples" },
-      { name: "AI Resume Builder", path: "/ai-resume-builder" },
+      { name: "AI Resume Builder", path: "/app/resumes" },
     ],
   },
   {
     title: "Tax Forms",
     links: [
-      { name: "W-2 Generator", path: "/w2-generator" },
-      { name: "W-9 Generator", path: "/w9-generator" },
-      { name: "1099-NEC Generator", path: "/1099-nec-generator" },
-      { name: "Schedule C Generator", path: "/schedule-c-generator" },
+      { name: "W-2 Generator", path: "/app/tax-forms" },
+      { name: "W-9 Generator", path: "/app/tax-forms" },
+      { name: "1099-NEC Generator", path: "/app/tax-forms" },
+      { name: "Schedule C Generator", path: "/app/tax-forms" },
     ],
   },
   {
-    title: "Tools & Compare",
+    title: "More Generators",
     links: [
-      { name: "All Generators", path: "/generators" },
-      { name: "Offer Letter Generator", path: "/offer-letter-generator" },
-      { name: "Commercial Lease", path: "/commercial-lease-generator" },
+      { name: "Legal Forms", path: "/app/legal-forms" },
+      { name: "Business Forms", path: "/app/business-forms" },
+      { name: "Commercial Lease", path: "/app/business-forms" },
       { name: "MintSlip vs Others", path: "/mintslip-vs-other-paystub-generators" },
     ],
   },

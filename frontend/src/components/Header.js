@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, FileText, FileBarChart, Menu, Mail, HelpCircle, Info, ChevronDown, Receipt, FileSpreadsheet, Sparkles, User, LogOut, Settings, Download, LayoutDashboard, Phone, ShieldCheck } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { FileText, ChevronDown, LogOut, Settings, Download, LayoutDashboard, ShieldCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,38 +8,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import MintSlip from '../assests/mintslip-logo.png';
 import '../marketing-nav.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-// Tax Forms dropdown items
-const TAX_FORMS = [
-  { name: "W-2 Generator", path: "/w2-generator", icon: FileSpreadsheet },
-  { name: "W-9 Generator", path: "/w9-generator", icon: FileSpreadsheet },
-  { name: "1099 NEC Generator", path: "/1099-nec-generator", icon: FileSpreadsheet },
-  { name: "1099 Misc Generator", path: "/1099-misc-generator", icon: FileSpreadsheet },
-  { name: "Schedule C Generator", path: "/schedule-c-generator", icon: FileSpreadsheet },
-  // Add more tax forms here as needed
-];
-
-// Other Forms dropdown items
-const OTHER_FORMS = [
-  { name: "Service Expense Generator", path: "/service-expense-generator", icon: FileSpreadsheet },
-  { name: "Voided Check", path: "/voided-check-generator", icon: FileSpreadsheet },
-  { name: "Offer Letter Generator", path: "/offer-letter-generator", icon: FileSpreadsheet },
-  { name: "Cease & Desist Letter", path: "/cease-and-desist-generator", icon: FileSpreadsheet },
-  { name: "Power of Attorney", path: "/power-of-attorney-generator", icon: FileSpreadsheet },
-  { name: "Commercial Lease", path: "/commercial-lease-generator", icon: FileSpreadsheet },
-  { name: "Invoice Generator", path: "/invoice-generator-generator", icon: FileSpreadsheet },
-  { name: "Vehicle Bill of Sale", path: "/vehicle-bill-of-sale-generator", icon: FileSpreadsheet },
-  // Add more forms here as needed
-];
 
 // User account dropdown (logged-in avatar) — shown in the pill's actions
 function UserAccountDropdown({ user, onNavigate, onLogout }) {
@@ -119,204 +84,9 @@ function UserAccountDropdown({ user, onNavigate, onLogout }) {
   );
 }
 
-// Navigation links component for mobile
-function MobileNavLinks({ location, onNavigate }) {
-  const [taxFormsOpen, setTaxFormsOpen] = useState(false);
-  const [otherFormsOpen, setOtherFormsOpen] = useState(false);
-  const [paystubsOpen, setPaystubsOpen] = useState(false);
-  const isActive = (path) => location.pathname === path;
-  const isTaxFormActive = TAX_FORMS.some(form => location.pathname === form.path);
-  const isOtherFormActive = OTHER_FORMS.some(form => location.pathname === form.path);
-  const isPaystubActive = location.pathname === '/paystub-generator' || location.pathname === '/paystub-samples';
-  
-  const getButtonClasses = (path) => {
-    const base = "flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md transition-all";
-    if (isActive(path)) {
-      return `${base} bg-green-100 text-green-800 font-semibold`;
-    }
-    return `${base} hover:bg-green-50 text-slate-500 hover:text-green-700`;
-  };
-
-  return (
-    <>
-      {/* Pay Stubs Collapsible for Mobile */}
-      <Collapsible open={paystubsOpen} onOpenChange={setPaystubsOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            className={`flex items-center justify-between gap-2 px-4 py-3 w-full rounded-md transition-all ${
-              isPaystubActive 
-                ? 'bg-green-100 text-green-800 font-semibold' 
-                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-            }`}
-            data-testid="nav-paystub-mobile"
-          >
-            <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              <span className="text-base">Pay Stubs</span>
-            </div>
-            <ChevronDown className={`w-4 h-4 transition-transform ${paystubsOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-6 space-y-1 mt-1">
-          <button
-            onClick={() => onNavigate("/paystub-generator")}
-            className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
-              isActive("/paystub-generator") 
-                ? 'bg-green-100 text-green-800 font-semibold' 
-                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Create Paystub</span>
-          </button>
-          <button
-            onClick={() => onNavigate("/canadian-paystub-generator")}
-            className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
-              isActive("/canadian-paystub-generator") 
-                ? 'bg-green-100 text-green-800 font-semibold' 
-                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Canada Pay Stubs</span>
-          </button>
-          <button
-            onClick={() => onNavigate("/paystub-samples")}
-            className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
-              isActive("/paystub-samples") 
-                ? 'bg-green-100 text-green-800 font-semibold' 
-                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Sample Templates</span>
-          </button>
-        </CollapsibleContent>
-      </Collapsible>
-      
-      <button
-        onClick={() => onNavigate("/ai-resume-builder")}
-        className={getButtonClasses("/ai-resume-builder")}
-        data-testid="nav-bankstatement-link-mobile"
-      >
-        <Sparkles className="w-5 h-5" />
-        <span className="text-base">AI Resume Builder</span>
-      </button>
-
-      {/* Tax Forms Collapsible for Mobile */}
-      <Collapsible open={taxFormsOpen} onOpenChange={setTaxFormsOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            className={`flex items-center justify-between gap-2 px-4 py-3 w-full rounded-md transition-all ${
-              isTaxFormActive 
-                ? 'bg-green-100 text-green-800 font-semibold' 
-                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-            }`}
-            data-testid="nav-taxforms-mobile"
-          >
-            <div className="flex items-center gap-2">
-              <Receipt className="w-5 h-5" />
-              <span className="text-base">Tax Forms</span>
-            </div>
-            <ChevronDown className={`w-4 h-4 transition-transform ${taxFormsOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-6 space-y-1 mt-1">
-          {TAX_FORMS.map((form) => {
-            const IconComponent = form.icon;
-            return (
-              <button
-                key={form.path}
-                onClick={() => onNavigate(form.path)}
-                className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
-                  isActive(form.path) 
-                    ? 'bg-green-100 text-green-800 font-semibold' 
-                    : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-                }`}
-              >
-                <IconComponent className="w-4 h-4" />
-                <span className="text-sm">{form.name}</span>
-              </button>
-            );
-          })}
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Other Forms Collapsible for Mobile
-      <Collapsible open={otherFormsOpen} onOpenChange={setOtherFormsOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            className={`flex items-center justify-between gap-2 px-4 py-3 w-full rounded-md transition-all ${
-              isOtherFormActive 
-                ? 'bg-green-100 text-green-800 font-semibold' 
-                : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-            }`}
-            data-testid="nav-otherforms-mobile"
-          >
-            <div className="flex items-center gap-2">
-              <Receipt className="w-5 h-5" />
-              <span className="text-base">Other Forms</span>
-            </div>
-            <ChevronDown className={`w-4 h-4 transition-transform ${otherFormsOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-6 space-y-1 mt-1">
-          {OTHER_FORMS.map((form) => {
-            const IconComponent = form.icon;
-            return (
-              <button
-                key={form.path}
-                onClick={() => onNavigate(form.path)}
-                className={`flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md transition-all ${
-                  isActive(form.path) 
-                    ? 'bg-green-100 text-green-800 font-semibold' 
-                    : 'hover:bg-green-50 text-slate-500 hover:text-green-700'
-                }`}
-              >
-                <IconComponent className="w-4 h-4" />
-                <span className="text-sm">{form.name}</span>
-              </button>
-            );
-          })}
-        </CollapsibleContent>
-      </Collapsible> */}
-
-      <button
-        onClick={() => onNavigate("/generators")}
-        className={getButtonClasses("/generators")}
-        data-testid="nav-generators-link-mobile"
-      >
-        <FileSpreadsheet className="w-5 h-5" />
-        <span className="text-base">All Generators</span>
-      </button>
-
-      <button
-        onClick={() => onNavigate("/about")}
-        className={getButtonClasses("/about")}
-        data-testid="nav-about-link-mobile"
-      >
-        <Info className="w-5 h-5" />
-        <span className="text-base">About</span>
-      </button>
-      
-      <button
-        onClick={() => onNavigate("/faq")}
-        className={getButtonClasses("/faq")}
-        data-testid="nav-faq-link-mobile"
-      >
-        <HelpCircle className="w-5 h-5" />
-        <span className="text-base">FAQ</span>
-      </button>
-      
-    </>
-  );
-}
-
 export default function Header({ title }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const isHome = location.pathname === "/";
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [authEnabled, setAuthEnabled] = useState(true);
 
@@ -344,7 +114,16 @@ export default function Header({ title }) {
 
   const handleNavigation = (path) => {
     navigate(path);
-    setMobileMenuOpen(false);
+  };
+
+  // Scroll to a home page section; from other pages, go home first (Home
+  // reads the hash on load and scrolls there).
+  const goToSection = (id) => {
+    if (location.pathname === "/") {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate(`/#${id}`);
+    }
   };
 
   const handleLogout = () => {
@@ -368,10 +147,10 @@ export default function Header({ title }) {
           </button>
 
           <div className="navbar-links">
-            <a onClick={() => handleNavigation("/paystub-generator")}>Pay Stubs</a>
-            <a onClick={() => handleNavigation("/paystub-samples")}>Samples</a>
-            <a onClick={() => handleNavigation("/ai-resume-builder")}>AI Resume</a>
-            <a onClick={() => handleNavigation("/generators")}>All Generators</a>
+            <a onClick={() => goToSection("how-it-works")}>How it works</a>
+            <a href="/#">Reviews</a>
+            <a href="/#">Compare</a>
+            <a onClick={() => goToSection("faq")}>FAQ</a>
           </div>
 
           <div className="navbar-actions">
@@ -385,122 +164,7 @@ export default function Header({ title }) {
               <span>Create a paystub</span>
             </button>
 
-            {/* Mobile/Tablet Menu */}
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <button
-                    className="navbar-menu-btn"
-                    data-testid="mobile-menu-button"
-                    aria-label="Open navigation menu"
-                  >
-                    <Menu className="w-6 h-6" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[280px] sm:w-[320px] overflow-y-auto">
-                  <SheetHeader>
-                    <SheetTitle 
-                      className="text-xl font-black tracking-tight text-left"
-                      style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}
-                    >
-                      MintSlip
-                    </SheetTitle>
-                  </SheetHeader>
-                  <nav className="flex flex-col gap-2 mt-6 pb-20">
-                    <MobileNavLinks location={location} onNavigate={handleNavigation} />
-                  </nav>
-                  
-                  {/* Auth buttons in mobile menu when logged out */}
-                  {!user && authEnabled && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-2 px-4">
-                      <button
-                        onClick={() => handleNavigation("/signup")}
-                        className="w-full py-2.5 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
-                      >
-                        Sign Up
-                      </button>
-                      <button
-                        onClick={() => handleNavigation("/login")}
-                        className="w-full py-2.5 text-sm font-medium text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-md transition-colors"
-                      >
-                        Log In
-                      </button>
-                    </div>
-                  )}
 
-                  {/* User info in mobile menu */}
-                  {user ? (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="px-4 py-2 mb-2">
-                        <p className="font-medium text-slate-800">{user.name}</p>
-                        <p className="text-xs text-slate-500">{user.email}</p>
-                      </div>
-                      <button
-                        onClick={() => handleNavigation("/user/dashboard")}
-                        className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-green-50 transition-colors text-slate-600"
-                      >
-                        <LayoutDashboard className="w-4 h-4" />
-                        <span>Dashboard</span>
-                      </button>
-                      <button
-                        onClick={() => handleNavigation("/user/downloads")}
-                        className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-green-50 transition-colors text-slate-600"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>My Downloads</span>
-                      </button>
-                      {(user.subscription?.tier === 'business' && ['active', 'cancelling'].includes(user.subscription?.status)) && (
-                        <button
-                          onClick={() => handleNavigation("/user/pdf-engine")}
-                          className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-purple-50 transition-colors text-purple-600"
-                        >
-                          <ShieldCheck className="w-4 h-4" />
-                          <span>PDF Engine</span>
-                          <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">Business</span>
-                        </button>
-                      )}
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 px-4 py-2 w-full justify-start rounded-md hover:bg-red-50 transition-colors text-red-600"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Log Out</span>
-                      </button>
-                    </div>
-                  ) : null}
-                  
-                  {/* Home link in mobile menu */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <button
-                      onClick={() => handleNavigation("/")}
-                      className="flex items-center gap-2 px-4 py-3 w-full justify-start rounded-md hover:bg-green-50 transition-colors"
-                      data-testid="nav-home-link-mobile"
-                      style={{ color: location.pathname === '/' ? '#1a4731' : '#64748b' }}
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                      <span className="font-medium text-base">Back to Home</span>
-                    </button>
-                  </div>
-                  
-                  {/* Support Contact in Mobile Menu */}
-                  <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                    <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Support</p>
-                    <a 
-                      href="tel:+18556236746" 
-                      className="flex items-center gap-2 px-4 py-2 w-full rounded-md hover:bg-green-50 transition-colors text-slate-600"
-                    >
-                      <Phone className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">(855) 623-6746</span>
-                    </a>
-                    <a 
-                      href="mailto:support@mintslip.com" 
-                      className="flex items-center gap-2 px-4 py-2 w-full rounded-md hover:bg-green-50 transition-colors text-slate-600"
-                    >
-                      <Mail className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">support@mintslip.com</span>
-                    </a>
-                  </div>
-                </SheetContent>
-              </Sheet>
           </div>
         </nav>
       </div>

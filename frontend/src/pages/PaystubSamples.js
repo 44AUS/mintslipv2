@@ -512,7 +512,7 @@ export default function PaystubSamples() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button
-                onClick={() => navigate('/paystub-generator')}
+                onClick={() => navigate('/app')}
                 size="lg"
                 className="cta-shine gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-8 rounded-xl shadow-md shadow-green-900/10"
               >
@@ -604,7 +604,7 @@ export default function PaystubSamples() {
             Choose any template above and start generating professional paystubs in minutes. No complicated setup required.
           </p>
           <Button 
-            onClick={() => navigate('/paystub-generator')}
+            onClick={() => navigate('/app')}
             size="lg"
             className="bg-white text-green-900 hover:bg-green-50 font-semibold px-8"
           >

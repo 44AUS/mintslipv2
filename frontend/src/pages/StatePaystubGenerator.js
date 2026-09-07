@@ -532,7 +532,7 @@ export default function StatePaystubGenerator() {
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">State Not Found</h1>
           <p className="text-gray-600 mb-8">The requested state page does not exist.</p>
-          <Link to="/paystub-generator" className="text-green-700 hover:underline">
+          <Link to="/app" className="text-green-700 hover:underline">
             Go to Paystub Generator
           </Link>
         </div>
@@ -814,7 +814,7 @@ export default function StatePaystubGenerator() {
                   Join thousands of {stateInfo.name} residents who trust MintSlip for their pay stub needs.
                 </p>
                 <Link 
-                  to="/paystub-generator" 
+                  to="/app" 
                   className="inline-block bg-white text-green-800 px-8 py-3 rounded-lg font-bold hover:bg-green-50 transition-colors"
                 >
                   Generate Pay Stub Now
@@ -868,7 +868,7 @@ export default function StatePaystubGenerator() {
                 <p className="text-center text-gray-600">
                   Need pay stubs for another state? We serve all 50 US states with accurate tax calculations.
                   <br />
-                  <Link to="/paystub-generator" className="text-green-700 hover:underline font-medium">
+                  <Link to="/app" className="text-green-700 hover:underline font-medium">
                     Start Generating Your Pay Stubs Today →
                   </Link>
                 </p>

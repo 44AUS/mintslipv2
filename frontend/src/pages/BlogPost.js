@@ -433,7 +433,7 @@ export default function BlogPost() {
                   Generate accurate, professional pay stubs in minutes with MintSlip&apos;s easy-to-use generator.
                 </p>
                 <Button
-                  onClick={() => navigate("/paystub-generator")}
+                  onClick={() => navigate("/app")}
                   className="bg-white text-green-700 hover:bg-green-50 gap-2"
                 >
                   Generate Pay Stub Now

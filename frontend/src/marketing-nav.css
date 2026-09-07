@@ -1,0 +1,154 @@
+/* Marketing header — whodat's floating glass pill, in MintSlip green.
+   Ported from whodat frontend/src/styles/nav.css. */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  padding: 14px clamp(12px, 3vw, 28px);
+  /* Transparent so the page shows through the pill's blur */
+  background: transparent;
+  pointer-events: none;
+}
+.navbar-pill {
+  pointer-events: auto;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 12px 12px 26px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 8px 28px rgba(20, 83, 45, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.navbar-brand img { height: 34px; width: auto; display: block; }
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.6vw, 40px);
+}
+.navbar-links a {
+  font-size: 16px;
+  color: #4a4757;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.navbar-links a:hover { color: #17151f; }
+
+.navbar-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.navbar-secondary {
+  font-size: 16px;
+  color: #4a4757;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.navbar-secondary:hover { color: #17151f; }
+
+.navbar-cta {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #2dd36f, #16a34a);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow:
+    0 8px 20px rgba(22, 163, 74, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+/* Shine that glides across the button on a loop */
+.navbar-cta::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 55%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.55) 50%, transparent 100%);
+  transform: translateX(-160%) skewX(-18deg);
+  animation: navCtaShine 3.4s ease-in-out infinite;
+}
+@keyframes navCtaShine {
+  0% { transform: translateX(-160%) skewX(-18deg); }
+  45% { transform: translateX(260%) skewX(-18deg); }
+  100% { transform: translateX(260%) skewX(-18deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navbar-cta::after { animation: none; opacity: 0; }
+}
+.navbar-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(22, 163, 74, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+.navbar-cta svg { flex-shrink: 0; }
+
+/* Mobile menu trigger (whodat has no hamburger; ours only appears when the
+   centre links are hidden, styled to blend into the pill) */
+.navbar-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  color: #17151f;
+}
+.navbar-menu-btn:hover { background: rgba(0, 0, 0, 0.05); }
+
+/* Tablet: drop the centre links, keep brand + actions */
+@media (max-width: 900px) {
+  .navbar-links { display: none; }
+  .navbar-pill { padding-left: 20px; }
+  .navbar-menu-btn { display: inline-flex; }
+}
+@media (max-width: 480px) {
+  .navbar { padding: 10px; }
+  .navbar-pill { padding: 9px 9px 9px 16px; gap: 10px; }
+  .navbar-brand img { height: 28px; }
+  .navbar-secondary { font-size: 14.5px; }
+  .navbar-cta { padding: 11px 16px; font-size: 14.5px; gap: 7px; }
+}
+/* Very small: the icon carries the button */
+@media (max-width: 380px) {
+  .navbar-cta span { display: none; }
+  .navbar-cta { padding: 11px 13px; }
+  .navbar-secondary { display: none; }
+}

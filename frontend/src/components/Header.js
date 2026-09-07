@@ -21,6 +21,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import MintSlip from '../assests/mintslip-logo.png';
+import '../marketing-nav.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -47,111 +48,9 @@ const OTHER_FORMS = [
   // Add more forms here as needed
 ];
 
-// Default desktop nav items (order is user-configurable)
-const DEFAULT_NAV_ITEMS = [
-  { id: "paystubs",       type: "dropdown" },
-  { id: "resume",         type: "link", path: "/ai-resume-builder",  label: "AI Resume Builder", icon: Sparkles },
-  { id: "generators",     type: "link", path: "/generators",         label: "All Generators",    icon: FileText },
-];
-
-function DesktopNavItem({ item, location, onNavigate }) {
-  const isActive = (path) => location.pathname === path;
-  const isPaystubActive = location.pathname === "/paystub-generator" || location.pathname === "/paystub-samples" || location.pathname === "/canadian-paystub-generator";
-
-  const btnBase = "flex items-center gap-2 px-3.5 py-2 rounded-lg transition-colors duration-200 text-sm font-medium";
-  const activeClasses = `${btnBase} bg-green-50 text-green-800 font-semibold`;
-  const idleClasses   = `${btnBase} text-slate-600 hover:bg-slate-50 hover:text-green-800`;
-
-  if (item.type === "dropdown") {
-    return (
-      <div className="flex items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className={isPaystubActive ? activeClasses : idleClasses} data-testid="nav-paystub-dropdown">
-              <FileText className="w-4 h-4" />
-              <span>Pay Stubs</span>
-              <ChevronDown className="w-3 h-3 ml-1" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            {[
-              { path: "/paystub-generator",          label: "Create Paystub" },
-              { path: "/canadian-paystub-generator", label: "Canada Pay Stubs" },
-              { path: "/paystub-samples",             label: "Sample Templates" },
-            ].map(({ path, label }) => (
-              <DropdownMenuItem key={path} onClick={() => onNavigate(path)}
-                className={`flex items-center gap-2 cursor-pointer ${isActive(path) ? "bg-green-50 text-green-800 font-semibold" : ""}`}>
-                <FileText className="w-4 h-4" /><span>{label}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    );
-  }
-
-  const Icon = item.icon;
-  return (
-    <div className="flex items-center">
-      <button onClick={() => onNavigate(item.path)}
-        className={`${isActive(item.path) ? activeClasses : idleClasses} relative`}>
-        <Icon className="w-4 h-4" />
-        <span>{item.label}</span>
-        {item.badge && (
-          <span className="ml-1 text-[10px] font-semibold bg-green-600 text-white px-1.5 py-0.5 rounded-full">{item.badge}</span>
-        )}
-      </button>
-    </div>
-  );
-}
-
-function DesktopNavLinks({ location, onNavigate }) {
-  const [orderedItems, setOrderedItems] = useState(DEFAULT_NAV_ITEMS);
-
-  useEffect(() => {
-    fetch(`${BACKEND_URL}/api/nav-order`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.success && Array.isArray(data.order)) {
-          const map = Object.fromEntries(DEFAULT_NAV_ITEMS.map(i => [i.id, i]));
-          const ordered = data.order.filter(id => map[id]).map(id => map[id]);
-          const unseen  = DEFAULT_NAV_ITEMS.filter(i => !data.order.includes(i.id));
-          setOrderedItems([...ordered, ...unseen]);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  return (
-    <>
-      {orderedItems.map(item => (
-        <DesktopNavItem key={item.id} item={item} location={location} onNavigate={onNavigate} />
-      ))}
-    </>
-  );
-}
-
-// User account dropdown component for desktop
-function UserAccountDropdown({ user, onNavigate, onLogout, authEnabled }) {
-  if (!user) {
-    if (!authEnabled) return null;
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => onNavigate("/login")}
-          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-green-800 hover:bg-slate-50 rounded-lg transition-colors duration-200"
-        >
-          Log In
-        </button>
-        <button
-          onClick={() => onNavigate("/signup")}
-          className="px-4 py-2 text-sm font-semibold text-white bg-green-700 hover:bg-green-800 rounded-lg shadow-sm shadow-green-900/10 transition-colors duration-200"
-        >
-          Sign Up
-        </button>
-      </div>
-    );
-  }
+// User account dropdown (logged-in avatar) — shown in the pill's actions
+function UserAccountDropdown({ user, onNavigate, onLogout }) {
+  if (!user) return null;
 
   return (
     <DropdownMenu>
@@ -457,63 +356,40 @@ export default function Header({ title }) {
 
   return (
     <>
-      {/* Support Bar */}
-      <div className="bg-slate-900 text-white py-1.5 px-4 text-center text-[13px] hidden sm:block">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-6">
-          <a 
-            href="tel:+18556236746" 
-            className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
-          >
-            <Phone className="w-3.5 h-3.5" />
-            <span>Support: (855) 623-6746</span>
-          </a>
-          <span className="text-slate-500">|</span>
-          <a 
-            href="mailto:support@mintslip.com" 
-            className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
-          >
-            <Mail className="w-3.5 h-3.5" />
-            <span>support@mintslip.com</span>
-          </a>
-        </div>
-      </div>
-      
-      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_12px_rgba(15,23,42,0.04)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Left: Logo */}
-            <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
-              <button onClick={() => navigate("/")} aria-label="MintSlip home" className="block">
-                <img
-                  src={MintSlip}
-                  alt="MintSlip"
-                  style={{ height: '40px', width: 'auto' }}
-                />
-              </button>
-            </div>
-            
-            {/* Center: Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
-              <DesktopNavLinks location={location} onNavigate={handleNavigation} />
-            </nav>
+      {/* Floating glass pill header (whodat marketing nav) */}
+      <div className="navbar">
+        <nav className="navbar-pill">
+          <button className="navbar-brand" onClick={() => navigate("/")} aria-label="MintSlip home">
+            <img src={MintSlip} alt="MintSlip" />
+          </button>
 
-            {/* Right: User Account (Desktop) + Mobile Menu */}
-            <div className="flex items-center gap-3">
-              {/* User Account - Desktop Only */}
-              <div className="hidden lg:block">
-                <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} authEnabled={authEnabled} />
-            </div>
+          <div className="navbar-links">
+            <a onClick={() => handleNavigation("/paystub-generator")}>Pay Stubs</a>
+            <a onClick={() => handleNavigation("/paystub-samples")}>Samples</a>
+            <a onClick={() => handleNavigation("/ai-resume-builder")}>AI Resume</a>
+            <a onClick={() => handleNavigation("/generators")}>All Generators</a>
+          </div>
 
-            {/* Mobile/Tablet Hamburger Menu */}
-            <div className="lg:hidden">
+          <div className="navbar-actions">
+            {user ? (
+              <UserAccountDropdown user={user} onNavigate={handleNavigation} onLogout={handleLogout} />
+            ) : authEnabled ? (
+              <button className="navbar-secondary" onClick={() => handleNavigation("/login")}>Log in</button>
+            ) : null}
+            <button className="navbar-cta" onClick={() => handleNavigation("/paystub-generator")}>
+              <FileText size={18} />
+              <span>Create a paystub</span>
+            </button>
+
+            {/* Mobile/Tablet Menu */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <button
-                    className="p-2 rounded-md hover:bg-green-50 transition-colors"
+                    className="navbar-menu-btn"
                     data-testid="mobile-menu-button"
                     aria-label="Open navigation menu"
                   >
-                    <Menu className="w-6 h-6" style={{ color: '#1a4731' }} />
+                    <Menu className="w-6 h-6" />
                   </button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[280px] sm:w-[320px] overflow-y-auto">
@@ -621,11 +497,9 @@ export default function Header({ title }) {
                   </div>
                 </SheetContent>
               </Sheet>
-            </div>
           </div>
-        </div>
+        </nav>
       </div>
-      </header>
     </>
   );
 }

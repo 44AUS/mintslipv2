@@ -141,6 +141,33 @@ ion-alert .alert-button-role-cancel {
   color: var(--ion-color-danger) !important;
 }
 
+/* Select (radio) popups in dark mode: the app palette only defines steps
+   50-300, so ion-alert text fell back to its near-black defaults on the
+   dark overlay background. */
+body.dark ion-alert {
+  --background: #1f1f1f;
+}
+body.dark ion-alert .alert-title,
+body.dark ion-alert .alert-sub-title,
+body.dark ion-alert .alert-message,
+body.dark ion-alert .alert-radio-label,
+body.dark ion-alert .alert-checkbox-label {
+  color: #ffffff !important;
+}
+
+/* Visible hover on the modal toolbar icon buttons (X / checkmark): a
+   host-level background, since the shadow-DOM hover overlay is invisible
+   on light backgrounds. */
+@media (any-hover: hover) {
+  .modal-slide-up ion-toolbar ion-buttons ion-button {
+    border-radius: 999px;
+    transition: background-color 0.15s ease;
+  }
+  .modal-slide-up ion-toolbar ion-buttons ion-button:hover {
+    background-color: var(--ion-color-step-100, rgba(0, 0, 0, 0.08));
+  }
+}
+
 /* Hover feedback on every modal button, matching the toolbar X/checkmark —
    the default 4% overlay is nearly invisible on light backgrounds. */
 @media (any-hover: hover) {

@@ -63,23 +63,26 @@ export default function PromoBanner({ inApp = false }) {
 
   return (
     <div
-      className="relative py-2.5 px-4 text-center"
+      className="relative py-2 pl-3 pr-10 sm:py-2.5 sm:px-4 text-center"
       style={{
         backgroundColor: banner.backgroundColor || "#10b981",
         color: banner.textColor || "#ffffff"
       }}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 flex-wrap">
-        <Sparkles className="w-4 h-4 animate-pulse" />
-        
-        <span className="text-sm font-medium">
+      {/* Tighter type/gaps below sm so the line reads cleanly instead of
+          scrunching; the sparkle is desktop-only and the container reserves
+          right padding for the dismiss X. */}
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-x-2 gap-y-1 sm:gap-3 flex-wrap">
+        <Sparkles className="w-4 h-4 animate-pulse hidden sm:block" />
+
+        <span className="text-[13px] sm:text-sm font-medium leading-snug">
           {banner.message}
         </span>
-        
+
         {banner.discountCode && (
           <button
             onClick={handleCopyCode}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold transition-all hover:scale-105"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-bold transition-all hover:scale-105 whitespace-nowrap"
             style={{
               backgroundColor: "rgba(255,255,255,0.2)",
               backdropFilter: "blur(4px)"
@@ -94,17 +97,17 @@ export default function PromoBanner({ inApp = false }) {
             )}
           </button>
         )}
-        
+
         {banner.discountPercent > 0 && (
-          <span className="text-sm font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+          <span className="text-xs sm:text-sm font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
             {banner.discountPercent}% OFF
           </span>
         )}
       </div>
-      
+
       <button
         onClick={handleDismiss}
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-all hover:bg-white/20"
+        className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-all hover:bg-white/20"
         aria-label="Dismiss banner"
       >
         <X className="w-4 h-4" />

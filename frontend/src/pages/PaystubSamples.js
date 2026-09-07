@@ -8,7 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Expand, ArrowRight, FileText, CheckCircle, Loader2 } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { generateTemplateA, generateTemplateB, generateTemplateC, generateTemplateH } from "@/utils/paystubTemplates";
+import { fetchPublishedLayout, renderLayout } from "@/utils/layoutEngine";
 import * as pdfjsLib from 'pdfjs-dist';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Set up pdf.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -400,11 +403,37 @@ function TemplateCard({ template, previewImage, isLoading, onUseTemplate }) {
   );
 }
 
+// Card shape for an admin-published custom template — its generator renders
+// the published layout through the layout engine with the same sample data.
+function toCustomCard(t) {
+  return {
+    id: `custom:${t.id}`,
+    name: t.name,
+    description: t.description || "Custom paystub template designed by the MintSlip team.",
+    features: ["Custom MintSlip design", "Accurate tax calculations", "Instant PDF download"],
+    color: t.badgeColor || "#16a34a",
+    generator: async (doc, templateData) => {
+      const layout = await fetchPublishedLayout(t.id);
+      if (!layout) throw new Error("Layout unavailable");
+      renderLayout(doc, layout, templateData);
+    },
+  };
+}
+
 export default function PaystubSamples() {
   const navigate = useNavigate();
   const [previews, setPreviews] = useState({});
   const [loading, setLoading] = useState({});
-  
+  const [customCards, setCustomCards] = useState([]);
+
+  // Admin-published custom paystub templates join the sample grid
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/doc-templates?documentType=paystub`)
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setCustomCards((d.templates || []).map(toCustomCard)); })
+      .catch(() => {});
+  }, []);
+
   // Generate previews on mount
   useEffect(() => {
     const generateAllPreviews = async () => {
@@ -419,9 +448,28 @@ export default function PaystubSamples() {
         setLoading(prev => ({ ...prev, [template.id]: false }));
       }
     };
-    
+
     generateAllPreviews();
   }, []);
+
+  // Previews for custom templates, as they load
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      for (const card of customCards) {
+        if (previews[card.id] || loading[card.id]) continue;
+        setLoading(prev => ({ ...prev, [card.id]: true }));
+        try {
+          const preview = await generateSamplePreview(card);
+          if (!cancelled) setPreviews(prev => ({ ...prev, [card.id]: preview }));
+        } catch (error) {
+          console.error(`Error generating preview for ${card.name}:`, error);
+        }
+        if (!cancelled) setLoading(prev => ({ ...prev, [card.id]: false }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [customCards]); // eslint-disable-line
   
   const handleUseTemplate = (templateId) => {
     // Navigate to paystub form with template pre-selected
@@ -487,7 +535,7 @@ export default function PaystubSamples() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {TEMPLATES.map((template) => (
+            {[...TEMPLATES, ...customCards].map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}

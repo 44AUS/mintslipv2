@@ -1,20 +1,12 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import AppLayout from "@/components/AppLayout";
-import {
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSpinner,
-} from "@ionic/react";
-import { closeOutline } from "ionicons/icons";
+import { IonSpinner } from "@ionic/react";
 import { generateW2Preview } from "@/utils/w2PreviewGenerator";
 import { generateW9Preview } from "@/utils/w9PreviewGenerator";
 import { generate1099NECPreview } from "@/utils/1099necPreviewGenerator";
 import { generate1099MISCPreview } from "@/utils/1099miscPreviewGenerator";
 import { generateScheduleCPreview } from "@/utils/scheduleCPreviewGenerator";
-import W2Form from "@/pages/W2Form";
-import W9Form from "@/pages/W9Form";
-import Form1099NEC from "@/pages/Form1099NEC";
-import Form1099MISC from "@/pages/Form1099MISC";
-import ScheduleCForm from "@/pages/ScheduleCForm";
+import AppTaxFormModal from "./AppTaxFormModal";
 
 const SAMPLE_YEAR = "2024";
 
@@ -57,19 +49,19 @@ const SCHEDC_SAMPLE = {
   line1: 85000, line2: 0, line3: 85000, line4: 0, line5: 85000, line7: 85000,
 };
 
-// One card per tax form: name badge, sample preview, and the full generator
-// component that opens in the form modal.
+// One card per tax form: name badge + sample preview; tapping opens the
+// native form modal (AppTaxFormModal).
 const TAX_FORMS = [
   { key: "w2", name: "W-2", title: "W-2 Wage & Tax Statement", color: "#7c3aed",
-    preview: () => generateW2Preview(W2_SAMPLE, SAMPLE_YEAR), Component: W2Form },
+    preview: () => generateW2Preview(W2_SAMPLE, SAMPLE_YEAR) },
   { key: "w9", name: "W-9", title: "W-9 Taxpayer Identification", color: "#0891b2",
-    preview: () => generateW9Preview(W9_SAMPLE, SAMPLE_YEAR), Component: W9Form },
+    preview: () => generateW9Preview(W9_SAMPLE, SAMPLE_YEAR) },
   { key: "1099-nec", name: "1099-NEC", title: "1099-NEC Nonemployee Compensation", color: "#d97706",
-    preview: () => generate1099NECPreview(NEC_SAMPLE, SAMPLE_YEAR), Component: Form1099NEC },
+    preview: () => generate1099NECPreview(NEC_SAMPLE, SAMPLE_YEAR) },
   { key: "1099-misc", name: "1099-MISC", title: "1099-MISC Miscellaneous Income", color: "#ea580c",
-    preview: () => generate1099MISCPreview(MISC_SAMPLE, SAMPLE_YEAR), Component: Form1099MISC },
+    preview: () => generate1099MISCPreview(MISC_SAMPLE, SAMPLE_YEAR) },
   { key: "schedule-c", name: "Schedule C", title: "Schedule C Profit or Loss", color: "#92400e",
-    preview: () => generateScheduleCPreview(SCHEDC_SAMPLE, SAMPLE_YEAR), Component: ScheduleCForm },
+    preview: () => generateScheduleCPreview(SCHEDC_SAMPLE, SAMPLE_YEAR) },
 ];
 
 export default function AppTaxForms() {
@@ -93,8 +85,6 @@ export default function AppTaxForms() {
     })();
     return () => { cancelled = true; };
   }, []);
-
-  const active = TAX_FORMS.find(f => f.key === activeForm) || null;
 
   return (
     <AppLayout fillHeight>
@@ -137,29 +127,8 @@ export default function AppTaxForms() {
         </div>
       </div>
 
-      {/* ── Form Modal (portalled to ion-app, same chrome as the paystub form modal) ── */}
-      {active && createPortal(
-        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10000, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "center" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
-          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 720 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", overflow: "hidden" }}>
-            <IonHeader>
-              <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
-                <IonButtons slot="start">
-                  <IonButton fill="clear" shape="round" onClick={() => setActiveForm(null)}>
-                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
-                      <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                    </span>
-                  </IonButton>
-                </IonButtons>
-                <IonTitle style={{ fontWeight: 700 }}>{active.title}</IonTitle>
-              </IonToolbar>
-            </IonHeader>
-            <div style={{ flex: 1, overflowY: "auto" }}>
-              <active.Component embedded />
-            </div>
-          </div>
-        </div>,
-        document.querySelector("ion-app") || document.body
-      )}
+      {/* ── Native form modal (same flow as the paystub modal) ── */}
+      {activeForm && <AppTaxFormModal formKey={activeForm} onClose={() => setActiveForm(null)} />}
     </AppLayout>
   );
 }

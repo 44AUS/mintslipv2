@@ -514,18 +514,23 @@ export default function AppLayout({ children, fillHeight = false }) {
         ]}
       />
 
-      {/* ── Notifications drawer ── */}
-      {notifDrawerOpen && createPortal(<>
-        <div
-          onClick={closeNotifDrawer}
-          style={{ position: "fixed", inset: 0, zIndex: 9994, background: "rgba(0,0,0,0.5)" }}
-        />
+      {/* ── Notifications drawer — same width/slide animation as the admin
+          dashboard drawer: always mounted, transform-toggled ── */}
+      {createPortal(<>
+        {notifDrawerOpen && (
+          <div
+            onClick={closeNotifDrawer}
+            style={{ position: "fixed", inset: 0, zIndex: 9994, background: "rgba(0,0,0,0.3)" }}
+          />
+        )}
         <div style={{
           position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 9995,
-          width: 320, maxWidth: "90vw",
+          width: 340, maxWidth: "90vw",
           background: "var(--app-sidebar-bg, #ffffff)",
-          boxShadow: "-4px 0 24px rgba(0,0,0,0.25)",
+          boxShadow: "-4px 0 24px rgba(0,0,0,0.18)",
           display: "flex", flexDirection: "column",
+          transform: notifDrawerOpen ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.28s cubic-bezier(0.4,0,0.2,1)",
         }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", padding: "0 12px", minHeight: 60, borderBottom: "1px solid var(--app-divider)", flexShrink: 0, gap: 8 }}>

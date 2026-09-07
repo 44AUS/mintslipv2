@@ -808,6 +808,59 @@ async def send_support_reply_email(user_email: str, user_name: str, admin_name: 
     return await send_email(user_email, template["subject"], template["html"], "support_reply")
 
 
+CHAT_REASON_LABELS = {
+    "general": "General Question",
+    "technical": "Technical Issue",
+    "billing": "Billing",
+    "refund": "Refund Request",
+    "feature": "Feature Request",
+    "bug": "Report a Problem",
+    "other": "Other",
+}
+
+
+def template_support_chat_notification(guest_name: str, guest_email: str, reason: str, message_text: str, image_count: int = 0) -> Dict[str, str]:
+    """Notify an admin that a customer sent a message in a live support chat."""
+    safe_msg = (message_text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
+    reason_label = CHAT_REASON_LABELS.get((reason or "").lower(), reason or "General question")
+    attach_note = ""
+    if image_count:
+        plural = "s" if image_count != 1 else ""
+        attach_note = f'<p class="text-muted" style="font-size: 13px;">📷 {image_count} image attachment{plural} — open the chat to view.</p>'
+    content = f"""
+        <h1>New Support Chat Message 💬</h1>
+        <p><strong>{guest_name or 'A customer'}</strong> ({guest_email or 'no email'}) sent a message:</p>
+
+        <div class="highlight">
+            <p style="margin: 0; color: #374151; line-height: 1.7;">{safe_msg or "📷 Sent an attachment"}</p>
+        </div>
+        {attach_note}
+
+        <p class="text-muted">Topic: {reason_label}</p>
+
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{SITE_URL}/admin/support" class="button">Open Support Center</a>
+        </p>
+    """
+    return {
+        "subject": f"New support message from {guest_name or 'a customer'} - MintSlip",
+        "html": get_base_template(content, (message_text or "New support chat message")[:110]),
+    }
+
+
+async def send_support_chat_notification_email(to_email: str, guest_name: str, guest_email: str, reason: str, message_text: str, image_count: int = 0):
+    """Email one admin/moderator about an incoming support-chat message."""
+    config = await get_email_config("support_chat_notification")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    default = template_support_chat_notification(guest_name, guest_email, reason, message_text, image_count)
+    template = await resolve_template("support_chat_notification", default, {
+        "guest_name": guest_name or "A customer", "guest_email": guest_email or "",
+        "reason": reason or "general", "message_text": message_text or "", "SITE_URL": SITE_URL,
+    })
+    return await send_email(to_email, template["subject"], template["html"], "support_chat_notification")
+
+
 def _pretty_date(iso_str: str) -> str:
     """Render an ISO date like 2026-09-07T00:00:00Z as 'September 7th, 2026'."""
     if not iso_str:

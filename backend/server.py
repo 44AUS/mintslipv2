@@ -33,6 +33,7 @@ from email_service import (
     send_welcome_email,
     send_verification_email,
     send_support_reply_email,
+    send_support_chat_notification_email,
     send_discount_announcement_email,
     schedule_getting_started_email,
     schedule_subscription_thank_you,
@@ -5756,6 +5757,30 @@ async def delete_support_ticket(ticket_id: str, session: dict = Depends(get_curr
 # Live Support Chat  (user-facing widget ↔ admin SupportCenter)
 # ─────────────────────────────────────────────────────────────
 
+async def _notify_admins_of_chat_message(chat: dict, text: str, image_count: int = 0):
+    """Email every admin and active moderator about an incoming chat message.
+
+    Fired as a background task; send_email's rate limiter paces the batch."""
+    try:
+        recipients = set()
+        async for a in admins_collection.find({}, {"email": 1}):
+            if a.get("email"):
+                recipients.add(a["email"].lower())
+        async for m in moderators_collection.find({"isActive": {"$ne": False}}, {"email": 1}):
+            if m.get("email"):
+                recipients.add(m["email"].lower())
+        for email in sorted(recipients):
+            try:
+                await send_support_chat_notification_email(
+                    email, chat.get("guestName", ""), chat.get("guestEmail", ""),
+                    chat.get("reason", "general"), text, image_count,
+                )
+            except Exception as e:
+                logger.warning(f"Support chat notification to {email} failed: {e}")
+    except Exception as e:
+        logger.error(f"Support chat admin notification failed: {e}")
+
+
 @app.post("/api/support/chat/start")
 async def start_support_chat(request: Request):
     """Create a new live-chat conversation from the site/app widget."""
@@ -5787,6 +5812,7 @@ async def start_support_chat(request: Request):
         "unreadByUser": 0,
     }
     await support_chats_collection.insert_one(chat)
+    asyncio.create_task(_notify_admins_of_chat_message(chat, message))
     return {"success": True, "chatId": chat["id"], "message": first, "adminOnline": await any_admin_online()}
 
 
@@ -5866,6 +5892,13 @@ async def send_support_chat_message(chat_id: str, request: Request):
          "$set":  {"updatedAt": msg["timestamp"]},
          "$inc":  {"unreadByAdmin": 1}}
     )
+
+    # Email the team, but only for the first unread message in a burst — once
+    # a chat is already flagged unread, further messages don't re-notify until
+    # an admin reads or replies (which resets unreadByAdmin to 0).
+    if chat.get("unreadByAdmin", 0) == 0:
+        asyncio.create_task(_notify_admins_of_chat_message(chat, text, len(image_urls)))
+
     return {"success": True, "message": msg, "adminOnline": await any_admin_online()}
 
 

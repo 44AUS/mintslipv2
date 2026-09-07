@@ -27,6 +27,7 @@ import { generateAndDownloadResume } from "../utils/resumeGenerator";
 import AppOfferLetter from "../pages/app/AppOfferLetter";
 import AppResumeBuilder from "../pages/app/AppResumeBuilder";
 import SupportChatWidget from "./SupportChatWidget";
+import PromoBanner from "./PromoBanner";
 import "../admin-theme.css";
 
 const tabs = [
@@ -372,6 +373,8 @@ export default function AppLayout({ children, fillHeight = false }) {
         {/* ── Main area ── */}
         <IonPage id="app-main">
           <IonHeader>
+            {/* Active discount banner sits above the top bar */}
+            <PromoBanner inApp />
             <IonToolbar>
               <IonButtons slot="start">
                 {isSecondaryPage ? (

@@ -5,14 +5,17 @@ import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-export default function PromoBanner() {
+export default function PromoBanner({ inApp = false }) {
   const [banner, setBanner] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
   const [copied, setCopied] = useState(false);
   const location = useLocation();
 
-  // Hide banner on admin pages
+  // Hide banner on admin pages. The global instance also skips /app — the app
+  // layout mounts its own copy (inApp) above its top bar, since the globally
+  // mounted one sits behind the fixed IonApp there.
   const isAdminPage = location.pathname.startsWith("/admin");
+  const isAppPage = location.pathname.startsWith("/app");
 
   useEffect(() => {
     fetchBanner();
@@ -54,7 +57,7 @@ export default function PromoBanner() {
   };
 
   // Don't show on admin pages or if no banner/not visible
-  if (!banner || !isVisible || isAdminPage) {
+  if (!banner || !isVisible || isAdminPage || (isAppPage && !inApp)) {
     return null;
   }
 

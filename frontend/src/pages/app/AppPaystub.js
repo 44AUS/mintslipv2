@@ -29,6 +29,13 @@ import WorkdayLogo from "../../assests/workday-logo.png";
 import OnPayLogo from "../../assests/onpayLogo.webp";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// Date-only strings must parse as LOCAL dates — new Date("YYYY-MM-DD") is UTC
+// midnight, which reads back as the previous day in US timezones.
+const parseLocalDate = (s) => {
+  const [y, m, d] = String(s).split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+};
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
 const sectionHeadingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)", display: "flex", alignItems: "center", gap: 8 };
 
@@ -425,7 +432,7 @@ export default function AppPaystub() {
   // ── calculateNumStubs ────────────────────────────────────────────────────
   const calculateNumStubs = useMemo(() => {
     if (!formData.startDate || !formData.endDate) return 0;
-    const diffTime = Math.abs(new Date(formData.endDate) - new Date(formData.startDate));
+    const diffTime = Math.abs(parseLocalDate(formData.endDate) - parseLocalDate(formData.startDate));
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
     return Math.ceil(diffDays / periodLength);
@@ -436,7 +443,7 @@ export default function AppPaystub() {
     if (!formData.startDate || !formData.endDate || calculateNumStubs === 0) return [];
     const periods = [];
     const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
-    let currentStart = new Date(formData.startDate);
+    let currentStart = parseLocalDate(formData.startDate);
     const fmt = (date) => {
       const d = new Date(date);
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -579,7 +586,7 @@ export default function AppPaystub() {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {
         setIsGeneratingPreview(true);
         try {
-          const diffTime = Math.abs(new Date(formData.endDate) - new Date(formData.startDate));
+          const diffTime = Math.abs(parseLocalDate(formData.endDate) - parseLocalDate(formData.startDate));
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           const periodLength = formData.payFrequency === "biweekly" ? 14 : 7;
           const numStubs = Math.max(1, Math.ceil(diffDays / periodLength));

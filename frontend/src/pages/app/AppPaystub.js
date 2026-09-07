@@ -992,7 +992,7 @@ export default function AppPaystub() {
                 <span style={sectionHeadingStyle}>Pay Details</span>
                 <div>
                   {/* Pay type toggle */}
-                  <IonSegment value={formData.payType} onIonChange={e => setFormData(prev => ({ ...prev, payType: e.detail.value }))} style={{ marginBottom: 12 }}>
+                  <IonSegment mode="ios" value={formData.payType} onIonChange={e => setFormData(prev => ({ ...prev, payType: e.detail.value }))} style={{ marginBottom: 12 }}>
                     <IonSegmentButton value="hourly"><IonLabel>Hourly</IonLabel></IonSegmentButton>
                     <IonSegmentButton value="salary" disabled={!canUseSalary}><IonLabel>Salary</IonLabel></IonSegmentButton>
                   </IonSegment>

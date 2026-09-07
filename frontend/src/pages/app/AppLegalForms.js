@@ -6,6 +6,7 @@ import { generatePowerOfAttorneyPreview } from "@/utils/powerOfAttorneyPreviewGe
 import { generateVehicleBillOfSalePreview } from "@/utils/vehicleBillOfSalePreviewGenerator";
 import AppTaxFormModal from "./AppTaxFormModal";
 import { LEGAL_FORM_CONFIGS } from "./appLegalFormConfigs";
+import { useDisabledGenerators } from "@/utils/generatorAvailability";
 
 // Sample data for the card previews — the real generators render these.
 const CEASE_SAMPLE = {
@@ -56,6 +57,8 @@ export default function AppLegalForms() {
   const [previews, setPreviews] = useState({});
   const [loadingPreviews, setLoadingPreviews] = useState(true);
   const [activeForm, setActiveForm] = useState(null);
+  const disabledGenerators = useDisabledGenerators();
+  const visibleForms = LEGAL_FORMS.filter(form => !disabledGenerators.has(form.key));
 
   useEffect(() => {
     let cancelled = false;
@@ -78,8 +81,13 @@ export default function AppLegalForms() {
     <AppLayout fillHeight>
       <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
         <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
+          {visibleForms.length === 0 && !loadingPreviews && (
+            <p style={{ color: "var(--ion-color-medium)", fontSize: "0.9rem", textAlign: "center", padding: "32px 0" }}>
+              No forms are currently available.
+            </p>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {LEGAL_FORMS.map(form => (
+            {visibleForms.map(form => (
               <div key={form.key}
                 onClick={() => setActiveForm(form.key)}
                 style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-card-background)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}

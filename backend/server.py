@@ -5081,6 +5081,31 @@ async def update_tutorial_categories(request: dict, session: dict = Depends(get_
     return {"success": True, "categories": categories}
 
 
+# ========== GENERATOR AVAILABILITY ==========
+
+@app.get("/api/generators/availability")
+async def get_generator_availability():
+    """Public: ids of templates/generators the admin has disabled (read at runtime by web + iOS/Android)"""
+    doc = await site_settings_collection.find_one({"key": "generator_availability"}, {"_id": 0})
+    return {"success": True, "disabled": (doc or {}).get("disabled", [])}
+
+
+@app.put("/api/admin/generators")
+async def update_generator_availability(request: dict, session: dict = Depends(get_current_admin)):
+    check_permission(session, "manage_site_settings")
+    disabled = request.get("disabled", [])
+    if not isinstance(disabled, list):
+        raise HTTPException(status_code=400, detail="disabled must be a list of generator ids")
+    disabled = [str(g)[:80] for g in disabled][:200]
+    await site_settings_collection.update_one(
+        {"key": "generator_availability"},
+        {"$set": {"key": "generator_availability", "disabled": disabled, "updatedAt": datetime.now(timezone.utc).isoformat(), "updatedBy": session.get("adminId", "")}},
+        upsert=True
+    )
+    await log_action(session, "update_generator_availability", "site_settings", "generator_availability")
+    return {"success": True, "disabled": disabled}
+
+
 # ========== AUTH SETTINGS ==========
 
 @app.get("/api/auth-status")

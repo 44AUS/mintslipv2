@@ -3,6 +3,7 @@ import AppLayout from "@/components/AppLayout";
 import { IonSpinner } from "@ionic/react";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import AppResumeBuilder from "./AppResumeBuilder";
+import { useDisabledGenerators } from "@/utils/generatorAvailability";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const RESUME_STORAGE_KEY = "resumeBuilderFormData";
@@ -66,8 +67,11 @@ export default function AppResumes() {
       .catch(() => {});
   }, []);
 
-  const templateCards = [
-    ...BUILT_IN_TEMPLATES,
+  // Admin can disable the whole builder or individual built-in styles from
+  // Site Settings (custom templates are unpublished from the template editor)
+  const disabledGenerators = useDisabledGenerators();
+  const templateCards = disabledGenerators.has("ai-resume") ? [] : [
+    ...BUILT_IN_TEMPLATES.filter((t) => !disabledGenerators.has(`resume-${t.value}`)),
     ...customTemplates.map((t) => ({ value: `custom:${t.id}`, name: t.name, color: t.badgeColor || "#16a34a" })),
   ];
 

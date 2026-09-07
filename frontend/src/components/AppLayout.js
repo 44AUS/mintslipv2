@@ -18,6 +18,9 @@ import {
   countUnread, getPendingToasts, markToastShown,
 } from "../utils/appNotifications";
 import { generateAndDownloadPaystub } from "../utils/paystubGenerator";
+import {
+  useDisabledGenerators, TAX_GENERATOR_IDS, LEGAL_GENERATOR_IDS, BUSINESS_GENERATOR_IDS,
+} from "../utils/generatorAvailability";
 import { generateAndDownloadCanadianPaystub } from "../utils/canadianPaystubGenerator";
 import { generateAndDownloadOfferLetter } from "../utils/offerLetterGenerator";
 import { generateAndDownloadResume } from "../utils/resumeGenerator";
@@ -157,6 +160,20 @@ export default function AppLayout({ children, fillHeight = false }) {
   };
 
   const activeTab = getActiveTab();
+
+  // Server-driven availability: tabs/actions vanish as soon as the admin
+  // disables a generator (fetched at runtime — no app-store update needed).
+  const disabledGenerators = useDisabledGenerators();
+  const groupAllDisabled = (ids) => ids.every((id) => disabledGenerators.has(id));
+  const tabHidden = {
+    "paystub":          disabledGenerators.has("paystub"),
+    "canadian-paystub": disabledGenerators.has("canadian-paystub"),
+    "tax-forms":        groupAllDisabled(TAX_GENERATOR_IDS),
+    "legal-forms":      groupAllDisabled(LEGAL_GENERATOR_IDS),
+    "business-forms":   groupAllDisabled(BUSINESS_GENERATOR_IDS),
+    "resumes":          disabledGenerators.has("ai-resume"),
+  };
+  const visibleTabs = tabs.filter((tab) => !tabHidden[tab.id]);
 
   const isSecondaryPage = ["/app/terms", "/app/privacy", "/app/settings"].includes(location.pathname);
   const pageTitle = {
@@ -386,7 +403,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                   <IonPopover trigger="app-mobile-nav-trigger" triggerAction="click" side="bottom" alignment="start" style={{ "--width": "240px" }}>
                     <IonContent>
                       <IonList lines="none" style={{ padding: "4px 0" }}>
-                        {tabs.map(tab => (
+                        {visibleTabs.map(tab => (
                           <IonItem
                             key={tab.id}
                             button
@@ -420,7 +437,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                   }}
                   style={{ "--background": "transparent", "--color": "rgba(255,255,255,0.65)", "--color-checked": "#ffffff", "--indicator-color": "#ffffff" }}
                 >
-                  {tabs.map(tab => (
+                  {visibleTabs.map(tab => (
                     <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>
                       <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
                         <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
@@ -503,15 +520,22 @@ export default function AppLayout({ children, fillHeight = false }) {
         onClose={() => setCreateOpen(false)}
         style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
         buttons={[
-          { text: "Create Pay Stub",         handler: () => navigate("/app") },
-          { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
-          { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
-          { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
-          { text: "Build Tax Forms",         handler: () => navigate("/app/tax-forms") },
-          { text: "Build Legal Forms",       handler: () => navigate("/app/legal-forms") },
-          { text: "Build Business Forms",    handler: () => navigate("/app/business-forms") },
+          !disabledGenerators.has("paystub") &&
+            { text: "Create Pay Stub",         handler: () => navigate("/app") },
+          !disabledGenerators.has("canadian-paystub") &&
+            { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
+          !disabledGenerators.has("offer-letter") &&
+            { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
+          !disabledGenerators.has("ai-resume") &&
+            { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
+          !groupAllDisabled(TAX_GENERATOR_IDS) &&
+            { text: "Build Tax Forms",         handler: () => navigate("/app/tax-forms") },
+          !groupAllDisabled(LEGAL_GENERATOR_IDS) &&
+            { text: "Build Legal Forms",       handler: () => navigate("/app/legal-forms") },
+          !groupAllDisabled(BUSINESS_GENERATOR_IDS) &&
+            { text: "Build Business Forms",    handler: () => navigate("/app/business-forms") },
           { text: "Cancel", role: "cancel" },
-        ]}
+        ].filter(Boolean)}
       />
 
       {/* ── Notifications drawer — same width/slide animation as the admin

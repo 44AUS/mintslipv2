@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IonSpinner } from "@ionic/react";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock, Smartphone, Plus, X } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock, Smartphone, Plus, X, SlidersHorizontal } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { GENERATOR_GROUPS, clearGeneratorAvailabilityCache } from "@/utils/generatorAvailability";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -73,6 +74,11 @@ export default function AdminSiteSettings() {
   const [psPriceLoading, setPsPriceLoading] = useState(false);
   const [psPriceMsg, setPsPriceMsg] = useState(null);
 
+  // Templates & generators availability (ids currently disabled)
+  const [disabledGens, setDisabledGens] = useState([]);
+  const [genSaving, setGenSaving] = useState(false);
+  const [genMsg, setGenMsg] = useState(null);
+
   // Document retention
   const [retentionDays, setRetentionDays] = useState(0);
   const [retentionLoading, setRetentionLoading] = useState(false);
@@ -112,7 +118,48 @@ export default function AdminSiteSettings() {
     fetchRetention();
     fetchAppSettings();
     fetchTutorialCategories();
+    fetchGenerators();
   }, []);
+
+  const fetchGenerators = async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/generators/availability?_=${Date.now()}`);
+      const data = await res.json();
+      if (data.success) setDisabledGens(data.disabled || []);
+    } catch (e) {}
+  };
+
+  // Each flip saves immediately — the app reads this list at runtime, so the
+  // change is live on iOS/Android without an update.
+  const toggleGenerator = async (id) => {
+    const prev = disabledGens;
+    const next = prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id];
+    setDisabledGens(next);
+    setGenSaving(true);
+    setGenMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/generators`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ disabled: next }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        clearGeneratorAvailabilityCache();
+        setGenMsg({ type: "success", text: "Saved — the change is live in the app now." });
+        setTimeout(() => setGenMsg(null), 3000);
+      } else {
+        setDisabledGens(prev);
+        setGenMsg({ type: "error", text: "Failed to save. Try again." });
+      }
+    } catch (e) {
+      setDisabledGens(prev);
+      setGenMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setGenSaving(false);
+    }
+  };
 
   const fetchAppSettings = async () => {
     try {
@@ -545,6 +592,40 @@ export default function AdminSiteSettings() {
               {authLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Auth Settings
             </button>
+          </div>
+
+          {/* Templates & Generators */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-50">
+                <SlidersHorizontal className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Templates &amp; Generators</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Turn individual templates and generators on or off. The app reads this list at runtime, so changes take effect immediately on iOS/Android — no app update needed.
+                </p>
+              </div>
+            </div>
+            <Msg msg={genMsg} />
+            <div className="space-y-5">
+              {GENERATOR_GROUPS.map(group => (
+                <div key={group.title}>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{group.title}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {group.items.map(item => {
+                      const isOn = !disabledGens.includes(item.id);
+                      return (
+                        <div key={item.id} className="flex items-center justify-between gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                          <span className={`text-sm font-medium ${isOn ? "text-slate-700" : "text-slate-400 line-through"}`}>{item.label}</span>
+                          <Toggle on={isOn} onClick={() => toggleGenerator(item.id)} disabled={genSaving} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Subscription Tier Downloads */}

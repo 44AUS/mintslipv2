@@ -13,6 +13,7 @@ import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutlin
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
+import { useDisabledGenerators } from "@/utils/generatorAvailability";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
 import { saveGuestDocument } from "@/utils/guestSave";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
@@ -564,9 +565,12 @@ export default function AppPaystub() {
       .catch(() => {});
   }, []);
 
-  // Landing cards: built-in styles plus admin-published custom templates
-  const templateCards = [
-    ...PAYROLL_COMPANIES,
+  // Landing cards: built-in styles plus admin-published custom templates.
+  // Admin can disable the whole generator or individual built-in styles
+  // from Site Settings (takes effect at runtime, no app update).
+  const disabledGenerators = useDisabledGenerators();
+  const templateCards = disabledGenerators.has("paystub") ? [] : [
+    ...PAYROLL_COMPANIES.filter((c) => !disabledGenerators.has(`paystub-${c.id}`)),
     ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#16a34a" })),
   ];
 

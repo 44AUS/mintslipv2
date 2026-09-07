@@ -1,35 +1,47 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSpinner,
   IonInput, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonLabel,
-  IonCheckbox, IonGrid, IonRow, IonCol, IonNote, IonToast,
+  IonCheckbox, IonGrid, IonRow, IonCol, IonNote, IonToast, IonTextarea,
 } from "@ionic/react";
-import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline } from "ionicons/icons";
+import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOutline, trashOutline, imageOutline } from "ionicons/icons";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
-import { TAX_FORM_CONFIGS } from "./appTaxFormConfigs";
+import SignaturePad from "@/components/SignaturePad";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
 const sectionHeadingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)" };
 const ionInputStyle = { marginBottom: 8 };
+const labelStyle = { fontSize: "0.75rem", color: "var(--ion-color-medium)", marginBottom: 4, display: "block" };
 
-// Native tax-form modal — same chrome and flow as the paystub form modal:
-// Ionic inputs/selects/segments in card sections, and the toolbar checkmark
-// opens the preview modal with coupon, price, and Pay & Download.
-export default function AppTaxFormModal({ formKey, onClose }) {
-  const config = TAX_FORM_CONFIGS[formKey];
+const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+  const r = new FileReader();
+  r.onloadend = () => resolve(r.result);
+  r.onerror = () => reject(new Error("Failed to read file"));
+  r.readAsDataURL(file);
+});
+
+// Native document-form modal (tax, legal, and business forms) — same chrome
+// and flow as the paystub form modal: Ionic inputs/selects/segments in card
+// sections, and the toolbar checkmark opens the preview modal with coupon,
+// price, and Pay & Download. Driven entirely by a form config.
+export default function AppTaxFormModal({ config, onClose }) {
 
   const [formData, setFormData] = useState(() => {
     try {
       const s = localStorage.getItem(config.storageKey);
-      return s ? JSON.parse(s) : {};
-    } catch { return {}; }
+      if (s) return JSON.parse(s);
+    } catch {}
+    // Start from the config's defaults (same ones the web form seeds)
+    try { return config.derive ? config.derive({}) : {}; } catch { return {}; }
   });
   const [taxYear, setTaxYear] = useState(() => {
-    try { return localStorage.getItem(`${config.storageKey}Year`) || config.defaultYear; }
-    catch { return config.defaultYear; }
+    try { return localStorage.getItem(`${config.storageKey}Year`) || config.defaultYear || ""; }
+    catch { return config.defaultYear || ""; }
   });
+  const [sigModes, setSigModes] = useState({}); // per-signature-field draw|type|upload
+  const fileInputRefs = useRef({});
 
   const [user, setUser] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
@@ -45,6 +57,8 @@ export default function AppTaxFormModal({ formKey, onClose }) {
   const showToast = (message, color = "danger") => setToastState({ isOpen: true, message, color });
 
   const setField = (name, value) => setFormData(prev => ({ ...prev, [name]: value }));
+
+  const basePrice = typeof config.price === "function" ? config.price(formData) : config.price;
 
   useEffect(() => {
     try {
@@ -105,8 +119,8 @@ export default function AppTaxFormModal({ formKey, onClose }) {
       const { ok, data } = await nativePost(`${BACKEND_URL}/api/validate-coupon`, { code: couponCode.trim(), generatorType: config.docType });
       if (!data) { setCouponError("Server error. Please try again."); setAppliedDiscount(null); return; }
       if (ok && data.valid) {
-        const discountAmount = config.price * data.discountPercent / 100;
-        setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, discountedPrice: parseFloat((config.price - discountAmount).toFixed(2)) });
+        const discountAmount = basePrice * data.discountPercent / 100;
+        setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, discountedPrice: parseFloat((basePrice - discountAmount).toFixed(2)) });
         showToast(`Coupon applied: ${data.discountPercent}% off!`, "success");
       } else {
         setCouponError(data.detail || "Invalid coupon code");
@@ -130,6 +144,8 @@ export default function AppTaxFormModal({ formKey, onClose }) {
     if (err) { showToast(err); return; }
     const derived = config.derive(formData);
 
+    const checkoutTemplate = config.checkoutTemplate ? config.checkoutTemplate(derived, taxYear) : taxYear;
+
     if (hasActiveSubscription) {
       const token = localStorage.getItem("userToken");
       setIsProcessing(true);
@@ -137,7 +153,7 @@ export default function AppTaxFormModal({ formKey, onClose }) {
         const res = await fetch(`${BACKEND_URL}/api/user/subscription-download`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ documentType: config.docType, template: taxYear }),
+          body: JSON.stringify({ documentType: config.docType, template: checkoutTemplate }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Failed to process subscription download");
@@ -154,7 +170,7 @@ export default function AppTaxFormModal({ formKey, onClose }) {
                   documentType: config.docType,
                   fileName: `${config.key.replace(/-/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`,
                   fileData: reader.result.split(",")[1],
-                  template: taxYear,
+                  template: checkoutTemplate,
                 }),
               });
             };
@@ -177,18 +193,21 @@ export default function AppTaxFormModal({ formKey, onClose }) {
 
     setIsProcessing(true);
     try {
-      localStorage.setItem(config.pendingDataKey, JSON.stringify(derived));
-      if (config.pendingYearKey) localStorage.setItem(config.pendingYearKey, taxYear);
+      const pendingEntries = config.buildPending
+        ? config.buildPending(derived, taxYear)
+        : { [config.pendingDataKey]: derived, ...(config.pendingYearKey ? { [config.pendingYearKey]: taxYear } : {}) };
+      Object.entries(pendingEntries).forEach(([k, v]) =>
+        localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v)));
       const origin = getStripeOrigin(BACKEND_URL);
-      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : config.price;
+      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
       const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
         amount: finalAmount,
         documentType: config.docType,
-        template: taxYear,
+        template: checkoutTemplate,
         successUrl: `${origin}/payment-success?type=${config.docType}&source=app&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${origin}/app/tax-forms`,
+        cancelUrl: `${origin}${config.cancelPath || "/app/tax-forms"}`,
         discountCode: appliedDiscount?.code || null,
-        discountAmount: appliedDiscount ? parseFloat((config.price - finalAmount).toFixed(2)) : 0,
+        discountAmount: appliedDiscount ? parseFloat((basePrice - finalAmount).toFixed(2)) : 0,
       });
       if (!data) throw new Error("Server error. Please try again.");
       if (!ok) throw new Error(data.detail || "Failed to create checkout session");
@@ -232,6 +251,159 @@ export default function AppTaxFormModal({ formKey, onClose }) {
             <span style={{ fontSize: "0.85rem", whiteSpace: "normal" }}>{field.label}</span>
           </IonCheckbox>
         );
+      case "textarea":
+        return col(
+          <IonTextarea fill="outline" labelPlacement="floating" label={field.label}
+            autoGrow rows={field.rows || 3} placeholder={field.placeholder}
+            value={value ?? ""} onIonInput={e => setField(field.name, e.detail.value)} style={ionInputStyle} />
+        );
+      case "color":
+        return col(
+          <div style={{ marginBottom: 8 }}>
+            <span style={labelStyle}>{field.label}</span>
+            <input type="color" value={value || field.default || "#1a1a1a"}
+              onChange={e => setField(field.name, e.target.value)}
+              style={{ width: "100%", height: 40, borderRadius: 6, border: "1px solid var(--ion-color-step-200)", cursor: "pointer", display: "block" }} />
+          </div>
+        );
+      case "image":
+        return col(
+          <div style={{ marginBottom: 8 }}>
+            <span style={labelStyle}>{field.label}</span>
+            {value ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--ion-color-step-200)", background: "var(--ion-color-step-50)" }}>
+                <img src={value} alt="" style={{ height: 36, width: "auto", maxWidth: 100, objectFit: "contain" }} />
+                <span style={{ flex: 1, fontSize: "0.78rem", color: "var(--ion-color-medium)" }}>Uploaded</span>
+                <IonButton fill="clear" size="small" onClick={() => setField(field.name, null)}>
+                  <IonIcon icon={closeOutline} slot="icon-only" />
+                </IonButton>
+              </div>
+            ) : (
+              <div onClick={() => fileInputRefs.current[field.name]?.click()}
+                style={{ padding: 14, borderRadius: 8, border: "2px dashed var(--ion-color-step-200)", textAlign: "center", cursor: "pointer", color: "var(--ion-color-medium)", fontSize: "0.82rem" }}>
+                <IonIcon icon={imageOutline} style={{ fontSize: 22, display: "block", margin: "0 auto 4px" }} />
+                Tap to upload image
+              </div>
+            )}
+            <input ref={el => { fileInputRefs.current[field.name] = el; }} type="file" accept="image/*" style={{ display: "none" }}
+              onChange={async e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setField(field.name, await readFileAsDataUrl(f)); }} />
+          </div>
+        );
+      case "signature": {
+        const mode = sigModes[field.name] || "draw";
+        const modes = field.nameField ? ["draw", "type", "upload"] : ["draw", "upload"];
+        return col(
+          <div style={{ marginBottom: 8 }}>
+            <span style={labelStyle}>{field.label}</span>
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              {modes.map(m => (
+                <button key={m} type="button" onClick={() => { setSigModes(prev => ({ ...prev, [field.name]: m })); setField(field.name, null); }}
+                  style={{
+                    flex: 1, padding: "6px 8px", borderRadius: 6, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
+                    border: `2px solid ${mode === m ? "var(--ion-color-primary)" : "var(--ion-color-step-200)"}`,
+                    background: mode === m ? "rgba(var(--ion-color-primary-rgb),0.08)" : "transparent",
+                    color: mode === m ? "var(--ion-color-primary)" : "var(--ion-text-color)",
+                  }}>
+                  {m === "draw" ? "Draw" : m === "type" ? "Type" : "Upload"}
+                </button>
+              ))}
+            </div>
+            {mode === "draw" && <SignaturePad height={150} onChange={dataUrl => setField(field.name, dataUrl)} />}
+            {mode === "type" && field.nameField && (
+              <>
+                <IonInput fill="outline" labelPlacement="floating" label="Typed signature name"
+                  value={formData[field.nameField] ?? ""} onIonInput={e => setField(field.nameField, e.detail.value)} style={ionInputStyle} />
+                {formData[field.nameField] && (
+                  <div style={{ border: "1px solid var(--ion-color-step-200)", borderRadius: 8, background: "var(--ion-color-step-50)", padding: "10px 14px" }}>
+                    <span style={{ fontSize: "1.4rem", fontStyle: "italic", fontFamily: "Georgia, 'Times New Roman', serif", color: "var(--ion-text-color)" }}>
+                      {formData[field.nameField]}
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+            {mode === "upload" && (
+              value ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--ion-color-step-200)", background: "var(--ion-color-step-50)" }}>
+                  <img src={value} alt="signature" style={{ height: 32, width: "auto", maxWidth: 120, objectFit: "contain" }} />
+                  <span style={{ flex: 1, fontSize: "0.78rem", color: "var(--ion-color-medium)" }}>Uploaded</span>
+                  <IonButton fill="clear" size="small" onClick={() => setField(field.name, null)}>
+                    <IonIcon icon={closeOutline} slot="icon-only" />
+                  </IonButton>
+                </div>
+              ) : (
+                <>
+                  <div onClick={() => fileInputRefs.current[field.name]?.click()}
+                    style={{ padding: 14, borderRadius: 8, border: "2px dashed var(--ion-color-step-200)", textAlign: "center", cursor: "pointer", color: "var(--ion-color-medium)", fontSize: "0.82rem" }}>
+                    Tap to upload signature image
+                  </div>
+                  <input ref={el => { fileInputRefs.current[field.name] = el; }} type="file" accept="image/*" style={{ display: "none" }}
+                    onChange={async e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) setField(field.name, await readFileAsDataUrl(f)); }} />
+                </>
+              )
+            )}
+          </div>
+        );
+      }
+      case "checkboxGroup": {
+        const map = value || {};
+        return col(
+          <div style={{ marginBottom: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+            {field.label && <span style={labelStyle}>{field.label}</span>}
+            {field.options.map(o => (
+              <IonCheckbox key={o.id} checked={!!map[o.id]} labelPlacement="end" justify="start"
+                onIonChange={e => setField(field.name, { ...map, [o.id]: e.detail.checked })}>
+                <span style={{ fontSize: "0.85rem", whiteSpace: "normal" }}>{o.label}</span>
+              </IonCheckbox>
+            ))}
+          </div>
+        );
+      }
+      case "rowList": {
+        const rows = Array.isArray(value) ? value : [];
+        const updateRow = (idx, colName, v) => {
+          const next = rows.map((r, i) => (i === idx ? { ...r, [colName]: v } : r));
+          setField(field.name, next);
+        };
+        return (
+          <IonCol key={field.name} size="12">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 8 }}>
+              {field.label && <span style={labelStyle}>{field.label}</span>}
+              {rows.map((row, idx) => (
+                <div key={idx} style={{ background: "var(--ion-color-step-100)", borderRadius: 8, padding: 10 }}>
+                  <IonGrid style={{ padding: 0 }}>
+                    <IonRow>
+                      {field.columns.map(c => (
+                        <IonCol key={c.name} size={c.sizeSm || "6"} sizeMd={c.size || "3"}>
+                          {c.type === "select" ? (
+                            <IonSelect fill="outline" labelPlacement="floating" label={c.label} value={row[c.name] ?? ""}
+                              onIonChange={e => updateRow(idx, c.name, e.detail.value)} style={ionInputStyle}>
+                              {c.options.map(o => <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>)}
+                            </IonSelect>
+                          ) : (
+                            <IonInput fill="outline" labelPlacement="floating" label={c.label} type={c.type || "text"}
+                              value={row[c.name] ?? ""} onIonInput={e => updateRow(idx, c.name, e.detail.value)} style={ionInputStyle} />
+                          )}
+                        </IonCol>
+                      ))}
+                      <IonCol size="12" sizeMd="1" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <IonButton fill="clear" color="danger" size="small" onClick={() => setField(field.name, rows.filter((_, i) => i !== idx))}>
+                          <IonIcon icon={trashOutline} />
+                        </IonButton>
+                      </IonCol>
+                    </IonRow>
+                  </IonGrid>
+                </div>
+              ))}
+              <IonButton fill="outline" size="small" style={{ alignSelf: "flex-start" }}
+                onClick={() => setField(field.name, [...rows, field.newRow ? field.newRow() : {}])}>
+                <IonIcon slot="start" icon={addOutline} />
+                {field.addLabel || "Add Row"}
+              </IonButton>
+            </div>
+          </IonCol>
+        );
+      }
       default:
         return col(
           <IonInput fill="outline" labelPlacement="floating" label={field.label}
@@ -278,14 +450,16 @@ export default function AppTaxFormModal({ formKey, onClose }) {
           <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 40px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              {/* Tax year */}
-              <div style={cardStyle}>
-                <span style={sectionHeadingStyle}>Tax Year</span>
-                <IonSelect fill="outline" labelPlacement="floating" label="Tax Year" value={taxYear}
-                  onIonChange={e => setTaxYear(e.detail.value)} style={ionInputStyle}>
-                  {config.taxYears.map(y => <IonSelectOption key={y} value={y}>{y}</IonSelectOption>)}
-                </IonSelect>
-              </div>
+              {/* Tax year (tax forms only) */}
+              {config.taxYears && (
+                <div style={cardStyle}>
+                  <span style={sectionHeadingStyle}>Tax Year</span>
+                  <IonSelect fill="outline" labelPlacement="floating" label="Tax Year" value={taxYear}
+                    onIonChange={e => setTaxYear(e.detail.value)} style={ionInputStyle}>
+                    {config.taxYears.map(y => <IonSelectOption key={y} value={y}>{y}</IonSelectOption>)}
+                  </IonSelect>
+                </div>
+              )}
 
               {config.sections.map(section => (
                 <div key={section.title} style={cardStyle}>
@@ -375,13 +549,13 @@ export default function AppTaxFormModal({ formKey, onClose }) {
                 <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ion-color-light-shade)", textAlign: "center" }}>
                   {appliedDiscount ? (
                     <>
-                      <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: "0 0 4px" }}>${config.price.toFixed(2)}</p>
+                      <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: "0 0 4px" }}>${basePrice.toFixed(2)}</p>
                       <p style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${appliedDiscount.discountedPrice.toFixed(2)}</p>
                       <p style={{ fontSize: "0.75rem", color: "var(--ion-color-success)", margin: 0 }}>{appliedDiscount.discountPercent}% discount applied</p>
                     </>
                   ) : (
                     <>
-                      <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${config.price.toFixed(2)}</p>
+                      <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${basePrice.toFixed(2)}</p>
                       <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", margin: 0 }}>One-time payment · instant download</p>
                     </>
                   )}
@@ -413,7 +587,7 @@ export default function AppTaxFormModal({ formKey, onClose }) {
                   ? "Processing..."
                   : hasActiveSubscription
                     ? "Download Document"
-                    : `Pay & Download — $${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : config.price.toFixed(2)}`}
+                    : `Pay & Download — $${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : basePrice.toFixed(2)}`}
               </IonButton>
             </div>
           </div>

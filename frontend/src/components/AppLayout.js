@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
-  calculatorOutline, chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
+  briefcaseOutline, calculatorOutline, chevronDownOutline, documentTextOutline, leafOutline, scaleOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
@@ -30,6 +30,8 @@ const tabs = [
   { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app" },
   { id: "canadian-paystub", label: "Canadian Stubs", icon: leafOutline,         path: "/app/canadian-paystub" },
   { id: "tax-forms",        label: "Tax Forms",      icon: calculatorOutline,   path: "/app/tax-forms" },
+  { id: "legal-forms",      label: "Legal Forms",    icon: scaleOutline,        path: "/app/legal-forms" },
+  { id: "business-forms",   label: "Business Forms", icon: briefcaseOutline,    path: "/app/business-forms" },
 ];
 
 // Persists sidebar state across route-driven remounts
@@ -146,6 +148,8 @@ export default function AppLayout({ children, fillHeight = false }) {
     const path = location.pathname;
     if (path.includes("/app/canadian-paystub")) return "canadian-paystub";
     if (path.includes("/app/tax-forms"))        return "tax-forms";
+    if (path.includes("/app/legal-forms"))      return "legal-forms";
+    if (path.includes("/app/business-forms"))   return "business-forms";
     if (path.includes("/app/paystub"))          return "paystub";
     return "paystub";
   };
@@ -502,6 +506,8 @@ export default function AppLayout({ children, fillHeight = false }) {
           { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
           { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
           { text: "Build Tax Forms",         handler: () => navigate("/app/tax-forms") },
+          { text: "Build Legal Forms",       handler: () => navigate("/app/legal-forms") },
+          { text: "Build Business Forms",    handler: () => navigate("/app/business-forms") },
           { text: "Cancel", role: "cancel" },
         ]}
       />

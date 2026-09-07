@@ -7,6 +7,7 @@ import { generate1099NECPreview } from "@/utils/1099necPreviewGenerator";
 import { generate1099MISCPreview } from "@/utils/1099miscPreviewGenerator";
 import { generateScheduleCPreview } from "@/utils/scheduleCPreviewGenerator";
 import AppTaxFormModal from "./AppTaxFormModal";
+import { TAX_FORM_CONFIGS } from "./appTaxFormConfigs";
 
 const SAMPLE_YEAR = "2024";
 
@@ -128,7 +129,7 @@ export default function AppTaxForms() {
       </div>
 
       {/* ── Native form modal (same flow as the paystub modal) ── */}
-      {activeForm && <AppTaxFormModal formKey={activeForm} onClose={() => setActiveForm(null)} />}
+      {activeForm && <AppTaxFormModal config={TAX_FORM_CONFIGS[activeForm]} onClose={() => setActiveForm(null)} />}
     </AppLayout>
   );
 }

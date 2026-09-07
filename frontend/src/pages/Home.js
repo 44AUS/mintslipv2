@@ -16,7 +16,7 @@ import inputInfo from '../assests/inputInfo.png';
 import download from '../assests/download.png';
 
 // Rotating hero word: flips out, swaps, flips back in on a loop
-const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Business Documents", "Legal Documents"];
+const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Documents"];
 const FlipWord = () => {
   const [idx, setIdx] = useState(0);
   const [flipping, setFlipping] = useState(false);

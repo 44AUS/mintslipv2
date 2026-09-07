@@ -81,6 +81,7 @@ import AIResumeLanding from "@/pages/AIResumeLanding";
 import PDFEngine from "@/pages/PDFEngine";
 import AppPaystub from "@/pages/app/AppPaystub";
 import AppCanadianPaystub from "@/pages/app/AppCanadianPaystub";
+import AppTaxForms, { AppEmbeddedForm } from "@/pages/app/AppTaxForms";
 import AppTerms from "@/pages/app/AppTerms";
 import AppPrivacy from "@/pages/app/AppPrivacy";
 import AppSettings from "@/pages/app/AppSettings";
@@ -231,6 +232,12 @@ function MobileApp() {
               <Route path="/app" element={<AppPaystub />} />
               <Route path="/app/paystub" element={<AppPaystub />} />
               <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
+              <Route path="/app/tax-forms" element={<AppTaxForms />} />
+              <Route path="/app/tax-forms/w2" element={<AppEmbeddedForm><W2Form embedded /></AppEmbeddedForm>} />
+              <Route path="/app/tax-forms/w9" element={<AppEmbeddedForm><W9Form embedded /></AppEmbeddedForm>} />
+              <Route path="/app/tax-forms/1099-nec" element={<AppEmbeddedForm><Form1099NEC embedded /></AppEmbeddedForm>} />
+              <Route path="/app/tax-forms/1099-misc" element={<AppEmbeddedForm><Form1099MISC embedded /></AppEmbeddedForm>} />
+              <Route path="/app/tax-forms/schedule-c" element={<AppEmbeddedForm><ScheduleCForm embedded /></AppEmbeddedForm>} />
               <Route path="/app/terms" element={<AppTerms />} />
               <Route path="/app/privacy" element={<AppPrivacy />} />
               <Route path="/app/settings" element={<AppSettings />} />
@@ -369,6 +376,12 @@ function App() {
             <Route path="/app" element={<AppPaystub />} />
             <Route path="/app/paystub" element={<AppPaystub />} />
             <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
+            <Route path="/app/tax-forms" element={<AppTaxForms />} />
+            <Route path="/app/tax-forms/w2" element={<AppEmbeddedForm><W2Form embedded /></AppEmbeddedForm>} />
+            <Route path="/app/tax-forms/w9" element={<AppEmbeddedForm><W9Form embedded /></AppEmbeddedForm>} />
+            <Route path="/app/tax-forms/1099-nec" element={<AppEmbeddedForm><Form1099NEC embedded /></AppEmbeddedForm>} />
+            <Route path="/app/tax-forms/1099-misc" element={<AppEmbeddedForm><Form1099MISC embedded /></AppEmbeddedForm>} />
+            <Route path="/app/tax-forms/schedule-c" element={<AppEmbeddedForm><ScheduleCForm embedded /></AppEmbeddedForm>} />
             <Route path="/app/terms" element={<AppTerms />} />
             <Route path="/app/privacy" element={<AppPrivacy />} />
             <Route path="/app/settings" element={<AppSettings />} />

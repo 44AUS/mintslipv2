@@ -35,7 +35,7 @@ const US_STATES = [
 // Available tax years
 const TAX_YEARS = ["2025", "2024", "2023", "2022", "2021"];
 
-export default function Form1099NEC() {
+export default function Form1099NEC({ embedded = false }) {
   const navigate = useNavigate();
   const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -391,7 +391,7 @@ export default function Form1099NEC() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header />
+      {!embedded && <Header />}
       <div className="max-w-7xl mx-auto px-6 py-8">
 
         <div className="mb-8">
@@ -1094,7 +1094,7 @@ export default function Form1099NEC() {
         </div>
       </section>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 }

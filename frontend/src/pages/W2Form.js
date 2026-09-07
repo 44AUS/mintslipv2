@@ -50,7 +50,7 @@ const generateTaxYears = () => {
   return years;
 };
 
-export default function W2Form() {
+export default function W2Form({ embedded = false }) {
   const navigate = useNavigate();
   const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -486,7 +486,7 @@ export default function W2Form() {
         <meta name="twitter:description" content="Generate professional W-2 wage and tax statements." />
       </Helmet>
       
-      <Header />
+      {!embedded && <Header />}
       <div className="max-w-7xl mx-auto px-6 py-8">
 
         <div className="mb-8">
@@ -1348,7 +1348,7 @@ export default function W2Form() {
         </div>
       </section>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 }

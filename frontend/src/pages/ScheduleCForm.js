@@ -36,7 +36,7 @@ const US_STATES = [
 // Tax years available (2024, 2023, 2022)
 const TAX_YEARS = ["2024", "2023", "2022"];
 
-export default function ScheduleCForm() {
+export default function ScheduleCForm({ embedded = false }) {
   const navigate = useNavigate();
   const authEnabled = useAuthEnabled();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -444,7 +444,7 @@ export default function ScheduleCForm() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header />
+      {!embedded && <Header />}
       <div className="max-w-7xl mx-auto px-6 py-8">
 
         <div className="mb-8">
@@ -1254,7 +1254,7 @@ export default function ScheduleCForm() {
         </div>
       </section>
 
-      <Footer />
+      {!embedded && <Footer />}
     </div>
   );
 }

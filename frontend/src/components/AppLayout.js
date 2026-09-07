@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
-  chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
+  calculatorOutline, chevronDownOutline, documentTextOutline, leafOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
@@ -29,6 +29,7 @@ import "../admin-theme.css";
 const tabs = [
   { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app" },
   { id: "canadian-paystub", label: "Canadian Stubs", icon: leafOutline,         path: "/app/canadian-paystub" },
+  { id: "tax-forms",        label: "Tax Forms",      icon: calculatorOutline,   path: "/app/tax-forms" },
 ];
 
 // Persists sidebar state across route-driven remounts
@@ -144,6 +145,7 @@ export default function AppLayout({ children, fillHeight = false }) {
   const getActiveTab = () => {
     const path = location.pathname;
     if (path.includes("/app/canadian-paystub")) return "canadian-paystub";
+    if (path.includes("/app/tax-forms"))        return "tax-forms";
     if (path.includes("/app/paystub"))          return "paystub";
     return "paystub";
   };
@@ -497,6 +499,7 @@ export default function AppLayout({ children, fillHeight = false }) {
         buttons={[
           { text: "Create Pay Stub",         handler: () => navigate("/app") },
           { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
+          { text: "Create Tax Form",         handler: () => navigate("/app/tax-forms") },
           { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
           { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
           { text: "Cancel", role: "cancel" },

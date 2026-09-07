@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import {
-  IonButton, IonIcon, IonSpinner, IonSegment, IonSegmentButton, IonLabel,
+  IonButton, IonIcon, IonList, IonSpinner, IonSegment, IonSegmentButton, IonLabel,
 } from "@ionic/react";
 import {
   clipboardOutline, refreshOutline, trashOutline, searchOutline,
@@ -9,6 +9,7 @@ import {
 } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 import AdminDetailModal from "@/components/AdminDetailModal";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_SIZE = 50;
@@ -97,7 +98,14 @@ export default function AdminAuditLog() {
   const [total,          setTotal]          = useState(0);
   const [page,           setPage]           = useState(0);
   const [loading,        setLoading]        = useState(false);
+  const [isMobile,       setIsMobile]       = useState(window.innerWidth < 768);
   const [search,         setSearch]         = useState("");
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const [actionFilter,   setActionFilter]   = useState("all");
   const [resourceFilter, setResourceFilter] = useState("all");
   const [clearing,       setClearing]       = useState(false);
@@ -263,6 +271,33 @@ export default function AdminAuditLog() {
                   <IonIcon icon={clipboardOutline} style={{ fontSize: 40 }} />
                   <span style={{ fontSize: "0.875rem" }}>No log entries found</span>
                 </div>
+              ) : isMobile ? (
+                /* Condensed whodat-style rows (native per-row taps — no
+                   tr-anchored overlay, which iOS Safari mis-positions) */
+                <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+                  {visibleLogs.map(log => {
+                    const tone = getActionTone(log.action);
+                    const isAdmin = log.role === "admin";
+                    return (
+                      <AdminListItem
+                        key={log.id}
+                        onClick={() => setDetail(log)}
+                        title={log.actorEmail || log.actorId || "—"}
+                        badges={<>
+                          <span className={`admin-badge admin-badge-${tone}`}>{(log.action || "").replace(/_/g, " ")}</span>
+                          <span className={`admin-badge ${isAdmin ? "admin-badge-blue" : "admin-badge-slate"}`} style={{ textTransform: "capitalize" }}>
+                            {log.role}{log.level ? ` L${log.level}` : ""}
+                          </span>
+                        </>}
+                        subtitle={[
+                          log.resourceType ? log.resourceType.replace(/_/g, " ") : null,
+                          log.details,
+                        ].filter(Boolean).join(" · ") || "—"}
+                        meta={new Date(log.timestamp).toLocaleString()}
+                      />
+                    );
+                  })}
+                </IonList>
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
@@ -281,7 +316,7 @@ export default function AdminAuditLog() {
                         const tone = getActionTone(log.action);
                         const isAdmin = log.role === "admin";
                         return (
-                          <tr key={log.id} style={{ position: "relative", height: 52 }}>
+                          <tr key={log.id} style={{ position: "relative", height: 52, transform: "translateZ(0)" }}>
                             {/* First cell hosts the row-wide click/ripple overlay
                                 (the <tr> is its containing block) */}
                             <td style={{ ...tdStyle, fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>

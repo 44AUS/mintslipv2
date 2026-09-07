@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
-  IonButton, IonRippleEffect, IonSpinner,
+  IonButton, IonList, IonRippleEffect, IonSpinner,
 } from "@ionic/react";
 import { toast } from "@/utils/toast";
 import {
@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -47,6 +48,13 @@ export default function AdminDiscounts() {
   const [adminInfo, setAdminInfo] = useState(null);
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState(null);
 
@@ -499,6 +507,40 @@ export default function AdminDiscounts() {
             <p className="text-slate-500">No discount codes yet</p>
             <p className="text-sm text-slate-400">Create your first discount code to get started</p>
           </div>
+        ) : isMobile ? (
+          /* Condensed whodat-style rows for narrow screens */
+          <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+            {discounts.map((discount) => (
+              <AdminListItem
+                key={discount.id}
+                title={<span style={{ fontFamily: "monospace" }}>{discount.code}</span>}
+                badges={<>
+                  <span style={{ color: "#16a34a", fontWeight: 700, fontSize: "0.78rem" }}>{discount.discountPercent}% OFF</span>
+                  {!discount.isActive ? (
+                    <span className="admin-badge admin-badge-red">Inactive</span>
+                  ) : isExpired(discount.expiryDate) ? (
+                    <span className="admin-badge admin-badge-amber">Expired</span>
+                  ) : isNotStarted(discount.startDate) ? (
+                    <span className="admin-badge admin-badge-blue">Scheduled</span>
+                  ) : (
+                    <span className="admin-badge admin-badge-green">Active</span>
+                  )}
+                </>}
+                subtitle={discount.applicableTo === "all" ? "All Generators" : `${discount.specificGenerators?.length || 0} generators`}
+                meta={`${formatDate(discount.startDate)} – ${formatDate(discount.expiryDate)} · used ${discount.usageCount || 0}${discount.usageType === "limited" ? ` / ${discount.usageLimit}` : ""}`}
+                status={
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <button onClick={() => handleEdit(discount)} className="ion-activatable admin-action-btn" title="Edit">
+                      <Edit2 size={14} /><IonRippleEffect />
+                    </button>
+                    <button onClick={() => handleDelete(discount.id)} className="ion-activatable admin-action-btn danger" title="Delete">
+                      <Trash2 size={14} /><IonRippleEffect />
+                    </button>
+                  </div>
+                }
+              />
+            ))}
+          </IonList>
         ) : (
           <div className="overflow-x-auto">
             <table className="admin-table">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  IonSegment, IonSegmentButton, IonLabel, IonButton, IonIcon, IonSpinner,
+  IonSegment, IonSegmentButton, IonLabel, IonButton, IonIcon, IonList, IonSpinner,
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
   IonFooter, IonButtons,
 } from "@ionic/react";
@@ -11,6 +11,7 @@ import {
 } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -53,6 +54,13 @@ export default function AdminBannedIPs() {
   const [bannedIps,       setBannedIps]       = useState([]);
   const [loading,         setLoading]         = useState(true);
   const [segment,         setSegment]         = useState("active");
+  const [isMobile,        setIsMobile]        = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const [isDialogOpen,    setIsDialogOpen]    = useState(false);
   const [newIp,           setNewIp]           = useState("");
   const [newReason,       setNewReason]       = useState("");
@@ -231,6 +239,35 @@ export default function AdminBannedIPs() {
                     </IonButton>
                   )}
                 </div>
+              ) : isMobile ? (
+                /* Condensed whodat-style rows for narrow screens */
+                <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+                  {rows.map(banned => (
+                    <AdminListItem
+                      key={banned.id}
+                      start={
+                        <div style={{
+                          width: 10, height: 10, borderRadius: "50%",
+                          background: segment === "active" ? "var(--ion-color-danger)" : "var(--ion-color-success)",
+                        }} />
+                      }
+                      title={<span style={{ fontFamily: "monospace" }}>{banned.ip}</span>}
+                      subtitle={banned.reason || "—"}
+                      meta={`${segment === "active" ? "Banned" : "Unbanned"} ${formatDate(segment === "active" ? banned.bannedAt : banned.unbannedAt)}`}
+                      status={segment === "active" ? (
+                        <IonButton fill="clear" size="small" color="success" onClick={() => unbanIp(banned.ip)}>
+                          <IonIcon slot="start" icon={checkmarkOutline} style={{ fontSize: 14 }} />
+                          Unban
+                        </IonButton>
+                      ) : (
+                        <IonButton fill="clear" size="small" color="danger" onClick={() => { setNewIp(banned.ip); setNewReason(banned.reason || ""); setIsDialogOpen(true); }}>
+                          <IonIcon slot="start" icon={shieldOutline} style={{ fontSize: 14 }} />
+                          Re-ban
+                        </IonButton>
+                      )}
+                    />
+                  ))}
+                </IonList>
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>

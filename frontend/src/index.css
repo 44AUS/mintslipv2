@@ -9,11 +9,17 @@ body.ionic-active {
   overflow: hidden;
 }
 
-/* Ensure non-admin pages keep normal scrolling */
-html:not(.ionic-active),
-body:not(.ionic-active) {
+/* Ensure non-admin pages keep normal scrolling. Body must stay
+   overflow:visible (the default) — overflow:auto would make it a separate
+   scroll container and break position:sticky (the pill header) against
+   document scrolling. */
+html:not(.ionic-active) {
   height: auto;
   overflow: auto;
+}
+body:not(.ionic-active) {
+  height: auto;
+  overflow: visible;
 }
 
 body {

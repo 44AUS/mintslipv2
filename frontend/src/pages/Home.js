@@ -1310,7 +1310,10 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    // overflow-x: clip contains the decorative blur circles without creating a
+    // scroll container, so the sticky pill header keeps pinning on scroll
+    // (overflow: hidden would break position: sticky).
+    <div className="min-h-screen bg-white relative" style={{ overflowX: "clip" }}>
       <Helmet>
         <title>MintSlip - Professional Instant Paystub & Document Generator | Instant Download</title>
         <meta name="description" content="Generate professional pay stubs, W-2 forms, accountant mockups, 1099s, and more in minutes. No registration required. Trusted by 10,000+ users. Secure PayPal payment." />

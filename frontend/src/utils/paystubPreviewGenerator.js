@@ -121,6 +121,7 @@ function calculatePayPeriodsFromHireDate(hireDate, currentPeriodEnd, periodLengt
   const diffTime = currentPeriodEnd.getTime() - ytdStartDate.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const numPeriods = Math.max(1, Math.ceil(diffDays / periodLength));
+  console.log(`[Preview YTD Debug] hireDate=${hireDate?.toISOString()}, endDate=${currentPeriodEnd?.toISOString()}, ytdStartDate=${ytdStartDate?.toISOString()}, diffDays=${diffDays}, numPeriods=${numPeriods}`);
   return numPeriods;
 }
 
@@ -483,6 +484,23 @@ export const generateAllPreviewPDFs = async (formData, template = 'template-a', 
     } else {
       hireDate = new Date(); // Last resort fallback
     }
+
+    // Same anchor consistency as the main generator: a hire date after the
+    // first period end would flip YTD anchors mid-batch and make YTD collapse
+    // on the first stub whose end crosses it; anchor at Jan 1 for every stub.
+    const firstPeriodEnd = endDateArray[0]
+      ? new Date(endDateArray[0] + 'T12:00:00')
+      : (() => {
+          const base = startDateArray[0] || formData.startDate;
+          if (!base) return null;
+          const d = new Date(base + 'T12:00:00');
+          d.setDate(d.getDate() + periodLength - 1);
+          return d;
+        })();
+    if (firstPeriodEnd && hireDate > firstPeriodEnd) {
+      hireDate = new Date(firstPeriodEnd.getFullYear(), 0, 1);
+    }
+
     const state = formData.state?.toUpperCase() || "";
     const stateRate = isContractor ? 0 : getStateTaxRate(state);
 

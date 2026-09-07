@@ -278,6 +278,19 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
       startDate = new Date(hireDate);
     }
 
+    // If the hire date lands after the first pay period ends, it contradicts
+    // the periods being generated. Anchor YTD at Jan 1 for EVERY stub in that
+    // case — the per-stub fallback used to flip anchors mid-batch, making YTD
+    // collapse on the first stub whose period end crossed the hire date.
+    const firstPeriodEnd = parseLocalDate(endDateArray[0]) || (() => {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + periodLength - 1);
+      return d;
+    })();
+    const effectiveHireDate = (hireDate && firstPeriodEnd && hireDate > firstPeriodEnd)
+      ? new Date(firstPeriodEnd.getFullYear(), 0, 1)
+      : hireDate;
+
     // Get state tax rate from centralized tax calculator
     const state = formData.state?.toUpperCase() || "";
     const stateRate = isContractor ? 0 : getStateTaxRate(state);
@@ -304,7 +317,7 @@ export const generateAndDownloadPaystub = async (formData, template = 'template-
           payDay, pageWidth, pageHeight, calculatedNumStubs, payFrequency,
           checkNumberArray, memoArray,
           startDateArray, endDateArray, payDateArray, commissionArray, tipsArray, tipsCashArray,
-          hireDate  // Pass consistent hire date for YTD calculations
+          effectiveHireDate  // Pass consistent hire date for YTD calculations
         );
 
         // Template-specific filename with pay date

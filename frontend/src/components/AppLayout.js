@@ -499,9 +499,9 @@ export default function AppLayout({ children, fillHeight = false }) {
         buttons={[
           { text: "Create Pay Stub",         handler: () => navigate("/app") },
           { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
-          { text: "Create Tax Form",         handler: () => navigate("/app/tax-forms") },
           { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
           { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
+          { text: "Build Tax Forms",         handler: () => navigate("/app/tax-forms") },
           { text: "Cancel", role: "cancel" },
         ]}
       />

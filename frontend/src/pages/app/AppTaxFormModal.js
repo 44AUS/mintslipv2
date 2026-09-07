@@ -241,7 +241,13 @@ export default function AppTaxFormModal({ formKey, onClose }) {
     }
   };
 
-  const isDesktop = window.innerWidth >= 768;
+  // Tracked as state so rotation/resizes keep the modal full-screen on mobile
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return createPortal(
     <>

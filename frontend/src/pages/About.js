@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Target, Eye, Award, Users, Shield, Zap, FileText } from "lucide-react";
 
 const STATS = [
-  { value: "50K+", label: "Documents Generated", icon: FileText },
+  { value: "10K+", label: "Documents Generated", icon: FileText },
   { value: "99.9%", label: "Accuracy Rate", icon: CheckCircle },
   { value: "24hr", label: "Support Response", icon: Zap },
   { value: "100%", label: "Secure & Private", icon: Shield },
@@ -65,7 +65,7 @@ export default function About() {
         <meta name="description" content="Learn about MintSlip - your trusted partner for professional document generation. We provide accurate, affordable, and easy-to-use tools for paystubs, tax forms, and more." />
         <meta name="keywords" content="about MintSlip, document generation company, paystub generator, tax form generator" />
         <meta property="og:title" content="About MintSlip - Document Generation Platform" />
-        <meta property="og:description" content="Trusted by 50K+ users for professional document generation." />
+        <meta property="og:description" content="Trusted by 1,000+ users for professional document generation." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="About MintSlip" />

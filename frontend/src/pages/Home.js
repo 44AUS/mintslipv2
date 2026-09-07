@@ -1296,33 +1296,9 @@ function HeroProductPreview() {
 export default function Home() {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
-  const [userCount, setUserCount] = useState("10K+"); // Default fallback
-  const [docsCount, setDocsCount] = useState("50K+"); // Default fallback
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-  // Fetch hero stats from API
-  useEffect(() => {
-    const fetchHeroStats = async () => {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/hero-stats`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            if (data.users?.formatted) {
-              setUserCount(data.users.formatted);
-            }
-            if (data.documents?.formatted) {
-              setDocsCount(data.documents.formatted);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching hero stats:", error);
-        // Keep default fallback on error
-      }
-    };
-    fetchHeroStats();
-  }, [BACKEND_URL]);
+  // Hero stats are hardcoded (the live API numbers read too small)
+  const userCount = "1,000+";
+  const docsCount = "10K+";
 
   // Animation on mount
   useEffect(() => {
@@ -1342,7 +1318,7 @@ export default function Home() {
     <div className="min-h-screen bg-white relative" style={{ overflowX: "clip" }}>
       <Helmet>
         <title>MintSlip - Professional Instant Paystub & Document Generator | Instant Download</title>
-        <meta name="description" content="Generate professional pay stubs, W-2 forms, accountant mockups, 1099s, and more in minutes. No registration required. Trusted by 10,000+ users. Secure PayPal payment." />
+        <meta name="description" content="Generate professional pay stubs, W-2 forms, accountant mockups, 1099s, and more in minutes. No registration required. Trusted by 1,000+ users. Secure payment." />
         <meta name="keywords" content="paystub generator, pay stub maker, W-2 generator, accountant mockup generator, 1099 form, document generator, instant download" />
         <meta property="og:title" content="MintSlip - Professional Document Generator" />
         <meta property="og:description" content="Create professional pay stubs, tax forms, and budgeting documents instantly. No sign-up required." />

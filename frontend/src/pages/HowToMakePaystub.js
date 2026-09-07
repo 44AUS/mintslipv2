@@ -409,26 +409,7 @@ export default function HowToMakePaystub() {
   const [isVisible] = useState(true);
   const [previews, setPreviews] = useState({});
   const [loading, setLoading] = useState({});
-  const [userCount, setUserCount] = useState("10K+");
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-  // Fetch hero stats
-  useEffect(() => {
-    const fetchHeroStats = async () => {
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/hero-stats`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.users?.formatted) {
-            setUserCount(data.users.formatted);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching hero stats:", error);
-      }
-    };
-    fetchHeroStats();
-  }, [BACKEND_URL]);
+  const userCount = "1,000+"; // hardcoded hero stat
   
   // Generate previews on mount
   useEffect(() => {
@@ -583,7 +564,7 @@ export default function HowToMakePaystub() {
     <div className="min-h-screen bg-white">
       <Helmet>
         <title>How to Make a Paystub | Step-by-Step Guide 2025 | MintSlip</title>
-        <meta name="description" content="Learn how to make a paystub in minutes with our step-by-step guide. Create professional pay stubs with accurate tax calculations. Free preview, instant download. Trusted by 10,000+ users." />
+        <meta name="description" content="Learn how to make a paystub in minutes with our step-by-step guide. Create professional pay stubs with accurate tax calculations. Free preview, instant download. Trusted by 1,000+ users." />
         <meta name="keywords" content="how to make a paystub, create paystub, paystub generator, pay stub maker, free paystub template, make pay stub online, paystub creator, generate paystub" />
         <meta property="og:title" content="How to Make a Paystub - Complete Step-by-Step Guide 2025" />
         <meta property="og:description" content="Create professional paystubs in under 5 minutes. Our guide shows you exactly how to make accurate pay stubs with proper tax calculations." />
@@ -658,7 +639,7 @@ export default function HowToMakePaystub() {
                 <p className="text-sm text-slate-500">Average Time</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black text-slate-900">50K+</p>
+                <p className="text-3xl font-black text-slate-900">10K+</p>
                 <p className="text-sm text-slate-500">Paystubs Created</p>
               </div>
               <div className="text-center">

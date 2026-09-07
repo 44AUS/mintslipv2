@@ -15,6 +15,32 @@ import select from '../assests/select.png';
 import inputInfo from '../assests/inputInfo.png';
 import download from '../assests/download.png';
 
+// Rotating hero word: flips out, swaps, flips back in on a loop
+const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Business Documents", "Legal Documents"];
+const FlipWord = () => {
+  const [idx, setIdx] = useState(0);
+  const [flipping, setFlipping] = useState(false);
+
+  useEffect(() => {
+    const cycle = setInterval(() => {
+      setFlipping(true);
+      setTimeout(() => {
+        setIdx(i => (i + 1) % FLIP_WORDS.length);
+        setFlipping(false);
+      }, 250);
+    }, 2600);
+    return () => clearInterval(cycle);
+  }, []);
+
+  return (
+    <span className="flip-word">
+      <span key={idx} className={`flip-word-inner${flipping ? " is-out" : ""}`}>
+        {FLIP_WORDS[idx]}
+      </span>
+    </span>
+  );
+};
+
 // Telegram icon SVG component
 const TelegramIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -1356,7 +1382,7 @@ export default function Home() {
 
             <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.1 }}>
               Generate Professional{' '}
-              <span className="text-green-700">Paystubs</span>{' '}
+              <span className="text-green-700"><FlipWord /></span>{' '}
               in Minutes
             </h1>
             <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl mx-auto lg:mx-0 mb-8">

@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonRippleEffect, IonSpinner } from "@ionic/react";
+import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonList, IonRippleEffect, IonSpinner } from "@ionic/react";
 import { refreshOutline, chevronForwardOutline } from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
 import AdminDetailModal from "@/components/AdminDetailModal";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -89,6 +90,13 @@ export default function AdminSavedDocs() {
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState("all");
   const [detail, setDetail]   = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const fetchDocs = useCallback(async () => {
     setLoading(true);
@@ -207,6 +215,36 @@ export default function AdminSavedDocs() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
                   <IonSpinner name="crescent" />
                 </div>
+              ) : isMobile ? (
+                /* Condensed whodat-style rows: readable without sideways
+                   scrolling, native per-row taps (no tr-anchored overlay,
+                   which iOS Safari mis-positions). Actions live in the modal. */
+                filtered.length === 0 ? (
+                  <div className="adm-empty">No saved documents found</div>
+                ) : (
+                  <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+                    {filtered.map(doc => {
+                      const label = DOCUMENT_TYPES[doc.documentType] || doc.documentType || "—";
+                      const size = doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : null;
+                      const date = doc.createdAt ? new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null;
+                      return (
+                        <AdminListItem
+                          key={doc.id}
+                          onClick={() => setDetail(doc)}
+                          start={
+                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: DOC_COLORS[doc.documentType] || "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ fontSize: "0.65rem", color: "#fff", fontWeight: 700 }}>{getInitials(doc.userEmail)}</span>
+                            </div>
+                          }
+                          title={label}
+                          badges={doc.fileExists === false && <span className="admin-badge admin-badge-red">Missing</span>}
+                          subtitle={doc.userEmail || "—"}
+                          meta={[doc.fileName, size, date].filter(Boolean).join(" · ")}
+                        />
+                      );
+                    })}
+                  </IonList>
+                )
               ) : (
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
@@ -226,7 +264,7 @@ export default function AdminSavedDocs() {
                       {filtered.map(doc => {
                         const label = DOCUMENT_TYPES[doc.documentType] || doc.documentType || "—";
                         return (
-                          <tr key={doc.id} style={{ position: "relative", height: 64 }}>
+                          <tr key={doc.id} style={{ position: "relative", height: 64, transform: "translateZ(0)" }}>
 
                             {/* User — also hosts the row-wide click/ripple overlay,
                                 which spans the whole row because the <tr> is its

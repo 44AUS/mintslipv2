@@ -32,15 +32,8 @@ const cardStyle = {
 };
 const headingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)" };
 const labelStyle = { fontSize: "0.75rem", color: "var(--ion-color-medium)", marginBottom: 4, display: "block" };
-const inputStyle = {
-  "--background": "var(--ion-color-step-50)",
-  "--color": "var(--ion-text-color)",
-  "--border-color": "var(--ion-color-step-200)",
-  "--border-radius": "6px",
-  "--padding-start": "10px",
-  "--padding-end": "10px",
-  fontSize: "0.9rem",
-};
+// Inputs match the paystub modal: plain outline + floating label, no overrides
+const inputStyle = {};
 
 const TEMPLATES = [
   { value: "ats",     label: "ATS Optimized",      desc: "Passes ATS scanners",      color: "#2563eb" },
@@ -290,10 +283,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
 
   // ── Helper components ───────────────────────────────────────────────────
   const Field = ({ label, value, onChange, type = "text", placeholder = "" }) => (
-    <div>
-      {label && <span style={labelStyle}>{label}</span>}
-      <IonInput value={value} onIonInput={e => onChange(e.detail.value)} type={type} placeholder={placeholder} fill="outline" style={inputStyle} />
-    </div>
+    <IonInput value={value} onIonInput={e => onChange(e.detail.value)} type={type} placeholder={placeholder}
+      fill="outline" labelPlacement="floating" label={label} style={inputStyle} />
   );
 
   // ── Step renderers ────────────────────────────────────────────────────
@@ -346,7 +337,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
             </div>
             {exp.responsibilities.map((r, rIdx) => (
               <div key={rIdx} style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-                <IonInput value={r} onIonInput={e => updateBullet(exp.id, rIdx, e.detail.value)} placeholder={`Bullet ${rIdx + 1}`} fill="outline" style={{ ...inputStyle, flex: 1 }} />
+                <IonInput value={r} onIonInput={e => updateBullet(exp.id, rIdx, e.detail.value)} fill="outline" labelPlacement="floating" label={`Bullet ${rIdx + 1}`} style={{ ...inputStyle, flex: 1 }} />
                 {exp.responsibilities.length > 1 && (
                   <IonButton fill="clear" size="small" color="medium" onClick={() => removeBullet(exp.id, rIdx)}>
                     <IonIcon icon={trashOutline} slot="icon-only" style={{ fontSize: 15 }} />
@@ -405,7 +396,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       <p style={{ fontSize: "0.82rem", color: "var(--ion-color-medium)", margin: 0 }}>Add technical skills, tools, languages, and certifications.</p>
       {formData.skills.map((skill, idx) => (
         <div key={idx} style={{ display: "flex", gap: 6 }}>
-          <IonInput value={skill} onIonInput={e => updateSkill(idx, e.detail.value)} placeholder={`Skill ${idx + 1}`} fill="outline" style={{ ...inputStyle, flex: 1 }} />
+          <IonInput value={skill} onIonInput={e => updateSkill(idx, e.detail.value)} fill="outline" labelPlacement="floating" label={`Skill ${idx + 1}`} style={{ ...inputStyle, flex: 1 }} />
           {formData.skills.length > 1 && (
             <IonButton fill="clear" size="small" color="medium" onClick={() => removeSkill(idx)}>
               <IonIcon icon={trashOutline} slot="icon-only" style={{ fontSize: 15 }} />
@@ -424,23 +415,17 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={headingStyle}>Target Job</div>
       <Field label="Target Job Title" value={formData.targetJobTitle} onChange={v => setField("targetJobTitle", v)} placeholder="e.g. Senior Software Engineer" />
-      <div>
-        <span style={labelStyle}>Job Posting URL (Optional — auto-extracts description)</span>
-        <div style={{ display: "flex", gap: 8 }}>
-          <IonInput value={formData.jobUrl} onIonInput={e => setField("jobUrl", e.detail.value)}
-            placeholder="Paste job URL..." fill="outline" style={{ ...inputStyle, flex: 1 }} />
-          <IonButton onClick={scrapeJobUrl} disabled={isScrapingJob}
-            style={{ "--background": "#7c3aed", "--background-activated": "#6d28d9", flexShrink: 0 }}>
-            {isScrapingJob ? <IonSpinner name="crescent" style={{ color: "#fff", width: 18, height: 18 }} /> : "Extract"}
-          </IonButton>
-        </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <IonInput value={formData.jobUrl} onIonInput={e => setField("jobUrl", e.detail.value)}
+          fill="outline" labelPlacement="floating" label="Job Posting URL (Optional)" style={{ ...inputStyle, flex: 1 }} />
+        <IonButton onClick={scrapeJobUrl} disabled={isScrapingJob}
+          style={{ "--background": "#7c3aed", "--background-activated": "#6d28d9", flexShrink: 0 }}>
+          {isScrapingJob ? <IonSpinner name="crescent" style={{ color: "#fff", width: 18, height: 18 }} /> : "Extract"}
+        </IonButton>
       </div>
-      <div>
-        <span style={labelStyle}>Job Description * (the AI tailors your resume to this)</span>
-        <IonTextarea value={formData.jobDescription} onIonInput={e => setField("jobDescription", e.detail.value)}
-          rows={10} placeholder="Paste the full job description here..." fill="outline"
-          style={{ "--background": "var(--ion-color-step-50)", "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-200)", fontSize: "0.88rem" }} />
-      </div>
+      <IonTextarea value={formData.jobDescription} onIonInput={e => setField("jobDescription", e.detail.value)}
+        rows={10} fill="outline" labelPlacement="floating" label="Job Description *"
+        placeholder="Paste the full job description — the AI tailors your resume to it" style={inputStyle} />
     </div>
   );
 
@@ -459,12 +444,10 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           ))}
         </div>
       </div>
-      <div>
-        <span style={labelStyle}>Font</span>
-        <IonSelect value={formData.font} onIonChange={e => setField("font", e.detail.value)} fill="outline" style={inputStyle}>
-          {FONTS.map(f => <IonSelectOption key={f.value} value={f.value}>{f.label}</IonSelectOption>)}
-        </IonSelect>
-      </div>
+      <IonSelect value={formData.font} onIonChange={e => setField("font", e.detail.value)}
+        fill="outline" labelPlacement="floating" label="Font" style={inputStyle}>
+        {FONTS.map(f => <IonSelectOption key={f.value} value={f.value}>{f.label}</IonSelectOption>)}
+      </IonSelect>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <IonCheckbox checked={formData.onePage} onIonChange={e => setField("onePage", e.detail.checked)} />
         <span style={{ fontSize: "0.88rem", color: "var(--ion-text-color)" }}>Fit to one page</span>

@@ -33,6 +33,7 @@ from email_service import (
     send_welcome_email,
     send_verification_email,
     send_support_reply_email,
+    send_discount_announcement_email,
     schedule_getting_started_email,
     schedule_subscription_thank_you,
     send_download_confirmation,
@@ -4825,6 +4826,51 @@ async def create_discount(request: dict, session: dict = Depends(get_current_adm
     await discounts_collection.insert_one(discount)
     await log_action(session, "create_discount", "discount", discount["id"], discount["code"])
     return {"success": True, "id": discount["id"]}
+
+
+@app.post("/api/admin/discounts/announce")
+async def announce_discount(request: dict, session: dict = Depends(get_current_admin)):
+    """Mass-email a discount code to all registered users and past guest purchasers."""
+    check_permission(session, "manage_discounts")
+    code = (request.get("code") or "").strip().upper()
+    message = (request.get("message") or "").strip()
+    if not code:
+        raise HTTPException(status_code=400, detail="code is required")
+    discount = await discounts_collection.find_one({"code": code}, {"_id": 0})
+    if not discount:
+        raise HTTPException(status_code=404, detail="Discount code not found")
+
+    # Registered users + unique guest purchase emails (same sources as hero-stats)
+    recipients = set()
+    async for u in users_collection.find({}, {"email": 1}):
+        if u.get("email"):
+            recipients.add(u["email"].lower())
+    async for doc in purchases_collection.aggregate([
+        {"$match": {"isGuest": True, "email": {"$exists": True, "$ne": ""}}},
+        {"$group": {"_id": {"$toLower": "$email"}}},
+    ]):
+        if doc.get("_id"):
+            recipients.add(doc["_id"])
+
+    percent = discount.get("discountPercent", 0)
+    expiry = discount.get("expiryDate") or ""
+    emails = sorted(recipients)
+
+    async def _send_all():
+        sent = 0
+        for email in emails:
+            try:
+                res = await send_discount_announcement_email(email, code, percent, message, expiry)
+                if res.get("success"):
+                    sent += 1
+            except Exception as e:
+                logger.error(f"Discount announcement to {email} failed: {e}")
+        logger.info(f"Discount announcement '{code}' sent to {sent}/{len(emails)} recipients")
+
+    # Send in the background — the rate limiter in send_email paces the batch
+    asyncio.create_task(_send_all())
+    await log_action(session, "announce_discount", "discount", discount.get("id", ""), f"{code} → {len(emails)} recipients")
+    return {"success": True, "recipients": len(emails)}
 
 @app.put("/api/admin/discounts/{discount_id}")
 async def update_discount(discount_id: str, request: dict, session: dict = Depends(get_current_admin)):

@@ -808,6 +808,49 @@ async def send_support_reply_email(user_email: str, user_name: str, admin_name: 
     return await send_email(user_email, template["subject"], template["html"], "support_reply")
 
 
+def template_discount_announcement(code: str, discount_percent, custom_message: str = "", expiry_date: str = "") -> Dict[str, str]:
+    """Announce a new discount code, with an optional custom note from the admin."""
+    safe_msg = (custom_message or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
+    msg_block = (
+        f'<div class="highlight"><p style="margin: 0; color: #374151; line-height: 1.7;">{safe_msg}</p></div>'
+        if safe_msg else ""
+    )
+    expiry_note = f'<p class="text-muted">Offer valid until {expiry_date}.</p>' if expiry_date else ""
+    content = f"""
+        <h1>A Discount Just for You 🎉</h1>
+        <p>Hi there,</p>
+        <p>Use the code below to get <strong>{discount_percent}% off</strong> your next document on MintSlip:</p>
+
+        <div style="text-align: center; margin: 26px 0;">
+            <span style="display: inline-block; background: #dcfce7; border: 2px dashed #16a34a; color: #14532d; font-family: monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; padding: 14px 28px; border-radius: 10px;">{code}</span>
+        </div>
+        {msg_block}
+
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{SITE_URL}/app" class="button">Create a Document</a>
+        </p>
+        {expiry_note}
+    """
+    return {
+        "subject": f"{discount_percent}% off with code {code} - MintSlip",
+        "html": get_base_template(content, f"Save {discount_percent}% with code {code}"),
+    }
+
+
+async def send_discount_announcement_email(to_email: str, code: str, discount_percent, custom_message: str = "", expiry_date: str = ""):
+    """Email one recipient about a new discount code (used by the mass announce)."""
+    config = await get_email_config("discount_announcement")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    default = template_discount_announcement(code, discount_percent, custom_message, expiry_date)
+    template = await resolve_template("discount_announcement", default, {
+        "code": code, "discount_percent": discount_percent,
+        "custom_message": custom_message or "", "expiry_date": expiry_date or "",
+        "SITE_URL": SITE_URL,
+    })
+    return await send_email(to_email, template["subject"], template["html"], "discount_announcement")
+
+
 async def send_verification_email(user_email: str, user_name: str, verification_code: str, verification_link: str):
     """Send email verification immediately after signup"""
     default = template_email_verification(user_name, verification_code, verification_link)

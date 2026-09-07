@@ -84,6 +84,10 @@ export default function AdminDiscounts() {
     isActive: true
   });
 
+  // Announce-by-email option shown when creating a code
+  const [notifyAll, setNotifyAll] = useState(false);
+  const [notifyMessage, setNotifyMessage] = useState("");
+
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     const info = localStorage.getItem("adminInfo");
@@ -221,8 +225,27 @@ export default function AdminDiscounts() {
       });
       if (response.ok) {
         toast.success(editingDiscount ? "Discount code updated!" : "Discount code created!");
+        if (!editingDiscount && notifyAll) {
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/admin/discounts/announce`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${adminToken}` },
+              body: JSON.stringify({ code: formData.code, message: notifyMessage }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              toast.success(`Emailing the code to ${data.recipients} user${data.recipients === 1 ? "" : "s"} & guests…`);
+            } else {
+              toast.error(data.detail || "Failed to send announcement emails");
+            }
+          } catch (_) {
+            toast.error("Failed to send announcement emails");
+          }
+        }
         setIsDialogOpen(false);
         resetForm();
+        setNotifyAll(false);
+        setNotifyMessage("");
         fetchDiscounts();
       } else {
         const error = await response.json();
@@ -683,6 +706,34 @@ export default function AdminDiscounts() {
                 />
                 <label htmlFor="isActive" className="text-sm cursor-pointer">Active</label>
               </div>
+
+              {/* Announce by email (create only) */}
+              {!editingDiscount && (
+                <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--app-divider, #e2e8f0)" }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <input
+                      type="checkbox"
+                      id="notifyAll"
+                      checked={notifyAll}
+                      onChange={(e) => setNotifyAll(e.target.checked)}
+                      style={{ width: 16, height: 16, cursor: "pointer" }}
+                    />
+                    <label htmlFor="notifyAll" className="text-sm cursor-pointer font-medium">
+                      Email this code to all users &amp; guests
+                    </label>
+                  </div>
+                  {notifyAll && (
+                    <textarea
+                      className="admin-input"
+                      rows={3}
+                      style={{ width: "100%", resize: "vertical" }}
+                      placeholder="Custom message to include in the email (optional)"
+                      value={notifyMessage}
+                      onChange={(e) => setNotifyMessage(e.target.value)}
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Footer */}

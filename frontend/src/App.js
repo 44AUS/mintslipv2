@@ -27,8 +27,6 @@ import HowToMakePaystub from "@/pages/HowToMakePaystub";
 import PaystubForApartment from "@/pages/PaystubForApartment";
 import FAQ from "@/pages/FAQ";
 import About from "@/pages/About";
-import Privacy from "@/pages/Privacy";
-import Terms from "@/pages/Terms";
 import NotFound from "@/pages/NotFound";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminDiscounts from "@/pages/AdminDiscounts";
@@ -324,8 +322,8 @@ function App() {
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/about" element={<About />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Navigate to="/app/privacy" replace />} />
+            <Route path="/terms" element={<Navigate to="/app/terms" replace />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             {/* Blog Routes */}
             <Route path="/blog" element={<Blog />} />

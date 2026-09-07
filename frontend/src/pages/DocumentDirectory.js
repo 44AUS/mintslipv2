@@ -604,19 +604,19 @@ export default function DocumentDirectory() {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-16 bg-gradient-to-br from-green-800 to-emerald-900">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-black text-white mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+      <section className="py-16 px-6">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Can&apos;t Find What You Need?
           </h2>
-          <p className="text-green-100 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-slate-600 text-lg mb-8 max-w-2xl mx-auto">
             We&apos;re constantly adding new document generators. Contact us if you need a specific document type.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => openSupportChat()}
               size="lg"
-              className="gap-2 px-8 py-6 bg-white text-green-800 hover:bg-green-50 shadow-lg"
+              className="cta-shine gap-2 px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >
               Contact Us
               <ArrowRight className="w-4 h-4" />
@@ -625,7 +625,7 @@ export default function DocumentDirectory() {
               onClick={() => navigate("/")}
               size="lg"
               variant="outline"
-              className="gap-2 px-8 py-6 border-2 border-white text-white hover:bg-white/10"
+              className="gap-2 px-8 py-6 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl"
             >
               Back to Home
             </Button>

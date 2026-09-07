@@ -301,45 +301,42 @@ export default function AIResumeLanding() {
       <Header />
 
       {/* Hero Section */}
-      <section 
+      <section
         ref={heroRef}
-        className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl relative overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-slate-900 text-white mt-4"
+        className="relative overflow-hidden"
       >
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/20 rounded-full filter blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-green-400/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-600/5 rounded-full filter blur-3xl" />
-        </div>
+        {/* Soft background accents */}
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-20 lg:py-28">
+        <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-16 lg:pt-20 lg:pb-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left content */}
             <div className={`space-y-8 transition-all duration-1000 ${heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                <Sparkles className="w-4 h-4 text-green-400" />
-                <span className="text-sm font-medium text-green-300">AI-Powered Resume Builder</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80">
+                <Sparkles className="w-4 h-4 text-green-700" />
+                <span className="text-sm font-medium text-green-900">AI-Powered Resume Builder</span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-slate-900">
                 Create an{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-300">
+                <span className="text-green-700">
                   ATS-Optimized
                 </span>{" "}
                 Resume in Minutes
               </h1>
 
-              <p className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-xl">
-                Let AI craft compelling content tailored to your target job. Our GPT-4 powered builder helps you 
-                <span className="text-green-400 font-semibold"> land 3x more interviews</span> with professionally optimized resumes.
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl">
+                Let AI craft compelling content tailored to your target job. Our AI-powered builder helps you
+                <span className="text-green-700 font-semibold"> land 3x more interviews</span> with professionally optimized resumes.
               </p>
 
               {/* Price Badge */}
-              <div className="inline-flex items-center gap-3 px-5 py-3 bg-green-700/50 backdrop-blur-sm rounded-xl border border-green-500/30">
-                <span className="text-green-300 text-sm">One-time payment</span>
-                <span className="text-3xl font-black text-white">$9.99</span>
-                <span className="text-green-300 text-sm">PDF + DOCX</span>
+              <div className="inline-flex items-center gap-3 px-5 py-3 bg-green-50 rounded-xl border border-green-200/80">
+                <span className="text-green-900 text-sm">One-time payment</span>
+                <span className="text-3xl font-black text-slate-900">$9.99</span>
+                <span className="text-green-900 text-sm">PDF + DOCX</span>
               </div>
 
               {/* CTA Buttons */}
@@ -347,7 +344,7 @@ export default function AIResumeLanding() {
                 <Button
                   onClick={() => navigate("/ai-resume-builder")}
                   size="lg"
-                  className="group gap-2 text-lg px-8 py-6 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all duration-300"
+                  className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
                 >
                   <Wand2 className="w-5 h-5" />
                   Build My Resume Now
@@ -357,7 +354,7 @@ export default function AIResumeLanding() {
                   onClick={() => navigate("/ai-resume-builder")}
                   size="lg"
                   variant="outline"
-                  className="group gap-2 text-lg px-8 py-6 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300"
+                  className="group gap-2 text-lg px-8 py-6 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-300"
                 >
                   <Upload className="w-5 h-5" />
                   Upload Existing Resume
@@ -372,11 +369,11 @@ export default function AIResumeLanding() {
                       <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                     ))}
                   </div>
-                  <span className="text-sm text-slate-300">4.8/5 from 2,847 reviews</span>
+                  <span className="text-sm text-slate-500">4.8/5 from 2,847 reviews</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                  <Shield className="w-4 h-4 text-green-400" />
-                  <span>Secure PayPal Payment</span>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <Shield className="w-4 h-4 text-green-700" />
+                  <span>Secure Payment</span>
                 </div>
               </div>
             </div>
@@ -568,21 +565,21 @@ export default function AIResumeLanding() {
       </section>
 
       {/* AI Demo Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 bg-gradient-to-br from-green-900 to-green-800 text-white">
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <span className="inline-block px-4 py-1.5 bg-green-700/50 text-green-300 text-sm font-semibold rounded-full mb-4">
+              <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
                 AI-POWERED
               </span>
-              <h2 className="text-3xl md:text-4xl font-black mb-6">
+              <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6">
                 Let AI Write Your{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-300">
+                <span className="text-green-700">
                   Perfect Bullet Points
                 </span>
               </h2>
-              <p className="text-lg text-green-100 mb-8 leading-relaxed">
-                Simply describe your role and responsibilities, and our AI will generate compelling, 
+              <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                Simply describe your role and responsibilities, and our AI will generate compelling,
                 achievement-focused bullet points optimized for ATS systems and hiring managers.
               </p>
 
@@ -594,10 +591,10 @@ export default function AIResumeLanding() {
                   "Regenerate until you're satisfied"
                 ].map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <CheckCircle className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-green-100">{item}</span>
+                    <span className="text-slate-700">{item}</span>
                   </div>
                 ))}
               </div>
@@ -605,7 +602,7 @@ export default function AIResumeLanding() {
               <Button
                 onClick={() => navigate("/ai-resume-builder")}
                 size="lg"
-                className="mt-8 gap-2 bg-white text-green-800 hover:bg-green-50"
+                className="cta-shine mt-8 gap-2 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
               >
                 <Sparkles className="w-5 h-5" />
                 Try AI Generation - $9.99
@@ -613,30 +610,30 @@ export default function AIResumeLanding() {
               </Button>
             </div>
 
-            <div className="bg-green-800/50 backdrop-blur rounded-2xl p-6 border border-green-700">
+            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xl shadow-slate-900/5">
               {/* Input */}
               <div className="mb-6">
-                <label className="text-sm text-green-300 mb-2 block">Your Input:</label>
-                <div className="bg-green-900/50 rounded-lg p-4 border border-green-700">
-                  <p className="text-green-100">"managed team of developers, worked on web applications"</p>
+                <label className="text-sm text-slate-500 mb-2 block">Your Input:</label>
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <p className="text-slate-700">"managed team of developers, worked on web applications"</p>
                 </div>
               </div>
 
               {/* AI Output */}
               <div>
-                <label className="text-sm text-green-400 mb-2 flex items-center gap-2">
+                <label className="text-sm text-green-700 mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   AI-Generated:
                 </label>
-                <div className="bg-green-900/30 rounded-lg p-4 border border-green-600/50 space-y-3">
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200 space-y-3">
                   {[
                     "Led cross-functional team of 8 developers, delivering 15+ web applications with 99.9% uptime",
                     "Spearheaded agile transformation, reducing sprint cycle time by 40% and increasing team velocity",
                     "Architected scalable microservices infrastructure serving 100K+ daily active users"
                   ].map((bullet, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <span className="text-green-400 mt-1">•</span>
-                      <p className="text-white">{bullet}</p>
+                      <span className="text-green-600 mt-1">•</span>
+                      <p className="text-slate-800">{bullet}</p>
                     </div>
                   ))}
                 </div>
@@ -762,27 +759,27 @@ export default function AIResumeLanding() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 bg-gradient-to-br from-green-800 to-green-700 text-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-black mb-6">
+      <section className="py-16 px-6">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+          <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">
             Ready to Build Your Winning Resume?
           </h2>
-          <p className="text-xl text-green-100 mb-4 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 mb-4 max-w-2xl mx-auto">
             Join over 50,000 job seekers who've landed interviews with our AI-powered resume builder.
           </p>
-          
+
           {/* Price highlight */}
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 mb-8">
-            <span className="text-green-200">Only</span>
-            <span className="text-4xl font-black text-white">$9.99</span>
-            <span className="text-green-200">one-time payment</span>
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-xl border border-green-200/80 shadow-sm mb-8">
+            <span className="text-green-900">Only</span>
+            <span className="text-4xl font-black text-slate-900">$9.99</span>
+            <span className="text-green-900">one-time payment</span>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => navigate("/ai-resume-builder")}
               size="lg"
-              className="gap-2 text-lg px-10 py-7 bg-white text-green-800 hover:bg-green-50 shadow-xl"
+              className="cta-shine gap-2 text-lg px-10 py-7 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >
               <Wand2 className="w-5 h-5" />
               Build My Resume Now
@@ -790,18 +787,18 @@ export default function AIResumeLanding() {
             </Button>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-green-200">
+          <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-slate-500">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-4 h-4 text-green-700" />
               <span>PDF + DOCX download</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
+              <Clock className="w-4 h-4 text-green-700" />
               <span>Ready in 5 minutes</span>
             </div>
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>Secure PayPal payment</span>
+              <Shield className="w-4 h-4 text-green-700" />
+              <span>Secure payment</span>
             </div>
           </div>
         </div>

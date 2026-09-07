@@ -590,27 +590,29 @@ export default function StatePaystubGenerator() {
       <Header />
 
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-green-900 to-green-800 text-white py-16">
-          <div className="container mx-auto px-4">
+        <section className="relative overflow-hidden pt-12 pb-14 sm:pt-16 sm:pb-16">
+          <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+          <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+          <div className="relative container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                {stateInfo.name} Paystub Generator
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                {stateInfo.name} <span className="text-green-700">Paystub Generator</span>
               </h1>
-              <p className="text-xl text-green-100 mb-6">
+              <p className="text-xl text-slate-600 mb-6">
                 Create Professional Pay Stubs for {stateInfo.name} ({stateInfo.abbr}) in Minutes
               </p>
               <div className="flex flex-wrap justify-center gap-4 mb-8">
-                <span className="bg-green-700/50 px-4 py-2 rounded-full text-sm">
+                <span className="bg-green-50 border border-green-200/80 text-green-900 px-4 py-2 rounded-full text-sm font-medium">
                   {stateInfo.hasStateTax ? `${stateInfo.taxRate} State Tax` : 'No State Income Tax'}
                 </span>
-                <span className="bg-green-700/50 px-4 py-2 rounded-full text-sm">
+                <span className="bg-green-50 border border-green-200/80 text-green-900 px-4 py-2 rounded-full text-sm font-medium">
                   Min Wage: {stateInfo.minWage}
                 </span>
-                <span className="bg-green-700/50 px-4 py-2 rounded-full text-sm">
+                <span className="bg-green-50 border border-green-200/80 text-green-900 px-4 py-2 rounded-full text-sm font-medium">
                   Instant PDF Download
                 </span>
               </div>
-              <p className="text-green-200 text-lg">
+              <p className="text-slate-500 text-lg">
                 Trusted by renters & contractors across {stateInfo.majorCities.slice(0, 3).join(', ')}, and all of {stateInfo.name}
               </p>
             </div>

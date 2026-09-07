@@ -36,8 +36,8 @@ const COLUMNS = [
     title: "Trust",
     links: [
       { name: "About Us", path: "/about" },
-      { name: "Privacy Policy", path: "/privacy" },
-      { name: "Terms of Service", path: "/terms" },
+      { name: "Privacy Policy", path: "/app/privacy" },
+      { name: "Terms of Service", path: "/app/terms" },
       { name: "FAQ & Refunds", path: "/faq" },
     ],
   },

@@ -114,39 +114,37 @@ export default function PowerOfAttorneyLanding() {
       <Header />
 
       {/* HERO */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl relative overflow-hidden bg-gradient-to-br from-slate-900 via-green-900 to-slate-900 text-white mt-4">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-green-500/20 rounded-full filter blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-emerald-400/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-        </div>
+      <section className="relative overflow-hidden">
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-28 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm mb-6">
-            <Scale className="w-4 h-4" /> Durable · Notary-ready
+        <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-16 md:pt-20 md:pb-20 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-green-50 border border-green-200/80 text-sm font-medium text-green-900 mb-6">
+            <Scale className="w-4 h-4 text-green-700" /> Durable · Notary-ready
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
-            Durable General Power of Attorney
+          <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
+            Durable General <span className="text-green-700">Power of Attorney</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-green-100/90 max-w-3xl mx-auto mb-10">
+          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-10">
             Appoint someone you trust to manage your money and property — and keep that authority in place
             even if you become unable to act for yourself.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button onClick={go} className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2">
+            <Button onClick={go} className="cta-shine bg-green-700 hover:bg-green-800 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2 shadow-md shadow-green-900/10">
               Create Your POA <ArrowRight className="w-5 h-5" />
             </Button>
-            <div className="text-green-100/80 text-sm">
-              One-time <span className="font-bold text-white">${PRICE}</span> · Instant PDF download
+            <div className="text-slate-500 text-sm">
+              One-time <span className="font-bold text-slate-900">${PRICE}</span> · Instant PDF download
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-12 text-sm text-green-100/80">
-            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-400" /> Survives incapacity</span>
-            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-400" /> Notary &amp; witness blocks</span>
-            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-400" /> All 50 states</span>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-12 text-sm text-slate-500">
+            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> Survives incapacity</span>
+            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> Notary &amp; witness blocks</span>
+            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> All 50 states</span>
           </div>
         </div>
       </section>
@@ -302,16 +300,16 @@ export default function PowerOfAttorneyLanding() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-20 px-6 bg-gradient-to-br from-green-900 to-slate-900 text-white text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "Outfit, sans-serif" }}>
+      <section className="py-16 px-6">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4" style={{ fontFamily: "Outfit, sans-serif" }}>
             Put it in place before you need it
           </h2>
-          <p className="text-green-100/90 mb-8 text-lg">
+          <p className="text-slate-600 mb-8 text-lg">
             A power of attorney only works if it's signed while you still have capacity. Ten minutes today can spare your family a
             guardianship case later.
           </p>
-          <Button onClick={go} className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2">
+          <Button onClick={go} className="cta-shine bg-green-700 hover:bg-green-800 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2 shadow-md shadow-green-900/10">
             Create Your Power of Attorney <ArrowRight className="w-5 h-5" />
           </Button>
         </div>

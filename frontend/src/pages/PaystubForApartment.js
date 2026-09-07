@@ -204,34 +204,30 @@ export default function PaystubForApartment() {
       <Header />
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl relative bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white py-16 md:py-24 overflow-hidden mt-4">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255,255,255,0.15) 2px, transparent 0)',
-            backgroundSize: '50px 50px'
-          }} />
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <section className="relative overflow-hidden pt-12 pb-14 md:pt-16 md:pb-16">
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-6">
           <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Breadcrumb */}
             <nav className="mb-6 text-sm">
-              <ol className="flex items-center justify-center gap-2 text-green-200">
-                <li><Link to="/" className="hover:text-white transition-colors">Home</Link></li>
+              <ol className="flex items-center justify-center gap-2 text-slate-500">
+                <li><Link to="/" className="hover:text-green-700 transition-colors">Home</Link></li>
                 <li>/</li>
-                <li className="text-white font-medium">Paystub for Apartment</li>
+                <li className="text-slate-900 font-medium">Paystub for Apartment</li>
               </ol>
             </nav>
 
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
-              <HomeIcon className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-medium">Complete Renter's Guide</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 mb-6">
+              <HomeIcon className="w-4 h-4 text-green-700" />
+              <span className="text-sm font-medium text-green-900">Complete Renter's Guide</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Paystub for Apartment
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              Paystub for <span className="text-green-700">Apartment</span>
             </h1>
-            <p className="text-lg md:text-xl text-green-100 leading-relaxed max-w-3xl mx-auto mb-8">
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto mb-8">
               Your complete guide to understanding proof of income requirements when renting an apartment. Learn what landlords look for, how to prepare your documentation, and create professional paystubs.
             </p>
 
@@ -239,7 +235,7 @@ export default function PaystubForApartment() {
               <Button
                 onClick={() => navigate("/paystub-generator")}
                 size="lg"
-                className="group gap-2 text-lg px-8 py-6 bg-white text-green-800 hover:bg-green-50 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
               >
                 <Zap className="w-5 h-5" />
                 Create Paystub Now
@@ -249,7 +245,7 @@ export default function PaystubForApartment() {
                 onClick={() => navigate("/how-to-make-a-paystub")}
                 size="lg"
                 variant="outline"
-                className="group gap-2 text-lg px-8 py-6 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300"
+                className="group gap-2 text-lg px-8 py-6 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl transition-all duration-300"
               >
                 Learn How to Make a Paystub
               </Button>
@@ -258,16 +254,16 @@ export default function PaystubForApartment() {
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-6 mt-12 max-w-2xl mx-auto">
               <div className="text-center">
-                <p className="text-3xl font-black text-white">3x</p>
-                <p className="text-sm text-green-200">Typical Income Ratio</p>
+                <p className="text-3xl font-black text-slate-900">3x</p>
+                <p className="text-sm text-slate-500">Typical Income Ratio</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black text-white">2-3</p>
-                <p className="text-sm text-green-200">Paystubs Required</p>
+                <p className="text-3xl font-black text-slate-900">2-3</p>
+                <p className="text-sm text-slate-500">Paystubs Required</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-black text-white">5 min</p>
-                <p className="text-sm text-green-200">To Create</p>
+                <p className="text-3xl font-black text-slate-900">5 min</p>
+                <p className="text-sm text-slate-500">To Create</p>
               </div>
             </div>
           </div>
@@ -725,20 +721,20 @@ export default function PaystubForApartment() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-16 md:py-20 bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 text-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
+      <section className="py-16 px-6">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Create Your Professional Paystub?
           </h2>
-          <p className="text-lg text-green-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
             Create professional paystubs with accurate tax calculations in under five minutes. Our easy-to-use generator helps you document your income professionally for apartment applications.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => navigate("/paystub-generator")}
               size="lg"
-              className="group gap-2 text-lg px-8 py-6 bg-white text-green-800 hover:bg-green-50 shadow-lg"
+              className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >
               <FileText className="w-5 h-5" />
               Create Paystub Now
@@ -748,24 +744,24 @@ export default function PaystubForApartment() {
               onClick={() => openSupportChat()}
               size="lg"
               variant="outline"
-              className="gap-2 text-lg px-8 py-6 border-2 border-white/30 text-white hover:bg-white/10"
+              className="gap-2 text-lg px-8 py-6 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl"
             >
               <CreditCard className="w-4 h-4" />
               Contact Support
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-green-200 text-sm">
+          <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-slate-500 text-sm">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              <span>Secure PayPal Payment</span>
+              <Shield className="w-5 h-5 text-green-700" />
+              <span>Secure Payment</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
+              <Clock className="w-5 h-5 text-green-700" />
               <span>Instant Download</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle className="w-5 h-5 text-green-700" />
               <span>No Account Required</span>
             </div>
           </div>

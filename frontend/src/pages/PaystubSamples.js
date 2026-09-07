@@ -491,31 +491,33 @@ export default function PaystubSamples() {
         <link rel="canonical" href="https://mintslip.com/paystub-samples" />
       </Helmet>
       
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white">
       <Header />
-      
+
       {/* Hero Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white py-16 sm:py-20 mt-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="relative overflow-hidden pt-12 pb-14 sm:pt-16 sm:pb-16">
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-6">
-              <FileText className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 text-sm font-medium text-green-900 mb-6">
+              <FileText className="w-4 h-4 text-green-700" />
               Professional Paystub Templates
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Paystub Sample Templates
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              Paystub Sample <span className="text-green-700">Templates</span>
             </h1>
-            <p className="text-lg sm:text-xl text-green-100 max-w-3xl mx-auto mb-8">
+            <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-8">
               Choose from our professionally designed paystub templates. Each template is crafted to meet industry standards and provides a clean, professional appearance for your payroll documents.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button 
+              <Button
                 onClick={() => navigate('/paystub-generator')}
                 size="lg"
-                className="bg-white text-green-900 hover:bg-green-50 font-semibold px-8"
+                className="cta-shine gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-8 rounded-xl shadow-md shadow-green-900/10"
               >
                 Create Your Paystub
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-5 h-5" />
               </Button>
             </div>
           </div>

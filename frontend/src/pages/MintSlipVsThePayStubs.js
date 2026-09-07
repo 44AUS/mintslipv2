@@ -485,24 +485,24 @@ export default function MintSlipVsThePayStubs() {
         </section>
 
         {/* Quick Stats Section */}
-        <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-12 bg-gradient-to-r from-green-800 to-green-700">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+        <section className="py-8 px-6">
+          <div className="max-w-7xl mx-auto rounded-3xl bg-green-50 border border-green-100 py-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2">50%</div>
-                <div className="text-green-200">Cheaper</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">50%</div>
+                <div className="text-slate-600">Cheaper</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2">4+</div>
-                <div className="text-green-200">Template Styles</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">4+</div>
+                <div className="text-slate-600">Template Styles</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2">50</div>
-                <div className="text-green-200">State Tax Calculations</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">50</div>
+                <div className="text-slate-600">State Tax Calculations</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2">24/7</div>
-                <div className="text-green-200">Instant Access</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">24/7</div>
+                <div className="text-slate-600">Instant Access</div>
               </div>
             </div>
           </div>
@@ -760,22 +760,22 @@ export default function MintSlipVsThePayStubs() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-16 md:py-24 bg-gradient-to-r from-green-800 to-green-700">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
+        <section className="py-16 px-6">
+          <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Ready to Save 50% on Your Next Paystub?
             </h2>
-            <p className="text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
               Join thousands who've switched from ThePayStubs to MintSlip. Better quality, more features, lower price.
             </p>
-            <Button 
+            <Button
               onClick={() => navigate('/paystub-generator')}
-              className="bg-white text-green-800 hover:bg-green-50 px-10 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+              className="cta-shine bg-green-700 hover:bg-green-800 text-white px-10 py-6 text-lg rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all"
             >
               Create Your Paystub Now
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
-            <p className="text-green-200 mt-4 text-sm">
+            <p className="text-slate-500 mt-4 text-sm">
               No account required • Instant download • 100% satisfaction guaranteed
             </p>
           </div>

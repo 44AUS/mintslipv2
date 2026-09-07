@@ -144,10 +144,14 @@ export default function Blog() {
 
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         {/* Hero Section */}
-        <div className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-r from-green-800 to-emerald-700 text-white py-16 mt-4">
-          <div className="max-w-7xl mx-auto px-6">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">MintSlip Blog</h1>
-            <p className="text-xl text-green-100 max-w-2xl">
+        <div className="relative overflow-hidden pt-12 pb-10 sm:pt-16 sm:pb-12">
+          <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+          <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+          <div className="relative max-w-7xl mx-auto px-6">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              MintSlip <span className="text-green-700">Blog</span>
+            </h1>
+            <p className="text-xl text-slate-600 max-w-2xl">
               Expert guides, tips, and resources for pay stubs, proof of income, payroll, and financial documentation.
             </p>
           </div>

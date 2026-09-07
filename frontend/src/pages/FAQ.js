@@ -401,12 +401,18 @@ export default function FAQ() {
       <Header />
       
       {/* Hero Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white py-16 md:py-24 mt-4">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            You asked, we answered
+      <section className="relative overflow-hidden pt-12 pb-14 sm:pt-16 sm:pb-16">
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 text-sm font-medium text-green-900 mb-6">
+            <Search className="w-4 h-4 text-green-700" />
+            Help Center
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            You asked, we <span className="text-green-700">answered</span>
           </h1>
-          <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto mb-10">
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10">
             MintSlip's most frequently asked questions by our customers
           </p>
 
@@ -418,7 +424,7 @@ export default function FAQ() {
               placeholder="Search for answers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-14 pl-12 pr-4 text-base rounded-xl border-0 shadow-lg text-slate-800"
+              className="w-full h-14 pl-12 pr-4 text-base rounded-xl border border-slate-200 shadow-lg text-slate-800 bg-white"
             />
           </div>
         </div>

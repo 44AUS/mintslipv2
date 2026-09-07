@@ -75,19 +75,21 @@ export default function About() {
       <Header />
       
       {/* Hero Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white py-20 md:py-28 mt-4">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="relative overflow-hidden pt-14 pb-16 md:pt-20 md:pb-20">
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto px-6">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Your Trusted Partner in Document Generation
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              Your Trusted Partner in <span className="text-green-700">Document Generation</span>
             </h1>
-            <p className="text-lg md:text-xl text-green-100 leading-relaxed mb-8">
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-8">
               At MintSlip, we understand the importance of accurate financial documentation. Our commitment is to simplify the process, offering an accurate, easy-to-use, and affordable document generator tailored to the unique needs of businesses, entrepreneurs, and individuals across the USA.
             </p>
-            <Button 
+            <Button
               onClick={() => navigate("/")}
               size="lg"
-              className="h-12 px-8 text-base font-semibold bg-white text-green-800 hover:bg-green-50"
+              className="cta-shine h-12 px-8 text-base font-semibold bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >
               Get Started
             </Button>
@@ -232,27 +234,27 @@ export default function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden py-16 bg-gradient-to-br from-green-800 to-green-900 text-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+      <section className="py-16 px-6">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Get Started?
           </h2>
-          <p className="text-green-100 text-lg mb-8 max-w-xl mx-auto">
+          <p className="text-slate-600 text-lg mb-8 max-w-xl mx-auto">
             Create professional pay stubs, accounting mockups, W-2 forms, and more in minutes. No complicated software required.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
+            <Button
               onClick={() => navigate("/")}
               size="lg"
-              className="h-12 px-8 text-base font-semibold bg-white text-green-800 hover:bg-green-50"
+              className="cta-shine h-12 px-8 text-base font-semibold bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
             >
               Create Your Document
             </Button>
-            <Button 
+            <Button
               onClick={() => openSupportChat()}
               size="lg"
               variant="outline"
-              className="h-12 px-8 text-base font-semibold border-white text-white hover:bg-white/10"
+              className="h-12 px-8 text-base font-semibold border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl"
             >
               Contact Us
             </Button>

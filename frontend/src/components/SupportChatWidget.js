@@ -115,6 +115,17 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
   });
   const fabDrag = useRef({ active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0, lastPos: null });
 
+  // "Show support chat" toggle in app Settings hides the floating bubble;
+  // an explicit open (Feature Request / Report a Problem rows) still works.
+  const [hiddenPref, setHiddenPref] = useState(() => {
+    try { return localStorage.getItem('appShowSupportChat') === 'false'; } catch { return false; }
+  });
+  useEffect(() => {
+    const handler = (e) => setHiddenPref(e?.detail?.visible === false);
+    window.addEventListener('mintslip-support-visibility', handler);
+    return () => window.removeEventListener('mintslip-support-visibility', handler);
+  }, []);
+
   // form fields
   const [reason,    setReason]    = useState(stored.reason || '');
   const [name,      setName]      = useState(stored.name   || currentUser?.name  || '');
@@ -387,6 +398,9 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
 
   // ── hide on admin pages ───────────────────────────────────────────────────────
   if (window.location.pathname.startsWith('/admin')) return null;
+
+  // hidden via Settings — render nothing unless the chat was explicitly opened
+  if (hiddenPref && !isOpen) return null;
 
   // ── layout helpers ────────────────────────────────────────────────────────────
   const isMobile  = window.innerWidth < 600;

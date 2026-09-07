@@ -115,7 +115,7 @@ export default function AppSettings() {
 
   const [darkMode,  setDarkMode]  = useState(() => localStorage.getItem("appDarkMode") === "true");
   const [language,  setLanguage]  = useState(() => localStorage.getItem("appLanguage") || "en");
-  const [showHelp,  setShowHelp]  = useState(() => localStorage.getItem("appShowHelp") === "true");
+  const [showChat,  setShowChat]  = useState(() => localStorage.getItem("appShowSupportChat") !== "false");
 
   const [tutorialOpen,       setTutorialOpen]       = useState(false);
   const [tutorialSearch,     setTutorialSearch]     = useState("");
@@ -146,10 +146,12 @@ export default function AppSettings() {
     localStorage.setItem("appLanguage", val);
   };
 
-  const handleHelp = () => {
-    const next = !showHelp;
-    setShowHelp(next);
-    localStorage.setItem("appShowHelp", String(next));
+  // Shows/hides the floating support chat bubble everywhere in the app
+  const handleChatToggle = () => {
+    const next = !showChat;
+    setShowChat(next);
+    localStorage.setItem("appShowSupportChat", String(next));
+    window.dispatchEvent(new CustomEvent("mintslip-support-visibility", { detail: { visible: next } }));
   };
 
   const closeTutorialModal = () => {
@@ -282,12 +284,12 @@ export default function AppSettings() {
                 />
                 <Row
                   icon={helpCircleOutline}
-                  label="Show help button"
+                  label="Show support chat"
                   last
                   right={
                     <IonToggle
-                      checked={showHelp}
-                      onIonChange={handleHelp}
+                      checked={showChat}
+                      onIonChange={handleChatToggle}
                       style={{ "--handle-width": "20px", "--handle-height": "20px" }}
                     />
                   }

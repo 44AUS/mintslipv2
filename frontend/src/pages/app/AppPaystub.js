@@ -1258,10 +1258,12 @@ export default function AppPaystub() {
                         </IonGrid>
                       </div>
                     ))}
-                    <IonButton fill="outline" size="small" onClick={addEmployerBenefit}>
-                      <IonIcon slot="start" icon={addOutline} />
-                      Add Employer Benefit
-                    </IonButton>
+                    <div style={{ textAlign: "center" }}>
+                      <IonButton fill="outline" size="small" onClick={addEmployerBenefit}>
+                        <IonIcon slot="start" icon={addOutline} />
+                        Add Employer Benefit
+                      </IonButton>
+                    </div>
                   </div>
                 </div>
               )}

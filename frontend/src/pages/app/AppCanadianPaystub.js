@@ -153,14 +153,10 @@ export default function AppCanadianPaystub() {
   }, [selectedTemplate]);
 
   // ── Company logo ─────────────────────────────────────────────────────────
-  const [companySearchQuery,    setCompanySearchQuery]    = useState("");
-  const [selectedPayrollCompany,setSelectedPayrollCompany]= useState(null);
-  const [showCompanyDropdown,   setShowCompanyDropdown]   = useState(false);
   const [companyLogo,           setCompanyLogo]           = useState(null);
   const [logoPreview,           setLogoPreview]           = useState(null);
   const [isDragging,            setIsDragging]            = useState(false);
   const [logoError,             setLogoError]             = useState("");
-  const companySearchRef = useRef(null);
   const logoInputRef     = useRef(null);
 
   // ── Per-period state ──────────────────────────────────────────────────────
@@ -355,31 +351,6 @@ export default function AppCanadianPaystub() {
       setFormData(prev => ({ ...prev, payType: "hourly" }));
     }
   };
-
-  // ── Payroll company selection ──────────────────────────────────────────────
-  const filteredCompanies = PAYROLL_COMPANIES.filter(c =>
-    c.name.toLowerCase().includes(companySearchQuery.toLowerCase())
-  );
-
-  const handlePayrollCompanySelect = (company) => {
-    setSelectedPayrollCompany(company);
-    setCompanySearchQuery(company.name);
-    setSelectedTemplate(company.template);
-    setShowCompanyDropdown(false);
-    if ((company.template === "template-b" || company.template === "template-c") && formData.workerType === "contractor") {
-      setFormData(prev => ({ ...prev, workerType: "employee" }));
-    }
-  };
-
-  useEffect(() => {
-    const handler = (event) => {
-      if (companySearchRef.current && !companySearchRef.current.contains(event.target)) {
-        setShowCompanyDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   // ── Logo handling ─────────────────────────────────────────────────────────
   const resizeImageToFit = (base64Data, maxWidth, maxHeight) =>
@@ -659,7 +630,7 @@ export default function AppCanadianPaystub() {
     if (!window.confirm("Clear the form? All entered data will be lost.")) return;
     setFormData(defaultFormData);
     setDeductions([]); setContributions([]); setAbsencePlans([]); setEmployerBenefits([]); setHoursPerPeriod([]);
-    setCompanyLogo(null); setLogoPreview(null); setSelectedPayrollCompany(null); setCompanySearchQuery("");
+    setCompanyLogo(null); setLogoPreview(null);
     localStorage.removeItem(STORAGE_KEY); localStorage.removeItem("canadianPaystubTemplate"); localStorage.removeItem("canadianPaystubCompanyLogo");
     showToast("Form cleared successfully", "success");
   };
@@ -808,51 +779,10 @@ export default function AppCanadianPaystub() {
                 </div>
               </div>
 
-              {/* ── Template / Payroll Company ── */}
+              {/* ── Template ── */}
               <div style={cardStyle}>
-                <span style={sectionHeadingStyle}>Template &amp; Payroll Provider</span>
+                <span style={sectionHeadingStyle}>Template</span>
                 <div>
-                  <div style={{ position: "relative", marginBottom: 12 }} ref={companySearchRef}>
-                    <IonInput
-                      fill="outline"
-                      labelPlacement="floating"
-                      label="Search Payroll Provider"
-                      value={companySearchQuery}
-                      onIonInput={e => { setCompanySearchQuery(e.detail.value); setShowCompanyDropdown(true); }}
-                      onIonFocus={() => setShowCompanyDropdown(true)}
-                      placeholder="e.g. Gusto, Workday, OnPay"
-                    />
-                    {showCompanyDropdown && filteredCompanies.length > 0 && (
-                      <div style={{ position: "absolute", zIndex: 999, left: 0, right: 0, background: "var(--ion-card-background)", border: "1px solid var(--ion-color-light)", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.12)", overflow: "hidden" }}>
-                        {filteredCompanies.map(company => (
-                          <div
-                            key={company.id}
-                            onClick={() => handlePayrollCompanySelect(company)}
-                            style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid var(--ion-color-light)", background: selectedPayrollCompany?.id === company.id ? "var(--ion-color-step-100)" : "transparent" }}
-                          >
-                            {company.logo && <img src={company.logo} alt={company.name} style={{ width: 36, height: 36, objectFit: "contain" }} />}
-                            <div>
-                              <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{company.name}</div>
-                              <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>
-                                {company.template === "template-a" ? "Gusto Style" : company.template === "template-h" ? "OnPay Style" : "Workday Style"}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {selectedPayrollCompany && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 10, background: "rgba(var(--ion-color-success-rgb),0.1)", borderRadius: 8, marginBottom: 12, border: "1px solid var(--ion-color-success)" }}>
-                      {selectedPayrollCompany.logo && <img src={selectedPayrollCompany.logo} alt={selectedPayrollCompany.name} style={{ width: 48, height: 48, objectFit: "contain" }} />}
-                      <div>
-                        <div style={{ fontWeight: 700 }}>{selectedPayrollCompany.name}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)" }}>Template: {selectedPayrollCompany.template}</div>
-                      </div>
-                    </div>
-                  )}
-
                   <IonSelect fill="outline" labelPlacement="floating" label="Template" value={selectedTemplate} onIonChange={e => handleTemplateChange(e.detail.value)} style={ionInputStyle}>
                     <IonSelectOption value="template-a">Gusto Style (Template A)</IonSelectOption>
                     <IonSelectOption value="template-c">Workday Style (Template C)</IonSelectOption>
@@ -1184,10 +1114,12 @@ export default function AppCanadianPaystub() {
                       </IonGrid>
                     </div>
                   ))}
-                  <IonButton fill="outline" size="small" onClick={addDeduction}>
-                    <IonIcon slot="start" icon={addOutline} />
-                    Add Deduction
-                  </IonButton>
+                  <div style={{ textAlign: "center" }}>
+                    <IonButton fill="outline" size="small" onClick={addDeduction}>
+                      <IonIcon slot="start" icon={addOutline} />
+                      Add Deduction
+                    </IonButton>
+                  </div>
                 </div>
               </div>
 
@@ -1227,10 +1159,12 @@ export default function AppCanadianPaystub() {
                       </IonGrid>
                     </div>
                   ))}
-                  <IonButton fill="outline" size="small" onClick={addContribution}>
-                    <IonIcon slot="start" icon={addOutline} />
-                    Add Contribution
-                  </IonButton>
+                  <div style={{ textAlign: "center" }}>
+                    <IonButton fill="outline" size="small" onClick={addContribution}>
+                      <IonIcon slot="start" icon={addOutline} />
+                      Add Contribution
+                    </IonButton>
+                  </div>
                 </div>
               </div>
 
@@ -1276,10 +1210,12 @@ export default function AppCanadianPaystub() {
                         </IonGrid>
                       </div>
                     ))}
-                    <IonButton fill="outline" size="small" onClick={addEmployerBenefit}>
-                      <IonIcon slot="start" icon={addOutline} />
-                      Add Employer Benefit
-                    </IonButton>
+                    <div style={{ textAlign: "center" }}>
+                      <IonButton fill="outline" size="small" onClick={addEmployerBenefit}>
+                        <IonIcon slot="start" icon={addOutline} />
+                        Add Employer Benefit
+                      </IonButton>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1311,18 +1247,20 @@ export default function AppCanadianPaystub() {
                         </IonGrid>
                       </div>
                     ))}
-                    <IonButton fill="outline" size="small" onClick={addAbsencePlan}>
-                      <IonIcon slot="start" icon={addOutline} />
-                      Add Absence Plan
-                    </IonButton>
+                    <div style={{ textAlign: "center" }}>
+                      <IonButton fill="outline" size="small" onClick={addAbsencePlan}>
+                        <IonIcon slot="start" icon={addOutline} />
+                        Add Absence Plan
+                      </IonButton>
+                    </div>
                   </div>
                 </div>
               )}
 
             </div>
 
-            <div style={{ marginTop: 12, textAlign: "right" }}>
-              <IonButton fill="outline" color="medium" size="small" onClick={clearForm}>Clear Form</IonButton>
+            <div style={{ marginTop: 12 }}>
+              <IonButton expand="block" fill="outline" color="medium" onClick={clearForm}>Clear Form</IonButton>
             </div>
           </div>
           </div>

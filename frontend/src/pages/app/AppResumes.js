@@ -72,7 +72,9 @@ export default function AppResumes() {
   const disabledGenerators = useDisabledGenerators();
   const templateCards = disabledGenerators.has("ai-resume") ? [] : [
     ...BUILT_IN_TEMPLATES.filter((t) => !disabledGenerators.has(`resume-${t.value}`)),
-    ...customTemplates.map((t) => ({ value: `custom:${t.id}`, name: t.name, color: t.badgeColor || "#16a34a" })),
+    ...customTemplates
+      .filter((t) => !disabledGenerators.has(`custom:${t.id}`))
+      .map((t) => ({ value: `custom:${t.id}`, name: t.name, color: t.badgeColor || "#16a34a" })),
   ];
 
   // Render each template's sample preview as its card image

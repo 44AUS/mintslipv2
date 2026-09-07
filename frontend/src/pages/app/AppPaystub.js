@@ -569,9 +569,10 @@ export default function AppPaystub() {
   // Admin can disable the whole generator or individual built-in styles
   // from Site Settings (takes effect at runtime, no app update).
   const disabledGenerators = useDisabledGenerators();
+  const visibleCustomTemplates = customTemplates.filter((t) => !disabledGenerators.has(`custom:${t.id}`));
   const templateCards = disabledGenerators.has("paystub") ? [] : [
     ...PAYROLL_COMPANIES.filter((c) => !disabledGenerators.has(`paystub-${c.id}`)),
-    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#16a34a" })),
+    ...visibleCustomTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#16a34a" })),
   ];
 
   useEffect(() => {
@@ -899,7 +900,7 @@ export default function AppPaystub() {
                     <IonSelectOption value="template-c">Workday Style (Template C)</IonSelectOption>
                     <IonSelectOption value="template-h">OnPay Style (Template H)</IonSelectOption>
                     {isLocalhost && <IonSelectOption value="template-b">ADP Style (Template B)</IonSelectOption>}
-                    {customTemplates.map(t => <IonSelectOption key={t.id} value={`custom:${t.id}`}>{t.name}</IonSelectOption>)}
+                    {visibleCustomTemplates.map(t => <IonSelectOption key={t.id} value={`custom:${t.id}`}>{t.name}</IonSelectOption>)}
                   </IonSelect>
 
                   {/* Customer color choice (offered by some custom templates) */}

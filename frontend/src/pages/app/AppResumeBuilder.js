@@ -15,6 +15,7 @@ import {
 import { generateAndDownloadResume } from "@/utils/resumeGenerator";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
+import { useDisabledGenerators } from "@/utils/generatorAvailability";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "resumeBuilderFormData";
@@ -126,9 +127,13 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       .catch(() => {});
   }, []);
 
+  // Admin can disable built-in styles or custom templates from Site Settings
+  const disabledGenerators = useDisabledGenerators();
   const templateOptions = [
-    ...TEMPLATES,
-    ...customTemplates.map((t) => ({ value: `custom:${t.id}`, label: t.name, desc: t.description || "Custom design", color: t.badgeColor || "#16a34a" })),
+    ...TEMPLATES.filter((t) => !disabledGenerators.has(`resume-${t.value}`)),
+    ...customTemplates
+      .filter((t) => !disabledGenerators.has(`custom:${t.id}`))
+      .map((t) => ({ value: `custom:${t.id}`, label: t.name, desc: t.description || "Custom design", color: t.badgeColor || "#16a34a" })),
   ];
 
   const checkSub = async () => {

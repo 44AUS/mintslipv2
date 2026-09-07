@@ -76,6 +76,7 @@ export default function AdminSiteSettings() {
 
   // Templates & generators availability (ids currently disabled)
   const [disabledGens, setDisabledGens] = useState([]);
+  const [customDocTemplates, setCustomDocTemplates] = useState([]);
   const [genSaving, setGenSaving] = useState(false);
   const [genMsg, setGenMsg] = useState(null);
 
@@ -126,6 +127,12 @@ export default function AdminSiteSettings() {
       const res = await fetch(`${BACKEND_URL}/api/generators/availability?_=${Date.now()}`);
       const data = await res.json();
       if (data.success) setDisabledGens(data.disabled || []);
+    } catch (e) {}
+    // Admin-made published templates join the card as their own group
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/doc-templates`);
+      const data = await res.json();
+      if (data.success) setCustomDocTemplates(data.templates || []);
     } catch (e) {}
   };
 
@@ -625,6 +632,30 @@ export default function AdminSiteSettings() {
                   </div>
                 </div>
               ))}
+              {customDocTemplates.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Admin-Made Templates</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {customDocTemplates.map(t => {
+                      const id = `custom:${t.id}`;
+                      const isOn = !disabledGens.includes(id);
+                      const typeLabel = {
+                        "paystub": "Pay Stub", "canadian-paystub": "Canadian Stub", "resume": "Resume",
+                        "offer-letter": "Offer Letter", "legal-document": "Legal Doc",
+                      }[t.documentType] || t.documentType;
+                      return (
+                        <div key={id} className="flex items-center justify-between gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                          <span className="flex items-center gap-2 min-w-0">
+                            <span className={`text-sm font-medium truncate ${isOn ? "text-slate-700" : "text-slate-400 line-through"}`}>{t.name}</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-200 text-slate-500 flex-shrink-0">{typeLabel}</span>
+                          </span>
+                          <Toggle on={isOn} onClick={() => toggleGenerator(id)} disabled={genSaving} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

@@ -230,6 +230,17 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     return () => window.removeEventListener('mintslip-open-support', openChat);
   }, [openChat]);
 
+  // Deep link from support-reply emails: ?support=open opens the chat, then
+  // the param is removed so a refresh doesn't re-open it.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('support') !== 'open') return;
+    openChat();
+    params.delete('support');
+    const qs = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (qs ? `?${qs}` : ''));
+  }, []); // eslint-disable-line
+
   // ── bubble dragging ──────────────────────────────────────────────────────────
   // Pointer-based so it works for both mouse and touch. A press that moves less
   // than 6px counts as a click (toggle); anything further drags the bubble.

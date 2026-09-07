@@ -502,6 +502,35 @@ def template_password_reset(user_name: str, reset_link: str, reset_code: str) ->
     }
 
 
+def template_support_reply(user_name: str, admin_name: str, message_text: str, image_count: int = 0) -> Dict[str, str]:
+    """A support-chat reply from an admin, shown in the branded email frame."""
+    safe_msg = (message_text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>")
+    attach_note = ""
+    if image_count:
+        plural = "s" if image_count != 1 else ""
+        attach_note = f'<p class="text-muted" style="font-size: 13px;">📷 {image_count} image attachment{plural} — open the chat to view.</p>'
+    content = f"""
+        <h1>New Reply from Support 💬</h1>
+        <p>Hi {user_name or 'there'},</p>
+        <p><strong>{admin_name or 'MintSlip Support'}</strong> replied to your support conversation:</p>
+
+        <div class="highlight">
+            <p style="margin: 0; color: #374151; line-height: 1.7;">{safe_msg or "📷 Sent you an attachment"}</p>
+        </div>
+        {attach_note}
+
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{SITE_URL}/?support=open" class="button">Open the Conversation</a>
+        </p>
+
+        <p class="text-muted">Reply in the chat and we'll get right back to you.</p>
+    """
+    return {
+        "subject": f"{admin_name or 'MintSlip Support'} replied to your support chat - MintSlip",
+        "html": get_base_template(content, (message_text or "New reply from MintSlip support")[:110]),
+    }
+
+
 async def resolve_template(template_name: str, default_template: Dict, variables: Dict = None) -> Dict:
     """Check DB for a custom template override; fall back to the hardcoded default."""
     try:
@@ -764,6 +793,19 @@ async def send_welcome_email(user_email: str, user_name: str):
     default = template_welcome(user_name, user_email)
     template = await resolve_template("welcome", default, {"user_name": user_name or "there", "user_email": user_email or "", "SITE_URL": SITE_URL})
     return await send_email(user_email, template["subject"], template["html"], "welcome")
+
+
+async def send_support_reply_email(user_email: str, user_name: str, admin_name: str, message_text: str, image_count: int = 0):
+    """Email the customer whenever an admin replies in their support chat."""
+    config = await get_email_config("support_reply")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    default = template_support_reply(user_name, admin_name, message_text, image_count)
+    template = await resolve_template("support_reply", default, {
+        "user_name": user_name or "there", "admin_name": admin_name or "MintSlip Support",
+        "message_text": message_text or "", "SITE_URL": SITE_URL,
+    })
+    return await send_email(user_email, template["subject"], template["html"], "support_reply")
 
 
 async def send_verification_email(user_email: str, user_name: str, verification_code: str, verification_link: str):

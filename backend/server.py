@@ -32,6 +32,7 @@ load_dotenv()
 from email_service import (
     send_welcome_email,
     send_verification_email,
+    send_support_reply_email,
     schedule_getting_started_email,
     schedule_subscription_thank_you,
     send_download_confirmation,
@@ -5841,6 +5842,20 @@ async def admin_reply_support_chat(chat_id: str, request: Request, session: dict
          "$set":  {"updatedAt": msg["timestamp"], "unreadByAdmin": 0},
          "$inc":  {"unreadByUser": 1}}
     )
+
+    # Email the customer a copy of the reply (branded template) — fired in the
+    # background so a slow SMTP round-trip never delays the chat response.
+    guest_email = (chat.get("guestEmail") or "").strip()
+    if guest_email:
+        async def _notify():
+            try:
+                await send_support_reply_email(
+                    guest_email, chat.get("guestName") or "", admin_name, text, len(image_urls),
+                )
+            except Exception as e:
+                logger.warning(f"Support reply email failed for {guest_email}: {e}")
+        asyncio.create_task(_notify())
+
     return {"success": True, "message": msg}
 
 

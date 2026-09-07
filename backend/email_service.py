@@ -861,6 +861,44 @@ async def send_support_chat_notification_email(to_email: str, guest_name: str, g
     return await send_email(to_email, template["subject"], template["html"], "support_chat_notification")
 
 
+def template_document_resend(user_name: str, file_names: list) -> Dict[str, str]:
+    """Deliver a customer's purchased document(s) as email attachments."""
+    items = "".join(
+        f'<li style="margin: 4px 0;">📎 {str(n).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")}</li>'
+        for n in (file_names or [])
+    )
+    plural = "s" if len(file_names or []) != 1 else ""
+    content = f"""
+        <h1>Your Document{plural} from MintSlip 📄</h1>
+        <p>Hi {user_name or 'there'},</p>
+        <p>As requested, here {'are' if plural else 'is'} your document{plural} — attached to this email:</p>
+
+        <div class="highlight">
+            <ul style="margin: 0; padding-left: 18px; color: #374151; line-height: 1.7; list-style: none;">{items}</ul>
+        </div>
+
+        <p class="text-muted">Having trouble opening the attachment{plural}? Just reply to this email and our support team will help you out.</p>
+    """
+    return {
+        "subject": f"Your document{plural} from MintSlip",
+        "html": get_base_template(content, f"Your MintSlip document{plural} — attached"),
+    }
+
+
+async def send_document_resend_email(to_email: str, user_name: str, file_names: list, attachments: list):
+    """Resend purchased/saved files to a customer as attachments (admin action)."""
+    config = await get_email_config("document_resend")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    default = template_document_resend(user_name, file_names)
+    template = await resolve_template("document_resend", default, {
+        "user_name": user_name or "there",
+        "file_names": ", ".join(file_names or []),
+        "SITE_URL": SITE_URL,
+    })
+    return await send_email(to_email, template["subject"], template["html"], "document_resend", attachments=attachments)
+
+
 def _pretty_date(iso_str: str) -> str:
     """Render an ISO date like 2026-09-07T00:00:00Z as 'September 7th, 2026'."""
     if not iso_str:

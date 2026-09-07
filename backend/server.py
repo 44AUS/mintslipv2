@@ -35,6 +35,7 @@ from email_service import (
     send_support_reply_email,
     send_support_chat_notification_email,
     send_discount_announcement_email,
+    send_document_resend_email,
     schedule_getting_started_email,
     schedule_subscription_thank_you,
     send_download_confirmation,
@@ -4526,6 +4527,79 @@ async def admin_download_saved_document(doc_id: str, session: dict = Depends(get
             logger.error(f"Failed to decode file content from MongoDB: {e}")
     
     raise HTTPException(status_code=404, detail="Document file not found on server")
+
+
+# Resend keeps a 40MB cap on the whole message; leave headroom for the base64
+# inflation (4/3) plus the HTML body.
+RESEND_ATTACHMENT_LIMIT_BYTES = 25 * 1024 * 1024
+
+@app.post("/api/admin/saved-documents/resend")
+async def admin_resend_saved_documents(request: dict, session: dict = Depends(get_current_admin)):
+    """Email saved document(s) to the customer as attachments (admin only).
+
+    Used from the purchase and saved-doc detail modals when a customer says
+    they never received their file. Body: {docIds: [...], email?: "..."}."""
+    doc_ids = [d for d in (request.get("docIds") or []) if d][:10]
+    override_email = (request.get("email") or "").strip().lower()
+    if not doc_ids:
+        raise HTTPException(status_code=400, detail="docIds is required")
+
+    attachments, file_names, missing = [], [], []
+    resolved_email, user_name = "", ""
+    total_bytes = 0
+
+    for doc_id in doc_ids:
+        doc = await saved_documents_collection.find_one({"id": doc_id})
+        if not doc:
+            missing.append(doc_id)
+            continue
+
+        # File bytes: disk copy first, then the MongoDB base64 backup.
+        content_b64 = None
+        file_path = os.path.join(USER_DOCUMENTS_DIR, doc.get("storedFileName") or "")
+        if doc.get("storedFileName") and os.path.exists(file_path):
+            with open(file_path, "rb") as f:
+                raw = f.read()
+            total_bytes += len(raw)
+            content_b64 = base64.b64encode(raw).decode()
+        elif doc.get("fileContent"):
+            content_b64 = doc["fileContent"]
+            total_bytes += int(len(content_b64) * 3 / 4)
+        if not content_b64:
+            missing.append(doc.get("fileName") or doc_id)
+            continue
+        if total_bytes > RESEND_ATTACHMENT_LIMIT_BYTES:
+            raise HTTPException(status_code=400, detail="Attachments exceed the 25MB email limit — resend fewer files at a time")
+
+        name = doc.get("fileName") or "document.pdf"
+        attachments.append({"filename": name, "content": content_b64})
+        file_names.append(name)
+
+        # Recipient/name from the first doc that resolves one.
+        if not resolved_email:
+            resolved_email = (doc.get("guestEmail") or doc.get("userEmail") or "").strip().lower()
+            if not resolved_email and doc.get("userId"):
+                user = await users_collection.find_one({"id": doc["userId"]}, {"email": 1, "name": 1})
+                if user:
+                    resolved_email = (user.get("email") or "").strip().lower()
+                    user_name = user.get("name") or ""
+
+    if not attachments:
+        raise HTTPException(status_code=404, detail="None of the selected documents have a file available to send")
+
+    to_email = override_email or resolved_email
+    if not to_email or "@" not in to_email:
+        raise HTTPException(status_code=400, detail="No recipient email on file — provide one in the request")
+
+    result = await send_document_resend_email(to_email, user_name, file_names, attachments)
+    if not result.get("success"):
+        raise HTTPException(status_code=502, detail=result.get("error") or "Email failed to send")
+    if result.get("skipped"):
+        raise HTTPException(status_code=400, detail="The document_resend email template is disabled")
+
+    await log_action(session, "resend_documents", "saved_document", ",".join(doc_ids),
+                     f"{len(attachments)} file(s) → {to_email}")
+    return {"success": True, "sent": len(attachments), "to": to_email, "missing": missing}
 
 
 @app.delete("/api/admin/users/{user_id}/saved-documents")

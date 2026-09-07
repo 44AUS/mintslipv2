@@ -51,6 +51,7 @@ function templateLabel(t) {
 // `onViewAll` add their buttons only when provided.
 export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onDelete, onViewAll }) {
   const [refunding, setRefunding] = useState(false);
+  const [resending, setResending] = useState(false);
   const [docs, setDocs] = useState([]);
   const [docsLoading, setDocsLoading] = useState(false);
   const p = purchase;
@@ -81,6 +82,31 @@ export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onD
       window.open(URL.createObjectURL(await res.blob()), "_blank");
     } catch (err) {
       toast.error(`Failed to open document: ${err.message}`);
+    }
+  };
+
+  // Email the customer their file(s) again — for "I never got my download".
+  const resendFiles = async () => {
+    const available = docs.filter((d) => d.fileExists);
+    const email = p?.email || p?.paypalEmail;
+    if (!available.length || !email) return;
+    const label = available.length === 1 ? available[0].fileName : `${available.length} files`;
+    if (!window.confirm(`Email ${label} to ${email}?`)) return;
+    setResending(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/resend`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ docIds: available.map((d) => d.id), email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Resend failed");
+      toast.success(`Sent ${data.sent} file${data.sent !== 1 ? "s" : ""} to ${data.to}`);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -173,6 +199,18 @@ export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onD
           >
             {refunding ? "Refunding…" : p.refunded ? "Already Refunded" : "Issue Refund"}
           </IonButton>
+          {(p.email || p.paypalEmail) && docs.some((d) => d.fileExists) && (
+            <IonButton
+              expand="block"
+              fill="outline"
+              color="primary"
+              onClick={resendFiles}
+              disabled={resending}
+              title="Email the generated file(s) to the customer again"
+            >
+              {resending ? "Sending…" : `Resend File${docs.filter((d) => d.fileExists).length !== 1 ? "s" : ""} to Customer`}
+            </IonButton>
+          )}
           {(p.email || p.paypalEmail) && (
             <IonButton expand="block" fill="outline" color="medium" href={`mailto:${p.email || p.paypalEmail}`}>
               Email Customer

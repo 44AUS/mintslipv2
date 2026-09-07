@@ -90,6 +90,7 @@ export default function AdminSavedDocs() {
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState("all");
   const [detail, setDetail]   = useState(null);
+  const [resending, setResending] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -169,6 +170,28 @@ export default function AdminSavedDocs() {
       window.open(URL.createObjectURL(await res.blob()), "_blank");
     } catch (err) {
       toast.error(`Failed to open: ${err.message}`);
+    }
+  };
+
+  // Email the file to its owner again — for "I never got my download".
+  const resendDoc = async (doc) => {
+    const email = doc.userEmail && doc.userEmail.includes("@") ? doc.userEmail : null;
+    if (!window.confirm(`Email ${doc.fileName || "this file"} to ${email || "the customer on file"}?`)) return;
+    setResending(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/resend`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ docIds: [doc.id], ...(email ? { email } : {}) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Resend failed");
+      toast.success(`File sent to ${data.to}`);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -384,6 +407,18 @@ export default function AdminSavedDocs() {
             <IonButton expand="block" color="primary" onClick={() => viewDoc(detail)} disabled={detail.fileExists === false}>
               {detail.fileExists === false ? "File Missing" : "View Document"}
             </IonButton>
+            {detail.fileExists !== false && (
+              <IonButton
+                expand="block"
+                fill="outline"
+                color="primary"
+                onClick={() => resendDoc(detail)}
+                disabled={resending}
+                title="Email this file to the user again"
+              >
+                {resending ? "Sending…" : "Resend File to User"}
+              </IonButton>
+            )}
             {detail.userEmail && (
               <IonButton expand="block" fill="outline" color="medium" href={`mailto:${detail.userEmail}`}>
                 Email User

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, Mail, HelpCircle, ArrowLeft, FileText, FolderArchive, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, Download, Mail, HelpCircle, ArrowLeft, FileText, FolderArchive, AlertCircle } from 'lucide-react';
+import { IonProgressBar } from '@ionic/react';
 import { toast } from "@/utils/toast";
 
 // Import all generators
@@ -33,6 +34,99 @@ import { sendDownloadEmailWithPdf } from '@/utils/emailWithPdf';
 import { addGeneratingNotification, markNotificationReady, markNotificationError } from '@/utils/appNotifications';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
+// ── Animated processing screen (whodat-style search screen, MintSlip green) ──
+// A floating, spinning 3D leaf over a soft glow, the brand line, an Ionic
+// progress bar, and cycling status messages. Background follows the dark/light
+// mode the user picked in the app.
+function ProcessingScreen({ title, messages }) {
+  const dark = typeof window !== "undefined" && localStorage.getItem("appDarkMode") === "true";
+  const [progress, setProgress] = useState(0);
+
+  // Ease toward 92% and hold — the real work finishes the screen by unmounting
+  useEffect(() => {
+    const iv = setInterval(() => {
+      setProgress((p) => Math.min(0.92, p + (0.92 - p) * 0.03 + 0.003));
+    }, 120);
+    return () => clearInterval(iv);
+  }, []);
+
+  const msgIndex = Math.min(messages.length - 1, Math.floor((progress / 0.92) * messages.length));
+  const bg = dark ? "#121212" : "#f6faf7";
+  const ink = dark ? "#ffffff" : "#0f172a";
+  const sub = dark ? "rgba(255,255,255,0.62)" : "#64748b";
+  const track = dark ? "rgba(255,255,255,0.12)" : "rgba(22,163,74,0.16)";
+
+  const leafFace = (
+    <svg viewBox="0 0 64 74" width="120" height="139" aria-hidden="true">
+      <defs>
+        <linearGradient id="mintLeafG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#4ade80" />
+          <stop offset="1" stopColor="#15803d" />
+        </linearGradient>
+      </defs>
+      <path d="M32 4 C 12 16 6 34 12 48 C 17 59 27 63 32 64 C 37 63 47 59 52 48 C 58 34 52 16 32 4 Z" fill="url(#mintLeafG)" />
+      <path d="M32 10 L 32 62" stroke="rgba(255,255,255,0.55)" strokeWidth="2" fill="none" />
+      <path d="M32 24 C 26 26 21 30 18 35 M32 36 C 27 38 23 42 21 46 M32 24 C 38 26 43 30 46 35 M32 36 C 37 38 41 42 43 46"
+        stroke="rgba(255,255,255,0.4)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+      <path d="M32 62 C 32 66 33 70 35 73" stroke="#15803d" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <style>{`
+        @keyframes msLeafSpin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+        @keyframes msLeafFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes msGlowPulse { 0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); } 50% { opacity: 0.9; transform: translateX(-50%) scale(1.15); } }
+        @keyframes msMsgIn { 0% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) {
+          .ms-leaf-spin { animation: none !important; }
+          .ms-leaf-float { animation: none !important; }
+        }
+      `}</style>
+      <div style={{ maxWidth: 380, width: "100%", textAlign: "center" }}>
+        {/* 3D leaf */}
+        <div style={{ position: "relative", height: 190, marginBottom: 8 }}>
+          <div aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)", width: 180, height: 60, background: "radial-gradient(ellipse at center, rgba(34,197,94,0.35) 0%, transparent 70%)", filter: "blur(14px)", animation: "msGlowPulse 2.6s ease-in-out infinite" }} />
+          <div className="ms-leaf-float" style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", animation: "msLeafFloat 3.2s ease-in-out infinite", perspective: 700 }}>
+            <div className="ms-leaf-spin" style={{ position: "relative", width: 120, height: 139, transformStyle: "preserve-3d", animation: "msLeafSpin 4s linear infinite", filter: "drop-shadow(0 10px 24px rgba(21,128,61,0.35))" }}>
+              <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden" }}>{leafFace}</div>
+              <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>{leafFace}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Brand + progress (whodat's scan-brandhead treatment) */}
+        <div style={{ fontFamily: "Outfit, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: "0.02em", color: ink, marginBottom: 14 }}>
+          mint<span style={{ color: "#16a34a" }}>slip</span>
+        </div>
+        <IonProgressBar value={progress} style={{ "--progress-background": "#16a34a", "--background": track, borderRadius: 99, height: 6, overflow: "hidden", marginBottom: 22 }} />
+
+        <h2 style={{ fontFamily: "Outfit, sans-serif", fontWeight: 700, fontSize: 20, color: ink, margin: "0 0 8px" }}>{title}</h2>
+        <p key={msgIndex} style={{ color: sub, fontSize: 15, margin: 0, minHeight: 22, animation: "msMsgIn 0.35s ease" }}>
+          {messages[msgIndex]}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const VERIFY_MESSAGES = [
+  "Contacting secure payment server…",
+  "Verifying your payment…",
+  "Confirming your order details…",
+  "Payment locked in — almost there…",
+];
+
+const GENERATE_MESSAGES = [
+  "Warming up the document engine…",
+  "Laying out your document…",
+  "Crunching totals and taxes…",
+  "Rendering crisp PDF pages…",
+  "Applying finishing touches…",
+  "Packaging your download…",
+];
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
@@ -779,32 +873,12 @@ export default function PaymentSuccess() {
 
   // Loading state while verifying payment
   if (isVerifying) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
-        <div className="max-w-lg w-full text-center">
-          <div className="bg-white rounded-2xl shadow-xl border border-green-100 p-8">
-            <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-800 mb-2">Verifying Payment...</h2>
-            <p className="text-slate-600">Please wait while we confirm your payment.</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProcessingScreen title="Verifying Payment" messages={VERIFY_MESSAGES} />;
   }
 
   // Generating state
   if (isGenerating) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
-        <div className="max-w-lg w-full text-center">
-          <div className="bg-white rounded-2xl shadow-xl border border-green-100 p-8">
-            <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-slate-800 mb-2">Generating Your Document...</h2>
-            <p className="text-slate-600">Your {getDocumentTypeDisplay(orderType)} is being created.</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProcessingScreen title={`Generating Your ${getDocumentTypeDisplay(orderType)}`} messages={GENERATE_MESSAGES} />;
   }
 
   // Error state

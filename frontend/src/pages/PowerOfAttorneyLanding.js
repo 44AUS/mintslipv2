@@ -120,7 +120,7 @@ export default function PowerOfAttorneyLanding() {
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-emerald-400/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28 text-center">
+        <div className="relative max-w-7xl mx-auto px-6 py-20 md:py-28 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm mb-6">
             <Scale className="w-4 h-4" /> Durable · Notary-ready
           </div>
@@ -184,7 +184,7 @@ export default function PowerOfAttorneyLanding() {
 
       {/* WHAT IT COVERS */}
       <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>
             What your agent can handle
           </h2>
@@ -207,7 +207,7 @@ export default function PowerOfAttorneyLanding() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-20 px-6 max-w-6xl mx-auto">
+      <section className="py-20 px-6 max-w-7xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold mb-14 text-center" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>
           How it works
         </h2>
@@ -229,7 +229,7 @@ export default function PowerOfAttorneyLanding() {
 
       {/* FEATURES */}
       <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-14 text-center" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>
             What's included
           </h2>

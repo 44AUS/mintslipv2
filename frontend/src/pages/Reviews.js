@@ -30,7 +30,7 @@ export default function Reviews() {
       </section>
 
       {/* Review Content */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
+      <section className="max-w-7xl mx-auto px-6 py-16">
         
       </section>
 

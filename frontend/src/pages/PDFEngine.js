@@ -651,7 +651,7 @@ export default function PDFEngine() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header title="MintSlip" />
       
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
         {/* Page Header */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">

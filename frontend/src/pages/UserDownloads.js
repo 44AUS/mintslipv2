@@ -354,7 +354,7 @@ export default function UserDownloads() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header title="MintSlip" />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 mb-2">Downloads</h1>

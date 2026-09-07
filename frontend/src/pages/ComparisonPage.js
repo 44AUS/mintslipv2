@@ -688,7 +688,7 @@ export default function ComparisonPage() {
         <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
         
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left side - Text content */}
             <div 
@@ -760,7 +760,7 @@ export default function ComparisonPage() {
 
       {/* Feature Highlights Grid */}
       <section ref={featuresRef} className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 
               className="text-3xl md:text-4xl font-black mb-4"
@@ -858,7 +858,7 @@ export default function ComparisonPage() {
 
       {/* Animated Feature Cards */}
       <section ref={cardsRef} className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 
               className="text-3xl md:text-4xl font-black mb-4"

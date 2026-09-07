@@ -180,7 +180,7 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header title="MintSlip" />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 w-full">
         {/* Email Verification Warning */}
         {user && user.emailVerified === false && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">

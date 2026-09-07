@@ -328,7 +328,7 @@ export default function SubscriptionPlans() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
       <Header title="MintSlip" />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-12 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-12 w-full">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-slate-800 mb-4">

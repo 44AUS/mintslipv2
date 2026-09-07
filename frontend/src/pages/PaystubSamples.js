@@ -496,7 +496,7 @@ export default function PaystubSamples() {
       
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white py-16 sm:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-6">
               <FileText className="w-4 h-4" />
@@ -524,7 +524,7 @@ export default function PaystubSamples() {
       
       {/* Templates Grid */}
       <section className="py-16 sm:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Our Paystub Templates
@@ -550,7 +550,7 @@ export default function PaystubSamples() {
       
       {/* Features Section */}
       <section className="py-16 bg-white border-t border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Why Choose Our Templates?

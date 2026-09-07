@@ -612,7 +612,7 @@ export default function HowToMakePaystub() {
           }} />
         </div>
         
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Breadcrumb */}
             <nav className="mb-6 text-sm">
@@ -1176,7 +1176,7 @@ export default function HowToMakePaystub() {
 
       {/* Internal Links Section */}
       <section className="py-16 md:py-20 bg-slate-50 border-t border-slate-200">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Explore More Document Generators

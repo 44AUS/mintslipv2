@@ -425,7 +425,7 @@ export default function FAQ() {
       </section>
 
       {/* FAQ Content */}
-      <section className="max-w-5xl mx-auto px-6 py-16">
+      <section className="max-w-7xl mx-auto px-6 py-16">
         
         {/* Show search results if searching */}
         {searchQuery.trim() && searchResults ? (

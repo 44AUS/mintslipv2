@@ -1,59 +1,46 @@
 import { useNavigate } from "react-router-dom";
-import { Mail, MapPin, Phone, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import MintSlipLogo from '../assests/mintslip-logo.png';
+import '../marketing-nav.css';
 
-const FOOTER_LINKS = {
-  documents: {
-    title: "Documents",
+// Marketing footer — whodat's footer layout (wide brand column + four mono
+// link columns + bottom bar with copyright and disclaimer), in MintSlip green.
+const COLUMNS = [
+  {
+    title: "Product",
     links: [
       { name: "Pay Stub Generator", path: "/paystub-generator" },
-      { name: "Canadian Pay Stub Generator", path: "/canadian-paystub-generator" },
-      // { name: "Accounting Mockups", path: "/accounting-mockup-generator" },
-      { name: "W-2 Form Generator", path: "/w2-generator" },
-      { name: "W-9 Form Generator", path: "/w9-generator" },
-      { name: "1099-NEC Form Generator", path: "/1099-nec-generator" },
-      { name: "1099-MISC Form Generator", path: "/1099-misc-generator" },
-      { name: "Offer Letter Generator", path: "/offer-letter-generator" },
-      { name: "Cease & Desist Letter", path: "/cease-and-desist-generator" },
-      { name: "Power of Attorney", path: "/power-of-attorney-generator" },
-      { name: "Commercial Lease", path: "/commercial-lease-generator" },
-      { name: "Schedule C Form Generator", path: "/schedule-c-generator" },
-      { name: "Vehicle Bill of Sale Generator", path: "/vehicle-bill-of-sale-generator" },
-      // { name: "Service Expense Generator", path: "/service-expense-generator" },
-      { name: "Contractor Paystub Generator", path: "/contractor-paystub-generator" },
-      { name: "Instant Paystub Generator", path: "/instant-paystub-generator" },
-      { name: "Self Employed Paystub Generator", path: "/self-employed-paystub-generator" },
-    ]
+      { name: "Canadian Pay Stubs", path: "/canadian-paystub-generator" },
+      { name: "Sample Templates", path: "/paystub-samples" },
+      { name: "AI Resume Builder", path: "/ai-resume-builder" },
+    ],
   },
-  company: {
-    title: "Company",
+  {
+    title: "Tax Forms",
+    links: [
+      { name: "W-2 Generator", path: "/w2-generator" },
+      { name: "W-9 Generator", path: "/w9-generator" },
+      { name: "1099-NEC Generator", path: "/1099-nec-generator" },
+      { name: "Schedule C Generator", path: "/schedule-c-generator" },
+    ],
+  },
+  {
+    title: "Tools & Compare",
+    links: [
+      { name: "All Generators", path: "/generators" },
+      { name: "Offer Letter Generator", path: "/offer-letter-generator" },
+      { name: "Commercial Lease", path: "/commercial-lease-generator" },
+      { name: "MintSlip vs Others", path: "/mintslip-vs-other-paystub-generators" },
+    ],
+  },
+  {
+    title: "Trust",
     links: [
       { name: "About Us", path: "/about" },
-      { name: "Blog", path: "/blog" },
-      { name: "FAQ", path: "/faq" },
-      { name: "How to Make a Paystub", path: "/how-to-make-a-paystub" },
-      { name: "Paystub for Apartment", path: "/paystub-for-apartment" },
-      { name: "MintSlip vs Others", path: "/mintslip-vs-other-paystub-generators" },
-      { name: "MintSlip vs ThePayStubs", path: "/mintslip-vs-thepaystubs" },
-      { name: "All Generators", path: "/generators" },
-    ]
-  },
-  legal: {
-    title: "Legal",
-    links: [
       { name: "Privacy Policy", path: "/privacy" },
       { name: "Terms of Service", path: "/terms" },
-      { name: "Refund Policy", path: "/faq" },
-    ]
-  }
-};
-
-const SOCIAL_LINKS = [
-  { icon: Facebook, href: "https://www.facebook.com/MintSlip", label: "Facebook" },
-  { icon: Twitter, href: "https://www.x.com/MintSlip", label: "Twitter" },
-  { icon: Instagram, href: "https://www.instagram.com/MintSlip", label: "Instagram" },
-  { icon: Linkedin, href: "https://www.linkedin.com/MintSlip", label: "LinkedIn" },
-  { icon: Youtube, href: "https://www.youtube.com/MintSlip", label: "YouTube" },
+      { name: "FAQ & Refunds", path: "/faq" },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -61,195 +48,39 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-          
-          {/* Brand & Description */}
-          <div className="lg:col-span-2">
-            <button
-              onClick={() => navigate("/")}
-              className="mb-4 block"
-            >
-              <img src={MintSlipLogo} alt="MintSlip" className="h-10 w-auto" />
+    <footer className="site-footer">
+      <div className="footer-container">
+        <div className="footer-grid">
+          <div className="footer-col footer-brand-col">
+            <button className="footer-brand" onClick={() => navigate("/")} aria-label="MintSlip home"
+              style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+              <img src={MintSlipLogo} alt="MintSlip" />
             </button>
-            
-            {/* App Store Badges */}
-            <div className="flex items-center gap-3 mb-6">
-              <a 
-                href="https://apps.apple.com/us/iphone/today" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity duration-200 border border-slate-600 hover:border-slate-400 rounded-xl p-2.5"
-              >
-                <img 
-                  src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/ekke591i_685b07d537802a80992e4b58_Group-1538236230.svg" 
-                  alt="Download on the App Store" 
-                  className="h-8"
-                />
+            <div className="footer-badges">
+              <a href="https://apps.apple.com/us/iphone/today" target="_blank" rel="noopener noreferrer">
+                <img src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/ekke591i_685b07d537802a80992e4b58_Group-1538236230.svg" alt="Download on the App Store" />
               </a>
-              <a 
-                href="https://play.google.com/store/apps/details?id=com.mintslip.app&hl=en_US" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity duration-200 border border-slate-600 hover:border-slate-400 rounded-xl p-2.5"
-              >
-                <img 
-                  src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/g56lcgcv_685b07d5f3fb1a2291ebea9b_Group-1538236231.svg" 
-                  alt="Get it on Google Play" 
-                  className="h-8"
-                />
+              <a href="https://play.google.com/store/apps/details?id=com.mintslip.app&hl=en_US" target="_blank" rel="noopener noreferrer">
+                <img src="https://customer-assets.emergentagent.com/job_email-service-repair/artifacts/g56lcgcv_685b07d5f3fb1a2291ebea9b_Group-1538236231.svg" alt="Get it on Google Play" />
               </a>
             </div>
-            
-            <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-sm">
-              Maximize your personal & business potential with our SaaS technology
-            </p>
-            
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm text-slate-400">
-                <Mail className="w-4 h-4 text-green-400" />
-                <a href="mailto:support@mintslip.com" className="hover:text-white transition-colors">
-                  support@mintslip.com
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-slate-400">
-                <MapPin className="w-4 h-4 text-green-400" />
-                <span>United States</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-slate-400">
-                <Phone className="w-4 h-4 text-green-400" />
-                <a href="tel:+18556236746" className="hover:text-white transition-colors">(855) 623-6746</a>
-              </div>
-              
+          </div>
+
+          {COLUMNS.map(col => (
+            <div key={col.title} className="footer-col">
+              <h4>{col.title}</h4>
+              {col.links.map(link => (
+                <button key={link.name} type="button" className="footer-link-btn" onClick={() => navigate(link.path)}>
+                  {link.name}
+                </button>
+              ))}
             </div>
-          </div>
-
-          {/* Document Links */}
-          <div>
-            <h4 className="font-semibold text-slate-200 mb-5 text-xs uppercase" style={{ letterSpacing: "0.12em" }}>
-              {FOOTER_LINKS.documents.title}
-            </h4>
-            <ul className="space-y-3">
-              {FOOTER_LINKS.documents.links.map((link) => (
-                <li key={link.name}>
-                  <button
-                    onClick={() => navigate(link.path)}
-                    className="text-slate-400 hover:text-white transition-colors duration-200 text-sm text-left"
-                  >
-                    {link.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company Links */}
-          <div>
-            <h4 className="font-semibold text-slate-200 mb-5 text-xs uppercase" style={{ letterSpacing: "0.12em" }}>
-              {FOOTER_LINKS.company.title}
-            </h4>
-            <ul className="space-y-3">
-              {FOOTER_LINKS.company.links.map((link) => (
-                <li key={link.name}>
-                  <button
-                    onClick={() => navigate(link.path)}
-                    className="text-slate-400 hover:text-white transition-colors duration-200 text-sm text-left"
-                  >
-                    {link.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div>
-            <h4 className="font-semibold text-slate-200 mb-5 text-xs uppercase" style={{ letterSpacing: "0.12em" }}>
-              {FOOTER_LINKS.legal.title}
-            </h4>
-            <ul className="space-y-3">
-              {FOOTER_LINKS.legal.links.map((link) => (
-                <li key={link.name}>
-                  <button
-                    onClick={() => navigate(link.path)}
-                    className="text-slate-400 hover:text-white transition-colors duration-200 text-sm text-left"
-                  >
-                    {link.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          ))}
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-slate-700 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            
-            {/* Copyright */}
-            <p className="text-slate-500 text-sm">
-              Â© {currentYear} MintSlip. All rights reserved.
-            </p>
-
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              {SOCIAL_LINKS.map((social) => {
-                const IconComponent = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    aria-label={social.label}
-                    className="group w-10 h-10 rounded-full bg-slate-800 hover:bg-green-700 flex items-center justify-center transition-colors duration-200"
-                  >
-                    <IconComponent className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors duration-200" />
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="mt-8 pt-8 border-t border-slate-800">
-          <div className="flex flex-wrap justify-center items-center gap-8 text-slate-500 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-900/50 flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <span>Secure Payments</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-900/50 flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <span>Privacy Protected</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-900/50 flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <span>Instant Download</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-900/50 flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </div>
-              <span>24/7 Support</span>
-            </div>
-          </div>
+        <div className="footer-bottom">
+          <span>© {currentYear} MintSlip, Inc.</span>
+          <span>MintSlip generates documents from information you provide. You are responsible for the accuracy and lawful use of any document you create.</span>
         </div>
       </div>
     </footer>

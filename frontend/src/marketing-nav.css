@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 /* Marketing header — whodat's floating glass pill, in MintSlip green.
    Ported from whodat frontend/src/styles/nav.css. */
 .navbar {
@@ -151,4 +153,59 @@
   .navbar-cta span { display: none; }
   .navbar-cta { padding: 11px 13px; }
   .navbar-secondary { display: none; }
+}
+
+/* ── Marketing footer — whodat's footer, in MintSlip green ──
+   Ported from whodat frontend/src/styles/common.css (.footer). */
+.site-footer {
+  border-top: 1px solid #e2ece4;
+  padding: 60px 0 40px;
+  background: #f8faf8;
+}
+.site-footer .footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.site-footer .footer-grid {
+  display: grid;
+  grid-template-columns: 1.7fr repeat(4, 1fr);
+  gap: 40px;
+}
+.site-footer .footer-brand img { height: 36px; width: auto; display: block; }
+.site-footer .footer-badges { display: flex; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.site-footer .footer-badges a { display: inline-flex; border: 1px solid #17201a; border-radius: 10px; padding: 7px 9px; transition: opacity 0.15s; background: #17201a; }
+.site-footer .footer-badges a:hover { opacity: 0.85; }
+.site-footer .footer-badges img { height: 26px; width: auto; display: block; }
+.site-footer .footer-col h4 {
+  font-family: 'IBM Plex Mono', 'GT Standard Mono', Verdana, sans-serif;
+  font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #67706a; margin: 0 0 16px; font-weight: 500;
+}
+.site-footer .footer-col a,
+.site-footer .footer-col .footer-link-btn {
+  font-family: 'IBM Plex Mono', 'GT Standard Mono', Verdana, sans-serif;
+  display: block; padding: 6px 0; font-size: 14px; opacity: 0.8;
+  color: #17201a; text-decoration: none; text-align: left;
+  background: none; border: none; cursor: pointer; width: 100%;
+}
+.site-footer .footer-col a:hover,
+.site-footer .footer-col .footer-link-btn:hover { opacity: 1; }
+.site-footer .footer-bottom {
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px solid #e2ece4;
+  display: flex; justify-content: space-between; align-items: center; gap: 24px;
+  color: #67706a; font-size: 13px;
+}
+.site-footer .footer-bottom span:last-child { text-align: right; max-width: 640px; }
+@media (max-width: 780px) {
+  .site-footer .footer-grid { grid-template-columns: 1fr 1fr; }
+  .site-footer .footer-bottom { flex-direction: column; gap: 12px; }
+  .site-footer .footer-bottom span:last-child { text-align: center; }
+  /* Brand sits above the link columns, centered */
+  .site-footer .footer-brand-col {
+    grid-column: 1 / -1;
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 8px;
+  }
 }

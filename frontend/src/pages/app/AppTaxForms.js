@@ -1,98 +1,165 @@
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import AppLayout from "@/components/AppLayout";
-import { IonPage, IonContent } from "@ionic/react";
-import { FileSpreadsheet, ClipboardList, Receipt, FileBarChart, ArrowRight } from "lucide-react";
+import {
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSpinner,
+} from "@ionic/react";
+import { closeOutline } from "ionicons/icons";
+import { generateW2Preview } from "@/utils/w2PreviewGenerator";
+import { generateW9Preview } from "@/utils/w9PreviewGenerator";
+import { generate1099NECPreview } from "@/utils/1099necPreviewGenerator";
+import { generate1099MISCPreview } from "@/utils/1099miscPreviewGenerator";
+import { generateScheduleCPreview } from "@/utils/scheduleCPreviewGenerator";
+import W2Form from "@/pages/W2Form";
+import W9Form from "@/pages/W9Form";
+import Form1099NEC from "@/pages/Form1099NEC";
+import Form1099MISC from "@/pages/Form1099MISC";
+import ScheduleCForm from "@/pages/ScheduleCForm";
 
-// The app's Tax Forms landing: one card per tax-form generator, in the same
-// card style as the paystub template grid. Tapping a card opens the full
-// generator embedded in the app shell (see AppEmbeddedForm below).
+const SAMPLE_YEAR = "2024";
+
+// Sample data used to render the card previews — the real filled IRS forms,
+// same idea as the paystub template cards.
+const W2_SAMPLE = {
+  employeeSSN: "123-45-6789", employerEIN: "12-3456789",
+  employerName: "Acme Corporation", employerAddress: "456 Business Ave",
+  employerCity: "New York", employerState: "NY", employerZip: "10002",
+  employeeFirstName: "John", employeeLastName: "Smith",
+  employeeAddress: "123 Main Street", employeeCity: "New York", employeeState: "NY", employeeZip: "10001",
+  wagesTips: 52000, federalTaxWithheld: 6240, socialSecurityWages: 52000, socialSecurityTax: 3224,
+  medicareWages: 52000, medicareTax: 754, state: "NY", stateWages: 52000, stateIncomeTax: 2600,
+};
+const W9_SAMPLE = {
+  name: "John Smith", businessName: "Smith Consulting LLC", taxClassification: "individual",
+  address: "123 Main Street", city: "New York", state: "NY", zipCode: "10001",
+  tinType: "ssn", ssn: "123-45-6789", signatureDate: `${SAMPLE_YEAR}-12-15`,
+};
+const NEC_SAMPLE = {
+  payerName: "Acme Corporation", payerAddress: "456 Business Ave",
+  payerCity: "New York", payerState: "NY", payerZip: "10002", payerPhone: "(555) 123-4567",
+  payerTIN: "12-3456789", recipientTIN: "123-45-6789", recipientName: "John Smith",
+  recipientAddress: "123 Main Street", recipientCity: "New York", recipientState: "NY", recipientZip: "10001",
+  box1: 48500, box4: 0, state1: "NY", stateIncome1: 48500,
+};
+const MISC_SAMPLE = {
+  payerName: "Acme Corporation", payerAddress: "456 Business Ave",
+  payerCity: "New York", payerState: "NY", payerZip: "10002", payerPhone: "(555) 123-4567",
+  payerTIN: "12-3456789", recipientTIN: "123-45-6789", recipientName: "John Smith",
+  recipientAddress: "123 Main Street", recipientCity: "New York", recipientState: "NY", recipientZip: "10001",
+  box1: 24000, box3: 1500,
+};
+const SCHEDC_SAMPLE = {
+  proprietorName: "John Smith", ssn: "123-45-6789",
+  principalBusiness: "Business consulting services", businessCode: "541610",
+  businessName: "Smith Consulting LLC", businessAddress: "123 Main Street",
+  businessCity: "New York", businessState: "NY", businessZip: "10001",
+  accountingMethod: "cash", materialParticipation: "yes",
+  line1: 85000, line2: 0, line3: 85000, line4: 0, line5: 85000, line7: 85000,
+};
+
+// One card per tax form: name badge, sample preview, and the full generator
+// component that opens in the form modal.
 const TAX_FORMS = [
-  {
-    key: "w2", name: "W-2", color: "#7c3aed", icon: FileSpreadsheet,
-    title: "W-2 Wage & Tax Statement",
-    desc: "The annual wage and tax statement employers issue to employees — every box calculated for you.",
-    path: "/app/tax-forms/w2",
-  },
-  {
-    key: "w9", name: "W-9", color: "#0891b2", icon: ClipboardList,
-    title: "W-9 Taxpayer Identification",
-    desc: "Request for taxpayer identification and certification, used by contractors and vendors.",
-    path: "/app/tax-forms/w9",
-  },
-  {
-    key: "1099-nec", name: "1099-NEC", color: "#d97706", icon: Receipt,
-    title: "1099-NEC Nonemployee Compensation",
-    desc: "Report payments to independent contractors and freelancers.",
-    path: "/app/tax-forms/1099-nec",
-  },
-  {
-    key: "1099-misc", name: "1099-MISC", color: "#ea580c", icon: Receipt,
-    title: "1099-MISC Miscellaneous Income",
-    desc: "Report rents, royalties, prizes, and other miscellaneous income.",
-    path: "/app/tax-forms/1099-misc",
-  },
-  {
-    key: "schedule-c", name: "Schedule C", color: "#92400e", icon: FileBarChart,
-    title: "Schedule C Profit or Loss",
-    desc: "Profit or loss from business for sole proprietors, ready to file with Form 1040.",
-    path: "/app/tax-forms/schedule-c",
-  },
+  { key: "w2", name: "W-2", title: "W-2 Wage & Tax Statement", color: "#7c3aed",
+    preview: () => generateW2Preview(W2_SAMPLE, SAMPLE_YEAR), Component: W2Form },
+  { key: "w9", name: "W-9", title: "W-9 Taxpayer Identification", color: "#0891b2",
+    preview: () => generateW9Preview(W9_SAMPLE, SAMPLE_YEAR), Component: W9Form },
+  { key: "1099-nec", name: "1099-NEC", title: "1099-NEC Nonemployee Compensation", color: "#d97706",
+    preview: () => generate1099NECPreview(NEC_SAMPLE, SAMPLE_YEAR), Component: Form1099NEC },
+  { key: "1099-misc", name: "1099-MISC", title: "1099-MISC Miscellaneous Income", color: "#ea580c",
+    preview: () => generate1099MISCPreview(MISC_SAMPLE, SAMPLE_YEAR), Component: Form1099MISC },
+  { key: "schedule-c", name: "Schedule C", title: "Schedule C Profit or Loss", color: "#92400e",
+    preview: () => generateScheduleCPreview(SCHEDC_SAMPLE, SAMPLE_YEAR), Component: ScheduleCForm },
 ];
 
 export default function AppTaxForms() {
-  const navigate = useNavigate();
+  const [previews, setPreviews] = useState({});
+  const [loadingPreviews, setLoadingPreviews] = useState(true);
+  const [activeForm, setActiveForm] = useState(null); // key of the open form modal
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      for (const form of TAX_FORMS) {
+        try {
+          const img = await form.preview();
+          if (cancelled) return;
+          if (img) setPreviews(prev => ({ ...prev, [form.key]: img }));
+        } catch (err) {
+          console.error(`Tax form preview failed for ${form.key}:`, err);
+        }
+      }
+      if (!cancelled) setLoadingPreviews(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const active = TAX_FORMS.find(f => f.key === activeForm) || null;
+
   return (
     <AppLayout fillHeight>
       <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
         <div style={{ background: "var(--ion-card-background)", borderRadius: 12, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-            {TAX_FORMS.map(form => {
-              const Icon = form.icon;
-              return (
-                <div
-                  key={form.key}
-                  onClick={() => navigate(form.path)}
-                  style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-card-background)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s", display: "flex", flexDirection: "column" }}
-                  onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
-                >
-                  {/* Tinted header with the form icon + name badge (template-card style) */}
-                  <div style={{ position: "relative", height: 120, background: `${form.color}14`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ position: "absolute", top: 10, left: 10, background: form.color, color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, boxShadow: "0 2px 8px rgba(0,0,0,0.28)" }}>
-                      {form.name}
+            {TAX_FORMS.map(form => (
+              <div key={form.key}
+                onClick={() => setActiveForm(form.key)}
+                style={{ cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-card-background)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
+              >
+                <div style={{ position: "relative", background: "#fff", overflow: "hidden", minHeight: 160 }}>
+                  {/* Form name badge over the preview (paystub-card style) */}
+                  <div style={{ position: "absolute", top: 10, left: 10, zIndex: 2, background: form.color, color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, boxShadow: "0 2px 8px rgba(0,0,0,0.28)" }}>
+                    {form.name}
+                  </div>
+                  {previews[form.key] ? (
+                    <div style={{ position: "relative", paddingTop: "141.4%", overflow: "hidden", pointerEvents: "none" }}>
+                      <img src={previews[form.key]} alt={`${form.name} sample`} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", display: "block" }} />
+                      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: "linear-gradient(to top, rgba(0,0,0,0.28), transparent)" }} />
                     </div>
-                    <div style={{ width: 56, height: 56, borderRadius: 14, background: form.color, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 18px rgba(0,0,0,0.22)" }}>
-                      <Icon size={28} color="#ffffff" />
+                  ) : loadingPreviews ? (
+                    <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
+                      <IonSpinner name="crescent" />
                     </div>
-                  </div>
-                  <div style={{ padding: "14px 16px 12px", flex: 1 }}>
-                    <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--ion-text-color)", marginBottom: 6 }}>{form.title}</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", lineHeight: 1.5 }}>{form.desc}</div>
-                  </div>
-                  <div style={{ padding: "8px 16px 12px", textAlign: "center", borderTop: "1px solid var(--app-divider, rgba(0,0,0,0.06))", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                    <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ion-color-primary)" }}>Create {form.name}</span>
-                    <ArrowRight size={14} style={{ color: "var(--ion-color-primary)" }} />
-                  </div>
+                  ) : (
+                    <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
+                      <span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>Preview unavailable</span>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
+                <div style={{ padding: "8px 16px 12px", textAlign: "center", borderTop: "1px solid var(--app-divider, rgba(0,0,0,0.06))" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ion-color-primary)" }}>Create {form.name} →</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </AppLayout>
-  );
-}
 
-// Wraps one of the full web tax-form generators inside the app shell —
-// the form renders with `embedded` so its site Header/Footer stay hidden.
-export function AppEmbeddedForm({ children }) {
-  return (
-    <AppLayout>
-      <IonPage>
-        <IonContent>
-          {children}
-        </IonContent>
-      </IonPage>
+      {/* ── Form Modal (portalled to ion-app, same chrome as the paystub form modal) ── */}
+      {active && createPortal(
+        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10000, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "center" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
+          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 720 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", overflow: "hidden" }}>
+            <IonHeader>
+              <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
+                <IonButtons slot="start">
+                  <IonButton fill="clear" shape="round" onClick={() => setActiveForm(null)}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                      <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                </IonButtons>
+                <IonTitle style={{ fontWeight: 700 }}>{active.title}</IonTitle>
+              </IonToolbar>
+            </IonHeader>
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              <active.Component embedded />
+            </div>
+          </div>
+        </div>,
+        document.querySelector("ion-app") || document.body
+      )}
     </AppLayout>
   );
 }

@@ -84,6 +84,7 @@ import AppCanadianPaystub from "@/pages/app/AppCanadianPaystub";
 import AppTaxForms from "@/pages/app/AppTaxForms";
 import AppLegalForms from "@/pages/app/AppLegalForms";
 import AppBusinessForms from "@/pages/app/AppBusinessForms";
+import AppResumes from "@/pages/app/AppResumes";
 import AppTerms from "@/pages/app/AppTerms";
 import AppPrivacy from "@/pages/app/AppPrivacy";
 import AppSettings from "@/pages/app/AppSettings";
@@ -237,6 +238,7 @@ function MobileApp() {
               <Route path="/app/tax-forms" element={<AppTaxForms />} />
               <Route path="/app/legal-forms" element={<AppLegalForms />} />
               <Route path="/app/business-forms" element={<AppBusinessForms />} />
+              <Route path="/app/resumes" element={<AppResumes />} />
               <Route path="/app/terms" element={<AppTerms />} />
               <Route path="/app/privacy" element={<AppPrivacy />} />
               <Route path="/app/settings" element={<AppSettings />} />
@@ -378,6 +380,7 @@ function App() {
             <Route path="/app/tax-forms" element={<AppTaxForms />} />
             <Route path="/app/legal-forms" element={<AppLegalForms />} />
             <Route path="/app/business-forms" element={<AppBusinessForms />} />
+            <Route path="/app/resumes" element={<AppResumes />} />
             <Route path="/app/terms" element={<AppTerms />} />
             <Route path="/app/privacy" element={<AppPrivacy />} />
             <Route path="/app/settings" element={<AppSettings />} />

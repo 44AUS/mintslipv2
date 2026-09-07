@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
-  briefcaseOutline, calculatorOutline, chevronDownOutline, documentTextOutline, leafOutline, scaleOutline, shieldOutline,
+  briefcaseOutline, calculatorOutline, chevronDownOutline, documentTextOutline, leafOutline, readerOutline, scaleOutline, shieldOutline,
   arrowBackOutline, settingsOutline, addOutline, notificationsOutline,
 } from "ionicons/icons";
 import MintSlipLogo from "../assests/mintslip-logo.png";
@@ -32,6 +32,7 @@ const tabs = [
   { id: "tax-forms",        label: "Tax Forms",      icon: calculatorOutline,   path: "/app/tax-forms" },
   { id: "legal-forms",      label: "Legal Forms",    icon: scaleOutline,        path: "/app/legal-forms" },
   { id: "business-forms",   label: "Business Forms", icon: briefcaseOutline,    path: "/app/business-forms" },
+  { id: "resumes",          label: "Resumes",        icon: readerOutline,       path: "/app/resumes" },
 ];
 
 // Persists sidebar state across route-driven remounts
@@ -150,6 +151,7 @@ export default function AppLayout({ children, fillHeight = false }) {
     if (path.includes("/app/tax-forms"))        return "tax-forms";
     if (path.includes("/app/legal-forms"))      return "legal-forms";
     if (path.includes("/app/business-forms"))   return "business-forms";
+    if (path.includes("/app/resumes"))          return "resumes";
     if (path.includes("/app/paystub"))          return "paystub";
     return "paystub";
   };

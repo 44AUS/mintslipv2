@@ -4,6 +4,7 @@ import {
   IonSegment, IonSegmentButton, IonReorderGroup, IonReorder,
   IonTextarea, IonModal, IonHeader, IonToolbar, IonTitle,
   IonContent, IonSearchbar, IonButtons, IonProgressBar,
+  IonPopover,
 } from '@ionic/react';
 import {
   chatbubbleOutline, chatbubblesOutline, star, starOutline,
@@ -12,7 +13,7 @@ import {
   linkOutline, removeOutline, chevronForwardOutline,
   menuOutline, closeCircleOutline, checkmarkDoneOutline,
   checkmarkOutline, addOutline, checkmarkCircleOutline,
-  mailOutline,
+  mailOutline, ellipsisVertical,
 } from 'ionicons/icons';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -117,6 +118,26 @@ function TypingIndicator() {
   );
 }
 
+// A controlled IonPopover that mounts fresh on open and fully unmounts on
+// close, anchored to the click event — same pattern as the admin sidebar user
+// menu. Trigger-based popovers leave Ionic's overlay controller stuck after
+// the first use, so a fresh element per open keeps it reliable.
+function FreshPopover({ open, event, onClose, children, ...rest }) {
+  const [render, setRender] = useState(open);
+  useEffect(() => { if (open) setRender(true); }, [open]);
+  if (!render) return null;
+  return (
+    <IonPopover
+      isOpen={open}
+      event={event}
+      onDidDismiss={() => { onClose?.(); setRender(false); }}
+      {...rest}
+    >
+      {children}
+    </IonPopover>
+  );
+}
+
 // ─── section header ───────────────────────────────────────────────────────────
 
 function SectionHeader({ title, borderTop }) {
@@ -164,6 +185,7 @@ export default function SupportCenter({
   const [imagePreviews, setImagePreviews] = useState([]);
   const [showNewModal, setShowNewModal] = useState(false);
   const [modalSearch, setModalSearch] = useState('');
+  const [actionsMenu, setActionsMenu] = useState({ open: false, event: undefined });
   const [hoveredConvId, setHoveredConvId] = useState(null);
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
 
@@ -606,49 +628,110 @@ export default function SupportCenter({
                     </div>
                   </div>
 
-                  {/* action buttons */}
-                  {activeConv.isLoad && (
-                    <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
-                      <IonIcon slot="icon-only" icon={linkOutline} style={{ fontSize: 18 }} />
+                  {/* action buttons: full row on desktop, one popover menu on mobile */}
+                  {!isMobile && (
+                    <>
+                      {activeConv.isLoad && (
+                        <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
+                          <IonIcon slot="icon-only" icon={linkOutline} style={{ fontSize: 18 }} />
+                        </IonButton>
+                      )}
+                      <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
+                        <IonIcon slot="icon-only" icon={folderOutline} style={{ fontSize: 18 }} />
+                      </IonButton>
+                      <IonButton
+                        fill="clear" color={activeConv.isBlocked ? 'danger' : 'medium'} size="small"
+                        style={{ '--border-radius': '50%' }}
+                        onClick={() => onBlockUser?.(activeConv.id, !activeConv.isBlocked)}
+                      >
+                        <IonIcon slot="icon-only" icon={activeConv.isBlocked ? shieldOutline : banOutline} style={{ fontSize: 18 }} />
+                      </IonButton>
+                      {/* Close ticket */}
+                      <IonButton
+                        fill="clear" color="success" size="small"
+                        style={{ '--border-radius': '50%' }}
+                        title="Close ticket"
+                        onClick={() => onCloseConversation?.(activeConv.id)}
+                      >
+                        <IonIcon slot="icon-only" icon={checkmarkCircleOutline} style={{ fontSize: 18 }} />
+                      </IonButton>
+                      {/* Delete ticket */}
+                      <IonButton
+                        fill="clear" color="danger" size="small"
+                        style={{ '--border-radius': '50%' }}
+                        title="Delete ticket"
+                        onClick={() => onDeleteConversation?.(activeConv.id)}
+                      >
+                        <IonIcon slot="icon-only" icon={trashOutline} style={{ fontSize: 18 }} />
+                      </IonButton>
+                      <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}
+                        onClick={() => onMinimize?.(activeConv, messages)}
+                      >
+                        <IonIcon slot="icon-only" icon={removeOutline} style={{ fontSize: 18 }} />
+                      </IonButton>
+                      <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
+                        <IonIcon slot="icon-only" icon={closeOutline} style={{ fontSize: 18 }} />
+                      </IonButton>
+                    </>
+                  )}
+                  {isMobile && (
+                    <IonButton
+                      fill="clear" color="medium" size="small"
+                      style={{ '--border-radius': '50%', flexShrink: 0 }}
+                      onClick={(e) => setActionsMenu({ open: true, event: e.nativeEvent })}
+                    >
+                      <IonIcon slot="icon-only" icon={ellipsisVertical} style={{ fontSize: 20 }} />
                     </IonButton>
                   )}
-                  <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
-                    <IonIcon slot="icon-only" icon={folderOutline} style={{ fontSize: 18 }} />
-                  </IonButton>
-                  <IonButton
-                    fill="clear" color={activeConv.isBlocked ? 'danger' : 'medium'} size="small"
-                    style={{ '--border-radius': '50%' }}
-                    onClick={() => onBlockUser?.(activeConv.id, !activeConv.isBlocked)}
-                  >
-                    <IonIcon slot="icon-only" icon={activeConv.isBlocked ? shieldOutline : banOutline} style={{ fontSize: 18 }} />
-                  </IonButton>
-                  {/* Close ticket */}
-                  <IonButton
-                    fill="clear" color="success" size="small"
-                    style={{ '--border-radius': '50%' }}
-                    title="Close ticket"
-                    onClick={() => onCloseConversation?.(activeConv.id)}
-                  >
-                    <IonIcon slot="icon-only" icon={checkmarkCircleOutline} style={{ fontSize: 18 }} />
-                  </IonButton>
-                  {/* Delete ticket */}
-                  <IonButton
-                    fill="clear" color="danger" size="small"
-                    style={{ '--border-radius': '50%' }}
-                    title="Delete ticket"
-                    onClick={() => onDeleteConversation?.(activeConv.id)}
-                  >
-                    <IonIcon slot="icon-only" icon={trashOutline} style={{ fontSize: 18 }} />
-                  </IonButton>
-                  <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}
-                    onClick={() => onMinimize?.(activeConv, messages)}
-                  >
-                    <IonIcon slot="icon-only" icon={removeOutline} style={{ fontSize: 18 }} />
-                  </IonButton>
-                  <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
-                    <IonIcon slot="icon-only" icon={closeOutline} style={{ fontSize: 18 }} />
-                  </IonButton>
                 </div>
+
+                {/* mobile chat actions popover (admin sidebar user-menu style) */}
+                <FreshPopover
+                  open={actionsMenu.open}
+                  event={actionsMenu.event}
+                  onClose={() => setActionsMenu({ open: false, event: undefined })}
+                  side="bottom"
+                  alignment="end"
+                  style={{ '--width': '230px', '--offset-y': '4px' }}
+                >
+                  <IonContent>
+                    <IonList lines="none" style={{ padding: '4px 0' }}>
+                      <IonItem button detail={false}
+                        onClick={() => { setActionsMenu({ open: false, event: undefined }); onCloseConversation?.(activeConv.id); }}
+                        style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
+                        <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                          <IonIcon icon={checkmarkCircleOutline} style={{ fontSize: 18, color: 'var(--ion-color-success)' }} />
+                        </div>
+                        <IonLabel>Close Ticket</IonLabel>
+                      </IonItem>
+                      <IonItem button detail={false}
+                        onClick={() => { setActionsMenu({ open: false, event: undefined }); onMinimize?.(activeConv, messages); }}
+                        style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
+                        <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                          <IonIcon icon={removeOutline} style={{ fontSize: 18 }} />
+                        </div>
+                        <IonLabel>Minimize</IonLabel>
+                      </IonItem>
+                      <IonItem button detail={false}
+                        onClick={() => { setActionsMenu({ open: false, event: undefined }); onBlockUser?.(activeConv.id, !activeConv.isBlocked); }}
+                        style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
+                        <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                          <IonIcon icon={activeConv.isBlocked ? shieldOutline : banOutline} style={{ fontSize: 18 }} />
+                        </div>
+                        <IonLabel>{activeConv.isBlocked ? 'Unblock User' : 'Block User'}</IonLabel>
+                      </IonItem>
+                      <div style={{ height: 1, background: 'var(--ion-border-color)', margin: '2px 0' }} />
+                      <IonItem button detail={false}
+                        onClick={() => { setActionsMenu({ open: false, event: undefined }); onDeleteConversation?.(activeConv.id); }}
+                        style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', '--color': 'var(--ion-color-danger)', fontSize: '0.88rem' }}>
+                        <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                          <IonIcon icon={trashOutline} style={{ fontSize: 18, color: 'var(--ion-color-danger)' }} />
+                        </div>
+                        <IonLabel>Delete Ticket</IonLabel>
+                      </IonItem>
+                    </IonList>
+                  </IonContent>
+                </FreshPopover>
 
                 {/* blocked banner */}
                 {activeConv.isBlocked && (

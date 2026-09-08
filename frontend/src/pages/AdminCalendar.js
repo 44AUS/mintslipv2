@@ -66,14 +66,9 @@ function isToday(d) {
   return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
 }
 
-const segBtnStyle = {
-  "--indicator-color": "var(--ion-card-background)",
-  "--color": "var(--ion-color-medium)",
-  "--color-checked": "var(--ion-text-color)",
-  "--border-radius": "8px",
-  "--indicator-box-shadow": "0 1px 4px rgba(0,0,0,0.15)",
-  minHeight: 28,
-};
+// Plain ios-mode segment buttons — the native track and sliding indicator,
+// same as the form modals and settings.
+const segBtnStyle = { minWidth: 0 };
 
 export default function AdminCalendar() {
   const navigate = useNavigate();
@@ -359,7 +354,6 @@ export default function AdminCalendar() {
                     mode="ios"
                     value={view}
                     onIonChange={e => setView(e.detail.value)}
-                    style={{ "--background": "rgba(0,0,0,0.08)", minHeight: 34 }}
                   >
                     {["month", "week", "day", "agenda"].map(v => (
                       <IonSegmentButton key={v} value={v} layout="label-only" style={segBtnStyle}>

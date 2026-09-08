@@ -88,11 +88,18 @@ function UserAvatar({ name = '?', size = 28 }) {
   );
 }
 
+// Server timestamps are UTC; parse offset-less ISO strings as UTC so message
+// times localize to the viewer's timezone instead of shifting by the offset.
+function parseTs(ts) {
+  if (typeof ts === 'string' && ts && !/(Z|[+-]\d{2}:?\d{2})$/.test(ts)) ts += 'Z';
+  return new Date(ts);
+}
+
 // typing expired if timestamp older than 6 seconds
 const TYPING_TTL = 6000;
 function isTypingFresh(ts) {
   if (!ts) return false;
-  return Date.now() - new Date(ts).getTime() < TYPING_TTL;
+  return Date.now() - parseTs(ts).getTime() < TYPING_TTL;
 }
 
 // ── main widget ────────────────────────────────────────────────────────────────
@@ -600,7 +607,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
               {messages.map((msg, i) => {
                 const prev = messages[i - 1];
                 const grouped = i > 0 && prev.fromAdmin === msg.fromAdmin &&
-                  new Date(msg.timestamp) - new Date(prev.timestamp) < 120000;
+                  parseTs(msg.timestamp) - parseTs(prev.timestamp) < 120000;
                 return (
                   <div key={msg.id || i} style={{
                     display: 'flex', alignItems: 'flex-end', gap: 8,
@@ -625,7 +632,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                     }}>
                       {!grouped && (
                         <div style={{ fontSize: '0.65rem', opacity: 0.65, marginBottom: 2 }}>
-                          {msg.fromAdmin ? msg.senderName : 'You'} · {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {msg.fromAdmin ? msg.senderName : 'You'} · {parseTs(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       )}
                       {msg.text}

@@ -22,9 +22,17 @@ function getInitials(name = '') {
   return name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?';
 }
 
+// Server timestamps are UTC. A string without an explicit offset would be
+// parsed as LOCAL time by `new Date`, shifting every message by the viewer's
+// UTC offset — so treat offset-less ISO strings as UTC before localizing.
+function parseTs(ts) {
+  if (typeof ts === 'string' && ts && !/(Z|[+-]\d{2}:?\d{2})$/.test(ts)) ts += 'Z';
+  return new Date(ts);
+}
+
 function getPresenceColor(lastActive) {
   if (!lastActive) return null;
-  const mins = (Date.now() - new Date(lastActive).getTime()) / 60000;
+  const mins = (Date.now() - parseTs(lastActive).getTime()) / 60000;
   if (mins < 5) return '#10b981';
   if (mins < 60) return '#ffce00';
   if (mins < 1440) return '#eb445a';
@@ -33,7 +41,7 @@ function getPresenceColor(lastActive) {
 
 function getPresenceLabel(lastActive) {
   if (!lastActive) return 'Offline';
-  const mins = (Date.now() - new Date(lastActive).getTime()) / 60000;
+  const mins = (Date.now() - parseTs(lastActive).getTime()) / 60000;
   if (mins < 1) return 'Online now';
   if (mins < 60) return `Active ${Math.floor(mins)}m ago`;
   const hrs = mins / 60;
@@ -43,13 +51,13 @@ function getPresenceLabel(lastActive) {
 
 function formatTime(ts) {
   if (!ts) return '';
-  const d = new Date(ts);
+  const d = parseTs(ts);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 function formatListTime(ts) {
   if (!ts) return '';
-  const d = new Date(ts);
+  const d = parseTs(ts);
   const now = new Date();
   const diffDays = Math.floor((now - d) / 86400000);
   if (diffDays === 0) return formatTime(ts);
@@ -62,7 +70,7 @@ function isGrouped(msgs, idx) {
   if (idx === 0) return false;
   const cur = msgs[idx], prev = msgs[idx - 1];
   if (cur.senderId !== prev.senderId) return false;
-  return new Date(cur.timestamp) - new Date(prev.timestamp) < 2 * 60000;
+  return parseTs(cur.timestamp) - parseTs(prev.timestamp) < 2 * 60000;
 }
 
 // ─── sub-components ───────────────────────────────────────────────────────────

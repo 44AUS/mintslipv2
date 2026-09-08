@@ -346,8 +346,8 @@ export default function AdminCalendar() {
                     )}
                   </div>
 
-                  {/* View segment — the stock Ionic segment, untouched */}
-                  <IonSegment value={view} onIonChange={e => setView(e.detail.value)}>
+                  {/* View segment — stock Ionic segment in iOS mode, untouched */}
+                  <IonSegment mode="ios" value={view} onIonChange={e => setView(e.detail.value)}>
                     {["month", "week", "day", "agenda"].map(v => (
                       <IonSegmentButton key={v} value={v}>
                         <IonLabel>{v.charAt(0).toUpperCase() + v.slice(1)}</IonLabel>

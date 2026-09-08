@@ -474,6 +474,11 @@ export default function AppTaxFormModal({ config, onClose }) {
                 </div>
               ))}
 
+              <IonButton expand="block" onClick={handleNext}
+                style={{ "--background": "#059669", "--background-activated": "#047857" }}>
+                Preview
+              </IonButton>
+
             </div>
           </div>
         </div>
@@ -520,12 +525,11 @@ export default function AppTaxFormModal({ config, onClose }) {
                   {!appliedDiscount ? (
                     <>
                       <div style={{ display: "flex", gap: 8 }}>
-                        <input
-                          type="text"
-                          placeholder="Coupon code"
+                        <IonInput
+                          fill="outline" labelPlacement="floating" label="Coupon code"
                           value={couponCode}
-                          onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
-                          style={{ flex: 1, fontFamily: "monospace", height: 42, padding: "0 12px", borderRadius: 4, border: "1.5px solid var(--ion-color-step-300, rgba(0,0,0,0.2))", background: "transparent", color: "var(--ion-text-color)", fontSize: "0.9rem", outline: "none" }}
+                          onIonInput={e => { setCouponCode((e.detail.value || "").toUpperCase()); setCouponError(""); }}
+                          style={{ flex: 1, fontFamily: "monospace" }}
                         />
                         <IonButton fill="outline" onClick={validateCoupon} disabled={isValidatingCoupon || !couponCode.trim()} style={{ flexShrink: 0 }}>
                           {isValidatingCoupon ? <IonSpinner name="crescent" /> : "Apply"}

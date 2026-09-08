@@ -471,9 +471,9 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             <div style={cardStyle}>
               <div style={headingStyle}>Preview & Download</div>
               {formData.companyName && formData.candidateName && (
-                <IonButton fill="outline" size="small" onClick={() => setShowPreview(v => !v)}
+                <IonButton fill="outline" expand="block" onClick={() => setShowPreview(v => !v)}
                   disabled={isGeneratingPreview}
-                  style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)", alignSelf: "flex-start" }}>
+                  style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
                   {isGeneratingPreview
                     ? <IonSpinner name="crescent" slot="start" style={{ width: 16, height: 16 }} />
                     : <IonIcon icon={eyeOutline} slot="start" />}

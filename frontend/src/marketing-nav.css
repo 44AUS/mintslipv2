@@ -242,10 +242,20 @@ div:has(> .nav-wash) {
   .site-footer .footer-grid { grid-template-columns: 1fr 1fr; }
   .site-footer .footer-bottom { flex-direction: column; gap: 12px; }
   .site-footer .footer-bottom span:last-child { text-align: center; }
-  /* Brand sits above the link columns, centered */
+  /* Brand sits above the link columns, centered, with the two store badges
+     side by side beneath the logo */
   .site-footer .footer-brand-col {
     grid-column: 1 / -1;
     display: flex; flex-direction: column; align-items: center;
     margin-bottom: 8px;
   }
+  .site-footer .footer-badges {
+    justify-content: center;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+  /* Link columns keep their two-up grid but centre their contents */
+  .site-footer .footer-col h4 { text-align: center; }
+  .site-footer .footer-col a,
+  .site-footer .footer-col .footer-link-btn { text-align: center; }
 }

@@ -13,7 +13,6 @@ const PHRASES = [
   "Create a Commercial Lease",
   "Create an Offer Letter",
   "Generate a 1099",
-  "Create a Bank Statement",
   "Create a Power of Attorney",
 ];
 

@@ -71,7 +71,6 @@ const DICTS = {
     "Create a Commercial Lease": "Crea un contrato de arrendamiento",
     "Create an Offer Letter": "Crea una carta de oferta",
     "Generate a 1099": "Genera un 1099",
-    "Create a Bank Statement": "Crea un estado de cuenta",
     "Create a Power of Attorney": "Crea un poder notarial",
   },
   fr: {
@@ -139,7 +138,6 @@ const DICTS = {
     "Create a Commercial Lease": "Créez un bail commercial",
     "Create an Offer Letter": "Créez une lettre d'offre",
     "Generate a 1099": "Générez un 1099",
-    "Create a Bank Statement": "Créez un relevé bancaire",
     "Create a Power of Attorney": "Créez une procuration",
   },
 };

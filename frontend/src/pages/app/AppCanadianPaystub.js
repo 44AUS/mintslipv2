@@ -1430,7 +1430,7 @@ export default function AppCanadianPaystub() {
         color={toastState.color}
         duration={3000}
         onDidDismiss={() => setToastState(s => ({ ...s, isOpen: false }))}
-        position="bottom"
+        position="top"
       />
     </AppLayout>
   );

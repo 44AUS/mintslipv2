@@ -1478,7 +1478,7 @@ export default function AppPaystub() {
         color={toastState.color}
         duration={3000}
         onDidDismiss={() => setToastState(s => ({ ...s, isOpen: false }))}
-        position="bottom"
+        position="top"
       />
     </AppLayout>
   );

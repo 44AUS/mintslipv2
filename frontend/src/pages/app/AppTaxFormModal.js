@@ -605,7 +605,7 @@ export default function AppTaxFormModal({ config, onClose }) {
         color={toastState.color}
         duration={3000}
         onDidDismiss={() => setToastState(s => ({ ...s, isOpen: false }))}
-        position="bottom"
+        position="top"
       />
     </>,
     document.querySelector("ion-app") || document.body

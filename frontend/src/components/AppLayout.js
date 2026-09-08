@@ -32,7 +32,7 @@ import { t, useLanguage } from "../utils/i18n";
 import "../admin-theme.css";
 
 const tabs = [
-  { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app" },
+  { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app/paystubs" },
   { id: "canadian-paystub", label: "Canadian Stubs", icon: leafOutline,         path: "/app/canadian-paystub" },
   { id: "tax-forms",        label: "Tax Forms",      icon: calculatorOutline,   path: "/app/tax-forms" },
   { id: "legal-forms",      label: "Legal Forms",    icon: scaleOutline,        path: "/app/legal-forms" },
@@ -179,7 +179,7 @@ export default function AppLayout({ children, fillHeight = false }) {
     if (path.includes("/app/business-forms"))   return "business-forms";
     if (path.includes("/app/resumes"))          return "resumes";
     if (path.includes("/app/paystub"))          return "paystub";
-    return "paystub";
+    return "home"; // the /app landing highlights no tab
   };
 
   const activeTab = getActiveTab();
@@ -424,7 +424,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                   <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })}
                     style={{ "--color": "#fff", textTransform: "none", marginLeft: 0, "--padding-start": "6px" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.03em" }}>
-                      {t(tabs.find(x => x.id === activeTab)?.label || "Navigate")}
+                      {t(tabs.find(x => x.id === activeTab)?.label || "Home")}
                       <IonIcon icon={chevronDownOutline} style={{ fontSize: 14, pointerEvents: "none" }} />
                     </span>
                   </IonButton>
@@ -549,7 +549,7 @@ export default function AppLayout({ children, fillHeight = false }) {
         style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
         buttons={[
           !disabledGenerators.has("paystub") &&
-            { text: t("Create Pay Stub"),         handler: () => navigate("/app") },
+            { text: t("Create Pay Stub"),         handler: () => navigate("/app/paystubs") },
           !disabledGenerators.has("canadian-paystub") &&
             { text: t("Create Canadian Paystub"), handler: () => navigate("/app/canadian-paystub") },
           !disabledGenerators.has("offer-letter") &&

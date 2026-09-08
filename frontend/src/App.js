@@ -78,6 +78,7 @@ import AIResumeBuilder from "@/pages/AIResumeBuilder";
 import AIResumeLanding from "@/pages/AIResumeLanding";
 import PDFEngine from "@/pages/PDFEngine";
 import AppPaystub from "@/pages/app/AppPaystub";
+import AppHome from "@/pages/app/AppHome";
 import AppCanadianPaystub from "@/pages/app/AppCanadianPaystub";
 import AppTaxForms from "@/pages/app/AppTaxForms";
 import AppLegalForms from "@/pages/app/AppLegalForms";
@@ -230,7 +231,8 @@ function MobileApp() {
           <IonToaster />
           <BrowserRouter>
             <Routes>
-              <Route path="/app" element={<AppPaystub />} />
+              <Route path="/app" element={<AppHome />} />
+              <Route path="/app/paystubs" element={<AppPaystub />} />
               <Route path="/app/paystub" element={<AppPaystub />} />
               <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
               <Route path="/app/tax-forms" element={<AppTaxForms />} />
@@ -240,7 +242,7 @@ function MobileApp() {
               <Route path="/app/terms" element={<AppTerms />} />
               <Route path="/app/privacy" element={<AppPrivacy />} />
               <Route path="/app/settings" element={<AppSettings />} />
-              <Route path="*" element={<AppPaystub />} />
+              <Route path="*" element={<AppHome />} />
             </Routes>
           </BrowserRouter>
         </div>
@@ -372,7 +374,8 @@ function App() {
             <Route path="/user/downloads" element={<UserDownloads />} />
             <Route path="/user/pdf-engine" element={<PDFEngine />} />
             {/* /app is the main app link; /app/paystub kept as an alias */}
-            <Route path="/app" element={<AppPaystub />} />
+            <Route path="/app" element={<AppHome />} />
+            <Route path="/app/paystubs" element={<AppPaystub />} />
             <Route path="/app/paystub" element={<AppPaystub />} />
             <Route path="/app/canadian-paystub" element={<AppCanadianPaystub />} />
             <Route path="/app/tax-forms" element={<AppTaxForms />} />

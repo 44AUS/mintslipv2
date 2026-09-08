@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { IonSegment, IonSegmentButton, IonLabel } from "@ionic/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/utils/toast";
 import { createStripeCheckout } from "@/utils/stripePayment";
@@ -1123,24 +1123,12 @@ export default function OfferLetterForm() {
                   {/* HR Signature Type */}
                   <div className="space-y-2 md:col-span-2">
                     <Label>Signature Type</Label>
-                    <RadioGroup 
-                      value={formData.hrSignatureType} 
-                      onValueChange={(val) => setFormData({...formData, hrSignatureType: val, hrSignatureImage: null})}
-                      className="flex gap-4"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="generated" id="hr-generated" />
-                        <Label htmlFor="hr-generated" className="cursor-pointer">Computer Generated</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="draw" id="hr-draw" />
-                        <Label htmlFor="hr-draw" className="cursor-pointer">Draw Signature</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="custom" id="hr-custom" />
-                        <Label htmlFor="hr-custom" className="cursor-pointer">Upload Custom Signature</Label>
-                      </div>
-                    </RadioGroup>
+                    <IonSegment mode="ios" value={formData.hrSignatureType}
+                      onIonChange={(e) => setFormData({...formData, hrSignatureType: e.detail.value, hrSignatureImage: null})}>
+                      <IonSegmentButton value="generated"><IonLabel>Auto-generate</IonLabel></IonSegmentButton>
+                      <IonSegmentButton value="draw"><IonLabel>Draw</IonLabel></IonSegmentButton>
+                      <IonSegmentButton value="custom"><IonLabel>Upload</IonLabel></IonSegmentButton>
+                    </IonSegment>
                   </div>
 
                   {formData.hrSignatureType === "draw" && (
@@ -1241,28 +1229,13 @@ export default function OfferLetterForm() {
                   {/* Employee Signature Type */}
                   <div className="space-y-2 md:col-span-2">
                     <Label>Signature Type</Label>
-                    <RadioGroup 
-                      value={formData.employeeSignatureType} 
-                      onValueChange={(val) => setFormData({...formData, employeeSignatureType: val, employeeSignatureImage: null})}
-                      className="flex gap-4"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="generated" id="emp-generated" />
-                        <Label htmlFor="emp-generated" className="cursor-pointer">Computer Generated</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="draw" id="emp-draw" />
-                        <Label htmlFor="emp-draw" className="cursor-pointer">Draw Signature</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="custom" id="emp-custom" />
-                        <Label htmlFor="emp-custom" className="cursor-pointer">Upload Custom Signature</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="blank" id="emp-blank" />
-                        <Label htmlFor="emp-blank" className="cursor-pointer">Leave Blank (Sign Later)</Label>
-                      </div>
-                    </RadioGroup>
+                    <IonSegment mode="ios" value={formData.employeeSignatureType}
+                      onIonChange={(e) => setFormData({...formData, employeeSignatureType: e.detail.value, employeeSignatureImage: null})}>
+                      <IonSegmentButton value="generated"><IonLabel>Auto-generate</IonLabel></IonSegmentButton>
+                      <IonSegmentButton value="draw"><IonLabel>Draw</IonLabel></IonSegmentButton>
+                      <IonSegmentButton value="custom"><IonLabel>Upload</IonLabel></IonSegmentButton>
+                      <IonSegmentButton value="blank"><IonLabel>Blank</IonLabel></IonSegmentButton>
+                    </IonSegment>
                   </div>
 
                   {formData.employeeSignatureType === "draw" && (

@@ -4,6 +4,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
   IonButton, IonIcon, IonSpinner, IonTextarea, IonToast,
+  IonSegment, IonSegmentButton, IonLabel,
 } from "@ionic/react";
 import {
   cloudDownloadOutline, eyeOutline, closeOutline, imageOutline,
@@ -259,20 +260,11 @@ export default function AppOfferLetter({ isOpen, onClose }) {
 
   const SigToggle = ({ typeField, imageField, sigRef }) => (
     <div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        {["generated", "custom"].map(t => (
-          <button key={t} onClick={() => setField(typeField, t)}
-            style={{
-              flex: 1, padding: "6px 8px", borderRadius: 6,
-              border: `2px solid ${formData[typeField] === t ? "var(--ion-color-primary)" : "var(--ion-color-step-200)"}`,
-              background: formData[typeField] === t ? "rgba(var(--ion-color-primary-rgb),0.08)" : "transparent",
-              cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
-              color: formData[typeField] === t ? "var(--ion-color-primary)" : "var(--ion-text-color)",
-            }}>
-            {t === "generated" ? "Auto-generate" : "Upload Image"}
-          </button>
-        ))}
-      </div>
+      <IonSegment mode="ios" value={formData[typeField]} style={{ marginBottom: 8 }}
+        onIonChange={e => setField(typeField, e.detail.value)}>
+        <IonSegmentButton value="generated"><IonLabel>Auto-generate</IonLabel></IonSegmentButton>
+        <IonSegmentButton value="custom"><IonLabel>Upload Image</IonLabel></IonSegmentButton>
+      </IonSegment>
       {formData[typeField] === "custom" && (
         formData[imageField] ? (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--ion-color-step-200)", background: "var(--ion-color-step-50)" }}>

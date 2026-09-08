@@ -16,7 +16,8 @@ import SignaturePad from "@/components/SignaturePad";
 import { generateAndDownloadPowerOfAttorney, POA_POWERS } from "@/utils/powerOfAttorneyGenerator";
 import { generatePowerOfAttorneyPreview } from "@/utils/powerOfAttorneyPreviewGenerator";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
-import { Upload, X, Scale, CreditCard, Lock, Loader2, PenTool, Type, CheckSquare, Square } from "lucide-react";
+import { Upload, X, Scale, CreditCard, Lock, Loader2, CheckSquare, Square } from "lucide-react";
+import { IonSegment, IonSegmentButton, IonLabel } from "@ionic/react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { trackDocumentGenerated, trackPaymentInitiated } from "@/utils/analyticsTracker";
 import useAuthEnabled from "@/hooks/useAuthEnabled";
@@ -53,24 +54,13 @@ function SignatureBlock({
   return (
     <div className="space-y-3">
       <Label>{label}</Label>
-      <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-1">
-        {[
-          { value: "draw",   label: "Draw",   icon: PenTool },
-          { value: "type",   label: "Type",   icon: Type },
-          { value: "upload", label: "Upload", icon: Upload },
-        ].map(({ value, label: l, icon: Icon }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onModeChange(which, value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              mode === value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <Icon className="w-4 h-4" /> {l}
-          </button>
+      <IonSegment mode="ios" value={mode} onIonChange={(e) => onModeChange(which, e.detail.value)}>
+        {["draw", "type", "upload"].map((value) => (
+          <IonSegmentButton key={value} value={value}>
+            <IonLabel style={{ textTransform: "capitalize" }}>{value}</IonLabel>
+          </IonSegmentButton>
         ))}
-      </div>
+      </IonSegment>
 
       {mode === "draw" && (
         <SignaturePad height={170} onChange={(dataUrl) => onUpdate(imageField, dataUrl)} />

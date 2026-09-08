@@ -13,7 +13,8 @@ import CouponInput from "@/components/CouponInput";
 import { generateAndDownloadLegalDocument, generateLegalDocumentPreview } from "@/utils/legalDocumentGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { formatPhoneNumber, formatZipCode } from "@/utils/validation";
-import { Upload, X, Scale, CreditCard, Lock, Loader2, PenTool, Type, FileSignature } from "lucide-react";
+import { Upload, X, Scale, CreditCard, Lock, Loader2, FileSignature } from "lucide-react";
+import { IonSegment, IonSegmentButton, IonLabel } from "@ionic/react";
 import SignaturePad from "@/components/SignaturePad";
 import { trackDocumentGenerated, trackPaymentInitiated } from "@/utils/analyticsTracker";
 
@@ -77,20 +78,13 @@ function SignatureSection({ party, formData, update }) {
   return (
     <div className="space-y-4">
       <p className="font-semibold text-slate-800">Party {party} Signature</p>
-      <div className="flex gap-2">
-        {[["draw", PenTool, "Draw"], ["type", Type, "Type"], ["upload", Upload, "Upload"]].map(([value, Icon, label]) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => changeMode(value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
-              mode === value ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-            }`}
-          >
-            <Icon className="w-3.5 h-3.5" /> {label}
-          </button>
+      <IonSegment mode="ios" value={mode} onIonChange={(e) => changeMode(e.detail.value)}>
+        {["draw", "type", "upload"].map((value) => (
+          <IonSegmentButton key={value} value={value}>
+            <IonLabel style={{ textTransform: "capitalize" }}>{value}</IonLabel>
+          </IonSegmentButton>
         ))}
-      </div>
+      </IonSegment>
 
       {mode === "draw" && <SignaturePad onChange={(dataUrl) => update(imgField, dataUrl)} height={160} />}
 

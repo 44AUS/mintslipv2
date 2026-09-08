@@ -66,9 +66,6 @@ function isToday(d) {
   return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
 }
 
-// Plain ios-mode segment buttons — the native track and sliding indicator,
-// same as the form modals and settings.
-const segBtnStyle = { minWidth: 0 };
 
 export default function AdminCalendar() {
   const navigate = useNavigate();
@@ -349,17 +346,11 @@ export default function AdminCalendar() {
                     )}
                   </div>
 
-                  {/* View segment */}
-                  <IonSegment
-                    mode="ios"
-                    value={view}
-                    onIonChange={e => setView(e.detail.value)}
-                  >
+                  {/* View segment — the stock Ionic segment, untouched */}
+                  <IonSegment value={view} onIonChange={e => setView(e.detail.value)}>
                     {["month", "week", "day", "agenda"].map(v => (
-                      <IonSegmentButton key={v} value={v} layout="label-only" style={segBtnStyle}>
-                        <IonLabel style={{ fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap", margin: "4px 0" }}>
-                          {v.charAt(0).toUpperCase() + v.slice(1)}
-                        </IonLabel>
+                      <IonSegmentButton key={v} value={v}>
+                        <IonLabel>{v.charAt(0).toUpperCase() + v.slice(1)}</IonLabel>
                       </IonSegmentButton>
                     ))}
                   </IonSegment>

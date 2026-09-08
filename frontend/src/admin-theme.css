@@ -744,8 +744,7 @@ body.dark .perm-card { background: var(--ion-card-background); box-shadow: 0 1px
   z-index: 5;
 }
 .admin-topbar-search.is-open { transform: scaleX(1); opacity: 1; pointer-events: auto; }
-.admin-topbar-search ion-searchbar { width: 100%; --min-height: 38px; padding: 0 4px; }
-.admin-search-panel {
+.admin-topbar-search ion-searchbar { width: 100%; --min-height: 38px; padding: 0 4px; }.admin-search-panel {
   position: fixed; z-index: 4000;
   background: var(--ion-card-background);
   border: none; border-radius: 0;

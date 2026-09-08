@@ -28,6 +28,7 @@ import AppOfferLetter from "../pages/app/AppOfferLetter";
 import AppResumeBuilder from "../pages/app/AppResumeBuilder";
 import SupportChatWidget from "./SupportChatWidget";
 import PromoBanner from "./PromoBanner";
+import { t, useLanguage } from "../utils/i18n";
 import "../admin-theme.css";
 
 const tabs = [
@@ -92,6 +93,7 @@ export default function AppLayout({ children, fillHeight = false }) {
   const navigate  = useNavigate();
   const location  = useLocation();
 
+  useLanguage(); // re-render the chrome when the language changes
   const [isMobile,          setIsMobile]          = useState(window.innerWidth < 768);
   const [navMenu,           setNavMenu]           = useState({ open: false, event: undefined });
   const [darkMode,          setDarkMode]           = useState(() => localStorage.getItem("appDarkMode") === "true");
@@ -197,11 +199,11 @@ export default function AppLayout({ children, fillHeight = false }) {
   const visibleTabs = tabs.filter((tab) => !tabHidden[tab.id]);
 
   const isSecondaryPage = ["/app/terms", "/app/privacy", "/app/settings"].includes(location.pathname);
-  const pageTitle = {
+  const pageTitle = t({
     "/app/terms":    "Terms of Service",
     "/app/privacy":  "Privacy Policy",
     "/app/settings": "Settings",
-  }[location.pathname] || "";
+  }[location.pathname] || "");
 
   // Read user info from localStorage
   const userInfo = (() => {
@@ -349,10 +351,10 @@ export default function AppLayout({ children, fillHeight = false }) {
                   </div>
                   <div style={{ minWidth: 0, flex: "1 1 0%" }}>
                     <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
-                      {userInfo?.name || userInfo?.email || "User"}
+                      {userInfo?.name || userInfo?.email || t("User")}
                     </div>
                     <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2 }}>
-                      {userInfo?.subscription?.status === "active" ? "Subscriber" : "Free"}
+                      {userInfo?.subscription?.status === "active" ? t("Subscriber") : t("Free")}
                     </div>
                   </div>
                 </div>
@@ -387,7 +389,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                   }}
                 >
                   <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
-                  {label}
+                  {t(label)}
                 </button>
               ))}
             </div>
@@ -422,7 +424,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                   <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })}
                     style={{ "--color": "#fff", textTransform: "none", marginLeft: 0, "--padding-start": "6px" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.03em" }}>
-                      {tabs.find(t => t.id === activeTab)?.label || "Navigate"}
+                      {t(tabs.find(x => x.id === activeTab)?.label || "Navigate")}
                       <IonIcon icon={chevronDownOutline} style={{ fontSize: 14, pointerEvents: "none" }} />
                     </span>
                   </IonButton>
@@ -445,7 +447,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                             }}
                           >
                             <IonIcon icon={tab.icon} slot="start" style={{ fontSize: 18 }} />
-                            <IonLabel>{tab.label}</IonLabel>
+                            <IonLabel>{t(tab.label)}</IonLabel>
                           </IonItem>
                         ))}
                       </IonList>
@@ -469,7 +471,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                         <IonIcon icon={tab.icon} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                       </span>
                       <IonLabel style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                        {tab.label}
+                        {t(tab.label)}
                       </IonLabel>
                     </IonSegmentButton>
                   ))}
@@ -519,7 +521,7 @@ export default function AppLayout({ children, fillHeight = false }) {
         position="top"
         color="success"
         buttons={[{
-          text: "View",
+          text: t("View"),
           handler: () => { openNotifDrawer(); return false; },
         }]}
       />
@@ -534,7 +536,7 @@ export default function AppLayout({ children, fillHeight = false }) {
             <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
               <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
             </span>
-            CREATE
+            {t("CREATE")}
           </IonButton>
         </div>,
         document.querySelector("ion-app") || document.body
@@ -547,20 +549,20 @@ export default function AppLayout({ children, fillHeight = false }) {
         style={{ "--background": "var(--ion-card-background)", "--button-background": "var(--ion-card-background)", "--button-background-activated": "var(--ion-color-step-100)", "--button-color": "var(--ion-text-color)", "--backdrop-opacity": "0.5" }}
         buttons={[
           !disabledGenerators.has("paystub") &&
-            { text: "Create Pay Stub",         handler: () => navigate("/app") },
+            { text: t("Create Pay Stub"),         handler: () => navigate("/app") },
           !disabledGenerators.has("canadian-paystub") &&
-            { text: "Create Canadian Paystub", handler: () => navigate("/app/canadian-paystub") },
+            { text: t("Create Canadian Paystub"), handler: () => navigate("/app/canadian-paystub") },
           !disabledGenerators.has("offer-letter") &&
-            { text: "Create Offer Letter",     handler: () => setOfferLetterOpen(true) },
+            { text: t("Create Offer Letter"),     handler: () => setOfferLetterOpen(true) },
           !disabledGenerators.has("ai-resume") &&
-            { text: "Build AI Resume",         handler: () => setResumeBuilderOpen(true) },
+            { text: t("Build AI Resume"),         handler: () => setResumeBuilderOpen(true) },
           !groupAllDisabled(TAX_GENERATOR_IDS) &&
-            { text: "Build Tax Forms",         handler: () => navigate("/app/tax-forms") },
+            { text: t("Build Tax Forms"),         handler: () => navigate("/app/tax-forms") },
           !groupAllDisabled(LEGAL_GENERATOR_IDS) &&
-            { text: "Build Legal Forms",       handler: () => navigate("/app/legal-forms") },
+            { text: t("Build Legal Forms"),       handler: () => navigate("/app/legal-forms") },
           !groupAllDisabled(BUSINESS_GENERATOR_IDS) &&
-            { text: "Build Business Forms",    handler: () => navigate("/app/business-forms") },
-          { text: "Cancel", role: "cancel" },
+            { text: t("Build Business Forms"),    handler: () => navigate("/app/business-forms") },
+          { text: t("Cancel"), role: "cancel" },
         ].filter(Boolean)}
       />
 
@@ -584,14 +586,14 @@ export default function AppLayout({ children, fillHeight = false }) {
         }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", padding: "0 12px", minHeight: 60, borderBottom: "1px solid var(--app-divider)", flexShrink: 0, gap: 8 }}>
-            <span style={{ flex: 1, fontSize: "1rem", fontWeight: 700, color: "var(--ion-text-color)" }}>Notifications</span>
+            <span style={{ flex: 1, fontSize: "1rem", fontWeight: 700, color: "var(--ion-text-color)" }}>{t("Notifications")}</span>
             {notifications.length > 0 && (
               <button
                 onClick={() => { clearAllNotifications(); setNotifications([]); }}
                 className="admin-badge admin-badge-red"
                 style={{ border: "none", cursor: "pointer", fontFamily: "inherit" }}
               >
-                Clear all
+                {t("Clear all")}
               </button>
             )}
             <button
@@ -606,9 +608,9 @@ export default function AppLayout({ children, fillHeight = false }) {
           {notifications.length === 0 ? (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, gap: 12 }}>
               <IonIcon icon={notificationsOutline} style={{ fontSize: 52, color: "var(--ion-color-medium)" }} />
-              <p style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: 0, fontWeight: 500 }}>No notifications yet</p>
+              <p style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: 0, fontWeight: 500 }}>{t("No notifications yet")}</p>
               <p style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.78rem", margin: 0, lineHeight: 1.5 }}>
-                Your completed downloads will appear here
+                {t("Your completed downloads will appear here")}
               </p>
             </div>
           ) : (
@@ -633,14 +635,14 @@ export default function AppLayout({ children, fillHeight = false }) {
                     {notif.status === "generating" && (
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                         <IonSpinner name="crescent" style={{ width: 13, height: 13, color: "var(--ion-color-primary)" }} />
-                        <span style={{ fontSize: "0.72rem", color: "var(--ion-color-primary)" }}>Generating...</span>
+                        <span style={{ fontSize: "0.72rem", color: "var(--ion-color-primary)" }}>{t("Generating...")}</span>
                       </div>
                     )}
                     {notif.status === "ready" && (
-                      <div style={{ fontSize: "0.72rem", color: "#16a34a", marginTop: 4, fontWeight: 500 }}>Ready to download</div>
+                      <div style={{ fontSize: "0.72rem", color: "#16a34a", marginTop: 4, fontWeight: 500 }}>{t("Ready to download")}</div>
                     )}
                     {notif.status === "error" && (
-                      <div style={{ fontSize: "0.72rem", color: "#dc2626", marginTop: 4 }}>Generation failed</div>
+                      <div style={{ fontSize: "0.72rem", color: "#dc2626", marginTop: 4 }}>{t("Generation failed")}</div>
                     )}
                   </div>
 
@@ -736,7 +738,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                     {userInfo?.name || userInfo?.email || "User"}
                   </div>
                   <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2 }}>
-                    {userInfo?.subscription?.status === "active" ? "Subscriber" : "Free"}
+                    {userInfo?.subscription?.status === "active" ? t("Subscriber") : t("Free")}
                   </div>
                 </div>
               </div>
@@ -765,7 +767,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                 }}
               >
                 <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
-                {label}
+                {t(label)}
               </button>
             ))}
           </div>

@@ -13,6 +13,7 @@ import {
   chevronForwardOutline, documentTextOutline, shieldOutline,
   arrowBackOutline, closeOutline, searchOutline,
 } from "ionicons/icons";
+import { t, setLanguage as setAppLanguage, useLanguage } from "@/utils/i18n";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -111,6 +112,7 @@ function VideoListItem({ video, onClick }) {
 
 export default function AppSettings() {
   const navigate = useNavigate();
+  useLanguage(); // re-render when the language changes
 
   const [settings, setSettings] = useState({
     version: "1.0.0", status: "normal", videoUrl: "", whatsNew: [], knownIssues: ["None :)"],
@@ -146,7 +148,7 @@ export default function AppSettings() {
 
   const handleLanguage = (val) => {
     setLanguage(val);
-    localStorage.setItem("appLanguage", val);
+    setAppLanguage(val); // persists + notifies every subscribed component
   };
 
   // Shows/hides the floating support chat bubble everywhere in the app
@@ -170,7 +172,7 @@ export default function AppSettings() {
   };
 
   const statusColor = { normal: "success", degraded: "warning", down: "danger" }[settings.status] || "success";
-  const statusLabel = { normal: "Normal", degraded: "Degraded", down: "Down" }[settings.status] || "Normal";
+  const statusLabel = t({ normal: "Normal", degraded: "Degraded", down: "Down" }[settings.status] || "Normal");
 
   // Plain ios-mode segment (native track + sliding indicator) rendered
   // full-width under the row label — same look as the form modals.
@@ -189,7 +191,7 @@ export default function AppSettings() {
     ? tutorialVideo.title
     : selectedCategory
       ? selectedCategory.name
-      : "Tutorials";
+      : t("Tutorials");
 
   return (
     <AppLayout>
@@ -200,12 +202,12 @@ export default function AppSettings() {
             {/* Status */}
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
-                <div style={cardTitle}>Status</div>
+                <div style={cardTitle}>{t("Status")}</div>
 
-                <Row label="App Status" right={<IonBadge color={statusColor}>{statusLabel}</IonBadge>} />
+                <Row label={t("App Status")} right={<IonBadge color={statusColor}>{statusLabel}</IonBadge>} />
                 <Row
-                  label={`Current version: ${settings.version}`}
-                  right={<span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Latest: {settings.version}</span>}
+                  label={`${t("Current version")}: ${settings.version}`}
+                  right={<span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>{t("Latest")}: {settings.version}</span>}
                 />
 
                 {settings.videoUrl && (
@@ -227,7 +229,7 @@ export default function AppSettings() {
                 {settings.whatsNew && settings.whatsNew.length > 0 && (
                   <div style={{ paddingLeft: 20 }}>
                     <div style={{ paddingBottom: 14, paddingRight: 20, borderBottom: "1px solid var(--ion-border-color)" }}>
-                      <div style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--ion-color-medium)", marginBottom: 8 }}>What's New</div>
+                      <div style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--ion-color-medium)", marginBottom: 8 }}>{t("What's New")}</div>
                       <ul style={{ margin: 0, padding: "0 0 0 20px", display: "flex", flexDirection: "column", gap: 5, listStyleType: "disc" }}>
                         {settings.whatsNew.map((item, i) => (
                           <li key={i} style={{ fontSize: "0.875rem", color: "var(--ion-text-color)", lineHeight: 1.6 }}>{item}</li>
@@ -238,7 +240,7 @@ export default function AppSettings() {
                 )}
 
                 <div style={{ padding: "14px 20px" }}>
-                  <div style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--ion-color-medium)", marginBottom: 8 }}>Known Issues</div>
+                  <div style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--ion-color-medium)", marginBottom: 8 }}>{t("Known Issues")}</div>
                   <ul style={{ margin: 0, padding: "0 0 0 16px", display: "flex", flexDirection: "column", gap: 5 }}>
                     {(settings.knownIssues?.length ? settings.knownIssues : ["None :)"]).map((item, i) => (
                       <li key={i} style={{ fontSize: "0.875rem", color: "var(--ion-color-medium)", lineHeight: 1.6 }}>{item}</li>
@@ -251,10 +253,10 @@ export default function AppSettings() {
             {/* Appearance */}
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
-                <div style={cardTitle}>Appearance</div>
+                <div style={cardTitle}>{t("Appearance")}</div>
                 <Row
                   icon={globeOutline}
-                  label="Language"
+                  label={t("Language")}
                   below={
                     <IonSegment mode="ios" value={language} onIonChange={e => handleLanguage(e.detail.value)}>
                       {[["en","English"],["es","Español"],["fr","Français"]].map(([v, l]) => (
@@ -267,7 +269,7 @@ export default function AppSettings() {
                 />
                 <Row
                   icon={moonOutline}
-                  label="Dark theme"
+                  label={t("Dark theme")}
                   right={
                     <IonToggle
                       checked={darkMode}
@@ -278,7 +280,7 @@ export default function AppSettings() {
                 />
                 <Row
                   icon={helpCircleOutline}
-                  label="Show support chat"
+                  label={t("Show support chat")}
                   last
                   right={
                     <IonToggle
@@ -294,19 +296,19 @@ export default function AppSettings() {
             {/* Support */}
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
-                <div style={cardTitle}>Support</div>
-                <Row icon={playCircleOutline} label="Tutorials" clickable right={<Chevron />} onClick={() => setTutorialOpen(true)} />
-                <Row icon={sendOutline}        label="Feature Request" clickable right={<Chevron />} onClick={() => window.dispatchEvent(new CustomEvent("mintslip-open-support", { detail: { reason: "feature" } }))} />
-                <Row icon={bugOutline}         label="Report a Problem" clickable last right={<Chevron />} onClick={() => window.dispatchEvent(new CustomEvent("mintslip-open-support", { detail: { reason: "bug" } }))} />
+                <div style={cardTitle}>{t("Support")}</div>
+                <Row icon={playCircleOutline} label={t("Tutorials")} clickable right={<Chevron />} onClick={() => setTutorialOpen(true)} />
+                <Row icon={sendOutline}        label={t("Feature Request")} clickable right={<Chevron />} onClick={() => window.dispatchEvent(new CustomEvent("mintslip-open-support", { detail: { reason: "feature" } }))} />
+                <Row icon={bugOutline}         label={t("Report a Problem")} clickable last right={<Chevron />} onClick={() => window.dispatchEvent(new CustomEvent("mintslip-open-support", { detail: { reason: "bug" } }))} />
               </div>
             </div>
 
             {/* About */}
             <div style={{ marginBottom: 28 }}>
               <div style={cardStyle}>
-                <div style={cardTitle}>About</div>
-                <Row icon={documentTextOutline} label="Terms of Service" clickable right={<Chevron />} onClick={() => navigate("/app/terms")} />
-                <Row icon={shieldOutline}       label="Privacy Policy"   clickable last right={<Chevron />} onClick={() => navigate("/app/privacy")} />
+                <div style={cardTitle}>{t("About")}</div>
+                <Row icon={documentTextOutline} label={t("Terms of Service")} clickable right={<Chevron />} onClick={() => navigate("/app/terms")} />
+                <Row icon={shieldOutline}       label={t("Privacy Policy")}   clickable last right={<Chevron />} onClick={() => navigate("/app/privacy")} />
               </div>
             </div>
 
@@ -343,7 +345,7 @@ export default function AppSettings() {
                 debounce={250}
                 value={tutorialSearch}
                 onIonInput={e => { setTutorialSearch(e.detail.value || ""); setSelectedCategory(null); setTutorialVideo(null); }}
-                placeholder="Search"
+                placeholder={t("Search")}
                 clearIcon={closeOutline}
                 style={{ maxWidth: 220, "--background": "var(--ion-color-step-100)", "--border-radius": "8px", paddingRight: 8 }}
               />
@@ -378,7 +380,7 @@ export default function AppSettings() {
               {(selectedCategory.videos || []).length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ion-color-medium)" }}>
                   <IonIcon icon={playCircleOutline} style={{ fontSize: 40, display: "block", margin: "0 auto 10px" }} />
-                  <div style={{ fontSize: "0.9rem" }}>No videos in this category.</div>
+                  <div style={{ fontSize: "0.9rem" }}>{t("No videos in this category.")}</div>
                 </div>
               ) : (
                 <div style={{ background: "var(--ion-card-background)" }}>
@@ -396,7 +398,7 @@ export default function AppSettings() {
               {searchResults.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 16px", color: "var(--ion-color-medium)" }}>
                   <IonIcon icon={searchOutline} style={{ fontSize: 48, display: "block", margin: "0 auto 10px" }} />
-                  <div style={{ fontSize: "1rem", fontWeight: 600, color: "var(--ion-text-color)" }}>No results found</div>
+                  <div style={{ fontSize: "1rem", fontWeight: 600, color: "var(--ion-text-color)" }}>{t("No results found")}</div>
                 </div>
               ) : (
                 <div style={{ background: "var(--ion-card-background)" }}>
@@ -414,12 +416,12 @@ export default function AppSettings() {
               {tutorialCategories.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0", color: "var(--ion-color-medium)" }}>
                   <IonIcon icon={playCircleOutline} style={{ fontSize: 40, display: "block", margin: "0 auto 10px" }} />
-                  <div style={{ fontSize: "0.9rem" }}>No tutorials available yet.</div>
+                  <div style={{ fontSize: "0.9rem" }}>{t("No tutorials available yet.")}</div>
                 </div>
               ) : (
                 <>
                   <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ion-text-color)", padding: "16px 16px 8px" }}>
-                    Playlists
+                    {t("Playlists")}
                   </div>
                   <div style={{
                     display: "grid",
@@ -445,7 +447,7 @@ export default function AppSettings() {
                           )}
                           <IonCardHeader style={{ borderTop: "1px solid var(--ion-border-color)", padding: "10px 14px 12px" }}>
                             <IonCardTitle style={{ fontSize: "0.95rem", fontWeight: 700, lineHeight: 1.3 }}>{cat.name}</IonCardTitle>
-                            <IonCardSubtitle style={{ fontSize: "0.78rem", marginTop: 3 }}>{(cat.videos || []).length} video{(cat.videos || []).length !== 1 ? "s" : ""}</IonCardSubtitle>
+                            <IonCardSubtitle style={{ fontSize: "0.78rem", marginTop: 3 }}>{(cat.videos || []).length} {t((cat.videos || []).length !== 1 ? "videos" : "video")}</IonCardSubtitle>
                           </IonCardHeader>
                         </IonCard>
                       );

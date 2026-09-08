@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import AdminListItem from "@/components/AdminListItem";
+import { AdminDateInput } from "@/components/DateInput";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -662,20 +663,16 @@ export default function AdminDiscounts() {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-                  <input
-                    className="admin-input"
-                    type="date"
+                  <AdminDateInput
                     value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    onChange={(v) => setFormData({ ...formData, startDate: v })}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Expiry Date *</label>
-                  <input
-                    className="admin-input"
-                    type="date"
+                  <AdminDateInput
                     value={formData.expiryDate}
-                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                    onChange={(v) => setFormData({ ...formData, expiryDate: v })}
                   />
                 </div>
               </div>

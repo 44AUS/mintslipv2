@@ -8,6 +8,7 @@ import {
 import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOutline, trashOutline, imageOutline } from "ionicons/icons";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import SignaturePad from "@/components/SignaturePad";
+import { IonDateInput } from "@/components/DateInput";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
@@ -399,6 +400,11 @@ export default function AppTaxFormModal({ config, onClose }) {
           </IonCol>
         );
       }
+      case "date":
+        return col(
+          <IonDateInput label={field.label} value={value ?? ""}
+            onChange={v => setField(field.name, v)} style={ionInputStyle} />
+        );
       default:
         return col(
           <IonInput fill="outline" labelPlacement="floating" label={field.label}

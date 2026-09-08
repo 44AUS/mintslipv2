@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { IonDateInput } from "@/components/DateInput";
 import { createPortal } from "react-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
@@ -965,7 +966,7 @@ export default function AppCanadianPaystub() {
                   <IonGrid>
                     <IonRow>
                       <IonCol size="12" sizeMd="6">
-                        <IonInput fill="outline" labelPlacement="floating" label={formData.workerType === "contractor" ? "Start Date *" : "Hire Date *"} type="date" name="hireDate" value={formData.hireDate} onIonInput={e => handleChange({ target: { name:"hireDate", value: e.detail.value } })} style={ionInputStyle} />
+                        <IonDateInput label={formData.workerType === "contractor" ? "Start Date *" : "Hire Date *"} value={formData.hireDate} onChange={v => handleChange({ target: { name:"hireDate", value: v } })} style={ionInputStyle} />
                       </IonCol>
                       <IonCol size="12" sizeMd="6">
                         {formData.payType === "hourly" ? (
@@ -986,10 +987,10 @@ export default function AppCanadianPaystub() {
                         </IonSelect>
                       </IonCol>
                       <IonCol size="12" sizeMd="6">
-                        <IonInput fill="outline" labelPlacement="floating" label="Period Start Date *" type="date" name="startDate" value={formData.startDate} onIonInput={e => handleChange({ target: { name:"startDate", value: e.detail.value } })} style={ionInputStyle} />
+                        <IonDateInput label="Period Start Date *" value={formData.startDate} onChange={v => handleChange({ target: { name:"startDate", value: v } })} style={ionInputStyle} />
                       </IonCol>
                       <IonCol size="12" sizeMd="6">
-                        <IonInput fill="outline" labelPlacement="floating" label="Period End Date *" type="date" name="endDate" value={formData.endDate} onIonInput={e => handleChange({ target: { name:"endDate", value: e.detail.value } })} style={ionInputStyle} />
+                        <IonDateInput label="Period End Date *" value={formData.endDate} onChange={v => handleChange({ target: { name:"endDate", value: v } })} style={ionInputStyle} />
                       </IonCol>
                     </IonRow>
                   </IonGrid>
@@ -1018,13 +1019,13 @@ export default function AppCanadianPaystub() {
                               <IonGrid>
                                 <IonRow>
                                   <IonCol size="6">
-                                    <IonInput fill="outline" labelPlacement="floating" label="Period Start" type="date" value={hoursPerPeriod[index]?.startDate || period.start} onIonInput={e => handlePeriodHoursChange(index, "startDate", e.detail.value)} style={ionInputStyle} />
+                                    <IonDateInput label="Period Start" value={hoursPerPeriod[index]?.startDate || period.start} onChange={v => handlePeriodHoursChange(index, "startDate", v)} style={ionInputStyle} />
                                   </IonCol>
                                   <IonCol size="6">
-                                    <IonInput fill="outline" labelPlacement="floating" label="Period End" type="date" value={hoursPerPeriod[index]?.endDate || period.end} onIonInput={e => handlePeriodHoursChange(index, "endDate", e.detail.value)} style={ionInputStyle} />
+                                    <IonDateInput label="Period End" value={hoursPerPeriod[index]?.endDate || period.end} onChange={v => handlePeriodHoursChange(index, "endDate", v)} style={ionInputStyle} />
                                   </IonCol>
                                   <IonCol size="6">
-                                    <IonInput fill="outline" labelPlacement="floating" label="Pay Date" type="date" value={hoursPerPeriod[index]?.payDate || period.pay} onIonInput={e => handlePeriodHoursChange(index, "payDate", e.detail.value)} style={ionInputStyle} />
+                                    <IonDateInput label="Pay Date" value={hoursPerPeriod[index]?.payDate || period.pay} onChange={v => handlePeriodHoursChange(index, "payDate", v)} style={ionInputStyle} />
                                   </IonCol>
                                   <IonCol size="6">
                                     <IonInput fill="outline" labelPlacement="floating" label="Regular Hours" type="number" value={hoursPerPeriod[index]?.hours ?? (formData.payFrequency === "biweekly" ? 80 : 40)} onIonInput={e => handlePeriodHoursChange(index, "hours", e.detail.value)} style={ionInputStyle} />

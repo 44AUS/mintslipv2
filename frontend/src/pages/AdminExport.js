@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
+import { AdminDateInput } from "@/components/DateInput";
 import { IonButton, IonSpinner } from "@ionic/react";
 import { toast } from "@/utils/toast";
 import { Download, FileText, Users, DollarSign } from "lucide-react";
@@ -59,11 +60,11 @@ function ExportCard({ icon: Icon, title, description, exportType, dateFilters })
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
           <div className="admin-form-group" style={{ marginBottom: 0 }}>
             <label className="admin-form-label" style={{ fontSize: "0.75rem" }}>Start Date</label>
-            <input className="admin-input" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <AdminDateInput value={startDate} onChange={setStartDate} />
           </div>
           <div className="admin-form-group" style={{ marginBottom: 0 }}>
             <label className="admin-form-label" style={{ fontSize: "0.75rem" }}>End Date</label>
-            <input className="admin-input" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <AdminDateInput value={endDate} onChange={setEndDate} />
           </div>
         </div>
       )}

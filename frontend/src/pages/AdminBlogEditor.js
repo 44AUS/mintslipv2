@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import TiptapEditor from "@/components/TiptapEditor";
 import AdminLayout from "@/components/AdminLayout";
+import { AdminDateInput } from "@/components/DateInput";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -448,11 +449,9 @@ export default function AdminBlogEditor() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Publish Date</label>
-                <input
-                  className="admin-input"
-                  type="date"
+                <AdminDateInput
                   value={post.publishDate}
-                  onChange={(e) => setPost(prev => ({ ...prev, publishDate: e.target.value }))}
+                  onChange={(v) => setPost(prev => ({ ...prev, publishDate: v }))}
                 />
               </div>
               <div>

@@ -9,6 +9,7 @@ import {
 import {
   cloudDownloadOutline, eyeOutline, closeOutline, imageOutline,
 } from "ionicons/icons";
+import { IonDateInput } from "@/components/DateInput";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
@@ -241,8 +242,12 @@ export default function AppOfferLetter({ isOpen, onClose }) {
   const Field = ({ label, field, type = "text", placeholder = "" }) => (
     <div>
       {label && <span style={labelStyle}>{label}</span>}
-      <IonInput value={formData[field]} onIonInput={e => setField(field, e.detail.value)}
-        type={type} placeholder={placeholder} fill="outline" style={inputStyle} />
+      {type === "date" ? (
+        <IonDateInput value={formData[field]} onChange={v => setField(field, v)} style={inputStyle} />
+      ) : (
+        <IonInput value={formData[field]} onIonInput={e => setField(field, e.detail.value)}
+          type={type} placeholder={placeholder} fill="outline" style={inputStyle} />
+      )}
     </div>
   );
 

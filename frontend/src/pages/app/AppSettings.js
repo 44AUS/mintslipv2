@@ -174,9 +174,10 @@ export default function AppSettings() {
   const statusColor = { normal: "success", degraded: "warning", down: "danger" }[settings.status] || "success";
   const statusLabel = t({ normal: "Normal", degraded: "Degraded", down: "Down" }[settings.status] || "Normal");
 
-  // Plain ios-mode segment (native track + sliding indicator) rendered
-  // full-width under the row label — same look as the form modals.
-  const segBtnStyle = { minWidth: 0 };
+  // Plain ios-mode segment (native track + sliding indicator), compact and
+  // content-sized so it shares one line with the row label.
+  const segStyle = { width: "auto", flexShrink: 0, marginLeft: 12 };
+  const segBtnStyle = { minWidth: 0, "--padding-start": "10px", "--padding-end": "10px", flex: "0 0 auto" };
 
   const searchQuery = tutorialSearch.toLowerCase().trim();
   const searchResults = searchQuery
@@ -257,11 +258,11 @@ export default function AppSettings() {
                 <Row
                   icon={globeOutline}
                   label={t("Language")}
-                  below={
-                    <IonSegment mode="ios" value={language} onIonChange={e => handleLanguage(e.detail.value)}>
+                  right={
+                    <IonSegment mode="ios" value={language} onIonChange={e => handleLanguage(e.detail.value)} style={segStyle}>
                       {[["en","English"],["es","Español"],["fr","Français"]].map(([v, l]) => (
                         <IonSegmentButton key={v} value={v} style={segBtnStyle}>
-                          <IonLabel style={{ fontSize: "0.78rem", fontWeight: 600 }}>{l}</IonLabel>
+                          <IonLabel style={{ fontSize: "0.74rem", fontWeight: 600, whiteSpace: "nowrap" }}>{l}</IonLabel>
                         </IonSegmentButton>
                       ))}
                     </IonSegment>

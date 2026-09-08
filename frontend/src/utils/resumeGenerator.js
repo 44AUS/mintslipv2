@@ -4,19 +4,7 @@ import JSZip from "jszip";
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } from "docx";
 import { saveAs } from "file-saver";
 import { fetchPublishedLayout, renderLayout } from "./layoutEngine";
-
-// Map font names to jsPDF built-in font families
-// jsPDF supports: helvetica, times, courier
-const getFontFamily = (fontName) => {
-  const fontMap = {
-    'Montserrat': 'helvetica',
-    'Times New Roman': 'times',
-    'Calibri': 'helvetica',
-    'Arial': 'helvetica',
-    'Helvetica': 'helvetica'
-  };
-  return fontMap[fontName] || 'helvetica';
-};
+import { ensureResumeFont } from "./resumeFonts";
 
 // Format date - handle timezone issues
 const formatDate = (dateStr) => {
@@ -83,7 +71,7 @@ export const generateResumePDF = async (data, addWatermark = false) => {
   const margin = 50;
   const template = data.template || 'ats';
   const colors = TEMPLATE_COLORS[template] || TEMPLATE_COLORS.ats;
-  const fontFamily = getFontFamily(data.font || 'Calibri');
+  const fontFamily = await ensureResumeFont(doc, data.font || 'Calibri');
   const onePage = data.onePage || false;
   const sectionLayout = data.sectionLayout || 'standard';
   
@@ -368,9 +356,9 @@ export const generateResumeDOCX = async (data) => {
   const fontName = data.font || 'Calibri';
   const sectionLayout = data.sectionLayout || 'standard';
   
-  // Map font names for DOCX
+  // DOCX carries the real font name — Word substitutes if it's not installed
   const docxFont = {
-    'Montserrat': 'Calibri',
+    'Montserrat': 'Montserrat',
     'Times New Roman': 'Times New Roman',
     'Calibri': 'Calibri',
     'Arial': 'Arial',

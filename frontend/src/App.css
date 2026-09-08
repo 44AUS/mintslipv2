@@ -179,13 +179,6 @@ ion-button.button-clear:has([slot="icon-only"]) {
 .modal-slide-up ion-toolbar {
   --ion-toolbar-color: var(--ion-text-color);
 }
-
-/* The support chat panel is a portal at z-index 99991, above Ionic's overlay
-   stack — the reason select's popover must be lifted over it. */
-ion-popover.chat-reason-popover {
-  z-index: 99999 !important;
-}
-
 /* Hover feedback on every modal button, matching the toolbar X/checkmark —
    the default 4% overlay is nearly invisible on light backgrounds. */
 @media (any-hover: hover) {

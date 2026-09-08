@@ -447,7 +447,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
         onPointerCancel={onFabPointerCancel}
         style={{
           position: 'fixed', ...fabPosStyle,
-          zIndex: 99990,
+          zIndex: 9990, // below Ionic overlays (20000+) so popovers/alerts/toasts paint above the chat
           width: FAB_SIZE, height: FAB_SIZE, borderRadius: '50%',
           background: 'linear-gradient(135deg,#2dd36f,#10b14a)',
           boxShadow: '0 4px 20px rgba(45,211,111,0.5)',
@@ -480,7 +480,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
         <div style={{
           position: 'fixed', ...popPosStyle,
           width: popW, height: POP_H,
-          zIndex: 99991,
+          zIndex: 9991,
           borderRadius: 16, overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
@@ -769,5 +769,9 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
     </>
   );
 
-  return createPortal(widget, document.body);
+  // Inside the Ionic app, mount into ion-app so the widget shares a stacking
+  // context with Ionic's overlays (ion-app pins its own context at z-index 0,
+  // so a body-level portal could never sit under an overlay mounted there).
+  // Recomputed each render — SPA navigation can add or remove ion-app.
+  return createPortal(widget, document.querySelector("ion-app") || document.body);
 }

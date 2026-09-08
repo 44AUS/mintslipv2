@@ -35,7 +35,7 @@ export default function AppHome() {
       `}</style>
       <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
         <div style={{
-          background: "var(--ion-card-background)", borderRadius: 12, padding: "20px 20px 24px",
+          background: "var(--ion-card-background)", borderRadius: 6, padding: "20px 20px 24px",
           height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         }}>

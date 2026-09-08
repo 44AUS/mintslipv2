@@ -447,39 +447,21 @@ export default function SupportCenter({
               borderBottom: '1px solid var(--ion-border-color)',
               flexShrink: 0,
             }}>
+              {/* Native ios segment — the same untouched look as the form
+                  modal and settings segments */}
               <IonSegment
                 mode="ios"
                 value={activeTab}
                 onIonChange={(e) => setActiveTab(e.detail.value)}
-                style={{ '--background': 'rgba(0,0,0,0.08)', minHeight: 36, flex: 1 }}
+                style={{ flex: 1 }}
               >
-                <IonSegmentButton
-                  value="open"
-                  style={{
-                    '--indicator-color': 'var(--ion-card-background)',
-                    '--color': 'var(--ion-color-medium)',
-                    '--color-checked': 'var(--ion-text-color)',
-                    '--border-radius': '8px',
-                    '--indicator-box-shadow': '0 1px 4px rgba(0,0,0,0.15)',
-                    minHeight: 30,
-                  }}
-                >
+                <IonSegmentButton value="open">
                   <IonLabel style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <IonIcon icon={chatbubbleOutline} style={{ fontSize: 14 }} />
                     Open
                   </IonLabel>
                 </IonSegmentButton>
-                <IonSegmentButton
-                  value="closed"
-                  style={{
-                    '--indicator-color': 'var(--ion-card-background)',
-                    '--color': 'var(--ion-color-medium)',
-                    '--color-checked': 'var(--ion-text-color)',
-                    '--border-radius': '8px',
-                    '--indicator-box-shadow': '0 1px 4px rgba(0,0,0,0.15)',
-                    minHeight: 30,
-                  }}
-                >
+                <IonSegmentButton value="closed">
                   <IonLabel style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <IonIcon icon={chatbubblesOutline} style={{ fontSize: 14 }} />
                     Closed

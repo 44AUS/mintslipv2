@@ -826,6 +826,41 @@ async def send_support_reply_email(user_email: str, user_name: str, admin_name: 
     return await send_email(user_email, template["subject"], template["html"], "support_reply")
 
 
+def template_support_chat_closed(user_name: str) -> Dict[str, str]:
+    """Tell the customer their support conversation was closed."""
+    content = f"""
+        <h1>Your Conversation Has Been Closed ✅</h1>
+        <p>Hi {user_name or 'there'},</p>
+        <p>Our support team has closed your conversation. We hope we were able to help!</p>
+
+        <div class="highlight">
+            <p style="margin: 0; color: #374151; line-height: 1.7;">Need anything else? Just open a new chat and we'll be right with you.</p>
+        </div>
+
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{SITE_URL}/?support=open" class="button">Start a New Conversation</a>
+        </p>
+
+        <p class="text-muted">Thanks for using MintSlip.</p>
+    """
+    return {
+        "subject": "Your support conversation has been closed - MintSlip",
+        "html": get_base_template(content, "Your MintSlip support conversation has been closed"),
+    }
+
+
+async def send_support_chat_closed_email(to_email: str, user_name: str):
+    """Email the customer when an admin closes their support conversation."""
+    config = await get_email_config("support_chat_closed")
+    if not config["enabled"]:
+        return {"success": True, "skipped": True}
+    default = template_support_chat_closed(user_name)
+    template = await resolve_template("support_chat_closed", default, {
+        "user_name": user_name or "there", "SITE_URL": SITE_URL,
+    })
+    return await send_email(to_email, template["subject"], template["html"], "support_chat_closed")
+
+
 CHAT_REASON_LABELS = {
     "general": "General Question",
     "technical": "Technical Issue",

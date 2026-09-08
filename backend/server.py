@@ -34,6 +34,7 @@ from email_service import (
     send_verification_email,
     send_support_reply_email,
     send_support_chat_notification_email,
+    send_support_chat_closed_email,
     send_discount_announcement_email,
     send_document_resend_email,
     schedule_getting_started_email,
@@ -6116,6 +6117,9 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
     """Close or reopen a live-chat conversation."""
     data = await request.json()
     new_status = data.get("status", "closed")
+    chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
     updates = {"status": new_status, "updatedAt": datetime.now(timezone.utc).isoformat()}
     if new_status == "closed":
         # A closed ticket no longer needs attention: clear its unread count so
@@ -6125,6 +6129,18 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
         {"id": chat_id},
         {"$set": updates}
     )
+
+    # Tell the customer their conversation was closed (only on an actual
+    # open→closed transition), in the background like the reply email.
+    guest_email = (chat.get("guestEmail") or "").strip()
+    if new_status == "closed" and chat.get("status") != "closed" and guest_email:
+        async def _notify_closed():
+            try:
+                await send_support_chat_closed_email(guest_email, chat.get("guestName") or "")
+            except Exception as e:
+                logger.warning(f"Chat closed email failed for {guest_email}: {e}")
+        asyncio.create_task(_notify_closed())
+
     return {"success": True}
 
 

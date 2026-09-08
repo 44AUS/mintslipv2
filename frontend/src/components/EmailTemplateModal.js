@@ -6,6 +6,7 @@ import {
 import { closeOutline } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 import { buildPreviewHtml, fillSampleVars } from "@/utils/emailPreview";
+import { DEFAULT_BODIES, DEFAULT_SUBJECTS } from "@/utils/emailDefaults";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -38,11 +39,14 @@ export default function EmailTemplateModal({ template, isOpen, onClose, onSaved 
 
   useEffect(() => {
     if (!template) return;
-    setSubject(template.subject || "");
-    setBody(template.html_body || "");
+    // Non-custom templates arrive without content — seed from the built-in
+    // defaults so the editor and rendered preview always show the real email.
+    setSubject(template.subject || DEFAULT_SUBJECTS[template.name] || "");
+    setBody(template.html_body || DEFAULT_BODIES[template.name] || "");
     setPreviewText(template.preview_text || "");
     setDelay(template.delay_minutes != null ? String(template.delay_minutes) : "");
     setEnabled(template.enabled !== false);
+    setShowPreview(false);
   }, [template]);
 
   if (!template) return null;

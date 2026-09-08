@@ -4945,7 +4945,7 @@ async def announce_discount(request: dict, session: dict = Depends(get_current_a
         logger.info(f"Discount announcement '{code}' sent to {sent}/{len(emails)} recipients")
 
     # Send in the background — the rate limiter in send_email paces the batch
-    asyncio.create_task(_send_all())
+    _spawn_email_task(_send_all())
     await log_action(session, "announce_discount", "discount", discount.get("id", ""), f"{code} → {len(emails)} recipients")
     return {"success": True, "recipients": len(emails)}
 
@@ -5835,6 +5835,17 @@ async def delete_support_ticket(ticket_id: str, session: dict = Depends(get_curr
 # Live Support Chat  (user-facing widget ↔ admin SupportCenter)
 # ─────────────────────────────────────────────────────────────
 
+# Fire-and-forget tasks need a strong reference — the event loop only keeps a
+# weak one, so an unreferenced task can be garbage-collected before it runs.
+_background_email_tasks = set()
+
+def _spawn_email_task(coro):
+    task = asyncio.create_task(coro)
+    _background_email_tasks.add(task)
+    task.add_done_callback(_background_email_tasks.discard)
+    return task
+
+
 async def _support_notification_recipients() -> list:
     """Emails of everyone who should hear about incoming chat messages:
     all admins plus active moderators."""
@@ -5899,8 +5910,9 @@ async def start_support_chat(request: Request):
         "unreadByAdmin": 1,
         "unreadByUser": 0,
     }
+    chat["adminNotifiedAt"] = now
     await support_chats_collection.insert_one(chat)
-    asyncio.create_task(_notify_admins_of_chat_message(chat, message))
+    _spawn_email_task(_notify_admins_of_chat_message(chat, message))
     return {"success": True, "chatId": chat["id"], "message": first, "adminOnline": await any_admin_online()}
 
 
@@ -5981,11 +5993,26 @@ async def send_support_chat_message(chat_id: str, request: Request):
          "$inc":  {"unreadByAdmin": 1}}
     )
 
-    # Email the team, but only for the first unread message in a burst — once
-    # a chat is already flagged unread, further messages don't re-notify until
-    # an admin reads or replies (which resets unreadByAdmin to 0).
-    if chat.get("unreadByAdmin", 0) == 0:
-        asyncio.create_task(_notify_admins_of_chat_message(chat, text, len(image_urls)))
+    # Email the team, throttled by time rather than unread state: the widget
+    # reuses one conversation per browser, so an unread-based throttle silences
+    # a chat forever once the admin lets it sit. Notify when the admin is
+    # caught up OR when the last notification is older than 10 minutes.
+    recently_notified = False
+    if chat.get("adminNotifiedAt"):
+        try:
+            last = datetime.fromisoformat(str(chat["adminNotifiedAt"]).replace("Z", "+00:00"))
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+            recently_notified = (datetime.now(timezone.utc) - last) < timedelta(minutes=10)
+        except ValueError:
+            pass
+    if chat.get("unreadByAdmin", 0) == 0 or not recently_notified:
+        await support_chats_collection.update_one(
+            {"id": chat_id}, {"$set": {"adminNotifiedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        _spawn_email_task(_notify_admins_of_chat_message(chat, text, len(image_urls)))
+    else:
+        logger.info(f"Support chat {chat_id}: notification throttled (last at {chat.get('adminNotifiedAt')})")
 
     return {"success": True, "message": msg, "adminOnline": await any_admin_online()}
 
@@ -6087,7 +6114,7 @@ async def admin_reply_support_chat(chat_id: str, request: Request, session: dict
                 )
             except Exception as e:
                 logger.warning(f"Support reply email failed for {guest_email}: {e}")
-        asyncio.create_task(_notify())
+        _spawn_email_task(_notify())
 
     return {"success": True, "message": msg}
 
@@ -6139,7 +6166,7 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
                 await send_support_chat_closed_email(guest_email, chat.get("guestName") or "")
             except Exception as e:
                 logger.warning(f"Chat closed email failed for {guest_email}: {e}")
-        asyncio.create_task(_notify_closed())
+        _spawn_email_task(_notify_closed())
 
     return {"success": True}
 

@@ -807,7 +807,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   ) : isMobile ? (
                     <>
                       {/* Mobile: current tab label button → popover */}
-                      <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })} style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
+                      <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })} style={{ "--color": "#fff", textTransform: "none", marginLeft: 0, "--padding-start": "6px" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.03em" }}>
                           {topbarTabs.find(t => t.id === activeTab)?.label || "Navigate"}
                           <IonIcon icon={chevronDownOutline} style={{ fontSize: 14, pointerEvents: "none" }} />

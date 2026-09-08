@@ -5989,7 +5989,9 @@ async def send_support_chat_message(chat_id: str, request: Request):
 @app.post("/api/admin/support-chats/test-notification")
 async def test_support_chat_notification(session: dict = Depends(get_current_admin)):
     """Send a test chat-notification email to the logged-in admin, synchronously,
-    and report the exact result — for diagnosing missing notifications."""
+    and report the exact result plus delivery config and the recent send log —
+    for diagnosing missing notifications end to end."""
+    import email_service as _es
     to_email = (session.get("email") or "").strip().lower()
     if not to_email:
         raise HTTPException(status_code=400, detail="Your admin session has no email address")
@@ -5999,13 +6001,30 @@ async def test_support_chat_notification(session: dict = Depends(get_current_adm
         to_email, "Test Customer", "customer@example.com", "general",
         "This is a test of your support chat email alerts. If you can read this, they work!", 0,
     )
+
+    # Delivery ground truth: how the service is configured and what the last
+    # few chat-notification attempts actually did.
+    diagnostics = {
+        "sender": _es.SENDER_EMAIL,
+        "apiKeyConfigured": bool(_es.resend.api_key),
+        "resendId": result.get("email_id"),
+    }
+    recent = await _es.email_logs_collection.find(
+        {"email_type": "support_chat_notification"}, {"_id": 0}
+    ).sort([("sent_at", -1), ("attempted_at", -1)]).limit(5).to_list(5)
+    diagnostics["recentLogs"] = [
+        {"to": r.get("to"), "status": r.get("status"), "error": r.get("error"),
+         "at": r.get("sent_at") or r.get("attempted_at")}
+        for r in recent
+    ]
+
     if result.get("skipped"):
         return {"success": False, "to": to_email, "recipients": recipients,
-                "error": "The support_chat_notification email template is disabled"}
+                "error": "The support_chat_notification email template is disabled", **diagnostics}
     if not result.get("success"):
         return {"success": False, "to": to_email, "recipients": recipients,
-                "error": result.get("error") or "Email failed to send"}
-    return {"success": True, "to": to_email, "recipients": recipients}
+                "error": result.get("error") or "Email failed to send", **diagnostics}
+    return {"success": True, "to": to_email, "recipients": recipients, **diagnostics}
 
 
 @app.get("/api/admin/support-chats")

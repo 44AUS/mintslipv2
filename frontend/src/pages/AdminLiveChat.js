@@ -249,13 +249,21 @@ export default function AdminLiveChat() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) throw new Error(data.error || data.detail || "Test email failed");
-      toast.success(
-        `Test email sent to ${data.to} — check your inbox (and spam). Chat alerts go to: ${(data.recipients || []).join(", ")}`,
-        { duration: 7000 },
-      );
+      console.log("Chat email diagnostics:", data);
+      if (!res.ok || !data.success) {
+        const lastFail = (data.recentLogs || []).find((l) => l.status === "failed");
+        throw new Error(
+          (data.error || data.detail || "Test email failed") +
+          (lastFail ? ` · last failure: ${lastFail.error}` : ""),
+        );
+      }
+      let msg = `Resend accepted the test email (id ${data.resendId || "?"}) from ${data.sender} → ${data.to}. Check your inbox and spam. Alert recipients: ${(data.recipients || []).join(", ")}`;
+      if (data.sender === "onboarding@resend.dev") {
+        msg += " — WARNING: SENDER_EMAIL is not set on the server; Resend only delivers onboarding@resend.dev mail to the Resend account owner's own address.";
+      }
+      toast.success(msg, { duration: 12000 });
     } catch (err) {
-      toast.error(`Email alerts are NOT working: ${err.message}`, { duration: 7000 });
+      toast.error(`Email alerts are NOT working: ${err.message}`, { duration: 12000 });
     }
   }, []);
 

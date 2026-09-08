@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButton, IonButtons, IonRippleEffect, IonSpinner,
+  IonFooter, IonButton, IonButtons, IonRippleEffect, IonSpinner, IonList,
 } from "@ionic/react";
 import { toast } from "@/utils/toast";
 import {
@@ -10,6 +10,7 @@ import {
   Calendar, Clock, MoreVertical, ExternalLink, X,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -28,6 +29,13 @@ export default function AdminBlog() {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -156,6 +164,45 @@ export default function AdminBlog() {
               <Plus size={16} style={{ marginRight: 6 }} />Create Post
             </IonButton>
           </div>
+        ) : isMobile ? (
+          /* Condensed whodat-style rows for narrow screens */
+          <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+            {filteredPosts.map((post) => (
+              <AdminListItem
+                key={post.id}
+                onClick={() => navigate(`/admin/blog/edit/${post.id}`)}
+                start={post.featuredImage ? (
+                  <img src={post.featuredImage.startsWith('/') ? `${BACKEND_URL}${post.featuredImage}` : post.featuredImage} alt="" style={{ width: 48, height: 36, borderRadius: 6, objectFit: "cover" }} />
+                ) : (
+                  <div style={{ width: 48, height: 36, borderRadius: 6, background: "var(--ion-color-step-100, #f1f5f9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <FileText size={18} style={{ color: "#94a3b8" }} />
+                  </div>
+                )}
+                title={post.title}
+                badges={
+                  <span className={`admin-badge ${post.status === "published" ? "admin-badge-green" : "admin-badge-amber"}`}>
+                    {post.status === "published" ? "Published" : "Draft"}
+                  </span>
+                }
+                subtitle={`/blog/${post.slug}`}
+                meta={`${post.category ? (categories.find(c => c.slug === post.category)?.name || post.category) + " · " : ""}${post.views || 0} views · ${formatDate(post.publishDate || post.createdAt)} · ${post.readingTime || 5} min`}
+                status={
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    {post.status === "published" && (
+                      <button className="ion-activatable admin-action-btn" title="View"
+                        onClick={(e) => { e.stopPropagation(); window.open(`/blog/${post.slug}`, "_blank"); }}>
+                        <ExternalLink size={14} /><IonRippleEffect />
+                      </button>
+                    )}
+                    <button className="ion-activatable admin-action-btn danger" title="Delete"
+                      onClick={(e) => { e.stopPropagation(); setPostToDelete(post); setDeleteDialogOpen(true); }}>
+                      <Trash2 size={14} /><IonRippleEffect />
+                    </button>
+                  </div>
+                }
+              />
+            ))}
+          </IonList>
         ) : (
           <div className="overflow-x-auto">
             <table className="admin-table">

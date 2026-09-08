@@ -5831,24 +5831,34 @@ async def delete_support_ticket(ticket_id: str, session: dict = Depends(get_curr
 # Live Support Chat  (user-facing widget ↔ admin SupportCenter)
 # ─────────────────────────────────────────────────────────────
 
+async def _support_notification_recipients() -> list:
+    """Emails of everyone who should hear about incoming chat messages:
+    all admins plus active moderators."""
+    recipients = set()
+    async for a in admins_collection.find({}, {"email": 1}):
+        if a.get("email"):
+            recipients.add(a["email"].lower())
+    async for m in moderators_collection.find({"isActive": {"$ne": False}}, {"email": 1}):
+        if m.get("email"):
+            recipients.add(m["email"].lower())
+    return sorted(recipients)
+
+
 async def _notify_admins_of_chat_message(chat: dict, text: str, image_count: int = 0):
     """Email every admin and active moderator about an incoming chat message.
 
     Fired as a background task; send_email's rate limiter paces the batch."""
     try:
-        recipients = set()
-        async for a in admins_collection.find({}, {"email": 1}):
-            if a.get("email"):
-                recipients.add(a["email"].lower())
-        async for m in moderators_collection.find({"isActive": {"$ne": False}}, {"email": 1}):
-            if m.get("email"):
-                recipients.add(m["email"].lower())
-        for email in sorted(recipients):
+        recipients = await _support_notification_recipients()
+        logger.info(f"Support chat notification for chat {chat.get('id')}: emailing {len(recipients)} recipient(s): {recipients}")
+        for email in recipients:
             try:
-                await send_support_chat_notification_email(
+                result = await send_support_chat_notification_email(
                     email, chat.get("guestName", ""), chat.get("guestEmail", ""),
                     chat.get("reason", "general"), text, image_count,
                 )
+                if not result.get("success"):
+                    logger.warning(f"Support chat notification to {email} failed: {result.get('error')}")
             except Exception as e:
                 logger.warning(f"Support chat notification to {email} failed: {e}")
     except Exception as e:
@@ -5974,6 +5984,28 @@ async def send_support_chat_message(chat_id: str, request: Request):
         asyncio.create_task(_notify_admins_of_chat_message(chat, text, len(image_urls)))
 
     return {"success": True, "message": msg, "adminOnline": await any_admin_online()}
+
+
+@app.post("/api/admin/support-chats/test-notification")
+async def test_support_chat_notification(session: dict = Depends(get_current_admin)):
+    """Send a test chat-notification email to the logged-in admin, synchronously,
+    and report the exact result — for diagnosing missing notifications."""
+    to_email = (session.get("email") or "").strip().lower()
+    if not to_email:
+        raise HTTPException(status_code=400, detail="Your admin session has no email address")
+
+    recipients = await _support_notification_recipients()
+    result = await send_support_chat_notification_email(
+        to_email, "Test Customer", "customer@example.com", "general",
+        "This is a test of your support chat email alerts. If you can read this, they work!", 0,
+    )
+    if result.get("skipped"):
+        return {"success": False, "to": to_email, "recipients": recipients,
+                "error": "The support_chat_notification email template is disabled"}
+    if not result.get("success"):
+        return {"success": False, "to": to_email, "recipients": recipients,
+                "error": result.get("error") or "Email failed to send"}
+    return {"success": True, "to": to_email, "recipients": recipients}
 
 
 @app.get("/api/admin/support-chats")

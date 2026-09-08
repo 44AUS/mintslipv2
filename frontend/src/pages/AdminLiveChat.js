@@ -237,6 +237,28 @@ export default function AdminLiveChat() {
     return () => window.removeEventListener("your-app-restore-mini", onRestore);
   }, []);
 
+  // ── test email alerts ─────────────────────────────────────────────────────────
+  // Sends a chat-notification email to the logged-in admin synchronously and
+  // reports the exact result, for diagnosing missing notifications.
+  const handleTestEmail = useCallback(async () => {
+    const token = localStorage.getItem("adminToken");
+    toast.info("Sending test email…");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/admin/support-chats/test-notification`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || data.detail || "Test email failed");
+      toast.success(
+        `Test email sent to ${data.to} — check your inbox (and spam). Chat alerts go to: ${(data.recipients || []).join(", ")}`,
+        { duration: 7000 },
+      );
+    } catch (err) {
+      toast.error(`Email alerts are NOT working: ${err.message}`, { duration: 7000 });
+    }
+  }, []);
+
   // ── derived ───────────────────────────────────────────────────────────────────
   const conversations = chats.map(chatToConv);
   const activeConv    = conversations.find(c => c.id === activeId) || null;
@@ -267,6 +289,7 @@ export default function AdminLiveChat() {
         onMinimize={handleMinimize}
         onTyping={handleAdminTyping}
         onCloseConversation={handleClose}
+        onTestEmail={handleTestEmail}
       />
     </AdminLayout>
   );

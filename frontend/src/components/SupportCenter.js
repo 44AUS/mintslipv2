@@ -12,6 +12,7 @@ import {
   linkOutline, removeOutline, chevronForwardOutline,
   menuOutline, closeCircleOutline, checkmarkDoneOutline,
   checkmarkOutline, addOutline, checkmarkCircleOutline,
+  mailOutline,
 } from 'ionicons/icons';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -153,6 +154,7 @@ export default function SupportCenter({
   onMinimize,
   onTyping,
   onCloseConversation,
+  onTestEmail,
 }) {
   const [activeTab, setActiveTab] = useState('open');
   const [showList, setShowList] = useState(true);
@@ -463,6 +465,18 @@ export default function SupportCenter({
                 </IonSegmentButton>
               </IonSegment>
 
+              {onTestEmail && (
+                <IonButton
+                  fill="clear"
+                  size="small"
+                  color="medium"
+                  title="Send a test email alert to yourself"
+                  onClick={onTestEmail}
+                  style={{ '--border-radius': '50%', flexShrink: 0 }}
+                >
+                  <IonIcon slot="icon-only" icon={mailOutline} style={{ fontSize: 18 }} />
+                </IonButton>
+              )}
               <IonButton
                 fill="clear"
                 size="small"

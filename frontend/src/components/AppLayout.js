@@ -199,6 +199,10 @@ export default function AppLayout({ children, fillHeight = false }) {
   const visibleTabs = tabs.filter((tab) => !tabHidden[tab.id]);
 
   const isSecondaryPage = ["/app/terms", "/app/privacy", "/app/settings"].includes(location.pathname);
+  const isLanding = location.pathname === "/app" || location.pathname === "/app/";
+  // The landing and the secondary pages always run full-bleed — the split-pane
+  // sidebar stays collapsed there regardless of the user's persisted toggle.
+  const sidebarHidden = isLanding || isSecondaryPage;
   const pageTitle = t({
     "/app/terms":    "Terms of Service",
     "/app/privacy":  "Privacy Policy",
@@ -293,7 +297,7 @@ export default function AppLayout({ children, fillHeight = false }) {
       <PromoBanner inApp />
       <IonSplitPane
         contentId="app-main"
-        when={sidebarOpen ? "md" : "(max-width: -1px)"}
+        when={sidebarOpen && !sidebarHidden ? "md" : "(max-width: -1px)"}
         style={{ "--side-width": "300px", "--side-max-width": "300px", "--side-min-width": "300px", position: "relative", flex: "1 1 0%", width: "100%" }}
       >
 
@@ -407,13 +411,13 @@ export default function AppLayout({ children, fillHeight = false }) {
                       <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                     </span>
                   </IonButton>
-                ) : (
+                ) : (isMobile || !sidebarHidden) ? (
                   <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
                     <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
                       <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                     </span>
                   </IonButton>
-                )}
+                ) : null}
               </IonButtons>
 
               {isSecondaryPage ? (

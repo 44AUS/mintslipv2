@@ -230,6 +230,7 @@ function MobileApp() {
         <div className="App">
           <IonToaster />
           <BrowserRouter>
+            <BodyThemeSync />
             <Routes>
               <Route path="/app" element={<AppHome />} />
               <Route path="/app/paystubs" element={<AppPaystub />} />
@@ -249,6 +250,23 @@ function MobileApp() {
       </Elements>
     </HelmetProvider>
   );
+}
+
+// Dark mode belongs to /app and /admin only — their layouts set body.dark but
+// unmount without removing it, which used to leave the marketing site dark.
+// This re-syncs the body class from the right store on every navigation.
+function BodyThemeSync() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (pathname === "/app" || pathname.startsWith("/app/")) {
+      document.body.classList.toggle("dark", localStorage.getItem("appDarkMode") === "true");
+    } else if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+      document.body.classList.toggle("dark", localStorage.getItem("adminDarkMode") === "true");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, [pathname]);
+  return null;
 }
 
 // The /app experience renders its own SupportChatWidget in AppLayout, so
@@ -276,6 +294,7 @@ function App() {
                 <GlobalSupportWidget currentUser={currentUser} />
                 <PromoBanner />
                 <ScrollToTop />
+                <BodyThemeSync />
                 <Routes>
                   <Route path="/" element={<Home />} />
               <Route path="/paystub-generator" element={<PaystubForm />} />

@@ -38,6 +38,9 @@ export default function SignaturePad({ onChange, height = 200 }) {
     const dpr = window.devicePixelRatio || 1;
     const cssW = wrap.clientWidth;
     const cssH = height;
+    // Inside a modal that is still animating in, the wrapper measures 0 wide.
+    // Skip — the ResizeObserver below re-runs this once layout settles.
+    if (!cssW) return;
 
     canvas.width  = Math.round(cssW * dpr);
     canvas.height = Math.round(cssH * dpr);
@@ -68,7 +71,21 @@ export default function SignaturePad({ onChange, height = 200 }) {
     redraw();
     const onResize = () => redraw();
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    // Re-size the canvas whenever the wrapper's width actually changes — this
+    // covers mounting inside a modal mid-present, when clientWidth is still 0.
+    let ro;
+    if (typeof ResizeObserver !== "undefined" && wrapRef.current) {
+      let lastW = wrapRef.current.clientWidth;
+      ro = new ResizeObserver(() => {
+        const w = wrapRef.current?.clientWidth || 0;
+        if (w !== lastW) { lastW = w; redraw(); }
+      });
+      ro.observe(wrapRef.current);
+    }
+    return () => {
+      window.removeEventListener("resize", onResize);
+      ro?.disconnect();
+    };
   }, [redraw]);
 
   // ── stroke rendering with midpoint smoothing ───────────────────────────────

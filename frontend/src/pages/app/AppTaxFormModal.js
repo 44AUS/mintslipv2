@@ -295,19 +295,14 @@ export default function AppTaxFormModal({ config, onClose }) {
         return col(
           <div style={{ marginBottom: 8 }}>
             <span style={labelStyle}>{field.label}</span>
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <IonSegment mode="ios" value={mode} style={{ marginBottom: 8 }}
+              onIonChange={e => { const m = e.detail.value; setSigModes(prev => ({ ...prev, [field.name]: m })); setField(field.name, null); }}>
               {modes.map(m => (
-                <button key={m} type="button" onClick={() => { setSigModes(prev => ({ ...prev, [field.name]: m })); setField(field.name, null); }}
-                  style={{
-                    flex: 1, padding: "6px 8px", borderRadius: 6, cursor: "pointer", fontSize: "0.78rem", fontWeight: 600,
-                    border: `2px solid ${mode === m ? "var(--ion-color-primary)" : "var(--ion-color-step-200)"}`,
-                    background: mode === m ? "rgba(var(--ion-color-primary-rgb),0.08)" : "transparent",
-                    color: mode === m ? "var(--ion-color-primary)" : "var(--ion-text-color)",
-                  }}>
-                  {m === "draw" ? "Draw" : m === "type" ? "Type" : "Upload"}
-                </button>
+                <IonSegmentButton key={m} value={m}>
+                  <IonLabel>{m === "draw" ? "Draw" : m === "type" ? "Type" : "Upload"}</IonLabel>
+                </IonSegmentButton>
               ))}
-            </div>
+            </IonSegment>
             {mode === "draw" && <SignaturePad height={150} onChange={dataUrl => setField(field.name, dataUrl)} />}
             {mode === "type" && field.nameField && (
               <>

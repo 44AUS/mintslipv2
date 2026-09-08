@@ -69,11 +69,31 @@ function FreshActionSheet({ isOpen, onClose, ...rest }) {
   );
 }
 
+// Same fresh-mount reliability pattern for popovers (see FreshActionSheet):
+// a trigger-based popover left permanently mounted desyncs its "presented"
+// state under this layout's polling re-renders, after which taps do nothing.
+function FreshPopover({ open, event, onClose, children, ...rest }) {
+  const [render, setRender] = useState(open);
+  useEffect(() => { if (open) setRender(true); }, [open]);
+  if (!render) return null;
+  return (
+    <IonPopover
+      isOpen={open}
+      event={event}
+      onDidDismiss={() => { onClose?.(); setRender(false); }}
+      {...rest}
+    >
+      {children}
+    </IonPopover>
+  );
+}
+
 export default function AppLayout({ children, fillHeight = false }) {
   const navigate  = useNavigate();
   const location  = useLocation();
 
   const [isMobile,          setIsMobile]          = useState(window.innerWidth < 768);
+  const [navMenu,           setNavMenu]           = useState({ open: false, event: undefined });
   const [darkMode,          setDarkMode]           = useState(() => localStorage.getItem("appDarkMode") === "true");
   const [sidebarOpen,       _setSidebarOpen]        = useState(_appSidebarOpen);
   const setSidebarOpen = (valOrFn) => {
@@ -398,14 +418,15 @@ export default function AppLayout({ children, fillHeight = false }) {
                 <IonTitle style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>{pageTitle}</IonTitle>
               ) : isMobile ? (
                 <>
-                  {/* Mobile: current tab label button → popover */}
-                  <IonButton id="app-mobile-nav-trigger" fill="clear" style={{ "--color": "#fff", flex: 1, maxWidth: "none", textTransform: "none" }}>
+                  {/* Mobile: current tab label button → fresh-mounted popover */}
+                  <IonButton fill="clear" onClick={(e) => setNavMenu({ open: true, event: e.nativeEvent })}
+                    style={{ "--color": "#fff", textTransform: "none", marginLeft: 0, "--padding-start": "6px" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.88rem", fontWeight: 700, letterSpacing: "0.03em" }}>
                       {tabs.find(t => t.id === activeTab)?.label || "Navigate"}
                       <IonIcon icon={chevronDownOutline} style={{ fontSize: 14, pointerEvents: "none" }} />
                     </span>
                   </IonButton>
-                  <IonPopover trigger="app-mobile-nav-trigger" triggerAction="click" side="bottom" alignment="start" style={{ "--width": "240px" }}>
+                  <FreshPopover open={navMenu.open} event={navMenu.event} onClose={() => setNavMenu({ open: false, event: undefined })} side="bottom" alignment="start" style={{ "--width": "240px" }}>
                     <IonContent>
                       <IonList lines="none" style={{ padding: "4px 0" }}>
                         {visibleTabs.map(tab => (
@@ -413,7 +434,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                             key={tab.id}
                             button
                             detail={false}
-                            onClick={() => { navigate(tab.path); document.querySelectorAll("ion-popover").forEach(p => p.dismiss()); }}
+                            onClick={() => { setNavMenu({ open: false, event: undefined }); navigate(tab.path); }}
                             style={{
                               "--min-height": "48px",
                               "--padding-start": "14px",
@@ -429,7 +450,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                         ))}
                       </IonList>
                     </IonContent>
-                  </IonPopover>
+                  </FreshPopover>
                 </>
               ) : (
                 /* Desktop: scrollable segment */

@@ -56,23 +56,11 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
       leaf.rotation.z = -0.06; // a slight natural lean
       group.add(leaf);
 
-      // Organic curl shared by every part: the blade's edges roll toward the
-      // viewer and the tip/base arch gently back, so nothing reads as a flat
-      // extrusion. Applied to raw vertices so the veins hug the curved surface.
-      const curl = (geometry) => {
-        const pos = geometry.attributes.position;
-        for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
-          pos.setZ(i, z + Math.pow(Math.abs(x), 1.7) * 0.34 - y * y * 0.07);
-        }
-        pos.needsUpdate = true;
-        geometry.computeVertexNormals();
-        return geometry;
-      };
-
       // Blade: the brand leaf outline (SVG path, mapped y-up), extruded with a
-      // soft bevel, curled, and vertex-tinted light at the tip to deep at the
-      // base — the logo gradient in actual geometry.
+      // soft bevel and vertex-tinted light at the tip to deep at the base —
+      // the logo gradient in actual geometry. No vertex displacement: the
+      // extrusion's irregular triangulation shades lumpy when displaced, so
+      // the blade stays smooth and the gloss/gradient carry the depth.
       const shape = new THREE.Shape();
       shape.moveTo(0, 0.9375);
       shape.bezierCurveTo(-0.625, 0.5625, -0.8125, 0, -0.625, -0.4375);
@@ -84,7 +72,6 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
         bevelSegments: 4, curveSegments: 40,
       });
       geo.translate(0, 0, -0.11); // centre the thickness on z=0
-      curl(geo);
       const tipColor = new THREE.Color("#34d399");
       const baseColor = new THREE.Color("#047857");
       {
@@ -107,28 +94,26 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
       }));
       leaf.add(blade);
 
-      // Veins on both faces, curled with the blade so they follow the surface:
-      // a tapering central rib + three pairs of angled side veins per face.
+      // Veins on both faces: a central rib + three pairs of angled side veins.
       const veinMat = new THREE.MeshStandardMaterial({
         color: 0xa7f3d0, transparent: true, opacity: 0.5,
         roughness: 0.5, metalness: 0, emissive: 0x6ee7b7, emissiveIntensity: 0.25,
       });
       const addVeins = (z) => {
-        const rib = new THREE.Mesh(curl(new THREE.BoxGeometry(0.032, 1.6, 0.018, 1, 24).translate(0, -0.06, z)), veinMat);
+        const rib = new THREE.Mesh(new THREE.BoxGeometry(0.032, 1.6, 0.018).translate(0, -0.06, z), veinMat);
         leaf.add(rib);
         [[0.34, -0.6], [0.02, -0.72], [-0.32, -0.84]].forEach(([y, rot]) => {
           for (const side of [-1, 1]) {
-            const g = new THREE.BoxGeometry(0.018, 0.46, 0.016, 1, 12);
+            const g = new THREE.BoxGeometry(0.018, 0.46, 0.016);
             g.translate(0, 0.23, 0); // pivot at the rib end
             g.rotateZ(side * rot);
             g.translate(side * 0.02, y - 0.05, z);
-            const v = new THREE.Mesh(curl(g), veinMat);
-            leaf.add(v);
+            leaf.add(new THREE.Mesh(g, veinMat));
           }
         });
       };
-      addVeins(0.075);
-      addVeins(-0.075);
+      addVeins(0.09);
+      addVeins(-0.09);
 
       // Stem: a gently curved tube flowing out of the blade's base
       const stemCurve = new THREE.CatmullRomCurve3([

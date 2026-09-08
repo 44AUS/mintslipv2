@@ -106,6 +106,11 @@ export default function AppLayout({ children, fillHeight = false }) {
     });
   };
   const [mobileSidebarOpen, setMobileSidebarOpen]  = useState(false);
+  // The landing arrives with the sidebar collapsed no matter the persisted
+  // toggle, but its menu button can still open it — tracked separately so
+  // opening it here never flips the remembered state for the generator pages.
+  const [landingSidebarOpen, setLandingSidebarOpen] = useState(false);
+  useEffect(() => { setLandingSidebarOpen(false); }, [location.pathname]);
   const [createOpen,        setCreateOpen]          = useState(false);
   const [offerLetterOpen,   setOfferLetterOpen]     = useState(false);
   const [resumeBuilderOpen, setResumeBuilderOpen]   = useState(false);
@@ -136,6 +141,8 @@ export default function AppLayout({ children, fillHeight = false }) {
   const handleMenuToggle = () => {
     if (window.innerWidth < 768) {
       setMobileSidebarOpen(v => !v);
+    } else if (location.pathname === "/app" || location.pathname === "/app/") {
+      setLandingSidebarOpen(v => !v);
     } else {
       setSidebarOpen(prev => !prev);
     }
@@ -200,9 +207,6 @@ export default function AppLayout({ children, fillHeight = false }) {
 
   const isSecondaryPage = ["/app/terms", "/app/privacy", "/app/settings"].includes(location.pathname);
   const isLanding = location.pathname === "/app" || location.pathname === "/app/";
-  // The landing and the secondary pages always run full-bleed — the split-pane
-  // sidebar stays collapsed there regardless of the user's persisted toggle.
-  const sidebarHidden = isLanding || isSecondaryPage;
   const pageTitle = t({
     "/app/terms":    "Terms of Service",
     "/app/privacy":  "Privacy Policy",
@@ -297,7 +301,7 @@ export default function AppLayout({ children, fillHeight = false }) {
       <PromoBanner inApp />
       <IonSplitPane
         contentId="app-main"
-        when={sidebarOpen && !sidebarHidden ? "md" : "(max-width: -1px)"}
+        when={(isLanding ? landingSidebarOpen : sidebarOpen && !isSecondaryPage) ? "md" : "(max-width: -1px)"}
         style={{ "--side-width": "300px", "--side-max-width": "300px", "--side-min-width": "300px", position: "relative", flex: "1 1 0%", width: "100%" }}
       >
 
@@ -411,13 +415,13 @@ export default function AppLayout({ children, fillHeight = false }) {
                       <IonIcon icon={arrowBackOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                     </span>
                   </IonButton>
-                ) : (isMobile || !sidebarHidden) ? (
+                ) : (
                   <IonButton fill="clear" onClick={handleMenuToggle} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}>
                     <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
                       <IonIcon icon={menuOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                     </span>
                   </IonButton>
-                ) : null}
+                )}
               </IonButtons>
 
               {isSecondaryPage ? (

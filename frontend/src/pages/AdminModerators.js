@@ -73,7 +73,7 @@ function Toggle({ on, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${on ? "bg-green-500" : "bg-slate-200"}`}
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0 ${on ? "bg-emerald-500" : "bg-slate-200"}`}
     >
       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${on ? "translate-x-4.5" : "translate-x-0.5"}`} />
     </button>
@@ -235,7 +235,7 @@ export default function AdminModerators() {
           </div>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
             <UserPlus className="w-4 h-4" />
             Add Moderator
@@ -273,7 +273,7 @@ export default function AdminModerators() {
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${LEVEL_COLORS[mod.level]}`}>
                     {LEVEL_LABELS[mod.level]}
                   </span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${mod.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${mod.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"}`}>
                     {mod.isActive ? "Active" : "Inactive"}
                   </span>
                   <span className="text-xs text-slate-400 hidden sm:block">{formatDate(mod.createdAt)}</span>
@@ -368,7 +368,7 @@ export default function AdminModerators() {
                   required
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Full name"
                 />
               </div>
@@ -379,7 +379,7 @@ export default function AdminModerators() {
                   required
                   value={form.email}
                   onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="moderator@example.com"
                 />
               </div>
@@ -393,7 +393,7 @@ export default function AdminModerators() {
                     required={!editingMod}
                     value={form.password}
                     onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                    className="w-full px-3 py-2 pr-10 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 pr-10 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     placeholder={editingMod ? "Leave blank to keep" : "Enter password"}
                   />
                   <button
@@ -410,7 +410,7 @@ export default function AdminModerators() {
                 <select
                   value={form.level}
                   onChange={(e) => setForm((f) => ({ ...f, level: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
                 >
                   <option value="1">Level 1 (Limited)</option>
                   <option value="2">Level 2 (Moderate)</option>
@@ -440,7 +440,7 @@ export default function AdminModerators() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
                 >
                   {saving && <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />}
                   {editingMod ? "Save Changes" : "Create Moderator"}

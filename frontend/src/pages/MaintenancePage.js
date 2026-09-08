@@ -30,10 +30,10 @@ export default function MaintenancePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-green-50 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 flex flex-col items-center justify-center px-4">
       {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-100 rounded-full opacity-50 blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-100 rounded-full opacity-50 blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-100 rounded-full opacity-50 blur-3xl"></div>
       </div>
 
@@ -57,7 +57,7 @@ export default function MaintenancePage() {
 
         {/* Maintenance Icon */}
         <div className="mb-6 flex justify-center">
-          <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-xl">
+          <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-xl">
             <Wrench className="w-12 h-12 text-white animate-pulse" />
           </div>
         </div>
@@ -77,16 +77,16 @@ export default function MaintenancePage() {
 
         {/* Estimated Time */}
         {maintenanceInfo.estimatedTime && (
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full mb-8">
-            <Clock className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-full mb-8">
+            <Clock className="w-4 h-4 text-emerald-600" />
+            <span className="text-sm font-medium text-emerald-800">
               Estimated time: {maintenanceInfo.estimatedTime}
             </span>
           </div>
         )}
 
         {/* Divider */}
-        <div className="w-16 h-1 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full mx-auto mb-8"></div>
+        <div className="w-16 h-1 bg-gradient-to-r from-emerald-500 to-emerald-500 rounded-full mx-auto mb-8"></div>
 
         {/* Contact Info */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
@@ -95,7 +95,7 @@ export default function MaintenancePage() {
           </p>
           <a 
             href="mailto:support@mintslip.com"
-            className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
           >
             <Mail className="w-4 h-4" />
             support@mintslip.com

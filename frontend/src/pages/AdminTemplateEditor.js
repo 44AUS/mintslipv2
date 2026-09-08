@@ -221,7 +221,7 @@ export default function AdminTemplateEditor() {
         const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, { headers: authHeaders() });
         if (!res.ok) throw new Error("Template not found");
         const data = await res.json();
-        setMeta({ id: data.template.id, name: data.template.name, description: data.template.description || "", badgeColor: data.template.badgeColor || "#16a34a", status: data.template.status, version: data.template.version, documentType: data.template.documentType });
+        setMeta({ id: data.template.id, name: data.template.name, description: data.template.description || "", badgeColor: data.template.badgeColor || "#059669", status: data.template.status, version: data.template.version, documentType: data.template.documentType });
         setLayout(data.template.layout && data.template.layout.elements ? data.template.layout : { page: { width: PAGE_W, height: PAGE_H }, elements: [] });
       } catch (err) {
         toast.error(err.message);
@@ -449,7 +449,7 @@ export default function AdminTemplateEditor() {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, {
         method: "PUT",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ name: meta.name, description: meta.description || "", badgeColor: meta.badgeColor || "#16a34a", layout }),
+        body: JSON.stringify({ name: meta.name, description: meta.description || "", badgeColor: meta.badgeColor || "#059669", layout }),
       });
       if (!res.ok) throw new Error("Failed to save");
       setDirty(false);
@@ -657,17 +657,17 @@ export default function AdminTemplateEditor() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <input
                       type="color"
-                      value={/^#[0-9a-fA-F]{6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#16a34a"}
+                      value={/^#[0-9a-fA-F]{6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#059669"}
                       onChange={(e) => { setMeta((m) => ({ ...m, badgeColor: e.target.value })); setDirty(true); }}
                       style={{ width: 40, height: 30, padding: 2, border: "1px solid var(--admin-border)", borderRadius: 6, background: "transparent", cursor: "pointer", flexShrink: 0 }}
                     />
                     <input
                       style={{ ...inputStyle, flex: 1 }}
-                      value={meta.badgeColor || "#16a34a"}
-                      placeholder="#16a34a"
+                      value={meta.badgeColor || "#059669"}
+                      placeholder="#059669"
                       onChange={(e) => { setMeta((m) => ({ ...m, badgeColor: e.target.value })); setDirty(true); }}
                     />
-                    <span style={{ background: /^#[0-9a-fA-F]{3,6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#16a34a", color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <span style={{ background: /^#[0-9a-fA-F]{3,6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#059669", color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {meta.name || "Template"}
                     </span>
                   </div>
@@ -680,8 +680,8 @@ export default function AdminTemplateEditor() {
                       onChange={(e) => commit((prev) => ({
                         ...prev,
                         accentOption: {
-                          baseColor: "#14532d",
-                          swatches: ["#14532d", "#0066cc", "#b91c1c", "#7c3aed", "#0f172a"],
+                          baseColor: "#064e3b",
+                          swatches: ["#064e3b", "#0066cc", "#b91c1c", "#7c3aed", "#0f172a"],
                           ...(prev.accentOption || {}),
                           enabled: e.target.checked,
                         },
@@ -695,14 +695,14 @@ export default function AdminTemplateEditor() {
                         <span style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", flexShrink: 0 }}>Color to swap</span>
                         <input
                           type="color"
-                          value={/^#[0-9a-fA-F]{6}$/.test(layout.accentOption.baseColor || "") ? layout.accentOption.baseColor : "#14532d"}
+                          value={/^#[0-9a-fA-F]{6}$/.test(layout.accentOption.baseColor || "") ? layout.accentOption.baseColor : "#064e3b"}
                           onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: e.target.value } }))}
                           style={{ width: 34, height: 26, padding: 2, border: "1px solid var(--admin-border)", borderRadius: 6, background: "transparent", cursor: "pointer", flexShrink: 0 }}
                         />
                         <input
                           style={{ ...inputStyle, flex: 1 }}
                           value={layout.accentOption.baseColor || ""}
-                          placeholder="#14532d"
+                          placeholder="#064e3b"
                           onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: e.target.value } }))}
                         />
                       </div>
@@ -926,7 +926,7 @@ export default function AdminTemplateEditor() {
           border: "1px solid var(--ion-border-color)", boxShadow: "0 14px 44px rgba(0,0,0,0.30)",
         }}>
           {/* header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "linear-gradient(135deg,#22c55e,#15803d)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "linear-gradient(135deg,#10b981,#047857)", flexShrink: 0 }}>
             <Sparkles size={18} style={{ color: "#fff", flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem", lineHeight: 1.2 }}>AI Design Assistant</div>
@@ -952,7 +952,7 @@ export default function AdminTemplateEditor() {
               <div key={i} style={{
                 alignSelf: m.role === "user" ? "flex-end" : "flex-start",
                 maxWidth: "85%",
-                background: m.role === "user" ? "#16a34a" : "var(--ion-color-step-50, rgba(0,0,0,0.04))",
+                background: m.role === "user" ? "#059669" : "var(--ion-color-step-50, rgba(0,0,0,0.04))",
                 color: m.role === "user" ? "#fff" : "var(--admin-text)",
                 borderRadius: m.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px",
                 padding: "8px 12px", fontSize: "0.82rem", lineHeight: 1.55,
@@ -1010,7 +1010,7 @@ export default function AdminTemplateEditor() {
               style={{ ...inputStyle, flex: 1, resize: "none", fontFamily: "inherit", lineHeight: 1.45 }}
             />
             <IonButton size="small" onClick={sendAi} disabled={aiBusy || (!aiInput.trim() && aiImages.length === 0)}
-              style={{ "--background": "#16a34a", "--background-activated": "#15803d", "--color": "#fff", "--border-radius": "8px", margin: 0 }}>
+              style={{ "--background": "#059669", "--background-activated": "#047857", "--color": "#fff", "--border-radius": "8px", margin: 0 }}>
               <Send size={14} />
             </IonButton>
           </div>

@@ -504,7 +504,7 @@ export default function CommercialLeaseForm() {
                       key={t.value} type="button"
                       onClick={() => update("leaseType", t.value)}
                       className={`w-full text-left p-3 rounded-lg border-2 transition-colors ${
-                        formData.leaseType === t.value ? "border-green-500 bg-green-50" : "border-slate-200 hover:border-slate-300"
+                        formData.leaseType === t.value ? "border-emerald-500 bg-emerald-50" : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
                       <div className="font-semibold text-sm text-slate-900">{t.label}</div>
@@ -721,19 +721,19 @@ export default function CommercialLeaseForm() {
           {/* ── PREVIEW + PAYMENT ── */}
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-6">
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>
                   <Building2 className="w-5 h-5" /> Lease Summary
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-slate-700">Landlord:</span><span className="font-medium text-slate-900">{formData.landlordName || "—"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-700">Tenant:</span><span className="font-medium text-slate-900">{formData.tenantName || "—"}</span></div>
-                  <div className="border-t border-green-300 my-2" />
+                  <div className="border-t border-emerald-300 my-2" />
                   <div className="flex justify-between"><span className="text-slate-700">Property:</span><span className="font-medium text-slate-900 text-right">{formData.premisesAddress || "—"}</span></div>
                   {formData.squareFootage && <div className="flex justify-between"><span className="text-slate-700">Size:</span><span className="font-medium text-slate-900">{formData.squareFootage} sq ft</span></div>}
                   <div className="flex justify-between"><span className="text-slate-700">Lease type:</span><span className="font-medium text-slate-900 text-right">{selectedLeaseType?.label || "—"}</span></div>
-                  <div className="border-t border-green-300 my-2" />
-                  <div className="flex justify-between font-bold"><span className="text-green-800">Monthly rent:</span><span className="text-green-800">{formData.monthlyRent ? `$${Number(String(formData.monthlyRent).replace(/[^0-9.]/g,"")).toLocaleString()}` : "—"}</span></div>
+                  <div className="border-t border-emerald-300 my-2" />
+                  <div className="flex justify-between font-bold"><span className="text-emerald-800">Monthly rent:</span><span className="text-emerald-800">{formData.monthlyRent ? `$${Number(String(formData.monthlyRent).replace(/[^0-9.]/g,"")).toLocaleString()}` : "—"}</span></div>
                   {formData.securityDeposit && <div className="flex justify-between"><span className="text-slate-700">Deposit:</span><span className="font-medium text-slate-900">${Number(String(formData.securityDeposit).replace(/[^0-9.]/g,"")).toLocaleString()}</span></div>}
                 </div>
               </div>
@@ -762,13 +762,13 @@ export default function CommercialLeaseForm() {
 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-1 font-semibold">Subscription Active</div>
-                      <p className="text-sm text-green-600">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-1 font-semibold">Subscription Active</div>
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? "Unlimited" : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
-                    <Button onClick={handleSubscriptionDownload} disabled={isProcessing} className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold">
+                    <Button onClick={handleSubscriptionDownload} disabled={isProcessing} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold">
                       {isProcessing ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Generating…</> : "Download Lease (Included in Plan)"}
                     </Button>
                   </div>
@@ -777,9 +777,9 @@ export default function CommercialLeaseForm() {
                     <CouponInput generatorType="commercial-lease" originalPrice={PRICE} onDiscountApplied={setAppliedDiscount} />
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : PRICE.toFixed(2)}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                     </p>
-                    <Button onClick={handleStripeCheckout} disabled={isProcessing} className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2">
+                    <Button onClick={handleStripeCheckout} disabled={isProcessing} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2">
                       {isProcessing
                         ? <><Loader2 className="w-5 h-5 animate-spin" />Processing…</>
                         : <><CreditCard className="w-5 h-5" />Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : PRICE.toFixed(2)}</>}
@@ -791,7 +791,7 @@ export default function CommercialLeaseForm() {
                     {authEnabled && (
                       <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                         <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
-                        <Button variant="outline" size="sm" onClick={() => navigate("/pricing")} className="text-green-600 border-green-600 hover:bg-green-50">
+                        <Button variant="outline" size="sm" onClick={() => navigate("/pricing")} className="text-emerald-600 border-emerald-600 hover:bg-emerald-50">
                           View Subscription Plans
                         </Button>
                       </div>

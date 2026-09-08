@@ -256,7 +256,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
     >
       <span className="font-semibold text-slate-800 pr-4">{question}</span>
       {isOpen ? (
-        <ChevronUp className="w-5 h-5 text-green-600 flex-shrink-0" />
+        <ChevronUp className="w-5 h-5 text-emerald-600 flex-shrink-0" />
       ) : (
         <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
       )}
@@ -275,17 +275,17 @@ const InternalLinkCard = ({ title, description, path, icon: Icon }) => {
   return (
     <div 
       onClick={() => navigate(path)}
-      className="group bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-green-400 hover:shadow-lg transition-all duration-300"
+      className="group bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-emerald-400 hover:shadow-lg transition-all duration-300"
     >
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-          <Icon className="w-6 h-6 text-green-700" />
+        <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+          <Icon className="w-6 h-6 text-emerald-700" />
         </div>
         <div className="flex-1">
-          <h4 className="font-bold text-slate-800 group-hover:text-green-700 transition-colors mb-1">{title}</h4>
+          <h4 className="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors mb-1">{title}</h4>
           <p className="text-sm text-slate-500">{description}</p>
         </div>
-        <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+        <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
       </div>
     </div>
   );
@@ -361,7 +361,7 @@ const TemplatePreviewCard = ({ template, previewImage, isLoading, onUseTemplate 
                   setDialogOpen(false);
                   onUseTemplate(template.id);
                 }}
-                className="bg-green-700 hover:bg-green-800"
+                className="bg-emerald-700 hover:bg-emerald-800"
               >
                 Use This Template
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -384,7 +384,7 @@ const TemplatePreviewCard = ({ template, previewImage, isLoading, onUseTemplate 
         <ul className="space-y-1.5 mb-5">
           {template.features.map((feature, idx) => (
             <li key={idx} className="flex items-center gap-2 text-sm text-slate-600">
-              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               {feature}
             </li>
           ))}
@@ -393,7 +393,7 @@ const TemplatePreviewCard = ({ template, previewImage, isLoading, onUseTemplate 
         {/* Action Button */}
         <Button 
           onClick={() => onUseTemplate(template.id)}
-          className="w-full bg-green-700 hover:bg-green-800 text-white"
+          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white"
         >
           Use This Template
           <ArrowRight className="w-4 h-4 ml-2" />
@@ -586,7 +586,7 @@ export default function HowToMakePaystub() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-14 md:pt-16 md:pb-16">
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-6">
@@ -594,19 +594,19 @@ export default function HowToMakePaystub() {
             {/* Breadcrumb */}
             <nav className="mb-6 text-sm">
               <ol className="flex items-center justify-center gap-2 text-slate-500">
-                <li><Link to="/" className="hover:text-green-700 transition-colors">Home</Link></li>
+                <li><Link to="/" className="hover:text-emerald-700 transition-colors">Home</Link></li>
                 <li>/</li>
                 <li className="text-slate-900 font-medium">How to Make a Paystub</li>
               </ol>
             </nav>
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 mb-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80 mb-6">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-sm font-medium text-green-900">Updated for 2025 Tax Rates</span>
+              <span className="text-sm font-medium text-emerald-900">Updated for 2025 Tax Rates</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              How to Make a <span className="text-green-700">Paystub</span>
+              How to Make a <span className="text-emerald-700">Paystub</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto mb-8">
               Creating professional pay stubs has never been easier. Follow our step-by-step guide to generate accurate paystubs with proper tax calculations in under 5 minutes.
@@ -616,7 +616,7 @@ export default function HowToMakePaystub() {
               <Button
                 onClick={() => navigate("/app")}
                 size="lg"
-                className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
+                className="cta-shine group gap-2 text-lg px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all duration-300"
               >
                 <Zap className="w-5 h-5" />
                 Create Paystub Now
@@ -667,31 +667,31 @@ export default function HowToMakePaystub() {
               Paystubs serve multiple important purposes in today&apos;s financial landscape. For employees, they provide a clear breakdown of earnings and deductions, helping you verify that your pay is correct and understand where your money goes. For self-employed individuals and contractors, paystubs serve as proof of income for loan applications, apartment rentals, and other financial transactions.
             </p>
 
-            <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg mb-4">
-              <h3 className="font-bold text-green-800 mb-3">Common Uses for Paystubs</h3>
+            <div className="bg-emerald-50 border-l-4 border-emerald-600 p-6 rounded-r-lg mb-4">
+              <h3 className="font-bold text-emerald-800 mb-3">Common Uses for Paystubs</h3>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-700">
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Apartment rental applications</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Mortgage and loan documentation</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Tax preparation and filing</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Proof of employment or income</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Child support and income verification</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Government benefit eligibility documentation</span>
                 </li>
               </ul>
@@ -732,8 +732,8 @@ export default function HowToMakePaystub() {
                   
                   <ul className="space-y-4 mb-6">
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-0.5">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
                         <strong className="text-slate-800">Gusto-Style Template</strong>
@@ -741,8 +741,8 @@ export default function HowToMakePaystub() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-0.5">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
                         <strong className="text-slate-800">ADP-Style Template</strong>
@@ -750,8 +750,8 @@ export default function HowToMakePaystub() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-0.5">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
                         <strong className="text-slate-800">Workday-Style Template</strong>
@@ -759,8 +759,8 @@ export default function HowToMakePaystub() {
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center mt-0.5">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div>
                         <strong className="text-slate-800">Custom Template</strong>
@@ -828,7 +828,7 @@ export default function HowToMakePaystub() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-green-600" />
+                        <Building2 className="w-4 h-4 text-emerald-600" />
                         Employer Info
                       </h4>
                       <ul className="text-sm text-slate-600 space-y-1">
@@ -840,7 +840,7 @@ export default function HowToMakePaystub() {
                     
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                        <User className="w-4 h-4 text-green-600" />
+                        <User className="w-4 h-4 text-emerald-600" />
                         Employee Info
                       </h4>
                       <ul className="text-sm text-slate-600 space-y-1">
@@ -852,7 +852,7 @@ export default function HowToMakePaystub() {
                     
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-green-600" />
+                        <DollarSign className="w-4 h-4 text-emerald-600" />
                         Earnings
                       </h4>
                       <ul className="text-sm text-slate-600 space-y-1">
@@ -864,7 +864,7 @@ export default function HowToMakePaystub() {
                     
                     <div className="bg-slate-50 p-4 rounded-lg">
                       <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-green-600" />
+                        <Calendar className="w-4 h-4 text-emerald-600" />
                         Pay Period
                       </h4>
                       <ul className="text-sm text-slate-600 space-y-1">
@@ -875,8 +875,8 @@ export default function HowToMakePaystub() {
                     </div>
                   </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm text-green-800">
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                    <p className="text-sm text-emerald-800">
                       <strong>Auto-Calculation:</strong> Our system automatically calculates federal income tax, Social Security, Medicare, and state taxes based on current 2025 tax rates.
                     </p>
                   </div>
@@ -891,7 +891,7 @@ export default function HowToMakePaystub() {
               <div className="order-2 lg:order-1">
                 <div className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center font-bold text-xl">3</div>
+                    <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xl">3</div>
                     <h3 className="text-2xl font-black text-slate-800" style={{ fontFamily: 'Outfit, sans-serif' }}>Preview, Pay & Download</h3>
                   </div>
                   
@@ -901,21 +901,21 @@ export default function HowToMakePaystub() {
                   
                   <ol className="space-y-4 mb-6">
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">1</div>
+                      <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">1</div>
                       <div>
                         <strong className="text-slate-800">Review Your Preview</strong>
                         <p className="text-sm text-slate-500">Check all details are accurate, including earnings, taxes, and deductions</p>
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">2</div>
+                      <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">2</div>
                       <div>
                         <strong className="text-slate-800">Secure PayPal Payment</strong>
                         <p className="text-sm text-slate-500">Pay securely via PayPal - we never see your financial information</p>
                       </div>
                     </li>
                     <li className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">3</div>
+                      <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold mt-0.5">3</div>
                       <div>
                         <strong className="text-slate-800">Instant PDF Download</strong>
                         <p className="text-sm text-slate-500">Your professional paystub downloads immediately - no watermark</p>
@@ -925,15 +925,15 @@ export default function HowToMakePaystub() {
 
                   <div className="flex gap-3 mb-6">
                     <div className="flex-1 bg-slate-50 p-3 rounded-lg text-center">
-                      <Shield className="w-6 h-6 text-green-600 mx-auto mb-1" />
+                      <Shield className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
                       <p className="text-xs text-slate-600 font-medium">Secure Payment</p>
                     </div>
                     <div className="flex-1 bg-slate-50 p-3 rounded-lg text-center">
-                      <Clock className="w-6 h-6 text-green-600 mx-auto mb-1" />
+                      <Clock className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
                       <p className="text-xs text-slate-600 font-medium">Instant Download</p>
                     </div>
                     <div className="flex-1 bg-slate-50 p-3 rounded-lg text-center">
-                      <FileText className="w-6 h-6 text-green-600 mx-auto mb-1" />
+                      <FileText className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
                       <p className="text-xs text-slate-600 font-medium">PDF Format</p>
                     </div>
                   </div>
@@ -941,7 +941,7 @@ export default function HowToMakePaystub() {
                   <Button
                     onClick={() => navigate("/app")}
                     size="lg"
-                    className="w-full gap-2 bg-green-700 hover:bg-green-800"
+                    className="w-full gap-2 bg-emerald-700 hover:bg-emerald-800"
                   >
                     <Zap className="w-5 h-5" />
                     Start Creating Your Paystub
@@ -954,7 +954,7 @@ export default function HowToMakePaystub() {
                 <div className="bg-white rounded-2xl p-6 shadow-xl border border-slate-200">
                   <div className="relative">
                     <div className="absolute -top-3 -left-3 z-10">
-                      <span className="bg-green-500 text-white font-bold px-4 py-1.5 rounded-lg text-sm shadow-lg flex items-center gap-2">
+                      <span className="bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg text-sm shadow-lg flex items-center gap-2">
                         <Download className="w-4 h-4" />
                         STEP 3
                       </span>
@@ -999,7 +999,7 @@ export default function HowToMakePaystub() {
               onClick={() => navigate("/paystub-samples")}
               variant="outline"
               size="lg"
-              className="gap-2 border-2 border-green-600 text-green-700 hover:bg-green-50"
+              className="gap-2 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
             >
               View All Templates
               <ArrowRight className="w-4 h-4" />
@@ -1097,14 +1097,14 @@ export default function HowToMakePaystub() {
               <li><strong>Keep records</strong> - Save copies of all paystubs for tax purposes and financial documentation</li>
             </ol>
 
-            <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg my-8">
-              <h4 className="font-bold text-green-800 mb-2">Ready to Create Your Paystub?</h4>
+            <div className="bg-emerald-50 border-l-4 border-emerald-600 p-6 rounded-r-lg my-8">
+              <h4 className="font-bold text-emerald-800 mb-2">Ready to Create Your Paystub?</h4>
               <p className="text-slate-700 mb-4">
                 MintSlip makes it easy to create professional, accurate paystubs in under 5 minutes. Our platform handles all the complex tax calculations so you can focus on what matters.
               </p>
               <Button
                 onClick={() => navigate("/app")}
-                className="bg-green-700 hover:bg-green-800 gap-2"
+                className="bg-emerald-700 hover:bg-emerald-800 gap-2"
               >
                 Create Your Paystub Now
                 <ArrowRight className="w-4 h-4" />
@@ -1173,7 +1173,7 @@ export default function HowToMakePaystub() {
 
       {/* Final CTA Section */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Create Your Professional Paystub?
           </h2>
@@ -1185,7 +1185,7 @@ export default function HowToMakePaystub() {
             <Button
               onClick={() => navigate("/app")}
               size="lg"
-              className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+              className="cta-shine group gap-2 text-lg px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
             >
               <FileText className="w-5 h-5" />
               Create Paystub Now
@@ -1204,15 +1204,15 @@ export default function HowToMakePaystub() {
 
           <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-slate-500 text-sm">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-green-700" />
+              <Shield className="w-5 h-5 text-emerald-700" />
               <span>Secure Payment</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-green-700" />
+              <Clock className="w-5 h-5 text-emerald-700" />
               <span>Instant Download</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-700" />
+              <CheckCircle className="w-5 h-5 text-emerald-700" />
               <span>No Account Required</span>
             </div>
           </div>

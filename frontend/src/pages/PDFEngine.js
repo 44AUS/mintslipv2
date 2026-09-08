@@ -76,7 +76,7 @@ const DOCUMENT_TYPES = {
 
 // Risk level colors and labels
 const RISK_LEVELS = {
-  low: { color: "bg-green-500", textColor: "text-green-700", bgLight: "bg-green-50", label: "Low Risk", icon: CheckCircle },
+  low: { color: "bg-emerald-500", textColor: "text-emerald-700", bgLight: "bg-emerald-50", label: "Low Risk", icon: CheckCircle },
   moderate: { color: "bg-yellow-500", textColor: "text-yellow-700", bgLight: "bg-yellow-50", label: "Moderate Risk", icon: AlertTriangle },
   high: { color: "bg-orange-500", textColor: "text-orange-700", bgLight: "bg-orange-50", label: "High Risk", icon: AlertTriangle },
   very_high: { color: "bg-red-500", textColor: "text-red-700", bgLight: "bg-red-50", label: "Very High Risk", icon: XCircle }
@@ -133,7 +133,7 @@ function RiskScoreDisplay({ score, level, producerMatch, documentType }) {
       <div className="flex items-end gap-4 mb-4">
         <span className={`text-5xl font-bold ${riskInfo.textColor}`}>{score}</span>
         <span className="text-slate-500 text-lg mb-1">/100</span>
-        {score <= 25 && <TrendingDown className="w-8 h-8 text-green-500 mb-1" />}
+        {score <= 25 && <TrendingDown className="w-8 h-8 text-emerald-500 mb-1" />}
         {score > 50 && <TrendingUp className="w-8 h-8 text-red-500 mb-1" />}
       </div>
       
@@ -159,13 +159,13 @@ function RiskScoreDisplay({ score, level, producerMatch, documentType }) {
       
       {/* Producer Match Badge */}
       {producerMatch && (
-        <div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
+        <div className="mt-4 p-3 bg-white rounded-lg border border-emerald-200">
           <div className="flex items-center gap-2">
-            <BadgeCheck className="w-5 h-5 text-green-600" />
-            <span className="font-medium text-green-800">Recognized Source: {producerMatch.name}</span>
+            <BadgeCheck className="w-5 h-5 text-emerald-600" />
+            <span className="font-medium text-emerald-800">Recognized Source: {producerMatch.name}</span>
           </div>
           {producerMatch.notes && (
-            <p className="text-sm text-green-600 mt-1">{producerMatch.notes}</p>
+            <p className="text-sm text-emerald-600 mt-1">{producerMatch.notes}</p>
           )}
         </div>
       )}
@@ -638,7 +638,7 @@ export default function PDFEngine() {
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header title="MintSlip" />
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
         <Footer />
       </div>
@@ -709,7 +709,7 @@ export default function PDFEngine() {
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all
                     ${isDragging ? 'border-purple-500 bg-purple-50' : 'border-slate-300 hover:border-purple-400 hover:bg-slate-50'}
-                    ${selectedFile ? 'bg-green-50 border-green-300' : ''}
+                    ${selectedFile ? 'bg-emerald-50 border-emerald-300' : ''}
                   `}
                 >
                   <input
@@ -722,7 +722,7 @@ export default function PDFEngine() {
                   
                   {selectedFile ? (
                     <div className="flex flex-col items-center gap-2">
-                      <File className="w-12 h-12 text-green-600" />
+                      <File className="w-12 h-12 text-emerald-600" />
                       <p className="font-medium text-slate-800 truncate max-w-full">{selectedFile.name}</p>
                       <p className="text-sm text-slate-500">
                         {(selectedFile.size / 1024).toFixed(1)} KB
@@ -859,7 +859,7 @@ export default function PDFEngine() {
                         icon={AlertTriangle}
                         badge={{ 
                           text: `${analysisResult.analysis.riskFactors.filter(f => f.points > 0).length} issues`, 
-                          className: analysisResult.analysis.riskFactors.some(f => f.points > 0) ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                          className: analysisResult.analysis.riskFactors.some(f => f.points > 0) ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
                         }}
                         defaultOpen={true}
                       >
@@ -871,25 +871,25 @@ export default function PDFEngine() {
                                 key={idx} 
                                 className={`flex items-start gap-3 p-3 rounded-lg border ${
                                   isPositive 
-                                    ? 'bg-green-50 border-green-100' 
+                                    ? 'bg-emerald-50 border-emerald-100' 
                                     : 'bg-red-50 border-red-100'
                                 }`}
                               >
                                 {isPositive 
-                                  ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                  ? <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                                   : <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                                 }
                                 <div className="flex-1">
-                                  <p className={`font-medium ${isPositive ? 'text-green-800' : 'text-red-800'}`}>
+                                  <p className={`font-medium ${isPositive ? 'text-emerald-800' : 'text-red-800'}`}>
                                     {factor.factor.replace(/_/g, ' ')}
                                   </p>
-                                  <p className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                  <p className={`text-sm ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
                                     {factor.description}
                                   </p>
                                 </div>
                                 <span className={`px-2 py-1 rounded text-sm font-medium ${
                                   isPositive 
-                                    ? 'bg-green-200 text-green-800' 
+                                    ? 'bg-emerald-200 text-emerald-800' 
                                     : 'bg-red-200 text-red-800'
                                 }`}>
                                   {factor.points > 0 ? '+' : ''}{factor.points}
@@ -935,7 +935,7 @@ export default function PDFEngine() {
                         badge={{ 
                           text: analysisResult.analysis.aiAnalysis.overallAssessment?.replace(/_/g, ' ') || 'Complete',
                           className: analysisResult.analysis.aiAnalysis.overallAssessment === 'LIKELY_LEGITIMATE' 
-                            ? "bg-green-100 text-green-700"
+                            ? "bg-emerald-100 text-emerald-700"
                             : analysisResult.analysis.aiAnalysis.overallAssessment === 'SUSPICIOUS'
                             ? "bg-yellow-100 text-yellow-700"
                             : "bg-red-100 text-red-700"
@@ -946,7 +946,7 @@ export default function PDFEngine() {
                           {/* AI Assessment Header */}
                           <div className={`p-4 rounded-lg border ${
                             analysisResult.analysis.aiAnalysis.overallAssessment === 'LIKELY_LEGITIMATE'
-                              ? 'bg-green-50 border-green-200'
+                              ? 'bg-emerald-50 border-emerald-200'
                               : analysisResult.analysis.aiAnalysis.overallAssessment === 'SUSPICIOUS'
                               ? 'bg-yellow-50 border-yellow-200'
                               : 'bg-red-50 border-red-200'
@@ -955,7 +955,7 @@ export default function PDFEngine() {
                               <div className="flex items-center gap-2">
                                 <Sparkles className={`w-5 h-5 ${
                                   analysisResult.analysis.aiAnalysis.overallAssessment === 'LIKELY_LEGITIMATE'
-                                    ? 'text-green-600'
+                                    ? 'text-emerald-600'
                                     : analysisResult.analysis.aiAnalysis.overallAssessment === 'SUSPICIOUS'
                                     ? 'text-yellow-600'
                                     : 'text-red-600'
@@ -975,16 +975,16 @@ export default function PDFEngine() {
                           {analysisResult.analysis.aiAnalysis.mathVerification && (
                             <div className={`p-3 rounded-lg border ${
                               analysisResult.analysis.aiAnalysis.mathVerification.passed 
-                                ? 'bg-green-50 border-green-200' 
+                                ? 'bg-emerald-50 border-emerald-200' 
                                 : 'bg-red-50 border-red-200'
                             }`}>
                               <div className="flex items-center gap-2 mb-2">
                                 <Calculator className={`w-4 h-4 ${
-                                  analysisResult.analysis.aiAnalysis.mathVerification.passed ? 'text-green-600' : 'text-red-600'
+                                  analysisResult.analysis.aiAnalysis.mathVerification.passed ? 'text-emerald-600' : 'text-red-600'
                                 }`} />
                                 <span className="font-medium text-sm">Math Verification</span>
                                 {analysisResult.analysis.aiAnalysis.mathVerification.passed 
-                                  ? <CheckCircle className="w-4 h-4 text-green-600" />
+                                  ? <CheckCircle className="w-4 h-4 text-emerald-600" />
                                   : <XCircle className="w-4 h-4 text-red-600" />
                                 }
                               </div>
@@ -1003,16 +1003,16 @@ export default function PDFEngine() {
                           {analysisResult.analysis.aiAnalysis.balanceVerification && (
                             <div className={`p-3 rounded-lg border ${
                               analysisResult.analysis.aiAnalysis.balanceVerification.passed 
-                                ? 'bg-green-50 border-green-200' 
+                                ? 'bg-emerald-50 border-emerald-200' 
                                 : 'bg-red-50 border-red-200'
                             }`}>
                               <div className="flex items-center gap-2 mb-2">
                                 <Calculator className={`w-4 h-4 ${
-                                  analysisResult.analysis.aiAnalysis.balanceVerification.passed ? 'text-green-600' : 'text-red-600'
+                                  analysisResult.analysis.aiAnalysis.balanceVerification.passed ? 'text-emerald-600' : 'text-red-600'
                                 }`} />
                                 <span className="font-medium text-sm">Balance Verification</span>
                                 {analysisResult.analysis.aiAnalysis.balanceVerification.passed 
-                                  ? <CheckCircle className="w-4 h-4 text-green-600" />
+                                  ? <CheckCircle className="w-4 h-4 text-emerald-600" />
                                   : <XCircle className="w-4 h-4 text-red-600" />
                                 }
                               </div>
@@ -1024,16 +1024,16 @@ export default function PDFEngine() {
                           {analysisResult.analysis.aiAnalysis.dateConsistency && (
                             <div className={`p-3 rounded-lg border ${
                               analysisResult.analysis.aiAnalysis.dateConsistency.passed 
-                                ? 'bg-green-50 border-green-200' 
+                                ? 'bg-emerald-50 border-emerald-200' 
                                 : 'bg-yellow-50 border-yellow-200'
                             }`}>
                               <div className="flex items-center gap-2 mb-2">
                                 <CalendarCheck className={`w-4 h-4 ${
-                                  analysisResult.analysis.aiAnalysis.dateConsistency.passed ? 'text-green-600' : 'text-yellow-600'
+                                  analysisResult.analysis.aiAnalysis.dateConsistency.passed ? 'text-emerald-600' : 'text-yellow-600'
                                 }`} />
                                 <span className="font-medium text-sm">Date Consistency</span>
                                 {analysisResult.analysis.aiAnalysis.dateConsistency.passed 
-                                  ? <CheckCircle className="w-4 h-4 text-green-600" />
+                                  ? <CheckCircle className="w-4 h-4 text-emerald-600" />
                                   : <AlertTriangle className="w-4 h-4 text-yellow-600" />
                                 }
                               </div>
@@ -1061,14 +1061,14 @@ export default function PDFEngine() {
                           
                           {/* Green Flags */}
                           {analysisResult.analysis.aiAnalysis.greenFlags?.length > 0 && (
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <p className="font-medium text-sm text-green-800 mb-2 flex items-center gap-1">
+                            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                              <p className="font-medium text-sm text-emerald-800 mb-2 flex items-center gap-1">
                                 <BadgeCheck className="w-4 h-4" />
                                 AI-Verified Positive Indicators
                               </p>
                               <ul className="space-y-1">
                                 {analysisResult.analysis.aiAnalysis.greenFlags.map((flag, i) => (
-                                  <li key={i} className="text-sm text-green-700 flex items-start gap-2">
+                                  <li key={i} className="text-sm text-emerald-700 flex items-start gap-2">
                                     <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                                     {flag}
                                   </li>
@@ -1125,15 +1125,15 @@ export default function PDFEngine() {
                       >
                         <div className="space-y-3">
                           {analysisResult.analysis.recommendations.map((rec, idx) => (
-                            <div key={idx} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-100">
-                              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                            <div key={idx} className="flex items-start gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                              <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                               <div>
-                                <p className="font-medium text-green-800">{rec.title}</p>
-                                <p className="text-sm text-green-600">{rec.description}</p>
+                                <p className="font-medium text-emerald-800">{rec.title}</p>
+                                <p className="text-sm text-emerald-600">{rec.description}</p>
                                 <span className={`text-xs px-2 py-0.5 rounded mt-2 inline-block ${
                                   rec.priority === 'high' ? 'bg-red-100 text-red-700' :
                                   rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-green-100 text-green-700'
+                                  'bg-emerald-100 text-emerald-700'
                                 }`}>
                                   {rec.priority} priority
                                 </span>
@@ -1322,10 +1322,10 @@ export default function PDFEngine() {
                         
                         {/* Regeneration Result */}
                         {regeneratedPdf && (
-                          <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                          <div className="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
                             <div className="flex items-center gap-2 mb-3">
-                              <CheckCircle className="w-5 h-5 text-green-600" />
-                              <span className="font-medium text-green-800">PDF Regenerated Successfully</span>
+                              <CheckCircle className="w-5 h-5 text-emerald-600" />
+                              <span className="font-medium text-emerald-800">PDF Regenerated Successfully</span>
                             </div>
                             
                             {/* Changes made */}
@@ -1334,10 +1334,10 @@ export default function PDFEngine() {
                                 <p className="text-sm font-medium text-slate-700 mb-2">Changes Applied:</p>
                                 <div className="space-y-1">
                                   {regeneratedPdf.changes.map((change, idx) => (
-                                    <div key={idx} className="text-xs bg-white p-2 rounded border border-green-100">
+                                    <div key={idx} className="text-xs bg-white p-2 rounded border border-emerald-100">
                                       <span className="font-medium">{change.field}:</span>
                                       <span className="text-slate-500"> {change.original || 'N/A'}</span>
-                                      <span className="text-green-600"> → {change.new}</span>
+                                      <span className="text-emerald-600"> → {change.new}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -1346,13 +1346,13 @@ export default function PDFEngine() {
                             
                             <Button
                               onClick={downloadRegeneratedPDF}
-                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
                             >
                               <Download className="w-4 h-4 mr-2" />
                               Download Regenerated PDF
                             </Button>
                             
-                            <p className="text-xs text-green-700 mt-2">
+                            <p className="text-xs text-emerald-700 mt-2">
                               Edit history removed. PDF appears freshly generated.
                             </p>
                           </div>

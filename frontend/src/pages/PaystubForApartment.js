@@ -42,7 +42,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
     >
       <span className="font-semibold text-slate-800 pr-4">{question}</span>
       {isOpen ? (
-        <ChevronUp className="w-5 h-5 text-green-600 flex-shrink-0" />
+        <ChevronUp className="w-5 h-5 text-emerald-600 flex-shrink-0" />
       ) : (
         <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
       )}
@@ -61,17 +61,17 @@ const InternalLinkCard = ({ title, description, path, icon: Icon }) => {
   return (
     <div 
       onClick={() => navigate(path)}
-      className="group bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-green-400 hover:shadow-lg transition-all duration-300"
+      className="group bg-white border border-slate-200 rounded-xl p-5 cursor-pointer hover:border-emerald-400 hover:shadow-lg transition-all duration-300"
     >
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition-colors">
-          <Icon className="w-6 h-6 text-green-700" />
+        <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+          <Icon className="w-6 h-6 text-emerald-700" />
         </div>
         <div className="flex-1">
-          <h4 className="font-bold text-slate-800 group-hover:text-green-700 transition-colors mb-1">{title}</h4>
+          <h4 className="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors mb-1">{title}</h4>
           <p className="text-sm text-slate-500">{description}</p>
         </div>
-        <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+        <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
       </div>
     </div>
   );
@@ -205,7 +205,7 @@ export default function PaystubForApartment() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-14 md:pt-16 md:pb-16">
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-6">
@@ -213,19 +213,19 @@ export default function PaystubForApartment() {
             {/* Breadcrumb */}
             <nav className="mb-6 text-sm">
               <ol className="flex items-center justify-center gap-2 text-slate-500">
-                <li><Link to="/" className="hover:text-green-700 transition-colors">Home</Link></li>
+                <li><Link to="/" className="hover:text-emerald-700 transition-colors">Home</Link></li>
                 <li>/</li>
                 <li className="text-slate-900 font-medium">Paystub for Apartment</li>
               </ol>
             </nav>
 
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 mb-6">
-              <HomeIcon className="w-4 h-4 text-green-700" />
-              <span className="text-sm font-medium text-green-900">Complete Renter's Guide</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80 mb-6">
+              <HomeIcon className="w-4 h-4 text-emerald-700" />
+              <span className="text-sm font-medium text-emerald-900">Complete Renter's Guide</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Paystub for <span className="text-green-700">Apartment</span>
+              Paystub for <span className="text-emerald-700">Apartment</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto mb-8">
               Your complete guide to understanding proof of income requirements when renting an apartment. Learn what landlords look for, how to prepare your documentation, and create professional paystubs.
@@ -235,7 +235,7 @@ export default function PaystubForApartment() {
               <Button
                 onClick={() => navigate("/app")}
                 size="lg"
-                className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
+                className="cta-shine group gap-2 text-lg px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all duration-300"
               >
                 <Zap className="w-5 h-5" />
                 Create Paystub Now
@@ -290,31 +290,31 @@ export default function PaystubForApartment() {
               Whether you are a traditional employee, freelancer, contractor, or self-employed individual, having proper income documentation is essential for securing the apartment you want. This guide will walk you through everything you need to know about using paystubs for apartment applications.
             </p>
 
-            <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg mb-4">
-              <h3 className="font-bold text-green-800 mb-3">What Landlords Typically Look For</h3>
+            <div className="bg-emerald-50 border-l-4 border-emerald-600 p-6 rounded-r-lg mb-4">
+              <h3 className="font-bold text-emerald-800 mb-3">What Landlords Typically Look For</h3>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-700">
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Consistent income over multiple pay periods</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Gross income that meets minimum requirements</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Employer information and verification</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Year-to-date earnings history</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Recent pay dates (within 30 days)</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                   <span>Professional formatting and completeness</span>
                 </li>
               </ul>
@@ -349,8 +349,8 @@ export default function PaystubForApartment() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
-              <div className="w-14 h-14 rounded-lg bg-green-100 flex items-center justify-center mb-4">
-                <Calculator className="w-7 h-7 text-green-700" />
+              <div className="w-14 h-14 rounded-lg bg-emerald-100 flex items-center justify-center mb-4">
+                <Calculator className="w-7 h-7 text-emerald-700" />
               </div>
               <h3 className="text-xl font-bold text-slate-800 mb-3" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 The 3x Rule
@@ -523,14 +523,14 @@ export default function PaystubForApartment() {
               If you have multiple jobs or income sources, you can provide paystubs from each source. Landlords will add up your total income when determining if you meet their requirements. Having documentation ready from all income sources can strengthen your application and demonstrate financial stability.
             </p>
 
-            <div className="bg-green-50 border-l-4 border-green-600 p-6 rounded-r-lg my-8">
-              <h4 className="font-bold text-green-800 mb-2">Create Professional Income Documentation</h4>
+            <div className="bg-emerald-50 border-l-4 border-emerald-600 p-6 rounded-r-lg my-8">
+              <h4 className="font-bold text-emerald-800 mb-2">Create Professional Income Documentation</h4>
               <p className="text-slate-700 mb-4">
                 MintSlip helps you create professional paystubs with accurate calculations. Our templates are designed to include all the information landlords look for when reviewing rental applications.
               </p>
               <Button
                 onClick={() => navigate("/app")}
-                className="bg-green-700 hover:bg-green-800 gap-2"
+                className="bg-emerald-700 hover:bg-emerald-800 gap-2"
               >
                 Create Your Paystub Now
                 <ArrowRight className="w-4 h-4" />
@@ -555,8 +555,8 @@ export default function PaystubForApartment() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-5 h-5 text-green-700" />
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-emerald-700" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-800 mb-2">Prepare Documents in Advance</h3>
@@ -712,7 +712,7 @@ export default function PaystubForApartment() {
                   Users are solely responsible for ensuring that all information entered into MintSlip accurately reflects their actual income and employment status. Misrepresenting income or employment information on rental applications may constitute fraud and can result in criminal charges, civil liability, eviction, and other legal consequences.
                 </p>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Always provide truthful and accurate information to landlords and property managers. MintSlip does not verify the accuracy of user-entered information and is not responsible for how documents are used. By using MintSlip, you agree to our <Link to="/terms" className="text-green-700 hover:text-green-800 underline">Terms of Service</Link> and <Link to="/privacy" className="text-green-700 hover:text-green-800 underline">Privacy Policy</Link>.
+                  Always provide truthful and accurate information to landlords and property managers. MintSlip does not verify the accuracy of user-entered information and is not responsible for how documents are used. By using MintSlip, you agree to our <Link to="/terms" className="text-emerald-700 hover:text-emerald-800 underline">Terms of Service</Link> and <Link to="/privacy" className="text-emerald-700 hover:text-emerald-800 underline">Privacy Policy</Link>.
                 </p>
               </div>
             </div>
@@ -722,7 +722,7 @@ export default function PaystubForApartment() {
 
       {/* Final CTA Section */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Create Your Professional Paystub?
           </h2>
@@ -734,7 +734,7 @@ export default function PaystubForApartment() {
             <Button
               onClick={() => navigate("/app")}
               size="lg"
-              className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+              className="cta-shine group gap-2 text-lg px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
             >
               <FileText className="w-5 h-5" />
               Create Paystub Now
@@ -753,15 +753,15 @@ export default function PaystubForApartment() {
 
           <div className="flex flex-wrap items-center justify-center gap-8 mt-12 text-slate-500 text-sm">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-green-700" />
+              <Shield className="w-5 h-5 text-emerald-700" />
               <span>Secure Payment</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-green-700" />
+              <Clock className="w-5 h-5 text-emerald-700" />
               <span>Instant Download</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-700" />
+              <CheckCircle className="w-5 h-5 text-emerald-700" />
               <span>No Account Required</span>
             </div>
           </div>

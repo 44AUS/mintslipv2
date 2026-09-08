@@ -108,9 +108,9 @@ const VsComparisonAnimation = ({ isVisible }) => (
         <line x1="185" y1="102" x2="250" y2="102" stroke="#1a4731" strokeWidth="2" opacity="0.6"
           style={{ strokeDasharray: 65, strokeDashoffset: isVisible ? 0 : 65, transition: 'stroke-dashoffset 0.5s ease-out 0.9s' }}/>
         {/* Amount highlight */}
-        <rect x="185" y="115" width="70" height="20" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1"
+        <rect x="185" y="115" width="70" height="20" rx="3" fill="#d1fae5" stroke="#10b981" strokeWidth="1"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1s forwards' : 'none' }}/>
-        <text x="220" y="129" textAnchor="middle" fill="#166534" fontSize="10" fontWeight="bold"
+        <text x="220" y="129" textAnchor="middle" fill="#065f46" fontSize="10" fontWeight="bold"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$9.99</text>
         {/* MINTSLIP label */}
         <rect x="185" y="165" width="70" height="18" rx="4" fill="#1a4731"
@@ -119,7 +119,7 @@ const VsComparisonAnimation = ({ isVisible }) => (
           style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}>MINTSLIP</text>
         {/* Checkmark */}
         <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1.2s forwards' : 'none' }}>
-          <circle cx="220" cy="95" r="18" fill="#22c55e"/>
+          <circle cx="220" cy="95" r="18" fill="#10b981"/>
           <path d="M212,95 L217,101 L230,86" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </g>
@@ -128,7 +128,7 @@ const VsComparisonAnimation = ({ isVisible }) => (
       <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.4s forwards' : 'none' }}>
         {/* Price badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.5s' : 'none' }}>
-          <rect x="170" y="5" width="55" height="20" rx="10" fill="#22c55e"/>
+          <rect x="170" y="5" width="55" height="20" rx="10" fill="#10b981"/>
           <text x="197" y="18" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">💰 SAVE 50%</text>
         </g>
         {/* Quality badge */}
@@ -204,7 +204,7 @@ const PriceComparisonAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center">
     <svg viewBox="0 0 200 200" className="w-full h-full max-w-xs">
       {/* Background circle */}
-      <circle cx="100" cy="100" r="80" fill="#f0fdf4" opacity="0.5"
+      <circle cx="100" cy="100" r="80" fill="#ecfdf5" opacity="0.5"
         style={{ animation: isVisible ? 'pulseBg 2s ease-in-out infinite' : 'none' }}/>
       
       {/* ThePayStubs price (crossed out) */}
@@ -226,20 +226,20 @@ const PriceComparisonAnimation = ({ isVisible }) => (
       }}>
         <rect x="45" y="100" width="110" height="50" rx="8" fill="#1a4731"/>
         <text x="100" y="128" textAnchor="middle" fill="#ffffff" fontSize="24" fontWeight="bold">$9.99</text>
-        <text x="100" y="142" textAnchor="middle" fill="#86efac" fontSize="10">MintSlip</text>
+        <text x="100" y="142" textAnchor="middle" fill="#6ee7b7" fontSize="10">MintSlip</text>
       </g>
 
       {/* Savings badge */}
       <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.5s ease-out 1.4s forwards' : 'none' }}>
-        <rect x="55" y="160" width="90" height="24" rx="12" fill="#22c55e"/>
+        <rect x="55" y="160" width="90" height="24" rx="12" fill="#10b981"/>
         <text x="100" y="176" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">SAVE 50%</text>
       </g>
 
       {/* Dollar signs floating */}
       <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.2s' }}>
-        <text x="25" y="100" fill="#22c55e" fontSize="16" style={{ animation: isVisible ? 'floatMoney 2s ease-in-out infinite' : 'none' }}>$</text>
-        <text x="175" y="90" fill="#22c55e" fontSize="14" style={{ animation: isVisible ? 'floatMoney 2.5s ease-in-out infinite 0.3s' : 'none' }}>$</text>
-        <text x="165" y="130" fill="#22c55e" fontSize="12" style={{ animation: isVisible ? 'floatMoney 2.2s ease-in-out infinite 0.6s' : 'none' }}>$</text>
+        <text x="25" y="100" fill="#10b981" fontSize="16" style={{ animation: isVisible ? 'floatMoney 2s ease-in-out infinite' : 'none' }}>$</text>
+        <text x="175" y="90" fill="#10b981" fontSize="14" style={{ animation: isVisible ? 'floatMoney 2.5s ease-in-out infinite 0.3s' : 'none' }}>$</text>
+        <text x="165" y="130" fill="#10b981" fontSize="12" style={{ animation: isVisible ? 'floatMoney 2.2s ease-in-out infinite 0.6s' : 'none' }}>$</text>
       </g>
     </svg>
 
@@ -346,23 +346,23 @@ const ComparisonRow = ({ feature, mintslip, competitor, mintslipBetter = true })
     <td className="py-4 px-4 text-center">
       {typeof mintslip === 'boolean' ? (
         mintslip ? (
-          <CheckCircle className="w-6 h-6 text-green-500 mx-auto" />
+          <CheckCircle className="w-6 h-6 text-emerald-500 mx-auto" />
         ) : (
           <XCircle className="w-6 h-6 text-red-400 mx-auto" />
         )
       ) : (
-        <span className={`font-semibold ${mintslipBetter ? 'text-green-600' : 'text-slate-600'}`}>{mintslip}</span>
+        <span className={`font-semibold ${mintslipBetter ? 'text-emerald-600' : 'text-slate-600'}`}>{mintslip}</span>
       )}
     </td>
     <td className="py-4 px-4 text-center">
       {typeof competitor === 'boolean' ? (
         competitor ? (
-          <CheckCircle className="w-6 h-6 text-green-500 mx-auto" />
+          <CheckCircle className="w-6 h-6 text-emerald-500 mx-auto" />
         ) : (
           <XCircle className="w-6 h-6 text-red-400 mx-auto" />
         )
       ) : (
-        <span className={`font-semibold ${!mintslipBetter ? 'text-green-600' : 'text-slate-400'}`}>{competitor}</span>
+        <span className={`font-semibold ${!mintslipBetter ? 'text-emerald-600' : 'text-slate-400'}`}>{competitor}</span>
       )}
     </td>
   </tr>
@@ -418,7 +418,7 @@ export default function MintSlipVsThePayStubs() {
         <section ref={heroRef} className="relative py-16 md:py-24 overflow-hidden">
           {/* Background decorations */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" />
+            <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" />
             <div className="absolute top-40 right-10 w-72 h-72 bg-yellow-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
 
@@ -426,14 +426,14 @@ export default function MintSlipVsThePayStubs() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Left Content */}
               <div className={`transition-all duration-700 ${heroInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-                <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
                   <Sparkles className="w-4 h-4" />
                   2025 Comparison Guide
                 </div>
                 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
                   MintSlip vs{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-500">
                     ThePayStubs
                   </span>
                 </h1>
@@ -445,7 +445,7 @@ export default function MintSlipVsThePayStubs() {
                 
                 <div className="flex flex-wrap gap-4 mb-8">
                   <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
-                    <DollarSign className="w-5 h-5 text-green-600" />
+                    <DollarSign className="w-5 h-5 text-emerald-600" />
                     <span className="text-slate-700 font-medium">$9.99 vs $19.99</span>
                   </div>
                   <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
@@ -461,7 +461,7 @@ export default function MintSlipVsThePayStubs() {
                 <div className="flex flex-wrap gap-4">
                   <Button 
                     onClick={() => navigate('/app')}
-                    className="bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    className="bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
                   >
                     Try MintSlip Today
                     <ArrowRight className="ml-2 w-5 h-5" />
@@ -469,7 +469,7 @@ export default function MintSlipVsThePayStubs() {
                   <Button 
                     variant="outline"
                     onClick={() => document.getElementById('comparison-table').scrollIntoView({ behavior: 'smooth' })}
-                    className="px-8 py-6 text-lg rounded-xl border-2 border-slate-200 hover:border-green-500 hover:bg-green-50"
+                    className="px-8 py-6 text-lg rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50"
                   >
                     See Full Comparison
                   </Button>
@@ -486,22 +486,22 @@ export default function MintSlipVsThePayStubs() {
 
         {/* Quick Stats Section */}
         <section className="py-8 px-6">
-          <div className="max-w-7xl mx-auto rounded-3xl bg-green-50 border border-green-100 py-12">
+          <div className="max-w-7xl mx-auto rounded-3xl bg-emerald-50 border border-emerald-100 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">50%</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-emerald-700">50%</div>
                 <div className="text-slate-600">Cheaper</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">4+</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-emerald-700">4+</div>
                 <div className="text-slate-600">Template Styles</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">50</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-emerald-700">50</div>
                 <div className="text-slate-600">State Tax Calculations</div>
               </div>
               <div>
-                <div className="text-4xl md:text-5xl font-bold mb-2 text-green-700">24/7</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2 text-emerald-700">24/7</div>
                 <div className="text-slate-600">Instant Access</div>
               </div>
             </div>
@@ -519,7 +519,7 @@ export default function MintSlipVsThePayStubs() {
 
               {/* Content */}
               <div className={`order-1 lg:order-2 transition-all duration-700 delay-200 ${priceInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
                   <DollarSign className="w-4 h-4" />
                   Price Comparison
                 </div>
@@ -530,7 +530,7 @@ export default function MintSlipVsThePayStubs() {
                 
                 <p className="text-lg text-slate-600 mb-6">
                   ThePayStubs charges <strong className="text-red-500">$19.99</strong> per paystub while MintSlip offers 
-                  the same professional quality at just <strong className="text-green-600">$9.99</strong>. 
+                  the same professional quality at just <strong className="text-emerald-600">$9.99</strong>. 
                   That's over 50% savings on every document you create.
                 </p>
 
@@ -541,12 +541,12 @@ export default function MintSlipVsThePayStubs() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-900 font-medium">MintSlip</span>
-                    <span className="text-2xl font-bold text-green-600">$9.99</span>
+                    <span className="text-2xl font-bold text-emerald-600">$9.99</span>
                   </div>
                   <div className="border-t border-slate-200 mt-4 pt-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-green-700 font-medium">Your Savings</span>
-                      <span className="text-xl font-bold text-green-600">$10.00 (50%)</span>
+                      <span className="text-emerald-700 font-medium">Your Savings</span>
+                      <span className="text-xl font-bold text-emerald-600">$10.00 (50%)</span>
                     </div>
                   </div>
                 </div>
@@ -597,7 +597,7 @@ export default function MintSlipVsThePayStubs() {
                         transition: `all 0.5s ease-out ${0.1 * index}s`
                       }}
                     >
-                      <item.icon className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <item.icon className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                       <span className="text-slate-700">{item.text}</span>
                     </div>
                   ))}
@@ -631,7 +631,7 @@ export default function MintSlipVsThePayStubs() {
             <div className={`overflow-x-auto transition-all duration-700 ${tableInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <table className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 <thead>
-                  <tr className="bg-gradient-to-r from-green-800 to-green-700 text-white">
+                  <tr className="bg-gradient-to-r from-emerald-800 to-emerald-700 text-white">
                     <th className="py-5 px-6 text-left font-semibold">Feature</th>
                     <th className="py-5 px-6 text-center font-semibold">
                       <div className="flex items-center justify-center gap-2">
@@ -761,7 +761,7 @@ export default function MintSlipVsThePayStubs() {
 
         {/* Final CTA Section */}
         <section className="py-16 px-6">
-          <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+          <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Ready to Save 50% on Your Next Paystub?
             </h2>
@@ -770,7 +770,7 @@ export default function MintSlipVsThePayStubs() {
             </p>
             <Button
               onClick={() => navigate('/app')}
-              className="cta-shine bg-green-700 hover:bg-green-800 text-white px-10 py-6 text-lg rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all"
+              className="cta-shine bg-emerald-700 hover:bg-emerald-800 text-white px-10 py-6 text-lg rounded-xl shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all"
             >
               Create Your Paystub Now
               <ArrowRight className="ml-2 w-5 h-5" />

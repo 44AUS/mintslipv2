@@ -108,14 +108,14 @@ export default function SubscriptionSuccess() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex flex-col">
       <Header title="MintSlip" />
 
       <main className="flex-1 flex items-center justify-center py-16">
         <div className="max-w-md mx-auto px-4 text-center">
           {isActivating ? (
             <div className="space-y-4">
-              <Loader2 className="w-16 h-16 animate-spin text-green-600 mx-auto" />
+              <Loader2 className="w-16 h-16 animate-spin text-emerald-600 mx-auto" />
               <h1 className="text-2xl font-bold text-slate-800">
                 Activating Your Subscription...
               </h1>
@@ -130,8 +130,8 @@ export default function SubscriptionSuccess() {
             </div>
           ) : isSuccess ? (
             <div className="space-y-6">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                <PartyPopper className="w-10 h-10 text-green-600" />
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+                <PartyPopper className="w-10 h-10 text-emerald-600" />
               </div>
               <h1 className="text-3xl font-bold text-slate-800">
                 Welcome to MintSlip!
@@ -139,20 +139,20 @@ export default function SubscriptionSuccess() {
               <p className="text-lg text-slate-600">
                 Your subscription is now active. Start creating professional documents today!
               </p>
-              <div className="bg-white rounded-xl p-6 border border-green-200 shadow-sm">
-                <div className="flex items-center gap-3 text-green-700">
+              <div className="bg-white rounded-xl p-6 border border-emerald-200 shadow-sm">
+                <div className="flex items-center gap-3 text-emerald-700">
                   <Check className="w-5 h-5" />
                   <span>Payment successful</span>
                 </div>
-                <div className="flex items-center gap-3 text-green-700 mt-2">
+                <div className="flex items-center gap-3 text-emerald-700 mt-2">
                   <Check className="w-5 h-5" />
                   <span>Subscription activated</span>
                 </div>
-                <div className="flex items-center gap-3 text-green-700 mt-2">
+                <div className="flex items-center gap-3 text-emerald-700 mt-2">
                   <Check className="w-5 h-5" />
                   <span>Downloads ready to use</span>
                 </div>
-                <div className="flex items-center gap-3 text-green-700 mt-2">
+                <div className="flex items-center gap-3 text-emerald-700 mt-2">
                   <Check className="w-5 h-5" />
                   <span>All features unlocked</span>
                 </div>
@@ -160,7 +160,7 @@ export default function SubscriptionSuccess() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   onClick={() => navigate("/user/dashboard")}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   Go to Dashboard
                 </Button>
@@ -189,7 +189,7 @@ export default function SubscriptionSuccess() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
                   onClick={() => navigate("/pricing")}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   Try Again
                 </Button>

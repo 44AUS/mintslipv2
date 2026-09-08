@@ -265,9 +265,9 @@ export default function DocumentDirectory() {
       <Header title="MintSlip" />
 
       {/* Hero Section with Search */}
-      <section ref={heroRef} className="relative py-16 md:py-20 bg-gradient-to-br from-slate-50 to-green-50 overflow-hidden">
+      <section ref={heroRef} className="relative py-16 md:py-20 bg-gradient-to-br from-slate-50 to-emerald-50 overflow-hidden">
         {/* Background Decorations */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
         
         <div className="max-w-4xl mx-auto px-6 relative">
@@ -280,14 +280,14 @@ export default function DocumentDirectory() {
             }}
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-green-200 shadow-sm">
-              <Sparkles className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">{generators.length} Document Generators</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-emerald-200 shadow-sm">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-medium text-emerald-800">{generators.length} Document Generators</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
               <span className="text-slate-800">Document</span>
-              <span className="block text-green-700">Generator Directory</span>
+              <span className="block text-emerald-700">Generator Directory</span>
             </h1>
 
             <p className="text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
@@ -311,7 +311,7 @@ export default function DocumentDirectory() {
                   placeholder="Search generators (e.g., 'paystub', 'W-2', '1099', 'contractor')..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-12 py-6 text-lg border-2 border-slate-200 rounded-xl focus:border-green-500 focus:ring-green-500 shadow-lg"
+                  className="w-full pl-12 pr-12 py-6 text-lg border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-emerald-500 shadow-lg"
                 />
                 {searchQuery && (
                   <button
@@ -337,8 +337,8 @@ export default function DocumentDirectory() {
                 onClick={() => setSelectedCategory("All")}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedCategory === "All"
-                    ? "bg-green-700 text-white shadow-md"
-                    : "bg-white text-slate-600 border border-slate-200 hover:border-green-300 hover:bg-green-50"
+                    ? "bg-emerald-700 text-white shadow-md"
+                    : "bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50"
                 }`}
               >
                 All ({generators.length})
@@ -351,8 +351,8 @@ export default function DocumentDirectory() {
                     onClick={() => setSelectedCategory(category)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                       selectedCategory === category
-                        ? "bg-green-700 text-white shadow-md"
-                        : "bg-white text-slate-600 border border-slate-200 hover:border-green-300 hover:bg-green-50"
+                        ? "bg-emerald-700 text-white shadow-md"
+                        : "bg-white text-slate-600 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50"
                     }`}
                   >
                     {category} ({count})
@@ -394,7 +394,7 @@ export default function DocumentDirectory() {
                 onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-md transition-all ${
                   viewMode === "grid" 
-                    ? "bg-white shadow-sm text-green-700" 
+                    ? "bg-white shadow-sm text-emerald-700" 
                     : "text-slate-500 hover:text-slate-700"
                 }`}
                 title="Grid View"
@@ -405,7 +405,7 @@ export default function DocumentDirectory() {
                 onClick={() => setViewMode("list")}
                 className={`p-2 rounded-md transition-all ${
                   viewMode === "list" 
-                    ? "bg-white shadow-sm text-green-700" 
+                    ? "bg-white shadow-sm text-emerald-700" 
                     : "text-slate-500 hover:text-slate-700"
                 }`}
                 title="List View"
@@ -430,7 +430,7 @@ export default function DocumentDirectory() {
                   setSearchQuery("");
                   setSelectedCategory("All");
                 }}
-                className="bg-green-700 hover:bg-green-800"
+                className="bg-emerald-700 hover:bg-emerald-800"
               >
                 Clear Filters
               </Button>
@@ -446,7 +446,7 @@ export default function DocumentDirectory() {
                   <button
                     key={generator.id}
                     onClick={() => navigate(generator.path)}
-                    className="group relative p-6 bg-white border-2 border-slate-200 rounded-xl hover:border-green-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
+                    className="group relative p-6 bg-white border-2 border-slate-200 rounded-xl hover:border-emerald-600 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-left"
                     style={{
                       opacity: resultsInView ? 1 : 0,
                       transform: resultsInView ? 'translateY(0)' : 'translateY(20px)',
@@ -456,7 +456,7 @@ export default function DocumentDirectory() {
                     {/* Badges */}
                     <div className="absolute top-4 right-4 flex gap-2">
                       {generator.popular && (
-                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                        <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
                           POPULAR
                         </span>
                       )}
@@ -468,12 +468,12 @@ export default function DocumentDirectory() {
                     </div>
 
                     {/* Icon */}
-                    <div className={`w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center mb-4 group-hover:bg-green-700 transition-colors`}>
-                      <IconComponent className={`w-6 h-6 ${generator.iconColor || 'text-green-700'} group-hover:text-white transition-colors`} />
+                    <div className={`w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center mb-4 group-hover:bg-emerald-700 transition-colors`}>
+                      <IconComponent className={`w-6 h-6 ${generator.iconColor || 'text-emerald-700'} group-hover:text-white transition-colors`} />
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-green-700 transition-colors" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2 group-hover:text-emerald-700 transition-colors" style={{ fontFamily: 'Outfit, sans-serif' }}>
                       {generator.name}
                     </h3>
                     <p className="text-sm text-slate-600 mb-4 line-clamp-2">
@@ -482,14 +482,14 @@ export default function DocumentDirectory() {
 
                     {/* Footer */}
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-black text-green-700">{generator.price}</span>
+                      <span className="text-lg font-black text-emerald-700">{generator.price}</span>
                       <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
                         {generator.category}
                       </span>
                     </div>
 
                     {/* Arrow indicator */}
-                    <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-300 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
                   </button>
                 );
               })}
@@ -513,7 +513,7 @@ export default function DocumentDirectory() {
                 return (
                   <div
                     key={generator.id}
-                    className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-slate-100 hover:bg-green-50/50 transition-colors cursor-pointer group"
+                    className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 border-b border-slate-100 hover:bg-emerald-50/50 transition-colors cursor-pointer group"
                     onClick={() => navigate(generator.path)}
                     style={{
                       opacity: resultsInView ? 1 : 0,
@@ -523,16 +523,16 @@ export default function DocumentDirectory() {
                   >
                     {/* Generator Info */}
                     <div className="col-span-5 flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0 group-hover:bg-green-100 transition-colors`}>
-                        <IconComponent className={`w-5 h-5 ${generator.iconColor || 'text-green-700'}`} />
+                      <div className={`w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-100 transition-colors`}>
+                        <IconComponent className={`w-5 h-5 ${generator.iconColor || 'text-emerald-700'}`} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-slate-800 group-hover:text-green-700 transition-colors">
+                          <h3 className="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
                             {generator.name}
                           </h3>
                           {generator.popular && (
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
                               POPULAR
                             </span>
                           )}
@@ -557,14 +557,14 @@ export default function DocumentDirectory() {
 
                     {/* Price */}
                     <div className="col-span-2 flex items-center">
-                      <span className="font-bold text-green-700">{generator.price}</span>
+                      <span className="font-bold text-emerald-700">{generator.price}</span>
                     </div>
 
                     {/* Action */}
                     <div className="col-span-2 flex items-center justify-end">
                       <Button
                         size="sm"
-                        className="bg-green-700 hover:bg-green-800 gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="bg-emerald-700 hover:bg-emerald-800 gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         Open
                         <ArrowRight className="w-4 h-4" />
@@ -593,7 +593,7 @@ export default function DocumentDirectory() {
                   transition: `all 0.4s ease-out ${0.6 + (0.1 * index)}s`
                 }}
               >
-                <div className="text-3xl font-black text-green-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                <div className="text-3xl font-black text-emerald-700" style={{ fontFamily: 'Outfit, sans-serif' }}>
                   {stat.value}
                 </div>
                 <div className="text-sm text-slate-600">{stat.label}</div>
@@ -605,7 +605,7 @@ export default function DocumentDirectory() {
 
       {/* CTA Section */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Can&apos;t Find What You Need?
           </h2>
@@ -616,7 +616,7 @@ export default function DocumentDirectory() {
             <Button
               onClick={() => openSupportChat()}
               size="lg"
-              className="cta-shine gap-2 px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+              className="cta-shine gap-2 px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
             >
               Contact Us
               <ArrowRight className="w-4 h-4" />

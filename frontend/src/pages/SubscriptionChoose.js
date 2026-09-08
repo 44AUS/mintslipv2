@@ -189,12 +189,12 @@ export default function SubscriptionChoose() {
   const getColorClasses = (color, isSelected) => {
     const colors = {
       green: {
-        bg: isSelected ? "bg-green-600" : "bg-white",
-        border: isSelected ? "border-green-600" : "border-slate-200",
+        bg: isSelected ? "bg-emerald-600" : "bg-white",
+        border: isSelected ? "border-emerald-600" : "border-slate-200",
         text: isSelected ? "text-white" : "text-slate-800",
-        badge: "bg-green-100 text-green-700",
-        icon: isSelected ? "text-white" : "text-green-600",
-        button: "bg-green-600 hover:bg-green-700"
+        badge: "bg-emerald-100 text-emerald-700",
+        icon: isSelected ? "text-white" : "text-emerald-600",
+        button: "bg-emerald-600 hover:bg-emerald-700"
       },
       blue: {
         bg: isSelected ? "bg-blue-600" : "bg-white",
@@ -219,7 +219,7 @@ export default function SubscriptionChoose() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
       </div>
     );
   }
@@ -249,7 +249,7 @@ export default function SubscriptionChoose() {
             { icon: FileText, text: "Save on Document Generation" }
           ].map((benefit, idx) => (
             <div key={idx} className="flex items-center gap-2 text-slate-600">
-              <benefit.icon className="w-5 h-5 text-green-600" />
+              <benefit.icon className="w-5 h-5 text-emerald-600" />
               <span className="text-sm font-medium">{benefit.text}</span>
             </div>
           ))}
@@ -286,7 +286,7 @@ export default function SubscriptionChoose() {
                 {isSelected && (
                   <div className="absolute top-4 right-4">
                     <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                      <Check className={`w-4 h-4 ${tier.color === "green" ? "text-green-600" : tier.color === "blue" ? "text-blue-600" : "text-purple-600"}`} />
+                      <Check className={`w-4 h-4 ${tier.color === "green" ? "text-emerald-600" : tier.color === "blue" ? "text-blue-600" : "text-purple-600"}`} />
                     </div>
                   </div>
                 )}
@@ -326,7 +326,7 @@ export default function SubscriptionChoose() {
                 <ul className="space-y-3">
                   {tier.features.map((feature, idx) => (
                     <li key={idx} className={`flex items-start gap-2 text-sm ${isSelected ? "text-white/90" : "text-slate-600"}`}>
-                      <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isSelected ? "text-white" : "text-green-600"}`} />
+                      <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isSelected ? "text-white" : "text-emerald-600"}`} />
                       {feature}
                     </li>
                   ))}
@@ -343,7 +343,7 @@ export default function SubscriptionChoose() {
             disabled={!selectedTier || isProcessing}
             className={`
               px-12 py-6 text-lg font-semibold rounded-xl shadow-lg
-              ${selectedTier === "starter" ? "bg-green-600 hover:bg-green-700" : ""}
+              ${selectedTier === "starter" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
               ${selectedTier === "professional" ? "bg-blue-600 hover:bg-blue-700" : ""}
               ${selectedTier === "business" ? "bg-purple-600 hover:bg-purple-700" : ""}
               ${!selectedTier ? "bg-slate-400" : ""}

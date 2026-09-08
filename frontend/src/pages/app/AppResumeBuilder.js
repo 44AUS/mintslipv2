@@ -196,7 +196,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     ...TEMPLATES.filter((t) => !disabledGenerators.has(`resume-${t.value}`)),
     ...customTemplates
       .filter((t) => !disabledGenerators.has(`custom:${t.id}`))
-      .map((t) => ({ value: `custom:${t.id}`, label: t.name, desc: t.description || "Custom design", color: t.badgeColor || "#16a34a" })),
+      .map((t) => ({ value: `custom:${t.id}`, label: t.name, desc: t.description || "Custom design", color: t.badgeColor || "#059669" })),
   ];
 
   const checkSub = async () => {
@@ -365,8 +365,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       <div>
         <span style={labelStyle}>Have a resume already?</span>
         {uploadedResumeName && !isParsingResume ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.35)" }}>
-            <IonIcon icon={documentTextOutline} style={{ fontSize: 18, color: "#16a34a", flexShrink: 0 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 8, background: "rgba(5,150,105,0.08)", border: "1px solid rgba(5,150,105,0.35)" }}>
+            <IonIcon icon={documentTextOutline} style={{ fontSize: 18, color: "#059669", flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{uploadedResumeName}</div>
               <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>Parsed — your details were filled in below</div>
@@ -557,8 +557,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       </IonButton>
       {generatedResume && (
         <>
-          <div style={{ padding: 14, borderRadius: 8, background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.3)", display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#16a34a", flexShrink: 0 }} />
+          <div style={{ padding: 14, borderRadius: 8, background: "rgba(5,150,105,0.08)", border: "1px solid rgba(5,150,105,0.3)", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#059669", flexShrink: 0 }} />
             <span style={{ fontSize: "0.85rem", color: "var(--ion-text-color)", fontWeight: 500, flex: 1 }}>Resume generated — ready to download</span>
             <IonButton fill="clear" size="small" onClick={generateResume} style={{ "--color": "var(--ion-color-medium)", flexShrink: 0 }}>
               <IonIcon icon={refreshOutline} slot="icon-only" style={{ fontSize: 16 }} />
@@ -571,12 +571,12 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           </IonButton>
           {hasActiveSubscription ? (
             <IonButton expand="block" onClick={handleSubscriptionDownload} disabled={isProcessing}
-              style={{ "--background": "#16a34a", "--background-activated": "#15803d" }}>
+              style={{ "--background": "#059669", "--background-activated": "#047857" }}>
               {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
             </IonButton>
           ) : (
             <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
-              style={{ "--background": "#16a34a", "--background-activated": "#15803d" }}>
+              style={{ "--background": "#059669", "--background-activated": "#047857" }}>
               {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
             </IonButton>
           )}
@@ -637,7 +637,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
             )}
             {currentStep < 6 && (
               <IonButton expand="block" onClick={() => setCurrentStep(s => s + 1)}
-                style={{ "--background": "#16a34a", "--background-activated": "#15803d", flex: 1 }}>
+                style={{ "--background": "#059669", "--background-activated": "#047857", flex: 1 }}>
                 Next<IonIcon icon={chevronForwardOutline} slot="end" />
               </IonButton>
             )}
@@ -680,12 +680,12 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
               )}
               {hasActiveSubscription ? (
                 <IonButton expand="block" onClick={handleSubscriptionDownload} disabled={isProcessing}
-                  style={{ marginTop: 20, "--background": "#16a34a", "--background-activated": "#15803d" }}>
+                  style={{ marginTop: 20, "--background": "#059669", "--background-activated": "#047857" }}>
                   {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
                 </IonButton>
               ) : (
                 <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
-                  style={{ marginTop: 20, "--background": "#16a34a", "--background-activated": "#15803d" }}>
+                  style={{ marginTop: 20, "--background": "#059669", "--background-activated": "#047857" }}>
                   {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
                 </IonButton>
               )}

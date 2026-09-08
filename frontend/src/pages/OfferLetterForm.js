@@ -541,17 +541,17 @@ export default function OfferLetterForm() {
                     onClick={() => setFormData({...formData, template: 'professional'})}
                     className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
                       formData.template === 'professional' 
-                        ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
-                        : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                        ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-200' 
+                        : 'border-slate-200 hover:border-emerald-400 hover:bg-slate-50'
                     }`}
                   >
                     {formData.template === 'professional' && (
-                      <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                      <div className="absolute top-2 right-2 bg-emerald-600 text-white rounded-full p-1">
                         <CheckCircle className="w-4 h-4" />
                       </div>
                     )}
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
-                      formData.template === 'professional' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                      formData.template === 'professional' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
                     }`}>
                       <Briefcase className="w-6 h-6" />
                     </div>
@@ -565,17 +565,17 @@ export default function OfferLetterForm() {
                     onClick={() => setFormData({...formData, template: 'modern'})}
                     className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
                       formData.template === 'modern' 
-                        ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
-                        : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                        ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-200' 
+                        : 'border-slate-200 hover:border-emerald-400 hover:bg-slate-50'
                     }`}
                   >
                     {formData.template === 'modern' && (
-                      <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                      <div className="absolute top-2 right-2 bg-emerald-600 text-white rounded-full p-1">
                         <CheckCircle className="w-4 h-4" />
                       </div>
                     )}
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
-                      formData.template === 'modern' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                      formData.template === 'modern' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
                     }`}>
                       <Sparkles className="w-6 h-6" />
                     </div>
@@ -589,17 +589,17 @@ export default function OfferLetterForm() {
                     onClick={() => setFormData({...formData, template: 'custom'})}
                     className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
                       formData.template === 'custom' 
-                        ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
-                        : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                        ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-200' 
+                        : 'border-slate-200 hover:border-emerald-400 hover:bg-slate-50'
                     }`}
                   >
                     {formData.template === 'custom' && (
-                      <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                      <div className="absolute top-2 right-2 bg-emerald-600 text-white rounded-full p-1">
                         <CheckCircle className="w-4 h-4" />
                       </div>
                     )}
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
-                      formData.template === 'custom' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                      formData.template === 'custom' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
                     }`}>
                       <Palette className="w-6 h-6" />
                     </div>
@@ -618,17 +618,17 @@ export default function OfferLetterForm() {
                         onClick={() => setFormData({ ...formData, template: tid })}
                         className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-all ${
                           active
-                            ? 'border-green-600 bg-green-50 ring-2 ring-green-200'
-                            : 'border-slate-200 hover:border-green-400 hover:bg-slate-50'
+                            ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-200'
+                            : 'border-slate-200 hover:border-emerald-400 hover:bg-slate-50'
                         }`}
                       >
                         {active && (
-                          <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                          <div className="absolute top-2 right-2 bg-emerald-600 text-white rounded-full p-1">
                             <CheckCircle className="w-4 h-4" />
                           </div>
                         )}
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
-                          active ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600'
+                          active ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
                         }`}>
                           <Briefcase className="w-6 h-6" />
                         </div>
@@ -714,8 +714,8 @@ export default function OfferLetterForm() {
                       onDrop={handleLogoDrop}
                       className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
                         isDraggingLogo 
-                          ? 'border-green-500 bg-green-50' 
-                          : 'border-slate-300 hover:border-green-400'
+                          ? 'border-emerald-500 bg-emerald-50' 
+                          : 'border-slate-300 hover:border-emerald-400'
                       }`}
                     >
                       {formData.companyLogo ? (
@@ -735,7 +735,7 @@ export default function OfferLetterForm() {
                             </button>
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                            <p className="text-sm font-medium text-emerald-700">Logo uploaded successfully!</p>
                             <p className="text-xs text-slate-500 mt-1">{formData.companyLogoName}</p>
                           </div>
                         </div>
@@ -1161,8 +1161,8 @@ export default function OfferLetterForm() {
                         onDrop={handleSignatureDrop('hrSignatureImage', setIsDraggingHrSig)}
                         className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
                           isDraggingHrSig 
-                            ? 'border-green-500 bg-green-50' 
-                            : 'border-slate-300 hover:border-green-400'
+                            ? 'border-emerald-500 bg-emerald-50' 
+                            : 'border-slate-300 hover:border-emerald-400'
                         }`}
                       >
                         {formData.hrSignatureImage ? (
@@ -1182,7 +1182,7 @@ export default function OfferLetterForm() {
                               </button>
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-green-700">Signature uploaded!</p>
+                              <p className="text-sm font-medium text-emerald-700">Signature uploaded!</p>
                               <p className="text-xs text-slate-500 mt-1">Click the X to remove</p>
                             </div>
                           </div>
@@ -1279,8 +1279,8 @@ export default function OfferLetterForm() {
                         onDrop={handleSignatureDrop('employeeSignatureImage', setIsDraggingEmpSig)}
                         className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
                           isDraggingEmpSig 
-                            ? 'border-green-500 bg-green-50' 
-                            : 'border-slate-300 hover:border-green-400'
+                            ? 'border-emerald-500 bg-emerald-50' 
+                            : 'border-slate-300 hover:border-emerald-400'
                         }`}
                       >
                         {formData.employeeSignatureImage ? (
@@ -1300,7 +1300,7 @@ export default function OfferLetterForm() {
                               </button>
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-green-700">Signature uploaded!</p>
+                              <p className="text-sm font-medium text-emerald-700">Signature uploaded!</p>
                               <p className="text-xs text-slate-500 mt-1">Click the X to remove</p>
                             </div>
                           </div>
@@ -1367,7 +1367,7 @@ export default function OfferLetterForm() {
             <div className="sticky top-24 space-y-6">
               
               {/* Summary Preview */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Offer Letter Summary
                 </h3>
@@ -1380,7 +1380,7 @@ export default function OfferLetterForm() {
                         : formData.template}
                     </span>
                   </div>
-                  <div className="border-t border-green-300 my-2"></div>
+                  <div className="border-t border-emerald-300 my-2"></div>
                   <div className="flex justify-between">
                     <span className="text-slate-700">Company:</span>
                     <span className="font-medium text-slate-900">{formData.companyName || "—"}</span>
@@ -1389,7 +1389,7 @@ export default function OfferLetterForm() {
                     <span className="text-slate-700">Candidate:</span>
                     <span className="font-medium text-slate-900">{formData.candidateName || "—"}</span>
                   </div>
-                  <div className="border-t border-green-300 my-2"></div>
+                  <div className="border-t border-emerald-300 my-2"></div>
                   <div className="flex justify-between">
                     <span className="text-slate-700">Position:</span>
                     <span className="font-medium text-slate-900">{formData.jobTitle || "—"}</span>
@@ -1410,10 +1410,10 @@ export default function OfferLetterForm() {
                     <span className="text-slate-700">Start Date:</span>
                     <span className="font-medium text-slate-900">{formData.startDate || "—"}</span>
                   </div>
-                  <div className="border-t border-green-300 my-2"></div>
+                  <div className="border-t border-emerald-300 my-2"></div>
                   <div className="flex justify-between font-bold">
-                    <span className="text-green-800">Compensation:</span>
-                    <span className="text-green-800">{formData.compensationAmount ? formatCompensation() : "—"}</span>
+                    <span className="text-emerald-800">Compensation:</span>
+                    <span className="text-emerald-800">{formData.compensationAmount ? formatCompensation() : "—"}</span>
                   </div>
                 </div>
               </div>
@@ -1430,7 +1430,7 @@ export default function OfferLetterForm() {
                 {isGeneratingPreview ? (
                   <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
@@ -1486,21 +1486,21 @@ export default function OfferLetterForm() {
                 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessing}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
                     >
                       {isProcessing ? (
                         <>
@@ -1529,13 +1529,13 @@ export default function OfferLetterForm() {
                     />
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '9.99'}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && ' for Offer Letter generation'}
                     </p>
                     
                     {isProcessing ? (
                       <div className="text-center py-4">
-                        <svg className="animate-spin h-8 w-8 mx-auto text-green-700" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-8 w-8 mx-auto text-emerald-700" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -1546,7 +1546,7 @@ export default function OfferLetterForm() {
                         <Button
                           onClick={handleStripeCheckout}
                           disabled={isProcessing}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                         >
                           {isProcessing ? (
                             <>
@@ -1575,7 +1575,7 @@ export default function OfferLetterForm() {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>
@@ -1594,8 +1594,8 @@ export default function OfferLetterForm() {
       <section className="bg-slate-50 border-t border-slate-200 py-16">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
-              <HelpCircle className="w-6 h-6 text-green-700" />
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-emerald-700" />
             </div>
             <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Offer Letter FAQ
@@ -1605,7 +1605,7 @@ export default function OfferLetterForm() {
           
           <Accordion type="single" collapsible className="space-y-3">
             <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is an offer letter?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1614,7 +1614,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What should be included in an offer letter?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1623,7 +1623,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Is an offer letter legally binding?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1632,7 +1632,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What's the difference between salary and hourly compensation?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1641,7 +1641,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Can I customize the offer letter template?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1650,7 +1650,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What benefits can I include in the offer letter?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1659,7 +1659,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Should I include at-will employment language?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1668,7 +1668,7 @@ export default function OfferLetterForm() {
             </AccordionItem>
 
             <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 How quickly will I receive my offer letter?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">

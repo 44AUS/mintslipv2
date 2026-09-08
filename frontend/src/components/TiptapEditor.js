@@ -47,7 +47,7 @@ const MenuButton = ({ onClick, isActive, disabled, children, title }) => (
     disabled={disabled}
     title={title}
     className={`p-2 rounded hover:bg-slate-100 transition-colors disabled:opacity-50 ${
-      isActive ? "bg-green-100 text-green-700" : "text-slate-600"
+      isActive ? "bg-emerald-100 text-emerald-700" : "text-slate-600"
     }`}
   >
     {children}
@@ -73,7 +73,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-green-600 underline hover:text-green-700",
+          class: "text-emerald-600 underline hover:text-emerald-700",
         },
       }),
       Image.configure({
@@ -358,7 +358,7 @@ export default function TiptapEditor({ content, onChange, onImageUpload }) {
                 Remove Link
               </Button>
             )}
-            <Button onClick={setLink} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={setLink} className="bg-emerald-600 hover:bg-emerald-700">
               {linkUrl ? "Insert Link" : "Remove Link"}
             </Button>
           </DialogFooter>

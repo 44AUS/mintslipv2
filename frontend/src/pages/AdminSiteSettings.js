@@ -13,14 +13,14 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 function Msg({ msg }) {
   if (!msg) return null;
   return (
-    <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm ${msg.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+    <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm ${msg.type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
       {msg.type === "success" ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
       {msg.text}
     </div>
   );
 }
 
-function Toggle({ on, onClick, disabled, onColor = "bg-green-500", offColor = "bg-slate-300" }) {
+function Toggle({ on, onClick, disabled, onColor = "bg-emerald-500", offColor = "bg-slate-300" }) {
   return (
     <button
       onClick={onClick}
@@ -538,7 +538,7 @@ export default function AdminSiteSettings() {
                   value={maintenance.message}
                   onChange={e => setMaintenance(prev => ({ ...prev, message: e.target.value }))}
                   rows={3}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                   placeholder="We're currently performing scheduled maintenance. We'll be back shortly!"
                 />
               </div>
@@ -549,7 +549,7 @@ export default function AdminSiteSettings() {
                 <input
                   value={maintenance.estimatedTime}
                   onChange={e => setMaintenance(prev => ({ ...prev, estimatedTime: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="e.g. Back in ~30 minutes"
                 />
               </div>
@@ -560,7 +560,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveMaintenance}
               disabled={maintenanceLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {maintenanceLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Maintenance Settings
@@ -584,7 +584,7 @@ export default function AdminSiteSettings() {
               <Toggle
                 on={authEnabled}
                 onClick={() => setAuthEnabled(v => !v)}
-                onColor="bg-green-500"
+                onColor="bg-emerald-500"
                 offColor="bg-red-400"
               />
             </div>
@@ -594,7 +594,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveAuth}
               disabled={authLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {authLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Auth Settings
@@ -687,7 +687,7 @@ export default function AdminSiteSettings() {
                       min="-1"
                       value={tierDownloads[key] ?? ""}
                       onChange={e => setTierDownloads(prev => ({ ...prev, [key]: parseInt(e.target.value, 10) || 0 }))}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
                     {tierDownloads[key] === -1 && (
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">∞</span>
@@ -705,7 +705,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveTierDownloads}
               disabled={tierLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {tierLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Tier Settings
@@ -731,7 +731,7 @@ export default function AdminSiteSettings() {
                 { key: "phone_lookup",      label: "Reverse Phone Lookup",   color: "text-blue-600" },
                 { key: "name_lookup",       label: "Name Lookup",            color: "text-purple-600" },
                 { key: "address_lookup",    label: "Address Lookup",         color: "text-amber-600" },
-                { key: "background_report", label: "Full Background Report", color: "text-green-600" },
+                { key: "background_report", label: "Full Background Report", color: "text-emerald-600" },
               ].map(({ key, label, color }) => (
                 <div key={key}>
                   <label className={`block text-xs font-semibold ${color} mb-1.5`}>{label}</label>
@@ -743,7 +743,7 @@ export default function AdminSiteSettings() {
                       step="0.01"
                       value={psPrices[key] ?? ""}
                       onChange={e => setPsPrices(prev => ({ ...prev, [key]: parseFloat(e.target.value) || 0 }))}
-                      className="w-full border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full border border-slate-200 rounded-lg pl-6 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -755,7 +755,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={savePSPrices}
               disabled={psPriceLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {psPriceLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save People Search Prices
@@ -786,7 +786,7 @@ export default function AdminSiteSettings() {
                     min="0"
                     value={retentionDays}
                     onChange={e => setRetentionDays(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                    className="w-36 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-36 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                   <span className="text-sm text-slate-500">
                     {retentionDays === 0 ? "Keep forever (permanent)" : `Auto-delete after ${retentionDays} day${retentionDays === 1 ? "" : "s"}`}
@@ -803,7 +803,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveRetention}
               disabled={retentionLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {retentionLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Retention Setting
@@ -813,8 +813,8 @@ export default function AdminSiteSettings() {
           {/* App Settings */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-green-50">
-                <Smartphone className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-50">
+                <Smartphone className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-800">App Settings</p>
@@ -830,7 +830,7 @@ export default function AdminSiteSettings() {
                   <input
                     value={appSettings.version}
                     onChange={e => setAppSettings(prev => ({ ...prev, version: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="1.0.0"
                   />
                 </div>
@@ -839,7 +839,7 @@ export default function AdminSiteSettings() {
                   <select
                     value={appSettings.status}
                     onChange={e => setAppSettings(prev => ({ ...prev, status: e.target.value }))}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
                   >
                     <option value="normal">Normal</option>
                     <option value="degraded">Degraded</option>
@@ -854,7 +854,7 @@ export default function AdminSiteSettings() {
                 <input
                   value={appSettings.videoUrl}
                   onChange={e => setAppSettings(prev => ({ ...prev, videoUrl: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   placeholder="https://www.youtube.com/embed/..."
                 />
               </div>
@@ -865,7 +865,7 @@ export default function AdminSiteSettings() {
                   <label className="text-sm font-medium text-slate-700">What's New</label>
                   <button
                     onClick={() => setAppSettings(prev => ({ ...prev, whatsNew: [...prev.whatsNew, ""] }))}
-                    className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
+                    className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add item
                   </button>
@@ -883,7 +883,7 @@ export default function AdminSiteSettings() {
                           next[i] = e.target.value;
                           return { ...prev, whatsNew: next };
                         })}
-                        className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         placeholder={`Item ${i + 1}`}
                       />
                       <button
@@ -903,7 +903,7 @@ export default function AdminSiteSettings() {
                   <label className="text-sm font-medium text-slate-700">Known Issues</label>
                   <button
                     onClick={() => setAppSettings(prev => ({ ...prev, knownIssues: [...prev.knownIssues, ""] }))}
-                    className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
+                    className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add item
                   </button>
@@ -921,7 +921,7 @@ export default function AdminSiteSettings() {
                           next[i] = e.target.value;
                           return { ...prev, knownIssues: next };
                         })}
-                        className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                         placeholder={`Issue ${i + 1}`}
                       />
                       <button
@@ -941,7 +941,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveAppSettings}
               disabled={appSettingsLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {appSettingsLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save App Settings
@@ -993,20 +993,20 @@ export default function AdminSiteSettings() {
                               value={vid.title}
                               onChange={e => updateVideo(cat.id, vid.id, "title", e.target.value)}
                               placeholder="Video title"
-                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                             <input
                               value={vid.youtubeUrl}
                               onChange={e => updateVideo(cat.id, vid.id, "youtubeUrl", e.target.value)}
                               placeholder="YouTube embed URL (https://www.youtube.com/embed/...)"
-                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
                             <textarea
                               value={vid.description}
                               onChange={e => updateVideo(cat.id, vid.id, "description", e.target.value)}
                               placeholder="Description (optional)"
                               rows={2}
-                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                              className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                             />
                           </div>
                           <button
@@ -1024,7 +1024,7 @@ export default function AdminSiteSettings() {
                   <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100">
                     <button
                       onClick={() => addVideo(cat.id)}
-                      className="flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 font-medium"
+                      className="flex items-center gap-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
                     >
                       <Plus className="w-3.5 h-3.5" /> Add Video
                     </button>
@@ -1034,7 +1034,7 @@ export default function AdminSiteSettings() {
 
               <button
                 onClick={addCategory}
-                className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-slate-300 hover:border-green-400 hover:text-green-600 text-slate-500 text-sm font-medium rounded-xl transition-colors w-full justify-center"
+                className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-slate-300 hover:border-emerald-400 hover:text-emerald-600 text-slate-500 text-sm font-medium rounded-xl transition-colors w-full justify-center"
               >
                 <Plus className="w-4 h-4" /> Add Category
               </button>
@@ -1045,7 +1045,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveTutorialCategories}
               disabled={tutorialLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {tutorialLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Tutorials
@@ -1079,7 +1079,7 @@ export default function AdminSiteSettings() {
             <button
               onClick={saveNavOrder}
               disabled={navSaving}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {navSaving ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Navigation Order

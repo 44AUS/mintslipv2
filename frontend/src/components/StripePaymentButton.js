@@ -189,7 +189,7 @@ export default function StripePaymentButton({
       <Button
         onClick={handleCardPayment}
         disabled={disabled || isProcessing || !stripe}
-        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
       >
         {isProcessing ? (
           <>

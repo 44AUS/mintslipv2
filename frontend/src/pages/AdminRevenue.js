@@ -29,7 +29,7 @@ const DOCUMENT_TYPES = {
 };
 
 const PIE_COLORS = [
-  '#16a34a', '#3b82f6', '#f59e0b', '#ef4444',
+  '#059669', '#3b82f6', '#f59e0b', '#ef4444',
   '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
   '#f97316', '#6366f1', '#14b8a6', '#a855f7',
 ];
@@ -172,8 +172,8 @@ export default function AdminRevenue() {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#059669" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#059669" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -186,7 +186,7 @@ export default function AdminRevenue() {
                       name === "revenue" ? "Revenue" : "Orders",
                     ]}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#16a34a" strokeWidth={2} fillOpacity={1} fill="url(#revGrad)" />
+                  <Area type="monotone" dataKey="revenue" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#revGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (

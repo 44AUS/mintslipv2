@@ -534,7 +534,7 @@ export default function AdminBlogEditor() {
                   </div>
                   <label className="block cursor-pointer">
                     <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                    <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
                       {isUploading ? (
                         <IonSpinner name="crescent" style={{ width: 24, height: 24, color: "#94a3b8" }} />
                       ) : (

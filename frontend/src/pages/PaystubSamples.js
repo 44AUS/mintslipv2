@@ -361,7 +361,7 @@ function TemplateCard({ template, previewImage, isLoading, onUseTemplate }) {
                   setDialogOpen(false);
                   onUseTemplate(template.id);
                 }}
-                className="bg-green-700 hover:bg-green-800"
+                className="bg-emerald-700 hover:bg-emerald-800"
               >
                 Use This Template
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -384,7 +384,7 @@ function TemplateCard({ template, previewImage, isLoading, onUseTemplate }) {
         <ul className="space-y-1.5 mb-5">
           {template.features.map((feature, idx) => (
             <li key={idx} className="flex items-center gap-2 text-sm text-slate-600">
-              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               {feature}
             </li>
           ))}
@@ -393,7 +393,7 @@ function TemplateCard({ template, previewImage, isLoading, onUseTemplate }) {
         {/* Action Button */}
         <Button 
           onClick={() => onUseTemplate(template.id)}
-          className="w-full bg-green-700 hover:bg-green-800 text-white"
+          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white"
         >
           Use This Template
           <ArrowRight className="w-4 h-4 ml-2" />
@@ -411,7 +411,7 @@ function toCustomCard(t) {
     name: t.name,
     description: t.description || "Custom paystub template designed by the MintSlip team.",
     features: ["Custom MintSlip design", "Accurate tax calculations", "Instant PDF download"],
-    color: t.badgeColor || "#16a34a",
+    color: t.badgeColor || "#059669",
     generator: async (doc, templateData) => {
       const layout = await fetchPublishedLayout(t.id);
       if (!layout) throw new Error("Layout unavailable");
@@ -496,16 +496,16 @@ export default function PaystubSamples() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-14 sm:pt-16 sm:pb-16">
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 text-sm font-medium text-green-900 mb-6">
-              <FileText className="w-4 h-4 text-green-700" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80 text-sm font-medium text-emerald-900 mb-6">
+              <FileText className="w-4 h-4 text-emerald-700" />
               Professional Paystub Templates
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Paystub Sample <span className="text-green-700">Templates</span>
+              Paystub Sample <span className="text-emerald-700">Templates</span>
             </h1>
             <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto mb-8">
               Choose from our professionally designed paystub templates. Each template is crafted to meet industry standards and provides a clean, professional appearance for your payroll documents.
@@ -514,7 +514,7 @@ export default function PaystubSamples() {
               <Button
                 onClick={() => navigate('/app')}
                 size="lg"
-                className="cta-shine gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-8 rounded-xl shadow-md shadow-green-900/10"
+                className="cta-shine gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 rounded-xl shadow-md shadow-emerald-900/10"
               >
                 Create Your Paystub
                 <ArrowRight className="w-5 h-5" />
@@ -564,8 +564,8 @@ export default function PaystubSamples() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-7 h-7 text-green-700" />
+              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-7 h-7 text-emerald-700" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Accurate Calculations</h3>
               <p className="text-slate-600">
@@ -573,8 +573,8 @@ export default function PaystubSamples() {
               </p>
             </div>
             <div className="text-center p-6">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-7 h-7 text-green-700" />
+              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-7 h-7 text-emerald-700" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Professional Design</h3>
               <p className="text-slate-600">
@@ -582,8 +582,8 @@ export default function PaystubSamples() {
               </p>
             </div>
             <div className="text-center p-6">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ArrowRight className="w-7 h-7 text-green-700" />
+              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ArrowRight className="w-7 h-7 text-emerald-700" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Instant Download</h3>
               <p className="text-slate-600">
@@ -595,18 +595,18 @@ export default function PaystubSamples() {
       </section>
       
       {/* CTA Section */}
-      <section className="py-16 bg-green-900 text-white">
+      <section className="py-16 bg-emerald-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Create Your Paystub?
           </h2>
-          <p className="text-lg text-green-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-emerald-100 mb-8 max-w-2xl mx-auto">
             Choose any template above and start generating professional paystubs in minutes. No complicated setup required.
           </p>
           <Button 
             onClick={() => navigate('/app')}
             size="lg"
-            className="bg-white text-green-900 hover:bg-green-50 font-semibold px-8"
+            className="bg-white text-emerald-900 hover:bg-emerald-50 font-semibold px-8"
           >
             Get Started Now
             <ArrowRight className="w-5 h-5 ml-2" />

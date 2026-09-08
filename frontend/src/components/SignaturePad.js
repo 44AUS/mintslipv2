@@ -279,7 +279,7 @@ export default function SignaturePad({ onChange, height = 200 }) {
       {/* Actions */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-slate-500 flex items-center gap-1">
-          {!isEmpty && <><Check className="w-3 h-3 text-green-600" /> Signature captured</>}
+          {!isEmpty && <><Check className="w-3 h-3 text-emerald-600" /> Signature captured</>}
         </p>
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" onClick={handleUndo} disabled={isEmpty}>

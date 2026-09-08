@@ -17,22 +17,22 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 // MintSlip green, so the preview matches what recipients receive.
 const BASE_PREVIEW_STYLES = `
   body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
-  .button{display:inline-block;box-sizing:border-box;padding:14px 30px;background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e,#16a34a 60%,#15803d);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(22,163,74,0.32);}
-  .highlight{background-color:#f0fdf4;padding:16px;border-radius:10px;border-left:4px solid #16a34a;}
+  .button{display:inline-block;box-sizing:border-box;padding:14px 30px;background-color:#059669;background-image:linear-gradient(135deg,#10b981,#059669 60%,#047857);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(5,150,105,0.32);}
+  .highlight{background-color:#ecfdf5;padding:16px;border-radius:10px;border-left:4px solid #059669;}
   h1 { color: #0f172a; margin: 0 0 12px; font-size:22px; font-weight:800; letter-spacing:-0.01em; }
   h2 { color: #0f172a; margin: 0 0 12px; font-size:19px; font-weight:700; }
   p { color: #334155; line-height: 1.65; font-size:15px; }
   ul { color:#334155; line-height:1.8; font-size:15px; }
-  a { color:#16a34a; }
+  a { color:#059669; }
   .text-muted{color:#64748b;}
 `;
 
 function buildPreviewHtml(htmlBody, previewText) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="margin:0;padding:0;background:#f0fdf4;">
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="margin:0;padding:0;background:#ecfdf5;">
     ${previewText ? `<span style="display:none;max-height:0;overflow:hidden;">${previewText}</span>` : ""}
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;"><tr><td align="center" style="padding:36px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;"><tr><td align="center" style="padding:36px 16px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
-        <tr><td style="background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e 0%,#16a34a 55%,#15803d 100%);padding:28px 32px;text-align:center;">
+        <tr><td style="background-color:#059669;background-image:linear-gradient(135deg,#10b981 0%,#059669 55%,#047857 100%);padding:28px 32px;text-align:center;">
           <span style="display:inline-block;background:#fff;border-radius:12px;padding:10px 18px;"><img src="/mintslip-logo.png" alt="MintSlip" style="height:30px;width:auto;display:block;" /></span>
         </td></tr>
         <tr><td style="padding:36px 32px 34px;color:#0f172a;">${htmlBody}</td></tr>
@@ -325,7 +325,7 @@ export default function AdminMassEmail() {
                   <IonButton
                     disabled={!canSend}
                     onClick={() => setConfirmOpen(true)}
-                    style={{ "--background": "#2dd36f", "--background-activated": "#28ba62", "--border-radius": "8px", "--color": "#fff", fontWeight: 700 }}
+                    style={{ "--background": "#10b981", "--background-activated": "#0ea371", "--border-radius": "8px", "--color": "#fff", fontWeight: 700 }}
                     size="small"
                   >
                     {sending
@@ -372,7 +372,7 @@ export default function AdminMassEmail() {
                     <div style={{
                       padding: "12px 16px", borderRadius: 8,
                       border: `1px solid ${sendError ? "var(--ion-color-danger)" : jobStatus?.status === "done" && jobStatus?.failed === 0 ? "var(--ion-color-success)" : "var(--ion-color-primary)"}`,
-                      background: sendError ? "rgba(235,68,90,0.07)" : jobStatus?.status === "done" && jobStatus?.failed === 0 ? "rgba(45,211,111,0.07)" : "rgba(var(--ion-color-primary-rgb),0.06)",
+                      background: sendError ? "rgba(235,68,90,0.07)" : jobStatus?.status === "done" && jobStatus?.failed === 0 ? "rgba(16,185,129,0.07)" : "rgba(var(--ion-color-primary-rgb),0.06)",
                       display: "flex", alignItems: "flex-start", gap: 10,
                     }}>
                       {sendError ? (
@@ -448,8 +448,8 @@ export default function AdminMassEmail() {
         <IonModalContent style={{ "--background": "var(--ion-card-background)" }}>
           <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(45,211,111,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <IonIcon icon={sendOutline} style={{ fontSize: 22, color: "#2dd36f" }} />
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <IonIcon icon={sendOutline} style={{ fontSize: 22, color: "#10b981" }} />
               </div>
               <div>
                 <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--ion-text-color)", lineHeight: 1.5 }}>
@@ -467,7 +467,7 @@ export default function AdminMassEmail() {
               <IonButton fill="outline" color="medium" expand="block" onClick={() => setConfirmOpen(false)} style={{ flex: 1 }}>
                 Cancel
               </IonButton>
-              <IonButton expand="block" onClick={handleSend} style={{ flex: 1, "--background": "#2dd36f", "--color": "#fff", fontWeight: 700 }}>
+              <IonButton expand="block" onClick={handleSend} style={{ flex: 1, "--background": "#10b981", "--color": "#fff", fontWeight: 700 }}>
                 <IonIcon slot="start" icon={sendOutline} />
                 Send Now
               </IonButton>

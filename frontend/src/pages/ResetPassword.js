@@ -84,11 +84,11 @@ export default function ResetPassword() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* Success Card */}
           <div className="bg-white rounded-2xl p-8 shadow-xl border border-slate-100 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg mb-6">
               <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800 mb-2">Password Reset!</h1>
@@ -97,7 +97,7 @@ export default function ResetPassword() {
             </p>
             <Button
               onClick={() => navigate("/login")}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg"
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white py-6 text-lg font-semibold shadow-lg"
             >
               Go to Login
             </Button>
@@ -108,11 +108,11 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg mb-4">
             <KeyRound className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">Reset Password</h1>
@@ -216,7 +216,7 @@ export default function ResetPassword() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
             >
               {isLoading ? (
                 <>
@@ -236,7 +236,7 @@ export default function ResetPassword() {
           <div className="mt-6 text-center">
             <Link
               to="/login"
-              className="inline-flex items-center text-green-600 hover:text-green-700 font-medium"
+              className="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back to Login
@@ -263,7 +263,7 @@ export default function ResetPassword() {
         {/* Security Note */}
         <div className="mt-6 bg-white rounded-xl p-4 border border-slate-100">
           <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-            <Lock className="w-4 h-4 text-green-600" />
+            <Lock className="w-4 h-4 text-emerald-600" />
             Security Tips
           </h3>
           <ul className="text-sm text-slate-600 space-y-1">

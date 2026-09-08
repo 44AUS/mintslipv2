@@ -72,7 +72,7 @@ export default function NotFound() {
               <Button
                 onClick={() => navigate("/app")}
                 variant="ghost"
-                className="gap-2 text-slate-600 hover:text-green-800"
+                className="gap-2 text-slate-600 hover:text-emerald-800"
               >
                 <FileText className="w-4 h-4" />
                 Generate Pay Stub
@@ -80,7 +80,7 @@ export default function NotFound() {
               <Button
                 onClick={() => navigate("/accounting-mockup-generator")}
                 variant="ghost"
-                className="gap-2 text-slate-600 hover:text-green-800"
+                className="gap-2 text-slate-600 hover:text-emerald-800"
               >
                 <FileBarChart className="w-4 h-4" />
                 Generate Accounting Mockup
@@ -88,14 +88,14 @@ export default function NotFound() {
               <Button
                 onClick={() => navigate("/faq")}
                 variant="ghost"
-                className="gap-2 text-slate-600 hover:text-green-800"
+                className="gap-2 text-slate-600 hover:text-emerald-800"
               >
                 FAQ
               </Button>
               <Button
                 onClick={() => openSupportChat()}
                 variant="ghost"
-                className="gap-2 text-slate-600 hover:text-green-800"
+                className="gap-2 text-slate-600 hover:text-emerald-800"
               >
                 Contact Us
               </Button>

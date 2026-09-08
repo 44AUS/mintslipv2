@@ -76,12 +76,12 @@ export default function About() {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-14 pb-16 md:pt-20 md:pb-20">
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Your Trusted Partner in <span className="text-green-700">Document Generation</span>
+              Your Trusted Partner in <span className="text-emerald-700">Document Generation</span>
             </h1>
             <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-8">
               At MintSlip, we understand the importance of accurate financial documentation. Our commitment is to simplify the process, offering an accurate, easy-to-use, and affordable document generator tailored to the unique needs of businesses, entrepreneurs, and individuals across the USA.
@@ -89,7 +89,7 @@ export default function About() {
             <Button
               onClick={() => navigate("/")}
               size="lg"
-              className="cta-shine h-12 px-8 text-base font-semibold bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+              className="cta-shine h-12 px-8 text-base font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
             >
               Get Started
             </Button>
@@ -98,17 +98,17 @@ export default function About() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-green-50 border-y border-green-100">
+      <section className="py-12 bg-emerald-50 border-y border-emerald-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {STATS.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
                 <div key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-3">
-                    <IconComponent className="w-6 h-6 text-green-700" />
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mb-3">
+                    <IconComponent className="w-6 h-6 text-emerald-700" />
                   </div>
-                  <p className="text-3xl md:text-4xl font-black text-green-800 mb-1">{stat.value}</p>
+                  <p className="text-3xl md:text-4xl font-black text-emerald-800 mb-1">{stat.value}</p>
                   <p className="text-sm text-slate-600">{stat.label}</p>
                 </div>
               );
@@ -136,26 +136,26 @@ export default function About() {
               </p>
             </div>
             <div className="relative">
-              <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-2xl p-8 md:p-12">
+              <div className="bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-2xl p-8 md:p-12">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <FileText className="w-10 h-10 text-green-700 mb-3" />
-                    <p className="font-bold text-green-800 text-lg">Pay Stubs</p>
+                    <FileText className="w-10 h-10 text-emerald-700 mb-3" />
+                    <p className="font-bold text-emerald-800 text-lg">Pay Stubs</p>
                     <p className="text-sm text-slate-500">Professional & Accurate</p>
                   </div>
                   <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <Shield className="w-10 h-10 text-green-700 mb-3" />
-                    <p className="font-bold text-green-800 text-lg">Accounting Mockups</p>
+                    <Shield className="w-10 h-10 text-emerald-700 mb-3" />
+                    <p className="font-bold text-emerald-800 text-lg">Accounting Mockups</p>
                     <p className="text-sm text-slate-500">Detailed & Complete</p>
                   </div>
                   <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <Award className="w-10 h-10 text-green-700 mb-3" />
-                    <p className="font-bold text-green-800 text-lg">W-2 Forms</p>
+                    <Award className="w-10 h-10 text-emerald-700 mb-3" />
+                    <p className="font-bold text-emerald-800 text-lg">W-2 Forms</p>
                     <p className="text-sm text-slate-500">Compliant</p>
                   </div>
                   <div className="bg-white rounded-xl p-6 shadow-sm">
-                    <Users className="w-10 h-10 text-green-700 mb-3" />
-                    <p className="font-bold text-green-800 text-lg">Support</p>
+                    <Users className="w-10 h-10 text-emerald-700 mb-3" />
+                    <p className="font-bold text-emerald-800 text-lg">Support</p>
                     <p className="text-sm text-slate-500">24hr Response</p>
                   </div>
                 </div>
@@ -182,10 +182,10 @@ export default function About() {
               const IconComponent = value.icon;
               return (
                 <div key={index} className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-                  <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-5">
-                    <IconComponent className="w-7 h-7 text-green-700" />
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-5">
+                    <IconComponent className="w-7 h-7 text-emerald-700" />
                   </div>
-                  <h3 className="text-xl font-bold text-green-800 mb-3">{value.title}</h3>
+                  <h3 className="text-xl font-bold text-emerald-800 mb-3">{value.title}</h3>
                   <p className="text-slate-600 leading-relaxed">{value.description}</p>
                 </div>
               );
@@ -210,7 +210,7 @@ export default function About() {
             {TESTIMONIALS.map((testimonial, index) => (
               <div key={index} className="bg-white rounded-xl p-8 shadow-lg border border-slate-100">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center">
                     <span className="text-white font-bold text-lg">{testimonial.name.charAt(0)}</span>
                   </div>
                   <div>
@@ -224,7 +224,7 @@ export default function About() {
                 </blockquote>
                 
                 <div className="pt-4 border-t border-slate-100">
-                  <p className="text-2xl font-black text-green-700">{testimonial.stat}</p>
+                  <p className="text-2xl font-black text-emerald-700">{testimonial.stat}</p>
                   <p className="text-sm text-slate-500">{testimonial.statLabel}</p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function About() {
 
       {/* CTA Section */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Get Started?
           </h2>
@@ -246,7 +246,7 @@ export default function About() {
             <Button
               onClick={() => navigate("/")}
               size="lg"
-              className="cta-shine h-12 px-8 text-base font-semibold bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+              className="cta-shine h-12 px-8 text-base font-semibold bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
             >
               Create Your Document
             </Button>

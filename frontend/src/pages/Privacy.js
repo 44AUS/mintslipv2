@@ -78,19 +78,19 @@ export default function Privacy() {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white py-16 md:py-24">
+      <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 text-white py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-700/50 mb-6">
-              <Shield className="w-8 h-8 text-green-200" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-700/50 mb-6">
+              <Shield className="w-8 h-8 text-emerald-200" />
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Privacy Policy
             </h1>
-            <p className="text-lg md:text-xl text-green-100 leading-relaxed">
+            <p className="text-lg md:text-xl text-emerald-100 leading-relaxed">
               Your privacy matters to us. This policy explains how MintSlip collects, uses, and protects your information.
             </p>
-            <p className="text-sm text-green-200 mt-4">
+            <p className="text-sm text-emerald-200 mt-4">
               Last updated: January 2025
             </p>
           </div>
@@ -98,7 +98,7 @@ export default function Privacy() {
       </section>
 
       {/* Introduction */}
-      <section className="py-12 bg-green-50 border-b border-green-100">
+      <section className="py-12 bg-emerald-50 border-b border-emerald-100">
         <div className="max-w-4xl mx-auto px-6">
           <p className="text-lg text-slate-700 leading-relaxed">
             At MintSlip, we are committed to protecting your privacy and ensuring the security of your personal information. 
@@ -117,11 +117,11 @@ export default function Privacy() {
               return (
                 <div key={index} className="relative">
                   <div className="flex items-start gap-6">
-                    <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
-                      <IconComponent className="w-7 h-7 text-green-700" />
+                    <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center">
+                      <IconComponent className="w-7 h-7 text-emerald-700" />
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-green-800 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                      <h2 className="text-2xl font-bold text-emerald-800 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
                         {section.title}
                       </h2>
                       <div className="prose prose-slate max-w-none">
@@ -148,13 +148,13 @@ export default function Privacy() {
       {/* CTA Section */}
       <section className="py-12 bg-slate-50">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h3 className="text-xl font-bold text-green-800 mb-4">Have Questions?</h3>
+          <h3 className="text-xl font-bold text-emerald-800 mb-4">Have Questions?</h3>
           <p className="text-slate-600 mb-6">
             If you have any questions about our privacy practices, we're here to help.
           </p>
           <button
             onClick={() => openSupportChat()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-green-800 text-white rounded-lg font-semibold hover:bg-green-900 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-800 text-white rounded-lg font-semibold hover:bg-emerald-900 transition-colors"
           >
             <Mail className="w-4 h-4" />
             Contact Us

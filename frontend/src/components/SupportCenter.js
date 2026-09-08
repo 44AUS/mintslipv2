@@ -25,7 +25,7 @@ function getInitials(name = '') {
 function getPresenceColor(lastActive) {
   if (!lastActive) return null;
   const mins = (Date.now() - new Date(lastActive).getTime()) / 60000;
-  if (mins < 5) return '#2dd36f';
+  if (mins < 5) return '#10b981';
   if (mins < 60) return '#ffce00';
   if (mins < 1440) return '#eb445a';
   return null;
@@ -824,8 +824,8 @@ export default function SupportCenter({
                       disabled={isSending || (!inputText.trim() && imageFiles.length === 0)}
                       onClick={handleSend}
                       style={{
-                        '--background': '#2dd36f',
-                        '--background-activated': '#28ba62',
+                        '--background': '#10b981',
+                        '--background-activated': '#0ea371',
                         '--color': '#fff',
                         '--border-radius': '8px',
                       }}

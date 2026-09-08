@@ -33,8 +33,8 @@ const DOCUMENT_TYPES = {
 };
 
 const DOC_COLORS = {
-  "paystub":              "#16a34a",
-  "canadian-paystub":    "#16a34a",
+  "paystub":              "#059669",
+  "canadian-paystub":    "#059669",
   "resume":              "#2563eb",
   "w2":                  "#7c3aed",
   "w9":                  "#7c3aed",

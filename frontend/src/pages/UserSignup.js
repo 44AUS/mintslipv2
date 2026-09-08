@@ -74,13 +74,13 @@ export default function UserSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex flex-col">
       <AuthHeader />
       <div className="flex-1 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg mb-4">
             <User className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">Create Account</h1>
@@ -163,7 +163,7 @@ export default function UserSignup() {
                   htmlFor="saveDocuments" 
                   className="text-sm font-medium cursor-pointer flex items-center gap-2"
                 >
-                  <FolderArchive className="w-4 h-4 text-green-600" />
+                  <FolderArchive className="w-4 h-4 text-emerald-600" />
                   Save my documents for later
                 </Label>
                 <p className="text-xs text-slate-500">
@@ -175,7 +175,7 @@ export default function UserSignup() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
             >
               {isLoading ? (
                 <>
@@ -194,7 +194,7 @@ export default function UserSignup() {
           <div className="mt-6 text-center">
             <p className="text-slate-500">
               Already have an account?{" "}
-              <Link to="/login" className="text-green-600 hover:text-green-700 font-medium">
+              <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
                 Sign in
               </Link>
             </p>

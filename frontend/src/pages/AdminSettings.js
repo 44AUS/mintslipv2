@@ -132,7 +132,7 @@ export default function AdminSettings() {
   const Msg = ({ msg }) => {
     if (!msg) return null;
     return (
-      <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm ${msg.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+      <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm ${msg.type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
         {msg.type === "success" ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
         {msg.text}
       </div>
@@ -156,7 +156,7 @@ export default function AdminSettings() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${tab === t.id ? "bg-green-600 text-white font-medium" : "text-slate-600 hover:bg-slate-50"}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${tab === t.id ? "bg-emerald-600 text-white font-medium" : "text-slate-600 hover:bg-slate-50"}`}
             >
               <t.icon className="w-4 h-4" />
               {t.label}
@@ -177,7 +177,7 @@ export default function AdminSettings() {
                   {photoPreview ? (
                     <img src={photoPreview} alt="avatar" className="w-20 h-20 rounded-full object-cover border-2 border-slate-200" />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-green-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-slate-200">
+                    <div className="w-20 h-20 rounded-full bg-emerald-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-slate-200">
                       {profile.name ? profile.name[0].toUpperCase() : profile.email ? profile.email[0].toUpperCase() : "A"}
                     </div>
                   )}
@@ -220,7 +220,7 @@ export default function AdminSettings() {
                   value={profile.name}
                   onChange={e => setProfile(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g. Alex"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -232,14 +232,14 @@ export default function AdminSettings() {
                   onChange={e => setProfile(prev => ({ ...prev, email: e.target.value }))}
                   type="email"
                   placeholder="admin@mintslip.com"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
               <Msg msg={profileMsg} />
               <button
                 onClick={handleSaveProfile}
                 disabled={profileLoading}
-                className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
               >
                 {profileLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
                 Save Changes
@@ -265,7 +265,7 @@ export default function AdminSettings() {
                   type="password"
                   value={passwords[key]}
                   onChange={e => setPasswords(prev => ({ ...prev, [key]: e.target.value }))}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   autoComplete="new-password"
                 />
               </div>
@@ -274,7 +274,7 @@ export default function AdminSettings() {
             <button
               onClick={handleChangePassword}
               disabled={pwLoading}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
             >
               {pwLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Lock className="w-4 h-4" />}
               Update Password

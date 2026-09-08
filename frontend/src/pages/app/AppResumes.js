@@ -74,7 +74,7 @@ export default function AppResumes() {
     ...BUILT_IN_TEMPLATES.filter((t) => !disabledGenerators.has(`resume-${t.value}`)),
     ...customTemplates
       .filter((t) => !disabledGenerators.has(`custom:${t.id}`))
-      .map((t) => ({ value: `custom:${t.id}`, name: t.name, color: t.badgeColor || "#16a34a" })),
+      .map((t) => ({ value: `custom:${t.id}`, name: t.name, color: t.badgeColor || "#059669" })),
   ];
 
   // Render each template's sample preview as its card image

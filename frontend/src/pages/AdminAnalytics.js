@@ -80,7 +80,7 @@ export default function AdminAnalytics() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-700 mx-auto mb-4"></div>
           <p className="text-slate-600">Verifying access...</p>
         </div>
       </div>
@@ -117,8 +117,8 @@ export default function AdminAnalytics() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-green-700" />
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-emerald-700" />
             </div>
             <CardTitle className="text-2xl" style={{ color: '#1a4731' }}>Admin Analytics</CardTitle>
             <CardDescription>
@@ -137,7 +137,7 @@ export default function AdminAnalytics() {
                   placeholder="Enter admin password"
                 />
               </div>
-              <Button type="submit" className="w-full bg-green-700 hover:bg-green-800">
+              <Button type="submit" className="w-full bg-emerald-700 hover:bg-emerald-800">
                 Access Dashboard
               </Button>
             </form>
@@ -183,16 +183,16 @@ export default function AdminAnalytics() {
             rel="noopener noreferrer"
             className="block"
           >
-            <Card className="hover:shadow-md transition-shadow cursor-pointer border-green-200 bg-green-50">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer border-emerald-200 bg-emerald-50">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center">
                   <Activity className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-green-800">GA4 Dashboard</p>
-                  <p className="text-xs text-green-600">View full analytics</p>
+                  <p className="font-semibold text-emerald-800">GA4 Dashboard</p>
+                  <p className="text-xs text-emerald-600">View full analytics</p>
                 </div>
-                <ExternalLink className="w-4 h-4 text-green-600" />
+                <ExternalLink className="w-4 h-4 text-emerald-600" />
               </CardContent>
             </Card>
           </a>
@@ -259,22 +259,22 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Tracking Setup Info */}
-        <Card className="mb-8 border-green-200 bg-green-50">
+        <Card className="mb-8 border-emerald-200 bg-emerald-50">
           <CardHeader>
-            <CardTitle className="text-lg text-green-800 flex items-center gap-2">
+            <CardTitle className="text-lg text-emerald-800 flex items-center gap-2">
               <Activity className="w-5 h-5" />
               Event Tracking Active
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-green-700">
+          <CardContent className="text-sm text-emerald-700">
             <p className="mb-3">Your app is now tracking these events in Google Analytics:</p>
             <ul className="list-disc list-inside space-y-1 mb-4">
-              <li><code className="bg-green-100 px-1 rounded">document_generated</code> - When a document is created after payment</li>
-              <li><code className="bg-green-100 px-1 rounded">purchase</code> - Revenue tracking with document type and amount</li>
-              <li><code className="bg-green-100 px-1 rounded">begin_checkout</code> - When payment is initiated</li>
+              <li><code className="bg-emerald-100 px-1 rounded">document_generated</code> - When a document is created after payment</li>
+              <li><code className="bg-emerald-100 px-1 rounded">purchase</code> - Revenue tracking with document type and amount</li>
+              <li><code className="bg-emerald-100 px-1 rounded">begin_checkout</code> - When payment is initiated</li>
             </ul>
-            <p className="text-xs text-green-600">
-              GA Property ID: <code className="bg-green-100 px-1 rounded">{GA_PROPERTY_ID}</code>
+            <p className="text-xs text-emerald-600">
+              GA Property ID: <code className="bg-emerald-100 px-1 rounded">{GA_PROPERTY_ID}</code>
             </p>
           </CardContent>
         </Card>
@@ -296,7 +296,7 @@ export default function AdminAnalytics() {
                 href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/explorer?params=_u..nav%3Dmaui%26_r.explorerCard..selmet%3D%5B%22eventCount%22%5D%26_r.explorerCard..seldim%3D%5B%22customEvent:document_type%22%5D&r=events-overview`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-green-600 hover:underline"
+                className="inline-flex items-center gap-1 text-emerald-600 hover:underline"
               >
                 Open in GA4 <ExternalLink className="w-3 h-3" />
               </a>
@@ -318,7 +318,7 @@ export default function AdminAnalytics() {
                 href={`https://analytics.google.com/analytics/web/#/p${GA_PROPERTY_ID.replace('G-', '')}/reports/monetization-overview`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-green-600 hover:underline"
+                className="inline-flex items-center gap-1 text-emerald-600 hover:underline"
               >
                 Open in GA4 <ExternalLink className="w-3 h-3" />
               </a>

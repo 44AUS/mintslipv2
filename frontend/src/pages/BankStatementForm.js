@@ -885,8 +885,8 @@ const createOrder = (data, actions) => {
                     />
                     {selectedBank && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-6 h-6 rounded bg-emerald-100 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -903,8 +903,8 @@ const createOrder = (data, actions) => {
                             key={bank.id}
                             data-testid={`bank-option-${bank.id}`}
                             onClick={() => handleBankSelect(bank)}
-                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
-                              selectedBank?.id === bank.id ? 'bg-green-100' : ''
+                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-emerald-50 transition-colors ${
+                              selectedBank?.id === bank.id ? 'bg-emerald-100' : ''
                             }`}
                           >
                             {/* Logo placeholder - 40x40 in dropdown */}
@@ -938,7 +938,7 @@ const createOrder = (data, actions) => {
 
                 {/* Selected Category Confirmation */}
                 {selectedBank && (
-                  <div className="mt-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                  <div className="mt-4 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-lg">
                     <div className="flex items-center gap-4">
                       {/* Logo preview - 150x150 */}
                       {selectedBank.logo ? (
@@ -953,7 +953,7 @@ const createOrder = (data, actions) => {
                         </div>
                       )}
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-800 mb-1">✓ Category Selected</p>
+                        <p className="text-sm font-medium text-emerald-800 mb-1">✓ Category Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedBank.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
                           Template: <span className="font-semibold">{selectedBank.template === 'template-a' ? 'Chime Inspired Summary Template' : selectedBank.template === 'template-b' ? 'Style B (Bank of America)' : 'Style C (Chase)'}</span>
@@ -989,10 +989,10 @@ const createOrder = (data, actions) => {
                   onDrop={handleDrop}
                   className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
                     isDragging 
-                      ? 'border-green-500 bg-green-50' 
+                      ? 'border-emerald-500 bg-emerald-50' 
                       : logoError 
                         ? 'border-red-300 bg-red-50' 
-                        : 'border-slate-300 hover:border-green-400'
+                        : 'border-slate-300 hover:border-emerald-400'
                   }`}
                 >
                   {logoPreview ? (
@@ -1012,7 +1012,7 @@ const createOrder = (data, actions) => {
                         </button>
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                        <p className="text-sm font-medium text-emerald-700">Logo uploaded successfully!</p>
                         <p className="text-xs text-slate-500 mt-1">
                           Click the X to remove and upload a different logo.
                         </p>
@@ -1407,16 +1407,16 @@ const createOrder = (data, actions) => {
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-6">
               {/* Statement Preview */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Statement Preview
                 </h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700 font-semibold">Bank:</span>
                     <span className="font-bold">{selectedBank?.name || '—'}</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700 font-semibold">Account Holder:</span>
                     <span className="font-bold">{accountName || "—"}</span>
                   </div>
@@ -1432,12 +1432,12 @@ const createOrder = (data, actions) => {
                     <span className="text-slate-700">Transactions:</span>
                     <span className="font-medium">{transactions.filter(t => t.date && t.amount).length}</span>
                   </div>
-                  <div className="border-t border-green-300 pt-2 mt-2">
+                  <div className="border-t border-emerald-300 pt-2 mt-2">
                     <div className="flex justify-between">
                       <span className="text-slate-700">Beginning Balance:</span>
                       <span className="font-bold">${parseFloat(beginningBalance || 0).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-green-700 text-lg mt-2">
+                    <div className="flex justify-between text-emerald-700 text-lg mt-2">
                       <span className="font-bold">Ending Balance:</span>
                       <span className="font-bold">${calculateEndingBalance().toFixed(2)}</span>
                     </div>
@@ -1457,7 +1457,7 @@ const createOrder = (data, actions) => {
                 {isGeneratingPreview ? (
                   <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
@@ -1550,14 +1550,14 @@ const createOrder = (data, actions) => {
                 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
@@ -1579,7 +1579,7 @@ const createOrder = (data, actions) => {
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessing || !isFormValid()}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
                     >
                       {isProcessing ? (
                         <>
@@ -1609,7 +1609,7 @@ const createOrder = (data, actions) => {
                     
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : getStatementPrice().toFixed(2)}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && ' for accounting mockup generation'}
                     </p>
                     
@@ -1631,7 +1631,7 @@ const createOrder = (data, actions) => {
                       <Button
                         onClick={handleStripeCheckout}
                         disabled={isProcessing}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                       >
                         {isProcessing ? (
                           <>
@@ -1659,7 +1659,7 @@ const createOrder = (data, actions) => {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>

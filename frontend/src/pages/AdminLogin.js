@@ -68,7 +68,7 @@ export default function AdminLogin() {
   if (isCheckingAuth) {
     return (
       <div className="ms-login-page">
-        <span className="ms-spin" style={{ width: 34, height: 34, borderColor: "rgba(22,163,74,0.25)", borderTopColor: "#16a34a" }} />
+        <span className="ms-spin" style={{ width: 34, height: 34, borderColor: "rgba(5,150,105,0.25)", borderTopColor: "#059669" }} />
       </div>
     );
   }

@@ -402,15 +402,15 @@ export default function FAQ() {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-14 sm:pt-16 sm:pb-16">
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 text-sm font-medium text-green-900 mb-6">
-            <Search className="w-4 h-4 text-green-700" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80 text-sm font-medium text-emerald-900 mb-6">
+            <Search className="w-4 h-4 text-emerald-700" />
             Help Center
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            You asked, we <span className="text-green-700">answered</span>
+            You asked, we <span className="text-emerald-700">answered</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10">
             MintSlip's most frequently asked questions by our customers
@@ -442,7 +442,7 @@ export default function FAQ() {
               </h2>
               <button 
                 onClick={() => setSearchQuery("")}
-                className="text-sm text-green-700 hover:text-green-800 font-medium"
+                className="text-sm text-emerald-700 hover:text-emerald-800 font-medium"
               >
                 Clear search
               </button>
@@ -460,7 +460,7 @@ export default function FAQ() {
                   <h3 className="text-lg font-semibold text-slate-700 flex items-center gap-2">
                     {(() => {
                       const IconComponent = FAQ_CATEGORIES[result.category].icon;
-                      return <IconComponent className="w-5 h-5 text-green-700" />;
+                      return <IconComponent className="w-5 h-5 text-emerald-700" />;
                     })()}
                     {result.title}
                   </h3>
@@ -471,7 +471,7 @@ export default function FAQ() {
                         value={`${result.category}-${index}`}
                         className="bg-white rounded-xl border border-slate-200 px-6 shadow-sm"
                       >
-                        <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-800 py-5">
+                        <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-800 py-5">
                           {faq.question}
                         </AccordionTrigger>
                         <AccordionContent className="text-slate-600 pb-5 leading-relaxed">
@@ -494,7 +494,7 @@ export default function FAQ() {
                   <TabsTrigger 
                     key={key} 
                     value={key}
-                    className="flex items-center gap-2 px-3 py-3 rounded-xl border-2 border-slate-200 data-[state=active]:border-green-700 data-[state=active]:bg-green-50 data-[state=active]:text-green-800 hover:border-green-300 transition-all"
+                    className="flex items-center gap-2 px-3 py-3 rounded-xl border-2 border-slate-200 data-[state=active]:border-emerald-700 data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-800 hover:border-emerald-300 transition-all"
                   >
                     <IconComponent className="w-4 h-4 flex-shrink-0" />
                     <span className="font-medium text-xs truncate">{category.title.replace(' Questions', '').replace(' Form', '')}</span>
@@ -521,7 +521,7 @@ export default function FAQ() {
                       value={`item-${index}`}
                       className="bg-white rounded-xl border border-slate-200 px-6 shadow-sm hover:shadow-md transition-shadow"
                     >
-                      <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-800 py-5">
+                      <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-800 py-5">
                         {faq.question}
                       </AccordionTrigger>
                       <AccordionContent className="text-slate-600 pb-5 leading-relaxed">
@@ -537,10 +537,10 @@ export default function FAQ() {
       </section>
 
       {/* Still Have Questions CTA */}
-      <section className="bg-green-50 py-16">
+      <section className="bg-emerald-50 py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-6">
-            <HelpCircle className="w-8 h-8 text-green-700" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-6">
+            <HelpCircle className="w-8 h-8 text-emerald-700" />
           </div>
           <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
             Still have questions?
@@ -551,7 +551,7 @@ export default function FAQ() {
           <Button 
             onClick={() => openSupportChat()}
             size="lg"
-            className="h-12 px-8 text-base font-semibold bg-green-800 hover:bg-green-900"
+            className="h-12 px-8 text-base font-semibold bg-emerald-800 hover:bg-emerald-900"
           >
             Contact Support
           </Button>

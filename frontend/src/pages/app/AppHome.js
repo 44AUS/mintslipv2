@@ -58,7 +58,7 @@ export default function AppHome() {
             <div style={{ height: 34, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
               <div key={phraseIdx} style={{
                 fontFamily: "Outfit, sans-serif", fontWeight: 800, fontSize: "1.35rem",
-                color: "#16a34a", letterSpacing: "-0.01em", whiteSpace: "nowrap",
+                color: "#059669", letterSpacing: "-0.01em", whiteSpace: "nowrap",
                 animation: "mshPhraseIn 0.45s ease both",
               }}>
                 {t(PHRASES[phraseIdx])}

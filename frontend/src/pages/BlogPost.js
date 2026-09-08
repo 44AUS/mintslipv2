@@ -197,7 +197,7 @@ export default function BlogPost() {
       <>
         <Header title="MintSlip" />
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
         <Footer />
       </>
@@ -291,13 +291,13 @@ export default function BlogPost() {
         <div className="bg-slate-50 border-b">
           <div className="max-w-7xl mx-auto px-6 py-3">
             <nav className="flex items-center gap-2 text-sm text-slate-500">
-              <Link to="/" className="hover:text-green-600">Home</Link>
+              <Link to="/" className="hover:text-emerald-600">Home</Link>
               <ChevronRight className="w-4 h-4" />
-              <Link to="/blog" className="hover:text-green-600">Blog</Link>
+              <Link to="/blog" className="hover:text-emerald-600">Blog</Link>
               {post.category && (
                 <>
                   <ChevronRight className="w-4 h-4" />
-                  <Link to={`/blog?category=${post.category}`} className="hover:text-green-600">
+                  <Link to={`/blog?category=${post.category}`} className="hover:text-emerald-600">
                     {categories.find(c => c.slug === post.category)?.name || post.category}
                   </Link>
                 </>
@@ -314,7 +314,7 @@ export default function BlogPost() {
             {post.category && (
               <Link 
                 to={`/blog?category=${post.category}`}
-                className="inline-block px-3 py-1 bg-green-50 text-green-700 text-sm font-medium rounded-full mb-4 hover:bg-green-100"
+                className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-full mb-4 hover:bg-emerald-100"
               >
                 {categories.find(c => c.slug === post.category)?.name || post.category}
               </Link>
@@ -367,7 +367,7 @@ export default function BlogPost() {
                       <a
                         key={index}
                         href={`#${heading.id}`}
-                        className={`block text-sm text-slate-600 hover:text-green-600 transition-colors ${
+                        className={`block text-sm text-slate-600 hover:text-emerald-600 transition-colors ${
                           heading.level === 3 ? 'pl-4' : ''
                         }`}
                       >
@@ -409,7 +409,7 @@ export default function BlogPost() {
                       <a
                         key={index}
                         href={`#${heading.id}`}
-                        className={`block text-sm text-slate-600 hover:text-green-600 ${
+                        className={`block text-sm text-slate-600 hover:text-emerald-600 ${
                           heading.level === 3 ? 'pl-4' : ''
                         }`}
                       >
@@ -422,19 +422,19 @@ export default function BlogPost() {
 
               {/* Article Content */}
               <div 
-                className="prose prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-a:text-green-600 prose-a:hover:text-green-700 prose-blockquote:border-l-green-500 prose-blockquote:bg-green-50 prose-blockquote:py-2 prose-blockquote:rounded-r prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900"
+                className="prose prose-lg max-w-none prose-headings:text-slate-800 prose-p:text-slate-600 prose-a:text-emerald-600 prose-a:hover:text-emerald-700 prose-blockquote:border-l-emerald-500 prose-blockquote:bg-emerald-50 prose-blockquote:py-2 prose-blockquote:rounded-r prose-code:bg-slate-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-900"
                 dangerouslySetInnerHTML={{ __html: processedContent }}
               />
 
               {/* CTA Block */}
-              <div className="my-12 p-6 md:p-8 bg-gradient-to-r from-green-700 to-emerald-600 rounded-xl text-white">
+              <div className="my-12 p-6 md:p-8 bg-gradient-to-r from-emerald-700 to-emerald-600 rounded-xl text-white">
                 <h3 className="text-xl md:text-2xl font-bold mb-3">Create Professional Pay Stubs Instantly</h3>
-                <p className="text-green-100 mb-4">
+                <p className="text-emerald-100 mb-4">
                   Generate accurate, professional pay stubs in minutes with MintSlip&apos;s easy-to-use generator.
                 </p>
                 <Button
                   onClick={() => navigate("/app")}
-                  className="bg-white text-green-700 hover:bg-green-50 gap-2"
+                  className="bg-white text-emerald-700 hover:bg-emerald-50 gap-2"
                 >
                   Generate Pay Stub Now
                   <ArrowRight className="w-4 h-4" />
@@ -465,7 +465,7 @@ export default function BlogPost() {
                       <Link
                         key={index}
                         to={`/blog?tag=${encodeURIComponent(tag)}`}
-                        className="px-3 py-1 bg-slate-100 text-slate-600 text-sm rounded-full hover:bg-green-50 hover:text-green-700"
+                        className="px-3 py-1 bg-slate-100 text-slate-600 text-sm rounded-full hover:bg-emerald-50 hover:text-emerald-700"
                       >
                         {tag}
                       </Link>
@@ -515,12 +515,12 @@ export default function BlogPost() {
                         />
                       </div>
                     ) : (
-                      <div className="aspect-video bg-gradient-to-br from-green-100 to-emerald-50 flex items-center justify-center">
-                        <FileText className="w-12 h-12 text-green-300" />
+                      <div className="aspect-video bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                        <FileText className="w-12 h-12 text-emerald-300" />
                       </div>
                     )}
                     <div className="p-4">
-                      <h3 className="font-semibold text-slate-800 line-clamp-2 hover:text-green-700">
+                      <h3 className="font-semibold text-slate-800 line-clamp-2 hover:text-emerald-700">
                         {relPost.title}
                       </h3>
                       <p className="text-sm text-slate-500 mt-2">

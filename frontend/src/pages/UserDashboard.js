@@ -169,7 +169,7 @@ export default function UserDashboard() {
       <>
         <Header title="MintSlip" />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
         <Footer />
       </>
@@ -237,7 +237,7 @@ export default function UserDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {/* Subscription Card */}
           <div className={`rounded-xl p-6 ${
-            currentTier?.color === "green" ? "bg-gradient-to-br from-green-500 to-green-600" :
+            currentTier?.color === "green" ? "bg-gradient-to-br from-emerald-500 to-emerald-600" :
             currentTier?.color === "blue" ? "bg-gradient-to-br from-blue-500 to-blue-600" :
             currentTier?.color === "purple" ? "bg-gradient-to-br from-purple-500 to-purple-600" :
             "bg-gradient-to-br from-slate-400 to-slate-500"
@@ -277,8 +277,8 @@ export default function UserDashboard() {
           {/* Downloads Remaining */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <Download className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Download className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
                 <p className="text-sm text-slate-500">Downloads Remaining</p>
@@ -288,7 +288,7 @@ export default function UserDashboard() {
             {subscriptionDownloadsTotal !== -1 && subscriptionDownloadsTotal > 0 && (
               <div className="w-full bg-slate-100 rounded-full h-2">
                 <div 
-                  className="h-2 rounded-full bg-green-600"
+                  className="h-2 rounded-full bg-emerald-600"
                   style={{ 
                     width: `${Math.max(0, ((subscriptionDownloadsRemaining ?? 0) / subscriptionDownloadsTotal) * 100)}%` 
                   }}
@@ -310,7 +310,7 @@ export default function UserDashboard() {
             </div>
             <Link 
               to="/user/downloads" 
-              className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
             >
               View History <ArrowRight className="w-4 h-4" />
             </Link>
@@ -325,10 +325,10 @@ export default function UserDashboard() {
               <Link
                 key={action.path}
                 to={action.path}
-                className="bg-white rounded-xl shadow-sm p-4 border border-slate-100 hover:border-green-200 hover:shadow-md transition-all group"
+                className="bg-white rounded-xl shadow-sm p-4 border border-slate-100 hover:border-emerald-200 hover:shadow-md transition-all group"
               >
                 <span className="text-2xl mb-2 block">{action.icon}</span>
-                <h3 className="font-medium text-slate-800 group-hover:text-green-600">
+                <h3 className="font-medium text-slate-800 group-hover:text-emerald-600">
                   {action.name}
                 </h3>
                 <p className="text-xs text-slate-500">Create new</p>
@@ -343,7 +343,7 @@ export default function UserDashboard() {
             <h2 className="text-lg font-semibold text-slate-800">Recent Downloads</h2>
             <Link 
               to="/user/downloads" 
-              className="text-sm text-green-600 hover:text-green-700 font-medium"
+              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
             >
               View All
             </Link>
@@ -356,7 +356,7 @@ export default function UserDashboard() {
               <p className="text-sm text-slate-400 mb-4">Create your first document to get started</p>
               <Button 
                 onClick={() => navigate("/paystub-generator")}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Document
@@ -395,7 +395,7 @@ export default function UserDashboard() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 mt-6">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FolderArchive className="w-5 h-5 text-green-600" />
+                <FolderArchive className="w-5 h-5 text-emerald-600" />
                 <h2 className="text-lg font-semibold text-slate-800">Saved Documents</h2>
                 <span className="text-sm text-slate-500">
                   ({savedDocsCount.count}/{savedDocsCount.maxDocuments})
@@ -403,7 +403,7 @@ export default function UserDashboard() {
               </div>
               <Link 
                 to="/user/downloads" 
-                className="text-sm text-green-600 hover:text-green-700 font-medium"
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
               >
                 View All
               </Link>
@@ -420,8 +420,8 @@ export default function UserDashboard() {
                 {savedDocuments.map((doc) => (
                   <div key={doc.id} className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-green-600" />
+                      <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-emerald-600" />
                       </div>
                       <div>
                         <p className="font-medium text-slate-800">
@@ -440,7 +440,7 @@ export default function UserDashboard() {
                     </div>
                     <Link 
                       to="/user/downloads"
-                      className="text-green-600 hover:text-green-700"
+                      className="text-emerald-600 hover:text-emerald-700"
                     >
                       <Download className="w-5 h-5" />
                     </Link>

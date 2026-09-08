@@ -53,7 +53,7 @@ const EnvelopeAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center">
     <svg viewBox="0 0 280 240" className="w-full h-full max-w-md">
       {/* Background circle pulse */}
-      <circle cx="140" cy="120" r="100" fill="#dcfce7" opacity="0.3"
+      <circle cx="140" cy="120" r="100" fill="#d1fae5" opacity="0.3"
         style={{ 
           animation: isVisible ? 'pulse 2s ease-in-out infinite' : 'none',
           transformOrigin: '140px 120px'
@@ -128,7 +128,7 @@ const EnvelopeAnimation = ({ isVisible }) => (
         transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(30px) scale(0.9)',
         transition: 'all 0.6s ease-out 1.4s'
       }}>
-        <rect x="195" y="50" width="75" height="110" rx="6" fill="#ffffff" stroke="#22c55e" strokeWidth="3" filter="url(#glowGreen)"/>
+        <rect x="195" y="50" width="75" height="110" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="3" filter="url(#glowGreen)"/>
         <rect x="195" y="50" width="75" height="22" rx="6" fill="#1a4731"/>
         <text x="232" y="65" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">PAYSTUB</text>
         {/* Paystub content lines */}
@@ -139,13 +139,13 @@ const EnvelopeAnimation = ({ isVisible }) => (
         <line x1="203" y1="106" x2="255" y2="106" stroke="#1a4731" strokeWidth="1.5" opacity="0.5"
           style={{ strokeDasharray: 55, strokeDashoffset: isVisible ? 0 : 55, transition: 'stroke-dashoffset 0.3s ease-out 1.8s' }}/>
         {/* Amount box */}
-        <rect x="203" y="118" width="62" height="18" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1"
+        <rect x="203" y="118" width="62" height="18" rx="3" fill="#d1fae5" stroke="#10b981" strokeWidth="1"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 1.9s forwards' : 'none' }}/>
-        <text x="234" y="131" textAnchor="middle" fill="#166534" fontSize="9" fontWeight="bold"
+        <text x="234" y="131" textAnchor="middle" fill="#065f46" fontSize="9" fontWeight="bold"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 2s forwards' : 'none' }}>$2,450.00</text>
         {/* Checkmark badge */}
         <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 2.1s forwards' : 'none' }}>
-          <circle cx="262" cy="58" r="12" fill="#22c55e" stroke="#ffffff" strokeWidth="2"/>
+          <circle cx="262" cy="58" r="12" fill="#10b981" stroke="#ffffff" strokeWidth="2"/>
           <path d="M256,58 L260,63 L270,52" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </g>
@@ -167,13 +167,13 @@ const EnvelopeAnimation = ({ isVisible }) => (
         <circle cx="270" cy="40" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite 2.2s' : 'none' }}/>
         <circle cx="20" cy="170" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 2.4s' : 'none' }}/>
         <circle cx="275" cy="150" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 2.6s' : 'none' }}/>
-        <circle cx="100" cy="40" r="2.5" fill="#22c55e" style={{ animation: isVisible ? 'sparkle 2s ease-in-out infinite 2.3s' : 'none' }}/>
+        <circle cx="100" cy="40" r="2.5" fill="#10b981" style={{ animation: isVisible ? 'sparkle 2s ease-in-out infinite 2.3s' : 'none' }}/>
       </g>
 
       {/* Flow lines connecting everything */}
       <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.5s ease-out 0.4s forwards' : 'none' }}>
-        <path d="M55,155 Q55,175 80,175 Q100,175 120,165" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.4"/>
-        <path d="M225,165 Q240,175 255,175 Q270,175 270,190" fill="none" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.4"/>
+        <path d="M55,155 Q55,175 80,175 Q100,175 120,165" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.4"/>
+        <path d="M225,165 Q240,175 255,175 Q270,175 270,190" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.4"/>
       </g>
 
       {/* SVG filter for glow effect */}
@@ -280,9 +280,9 @@ const SpeedServiceAnimation = ({ isVisible }) => (
         <line x1="185" y1="102" x2="250" y2="102" stroke="#1a4731" strokeWidth="2" opacity="0.6"
           style={{ strokeDasharray: 65, strokeDashoffset: isVisible ? 0 : 65, transition: 'stroke-dashoffset 0.5s ease-out 0.9s' }}/>
         {/* Amount highlight */}
-        <rect x="185" y="115" width="70" height="20" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1"
+        <rect x="185" y="115" width="70" height="20" rx="3" fill="#d1fae5" stroke="#10b981" strokeWidth="1"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1s forwards' : 'none' }}/>
-        <text x="220" y="129" textAnchor="middle" fill="#166534" fontSize="10" fontWeight="bold"
+        <text x="220" y="129" textAnchor="middle" fill="#065f46" fontSize="10" fontWeight="bold"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$2,450.00</text>
         {/* MINTSLIP label */}
         <rect x="185" y="165" width="70" height="18" rx="4" fill="#1a4731"
@@ -291,7 +291,7 @@ const SpeedServiceAnimation = ({ isVisible }) => (
           style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}>MINTSLIP</text>
         {/* Checkmark */}
         <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1.2s forwards' : 'none' }}>
-          <circle cx="220" cy="95" r="18" fill="#22c55e"/>
+          <circle cx="220" cy="95" r="18" fill="#10b981"/>
           <path d="M212,95 L217,101 L230,86" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </g>
@@ -305,7 +305,7 @@ const SpeedServiceAnimation = ({ isVisible }) => (
         </g>
         {/* Accurate badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
-          <rect x="230" y="15" width="48" height="20" rx="10" fill="#22c55e"/>
+          <rect x="230" y="15" width="48" height="20" rx="10" fill="#10b981"/>
           <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✓ ACCURATE</text>
         </g>
       </g>
@@ -469,9 +469,9 @@ const PaystubRevealAnimation = ({ isVisible }) => (
           opacity: isVisible ? 1 : 0,
           transition: 'opacity 0.4s ease-out 1.6s'
         }}>
-          <rect x="24" y="232" width="240" height="22" rx="0" fill="#dcfce7" stroke="#86efac" strokeWidth="1"/>
-          <text x="32" y="246" fill="#166534" fontSize="9" fontWeight="700">GROSS PAY</text>
-          <text x="220" y="246" fill="#166534" fontSize="10" fontWeight="700">$2,300.00</text>
+          <rect x="24" y="232" width="240" height="22" rx="0" fill="#d1fae5" stroke="#6ee7b7" strokeWidth="1"/>
+          <text x="32" y="246" fill="#065f46" fontSize="9" fontWeight="700">GROSS PAY</text>
+          <text x="220" y="246" fill="#065f46" fontSize="10" fontWeight="700">$2,300.00</text>
         </g>
 
         {/* Deductions Section */}
@@ -506,9 +506,9 @@ const PaystubRevealAnimation = ({ isVisible }) => (
         }}>
           <rect x="24" y="330" width="240" height="26" rx="4" fill="#1a4731"/>
           <text x="32" y="347" fill="#ffffff" fontSize="10" fontWeight="700">NET PAY</text>
-          <text x="210" y="347" fill="#4ade80" fontSize="12" fontWeight="800"
+          <text x="210" y="347" fill="#34d399" fontSize="12" fontWeight="800"
             style={{
-              textShadow: '0 0 10px rgba(74, 222, 128, 0.5)'
+              textShadow: '0 0 10px rgba(52, 211, 153, 0.5)'
             }}>$1,754.90</text>
         </g>
       </g>
@@ -523,7 +523,7 @@ const PaystubRevealAnimation = ({ isVisible }) => (
           animation: isVisible ? 'bounceIn 0.6s ease-out 2.6s forwards' : 'none',
           opacity: 0
         }}>
-          <circle cx="264" cy="30" r="20" fill="#22c55e" stroke="#ffffff" strokeWidth="3"/>
+          <circle cx="264" cy="30" r="20" fill="#10b981" stroke="#ffffff" strokeWidth="3"/>
           <path d="M254,30 L261,38 L276,22" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
             style={{
               strokeDasharray: 30,
@@ -533,11 +533,11 @@ const PaystubRevealAnimation = ({ isVisible }) => (
         </g>
 
         {/* Dollar signs floating */}
-        <text x="8" y="100" fill="#22c55e" fontSize="18" opacity="0.4"
+        <text x="8" y="100" fill="#10b981" fontSize="18" opacity="0.4"
           style={{ animation: isVisible ? 'floatUp 2s ease-in-out infinite 2.5s' : 'none' }}>$</text>
-        <text x="278" y="200" fill="#22c55e" fontSize="14" opacity="0.3"
+        <text x="278" y="200" fill="#10b981" fontSize="14" opacity="0.3"
           style={{ animation: isVisible ? 'floatUp 2.5s ease-in-out infinite 2.7s' : 'none' }}>$</text>
-        <text x="5" y="300" fill="#22c55e" fontSize="12" opacity="0.3"
+        <text x="5" y="300" fill="#10b981" fontSize="12" opacity="0.3"
           style={{ animation: isVisible ? 'floatUp 2.2s ease-in-out infinite 2.9s' : 'none' }}>$</text>
       </g>
 
@@ -626,12 +626,12 @@ const InstantDownloadAnimation = ({ isVisible }) => (
         opacity: isVisible ? 0.5 : 0,
         animation: isVisible ? 'speedLines 1.5s ease-out 0.3s infinite' : 'none'
       }}>
-        <line x1="55" y1="95" x2="45" y2="95" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="55" y1="105" x2="40" y2="105" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="55" y1="115" x2="48" y2="115" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="95" x2="155" y2="95" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="105" x2="160" y2="105" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="115" x2="152" y2="115" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="95" x2="45" y2="95" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="105" x2="40" y2="105" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="115" x2="48" y2="115" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="95" x2="155" y2="95" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="105" x2="160" y2="105" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="115" x2="152" y2="115" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
       </g>
 
       {/* Checkmark that appears */}
@@ -639,7 +639,7 @@ const InstantDownloadAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'checkAppear 1.5s ease-out 0.3s infinite' : 'none'
       }}>
-        <circle cx="130" cy="160" r="15" fill="#22c55e"/>
+        <circle cx="130" cy="160" r="15" fill="#10b981"/>
         <path d="M122,160 L128,167 L140,152" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
 
@@ -777,7 +777,7 @@ const NoDataStoredAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'fadeInCheck 0.4s ease-out 1.3s forwards' : 'none'
       }}>
-        <circle cx="100" cy="155" r="12" fill="#22c55e"/>
+        <circle cx="100" cy="155" r="12" fill="#10b981"/>
         <path d="M94,155 L98,160 L108,148" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
 
@@ -792,9 +792,9 @@ const NoDataStoredAnimation = ({ isVisible }) => (
 
       {/* Floating secure icons */}
       <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.2s' }}>
-        <circle cx="25" cy="140" r="3" fill="#22c55e" style={{ animation: isVisible ? 'float 2s ease-in-out infinite' : 'none' }}/>
-        <circle cx="175" cy="145" r="2.5" fill="#22c55e" style={{ animation: isVisible ? 'float 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
-        <circle cx="170" cy="30" r="2" fill="#22c55e" style={{ animation: isVisible ? 'float 2.2s ease-in-out infinite 0.6s' : 'none' }}/>
+        <circle cx="25" cy="140" r="3" fill="#10b981" style={{ animation: isVisible ? 'float 2s ease-in-out infinite' : 'none' }}/>
+        <circle cx="175" cy="145" r="2.5" fill="#10b981" style={{ animation: isVisible ? 'float 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
+        <circle cx="170" cy="30" r="2" fill="#10b981" style={{ animation: isVisible ? 'float 2.2s ease-in-out infinite 0.6s' : 'none' }}/>
       </g>
     </svg>
 
@@ -821,7 +821,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center">
     <svg viewBox="0 0 300 280" className="w-full h-full max-w-md">
       {/* Background secure circle */}
-      <circle cx="150" cy="140" r="120" fill="#f0fdf4" opacity="0.5"
+      <circle cx="150" cy="140" r="120" fill="#ecfdf5" opacity="0.5"
         style={{ 
           animation: isVisible ? 'securePulse 3s ease-in-out infinite' : 'none',
           transformOrigin: '150px 140px'
@@ -834,7 +834,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
         transition: 'all 0.6s ease-out'
       }}>
         <rect x="30" y="80" width="90" height="60" rx="8" fill="#1a4731"/>
-        <rect x="30" y="80" width="90" height="20" rx="8" fill="#166534"/>
+        <rect x="30" y="80" width="90" height="20" rx="8" fill="#065f46"/>
         {/* Card chip */}
         <rect x="42" y="105" width="18" height="14" rx="3" fill="#fbbf24"/>
         <line x1="46" y1="109" x2="56" y2="109" stroke="#d97706" strokeWidth="1"/>
@@ -855,9 +855,9 @@ const SecureInstantAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'fadeIn 0.4s ease-out 0.5s forwards' : 'none'
       }}>
-        <path d="M125,110 Q145,95 150,95" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"
+        <path d="M125,110 Q145,95 150,95" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"
           style={{ strokeDasharray: 40, strokeDashoffset: isVisible ? 0 : 40, transition: 'stroke-dashoffset 0.5s ease-out 0.5s' }}/>
-        <circle cx="125" cy="110" r="4" fill="#22c55e"/>
+        <circle cx="125" cy="110" r="4" fill="#10b981"/>
       </g>
 
       {/* Central Lock / Security */}
@@ -868,9 +868,9 @@ const SecureInstantAnimation = ({ isVisible }) => (
         transition: 'all 0.5s ease-out 0.7s'
       }}>
         {/* Lock body */}
-        <rect x="130" y="100" width="40" height="35" rx="6" fill="#22c55e"/>
+        <rect x="130" y="100" width="40" height="35" rx="6" fill="#10b981"/>
         {/* Lock shackle */}
-        <path d="M137,100 L137,88 C137,75 163,75 163,88 L163,100" fill="none" stroke="#22c55e" strokeWidth="7" strokeLinecap="round"/>
+        <path d="M137,100 L137,88 C137,75 163,75 163,88 L163,100" fill="none" stroke="#10b981" strokeWidth="7" strokeLinecap="round"/>
         {/* Keyhole */}
         <circle cx="150" cy="113" r="5" fill="#ffffff"/>
         <rect x="148" y="115" width="4" height="10" rx="2" fill="#ffffff"/>
@@ -880,9 +880,9 @@ const SecureInstantAnimation = ({ isVisible }) => (
 
       {/* Encryption circles around lock */}
       <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1s' }}>
-        <circle cx="150" cy="115" r="35" fill="none" stroke="#22c55e" strokeWidth="1" strokeDasharray="5 5"
+        <circle cx="150" cy="115" r="35" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="5 5"
           style={{ animation: isVisible ? 'rotateSlow 10s linear infinite' : 'none', transformOrigin: '150px 115px' }}/>
-        <circle cx="150" cy="115" r="45" fill="none" stroke="#22c55e" strokeWidth="1" strokeDasharray="8 4" opacity="0.5"
+        <circle cx="150" cy="115" r="45" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="8 4" opacity="0.5"
           style={{ animation: isVisible ? 'rotateSlowReverse 15s linear infinite' : 'none', transformOrigin: '150px 115px' }}/>
       </g>
 
@@ -891,9 +891,9 @@ const SecureInstantAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'fadeIn 0.4s ease-out 1.2s forwards' : 'none'
       }}>
-        <path d="M175,110 Q195,95 210,100" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"
+        <path d="M175,110 Q195,95 210,100" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"
           style={{ strokeDasharray: 40, strokeDashoffset: isVisible ? 0 : 40, transition: 'stroke-dashoffset 0.5s ease-out 1.2s' }}/>
-        <path d="M205,95 L212,100 L205,105" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M205,95 L212,100 L205,105" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
 
       {/* Document / PDF Output */}
@@ -915,7 +915,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
           style={{ strokeDasharray: 45, strokeDashoffset: isVisible ? 0 : 45, transition: 'stroke-dashoffset 0.4s ease-out 1.8s' }}/>
         {/* Download arrow on document */}
         <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.4s ease-out 2s forwards' : 'none' }}>
-          <circle cx="235" cy="148" r="10" fill="#22c55e"/>
+          <circle cx="235" cy="148" r="10" fill="#10b981"/>
           <path d="M235,143 L235,153 M230,150 L235,155 L240,150" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </g>
@@ -943,7 +943,7 @@ const SecureInstantAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'bounceIn 0.5s ease-out 2.4s forwards' : 'none'
       }}>
-        <rect x="105" y="210" width="90" height="28" rx="14" fill="#22c55e"/>
+        <rect x="105" y="210" width="90" height="28" rx="14" fill="#10b981"/>
         <text x="127" y="228" fill="#ffffff" fontSize="9" fontWeight="bold">⚡ INSTANT</text>
       </g>
 
@@ -959,9 +959,9 @@ const SecureInstantAnimation = ({ isVisible }) => (
 
       {/* Floating shield icons */}
       <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 2s' }}>
-        <path d="M25,50 L25,62 C25,70 35,75 35,75 C35,75 45,70 45,62 L45,50 L35,45 Z" fill="#22c55e" opacity="0.6"
+        <path d="M25,50 L25,62 C25,70 35,75 35,75 C35,75 45,70 45,62 L45,50 L35,45 Z" fill="#10b981" opacity="0.6"
           style={{ animation: isVisible ? 'floatShield 3s ease-in-out infinite' : 'none' }}/>
-        <path d="M265,180 L265,190 C265,196 273,200 273,200 C273,200 281,196 281,190 L281,180 L273,176 Z" fill="#22c55e" opacity="0.5"
+        <path d="M265,180 L265,190 C265,196 273,200 273,200 C273,200 281,196 281,190 L281,180 L273,176 Z" fill="#10b981" opacity="0.5"
           style={{ animation: isVisible ? 'floatShield 3.5s ease-in-out infinite 0.5s' : 'none' }}/>
       </g>
 
@@ -970,20 +970,20 @@ const SecureInstantAnimation = ({ isVisible }) => (
         <circle cx="280" cy="60" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite' : 'none' }}/>
         <circle cx="20" cy="200" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 0.2s' : 'none' }}/>
         <circle cx="290" cy="240" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.4s' : 'none' }}/>
-        <circle cx="15" cy="120" r="2" fill="#22c55e" style={{ animation: isVisible ? 'sparkle 2s ease-in-out infinite 0.3s' : 'none' }}/>
+        <circle cx="15" cy="120" r="2" fill="#10b981" style={{ animation: isVisible ? 'sparkle 2s ease-in-out infinite 0.3s' : 'none' }}/>
       </g>
 
       {/* Checkmarks showing completed steps */}
       <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 1s forwards' : 'none' }}>
-        <circle cx="75" cy="60" r="10" fill="#22c55e"/>
+        <circle cx="75" cy="60" r="10" fill="#10b981"/>
         <path d="M70,60 L73,64 L81,55" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
       <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 1.5s forwards' : 'none' }}>
-        <circle cx="150" cy="55" r="10" fill="#22c55e"/>
+        <circle cx="150" cy="55" r="10" fill="#10b981"/>
         <path d="M145,55 L148,59 L156,50" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
       <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 2s forwards' : 'none' }}>
-        <circle cx="235" cy="55" r="10" fill="#22c55e"/>
+        <circle cx="235" cy="55" r="10" fill="#10b981"/>
         <path d="M230,55 L233,59 L241,50" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
     </svg>
@@ -1202,7 +1202,7 @@ function HeroProductPreview() {
   const fieldRow = (label, filled, focused) => (
     <div>
       <div className="text-[10px] font-medium text-slate-500 mb-1">{label}</div>
-      <div className={`h-7 rounded-md border px-2 flex items-center ${focused ? "border-green-600 ring-2 ring-green-100 bg-white" : "border-slate-200 bg-slate-50"}`}>
+      <div className={`h-7 rounded-md border px-2 flex items-center ${focused ? "border-emerald-600 ring-2 ring-emerald-100 bg-white" : "border-slate-200 bg-slate-50"}`}>
         <div className={`h-1.5 rounded-full ${filled ? "bg-slate-300" : "bg-transparent"}`} style={{ width: filled }} />
       </div>
     </div>
@@ -1216,9 +1216,9 @@ function HeroProductPreview() {
         <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
           <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
           <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
           <div className="ml-3 h-6 flex-1 max-w-[210px] rounded-md bg-white border border-slate-200 flex items-center gap-1.5 px-2.5">
-            <Lock className="w-2.5 h-2.5 text-green-700" />
+            <Lock className="w-2.5 h-2.5 text-emerald-700" />
             <span className="text-[10px] text-slate-500 tracking-wide">mintslip.com/paystub-generator</span>
           </div>
         </div>
@@ -1227,14 +1227,14 @@ function HeroProductPreview() {
           {/* Form column */}
           <div className="col-span-2 p-4 space-y-3 border-r border-slate-100">
             <div className="flex items-center gap-1.5">
-              <Receipt className="w-3.5 h-3.5 text-green-700" />
+              <Receipt className="w-3.5 h-3.5 text-emerald-700" />
               <span className="text-[11px] font-semibold text-slate-800">Pay Stub Details</span>
             </div>
             {fieldRow("Company name", "80%")}
             {fieldRow("Employee name", "65%")}
             {fieldRow("Hourly rate", "40%", true)}
             {fieldRow("Pay period", "55%")}
-            <div className="h-8 rounded-lg bg-green-700 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+            <div className="h-8 rounded-lg bg-emerald-700 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-sm">
               Generate Pay Stub
               <ArrowRight className="w-3 h-3" />
             </div>
@@ -1242,9 +1242,9 @@ function HeroProductPreview() {
           {/* Live preview column */}
           <div className="col-span-3 bg-slate-100/70 p-4 sm:p-5">
             <div className="rounded-lg bg-white border border-slate-200 shadow-sm overflow-hidden">
-              <div className="bg-green-800 px-3 py-2 flex items-center justify-between">
+              <div className="bg-emerald-800 px-3 py-2 flex items-center justify-between">
                 <span className="text-[10px] font-bold tracking-widest text-white">MINTSLIP CORP.</span>
-                <span className="text-[9px] text-green-200">EARNINGS STATEMENT</span>
+                <span className="text-[9px] text-emerald-200">EARNINGS STATEMENT</span>
               </div>
               <div className="p-3 space-y-2.5">
                 <div className="flex justify-between gap-3">
@@ -1262,9 +1262,9 @@ function HeroProductPreview() {
                     <div key={i} className={`h-1.5 ${w} rounded-full ${i % 2 ? "bg-slate-100" : "bg-slate-200"}`} />
                   ))}
                 </div>
-                <div className="flex items-center justify-between rounded-md bg-green-50 border border-green-100 px-2.5 py-2">
-                  <span className="text-[9px] font-semibold text-green-900 tracking-wide">NET PAY</span>
-                  <span className="text-xs font-bold text-green-800">$2,847.50</span>
+                <div className="flex items-center justify-between rounded-md bg-emerald-50 border border-emerald-100 px-2.5 py-2">
+                  <span className="text-[9px] font-semibold text-emerald-900 tracking-wide">NET PAY</span>
+                  <span className="text-xs font-bold text-emerald-800">$2,847.50</span>
                 </div>
               </div>
             </div>
@@ -1274,19 +1274,19 @@ function HeroProductPreview() {
 
       {/* Floating chip: instant download */}
       <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white rounded-xl border border-slate-200 shadow-lg px-3.5 py-2.5 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-          <Download className="w-4 h-4 text-green-700" />
+        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+          <Download className="w-4 h-4 text-emerald-700" />
         </div>
         <div className="leading-tight">
           <p className="text-[11px] font-semibold text-slate-800">paystub.pdf</p>
           <p className="text-[10px] text-slate-500">Downloaded instantly</p>
         </div>
-        <CheckCircle className="w-4 h-4 text-green-600" />
+        <CheckCircle className="w-4 h-4 text-emerald-600" />
       </div>
 
       {/* Floating chip: secure checkout */}
       <div className="absolute -top-4 right-2 sm:-right-4 bg-white rounded-xl border border-slate-200 shadow-lg px-3 py-2 flex items-center gap-2">
-        <Shield className="w-3.5 h-3.5 text-green-700" />
+        <Shield className="w-3.5 h-3.5 text-emerald-700" />
         <span className="text-[11px] font-semibold text-slate-700">Secure checkout</span>
       </div>
     </div>
@@ -1348,16 +1348,16 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative max-w-7xl mx-auto px-6 pt-14 pb-20 md:pt-20 md:pb-28">
         {/* Background Decorations */}
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
         <div className={`relative grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-16 items-center transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           {/* Left: copy */}
           <div className="text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-green-700" />
-              <span className="text-sm font-medium text-green-900">Trusted by {userCount} users</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80 mb-6">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="text-sm font-medium text-emerald-900">Trusted by {userCount} users</span>
               <div className="flex gap-0.5" aria-hidden="true">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} xmlns="http://www.w3.org/2000/svg" width="11" height="10" viewBox="0 0 27.39 25.547">
@@ -1369,7 +1369,7 @@ export default function Home() {
 
             <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.1 }}>
               Generate Professional{' '}
-              <span className="text-green-700"><FlipWord /></span>{' '}
+              <span className="text-emerald-700"><FlipWord /></span>{' '}
               in Minutes
             </h1>
             <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl mx-auto lg:mx-0 mb-8">
@@ -1381,7 +1381,7 @@ export default function Home() {
               <Button
                 onClick={() => navigate("/app")}
                 size="lg"
-                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg hover:shadow-green-900/15 transition-all duration-200"
+                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10 hover:shadow-lg hover:shadow-emerald-900/15 transition-all duration-200"
               >
                 <FileText className="w-5 h-5" />
                 Create Pay Stub
@@ -1391,7 +1391,7 @@ export default function Home() {
                 onClick={() => navigate("/app/resumes")}
                 size="lg"
                 variant="outline"
-                className="group gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-green-50/60 transition-all duration-200"
+                className="group gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-800 hover:bg-emerald-50/60 transition-all duration-200"
               >
                 <Sparkles className="w-5 h-5" />
                 AI Resume Builder
@@ -1402,7 +1402,7 @@ export default function Home() {
             <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-6 justify-center lg:justify-start">
               {trustPoints.map((point) => (
                 <li key={point.text} className="flex items-center gap-1.5 text-sm text-slate-500">
-                  <point.icon className="w-4 h-4 text-green-600" aria-hidden="true" />
+                  <point.icon className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                   {point.text}
                 </li>
               ))}
@@ -1434,7 +1434,7 @@ export default function Home() {
             { number: "24/7", label: "Support" },
           ].map((stat, index) => (
             <div key={index} className="text-center px-4 py-6 border-slate-100 [&:nth-child(even)]:border-l md:[&:not(:first-child)]:border-l">
-              <p className="font-display text-2xl md:text-3xl font-bold text-green-800">{stat.number}</p>
+              <p className="font-display text-2xl md:text-3xl font-bold text-emerald-800">{stat.number}</p>
               <p className="text-sm text-slate-500 mt-1">{stat.label}</p>
             </div>
           ))}
@@ -1448,7 +1448,7 @@ export default function Home() {
           <section ref={paystubRef} className="bg-slate-50/70 border-y border-slate-200/80 py-20 md:py-24">
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-100/70 rounded-2xl border border-green-100 shadow-sm h-[450px] flex items-center justify-center overflow-hidden">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl border border-emerald-100 shadow-sm h-[450px] flex items-center justify-center overflow-hidden">
                   <PaystubRevealAnimation isVisible={paystubInView} />
                 </div>
                 <div className="space-y-6">
@@ -1463,15 +1463,15 @@ export default function Home() {
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
                       <span className="text-slate-700">Create accurate income documentation</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
                       <span className="text-slate-700">Essential for tax filing & records</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
                       <span className="text-slate-700">Track earnings & deductions clearly</span>
                     </li>
                   </ul>
@@ -1490,7 +1490,7 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
                 <div className="order-2 md:order-1 space-y-6">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-green-700" style={{ letterSpacing: '0.15em' }}>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700" style={{ letterSpacing: '0.15em' }}>
                     Accurate Income Documentation
                   </p>
                   <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
@@ -1506,9 +1506,9 @@ export default function Home() {
                       { icon: Shield, title: "Business Documentation", desc: "Accurate records for freelancers" },
                       { icon: Clock, title: "Instant Generation", desc: "Ready in minutes" },
                     ].map((item) => (
-                      <div key={item.title} className="p-4 bg-white rounded-xl border border-slate-200 hover:border-green-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                        <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center mb-2.5">
-                          <item.icon className="w-4.5 h-4.5 text-green-700" style={{ width: 18, height: 18 }} />
+                      <div key={item.title} className="p-4 bg-white rounded-xl border border-slate-200 hover:border-emerald-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                        <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center mb-2.5">
+                          <item.icon className="w-4.5 h-4.5 text-emerald-700" style={{ width: 18, height: 18 }} />
                         </div>
                         <h3 className="font-semibold text-slate-900 text-sm md:text-base">{item.title}</h3>
                         <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
@@ -1517,7 +1517,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="order-1 md:order-2">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100/70 rounded-2xl border border-green-100 shadow-sm h-96 flex items-center justify-center">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl border border-emerald-100 shadow-sm h-96 flex items-center justify-center">
                     <FormTypingAnimation isVisible={docInView} />
                   </div>
                 </div>
@@ -1528,58 +1528,58 @@ export default function Home() {
       })()}
 
       {/* Best Pricing Section */}
-      <section className="relative bg-gradient-to-br from-green-900 to-green-800 py-20 md:py-24 overflow-hidden">
-        <div aria-hidden="true" className="absolute -top-32 -right-32 w-96 h-96 bg-green-700/30 rounded-full filter blur-3xl pointer-events-none" />
+      <section className="relative bg-gradient-to-br from-emerald-900 to-emerald-800 py-20 md:py-24 overflow-hidden">
+        <div aria-hidden="true" className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-700/30 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-700/20 rounded-full filter blur-3xl pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-green-300 mb-4" style={{ letterSpacing: '0.15em' }}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300 mb-4" style={{ letterSpacing: '0.15em' }}>
               THE BEST PRICING
             </p>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
               We Offer the Best Pricing in The Paystub Generator Industry
             </h2>
-            <p className="text-lg text-green-100/90 max-w-2xl mx-auto">
+            <p className="text-lg text-emerald-100/90 max-w-2xl mx-auto">
               Transparent Pricing, Unmatched Value Ã¢â‚¬” That&apos;s the MintSlip Promise
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
             {/* Pay Stub Pricing */}
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-green-950/20 flex flex-col">
-              <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
-                <Receipt className="w-7 h-7 text-green-700" />
+            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-emerald-950/20 flex flex-col">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                <Receipt className="w-7 h-7 text-emerald-700" />
               </div>
               <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">Pay Stub Generator</h3>
               <div className="mb-5">
-                <span className="font-display text-5xl font-bold text-green-900">$9.99</span>
+                <span className="font-display text-5xl font-bold text-emerald-900">$9.99</span>
                 <span className="text-slate-500 ml-2">/ stub</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>100% Accurate Calculations</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Professional Templates</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Instant PDF Download</span>
                 </li>
               </ul>
               <button
                 onClick={() => navigate("/app")}
-                className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
+                className="w-full mt-auto py-3 bg-emerald-700 text-white rounded-xl font-semibold hover:bg-emerald-800 transition-colors duration-200"
               >
                 Generate Now
               </button>
             </div>
 
             {/* Canadian Pay Stub Pricing */}
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-green-950/20 relative flex flex-col">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white border border-green-600 text-green-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-emerald-950/20 relative flex flex-col">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white border border-emerald-600 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                 NEW
               </div>
               <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
@@ -1587,61 +1587,61 @@ export default function Home() {
               </div>
               <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">Canadian Pay Stub</h3>
               <div className="mb-5">
-                <span className="font-display text-5xl font-bold text-green-900">$9.99</span>
+                <span className="font-display text-5xl font-bold text-emerald-900">$9.99</span>
                 <span className="text-slate-500 ml-2">/ stub</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>CPP/QPP & EI Calculations</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>All Provinces & Territories</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Provincial Tax Brackets</span>
                 </li>
               </ul>
               <button
                 onClick={() => navigate("/app/canadian-paystub")}
-                className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
+                className="w-full mt-auto py-3 bg-emerald-700 text-white rounded-xl font-semibold hover:bg-emerald-800 transition-colors duration-200"
               >
                 Generate Now
               </button>
             </div>
 
             {/* AI Resume Builder Pricing */}
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-green-950/20 relative flex flex-col ring-2 ring-green-400/70">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-emerald-950/20 relative flex flex-col ring-2 ring-emerald-400/70">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                 POPULAR
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-7 h-7 text-green-700" />
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-7 h-7 text-emerald-700" />
               </div>
               <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">AI Resume Builder</h3>
               <div className="mb-5">
-                <span className="font-display text-5xl font-bold text-green-900">$9.99</span>
+                <span className="font-display text-5xl font-bold text-emerald-900">$9.99</span>
                 <span className="text-slate-500 ml-2">/ resume</span>
               </div>
               <ul className="text-left space-y-2 mb-6">
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>ATS-optimized resume</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Tailored To Target Jobs</span>
                 </li>
                 <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Professional Templates</span>
                 </li>
               </ul>
               <button
                 onClick={() => navigate("/app/resumes")}
-                className="w-full mt-auto py-3 bg-green-700 text-white rounded-xl font-semibold hover:bg-green-800 transition-colors duration-200"
+                className="w-full mt-auto py-3 bg-emerald-700 text-white rounded-xl font-semibold hover:bg-emerald-800 transition-colors duration-200"
               >
                 Generate Now
               </button>
@@ -1659,7 +1659,7 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 {/* Left Content - appears below animation on mobile */}
                 <div className="space-y-6 order-2 lg:order-1">
-                  <span className="inline-block text-sm font-semibold text-green-800 bg-green-50 border border-green-200/80 px-4 py-1.5 rounded-full">
+                  <span className="inline-block text-sm font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-4 py-1.5 rounded-full">
                     Quick Solution
                   </span>
                   <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight leading-tight text-slate-900">
@@ -1697,7 +1697,7 @@ export default function Home() {
                   </p>
                   <button
                     onClick={() => navigate("/app")}
-                    className="group inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-green-900/10 hover:shadow-lg"
+                    className="group inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-emerald-900/10 hover:shadow-lg"
                   >
                     Get Your Pay Stub Now
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
@@ -1706,7 +1706,7 @@ export default function Home() {
 
                 {/* Right - Animation - appears above text on mobile */}
                 <div className="flex justify-center items-center order-1 lg:order-2">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100/70 rounded-2xl overflow-hidden h-96 w-full border border-green-100 shadow-sm flex items-center justify-center">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl overflow-hidden h-96 w-full border border-emerald-100 shadow-sm flex items-center justify-center">
                     <EnvelopeAnimation isVisible={quickSolutionInView} />
                   </div>
                 </div>
@@ -1720,7 +1720,7 @@ export default function Home() {
       <section className="py-20 md:py-24 bg-slate-50/70 border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-green-700 mb-4" style={{ letterSpacing: '0.15em' }}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-4" style={{ letterSpacing: '0.15em' }}>
               How It Works
             </p>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
@@ -1736,7 +1736,7 @@ export default function Home() {
             ].map((step, i) => (
               <div key={i} className="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
                 <div className="relative p-6 pb-0">
-                  <div className="absolute top-4 left-4 z-10 w-10 h-10 rounded-xl bg-green-700 text-white font-display font-bold flex items-center justify-center shadow-md shadow-green-900/20">
+                  <div className="absolute top-4 left-4 z-10 w-10 h-10 rounded-xl bg-emerald-700 text-white font-display font-bold flex items-center justify-center shadow-md shadow-emerald-900/20">
                     {i + 1}
                   </div>
                   <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden h-64 w-full">
@@ -1794,17 +1794,17 @@ export default function Home() {
                     </p>
                     <ul className="space-y-3">
                       <li className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                         <span className="text-slate-700">Lightning-Fast Paystub Generation</span>
                       </li>
                       <li className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                         <span className="text-slate-700">Top-Notch Customer Support</span>
                       </li>
                     </ul>
                   </div>
                   <div className="flex justify-center items-center order-1 md:order-2">
-                    <div className="bg-gradient-to-br from-green-50 to-green-100/70 rounded-2xl overflow-hidden h-72 w-full border border-green-100 shadow-sm flex items-center justify-center">
+                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl overflow-hidden h-72 w-full border border-emerald-100 shadow-sm flex items-center justify-center">
                       <SpeedServiceAnimation isVisible={whyChooseInView} />
                     </div>
                   </div>
@@ -1814,7 +1814,7 @@ export default function Home() {
           {/* Bottom Section - Two Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Instant Download Card */}
-            <div className="bg-green-50/80 rounded-3xl border border-green-100 p-8 overflow-hidden">
+            <div className="bg-emerald-50/80 rounded-3xl border border-emerald-100 p-8 overflow-hidden">
               <h3 className="font-display text-2xl md:text-3xl font-bold mb-2 text-center text-slate-900">
                 Instant Download
               </h3>
@@ -1822,7 +1822,7 @@ export default function Home() {
                 Download your generated documents immediately after creation
               </p>
               <div className="relative">
-                <div className="bg-white rounded-2xl overflow-hidden border border-green-100 shadow-sm h-64 flex items-center justify-center">
+                <div className="bg-white rounded-2xl overflow-hidden border border-emerald-100 shadow-sm h-64 flex items-center justify-center">
                   <InstantDownloadAnimation isVisible={whyChooseInView} />
                 </div>
               </div>
@@ -1856,9 +1856,9 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               {/* Left: Info Content */}
               <div className={`space-y-6 transition-all duration-700 ${docInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200">
-                  <FileText className="w-4 h-4 text-green-700" />
-                  <span className="text-sm font-medium text-green-800">13+ Document Types</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-200">
+                  <FileText className="w-4 h-4 text-emerald-700" />
+                  <span className="text-sm font-medium text-emerald-800">13+ Document Types</span>
                 </div>
                 
                 <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
@@ -1871,35 +1871,35 @@ export default function Home() {
                 
                 <div className="grid grid-cols-2 gap-4 py-4">
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">Pay Stubs (US & Canada)</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">W-2 & W-9 Forms</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">1099-NEC & 1099-MISC</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">AI Resume Builder</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">Offer Letters</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">Vehicle Bill of Sale</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">Schedule C Forms</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                     <span className="text-sm">Service Expenses & More</span>
                   </div>
                 </div>
@@ -1907,7 +1907,7 @@ export default function Home() {
                 <Button
                   onClick={() => navigate("/generators")}
                   size="lg"
-                  className="group gap-2 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
+                  className="group gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all duration-200"
                 >
                   Browse All Documents
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -1920,55 +1920,55 @@ export default function Home() {
                   {/* Featured Document Cards */}
                   <button
                     onClick={() => navigate("/app")}
-                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
-                      <Receipt className="w-5 h-5 text-green-700" />
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
+                      <Receipt className="w-5 h-5 text-emerald-700" />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-1">Pay Stub</h4>
                     <p className="text-xs text-slate-500">Most Popular</p>
-                    <p className="text-lg font-bold text-green-700 mt-2">$9.99</p>
+                    <p className="text-lg font-bold text-emerald-700 mt-2">$9.99</p>
                   </button>
                   
                   <button
                     onClick={() => navigate("/app/resumes")}
-                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
-                      <Sparkles className="w-5 h-5 text-green-700" />
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
+                      <Sparkles className="w-5 h-5 text-emerald-700" />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-1">AI Resume</h4>
                     <p className="text-xs text-slate-500">AI-Powered</p>
-                    <p className="text-lg font-bold text-green-700 mt-2">$9.99</p>
+                    <p className="text-lg font-bold text-emerald-700 mt-2">$9.99</p>
                   </button>
                   
                   <button
                     onClick={() => navigate("/w2-generator")}
-                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
-                      <Calendar className="w-5 h-5 text-green-700" />
+                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
+                      <Calendar className="w-5 h-5 text-emerald-700" />
                     </div>
                     <h4 className="font-bold text-slate-800 mb-1">W-2 Form</h4>
                     <p className="text-xs text-slate-500">Tax Documents</p>
-                    <p className="text-lg font-bold text-green-700 mt-2">$14.99</p>
+                    <p className="text-lg font-bold text-emerald-700 mt-2">$14.99</p>
                   </button>
                   
                   <button
                     onClick={() => navigate("/generators")}
-                    className="group p-5 bg-gradient-to-br from-green-50 to-emerald-100/70 border border-green-200 rounded-xl hover:border-green-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+                    className="group p-5 bg-gradient-to-br from-emerald-50 to-emerald-100/70 border border-emerald-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-3 group-hover:bg-green-50 transition-colors">
-                      <ArrowRight className="w-5 h-5 text-green-700 group-hover:translate-x-0.5 transition-transform" />
+                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-3 group-hover:bg-emerald-50 transition-colors">
+                      <ArrowRight className="w-5 h-5 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
                     </div>
-                    <h4 className="font-bold text-green-800 mb-1">View All</h4>
-                    <p className="text-xs text-green-600">13+ Document Types</p>
-                    <p className="text-sm font-medium text-green-700 mt-2">Browse Directory →</p>
+                    <h4 className="font-bold text-emerald-800 mb-1">View All</h4>
+                    <p className="text-xs text-emerald-600">13+ Document Types</p>
+                    <p className="text-sm font-medium text-emerald-700 mt-2">Browse Directory →</p>
                   </button>
                 </div>
                 
                 {/* Background decoration */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-100 rounded-full filter blur-2xl opacity-50 -z-10" />
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-100 rounded-full filter blur-2xl opacity-50 -z-10" />
                 <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-100 rounded-full filter blur-2xl opacity-40 -z-10" />
               </div>
             </div>
@@ -2016,9 +2016,9 @@ export default function Home() {
             <div className="max-w-6xl mx-auto px-6">
               {/* Section Header */}
               <div className={`text-center mb-12 transition-all duration-700 ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full border border-green-200 mb-4">
-                  <FileText className="w-4 h-4 text-green-700" />
-                  <span className="text-sm font-medium text-green-800">From Our Blog</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-200 mb-4">
+                  <FileText className="w-4 h-4 text-emerald-700" />
+                  <span className="text-sm font-medium text-emerald-800">From Our Blog</span>
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Latest Articles & Guides
@@ -2040,12 +2040,12 @@ export default function Home() {
                   {latestPosts.map((post, index) => (
                     <article
                       key={post.id}
-                      className={`group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-green-400 hover:shadow-lg transition-all duration-300 cursor-pointer ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                      className={`group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-emerald-400 hover:shadow-lg transition-all duration-300 cursor-pointer ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                       style={{ transitionDelay: `${index * 100}ms` }}
                       onClick={() => navigate(`/blog/${post.slug}`)}
                     >
                       {/* Featured Image */}
-                      <div className="relative h-48 bg-gradient-to-br from-green-100 to-emerald-50 overflow-hidden">
+                      <div className="relative h-48 bg-gradient-to-br from-emerald-100 to-emerald-50 overflow-hidden">
                         {post.featuredImage ? (
                           <img
                             src={post.featuredImage.startsWith('/') ? `${BACKEND_URL}${post.featuredImage}` : post.featuredImage}
@@ -2054,13 +2054,13 @@ export default function Home() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <FileText className="w-16 h-16 text-green-300" />
+                            <FileText className="w-16 h-16 text-emerald-300" />
                           </div>
                         )}
                         {/* Category Badge and Views */}
                         <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
                           {post.category && (
-                            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-green-700 text-xs font-semibold rounded-full capitalize">
+                            <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-semibold rounded-full capitalize">
                               {post.category.replace(/-/g, ' ')}
                             </span>
                           )}
@@ -2088,7 +2088,7 @@ export default function Home() {
                         </div>
 
                         {/* Title */}
-                        <h4 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
+                        <h4 className="font-bold text-slate-800 text-lg mb-2 line-clamp-2 group-hover:text-emerald-700 transition-colors">
                           {post.title}
                         </h4>
 
@@ -2098,7 +2098,7 @@ export default function Home() {
                         </p>
 
                         {/* Read More Link */}
-                        <div className="flex items-center gap-1 text-green-600 font-medium text-sm group-hover:gap-2 transition-all">
+                        <div className="flex items-center gap-1 text-emerald-600 font-medium text-sm group-hover:gap-2 transition-all">
                           Read Article
                           <ArrowRight className="w-4 h-4" />
                         </div>
@@ -2114,7 +2114,7 @@ export default function Home() {
                   onClick={() => navigate("/blog")}
                   size="lg"
                   variant="outline"
-                  className="group gap-2 border-2 border-green-600 text-green-700 hover:bg-green-50"
+                  className="group gap-2 border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
                 >
                   View All Articles
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -2133,7 +2133,7 @@ export default function Home() {
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="order-2 md:order-1">
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-100/70 rounded-2xl border border-green-100 shadow-sm h-[400px] flex items-center justify-center overflow-hidden">
+                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl border border-emerald-100 shadow-sm h-[400px] flex items-center justify-center overflow-hidden">
                     <SecureInstantAnimation isVisible={trustInView} />
                   </div>
                 </div>
@@ -2146,15 +2146,15 @@ export default function Home() {
                   </p>
                   <ul className="space-y-4">
                     <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
                       <span className="text-slate-700">Industry-standard encryption</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
                       <span className="text-slate-700">No data storage after download</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-700 mt-1 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
                       <span className="text-slate-700">Instant PDF generation</span>
                     </li>
                   </ul>
@@ -2169,7 +2169,7 @@ export default function Home() {
       <section id="faq" className="py-20 md:py-24 bg-white scroll-mt-24">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-green-700 mb-4" style={{ letterSpacing: '0.15em' }}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-4" style={{ letterSpacing: '0.15em' }}>
               FAQ
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-4">
@@ -2183,7 +2183,7 @@ export default function Home() {
           <Accordion type="single" collapsible className="w-full">
             {LANDING_FAQS.map((faq, i) => (
               <AccordionItem key={i} value={`faq-${i}`} className="border-slate-200">
-                <AccordionTrigger className="text-left text-base font-semibold text-slate-800 hover:text-green-800 hover:no-underline py-5">
+                <AccordionTrigger className="text-left text-base font-semibold text-slate-800 hover:text-emerald-800 hover:no-underline py-5">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-base leading-relaxed text-slate-600 pb-5">
@@ -2198,7 +2198,7 @@ export default function Home() {
               onClick={() => navigate("/faq")}
               variant="outline"
               size="lg"
-              className="group gap-2 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-green-50/60 transition-all duration-200"
+              className="group gap-2 rounded-xl border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-800 hover:bg-emerald-50/60 transition-all duration-200"
             >
               View All FAQs
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -2209,8 +2209,8 @@ export default function Home() {
 
       {/* Final CTA Section */}
       <section className="pb-20 md:pb-24 px-6 bg-white">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 md:py-16 text-center overflow-hidden">
-          <div aria-hidden="true" className="absolute -top-24 -right-24 w-72 h-72 bg-green-100/70 rounded-full filter blur-3xl pointer-events-none" />
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 md:py-16 text-center overflow-hidden">
+          <div aria-hidden="true" className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-100/70 rounded-full filter blur-3xl pointer-events-none" />
           <div className="relative">
             <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-4">
               Create Your First Document in Minutes
@@ -2222,7 +2222,7 @@ export default function Home() {
               <Button
                 onClick={() => navigate("/app")}
                 size="lg"
-                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-green-700 hover:bg-green-800 shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-200"
+                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all duration-200"
               >
                 Create Pay Stub
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -2231,7 +2231,7 @@ export default function Home() {
                 onClick={() => navigate("/generators")}
                 size="lg"
                 variant="outline"
-                className="gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-green-600 hover:text-green-800 hover:bg-white transition-all duration-200"
+                className="gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-800 hover:bg-white transition-all duration-200"
               >
                 Browse All Generators
               </Button>

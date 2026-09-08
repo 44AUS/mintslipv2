@@ -73,7 +73,7 @@ export default function UserNavTabs() {
               ${isActive 
                 ? tab.businessOnly 
                   ? "bg-purple-600 text-white shadow-md"
-                  : "bg-green-600 text-white shadow-md" 
+                  : "bg-emerald-600 text-white shadow-md" 
                 : "bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 hover:border-slate-300"
               }
             `}

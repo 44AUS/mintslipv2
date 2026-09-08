@@ -104,9 +104,9 @@ const VsComparisonAnimation = ({ isVisible }) => (
         <line x1="185" y1="102" x2="250" y2="102" stroke="#1a4731" strokeWidth="2" opacity="0.6"
           style={{ strokeDasharray: 65, strokeDashoffset: isVisible ? 0 : 65, transition: 'stroke-dashoffset 0.5s ease-out 0.9s' }}/>
         {/* Amount highlight */}
-        <rect x="185" y="115" width="70" height="20" rx="3" fill="#dcfce7" stroke="#22c55e" strokeWidth="1"
+        <rect x="185" y="115" width="70" height="20" rx="3" fill="#d1fae5" stroke="#10b981" strokeWidth="1"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1s forwards' : 'none' }}/>
-        <text x="220" y="129" textAnchor="middle" fill="#166534" fontSize="10" fontWeight="bold"
+        <text x="220" y="129" textAnchor="middle" fill="#065f46" fontSize="10" fontWeight="bold"
           style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$2,450.00</text>
         {/* MINTSLIP label */}
         <rect x="185" y="165" width="70" height="18" rx="4" fill="#1a4731"
@@ -115,7 +115,7 @@ const VsComparisonAnimation = ({ isVisible }) => (
           style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}>MINTSLIP</text>
         {/* Checkmark */}
         <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1.2s forwards' : 'none' }}>
-          <circle cx="220" cy="95" r="18" fill="#22c55e"/>
+          <circle cx="220" cy="95" r="18" fill="#10b981"/>
           <path d="M212,95 L217,101 L230,86" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </g>
@@ -129,7 +129,7 @@ const VsComparisonAnimation = ({ isVisible }) => (
         </g>
         {/* Accurate badge */}
         <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
-          <rect x="230" y="15" width="48" height="20" rx="10" fill="#22c55e"/>
+          <rect x="230" y="15" width="48" height="20" rx="10" fill="#10b981"/>
           <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✓ ACCURATE</text>
         </g>
       </g>
@@ -250,12 +250,12 @@ const InstantDownloadAnimation = ({ isVisible }) => (
         opacity: isVisible ? 0.5 : 0,
         animation: isVisible ? 'speedLines 1.5s ease-out 0.3s infinite' : 'none'
       }}>
-        <line x1="55" y1="95" x2="45" y2="95" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="55" y1="105" x2="40" y2="105" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="55" y1="115" x2="48" y2="115" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="95" x2="155" y2="95" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="105" x2="160" y2="105" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="115" x2="152" y2="115" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="95" x2="45" y2="95" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="105" x2="40" y2="105" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="55" y1="115" x2="48" y2="115" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="95" x2="155" y2="95" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="105" x2="160" y2="105" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
+        <line x1="145" y1="115" x2="152" y2="115" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
       </g>
 
       {/* Checkmark that appears */}
@@ -263,7 +263,7 @@ const InstantDownloadAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'checkAppear 1.5s ease-out 0.3s infinite' : 'none'
       }}>
-        <circle cx="130" cy="160" r="15" fill="#22c55e"/>
+        <circle cx="130" cy="160" r="15" fill="#10b981"/>
         <path d="M122,160 L128,167 L140,152" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
 
@@ -401,7 +401,7 @@ const NoDataStoredAnimation = ({ isVisible }) => (
         opacity: 0,
         animation: isVisible ? 'fadeInCheck 0.4s ease-out 1.3s forwards' : 'none'
       }}>
-        <circle cx="100" cy="155" r="12" fill="#22c55e"/>
+        <circle cx="100" cy="155" r="12" fill="#10b981"/>
         <path d="M94,155 L98,160 L108,148" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
       </g>
 
@@ -416,9 +416,9 @@ const NoDataStoredAnimation = ({ isVisible }) => (
 
       {/* Floating secure icons */}
       <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.2s' }}>
-        <circle cx="25" cy="140" r="3" fill="#22c55e" style={{ animation: isVisible ? 'float 2s ease-in-out infinite' : 'none' }}/>
-        <circle cx="175" cy="145" r="2.5" fill="#22c55e" style={{ animation: isVisible ? 'float 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
-        <circle cx="170" cy="30" r="2" fill="#22c55e" style={{ animation: isVisible ? 'float 2.2s ease-in-out infinite 0.6s' : 'none' }}/>
+        <circle cx="25" cy="140" r="3" fill="#10b981" style={{ animation: isVisible ? 'float 2s ease-in-out infinite' : 'none' }}/>
+        <circle cx="175" cy="145" r="2.5" fill="#10b981" style={{ animation: isVisible ? 'float 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
+        <circle cx="170" cy="30" r="2" fill="#10b981" style={{ animation: isVisible ? 'float 2.2s ease-in-out infinite 0.6s' : 'none' }}/>
       </g>
     </svg>
 
@@ -523,7 +523,7 @@ const LightningBoltAnimation = ({ isVisible }) => (
         <circle cx="30" cy="90" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.2s ease-in-out infinite' : 'none' }}/>
         <circle cx="170" cy="95" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite 0.2s' : 'none' }}/>
         <circle cx="140" cy="160" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.3s ease-in-out infinite 0.4s' : 'none' }}/>
-        <circle cx="35" cy="140" r="2" fill="#22c55e" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.3s' : 'none' }}/>
+        <circle cx="35" cy="140" r="2" fill="#10b981" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.3s' : 'none' }}/>
       </g>
     </svg>
 
@@ -573,7 +573,7 @@ const FeatureRow = ({ feature, mintslip, others, isVisible, delay }) => (
     </div>
     <div className="flex items-center justify-center">
       {mintslip === true ? (
-        <div className="flex items-center gap-2 text-green-600">
+        <div className="flex items-center gap-2 text-emerald-600">
           <CheckCircle className="w-5 h-5" />
           <span className="hidden md:inline text-sm font-medium">Yes</span>
         </div>
@@ -583,12 +583,12 @@ const FeatureRow = ({ feature, mintslip, others, isVisible, delay }) => (
           <span className="hidden md:inline text-sm">No</span>
         </div>
       ) : (
-        <span className="text-green-600 font-semibold text-sm">{mintslip}</span>
+        <span className="text-emerald-600 font-semibold text-sm">{mintslip}</span>
       )}
     </div>
     <div className="flex items-center justify-center">
       {others === true ? (
-        <div className="flex items-center gap-2 text-green-600">
+        <div className="flex items-center gap-2 text-emerald-600">
           <CheckCircle className="w-5 h-5" />
           <span className="hidden md:inline text-sm font-medium">Yes</span>
         </div>
@@ -664,9 +664,9 @@ export default function ComparisonPage() {
       <Header title="MintSlip" />
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative py-16 md:py-24 bg-gradient-to-br from-slate-50 to-green-50 overflow-hidden">
+      <section ref={heroRef} className="relative py-16 md:py-24 bg-gradient-to-br from-slate-50 to-emerald-50 overflow-hidden">
         {/* Background Decorations */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-100 rounded-full filter blur-3xl opacity-30 animate-pulse" />
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-100 rounded-full filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
         
         <div className="max-w-7xl mx-auto px-6">
@@ -681,14 +681,14 @@ export default function ComparisonPage() {
               }}
             >
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-green-200 shadow-sm">
-                <Sparkles className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Feature Comparison</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-emerald-200 shadow-sm">
+                <Sparkles className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-800">Feature Comparison</span>
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: '1.1' }}>
                 <span className="text-slate-800">MintSlip</span>
-                <span className="block text-green-700">vs</span>
+                <span className="block text-emerald-700">vs</span>
                 <span className="block text-slate-800">Other Paystub</span>
                 <span className="block text-slate-800">Generators</span>
               </h1>
@@ -701,7 +701,7 @@ export default function ComparisonPage() {
                 <Button
                   onClick={() => navigate("/app")}
                   size="lg"
-                  className="gap-2 px-8 py-6 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all"
+                  className="gap-2 px-8 py-6 bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all"
                 >
                   <FileText className="w-5 h-5" />
                   Create a Paystub
@@ -730,7 +730,7 @@ export default function ComparisonPage() {
               }}
             >
               <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl h-64 md:h-80 flex items-center justify-center">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl h-64 md:h-80 flex items-center justify-center">
                   <VsComparisonAnimation isVisible={heroInView} />
                 </div>
               </div>
@@ -752,7 +752,7 @@ export default function ComparisonPage() {
                 transition: 'all 0.5s ease-out'
               }}
             >
-              Why MintSlip <span className="text-green-700">Stands Out</span>
+              Why MintSlip <span className="text-emerald-700">Stands Out</span>
             </h2>
           </div>
 
@@ -767,8 +767,8 @@ export default function ComparisonPage() {
                   transition: `all 0.5s ease-out ${0.1 * index}s`
                 }}
               >
-                <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mb-4">
-                  <item.icon className="w-6 h-6 text-green-700" />
+                <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center mb-4">
+                  <item.icon className="w-6 h-6 text-emerald-700" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-800 mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
                   {item.title}
@@ -793,7 +793,7 @@ export default function ComparisonPage() {
                 transition: 'all 0.5s ease-out'
               }}
             >
-              Feature <span className="text-green-700">Comparison</span>
+              Feature <span className="text-emerald-700">Comparison</span>
             </h2>
             <p 
               className="text-slate-600"
@@ -811,7 +811,7 @@ export default function ComparisonPage() {
             <div className="grid grid-cols-3 gap-4 p-4 bg-slate-800 text-white">
               <div className="font-semibold">Feature</div>
               <div className="text-center font-semibold flex items-center justify-center gap-2">
-                <span className="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+                <span className="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
                 MintSlip
               </div>
               <div className="text-center font-semibold flex items-center justify-center gap-2">
@@ -850,7 +850,7 @@ export default function ComparisonPage() {
                 transition: 'all 0.5s ease-out'
               }}
             >
-              What Makes Us <span className="text-green-700">Different</span>
+              What Makes Us <span className="text-emerald-700">Different</span>
             </h2>
           </div>
 
@@ -875,7 +875,7 @@ export default function ComparisonPage() {
 
             {/* Instant Download Card */}
             <div 
-              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 text-center"
+              className="bg-gradient-to-br from-emerald-50 to-emerald-50 rounded-2xl p-8 text-center"
               style={{
                 opacity: cardsInView ? 1 : 0,
                 transform: cardsInView ? 'translateY(0)' : 'translateY(30px)',
@@ -914,7 +914,7 @@ export default function ComparisonPage() {
 
       {/* CTA Section */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Ready to Experience the Difference?
           </h2>
@@ -925,7 +925,7 @@ export default function ComparisonPage() {
             <Button
               onClick={() => navigate("/app")}
               size="lg"
-              className="cta-shine gap-2 px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all"
+              className="cta-shine gap-2 px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all"
             >
               <FileText className="w-5 h-5" />
               Create Pay Stub Now

@@ -145,11 +145,11 @@ export default function Blog() {
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         {/* Hero Section */}
         <div className="relative overflow-hidden pt-12 pb-10 sm:pt-16 sm:pb-12">
-          <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+          <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
           <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
           <div className="relative max-w-7xl mx-auto px-6">
             <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              MintSlip <span className="text-green-700">Blog</span>
+              MintSlip <span className="text-emerald-700">Blog</span>
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl">
               Expert guides, tips, and resources for pay stubs, proof of income, payroll, and financial documentation.
@@ -173,7 +173,7 @@ export default function Blog() {
                       className="pl-10"
                     />
                   </div>
-                  <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                  <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
                     Search
                   </Button>
                 </div>
@@ -241,7 +241,7 @@ export default function Blog() {
                     variant="outline"
                     size="sm"
                     onClick={() => updateFilters({ tag: "" })}
-                    className="gap-1 bg-green-50 border-green-200 text-green-700"
+                    className="gap-1 bg-emerald-50 border-emerald-200 text-emerald-700"
                   >
                     <Tag className="w-3 h-3" />
                     {currentTag}
@@ -255,7 +255,7 @@ export default function Blog() {
           {/* Posts Grid */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-20">
@@ -287,21 +287,21 @@ export default function Blog() {
                         />
                       </div>
                     ) : (
-                      <div className="aspect-video bg-gradient-to-br from-green-100 to-emerald-50 flex items-center justify-center">
-                        <FileText className="w-12 h-12 text-green-300" />
+                      <div className="aspect-video bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                        <FileText className="w-12 h-12 text-emerald-300" />
                       </div>
                     )}
                     
                     <div className="p-5">
                       {/* Category */}
                       {post.category && (
-                        <span className="inline-block px-2 py-1 bg-green-50 text-green-700 text-xs font-medium rounded mb-3">
+                        <span className="inline-block px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded mb-3">
                           {categories.find(c => c.slug === post.category)?.name || post.category}
                         </span>
                       )}
                       
                       {/* Title */}
-                      <h2 className="text-lg font-bold text-slate-800 mb-2 line-clamp-2 group-hover:text-green-700 transition-colors">
+                      <h2 className="text-lg font-bold text-slate-800 mb-2 line-clamp-2 group-hover:text-emerald-700 transition-colors">
                         {post.title}
                       </h2>
                       
@@ -358,15 +358,15 @@ export default function Blog() {
           )}
 
           {/* CTA Section */}
-          <div className="mt-16 bg-gradient-to-r from-green-700 to-emerald-600 rounded-2xl p-8 md:p-12 text-white text-center">
+          <div className="mt-16 bg-gradient-to-r from-emerald-700 to-emerald-600 rounded-2xl p-8 md:p-12 text-white text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Create Professional Pay Stubs?</h2>
-            <p className="text-green-100 mb-6 max-w-xl mx-auto">
+            <p className="text-emerald-100 mb-6 max-w-xl mx-auto">
               Generate accurate, professional pay stubs in minutes with our easy-to-use generator.
             </p>
             <Button
               onClick={() => navigate("/app")}
               size="lg"
-              className="bg-white text-green-700 hover:bg-green-50 gap-2"
+              className="bg-white text-emerald-700 hover:bg-emerald-50 gap-2"
             >
               Create Pay Stub Now
               <ArrowRight className="w-4 h-4" />

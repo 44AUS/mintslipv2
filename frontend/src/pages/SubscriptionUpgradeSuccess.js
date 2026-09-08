@@ -85,8 +85,8 @@ export default function SubscriptionUpgradeSuccess() {
         <div className="max-w-md w-full text-center">
           {isProcessing ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
               </div>
               <h1 className="text-2xl font-bold text-slate-800 mb-2">
                 Processing Your Upgrade
@@ -108,29 +108,29 @@ export default function SubscriptionUpgradeSuccess() {
               </p>
               <Button
                 onClick={() => navigate("/pricing")}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 Back to Pricing
               </Button>
             </div>
           ) : upgradeComplete ? (
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-green-200">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <TrendingUp className="w-8 h-8 text-green-600" />
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-emerald-200">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <TrendingUp className="w-8 h-8 text-emerald-600" />
               </div>
               <h1 className="text-2xl font-bold text-slate-800 mb-2">
                 Upgrade Complete! 🎉
               </h1>
               <p className="text-slate-600 mb-6">
-                You're now on the <span className="font-semibold text-green-600">{getPlanName(newPlan)}</span> plan.
+                You're now on the <span className="font-semibold text-emerald-600">{getPlanName(newPlan)}</span> plan.
               </p>
               
-              <div className="bg-green-50 rounded-xl p-4 mb-6 text-left">
-                <h3 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+              <div className="bg-emerald-50 rounded-xl p-4 mb-6 text-left">
+                <h3 className="font-semibold text-emerald-800 mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   What's new for you
                 </h3>
-                <ul className="text-sm text-green-700 space-y-2">
+                <ul className="text-sm text-emerald-700 space-y-2">
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4" />
                     Your download count has been reset
@@ -149,7 +149,7 @@ export default function SubscriptionUpgradeSuccess() {
               <div className="space-y-3">
                 <Button
                   onClick={() => navigate("/user/dashboard")}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700"
                 >
                   Go to Dashboard
                 </Button>

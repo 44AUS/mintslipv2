@@ -331,7 +331,7 @@ export default function LegalDocumentForm() {
               {/* Template */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Scale className="w-5 h-5 text-green-700" />
+                  <Scale className="w-5 h-5 text-emerald-700" />
                   <h2 className="text-lg font-semibold text-slate-800">Document Template</h2>
                 </div>
                 {templatesLoading ? (
@@ -346,12 +346,12 @@ export default function LegalDocumentForm() {
                         type="button"
                         onClick={() => update("templateId", t.id)}
                         className={`text-left border-2 rounded-lg p-4 transition-all ${
-                          formData.templateId === t.id ? "border-green-600 bg-green-50" : "border-slate-200 hover:border-slate-300"
+                          formData.templateId === t.id ? "border-emerald-600 bg-emerald-50" : "border-slate-200 hover:border-slate-300"
                         }`}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: (t.badgeColor || "#16a34a") + "22" }}>
-                            <FileSignature className="w-4.5 h-4.5" style={{ color: t.badgeColor || "#16a34a", width: 18, height: 18 }} />
+                          <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: (t.badgeColor || "#059669") + "22" }}>
+                            <FileSignature className="w-4.5 h-4.5" style={{ color: t.badgeColor || "#059669", width: 18, height: 18 }} />
                           </div>
                           <div>
                             <p className="font-semibold text-slate-800 text-sm">{t.name}</p>
@@ -390,7 +390,7 @@ export default function LegalDocumentForm() {
                   <div>
                     <Label>Document color</Label>
                     <div className="flex items-center gap-2 flex-wrap mt-1.5">
-                      {[["", accentOption.baseColor || "#14532d", "Default"],
+                      {[["", accentOption.baseColor || "#064e3b", "Default"],
                         ...(accentOption.swatches || [])
                           .filter((c) => String(c).toLowerCase() !== String(accentOption.baseColor || "").toLowerCase())
                           .map((c) => [c, c, c])].map(([val, color, label]) => (
@@ -398,7 +398,7 @@ export default function LegalDocumentForm() {
                           onClick={() => update("accentColor", val)}
                           className="rounded-full transition-transform"
                           style={{ width: 30, height: 30, background: color, padding: 0, cursor: "pointer",
-                            border: (formData.accentColor || "") === val ? "3px solid #16a34a" : "2px solid rgba(0,0,0,0.15)",
+                            border: (formData.accentColor || "") === val ? "3px solid #059669" : "2px solid rgba(0,0,0,0.15)",
                             transform: (formData.accentColor || "") === val ? "scale(1.1)" : "none" }} />
                       ))}
                     </div>
@@ -491,11 +491,11 @@ export default function LegalDocumentForm() {
                   onDiscountApplied={setAppliedDiscount}
                 />
                 {hasActiveSubscription ? (
-                  <Button type="button" className="w-full bg-green-700 hover:bg-green-800 text-white h-12 text-base" disabled={isProcessing} onClick={handleSubscriptionDownload}>
+                  <Button type="button" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white h-12 text-base" disabled={isProcessing} onClick={handleSubscriptionDownload}>
                     {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Download with Subscription"}
                   </Button>
                 ) : (
-                  <Button type="button" className="w-full bg-green-700 hover:bg-green-800 text-white h-12 text-base" disabled={isProcessing} onClick={handleStripeCheckout}>
+                  <Button type="button" className="w-full bg-emerald-700 hover:bg-emerald-800 text-white h-12 text-base" disabled={isProcessing} onClick={handleStripeCheckout}>
                     {isProcessing
                       ? <Loader2 className="w-5 h-5 animate-spin" />
                       : <><CreditCard className="w-5 h-5 mr-2" /> Pay ${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : PRICE.toFixed(2)} &amp; Download</>}
@@ -513,7 +513,7 @@ export default function LegalDocumentForm() {
             <div className="sticky top-6 bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
                 <p className="font-semibold text-slate-800">Live Preview</p>
-                {isGeneratingPreview && <Loader2 className="w-4 h-4 animate-spin text-green-700" />}
+                {isGeneratingPreview && <Loader2 className="w-4 h-4 animate-spin text-emerald-700" />}
               </div>
               {pdfPreview ? (
                 <iframe title="Document preview" src={pdfPreview} className="w-full" style={{ height: 640, border: "none" }} />

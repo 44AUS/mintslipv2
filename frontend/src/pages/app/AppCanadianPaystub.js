@@ -516,7 +516,7 @@ export default function AppCanadianPaystub() {
   // Landing cards: built-in styles plus admin-published custom templates
   const templateCards = [
     ...PAYROLL_COMPANIES,
-    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#16a34a" })),
+    ...customTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#059669" })),
   ];
 
   useEffect(() => {
@@ -803,7 +803,7 @@ export default function AppCanadianPaystub() {
                     <div style={{ marginTop: 12 }}>
                       <p style={{ fontWeight: 600, marginBottom: 8 }}>Document Color</p>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                        {[["", accentOption.baseColor || "#14532d", "Default"],
+                        {[["", accentOption.baseColor || "#064e3b", "Default"],
                           ...(accentOption.swatches || [])
                             .filter(c => String(c).toLowerCase() !== String(accentOption.baseColor || "").toLowerCase())
                             .map(c => [c, c, c])].map(([val, color, label]) => (

@@ -515,7 +515,7 @@ export default function AdminDiscounts() {
                 key={discount.id}
                 title={<span style={{ fontFamily: "monospace" }}>{discount.code}</span>}
                 badges={<>
-                  <span style={{ color: "#16a34a", fontWeight: 700, fontSize: "0.78rem" }}>{discount.discountPercent}% OFF</span>
+                  <span style={{ color: "#059669", fontWeight: 700, fontSize: "0.78rem" }}>{discount.discountPercent}% OFF</span>
                   {!discount.isActive ? (
                     <span className="admin-badge admin-badge-red">Inactive</span>
                   ) : isExpired(discount.expiryDate) ? (
@@ -564,7 +564,7 @@ export default function AdminDiscounts() {
                       </span>
                     </td>
                     <td>
-                      <span style={{ color: "#16a34a", fontWeight: 600 }}>{discount.discountPercent}% OFF</span>
+                      <span style={{ color: "#059669", fontWeight: 600 }}>{discount.discountPercent}% OFF</span>
                     </td>
                     <td>
                       {!discount.isActive ? (

@@ -5453,9 +5453,9 @@ def _broadcast_html(message: str, button_text: str = "", button_url: str = "") -
         body += (
             f'<div style="text-align:center;margin:28px 0 8px;">'
             f'<a href="{button_url}" style="display:inline-block;box-sizing:border-box;'
-            f'background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e,#16a34a 60%,#15803d);'
+            f'background-color:#059669;background-image:linear-gradient(135deg,#10b981,#059669 60%,#047857);'
             f'color:#ffffff;text-decoration:none;padding:14px 30px;border-radius:10px;font-weight:700;'
-            f'font-size:15px;box-shadow:0 4px 14px rgba(22,163,74,0.32);">'
+            f'font-size:15px;box-shadow:0 4px 14px rgba(5,150,105,0.32);">'
             f'{button_text}</a></div>'
         )
     return get_base_template(body)
@@ -6122,7 +6122,7 @@ async def delete_support_chat(chat_id: str, session: dict = Depends(get_current_
 
 TEMPLATE_LIST_PROJECTION = {"_id": 0, "layout": 0, "publishedLayout": 0, "layoutHistory": 0}
 
-DEFAULT_BADGE_COLOR = "#16a34a"
+DEFAULT_BADGE_COLOR = "#059669"
 
 
 def _clean_badge_color(value) -> Optional[str]:

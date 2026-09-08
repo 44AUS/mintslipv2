@@ -59,7 +59,7 @@ button:focus-visible {
     --color: #fff;
     --border-radius: 14px;
     --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
-    --button-color: var(--ion-color-primary, #16a34a);
+    --button-color: var(--ion-color-primary, #059669);
     font-weight: 500;
 }
 .wd-toast::part(message) { font-size: 14.5px; }
@@ -230,7 +230,7 @@ code {
 .dark .bg-amber-50 { background-color: rgb(28 25 23) !important; }
 .dark .bg-blue-50 { background-color: rgb(24 24 27) !important; }
 .dark .bg-red-50 { background-color: rgba(239,68,68,0.08) !important; }
-.dark .bg-green-50 { background-color: rgba(22,163,74,0.08) !important; }
+.dark .bg-emerald-50 { background-color: rgba(5,150,105,0.08) !important; }
 .dark .bg-emerald-50 { background-color: rgba(5,150,105,0.1) !important; }
 .dark .bg-orange-50 { background-color: rgba(249,115,22,0.08) !important; }
 .dark .bg-purple-50 { background-color: rgba(139,92,246,0.08) !important; }

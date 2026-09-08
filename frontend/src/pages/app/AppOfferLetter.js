@@ -482,13 +482,13 @@ export default function AppOfferLetter({ isOpen, onClose }) {
               )}
               {hasActiveSubscription ? (
                 <IonButton expand="block" onClick={handleSubscriptionDownload} disabled={isProcessing}
-                  style={{ "--background": "#16a34a", "--background-activated": "#15803d" }}>
+                  style={{ "--background": "#059669", "--background-activated": "#047857" }}>
                   {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} />
                     : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
                 </IonButton>
               ) : (
                 <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
-                  style={{ "--background": "#16a34a", "--background-activated": "#15803d" }}>
+                  style={{ "--background": "#059669", "--background-activated": "#047857" }}>
                   {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} />
                     : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
                 </IonButton>

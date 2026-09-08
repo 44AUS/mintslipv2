@@ -36,7 +36,7 @@ export default function SubscriptionCancel() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 onClick={() => navigate("/pricing")}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 View Plans Again
               </Button>

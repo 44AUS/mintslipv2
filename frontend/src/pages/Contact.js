@@ -103,12 +103,12 @@ export default function Contact() {
       <Header />
       
       {/* Hero Section */}
-      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-br from-green-900 via-green-800 to-green-900 text-white py-16 md:py-24 mt-4">
+      <section className="max-w-7xl mx-3 sm:mx-6 xl:mx-auto rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900 text-white py-16 md:py-24 mt-4">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
             Get in touch with us today
           </h1>
-          <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-emerald-100 max-w-2xl mx-auto">
             We're always here to help! Reach out to us with any questions or concerns, and our team will respond within 24 hours.
           </p>
         </div>
@@ -122,8 +122,8 @@ export default function Contact() {
           <div className="order-2 lg:order-1">
             <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-green-700" />
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-emerald-700" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
@@ -189,7 +189,7 @@ export default function Contact() {
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="w-full h-12 text-base font-semibold bg-green-800 hover:bg-green-900"
+                  className="w-full h-12 text-base font-semibold bg-emerald-800 hover:bg-emerald-900"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
@@ -209,22 +209,22 @@ export default function Contact() {
 
           {/* Contact Info */}
           <div className="order-1 lg:order-2 space-y-8">
-            <div className="bg-gradient-to-br from-green-800 to-green-900 text-white p-8 rounded-xl shadow-lg">
+            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-white p-8 rounded-xl shadow-lg">
               <h2 className="text-2xl font-bold mb-6" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 Contact Information
               </h2>
-              <p className="text-green-100 mb-8">
+              <p className="text-emerald-100 mb-8">
                 Fill up the form and our team will get back to you within 24 hours.
               </p>
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-green-700/50 flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-5 h-5 text-green-200" />
+                  <div className="w-10 h-10 rounded-full bg-emerald-700/50 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-emerald-200" />
                   </div>
                   <div>
-                    <p className="text-sm text-green-200 mb-1">Email Us</p>
-                    <a href="mailto:support@mintslip.com" className="text-white hover:text-green-200 transition-colors font-medium">
+                    <p className="text-sm text-emerald-200 mb-1">Email Us</p>
+                    <a href="mailto:support@mintslip.com" className="text-white hover:text-emerald-200 transition-colors font-medium">
                       support@mintslip.com
                     </a>
                   </div>
@@ -237,12 +237,12 @@ export default function Contact() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm text-green-200 mb-1">Telegram Support</p>
+                    <p className="text-sm text-emerald-200 mb-1">Telegram Support</p>
                     <a 
                       href="https://t.me/+oV7eIADvNlozYTYx" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-white hover:text-green-200 transition-colors font-medium"
+                      className="text-white hover:text-emerald-200 transition-colors font-medium"
                     >
                       Join Our Telegram
                     </a>
@@ -250,29 +250,29 @@ export default function Contact() {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-green-700/50 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-green-200" />
+                  <div className="w-10 h-10 rounded-full bg-emerald-700/50 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-emerald-200" />
                   </div>
                   <div>
-                    <p className="text-sm text-green-200 mb-1">Response Time</p>
+                    <p className="text-sm text-emerald-200 mb-1">Response Time</p>
                     <p className="text-white font-medium">Within 24 hours</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-full bg-green-700/50 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-green-200" />
+                  <div className="w-10 h-10 rounded-full bg-emerald-700/50 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-emerald-200" />
                   </div>
                   <div>
-                    <p className="text-sm text-green-200 mb-1">Location</p>
+                    <p className="text-sm text-emerald-200 mb-1">Location</p>
                     <p className="text-white font-medium">United States</p>
                   </div>
                 </div>
               </div>
 
               {/* Decorative element */}
-              <div className="mt-10 pt-8 border-t border-green-700/50">
-                <p className="text-sm text-green-200">
+              <div className="mt-10 pt-8 border-t border-emerald-700/50">
+                <p className="text-sm text-emerald-200">
                   Need immediate assistance? Check our FAQ section below for quick answers to common questions.
                 </p>
               </div>
@@ -280,12 +280,12 @@ export default function Contact() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-green-50 p-6 rounded-xl border border-green-100 text-center">
-                <p className="text-3xl font-black text-green-800 mb-1">24h</p>
+              <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 text-center">
+                <p className="text-3xl font-black text-emerald-800 mb-1">24h</p>
                 <p className="text-sm text-slate-600">Response Time</p>
               </div>
-              <div className="bg-green-50 p-6 rounded-xl border border-green-100 text-center">
-                <p className="text-3xl font-black text-green-800 mb-1">98%</p>
+              <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 text-center">
+                <p className="text-3xl font-black text-emerald-800 mb-1">98%</p>
                 <p className="text-sm text-slate-600">Satisfaction Rate</p>
               </div>
             </div>
@@ -297,8 +297,8 @@ export default function Contact() {
       <section className="bg-slate-50 py-16">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-              <HelpCircle className="w-8 h-8 text-green-700" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-4">
+              <HelpCircle className="w-8 h-8 text-emerald-700" />
             </div>
             <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Frequently Asked Questions
@@ -315,7 +315,7 @@ export default function Contact() {
                 value={`item-${index}`}
                 className="bg-white rounded-xl border border-slate-200 px-6 shadow-sm"
               >
-                <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-800 py-5">
+                <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-800 py-5">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-slate-600 pb-5">
@@ -339,7 +339,7 @@ export default function Contact() {
           <Button 
             onClick={() => navigate("/")}
             size="lg"
-            className="h-12 px-8 text-base font-semibold bg-green-800 hover:bg-green-900"
+            className="h-12 px-8 text-base font-semibold bg-emerald-800 hover:bg-emerald-900"
           >
             Get Started Now
           </Button>

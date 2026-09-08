@@ -25,10 +25,10 @@ const DOC_LABELS = {
 };
 
 const DOC_COLORS = {
-  "paystub": "#16a34a", "canadian-paystub": "#16a34a", "resume": "#2563eb",
+  "paystub": "#059669", "canadian-paystub": "#059669", "resume": "#2563eb",
   "w2": "#7c3aed", "w9": "#7c3aed", "1099-nec": "#d97706", "1099-misc": "#d97706",
   "bank-statement": "#0891b2", "offer-letter": "#059669", "cease-and-desist": "#b91c1c",
-  "legal-document": "#14532d", "power-of-attorney": "#7c3aed", "commercial-lease": "#0891b2",
+  "legal-document": "#064e3b", "power-of-attorney": "#7c3aed", "commercial-lease": "#0891b2",
   "vehicle-bill-of-sale": "#dc2626", "schedule-c": "#92400e", "utility-bill": "#64748b",
 };
 

@@ -1123,7 +1123,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                 width: "100%", background: activeTab === tab.id ? "rgba(0,0,0,0.08)" : "none",
                 border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
                 padding: "0 20px", minHeight: 48, textAlign: "left",
-                color: activeTab === tab.id ? "#16a34a" : "var(--ion-text-color)",
+                color: activeTab === tab.id ? "#059669" : "var(--ion-text-color)",
                 fontWeight: activeTab === tab.id ? 600 : 400,
                 fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
               }}
@@ -1142,7 +1142,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
               width: "100%", background: activeTab === "settings" ? "rgba(0,0,0,0.08)" : "none",
               border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
               padding: "0 20px", minHeight: 48, textAlign: "left",
-              color: activeTab === "settings" ? "#16a34a" : "var(--ion-text-color)",
+              color: activeTab === "settings" ? "#059669" : "var(--ion-text-color)",
               fontWeight: activeTab === "settings" ? 600 : 400,
               fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
             }}

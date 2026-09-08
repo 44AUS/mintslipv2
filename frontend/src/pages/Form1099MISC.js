@@ -931,7 +931,7 @@ export default function Form1099MISC({ embedded = false }) {
             <div className="sticky top-24 space-y-6">
               
               {/* Summary Preview */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   1099-MISC Summary - {selectedTaxYear}
                 </h3>
@@ -944,7 +944,7 @@ export default function Form1099MISC({ embedded = false }) {
                     <span className="text-slate-700">Recipient:</span>
                     <span className="font-medium text-slate-900">{formData.recipientName || "—"}</span>
                   </div>
-                  <div className="border-t border-green-300 my-2"></div>
+                  <div className="border-t border-emerald-300 my-2"></div>
                   {totals.rents > 0 && (
                     <div className="flex justify-between">
                       <span className="text-slate-700">Box 1 - Rents:</span>
@@ -979,10 +979,10 @@ export default function Form1099MISC({ embedded = false }) {
                     <span className="text-slate-700">Box 4 - Federal Withheld:</span>
                     <span className="font-medium text-slate-900">{formatCurrency(totals.federalWithheld)}</span>
                   </div>
-                  <div className="border-t border-green-300 my-2"></div>
+                  <div className="border-t border-emerald-300 my-2"></div>
                   <div className="flex justify-between font-bold">
-                    <span className="text-green-800">Total Income:</span>
-                    <span className="text-green-800">{formatCurrency(totals.totalIncome)}</span>
+                    <span className="text-emerald-800">Total Income:</span>
+                    <span className="text-emerald-800">{formatCurrency(totals.totalIncome)}</span>
                   </div>
                 </div>
               </div>
@@ -999,7 +999,7 @@ export default function Form1099MISC({ embedded = false }) {
                 {isGeneratingPreview ? (
                   <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
@@ -1055,21 +1055,21 @@ export default function Form1099MISC({ embedded = false }) {
                 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessing}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
                     >
                       {isProcessing ? (
                         <>
@@ -1098,13 +1098,13 @@ export default function Form1099MISC({ embedded = false }) {
                     />
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '14.99'}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && ' for 1099-MISC generation'}
                     </p>
                     
                     {isProcessing ? (
                       <div className="text-center py-4">
-                        <svg className="animate-spin h-8 w-8 mx-auto text-green-700" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-8 w-8 mx-auto text-emerald-700" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -1115,7 +1115,7 @@ export default function Form1099MISC({ embedded = false }) {
                         <Button
                           onClick={handleStripeCheckout}
                           disabled={isProcessing}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                         >
                           {isProcessing ? (
                             <>
@@ -1144,7 +1144,7 @@ export default function Form1099MISC({ embedded = false }) {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>
@@ -1163,8 +1163,8 @@ export default function Form1099MISC({ embedded = false }) {
       <section className="bg-slate-50 border-t border-slate-200 py-16">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
-              <HelpCircle className="w-6 h-6 text-green-700" />
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-emerald-700" />
             </div>
             <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               1099-MISC Form FAQ
@@ -1174,7 +1174,7 @@ export default function Form1099MISC({ embedded = false }) {
           
           <Accordion type="single" collapsible className="space-y-3">
             <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is a 1099-MISC form?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1183,7 +1183,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What types of income are reported on 1099-MISC?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1192,7 +1192,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is Box 1 (Rents)?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1201,7 +1201,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is Box 2 (Royalties)?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1210,7 +1210,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is Box 3 (Other income)?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1219,7 +1219,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 When is the 1099-MISC due?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1228,7 +1228,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Should I use 1099-MISC or 1099-NEC for contractors?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1237,7 +1237,7 @@ export default function Form1099MISC({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Can I generate 1099-MISC forms for previous years?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">

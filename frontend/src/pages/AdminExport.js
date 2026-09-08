@@ -46,8 +46,8 @@ function ExportCard({ icon: Icon, title, description, exportType, dateFilters })
   return (
     <div className="admin-stat-card" style={{ padding: 24 }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 16 }}>
-        <div style={{ padding: 12, background: "rgba(22,163,74,0.1)", borderRadius: 10 }}>
-          <Icon size={24} style={{ color: "#16a34a" }} />
+        <div style={{ padding: 12, background: "rgba(5,150,105,0.1)", borderRadius: 10 }}>
+          <Icon size={24} style={{ color: "#059669" }} />
         </div>
         <div>
           <h3 style={{ fontWeight: 600, color: "var(--admin-text)", margin: 0 }}>{title}</h3>

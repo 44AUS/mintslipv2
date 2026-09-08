@@ -531,7 +531,7 @@ export default function AppLayout({ children, fillHeight = false }) {
         <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 200 }}>
           <IonButton
             onClick={() => setCreateOpen(true)}
-            style={{ "--background": "#16a34a", "--background-activated": "#15803d", "--background-hover": "#15803d", "--box-shadow": "0 6px 20px rgba(0,0,0,0.25)" }}
+            style={{ "--background": "#059669", "--background-activated": "#047857", "--background-hover": "#047857", "--box-shadow": "0 6px 20px rgba(0,0,0,0.25)" }}
           >
             <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
               <IonIcon icon={addOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
@@ -621,7 +621,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                   style={{
                     display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 16px",
                     borderBottom: "1px solid var(--app-divider)",
-                    background: notif.read ? "transparent" : "rgba(22,163,74,0.05)",
+                    background: notif.read ? "transparent" : "rgba(5,150,105,0.05)",
                   }}
                 >
                   {/* Info */}
@@ -639,7 +639,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                       </div>
                     )}
                     {notif.status === "ready" && (
-                      <div style={{ fontSize: "0.72rem", color: "#16a34a", marginTop: 4, fontWeight: 500 }}>{t("Ready to download")}</div>
+                      <div style={{ fontSize: "0.72rem", color: "#059669", marginTop: 4, fontWeight: 500 }}>{t("Ready to download")}</div>
                     )}
                     {notif.status === "error" && (
                       <div style={{ fontSize: "0.72rem", color: "#dc2626", marginTop: 4 }}>{t("Generation failed")}</div>

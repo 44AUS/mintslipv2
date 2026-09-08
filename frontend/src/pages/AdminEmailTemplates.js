@@ -214,21 +214,21 @@ const TEMPLATE_META = {
 // exactly what recipients receive: whodat-style frame in MintSlip green.
 const BASE_PREVIEW_STYLES = `
   body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
-  .button{display:inline-block;box-sizing:border-box;padding:14px 30px;background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e,#16a34a 60%,#15803d);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(22,163,74,0.32);}
-  .highlight{background-color:#f0fdf4;padding:16px;border-radius:10px;border-left:4px solid #16a34a;}
+  .button{display:inline-block;box-sizing:border-box;padding:14px 30px;background-color:#059669;background-image:linear-gradient(135deg,#10b981,#059669 60%,#047857);color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(5,150,105,0.32);}
+  .highlight{background-color:#ecfdf5;padding:16px;border-radius:10px;border-left:4px solid #059669;}
   h1{color:#0f172a;margin:0 0 12px;font-size:22px;font-weight:800;letter-spacing:-0.01em;}
   h2{color:#0f172a;margin:0 0 12px;font-size:19px;font-weight:700;}
   p{color:#334155;line-height:1.65;font-size:15px;}
   ul{color:#334155;line-height:1.8;font-size:15px;}
-  a{color:#16a34a;}
+  a{color:#059669;}
   .text-muted{color:#64748b;}
 `;
 
 function buildPreviewHtml(htmlBody) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="margin:0;padding:0;background:#f0fdf4;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;"><tr><td align="center" style="padding:36px 16px;">
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_PREVIEW_STYLES}</style></head><body style="margin:0;padding:0;background:#ecfdf5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;"><tr><td align="center" style="padding:36px 16px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
-      <tr><td style="background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e 0%,#16a34a 55%,#15803d 100%);padding:28px 32px;text-align:center;">
+      <tr><td style="background-color:#059669;background-image:linear-gradient(135deg,#10b981 0%,#059669 55%,#047857 100%);padding:28px 32px;text-align:center;">
         <span style="display:inline-block;background:#fff;border-radius:12px;padding:10px 18px;"><img src="/mintslip-logo.png" alt="MintSlip" style="height:30px;width:auto;display:block;" /></span>
       </td></tr>
       <tr><td style="padding:36px 32px 34px;color:#0f172a;">${htmlBody}</td></tr>
@@ -393,22 +393,22 @@ export default function AdminEmailTemplates() {
                   onClick={() => selectTemplate(tmpl)}
                   className={`w-full px-4 py-3 text-left transition-colors flex items-center justify-between group ${
                     selected?.name === tmpl.name
-                      ? "bg-green-50 border-l-2 border-green-500"
+                      ? "bg-emerald-50 border-l-2 border-emerald-500"
                       : "hover:bg-slate-50 border-l-2 border-transparent"
                   }`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <p className={`text-sm font-medium truncate ${selected?.name === tmpl.name ? "text-green-800" : tmpl.enabled === false ? "text-slate-400" : "text-slate-700"}`}>
+                      <p className={`text-sm font-medium truncate ${selected?.name === tmpl.name ? "text-emerald-800" : tmpl.enabled === false ? "text-slate-400" : "text-slate-700"}`}>
                         {tmpl.display_name}
                       </p>
                       {tmpl.is_system && <Lock className="w-2.5 h-2.5 text-slate-300 flex-shrink-0" />}
                     </div>
-                    <p className={`text-xs mt-0.5 ${tmpl.enabled === false ? "text-orange-400" : tmpl.is_custom ? "text-green-600" : "text-slate-400"}`}>
+                    <p className={`text-xs mt-0.5 ${tmpl.enabled === false ? "text-orange-400" : tmpl.is_custom ? "text-emerald-600" : "text-slate-400"}`}>
                       {tmpl.enabled === false ? "● Disabled" : tmpl.is_custom ? "● Custom" : "○ Default"}
                     </p>
                   </div>
-                  <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-opacity ${selected?.name === tmpl.name ? "opacity-60 text-green-600" : "opacity-0 group-hover:opacity-40"}`} />
+                  <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-opacity ${selected?.name === tmpl.name ? "opacity-60 text-emerald-600" : "opacity-0 group-hover:opacity-40"}`} />
                 </button>
               ))}
             </div>
@@ -436,13 +436,13 @@ export default function AdminEmailTemplates() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${enabled ? "text-green-600" : "text-slate-400"}`}>
+                    <span className={`text-xs font-medium ${enabled ? "text-emerald-600" : "text-slate-400"}`}>
                       {enabled ? "Enabled" : "Disabled"}
                     </span>
                     <button
                       onClick={() => handleToggleEnabled(!enabled)}
                       disabled={settingsSaving}
-                      className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none ${enabled ? "bg-green-500" : "bg-slate-300"} ${settingsSaving ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none ${enabled ? "bg-emerald-500" : "bg-slate-300"} ${settingsSaving ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${enabled ? "translate-x-5" : "translate-x-0"}`} />
                     </button>
@@ -464,7 +464,7 @@ export default function AdminEmailTemplates() {
                   onClick={handleSave}
                   disabled={saving || !subject.trim() || !htmlBody.trim()}
                   className={`flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg transition-colors disabled:opacity-50 ${
-                    saved ? "bg-green-100 text-green-700" : "bg-green-600 hover:bg-green-700 text-white"
+                    saved ? "bg-emerald-100 text-emerald-700" : "bg-emerald-600 hover:bg-emerald-700 text-white"
                   }`}
                 >
                   <Save className="w-3.5 h-3.5" />
@@ -501,7 +501,7 @@ export default function AdminEmailTemplates() {
                     min="1"
                     value={delayMinutes}
                     onChange={e => setDelayMinutes(e.target.value)}
-                    className="w-28 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-28 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="minutes"
                   />
                   <span className="text-sm text-slate-500">minutes</span>
@@ -524,7 +524,7 @@ export default function AdminEmailTemplates() {
                 value={subject}
                 onChange={e => setSubject(e.target.value)}
                 placeholder="e.g. Welcome to MintSlip! 🎉"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 
@@ -552,7 +552,7 @@ export default function AdminEmailTemplates() {
                   value={htmlBody}
                   onChange={e => setHtmlBody(e.target.value)}
                   placeholder={`<h1>Hello {user_name}!</h1>\n<p>Your email content here...</p>`}
-                  className="flex-1 min-h-80 font-mono text-sm border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  className="flex-1 min-h-80 font-mono text-sm border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
                   spellCheck={false}
                 />
               ) : (
@@ -574,7 +574,7 @@ export default function AdminEmailTemplates() {
                 value={previewText}
                 onChange={e => setPreviewText(e.target.value)}
                 placeholder="e.g. Welcome to MintSlip – your account is ready"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 

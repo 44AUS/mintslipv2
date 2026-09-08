@@ -66,7 +66,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
     >
       <span className="font-semibold text-slate-800 pr-4">{question}</span>
       {isOpen ? (
-        <ChevronUp className="w-5 h-5 text-green-700 flex-shrink-0" />
+        <ChevronUp className="w-5 h-5 text-emerald-700 flex-shrink-0" />
       ) : (
         <ChevronDown className="w-5 h-5 text-slate-400 flex-shrink-0" />
       )}
@@ -81,9 +81,9 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => (
 
 // Template Preview Card
 const TemplateCard = ({ name, description, color, popular }) => (
-  <div className="group relative bg-white rounded-xl border-2 border-slate-200 hover:border-green-600 transition-all duration-300 overflow-hidden hover:shadow-xl">
+  <div className="group relative bg-white rounded-xl border-2 border-slate-200 hover:border-emerald-600 transition-all duration-300 overflow-hidden hover:shadow-xl">
     {popular && (
-      <div className="absolute top-3 right-3 bg-green-700 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+      <div className="absolute top-3 right-3 bg-emerald-700 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
         POPULAR
       </div>
     )}
@@ -108,8 +108,8 @@ const TemplateCard = ({ name, description, color, popular }) => (
       <h3 className="font-bold text-slate-800">{name}</h3>
       <p className="text-sm text-slate-500 mt-1">{description}</p>
     </div>
-    <div className="absolute inset-0 bg-green-800/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-      <Button className="bg-white text-green-800 hover:bg-green-50">
+    <div className="absolute inset-0 bg-emerald-800/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <Button className="bg-white text-emerald-800 hover:bg-emerald-50">
         Use This Template
       </Button>
     </div>
@@ -257,7 +257,7 @@ export default function AIResumeLanding() {
 
   const templates = [
     { name: "ATS Optimized", description: "Clean, scannable format", color: "bg-slate-800", popular: true },
-    { name: "Modern Professional", description: "Contemporary with accent colors", color: "bg-green-700", popular: false },
+    { name: "Modern Professional", description: "Contemporary with accent colors", color: "bg-emerald-700", popular: false },
     { name: "Classic Executive", description: "Traditional formal style", color: "bg-slate-700", popular: false }
   ];
 
@@ -306,7 +306,7 @@ export default function AIResumeLanding() {
         className="relative overflow-hidden"
       >
         {/* Soft background accents */}
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-16 lg:pt-20 lg:pb-20">
@@ -314,14 +314,14 @@ export default function AIResumeLanding() {
             {/* Left content */}
             <div className={`space-y-8 transition-all duration-1000 ${heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-green-50 rounded-full border border-green-200/80">
-                <Sparkles className="w-4 h-4 text-green-700" />
-                <span className="text-sm font-medium text-green-900">AI-Powered Resume Builder</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80">
+                <Sparkles className="w-4 h-4 text-emerald-700" />
+                <span className="text-sm font-medium text-emerald-900">AI-Powered Resume Builder</span>
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-slate-900">
                 Create an{" "}
-                <span className="text-green-700">
+                <span className="text-emerald-700">
                   ATS-Optimized
                 </span>{" "}
                 Resume in Minutes
@@ -329,14 +329,14 @@ export default function AIResumeLanding() {
 
               <p className="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl">
                 Let AI craft compelling content tailored to your target job. Our AI-powered builder helps you
-                <span className="text-green-700 font-semibold"> land 3x more interviews</span> with professionally optimized resumes.
+                <span className="text-emerald-700 font-semibold"> land 3x more interviews</span> with professionally optimized resumes.
               </p>
 
               {/* Price Badge */}
-              <div className="inline-flex items-center gap-3 px-5 py-3 bg-green-50 rounded-xl border border-green-200/80">
-                <span className="text-green-900 text-sm">One-time payment</span>
+              <div className="inline-flex items-center gap-3 px-5 py-3 bg-emerald-50 rounded-xl border border-emerald-200/80">
+                <span className="text-emerald-900 text-sm">One-time payment</span>
                 <span className="text-3xl font-black text-slate-900">$9.99</span>
-                <span className="text-green-900 text-sm">PDF + DOCX</span>
+                <span className="text-emerald-900 text-sm">PDF + DOCX</span>
               </div>
 
               {/* CTA Buttons */}
@@ -344,7 +344,7 @@ export default function AIResumeLanding() {
                 <Button
                   onClick={() => navigate("/app/resumes")}
                   size="lg"
-                  className="cta-shine group gap-2 text-lg px-8 py-6 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10 hover:shadow-lg transition-all duration-300"
+                  className="cta-shine group gap-2 text-lg px-8 py-6 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all duration-300"
                 >
                   <Wand2 className="w-5 h-5" />
                   Build My Resume Now
@@ -372,7 +372,7 @@ export default function AIResumeLanding() {
                   <span className="text-sm text-slate-500">4.8/5 from 2,847 reviews</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Shield className="w-4 h-4 text-green-700" />
+                  <Shield className="w-4 h-4 text-emerald-700" />
                   <span>Secure Payment</span>
                 </div>
               </div>
@@ -382,19 +382,19 @@ export default function AIResumeLanding() {
             <div className={`relative transition-all duration-1000 delay-300 ${heroInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
               <div className="relative">
                 {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-400 rounded-2xl blur-2xl opacity-30" />
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-2xl blur-2xl opacity-30" />
                 
                 {/* Resume mockup */}
                 <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
                   {/* Header */}
                   <div className="bg-slate-800 p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
+                      <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center">
                         <span className="text-2xl font-bold text-white">JD</span>
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-white">John Doe</h3>
-                        <p className="text-green-400">Senior Software Engineer</p>
+                        <p className="text-emerald-400">Senior Software Engineer</p>
                       </div>
                     </div>
                   </div>
@@ -402,7 +402,7 @@ export default function AIResumeLanding() {
                   {/* Content */}
                   <div className="p-6 space-y-4">
                     {/* AI indicator */}
-                    <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-1.5 rounded-full w-fit">
+                    <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full w-fit">
                       <Sparkles className="w-4 h-4" />
                       <span className="font-medium">AI-Enhanced Content</span>
                     </div>
@@ -424,9 +424,9 @@ export default function AIResumeLanding() {
                       <span className="font-semibold text-slate-700">ATS Score</span>
                       <div className="flex items-center gap-2">
                         <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div className="w-[92%] h-full bg-gradient-to-r from-green-600 to-green-500 rounded-full"></div>
+                          <div className="w-[92%] h-full bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-full"></div>
                         </div>
-                        <span className="font-bold text-green-700">92%</span>
+                        <span className="font-bold text-emerald-700">92%</span>
                       </div>
                     </div>
                   </div>
@@ -434,7 +434,7 @@ export default function AIResumeLanding() {
 
                 {/* Floating badges */}
                 <div className="absolute -top-4 -right-4 bg-white rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 animate-bounce" style={{ animationDuration: '3s' }}>
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
                   <span className="text-sm font-semibold text-slate-700">ATS Approved</span>
                 </div>
                 
@@ -466,7 +466,7 @@ export default function AIResumeLanding() {
               { value: 5, suffix: " min", label: "Average Time" }
             ].map((stat, index) => (
               <div key={index} className="text-center">
-                <p className="text-3xl md:text-4xl font-black text-green-700">
+                <p className="text-3xl md:text-4xl font-black text-emerald-700">
                   <AnimatedCounter end={stat.value} suffix={stat.suffix} />
                 </p>
                 <p className="text-slate-600 mt-1">{stat.label}</p>
@@ -480,7 +480,7 @@ export default function AIResumeLanding() {
       <section ref={howItWorksRef} className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
+            <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full mb-4">
               HOW IT WORKS
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">
@@ -501,12 +501,12 @@ export default function AIResumeLanding() {
               >
                 {/* Connector line */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-12 left-[60%] w-full h-0.5 bg-gradient-to-r from-green-300 to-transparent" />
+                  <div className="hidden lg:block absolute top-12 left-[60%] w-full h-0.5 bg-gradient-to-r from-emerald-300 to-transparent" />
                 )}
                 
                 <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-slate-100 relative z-10">
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-700 to-green-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-green-500/30">
+                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-700 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
                       <step.icon className="w-6 h-6" />
                     </div>
                     <span className="text-4xl font-black text-slate-200">{step.number}</span>
@@ -522,7 +522,7 @@ export default function AIResumeLanding() {
             <Button
               onClick={() => navigate("/app/resumes")}
               size="lg"
-              className="gap-2 bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 shadow-lg"
+              className="gap-2 bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 shadow-lg"
             >
               Start Building Now - $9.99
               <ArrowRight className="w-4 h-4" />
@@ -535,7 +535,7 @@ export default function AIResumeLanding() {
       <section ref={featuresRef} className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
+            <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full mb-4">
               POWERFUL FEATURES
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">
@@ -550,11 +550,11 @@ export default function AIResumeLanding() {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className={`group p-6 rounded-2xl border border-slate-200 hover:border-green-300 hover:shadow-lg transition-all duration-500 bg-white ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                className={`group p-6 rounded-2xl border border-slate-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-500 bg-white ${featuresInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
-                <div className="w-12 h-12 bg-green-100 group-hover:bg-green-600 rounded-xl flex items-center justify-center mb-4 transition-colors">
-                  <feature.icon className="w-6 h-6 text-green-700 group-hover:text-white transition-colors" />
+                <div className="w-12 h-12 bg-emerald-100 group-hover:bg-emerald-600 rounded-xl flex items-center justify-center mb-4 transition-colors">
+                  <feature.icon className="w-6 h-6 text-emerald-700 group-hover:text-white transition-colors" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-800 mb-2">{feature.title}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
@@ -569,12 +569,12 @@ export default function AIResumeLanding() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
+              <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full mb-4">
                 AI-POWERED
               </span>
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-6">
                 Let AI Write Your{" "}
-                <span className="text-green-700">
+                <span className="text-emerald-700">
                   Perfect Bullet Points
                 </span>
               </h2>
@@ -591,7 +591,7 @@ export default function AIResumeLanding() {
                   "Regenerate until you're satisfied"
                 ].map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <CheckCircle className="w-4 h-4 text-white" />
                     </div>
                     <span className="text-slate-700">{item}</span>
@@ -602,7 +602,7 @@ export default function AIResumeLanding() {
               <Button
                 onClick={() => navigate("/app/resumes")}
                 size="lg"
-                className="cta-shine mt-8 gap-2 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+                className="cta-shine mt-8 gap-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
               >
                 <Sparkles className="w-5 h-5" />
                 Try AI Generation - $9.99
@@ -621,18 +621,18 @@ export default function AIResumeLanding() {
 
               {/* AI Output */}
               <div>
-                <label className="text-sm text-green-700 mb-2 flex items-center gap-2">
+                <label className="text-sm text-emerald-700 mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   AI-Generated:
                 </label>
-                <div className="bg-green-50 rounded-lg p-4 border border-green-200 space-y-3">
+                <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200 space-y-3">
                   {[
                     "Led cross-functional team of 8 developers, delivering 15+ web applications with 99.9% uptime",
                     "Spearheaded agile transformation, reducing sprint cycle time by 40% and increasing team velocity",
                     "Architected scalable microservices infrastructure serving 100K+ daily active users"
                   ].map((bullet, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <span className="text-green-600 mt-1">•</span>
+                      <span className="text-emerald-600 mt-1">•</span>
                       <p className="text-slate-800">{bullet}</p>
                     </div>
                   ))}
@@ -647,7 +647,7 @@ export default function AIResumeLanding() {
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
+            <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full mb-4">
               PROFESSIONAL TEMPLATES
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">
@@ -675,7 +675,7 @@ export default function AIResumeLanding() {
               onClick={() => navigate("/app/resumes")}
               size="lg"
               variant="outline"
-              className="gap-2 border-2 border-green-700 text-green-700 hover:bg-green-50"
+              className="gap-2 border-2 border-emerald-700 text-emerald-700 hover:bg-emerald-50"
             >
               <Layout className="w-4 h-4" />
               View All Templates
@@ -688,7 +688,7 @@ export default function AIResumeLanding() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
+            <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full mb-4">
               SUCCESS STORIES
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">
@@ -720,7 +720,7 @@ export default function AIResumeLanding() {
                   <div>
                     <p className="font-bold text-slate-800">{testimonial.name}</p>
                     <p className="text-sm text-slate-500">{testimonial.role}</p>
-                    <p className="text-sm text-green-700 font-medium">{testimonial.company}</p>
+                    <p className="text-sm text-emerald-700 font-medium">{testimonial.company}</p>
                   </div>
                 </div>
               </div>
@@ -733,7 +733,7 @@ export default function AIResumeLanding() {
       <section className="py-20 bg-slate-50">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1.5 bg-green-100 text-green-800 text-sm font-semibold rounded-full mb-4">
+            <span className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-semibold rounded-full mb-4">
               FAQ
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-4">
@@ -760,7 +760,7 @@ export default function AIResumeLanding() {
 
       {/* Final CTA Section */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6">
             Ready to Build Your Winning Resume?
           </h2>
@@ -769,17 +769,17 @@ export default function AIResumeLanding() {
           </p>
 
           {/* Price highlight */}
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-xl border border-green-200/80 shadow-sm mb-8">
-            <span className="text-green-900">Only</span>
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white rounded-xl border border-emerald-200/80 shadow-sm mb-8">
+            <span className="text-emerald-900">Only</span>
             <span className="text-4xl font-black text-slate-900">$9.99</span>
-            <span className="text-green-900">one-time payment</span>
+            <span className="text-emerald-900">one-time payment</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => navigate("/app/resumes")}
               size="lg"
-              className="cta-shine gap-2 text-lg px-10 py-7 bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md shadow-green-900/10"
+              className="cta-shine gap-2 text-lg px-10 py-7 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl shadow-md shadow-emerald-900/10"
             >
               <Wand2 className="w-5 h-5" />
               Build My Resume Now
@@ -789,15 +789,15 @@ export default function AIResumeLanding() {
 
           <div className="flex flex-wrap justify-center gap-6 mt-8 text-sm text-slate-500">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-700" />
+              <CheckCircle className="w-4 h-4 text-emerald-700" />
               <span>PDF + DOCX download</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-green-700" />
+              <Clock className="w-4 h-4 text-emerald-700" />
               <span>Ready in 5 minutes</span>
             </div>
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-green-700" />
+              <Shield className="w-4 h-4 text-emerald-700" />
               <span>Secure payment</span>
             </div>
           </div>

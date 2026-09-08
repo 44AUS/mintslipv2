@@ -1323,7 +1323,7 @@ export default function CanadianPaystubForm() {
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-red-600 flex items-center justify-center shadow-lg">
                     <USFlagIcon />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -1398,8 +1398,8 @@ export default function CanadianPaystubForm() {
                     />
                     {selectedPayrollCompany && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-6 h-6 rounded bg-emerald-100 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -1416,8 +1416,8 @@ export default function CanadianPaystubForm() {
                             key={company.id}
                             data-testid={`company-option-${company.id}`}
                             onClick={() => handlePayrollCompanySelect(company)}
-                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
-                              selectedPayrollCompany?.id === company.id ? 'bg-green-100' : ''
+                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-emerald-50 transition-colors ${
+                              selectedPayrollCompany?.id === company.id ? 'bg-emerald-100' : ''
                             }`}
                           >
                             <div className="w-10 h-10 rounded bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-1">
@@ -1450,7 +1450,7 @@ export default function CanadianPaystubForm() {
 
                 {/* Selected Company Confirmation */}
                 {selectedPayrollCompany && (
-                  <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                  <div className="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-lg">
                     <div className="flex items-center gap-4">
                       <div className="w-[100px] h-[100px] rounded-lg bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-2">
                         {selectedPayrollCompany.logo ? (
@@ -1464,7 +1464,7 @@ export default function CanadianPaystubForm() {
                         )}
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-800 mb-1">✓ Payroll Provider Selected</p>
+                        <p className="text-sm font-medium text-emerald-800 mb-1">✓ Payroll Provider Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedPayrollCompany.name}</p>
                         <p className="text-sm text-slate-600 mt-1">
                           Template: <span className="font-semibold">{selectedPayrollCompany.template === 'template-a' ? 'Style A (Gusto)' : selectedPayrollCompany.template === 'template-b' ? 'Style B (ADP)' : selectedPayrollCompany.template === 'template-h' ? 'Style H (OnPay)' : 'Style C (Workday)'}</span>
@@ -1493,10 +1493,10 @@ export default function CanadianPaystubForm() {
                   onDrop={handleLogoDrop}
                   className={`relative border-2 border-dashed rounded-lg p-6 transition-all ${
                     isDragging 
-                      ? 'border-green-500 bg-green-50' 
+                      ? 'border-emerald-500 bg-emerald-50' 
                       : logoError 
                         ? 'border-red-300 bg-red-50' 
-                        : 'border-slate-300 hover:border-green-400'
+                        : 'border-slate-300 hover:border-emerald-400'
                   }`}
                 >
                   {logoPreview ? (
@@ -1516,7 +1516,7 @@ export default function CanadianPaystubForm() {
                         </button>
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-700">Logo uploaded successfully!</p>
+                        <p className="text-sm font-medium text-emerald-700">Logo uploaded successfully!</p>
                         <p className="text-xs text-slate-500 mt-1">
                           Click the X to remove and upload a different logo.
                         </p>
@@ -1569,14 +1569,14 @@ export default function CanadianPaystubForm() {
                 {(selectedTemplate === 'template-a' || selectedTemplate === 'template-h') ? (
                   <RadioGroup value={formData.workerType} onValueChange={handleWorkerTypeChange}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'employee' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-200'}`}>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="employee" id="worker-employee" data-testid="worker-employee-radio" />
                           <Label htmlFor="worker-employee" className="cursor-pointer font-medium">Employee (T4)</Label>
                         </div>
                         <p className="text-xs text-slate-600 mt-2">Standard employee with tax withholdings</p>
                       </div>
-                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'contractor' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                      <div className={`border-2 rounded-md p-4 cursor-pointer transition-all ${formData.workerType === 'contractor' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-200'}`}>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="contractor" id="worker-contractor" data-testid="worker-contractor-radio" />
                           <Label htmlFor="worker-contractor" className="cursor-pointer font-medium">Contractor (T4A)</Label>
@@ -1588,7 +1588,7 @@ export default function CanadianPaystubForm() {
                 ) : (
                   <div className="p-4 bg-slate-50 border-2 border-slate-200 rounded-md">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-green-600 flex items-center justify-center">
+                      <div className="w-4 h-4 rounded-full bg-emerald-600 flex items-center justify-center">
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
@@ -1841,13 +1841,13 @@ export default function CanadianPaystubForm() {
                     onValueChange={(val) => setFormData({...formData, payType: val})}
                     className="flex flex-row gap-4"
                   >
-                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'hourly' ? 'border-green-800 bg-green-50' : 'border-slate-200'}`}>
+                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'hourly' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-200'}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="hourly" id="pay-hourly" data-testid="pay-hourly-radio" />
                         <Label htmlFor="pay-hourly" className="cursor-pointer font-medium">Hourly</Label>
                       </div>
                     </div>
-                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'salary' ? 'border-green-800 bg-green-50' : 'border-slate-200'} ${!canUseSalary ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <div className={`border-2 rounded-md p-3 cursor-pointer transition-all flex-1 ${formData.payType === 'salary' ? 'border-emerald-800 bg-emerald-50' : 'border-slate-200'} ${!canUseSalary ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem 
                           value="salary" 
@@ -2677,7 +2677,7 @@ export default function CanadianPaystubForm() {
                               </div>
                               <div className="w-28 space-y-1">
                                 <Label className="text-xs text-slate-600">Available</Label>
-                                <div className="h-9 flex items-center px-3 bg-green-50 border border-green-200 rounded-md text-green-700 font-semibold">
+                                <div className="h-9 flex items-center px-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-700 font-semibold">
                                   {(parseFloat(plan.accrued) || 0) - (parseFloat(plan.reduced) || 0)}
                                 </div>
                               </div>
@@ -2709,13 +2709,13 @@ export default function CanadianPaystubForm() {
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-6">
               {/* Pay Preview */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Pay Preview {formData.workerType === 'contractor' && <span className="text-sm font-normal text-amber-700">(1099 Contractor)</span>}
                 </h3>
                 <div className="space-y-2 text-sm">
                   {preview.numStubs > 0 && (
-                    <div className="flex justify-between mb-3 pb-3 border-b border-green-300">
+                    <div className="flex justify-between mb-3 pb-3 border-b border-emerald-300">
                       <span className="text-slate-700 font-semibold">Paystubs to Generate:</span>
                       <span className="font-bold">{preview.numStubs}</span>
                     </div>
@@ -2724,9 +2724,9 @@ export default function CanadianPaystubForm() {
                   {/* Individual stub preview with pagination */}
                   {preview.stubPreviews && preview.stubPreviews.length > 0 && (
                     <>
-                      <div className="bg-white rounded-lg p-3 border border-green-200 mb-3">
+                      <div className="bg-white rounded-lg p-3 border border-emerald-200 mb-3">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-green-800">
+                          <span className="text-xs font-semibold text-emerald-800">
                             Paystub {currentPreviewIndex + 1} of {preview.stubPreviews.length}
                           </span>
                           {preview.stubPreviews.length > 1 && (
@@ -2734,7 +2734,7 @@ export default function CanadianPaystubForm() {
                               <button
                                 onClick={() => setCurrentPreviewIndex(Math.max(0, currentPreviewIndex - 1))}
                                 disabled={currentPreviewIndex === 0}
-                                className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-green-200 transition-colors"
+                                className="w-6 h-6 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-200 transition-colors"
                               >
                                 <ChevronLeft className="h-3 w-3" />
                               </button>
@@ -2744,8 +2744,8 @@ export default function CanadianPaystubForm() {
                                   onClick={() => setCurrentPreviewIndex(idx)}
                                   className={`w-5 h-5 rounded-full text-xs font-medium transition-all ${
                                     idx === currentPreviewIndex
-                                      ? 'bg-green-700 text-white'
-                                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                      ? 'bg-emerald-700 text-white'
+                                      : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                                   }`}
                                 >
                                   {idx + 1}
@@ -2754,7 +2754,7 @@ export default function CanadianPaystubForm() {
                               <button
                                 onClick={() => setCurrentPreviewIndex(Math.min(preview.stubPreviews.length - 1, currentPreviewIndex + 1))}
                                 disabled={currentPreviewIndex === preview.stubPreviews.length - 1}
-                                className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-green-200 transition-colors"
+                                className="w-6 h-6 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-emerald-200 transition-colors"
                               >
                                 <ChevronRight className="h-3 w-3" />
                               </button>
@@ -2794,7 +2794,7 @@ export default function CanadianPaystubForm() {
                                   <span className="text-slate-600">Provincial Tax:</span>
                                   <span>${formatCurrency(preview.stubPreviews[currentPreviewIndex].provincialTax)}</span>
                                 </div>
-                                <div className="flex justify-between text-red-700 pt-1 border-t border-green-200">
+                                <div className="flex justify-between text-red-700 pt-1 border-t border-emerald-200">
                                   <span className="font-medium">Total Taxes:</span>
                                   <span className="font-medium">${formatCurrency(preview.stubPreviews[currentPreviewIndex].totalTaxes)}</span>
                                 </div>
@@ -2818,7 +2818,7 @@ export default function CanadianPaystubForm() {
                               </div>
                             )}
                             
-                            <div className="flex justify-between text-green-700 pt-1 border-t border-green-200">
+                            <div className="flex justify-between text-emerald-700 pt-1 border-t border-emerald-200">
                               <span className="font-bold">{formData.workerType === 'contractor' ? 'Payment:' : 'Net Pay:'}</span>
                               <span className="font-bold">${formatCurrency(preview.stubPreviews[currentPreviewIndex].netPay)}</span>
                             </div>
@@ -2828,7 +2828,7 @@ export default function CanadianPaystubForm() {
                       
                       {/* Totals section */}
                       {preview.numStubs > 1 && (
-                        <div className="pt-2 border-t border-green-300">
+                        <div className="pt-2 border-t border-emerald-300">
                           <div className="flex justify-between mb-1">
                             <span className="text-slate-700 font-semibold">All {preview.numStubs} Paystubs Total:</span>
                           </div>
@@ -2854,7 +2854,7 @@ export default function CanadianPaystubForm() {
                               <span className="font-medium">${formatCurrency(preview.totalContributions)}</span>
                             </div>
                           )}
-                          <div className="flex justify-between text-green-700 text-lg pt-1">
+                          <div className="flex justify-between text-emerald-700 text-lg pt-1">
                             <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Total Net Pay:'}</span>
                             <span className="font-bold">${formatCurrency(preview.netPay)}</span>
                           </div>
@@ -2885,7 +2885,7 @@ export default function CanadianPaystubForm() {
                             <span className="text-slate-700">EI:</span>
                             <span>${formatCurrency(preview.ei)}</span>
                           </div>
-                          <div className="border-t border-green-300 pt-2 mt-2">
+                          <div className="border-t border-emerald-300 pt-2 mt-2">
                             <div className="flex justify-between text-red-700">
                               <span className="font-bold">Total Taxes:</span>
                               <span className="font-bold">${formatCurrency(preview.totalTaxes)}</span>
@@ -2893,7 +2893,7 @@ export default function CanadianPaystubForm() {
                           </div>
                         </>
                       ) : (
-                        <div className="border-t border-green-300 pt-2 mt-2">
+                        <div className="border-t border-emerald-300 pt-2 mt-2">
                           <div className="flex justify-between text-amber-700">
                             <span className="font-bold">No Taxes Withheld</span>
                             <span className="font-bold">$0.00</span>
@@ -2901,7 +2901,7 @@ export default function CanadianPaystubForm() {
                         </div>
                       )}
                       
-                      <div className="flex justify-between text-green-700 text-lg">
+                      <div className="flex justify-between text-emerald-700 text-lg">
                         <span className="font-bold">{formData.workerType === 'contractor' ? 'Total Payment:' : 'Net Pay:'}</span>
                         <span className="font-bold">${formatCurrency(preview.netPay)}</span>
                       </div>
@@ -2922,7 +2922,7 @@ export default function CanadianPaystubForm() {
                 {isGeneratingPreview ? (
                   <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
@@ -3006,7 +3006,7 @@ export default function CanadianPaystubForm() {
                                   onClick={() => setCurrentPreviewIndex(idx)}
                                   className={`w-8 h-8 rounded-full text-sm font-medium transition-all ${
                                     idx === currentPreviewIndex
-                                      ? 'bg-green-700 text-white'
+                                      ? 'bg-emerald-700 text-white'
                                       : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
                                   }`}
                                 >
@@ -3048,7 +3048,7 @@ export default function CanadianPaystubForm() {
                               onClick={() => setCurrentPreviewIndex(idx)}
                               className={`w-7 h-7 rounded-full text-xs font-medium transition-all ${
                                 idx === currentPreviewIndex
-                                  ? 'bg-green-700 text-white shadow-sm'
+                                  ? 'bg-emerald-700 text-white shadow-sm'
                                   : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
                               }`}
                             >
@@ -3101,21 +3101,21 @@ export default function CanadianPaystubForm() {
                 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessing || !isFormValid}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isProcessing ? (
                         <>
@@ -3151,7 +3151,7 @@ export default function CanadianPaystubForm() {
                         />
                         <p className="text-sm text-slate-600 mb-4">
                           Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : (calculateNumStubs * 9.99).toFixed(2)}</strong> 
-                          {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                          {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                           {!appliedDiscount && ` (${calculateNumStubs} stub${calculateNumStubs > 1 ? 's' : ''} × $9.99)`}
                         </p>
                       </>
@@ -3160,7 +3160,7 @@ export default function CanadianPaystubForm() {
                       <Button
                         onClick={handleStripeCheckout}
                         disabled={isProcessing || !isFormValid}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isProcessing ? (
                           <>
@@ -3193,7 +3193,7 @@ export default function CanadianPaystubForm() {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>

@@ -550,7 +550,7 @@ export default function AppPaystub() {
   const visibleCustomTemplates = customTemplates.filter((t) => !disabledGenerators.has(`custom:${t.id}`));
   const templateCards = disabledGenerators.has("paystub") ? [] : [
     ...PAYROLL_COMPANIES.filter((c) => !disabledGenerators.has(`paystub-${c.id}`)),
-    ...visibleCustomTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#16a34a" })),
+    ...visibleCustomTemplates.map((t) => ({ id: `custom-${t.id}`, name: t.name, template: `custom:${t.id}`, color: t.badgeColor || "#059669" })),
   ];
 
   useEffect(() => {
@@ -844,7 +844,7 @@ export default function AppPaystub() {
                     <div style={{ marginTop: 12 }}>
                       <p style={{ fontWeight: 600, marginBottom: 8 }}>Document Color</p>
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                        {[["", accentOption.baseColor || "#14532d", "Default"],
+                        {[["", accentOption.baseColor || "#064e3b", "Default"],
                           ...(accentOption.swatches || [])
                             .filter(c => String(c).toLowerCase() !== String(accentOption.baseColor || "").toLowerCase())
                             .map(c => [c, c, c])].map(([val, color, label]) => (

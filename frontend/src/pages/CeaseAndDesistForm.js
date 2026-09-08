@@ -292,7 +292,7 @@ export default function CeaseAndDesistForm() {
                       onClick={() => update("template", t.value)}
                       className={`text-left p-4 rounded-lg border-2 transition-colors ${
                         formData.template === t.value
-                          ? "border-green-600 bg-green-50"
+                          ? "border-emerald-600 bg-emerald-50"
                           : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
@@ -639,7 +639,7 @@ export default function CeaseAndDesistForm() {
             <div className="sticky top-24 space-y-6">
 
               {/* Summary */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>
                   <ShieldAlert className="w-5 h-5" /> Letter Summary
                 </h3>
@@ -648,7 +648,7 @@ export default function CeaseAndDesistForm() {
                     <span className="text-slate-700">Template:</span>
                     <span className="font-medium text-slate-900 capitalize">{formData.template}</span>
                   </div>
-                  <div className="border-t border-green-300 my-2" />
+                  <div className="border-t border-emerald-300 my-2" />
                   <div className="flex justify-between">
                     <span className="text-slate-700">From:</span>
                     <span className="font-medium text-slate-900">{formData.senderName || "—"}</span>
@@ -657,7 +657,7 @@ export default function CeaseAndDesistForm() {
                     <span className="text-slate-700">To:</span>
                     <span className="font-medium text-slate-900">{formData.recipientName || "—"}</span>
                   </div>
-                  <div className="border-t border-green-300 my-2" />
+                  <div className="border-t border-emerald-300 my-2" />
                   <div className="flex justify-between">
                     <span className="text-slate-700">Violation:</span>
                     <span className="font-medium text-slate-900 text-right">{selectedViolation?.label || "—"}</span>
@@ -702,13 +702,13 @@ export default function CeaseAndDesistForm() {
 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-1 font-semibold">Subscription Active</div>
-                      <p className="text-sm text-green-600">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-1 font-semibold">Subscription Active</div>
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? "Unlimited" : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
-                    <Button onClick={handleSubscriptionDownload} disabled={isProcessing} className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold">
+                    <Button onClick={handleSubscriptionDownload} disabled={isProcessing} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold">
                       {isProcessing ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Generating…</> : "Download Letter (Included in Plan)"}
                     </Button>
                   </div>
@@ -721,14 +721,14 @@ export default function CeaseAndDesistForm() {
                     />
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : PRICE.toFixed(2)}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && " for your cease and desist letter"}
                     </p>
 
                     <Button
                       onClick={handleStripeCheckout}
                       disabled={isProcessing}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                     >
                       {isProcessing
                         ? <><Loader2 className="w-5 h-5 animate-spin" />Processing…</>
@@ -741,7 +741,7 @@ export default function CeaseAndDesistForm() {
                     {authEnabled && (
                       <div className="mt-4 pt-4 border-t border-slate-200 text-center">
                         <p className="text-sm text-slate-500 mb-2">Save with a subscription plan</p>
-                        <Button variant="outline" size="sm" onClick={() => navigate("/pricing")} className="text-green-600 border-green-600 hover:bg-green-50">
+                        <Button variant="outline" size="sm" onClick={() => navigate("/pricing")} className="text-emerald-600 border-emerald-600 hover:bg-emerald-50">
                           View Subscription Plans
                         </Button>
                       </div>

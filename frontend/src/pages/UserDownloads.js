@@ -343,7 +343,7 @@ export default function UserDownloads() {
       <>
         <Header title="MintSlip" />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
         <Footer />
       </>
@@ -368,8 +368,8 @@ export default function UserDownloads() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <Download className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <Download className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
                 <p className="text-sm text-slate-500">Total Downloads</p>
@@ -488,7 +488,7 @@ export default function UserDownloads() {
               
               {isLoading ? (
                 <div className="p-12 text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+                  <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-3" />
                   <p className="text-slate-500">Loading downloads...</p>
                 </div>
               ) : downloads.length === 0 ? (
@@ -511,7 +511,7 @@ export default function UserDownloads() {
                       <p className="text-sm text-slate-400">Your download history will appear here</p>
                       <Button 
                         onClick={() => navigate("/")} 
-                        className="mt-4 bg-green-600 hover:bg-green-700"
+                        className="mt-4 bg-emerald-600 hover:bg-emerald-700"
                       >
                         Start Creating Documents
                       </Button>
@@ -668,7 +668,7 @@ export default function UserDownloads() {
               
               {isSavedLoading ? (
                 <div className="p-12 text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+                  <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-3" />
                   <p className="text-slate-500">Loading saved documents...</p>
                 </div>
               ) : getFilteredSavedDocuments().length === 0 ? (
@@ -696,7 +696,7 @@ export default function UserDownloads() {
                       </p>
                       <Button 
                         onClick={() => navigate("/user/settings")}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-emerald-600 hover:bg-emerald-700"
                       >
                         Enable in Settings
                       </Button>
@@ -718,8 +718,8 @@ export default function UserDownloads() {
                       <TableRow key={doc.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                              <FileText className="w-5 h-5 text-green-600" />
+                            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-emerald-600" />
                             </div>
                             <div>
                               <p className="font-medium text-slate-800">

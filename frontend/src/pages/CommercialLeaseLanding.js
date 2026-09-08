@@ -124,16 +124,16 @@ export default function CommercialLeaseLanding() {
 
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-green-100/60 rounded-full filter blur-3xl pointer-events-none" />
+        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-6 pt-14 pb-16 md:pt-20 md:pb-20 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-green-50 border border-green-200/80 text-sm font-medium text-green-900 mb-6">
-            <Building2 className="w-4 h-4 text-green-700" /> Office · Retail · Warehouse · Restaurant
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-sm font-medium text-emerald-900 mb-6">
+            <Building2 className="w-4 h-4 text-emerald-700" /> Office · Retail · Warehouse · Restaurant
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight" style={{ fontFamily: "Outfit, sans-serif" }}>
-            Commercial <span className="text-green-700">Lease Agreement</span>
+            Commercial <span className="text-emerald-700">Lease Agreement</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-10">
@@ -142,7 +142,7 @@ export default function CommercialLeaseLanding() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button onClick={go} className="cta-shine bg-green-700 hover:bg-green-800 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2 shadow-md shadow-green-900/10">
+            <Button onClick={go} className="cta-shine bg-emerald-700 hover:bg-emerald-800 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2 shadow-md shadow-emerald-900/10">
               Create Your Lease <ArrowRight className="w-5 h-5" />
             </Button>
             <div className="text-slate-500 text-sm">
@@ -151,9 +151,9 @@ export default function CommercialLeaseLanding() {
           </div>
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mt-12 text-sm text-slate-500">
-            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> NNN, gross &amp; percentage</span>
-            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> Guaranty &amp; notary blocks</span>
-            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> All 50 states</span>
+            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-700" /> NNN, gross &amp; percentage</span>
+            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-700" /> Guaranty &amp; notary blocks</span>
+            <span className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-700" /> All 50 states</span>
           </div>
         </div>
       </section>
@@ -192,9 +192,9 @@ export default function CommercialLeaseLanding() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {PROPERTY_TYPES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="bg-white p-6 rounded-xl border border-slate-200 hover:border-green-300 hover:shadow-md transition-all">
-                <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-4">
-                  <Icon className="w-6 h-6 text-green-700" />
+              <div key={title} className="bg-white p-6 rounded-xl border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all">
+                <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
+                  <Icon className="w-6 h-6 text-emerald-700" />
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 mb-2">{title}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
@@ -244,14 +244,14 @@ export default function CommercialLeaseLanding() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {STEPS.map(s => (
               <div key={s.n} className="text-center">
-                <div className="w-14 h-14 rounded-full bg-green-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4">{s.n}</div>
+                <div className="w-14 h-14 rounded-full bg-emerald-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-4">{s.n}</div>
                 <h3 className="font-bold text-lg text-slate-900 mb-2">{s.title}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
           <div className="text-center mt-14">
-            <Button onClick={go} className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2">
+            <Button onClick={go} className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2">
               Start Your Lease <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
@@ -268,7 +268,7 @@ export default function CommercialLeaseLanding() {
             {INCLUDES.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex gap-4">
                 <div className="w-11 h-11 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5 text-green-700" />
+                  <Icon className="w-5 h-5 text-emerald-700" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 mb-1">{title}</h3>
@@ -282,7 +282,7 @@ export default function CommercialLeaseLanding() {
 
       {/* PRICING */}
       <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-md mx-auto bg-white border-2 border-green-200 rounded-2xl p-8 text-center shadow-sm">
+        <div className="max-w-md mx-auto bg-white border-2 border-emerald-200 rounded-2xl p-8 text-center shadow-sm">
           <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "Outfit, sans-serif", color: "#1a4731" }}>Simple pricing</h2>
           <div className="my-6">
             <span className="text-5xl font-bold text-slate-900">${PRICE}</span>
@@ -297,12 +297,12 @@ export default function CommercialLeaseLanding() {
               "Live preview and instant PDF download",
             ].map(t => (
               <li key={t} className="flex items-start gap-3 text-slate-700">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                 <span className="text-sm">{t}</span>
               </li>
             ))}
           </ul>
-          <Button onClick={go} className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl">
+          <Button onClick={go} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl">
             Create Your Lease
           </Button>
           <p className="text-xs text-slate-400 mt-4">No subscription required. Secured by Stripe.</p>
@@ -334,14 +334,14 @@ export default function CommercialLeaseLanding() {
 
       {/* FINAL CTA */}
       <section className="py-16 px-6">
-        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-green-50 via-emerald-50/60 to-white border border-green-100 px-6 py-14 md:px-16 text-center overflow-hidden">
+        <div className="relative max-w-5xl mx-auto rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50/60 to-white border border-emerald-100 px-6 py-14 md:px-16 text-center overflow-hidden">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4" style={{ fontFamily: "Outfit, sans-serif" }}>
             Get it in writing before the keys change hands
           </h2>
           <p className="text-slate-600 mb-8 text-lg">
             A clear lease prevents the disputes that cost landlords and tenants far more than the document ever will.
           </p>
-          <Button onClick={go} className="cta-shine bg-green-700 hover:bg-green-800 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2 shadow-md shadow-green-900/10">
+          <Button onClick={go} className="cta-shine bg-emerald-700 hover:bg-emerald-800 text-white px-8 py-6 text-lg font-semibold rounded-xl gap-2 shadow-md shadow-emerald-900/10">
             Create Your Commercial Lease <ArrowRight className="w-5 h-5" />
           </Button>
         </div>

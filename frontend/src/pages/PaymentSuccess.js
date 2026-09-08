@@ -56,7 +56,7 @@ function ProcessingScreen({ title, messages }) {
   const bg = dark ? "#121212" : "#f6faf7";
   const ink = dark ? "#ffffff" : "#0f172a";
   const sub = dark ? "rgba(255,255,255,0.62)" : "#64748b";
-  const track = dark ? "rgba(255,255,255,0.12)" : "rgba(22,163,74,0.16)";
+  const track = dark ? "rgba(255,255,255,0.12)" : "rgba(5,150,105,0.16)";
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 50, background: bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -71,9 +71,9 @@ function ProcessingScreen({ title, messages }) {
 
         {/* Brand + progress (whodat's scan-brandhead treatment) */}
         <div style={{ fontFamily: "Outfit, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: "0.02em", color: ink, marginBottom: 14 }}>
-          mint<span style={{ color: "#16a34a" }}>slip</span>
+          mint<span style={{ color: "#059669" }}>slip</span>
         </div>
-        <IonProgressBar value={progress} style={{ "--progress-background": "#16a34a", "--background": track, borderRadius: 99, height: 6, overflow: "hidden", marginBottom: 22 }} />
+        <IonProgressBar value={progress} style={{ "--progress-background": "#059669", "--background": track, borderRadius: 99, height: 6, overflow: "hidden", marginBottom: 22 }} />
 
         <h2 style={{ fontFamily: "Outfit, sans-serif", fontWeight: 700, fontSize: 20, color: ink, margin: "0 0 8px" }}>{title}</h2>
         <p key={msgIndex} style={{ color: sub, fontSize: 15, margin: 0, minHeight: 22, animation: "msMsgIn 0.35s ease" }}>
@@ -886,7 +886,7 @@ export default function PaymentSuccess() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
       {/* CSS Animation Styles */}
       <style>{`
         @keyframes checkmark-pop {
@@ -915,9 +915,9 @@ export default function PaymentSuccess() {
       
       <div className="max-w-lg w-full">
         {/* Success Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-green-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
           {/* Header with animated checkmark */}
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-10 text-center">
+          <div className="bg-gradient-to-r from-emerald-600 to-emerald-600 px-8 py-10 text-center">
             <div className="relative inline-flex items-center justify-center">
               <div className="absolute w-24 h-24 bg-white/20 rounded-full pulse-ring"></div>
               <div className="checkmark-container relative inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg">
@@ -931,10 +931,10 @@ export default function PaymentSuccess() {
                   strokeLinejoin="round"
                 >
                   <path 
-                    className="checkmark-icon text-green-600" 
+                    className="checkmark-icon text-emerald-600" 
                     d="M5 13l4 4L19 7"
                     style={{ 
-                      stroke: '#16a34a',
+                      stroke: '#059669',
                       strokeDasharray: 50,
                       strokeDashoffset: 50 
                     }}
@@ -943,23 +943,23 @@ export default function PaymentSuccess() {
               </div>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2 mt-4">Payment Successful!</h1>
-            <p className="text-green-100">Thank you for your purchase</p>
+            <p className="text-emerald-100">Thank you for your purchase</p>
           </div>
           
           {/* Content */}
           <div className="px-8 py-8 space-y-6">
             {/* Order confirmation */}
             {sessionId && (
-              <div className="bg-green-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-green-700">Session ID</p>
-                <p className="font-mono text-sm font-semibold text-green-800 truncate">{sessionId}</p>
+              <div className="bg-emerald-50 rounded-lg p-4 text-center">
+                <p className="text-sm text-emerald-700">Session ID</p>
+                <p className="font-mono text-sm font-semibold text-emerald-800 truncate">{sessionId}</p>
               </div>
             )}
             
             {/* Your Download Section */}
             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
               <div className="flex items-center gap-3 mb-4">
-                <Download className="w-5 h-5 text-green-600" />
+                <Download className="w-5 h-5 text-emerald-600" />
                 <h3 className="font-semibold text-slate-800 text-lg">Your Download</h3>
               </div>
               
@@ -971,7 +971,7 @@ export default function PaymentSuccess() {
                   
                   <button
                     onClick={handleRedownload}
-                    className="w-full flex items-center gap-4 p-4 bg-white border-2 border-slate-200 hover:border-green-500 hover:bg-green-50 rounded-xl transition-all group cursor-pointer"
+                    className="w-full flex items-center gap-4 p-4 bg-white border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-xl transition-all group cursor-pointer"
                   >
                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isZipFile ? 'bg-amber-100' : 'bg-red-100'}`}>
                       {isZipFile ? (
@@ -982,7 +982,7 @@ export default function PaymentSuccess() {
                     </div>
                     
                     <div className="flex-1 text-left">
-                      <p className="font-medium text-slate-800 group-hover:text-green-700 transition-colors">
+                      <p className="font-medium text-slate-800 group-hover:text-emerald-700 transition-colors">
                         {fileName || getDefaultFileName(orderType, fileCount)}
                       </p>
                       <p className="text-sm text-slate-500">
@@ -990,8 +990,8 @@ export default function PaymentSuccess() {
                       </p>
                     </div>
                     
-                    <div className="w-10 h-10 rounded-full bg-green-100 group-hover:bg-green-600 flex items-center justify-center transition-colors">
-                      <Download className="w-5 h-5 text-green-600 group-hover:text-white transition-colors" />
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 group-hover:bg-emerald-600 flex items-center justify-center transition-colors">
+                      <Download className="w-5 h-5 text-emerald-600 group-hover:text-white transition-colors" />
                     </div>
                   </button>
                 </>
@@ -1038,7 +1038,7 @@ export default function PaymentSuccess() {
             {/* Back button */}
             <Button 
               onClick={() => navigate('/')}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Home
@@ -1047,7 +1047,7 @@ export default function PaymentSuccess() {
             {/* Create another */}
             <button
               onClick={() => navigate(`/${orderType === 'canadian-paystub' ? 'canadian-paystub' : orderType}-generator`)}
-              className="w-full text-center text-green-600 hover:text-green-700 font-medium py-2"
+              className="w-full text-center text-emerald-600 hover:text-emerald-700 font-medium py-2"
             >
               Create Another Document →
             </button>

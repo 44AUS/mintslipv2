@@ -38,8 +38,10 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
       if (!renderer || !renderer.getContext()) return fail();
       renderer.setClearColor(0x000000, 0);
 
-      const green = new THREE.Color("#22c55e");
-      const deep = new THREE.Color("#15803d");
+      // Anchor the blade to the actual logo green — a lighter emerald under
+      // the coloured point light drifts visibly teal.
+      const green = new THREE.Color("#059669");
+      const deep = new THREE.Color("#065f46");
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
@@ -68,7 +70,7 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
       geo.translate(0, 0, -0.12); // centre the thickness on z=0
       const blade = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
         color: green, metalness: 0.18, roughness: 0.4,
-        emissive: deep, emissiveIntensity: 0.24,
+        emissive: deep, emissiveIntensity: 0.18,
       }));
       leaf.add(blade);
 
@@ -204,15 +206,15 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
     <svg viewBox="0 0 64 74" width={Math.round(height * 0.56)} height={Math.round(height * 0.65)} aria-hidden="true">
       <defs>
         <linearGradient id="leaf3dFallbackG" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#4ade80" />
-          <stop offset="1" stopColor="#15803d" />
+          <stop offset="0" stopColor="#34d399" />
+          <stop offset="1" stopColor="#047857" />
         </linearGradient>
       </defs>
       <path d="M32 4 C 12 16 6 34 12 48 C 17 59 27 63 32 64 C 37 63 47 59 52 48 C 58 34 52 16 32 4 Z" fill="url(#leaf3dFallbackG)" />
       <path d="M32 10 L 32 62" stroke="rgba(255,255,255,0.55)" strokeWidth="2" fill="none" />
       <path d="M32 24 C 26 26 21 30 18 35 M32 36 C 27 38 23 42 21 46 M32 24 C 38 26 43 30 46 35 M32 36 C 37 38 41 42 43 46"
         stroke="rgba(255,255,255,0.4)" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <path d="M32 62 C 32 66 33 70 35 73" stroke="#15803d" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M32 62 C 32 66 33 70 35 73" stroke="#047857" strokeWidth="3.5" fill="none" strokeLinecap="round" />
     </svg>
   );
 
@@ -228,7 +230,7 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
       <span className="leaf3d-glow" aria-hidden="true" style={{
         position: "absolute", left: "50%", bottom: 4, transform: "translateX(-50%)",
         width: height, height: Math.round(height * 0.32),
-        background: "radial-gradient(ellipse at center, rgba(34,197,94,0.35) 0%, transparent 70%)",
+        background: "radial-gradient(ellipse at center, rgba(16,185,129,0.35) 0%, transparent 70%)",
         filter: "blur(16px)", animation: "leaf3dGlowPulse 2.8s ease-in-out infinite",
         pointerEvents: "none",
       }} />
@@ -242,7 +244,7 @@ export default function Leaf3D({ height = 210, spinSpeed = 0.005 }) {
         <div className="leaf3d-fallback" aria-hidden="true" style={{
           position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
           animation: "leaf3dFallbackFloat 3.4s ease-in-out infinite",
-          filter: "drop-shadow(0 12px 28px rgba(21,128,61,0.35))",
+          filter: "drop-shadow(0 12px 28px rgba(4,120,87,0.35))",
         }}>
           {fallbackLeaf}
         </div>

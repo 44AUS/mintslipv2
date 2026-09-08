@@ -750,7 +750,7 @@ export default function ScheduleCForm({ embedded = false }) {
                       placeholder="Auto-calculated"
                       value={formData.line7} 
                       onChange={handleChange}
-                      className="bg-green-50 border-green-300 font-semibold"
+                      className="bg-emerald-50 border-emerald-300 font-semibold"
                     />
                   </div>
                 </div>
@@ -888,7 +888,7 @@ export default function ScheduleCForm({ embedded = false }) {
               </Collapsible>
 
               {/* Totals Section */}
-              <div className="space-y-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="space-y-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
                 <h3 className="text-lg font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Totals
                 </h3>
@@ -938,14 +938,14 @@ export default function ScheduleCForm({ embedded = false }) {
                       placeholder="Auto-calculated"
                       value={formData.line31} 
                       onChange={handleChange}
-                      className={`font-bold ${parseFloat(formData.line31) >= 0 ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400'}`}
+                      className={`font-bold ${parseFloat(formData.line31) >= 0 ? 'bg-emerald-100 border-emerald-400' : 'bg-red-100 border-red-400'}`}
                     />
                   </div>
                 </div>
 
                 {/* Loss checkbox (only show if loss) */}
                 {parseFloat(formData.line31) < 0 && (
-                  <div className="pt-4 border-t border-green-300">
+                  <div className="pt-4 border-t border-emerald-300">
                     <Label className="text-sm font-semibold">32. If you have a loss, check the box that describes your investment:</Label>
                     <RadioGroup value={formData.line32} onValueChange={(val) => setFormData({...formData, line32: val})} className="mt-2">
                       <div className="flex items-center space-x-2">
@@ -973,7 +973,7 @@ export default function ScheduleCForm({ embedded = false }) {
             <div className="sticky top-24 space-y-6">
               
               {/* Summary Preview */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Schedule C Summary - {selectedTaxYear}
                 </h3>
@@ -994,8 +994,8 @@ export default function ScheduleCForm({ embedded = false }) {
                     <span className="text-slate-700">Total Expenses (Line 27):</span>
                     <span className="text-red-600">-${summary.totalExpenses.toLocaleString('en-US')}</span>
                   </div>
-                  <div className="border-t border-green-300 pt-2 mt-2">
-                    <div className={`flex justify-between ${summary.netProfitLoss >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                  <div className="border-t border-emerald-300 pt-2 mt-2">
+                    <div className={`flex justify-between ${summary.netProfitLoss >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                       <span className="font-bold">Net Profit/Loss (Line 31):</span>
                       <span className="font-bold">
                         {summary.netProfitLoss >= 0 ? '' : '('}${Math.abs(summary.netProfitLoss).toLocaleString('en-US')}{summary.netProfitLoss < 0 ? ')' : ''}
@@ -1017,7 +1017,7 @@ export default function ScheduleCForm({ embedded = false }) {
                 {isGeneratingPreview ? (
                   <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
@@ -1073,21 +1073,21 @@ export default function ScheduleCForm({ embedded = false }) {
                 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessing}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
                     >
                       {isProcessing ? (
                         <>
@@ -1116,14 +1116,14 @@ export default function ScheduleCForm({ embedded = false }) {
                     />
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '14.99'}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && ' for Schedule C generation'}
                     </p>
                     <div>
                       <Button
                         onClick={handleStripeCheckout}
                         disabled={isProcessing}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                       >
                         {isProcessing ? (
                           <>
@@ -1151,7 +1151,7 @@ export default function ScheduleCForm({ embedded = false }) {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>
@@ -1169,8 +1169,8 @@ export default function ScheduleCForm({ embedded = false }) {
       <section className="bg-slate-50 border-t border-slate-200 py-16">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-4">
-              <HelpCircle className="w-6 h-6 text-green-700" />
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full mb-4">
+              <HelpCircle className="w-6 h-6 text-emerald-700" />
             </div>
             <h2 className="text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
               Schedule C Form FAQ
@@ -1180,7 +1180,7 @@ export default function ScheduleCForm({ embedded = false }) {
           
           <Accordion type="single" collapsible className="space-y-3">
             <AccordionItem value="item-1" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is Schedule C?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1189,7 +1189,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-2" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Who needs to file Schedule C?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1198,7 +1198,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-3" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What business expenses can I deduct?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1207,7 +1207,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-4" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is gross receipts vs net profit?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1216,7 +1216,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-5" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What is the home office deduction?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1225,7 +1225,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-6" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Do I need an EIN or can I use my SSN?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1234,7 +1234,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-7" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 What accounting method should I use?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">
@@ -1243,7 +1243,7 @@ export default function ScheduleCForm({ embedded = false }) {
             </AccordionItem>
 
             <AccordionItem value="item-8" className="bg-white border border-slate-200 rounded-lg px-6">
-              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-green-700">
+              <AccordionTrigger className="text-left font-semibold text-slate-800 hover:text-emerald-700">
                 Can I generate Schedule C for previous years?
               </AccordionTrigger>
               <AccordionContent className="text-slate-600 pb-4">

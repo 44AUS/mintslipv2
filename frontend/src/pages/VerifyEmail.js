@@ -176,11 +176,11 @@ export default function VerifyEmail() {
   // Success state
   if (isVerified) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* Logo/Brand */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg mb-4">
               <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-800">Email Verified!</h1>
@@ -189,9 +189,9 @@ export default function VerifyEmail() {
 
           {/* Success Card */}
           <div className="bg-white rounded-2xl p-8 shadow-xl border border-slate-100 text-center">
-            <div className="bg-green-50 rounded-xl p-4 mb-6">
+            <div className="bg-emerald-50 rounded-xl p-4 mb-6">
               <p className="text-slate-700">
-                Your email <strong className="text-green-700">{email}</strong> has been verified successfully.
+                Your email <strong className="text-emerald-700">{email}</strong> has been verified successfully.
               </p>
             </div>
             
@@ -201,7 +201,7 @@ export default function VerifyEmail() {
             
             <Button
               onClick={() => navigate("/subscription/choose")}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
             >
               Choose Your Plan
               <ArrowRight className="w-5 h-5" />
@@ -213,11 +213,11 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-lg mb-4">
             <ShieldCheck className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">Verify Your Email</h1>
@@ -227,9 +227,9 @@ export default function VerifyEmail() {
         {/* Verification Form */}
         <div className="bg-white rounded-2xl p-8 shadow-xl border border-slate-100">
           {email && (
-            <div className="bg-green-50 rounded-xl p-4 mb-6 text-center">
+            <div className="bg-emerald-50 rounded-xl p-4 mb-6 text-center">
               <p className="text-sm text-slate-600">We sent a verification code to:</p>
-              <p className="font-semibold text-green-700">{email}</p>
+              <p className="font-semibold text-emerald-700">{email}</p>
             </div>
           )}
 
@@ -260,7 +260,7 @@ export default function VerifyEmail() {
             <Button
               type="submit"
               disabled={isLoading || code.length < 6}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white py-6 text-lg font-semibold shadow-lg gap-2"
             >
               {isLoading ? (
                 <>
@@ -324,7 +324,7 @@ export default function VerifyEmail() {
         {/* Help Note */}
         <div className="mt-6 bg-white rounded-xl p-4 border border-slate-100">
           <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-green-600" />
+            <Mail className="w-4 h-4 text-emerald-600" />
             Can't Find the Email?
           </h3>
           <ul className="text-sm text-slate-600 space-y-1">

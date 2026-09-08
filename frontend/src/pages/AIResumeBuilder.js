@@ -111,7 +111,7 @@ export default function AIResumeBuilder() {
 
   const templateOptions = [
     ...TEMPLATES,
-    ...customTemplates.map((t) => ({ value: `custom:${t.id}`, label: t.name, description: t.description || "Custom design", color: t.badgeColor || "#16a34a" })),
+    ...customTemplates.map((t) => ({ value: `custom:${t.id}`, label: t.name, description: t.description || "Custom design", color: t.badgeColor || "#059669" })),
   ];
   
   const checkUserSubscription = async () => {
@@ -1573,7 +1573,7 @@ export default function AIResumeBuilder() {
               key={template.value}
               className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                 formData.template === template.value
-                  ? "border-green-600 bg-green-50"
+                  ? "border-emerald-600 bg-emerald-50"
                   : "border-slate-200 hover:border-slate-300"
               }`}
               onClick={() => handleChange("template", template.value)}
@@ -1723,7 +1723,7 @@ export default function AIResumeBuilder() {
           {/* Enhanced ATS Score */}
           {generatedResume.atsScore && (
             <div className={`relative overflow-hidden rounded-2xl p-6 ${
-              generatedResume.atsScore >= 80 ? 'bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200' :
+              generatedResume.atsScore >= 80 ? 'bg-gradient-to-br from-emerald-50 to-emerald-50 border border-emerald-200' :
               generatedResume.atsScore >= 60 ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200' :
               'bg-gradient-to-br from-red-50 to-orange-50 border border-red-200'
             }`}>
@@ -1998,14 +1998,14 @@ export default function AIResumeBuilder() {
           <div className="border rounded-lg p-6 bg-white">
             {isPaid ? (
               <div className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-2 text-green-600">
+                <div className="flex items-center justify-center gap-2 text-emerald-600">
                   <CheckCircle className="w-6 h-6" />
                   <span className="text-lg font-semibold">Payment Complete!</span>
                 </div>
                 <Button
                   onClick={handleDownload}
                   size="lg"
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   <Download className="w-5 h-5 mr-2" />
                   Download Resume (PDF + DOCX)
@@ -2015,21 +2015,21 @@ export default function AIResumeBuilder() {
               <div className="space-y-4">
                 {hasActiveSubscription ? (
                   <>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessingPayment}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
                     >
                       {isProcessingPayment ? (
                         <>
@@ -2060,8 +2060,8 @@ export default function AIResumeBuilder() {
                       {appliedDiscount ? (
                         <>
                           <p className="text-lg text-slate-400 line-through">${9.99.toFixed(2)}</p>
-                          <p className="text-2xl font-bold text-green-600">${appliedDiscount.discountedPrice.toFixed(2)}</p>
-                          <p className="text-green-600 text-sm">{appliedDiscount.discountPercent}% discount applied!</p>
+                          <p className="text-2xl font-bold text-emerald-600">${appliedDiscount.discountedPrice.toFixed(2)}</p>
+                          <p className="text-emerald-600 text-sm">{appliedDiscount.discountPercent}% discount applied!</p>
                         </>
                       ) : (
                         <p className="text-2xl font-bold text-slate-800">$9.99</p>
@@ -2072,7 +2072,7 @@ export default function AIResumeBuilder() {
                       <Button
                         onClick={handleStripeCheckout}
                         disabled={isProcessingPayment}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                       >
                         {isProcessingPayment ? (
                           <>
@@ -2103,7 +2103,7 @@ export default function AIResumeBuilder() {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>
@@ -2174,18 +2174,18 @@ export default function AIResumeBuilder() {
                       onClick={() => setCurrentStep(step.id)}
                       className={`flex flex-col items-center flex-shrink-0 ${
                         isCurrent
-                          ? "text-green-600"
+                          ? "text-emerald-600"
                           : isCompleted
-                          ? "text-green-500"
+                          ? "text-emerald-500"
                           : "text-slate-400"
                       }`}
                     >
                       <div
                         className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center mb-1 ${
                           isCurrent
-                            ? "bg-green-600 text-white"
+                            ? "bg-emerald-600 text-white"
                             : isCompleted
-                            ? "bg-green-100 text-green-600"
+                            ? "bg-emerald-100 text-emerald-600"
                             : "bg-slate-100 text-slate-400"
                         }`}
                       >
@@ -2200,7 +2200,7 @@ export default function AIResumeBuilder() {
                     {index < STEPS.length - 1 && (
                       <div
                         className={`flex-1 h-0.5 mx-1 md:mx-2 ${
-                          currentStep > step.id ? "bg-green-500" : "bg-slate-200"
+                          currentStep > step.id ? "bg-emerald-500" : "bg-slate-200"
                         }`}
                       />
                     )}

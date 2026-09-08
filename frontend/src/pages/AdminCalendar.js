@@ -13,8 +13,8 @@ import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 const DOC_COLORS = {
-  "paystub":               "#16a34a",
-  "canadian-paystub":      "#16a34a",
+  "paystub":               "#059669",
+  "canadian-paystub":      "#059669",
   "resume":                "#2563eb",
   "w2":                    "#7c3aed",
   "w9":                    "#7c3aed",
@@ -270,7 +270,7 @@ export default function AdminCalendar() {
                   {p.paypalEmail || p.userEmail || "—"}
                 </div>
               </div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#2dd36f", flexShrink: 0 }}>
+              <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#10b981", flexShrink: 0 }}>
                 ${(p.amount || 0).toFixed(2)}
               </div>
             </div>
@@ -397,7 +397,7 @@ export default function AdminCalendar() {
 
                 <div style={{ textAlign: "center" }}>
                   <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-text-color)", lineHeight: 1.3 }}>{MONTHS[month]}</div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "#2dd36f", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981", lineHeight: 1.2 }}>
                     ${monthRevenue.toFixed(2)}
                   </div>
                 </div>

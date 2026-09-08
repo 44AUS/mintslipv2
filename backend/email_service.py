@@ -62,24 +62,24 @@ def get_base_template(content: str, preview_text: str = "") -> str:
     <!--<![endif]-->
     <style>
         body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }}
-        .button {{ display: inline-block; box-sizing: border-box; padding: 14px 30px; background-color: #16a34a; background-image: linear-gradient(135deg, #22c55e, #16a34a 60%, #15803d); color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(22,163,74,0.32); }}
-        .highlight {{ background-color: #f0fdf4; padding: 16px; border-radius: 10px; border-left: 4px solid #16a34a; }}
+        .button {{ display: inline-block; box-sizing: border-box; padding: 14px 30px; background-color: #059669; background-image: linear-gradient(135deg, #10b981, #059669 60%, #047857); color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(5,150,105,0.32); }}
+        .highlight {{ background-color: #ecfdf5; padding: 16px; border-radius: 10px; border-left: 4px solid #059669; }}
         h1 {{ color: #0f172a; margin: 0 0 12px; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }}
         h2 {{ color: #0f172a; margin: 0 0 12px; font-size: 19px; font-weight: 700; }}
         p {{ color: #334155; line-height: 1.65; font-size: 15px; }}
         ul {{ color: #334155; line-height: 1.8; font-size: 15px; }}
-        a {{ color: #16a34a; }}
+        a {{ color: #059669; }}
         .text-muted {{ color: #64748b; }}
     </style>
 </head>
-<body style="margin:0;padding:0;background:#f0fdf4;">
+<body style="margin:0;padding:0;background:#ecfdf5;">
     <span style="display:none;max-height:0;overflow:hidden;">{preview_text}</span>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;">
     <tr><td align="center" style="padding:36px 16px;">
 
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
             <tr>
-            <td style="background-color:#16a34a;background-image:linear-gradient(135deg,#22c55e 0%,#16a34a 55%,#15803d 100%);padding:28px 32px;text-align:center;">
+            <td style="background-color:#059669;background-image:linear-gradient(135deg,#10b981 0%,#059669 55%,#047857 100%);padding:28px 32px;text-align:center;">
                 <span style="display:inline-block;background:#ffffff;border-radius:12px;padding:10px 18px;">
                     <img src="{SITE_URL}/mintslip-logo.png" alt="MintSlip" style="height:30px;width:auto;display:block;" />
                 </span>
@@ -929,7 +929,7 @@ def template_discount_announcement(code: str, discount_percent, custom_message: 
         <p>Use the code below to get <strong>{discount_percent}% off</strong> your next document on MintSlip:</p>
 
         <div style="text-align: center; margin: 26px 0;">
-            <span style="display: inline-block; background: #dcfce7; border: 2px dashed #16a34a; color: #14532d; font-family: monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; padding: 14px 28px; border-radius: 10px;">{code}</span>
+            <span style="display: inline-block; background: #d1fae5; border: 2px dashed #059669; color: #064e3b; font-family: monospace; font-size: 26px; font-weight: 700; letter-spacing: 3px; padding: 14px 28px; border-radius: 10px;">{code}</span>
         </div>
         {msg_block}
 

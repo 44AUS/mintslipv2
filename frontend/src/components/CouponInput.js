@@ -118,13 +118,13 @@ export default function CouponInput({
           )}
         </>
       ) : (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-green-600" />
+              <Check className="w-5 h-5 text-emerald-600" />
               <div>
-                <span className="font-mono font-semibold text-green-700">{appliedDiscount.code}</span>
-                <span className="text-green-600 ml-2">- {appliedDiscount.percent}% off</span>
+                <span className="font-mono font-semibold text-emerald-700">{appliedDiscount.code}</span>
+                <span className="text-emerald-600 ml-2">- {appliedDiscount.percent}% off</span>
               </div>
             </div>
             <Button
@@ -139,8 +139,8 @@ export default function CouponInput({
           </div>
           <div className="mt-2 text-sm">
             <span className="text-gray-500 line-through">${originalPrice.toFixed(2)}</span>
-            <span className="text-green-700 font-semibold ml-2">${appliedDiscount.newPrice}</span>
-            <span className="text-green-600 ml-1">(Save ${appliedDiscount.discountAmount})</span>
+            <span className="text-emerald-700 font-semibold ml-2">${appliedDiscount.newPrice}</span>
+            <span className="text-emerald-600 ml-1">(Save ${appliedDiscount.discountAmount})</span>
           </div>
         </div>
       )}

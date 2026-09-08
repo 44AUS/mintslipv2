@@ -471,7 +471,7 @@ export default function UserSettings() {
       <>
         <Header title="MintSlip" />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
         <Footer />
       </>
@@ -502,7 +502,7 @@ export default function UserSettings() {
           </div>
           <div className="p-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </span>
@@ -528,19 +528,19 @@ export default function UserSettings() {
               <div className="space-y-6">
                 {/* Current Plan */}
                 <div className={`p-4 rounded-xl border-2 ${
-                  currentTier?.color === "green" ? "border-green-200 bg-green-50" :
+                  currentTier?.color === "green" ? "border-emerald-200 bg-emerald-50" :
                   currentTier?.color === "blue" ? "border-blue-200 bg-blue-50" :
                   "border-purple-200 bg-purple-50"
                 }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        currentTier?.color === "green" ? "bg-green-100" :
+                        currentTier?.color === "green" ? "bg-emerald-100" :
                         currentTier?.color === "blue" ? "bg-blue-100" :
                         "bg-purple-100"
                       }`}>
                         <CurrentTierIcon className={`w-6 h-6 ${
-                          currentTier?.color === "green" ? "text-green-600" :
+                          currentTier?.color === "green" ? "text-emerald-600" :
                           currentTier?.color === "blue" ? "text-blue-600" :
                           "text-purple-600"
                         }`} />
@@ -557,7 +557,7 @@ export default function UserSettings() {
                         Cancelling
                       </span>
                     ) : (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">
                         Active
                       </span>
                     )}
@@ -600,7 +600,7 @@ export default function UserSettings() {
                     <div className="w-full bg-slate-200 rounded-full h-2">
                       <div 
                         className={`h-2 rounded-full ${
-                          currentTier?.color === "green" ? "bg-green-600" :
+                          currentTier?.color === "green" ? "bg-emerald-600" :
                           currentTier?.color === "blue" ? "bg-blue-600" :
                           "bg-purple-600"
                         }`}
@@ -647,7 +647,7 @@ export default function UserSettings() {
                 <p className="text-slate-500 mb-4">You don't have an active subscription</p>
                 <Button 
                   onClick={() => navigate("/subscription/choose")}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   Choose a Plan
                 </Button>
@@ -705,8 +705,8 @@ export default function UserSettings() {
               />
             </div>
             {user?.preferences?.saveDocuments && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-700">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <p className="text-sm text-emerald-700">
                   ✓ Your documents will be saved automatically when you download. View them in your{" "}
                   <Link to="/user/downloads" className="font-medium underline hover:no-underline">
                     Downloads page
@@ -728,7 +728,7 @@ export default function UserSettings() {
               <button
                 onClick={handleOpenBillingPortal}
                 disabled={portalLoading}
-                className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 Manage in Stripe
@@ -742,7 +742,7 @@ export default function UserSettings() {
               ) : (
                 invoices.map((inv) => {
                   const statusIcon = inv.status === "paid"
-                    ? <CheckCircle className="w-4 h-4 text-green-500" />
+                    ? <CheckCircle className="w-4 h-4 text-emerald-500" />
                     : inv.status === "void" || inv.status === "uncollectible"
                     ? <XCircle className="w-4 h-4 text-red-400" />
                     : <Clock className="w-4 h-4 text-amber-400" />;
@@ -845,7 +845,7 @@ export default function UserSettings() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-green-600" />
+              <Shield className="w-5 h-5 text-emerald-600" />
               Change Password
             </DialogTitle>
             <DialogDescription>
@@ -902,7 +902,7 @@ export default function UserSettings() {
             <Button 
               onClick={handleChangePassword}
               disabled={isProcessing}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
             >
               {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Change Password
@@ -922,7 +922,7 @@ export default function UserSettings() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-green-600" />
+              <Mail className="w-5 h-5 text-emerald-600" />
               Change Email Address
             </DialogTitle>
             <DialogDescription>
@@ -991,7 +991,7 @@ export default function UserSettings() {
             <Button 
               onClick={handleChangeEmail}
               disabled={isProcessing}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
             >
               {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Update Email
@@ -1105,7 +1105,7 @@ export default function UserSettings() {
             <Button 
               onClick={handleChangePlan}
               disabled={isProcessing || !selectedNewTier || selectedNewTier === user?.subscription?.tier}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
             >
               {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Confirm Change

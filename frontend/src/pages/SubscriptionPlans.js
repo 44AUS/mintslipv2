@@ -285,12 +285,12 @@ export default function SubscriptionPlans() {
   const getColorClasses = (color, isSelected) => {
     const colors = {
       green: {
-        bg: isSelected ? "bg-green-600" : "bg-white",
-        border: isSelected ? "border-green-600" : "border-slate-200",
+        bg: isSelected ? "bg-emerald-600" : "bg-white",
+        border: isSelected ? "border-emerald-600" : "border-slate-200",
         text: isSelected ? "text-white" : "text-slate-800",
-        badge: "bg-green-100 text-green-700",
-        icon: isSelected ? "text-white" : "text-green-600",
-        button: "bg-green-600 hover:bg-green-700"
+        badge: "bg-emerald-100 text-emerald-700",
+        icon: isSelected ? "text-white" : "text-emerald-600",
+        button: "bg-emerald-600 hover:bg-emerald-700"
       },
       blue: {
         bg: isSelected ? "bg-blue-600" : "bg-white",
@@ -317,7 +317,7 @@ export default function SubscriptionPlans() {
       <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header title="MintSlip" />
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
         </div>
         <Footer />
       </div>
@@ -349,7 +349,7 @@ export default function SubscriptionPlans() {
             { icon: FileText, text: "All Templates Included" }
           ].map((benefit, idx) => (
             <div key={idx} className="flex items-center gap-2 text-slate-600">
-              <benefit.icon className="w-5 h-5 text-green-600" />
+              <benefit.icon className="w-5 h-5 text-emerald-600" />
               <span className="text-sm font-medium">{benefit.text}</span>
             </div>
           ))}
@@ -398,7 +398,7 @@ export default function SubscriptionPlans() {
                 {isSelected && !isCurrentPlan && (
                   <div className="absolute top-4 right-4">
                     <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                      <Check className={`w-4 h-4 ${config.color === "green" ? "text-green-600" : config.color === "blue" ? "text-blue-600" : "text-purple-600"}`} />
+                      <Check className={`w-4 h-4 ${config.color === "green" ? "text-emerald-600" : config.color === "blue" ? "text-blue-600" : "text-purple-600"}`} />
                     </div>
                   </div>
                 )}
@@ -438,7 +438,7 @@ export default function SubscriptionPlans() {
                 <ul className="space-y-3">
                   {config.features.map((feature, idx) => (
                     <li key={idx} className={`flex items-start gap-2 text-sm ${isSelected ? "text-white/90" : "text-slate-600"}`}>
-                      <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isSelected ? "text-white" : "text-green-600"}`} />
+                      <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isSelected ? "text-white" : "text-emerald-600"}`} />
                       {feature}
                     </li>
                   ))}
@@ -479,7 +479,7 @@ export default function SubscriptionPlans() {
             disabled={!selectedTier || isProcessing || (user?.subscription?.tier === selectedTier)}
             className={`
               px-12 py-6 text-lg font-semibold rounded-xl shadow-lg
-              ${selectedTier === "starter" ? "bg-green-600 hover:bg-green-700" : ""}
+              ${selectedTier === "starter" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
               ${selectedTier === "professional" ? "bg-blue-600 hover:bg-blue-700" : ""}
               ${selectedTier === "business" ? "bg-purple-600 hover:bg-purple-700" : ""}
               ${!selectedTier ? "bg-slate-400" : ""}
@@ -543,7 +543,7 @@ export default function SubscriptionPlans() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
               {upgradeDetails?.isUpgrade ? "Upgrade Your Plan" : "Change Your Plan"}
             </DialogTitle>
             <DialogDescription>
@@ -570,7 +570,7 @@ export default function SubscriptionPlans() {
                 {upgradeDetails.creditAmount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Credit from current plan</span>
-                    <span className="font-medium text-green-600">-${upgradeDetails.creditAmount.toFixed(2)}</span>
+                    <span className="font-medium text-emerald-600">-${upgradeDetails.creditAmount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="border-t border-slate-200 pt-3 mt-3">
@@ -578,7 +578,7 @@ export default function SubscriptionPlans() {
                     <span className="font-semibold text-slate-800">
                       {upgradeDetails.immediateCharge ? "Amount due today" : "Credit applied"}
                     </span>
-                    <span className={`font-bold text-lg ${upgradeDetails.immediateCharge ? "text-green-600" : "text-blue-600"}`}>
+                    <span className={`font-bold text-lg ${upgradeDetails.immediateCharge ? "text-emerald-600" : "text-blue-600"}`}>
                       {upgradeDetails.immediateCharge 
                         ? `$${upgradeDetails.proratedAmount.toFixed(2)}`
                         : `$${Math.abs(upgradeDetails.proratedAmount).toFixed(2)} credit`
@@ -589,12 +589,12 @@ export default function SubscriptionPlans() {
               </div>
 
               {/* What you get */}
-              <div className="bg-green-50 rounded-lg p-4">
-                <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+              <div className="bg-emerald-50 rounded-lg p-4">
+                <h4 className="font-semibold text-emerald-800 mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   What you'll get immediately
                 </h4>
-                <ul className="text-sm text-green-700 space-y-1">
+                <ul className="text-sm text-emerald-700 space-y-1">
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4" />
                     {upgradeDetails.newDownloads === -1 ? "Unlimited" : upgradeDetails.newDownloads} downloads reset
@@ -627,7 +627,7 @@ export default function SubscriptionPlans() {
             <Button
               onClick={handleConfirmUpgrade}
               disabled={isProcessing}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
             >
               {isProcessing ? (
                 <>

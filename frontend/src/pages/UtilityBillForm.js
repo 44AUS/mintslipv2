@@ -596,8 +596,8 @@ export default function UtilityBillForm() {
                     />
                     {selectedProvider && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                        <div className="w-6 h-6 rounded bg-emerald-100 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-emerald-600" />
                         </div>
                       </div>
                     )}
@@ -612,19 +612,19 @@ export default function UtilityBillForm() {
                             key={provider.id}
                             data-testid={`provider-option-${provider.id}`}
                             onClick={() => handleProviderSelect(provider)}
-                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-green-50 transition-colors ${
-                              selectedProvider?.id === provider.id ? 'bg-green-100' : ''
+                            className={`flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-emerald-50 transition-colors ${
+                              selectedProvider?.id === provider.id ? 'bg-emerald-100' : ''
                             }`}
                           >
                             <div className={`w-10 h-10 rounded flex items-center justify-center ${
                               provider.template === 'template-a' ? 'bg-purple-100' :
-                              provider.template === 'template-b' ? 'bg-blue-100' : 'bg-green-100'
+                              provider.template === 'template-b' ? 'bg-blue-100' : 'bg-emerald-100'
                             }`}>
                               {provider.template === 'template-b' ? (
                                 <Droplets className="w-5 h-5 text-blue-600" />
                               ) : (
                                 <Zap className={`w-5 h-5 ${
-                                  provider.template === 'template-a' ? 'text-purple-600' : 'text-green-600'
+                                  provider.template === 'template-a' ? 'text-purple-600' : 'text-emerald-600'
                                 }`} />
                               )}
                             </div>
@@ -647,25 +647,25 @@ export default function UtilityBillForm() {
                 {selectedProvider && (
                   <div className={`p-4 border-2 rounded-lg ${
                     selectedProvider.template === 'template-a' ? 'bg-purple-50 border-purple-200' :
-                    selectedProvider.template === 'template-b' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'
+                    selectedProvider.template === 'template-b' ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200'
                   }`}>
                     <div className="flex items-center gap-4">
                       <div className={`w-16 h-16 rounded-lg flex items-center justify-center ${
                         selectedProvider.template === 'template-a' ? 'bg-purple-100' :
-                        selectedProvider.template === 'template-b' ? 'bg-blue-100' : 'bg-green-100'
+                        selectedProvider.template === 'template-b' ? 'bg-blue-100' : 'bg-emerald-100'
                       }`}>
                         {selectedProvider.template === 'template-b' ? (
                           <Droplets className="w-8 h-8 text-blue-600" />
                         ) : (
                           <Zap className={`w-8 h-8 ${
-                            selectedProvider.template === 'template-a' ? 'text-purple-600' : 'text-green-600'
+                            selectedProvider.template === 'template-a' ? 'text-purple-600' : 'text-emerald-600'
                           }`} />
                         )}
                       </div>
                       <div className="flex-1">
                         <p className={`text-sm font-medium mb-1 ${
                           selectedProvider.template === 'template-a' ? 'text-purple-800' :
-                          selectedProvider.template === 'template-b' ? 'text-blue-800' : 'text-green-800'
+                          selectedProvider.template === 'template-b' ? 'text-blue-800' : 'text-emerald-800'
                         }`}>✓ Template Selected</p>
                         <p className="font-bold text-xl text-slate-800">{selectedProvider.name}</p>
                         <p className="text-sm text-slate-600 mt-1">{selectedProvider.description}</p>
@@ -687,7 +687,7 @@ export default function UtilityBillForm() {
                 </div>
                 
                 {logoPreview ? (
-                  <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                  <div className="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-lg">
                     <div className="flex items-center gap-4">
                       <div className="w-24 h-24 rounded-lg bg-white border border-slate-200 flex items-center justify-center overflow-hidden p-2">
                         <img 
@@ -697,7 +697,7 @@ export default function UtilityBillForm() {
                         />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-green-800 mb-1">✓ Logo Uploaded</p>
+                        <p className="text-sm font-medium text-emerald-800 mb-1">✓ Logo Uploaded</p>
                         <p className="font-medium text-slate-800">{uploadedLogo?.name}</p>
                         <p className="text-xs text-slate-500 mt-1">
                           {(uploadedLogo?.size / 1024).toFixed(1)} KB
@@ -721,7 +721,7 @@ export default function UtilityBillForm() {
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
                     className={`p-8 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${
-                      isDragging ? 'border-green-500 bg-green-50' : 'border-slate-300 hover:border-green-400 hover:bg-slate-50'
+                      isDragging ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300 hover:border-emerald-400 hover:bg-slate-50'
                     }`}
                   >
                     <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
@@ -1396,37 +1396,37 @@ export default function UtilityBillForm() {
           <div className="lg:col-span-5">
             <div className="sticky top-24 space-y-6">
               {/* Bill Preview Summary */}
-              <div className="p-6 bg-green-50 border-2 border-green-200 rounded-md">
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-200 rounded-md">
                 <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
                   Bill Preview
                 </h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700 font-semibold">Template:</span>
                     <span className="font-bold">{selectedProvider?.name || '—'}</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700 font-semibold">Company:</span>
                     <span className="font-bold">{formData.companyName || '—'}</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700">Customer:</span>
                     <span className="font-medium">{formData.customerName || '—'}</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700">Account #:</span>
                     <span className="font-medium">{formData.accountNumber || '—'}</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700">Service:</span>
                     <span className="font-medium">{isWaterBillTemplate ? 'Water/Sewer' : formData.serviceType}</span>
                   </div>
-                  <div className="flex justify-between pb-2 border-b border-green-300">
+                  <div className="flex justify-between pb-2 border-b border-emerald-300">
                     <span className="text-slate-700">Due Date:</span>
                     <span className="font-medium">{formData.dueDate ? new Date(formData.dueDate).toLocaleDateString() : '—'}</span>
                   </div>
                   <div className="pt-2 mt-2">
-                    <div className="flex justify-between text-green-700 text-lg">
+                    <div className="flex justify-between text-emerald-700 text-lg">
                       <span className="font-bold">Amount Due:</span>
                       <span className="font-bold">${calculateTotalDue()}</span>
                     </div>
@@ -1455,7 +1455,7 @@ export default function UtilityBillForm() {
                 ) : isGeneratingPreview ? (
                   <div className="flex items-center justify-center h-96 bg-slate-100 rounded-md">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700 mx-auto mb-2"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-2"></div>
                       <p className="text-sm text-slate-500">Generating preview...</p>
                     </div>
                   </div>
@@ -1543,14 +1543,14 @@ export default function UtilityBillForm() {
                 
                 {hasActiveSubscription ? (
                   <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-emerald-700 mb-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-semibold">Subscription Active</span>
                       </div>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-emerald-600">
                         Downloads remaining: {user?.subscription?.downloads_remaining === -1 ? 'Unlimited' : user?.subscription?.downloads_remaining}
                       </p>
                     </div>
@@ -1573,7 +1573,7 @@ export default function UtilityBillForm() {
                     <Button
                       onClick={handleSubscriptionDownload}
                       disabled={isProcessing || !isFormValid()}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold"
                     >
                       {isProcessing ? (
                         <>
@@ -1599,7 +1599,7 @@ export default function UtilityBillForm() {
                     />
                     <p className="text-sm text-slate-600 mb-4">
                       Total: <strong>${appliedDiscount ? appliedDiscount.discountedPrice.toFixed(2) : '49.99'}</strong>
-                      {appliedDiscount && <span className="text-green-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
+                      {appliedDiscount && <span className="text-emerald-600 ml-1">({appliedDiscount.discountPercent}% off)</span>}
                       {!appliedDiscount && ' for service expense generation'}
                     </p>
                     
@@ -1620,7 +1620,7 @@ export default function UtilityBillForm() {
                     
                     {isProcessing ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+                        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
                         <span className="ml-2 text-slate-600">Processing...</span>
                       </div>
                     ) : (
@@ -1628,7 +1628,7 @@ export default function UtilityBillForm() {
                         <Button
                         onClick={handleStripeCheckout}
                         disabled={isProcessing}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl gap-2"
                       >
                         {isProcessing ? (
                           <>
@@ -1657,7 +1657,7 @@ export default function UtilityBillForm() {
                         variant="outline"
                         size="sm"
                         onClick={() => navigate("/pricing")}
-                        className="text-green-600 border-green-600 hover:bg-green-50"
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
                       >
                         View Subscription Plans
                       </Button>

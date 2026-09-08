@@ -66,7 +66,7 @@ function BotAvatar({ size = 28 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: 'linear-gradient(135deg,#2dd36f,#10b14a)',
+      background: 'linear-gradient(135deg,#10b981,#047857)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <IonIcon icon={chatbubblesOutline} style={{ color: '#fff', fontSize: size * 0.52 }} />
@@ -437,7 +437,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-4px); }
         }
-        .scw-msg-input textarea { caret-color: #2dd36f !important; }
+        .scw-msg-input textarea { caret-color: #10b981 !important; }
       `}</style>
       {/* floating button — draggable; a short press without movement toggles the chat */}
       <div
@@ -449,8 +449,8 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
           position: 'fixed', ...fabPosStyle,
           zIndex: 9990, // below Ionic overlays (20000+) so popovers/alerts/toasts paint above the chat
           width: FAB_SIZE, height: FAB_SIZE, borderRadius: '50%',
-          background: 'linear-gradient(135deg,#2dd36f,#10b14a)',
-          boxShadow: '0 4px 20px rgba(45,211,111,0.5)',
+          background: 'linear-gradient(135deg,#10b981,#047857)',
+          boxShadow: '0 4px 20px rgba(16,185,129,0.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', transition: 'transform 0.18s ease',
           transform: isOpen ? 'rotate(0deg) scale(0.92)' : 'scale(1)',
@@ -489,7 +489,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
 
           {/* ── header ── */}
           <div style={{
-            background: 'linear-gradient(135deg,#2dd36f,#10b14a)',
+            background: 'linear-gradient(135deg,#10b981,#047857)',
             padding: '14px 16px 12px',
             flexShrink: 0,
           }}>
@@ -614,7 +614,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                     {/* bubble */}
                     <div style={{
                       maxWidth: '72%',
-                      background: msg.fromAdmin ? 'var(--ion-background-color)' : '#2dd36f',
+                      background: msg.fromAdmin ? 'var(--ion-background-color)' : '#10b981',
                       color: msg.fromAdmin ? 'var(--ion-text-color)' : '#fff',
                       borderRadius: msg.fromAdmin
                         ? (grouped ? '4px 16px 16px 4px' : '4px 16px 16px 16px')
@@ -676,7 +676,7 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 expand="block"
                 disabled={starting || !name.trim() || !email.trim() || !firstMsg.trim() || !reason}
                 onClick={handleStart}
-                style={{ '--background': '#2dd36f', '--background-activated': '#28ba62', '--border-radius': '10px', fontWeight: 700 }}
+                style={{ '--background': '#10b981', '--background-activated': '#0ea371', '--border-radius': '10px', fontWeight: 700 }}
               >
                 {starting ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : <>
                   <IonIcon slot="start" icon={sendOutline} />
@@ -747,8 +747,8 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                       disabled={sending || (!chatInput.trim() && imageFiles.length === 0)}
                       onClick={handleSend}
                       style={{
-                        '--background': '#2dd36f',
-                        '--background-activated': '#28ba62',
+                        '--background': '#10b981',
+                        '--background-activated': '#0ea371',
                         '--color': '#fff',
                         '--border-radius': '8px',
                       }}

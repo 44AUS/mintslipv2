@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { IonButton, IonIcon, IonInput, IonSpinner, IonTextarea } from '@ionic/react';
+import { IonButton, IonIcon, IonInput, IonSpinner, IonTextarea, IonSelect, IonSelectOption } from '@ionic/react';
 import {
   chatbubblesOutline, closeOutline, sendOutline,
   chevronDownOutline, checkmarkCircleOutline, closeCircleOutline,
@@ -534,26 +534,18 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                 </div>
               </div>
 
-              {/* reason chips */}
-              <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ion-color-medium)', marginBottom: 8, marginTop: 0 }}>
-                REASON FOR CONTACT
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-                {REASONS.map(r => (
-                  <button key={r.id} onClick={() => setReason(r.id)} style={{
-                    padding: '5px 12px', borderRadius: 20, cursor: 'pointer',
-                    border: reason === r.id ? '2px solid #2dd36f' : '2px solid var(--ion-border-color)',
-                    background: reason === r.id ? 'rgba(45,211,111,0.12)' : 'transparent',
-                    color: reason === r.id ? '#2dd36f' : 'var(--ion-text-color)',
-                    fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.15s',
-                  }}>
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* name + email — same admin-field Ionic inputs as the admin dashboard */}
+              {/* reason + name + email — same admin-field Ionic inputs as the admin dashboard */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
+                <IonSelect
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="Reason for contact *" interface="popover"
+                  interfaceOptions={{ cssClass: 'chat-reason-popover' }}
+                  value={reason} onIonChange={e => setReason(e.detail.value)}
+                >
+                  {REASONS.map(r => (
+                    <IonSelectOption key={r.id} value={r.id}>{r.label}</IonSelectOption>
+                  ))}
+                </IonSelect>
                 <IonInput
                   className="admin-field" mode="md" fill="outline" labelPlacement="floating"
                   label="Your name *"

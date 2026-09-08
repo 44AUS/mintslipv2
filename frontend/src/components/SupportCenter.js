@@ -596,9 +596,9 @@ export default function SupportCenter({
               <>
                 {/* chat header */}
                 <div style={{
-                  height: 60, flexShrink: 0,
+                  minHeight: 60, flexShrink: 0,
                   display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '0 12px',
+                  padding: '6px 12px',
                   borderBottom: '1px solid var(--ion-border-color)',
                   background: 'var(--ion-background-color)',
                 }}>
@@ -620,10 +620,15 @@ export default function SupportCenter({
                     bg="var(--ion-background-color)"
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--ion-text-color)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.92rem', lineHeight: 1.25, color: 'var(--ion-text-color)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {activeConv.name}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--ion-color-medium)' }}>
+                    {activeConv.guestEmail && (
+                      <div style={{ fontSize: '0.72rem', lineHeight: 1.3, color: 'var(--ion-color-medium)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {activeConv.guestEmail}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '0.72rem', lineHeight: 1.3, color: 'var(--ion-color-medium)' }}>
                       {activeConv.isLoad ? `Load #${activeConv.loadNumber}` : getPresenceLabel(activeConv.lastActive)}
                     </div>
                   </div>

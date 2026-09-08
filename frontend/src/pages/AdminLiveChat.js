@@ -263,10 +263,10 @@ export default function AdminLiveChat() {
   const conversations = chats.map(chatToConv);
   const activeConv    = conversations.find(c => c.id === activeId) || null;
 
-  // Inject guest email as a subtitle hint in the chat header
+  // The list shows just the name; the chat header shows guestEmail on its own
+  // line (SupportCenter reads it straight off the conversation).
   const enrichedConvs = conversations.map(c => ({
     ...c,
-    name: c.name + (c.guestEmail ? ` (${c.guestEmail})` : ""),
     lastMessage: c.reason ? `[${REASON_LABELS[c.reason] || c.reason}] ${c.lastMessage}` : c.lastMessage,
   }));
 

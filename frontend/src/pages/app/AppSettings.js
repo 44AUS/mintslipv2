@@ -47,21 +47,24 @@ function IconWrap({ icon }) {
   );
 }
 
-function Row({ icon, label, right, last, clickable, onClick }) {
+function Row({ icon, label, right, below, last, clickable, onClick }) {
   return (
     <div
       onClick={onClick}
-      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0 0 20px", cursor: clickable ? "pointer" : "default" }}
+      style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 0 0 20px", cursor: clickable ? "pointer" : "default" }}
     >
       {icon && <IconWrap icon={icon} />}
       <div style={{
-        flex: "1 1 0%", display: "flex", alignItems: "center",
+        flex: "1 1 0%", display: "flex", flexDirection: "column",
         paddingBottom: 14, paddingRight: 20,
         borderBottom: last ? "none" : "1px solid var(--ion-border-color)",
         minWidth: 0,
       }}>
-        <span style={{ flex: "1 1 0%", fontSize: "0.9rem", fontWeight: 500, color: "var(--ion-text-color)" }}>{label}</span>
-        {right}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span style={{ flex: "1 1 0%", fontSize: "0.9rem", fontWeight: 500, color: "var(--ion-text-color)" }}>{label}</span>
+          {right}
+        </div>
+        {below && <div style={{ marginTop: 10 }}>{below}</div>}
       </div>
     </div>
   );
@@ -169,18 +172,9 @@ export default function AppSettings() {
   const statusColor = { normal: "success", degraded: "warning", down: "danger" }[settings.status] || "success";
   const statusLabel = { normal: "Normal", degraded: "Degraded", down: "Down" }[settings.status] || "Normal";
 
-  const segStyle = {
-    "--background": "rgba(255,255,255,0.08)",
-    minHeight: 30, width: "auto", marginLeft: "auto",
-  };
-  const segBtnStyle = {
-    "--indicator-color": "var(--ion-card-background)",
-    "--color": "var(--ion-color-medium)",
-    "--color-checked": "var(--ion-text-color)",
-    "--border-radius": "6px",
-    "--indicator-box-shadow": "0 1px 4px rgba(0,0,0,0.15)",
-    minHeight: 26, minWidth: 0,
-  };
+  // Plain ios-mode segment (native track + sliding indicator) rendered
+  // full-width under the row label — same look as the form modals.
+  const segBtnStyle = { minWidth: 0 };
 
   const searchQuery = tutorialSearch.toLowerCase().trim();
   const searchResults = searchQuery
@@ -261,11 +255,11 @@ export default function AppSettings() {
                 <Row
                   icon={globeOutline}
                   label="Language"
-                  right={
-                    <IonSegment mode="ios" value={language} onIonChange={e => handleLanguage(e.detail.value)} style={segStyle}>
+                  below={
+                    <IonSegment mode="ios" value={language} onIonChange={e => handleLanguage(e.detail.value)}>
                       {[["en","English"],["es","Español"],["fr","Français"]].map(([v, l]) => (
                         <IonSegmentButton key={v} value={v} style={segBtnStyle}>
-                          <IonLabel style={{ fontSize: "0.72rem", fontWeight: 600, margin: "3px 0" }}>{l}</IonLabel>
+                          <IonLabel style={{ fontSize: "0.78rem", fontWeight: 600 }}>{l}</IonLabel>
                         </IonSegmentButton>
                       ))}
                     </IonSegment>

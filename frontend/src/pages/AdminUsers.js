@@ -6,7 +6,7 @@ import {
   IonFooter, IonButtons, IonList,
 } from "@ionic/react";
 import {
-  refreshOutline, downloadOutline, chevronForwardOutline, searchOutline,
+  refreshOutline, downloadOutline, chevronForwardOutline,
 } from "ionicons/icons";
 import { X, Clock } from "lucide-react";
 import { toast } from "@/utils/toast";
@@ -66,7 +66,6 @@ export default function AdminUsers() {
   const [total, setTotal]     = useState(0);
   const [loading, setLoading] = useState(true);
   const [segment, setSegment] = useState("all");
-  const [search, setSearch]   = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -90,7 +89,6 @@ export default function AdminUsers() {
     try {
       const token = localStorage.getItem("adminToken");
       const params = new URLSearchParams({ skip: "0", limit: "500" });
-      if (search.trim()) params.append("search", search.trim());
       const res = await fetch(`${BACKEND_URL}/api/admin/users?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -101,7 +99,7 @@ export default function AdminUsers() {
       }
     } catch (_) {}
     setLoading(false);
-  }, [search]);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -251,18 +249,6 @@ export default function AdminUsers() {
                 <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--ion-color-medium)" }}>{total} total users</p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {/* Search */}
-                <div style={{ position: "relative" }}>
-                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", display: "inline-flex", fontSize: 16, color: "var(--ion-color-medium)", pointerEvents: "none" }}>
-                    <IonIcon icon={searchOutline} style={{ fontSize: "inherit" }} />
-                  </span>
-                  <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search name or email…"
-                    style={{ paddingLeft: 34, paddingRight: 12, height: 34, border: "1px solid var(--ion-border-color)", borderRadius: 6, background: "var(--ion-background-color)", color: "var(--ion-text-color)", fontSize: "0.875rem", outline: "none", width: 220 }}
-                  />
-                </div>
                 <IonButton fill="solid" size="small" onClick={exportCSV} style={{ "--background": "var(--ion-background-color)", "--color": "var(--ion-text-color)" }}>
                   <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", marginInlineEnd: 6 }}>
                     <IonIcon icon={downloadOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />

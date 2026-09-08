@@ -5,6 +5,7 @@ import {
 } from "@ionic/react";
 import { closeOutline } from "ionicons/icons";
 import { toast } from "@/utils/toast";
+import { buildPreviewHtml, fillSampleVars } from "@/utils/emailPreview";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -33,6 +34,7 @@ export default function EmailTemplateModal({ template, isOpen, onClose, onSaved 
   const [delay, setDelay] = useState("");
   const [enabled, setEnabled] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (!template) return;
@@ -141,6 +143,27 @@ export default function EmailTemplateModal({ template, isOpen, onClose, onSaved 
           <div style={{ marginBottom: 18 }}>
             <IonInput className="admin-field" mode="md" fill="outline" labelPlacement="floating" label="Preview text (inbox snippet, optional)"
               value={previewText} onIonInput={(e) => setPreviewText(e.detail.value)} placeholder="Shown after the subject in the inbox" />
+          </div>
+
+          {/* Rendered preview: the body inside the exact branded email frame,
+              with placeholders filled with sample values */}
+          <div style={{ marginBottom: 18 }}>
+            <IonButton expand="block" fill="outline" color="medium" onClick={() => setShowPreview(v => !v)}>
+              {showPreview ? "Hide preview" : "Preview email"}
+            </IonButton>
+            {showPreview && (
+              body.trim() ? (
+                <iframe
+                  title="Email preview"
+                  srcDoc={buildPreviewHtml(fillSampleVars(body))}
+                  style={{ width: "100%", height: 460, border: "1px solid var(--ion-border-color)", borderRadius: 8, marginTop: 10, background: "#fff" }}
+                />
+              ) : (
+                <p style={{ marginTop: 10, fontSize: "0.8rem", color: "var(--admin-text-muted)" }}>
+                  Write an email body above to see the rendered preview.
+                </p>
+              )
+            )}
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

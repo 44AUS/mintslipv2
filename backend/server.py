@@ -48,7 +48,8 @@ from email_service import (
     cancel_signup_no_purchase_reminder,
     process_scheduled_emails,
     send_email,
-    get_base_template
+    get_base_template,
+    rebrand_colors,
 )
 
 # Import PDF Engine
@@ -5329,7 +5330,9 @@ async def get_email_templates(session: dict = Depends(get_current_admin)):
         if custom:
             if has_custom_content:
                 entry["subject"] = custom.get("subject", "")
-                entry["html_body"] = custom.get("html_body", "")
+                # Remap pre-rebrand greens so the editor and previews (and the
+                # next save) carry the emerald palette
+                entry["html_body"] = rebrand_colors(custom.get("html_body", ""))
                 entry["preview_text"] = custom.get("preview_text", "")
             entry["enabled"] = custom.get("enabled", True)
             if tmpl.get("is_scheduled") and custom.get("delay_minutes") is not None:

@@ -533,12 +533,28 @@ def template_support_reply(user_name: str, admin_name: str, message_text: str, i
     }
 
 
+# Old green palette -> the emerald brand palette. Custom template bodies saved
+# in the DB before the rebrand still carry the old hexes; remap at render time
+# so every email that goes out is on-brand.
+BRAND_COLOR_REMAP = {
+    "#16a34a": "#059669", "#15803d": "#047857", "#22c55e": "#10b981",
+    "#4ade80": "#34d399", "#86efac": "#6ee7b7", "#bbf7d0": "#a7f3d0",
+    "#dcfce7": "#d1fae5", "#f0fdf4": "#ecfdf5", "#166534": "#065f46",
+    "#14532d": "#064e3b", "#2dd36f": "#10b981",
+}
+
+def rebrand_colors(html: str) -> str:
+    for old, new in BRAND_COLOR_REMAP.items():
+        html = html.replace(old, new).replace(old.upper(), new)
+    return html
+
+
 async def resolve_template(template_name: str, default_template: Dict, variables: Dict = None) -> Dict:
     """Check DB for a custom template override; fall back to the hardcoded default."""
     try:
         custom = await email_templates_collection.find_one({"name": template_name})
         if custom and custom.get("subject") and custom.get("html_body"):
-            html_body = custom["html_body"]
+            html_body = rebrand_colors(custom["html_body"])
             subject = custom["subject"]
             if variables:
                 for key, value in variables.items():

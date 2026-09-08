@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize Resend
 resend.api_key = os.environ.get("RESEND_API_KEY")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+# Every MintSlip email goes out as the branded no-reply address. The
+# mintslip.com domain must be verified in Resend for this sender to deliver.
+SENDER_EMAIL = "MintSlip <no-reply@mintslip.com>"
 TRUSTPILOT_URL = os.environ.get("TRUSTPILOT_URL", "https://www.trustpilot.com/review/mintslip.com")
 TRUSTPILOT_BCC = "mintslip.com+bafd4c313e@invite.trustpilot.com"
 SITE_URL = os.environ.get("SITE_URL", "https://mintslip.com")
@@ -122,7 +124,7 @@ def template_welcome(user_name: str, user_email: str) -> Dict[str, str]:
         <p style="text-align: center; margin: 30px 0;">
             <a href="{SITE_URL}/user/dashboard" class="button">Go to Dashboard</a>
         </p>
-        <p class="text-muted">If you have any questions, just reply to this email. We're here to help!</p>
+        <p class="text-muted">If you have any questions, reach us through the support chat at mintslip.com. We're here to help!</p>
     """
     return {
         "subject": "Welcome to MintSlip! 🎉",
@@ -227,7 +229,7 @@ def template_subscription_thank_you(user_name: str, plan_name: str, plan_price: 
             <a href="{SITE_URL}/user/dashboard" class="button">Go to Dashboard</a>
         </p>
         
-        <p class="text-muted">Need help? Reply to this email and we'll get back to you within 24 hours.</p>
+        <p class="text-muted">Need help? Reach us through the support chat at mintslip.com and we'll get back to you within 24 hours.</p>
     """
     return {
         "subject": f"Welcome to {plan_name}! Your MintSlip subscription is active",
@@ -340,7 +342,7 @@ def template_signup_no_purchase(user_name: str) -> Dict[str, str]:
             <a href="{SITE_URL}/generators" class="button">Browse Documents</a>
         </p>
         
-        <p class="text-muted">Have questions? Just reply to this email - we're happy to help!</p>
+        <p class="text-muted">Have questions? Reach us through the support chat at mintslip.com - we're happy to help!</p>
     """
     return {
         "subject": "Your MintSlip documents are waiting for you",
@@ -388,7 +390,7 @@ def template_abandoned_checkout(user_name: str, document_type: str) -> Dict[str,
             <li>Contact us for assistance</li>
         </ul>
         
-        <p class="text-muted">Just reply to this email if you need any help!</p>
+        <p class="text-muted">Reach us through the support chat at mintslip.com if you need any help!</p>
     """
     return {
         "subject": f"Complete your {doc_name} purchase - MintSlip",
@@ -877,7 +879,7 @@ def template_document_resend(user_name: str, file_names: list) -> Dict[str, str]
             <ul style="margin: 0; padding-left: 18px; color: #374151; line-height: 1.7; list-style: none;">{items}</ul>
         </div>
 
-        <p class="text-muted">Having trouble opening the attachment{plural}? Just reply to this email and our support team will help you out.</p>
+        <p class="text-muted">Having trouble opening the attachment{plural}? Reach us through the support chat at mintslip.com and our team will help you out.</p>
     """
     return {
         "subject": f"Your document{plural} from MintSlip",

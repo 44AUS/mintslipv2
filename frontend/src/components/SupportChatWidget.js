@@ -484,7 +484,6 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
           borderRadius: 16, overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
-          border: '1px solid var(--ion-border-color)',
           background: 'var(--ion-card-background)',
         }}>
 
@@ -508,9 +507,11 @@ export default function SupportChatWidget({ currentUser = null, bottomOffset = 0
                   </div>
                 </div>
               </div>
-              <button onClick={closeChat} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                <IonIcon icon={closeOutline} style={{ color: 'rgba(255,255,255,0.85)', fontSize: 22 }} />
-              </button>
+              <IonButton fill="clear" onClick={closeChat} style={{ '--color': 'rgba(255,255,255,0.85)', '--border-radius': '50%', margin: 0, flexShrink: 0 }}>
+                <span slot="icon-only" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 0, flexShrink: 0, fontSize: 22 }}>
+                  <IonIcon icon={closeOutline} style={{ fontSize: 'inherit', color: 'inherit', pointerEvents: 'none' }} />
+                </span>
+              </IonButton>
             </div>
           </div>
 

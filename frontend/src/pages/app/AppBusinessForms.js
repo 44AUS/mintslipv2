@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AppLayout from "@/components/AppLayout";
-import { IonSpinner } from "@ionic/react";
+import { IonSkeletonText } from "@ionic/react";
 import { generateCommercialLeasePreview } from "@/utils/commercialLeasePreviewGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
@@ -124,8 +124,12 @@ export default function AppBusinessForms() {
                       <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: "linear-gradient(to top, rgba(0,0,0,0.28), transparent)" }} />
                     </div>
                   ) : loadingPreviews ? (
-                    <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
-                      <IonSpinner name="crescent" />
+                    <div style={{ height: 180, padding: "14px 16px", background: "var(--ion-card-background)", display: "flex", flexDirection: "column", gap: 8, boxSizing: "border-box" }}>
+                      <IonSkeletonText animated={true} style={{ width: "45%", height: 16, borderRadius: 4, margin: 0 }} />
+                      <IonSkeletonText animated={true} style={{ width: "70%", height: 10, borderRadius: 4, margin: 0 }} />
+                      <IonSkeletonText animated={true} style={{ width: "100%", height: 40, borderRadius: 6, margin: "6px 0 0" }} />
+                      <IonSkeletonText animated={true} style={{ width: "100%", height: 40, borderRadius: 6, margin: 0 }} />
+                      <IonSkeletonText animated={true} style={{ width: "60%", height: 10, borderRadius: 4, margin: "6px 0 0" }} />
                     </div>
                   ) : (
                     <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>

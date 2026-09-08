@@ -8,7 +8,7 @@ import {
   IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonText, IonBadge, IonToast,
+  IonText, IonBadge, IonToast, IonSkeletonText,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
@@ -747,8 +747,12 @@ export default function AppPaystub() {
                     {company.name}
                   </div>
                   {loadingPreviews ? (
-                    <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
-                      <IonSpinner name="crescent" />
+                    <div style={{ height: 180, padding: "14px 16px", background: "var(--ion-card-background)", display: "flex", flexDirection: "column", gap: 8, boxSizing: "border-box" }}>
+                      <IonSkeletonText animated={true} style={{ width: "45%", height: 16, borderRadius: 4, margin: 0 }} />
+                      <IonSkeletonText animated={true} style={{ width: "70%", height: 10, borderRadius: 4, margin: 0 }} />
+                      <IonSkeletonText animated={true} style={{ width: "100%", height: 40, borderRadius: 6, margin: "6px 0 0" }} />
+                      <IonSkeletonText animated={true} style={{ width: "100%", height: 40, borderRadius: 6, margin: 0 }} />
+                      <IonSkeletonText animated={true} style={{ width: "60%", height: 10, borderRadius: 4, margin: "6px 0 0" }} />
                     </div>
                   ) : templatePreviews[company.template] ? (
                     <div style={{ position: "relative", paddingTop: "141.4%", overflow: "hidden", pointerEvents: "none" }}>

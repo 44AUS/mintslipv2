@@ -531,15 +531,14 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       <div style={headingStyle}>Style &amp; Generate</div>
       <div>
         <span style={labelStyle}>Template</span>
-        <div style={{ display: "flex", gap: 8 }}>
+        <IonSegment mode="ios" style={{ width: "100%" }} value={formData.template}
+          onIonChange={e => setField("template", e.detail.value)}>
           {templateOptions.map(t => (
-            <button key={t.value} onClick={() => setField("template", t.value)}
-              style={{ flex: 1, padding: "10px 6px", borderRadius: 8, border: `2px solid ${formData.template === t.value ? t.color : "var(--ion-color-step-200)"}`, background: formData.template === t.value ? `${t.color}15` : "transparent", cursor: "pointer", textAlign: "center" }}>
-              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: formData.template === t.value ? t.color : "var(--ion-text-color)" }}>{t.label}</div>
-              <div style={{ fontSize: "0.62rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{t.desc}</div>
-            </button>
+            <IonSegmentButton key={t.value} value={t.value}>
+              <IonLabel style={{ fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap" }}>{t.label}</IonLabel>
+            </IonSegmentButton>
           ))}
-        </div>
+        </IonSegment>
       </div>
       <IonSelect value={formData.font} onIonChange={e => setField("font", e.detail.value)}
         fill="outline" labelPlacement="floating" label="Font" style={inputStyle}>

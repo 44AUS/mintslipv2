@@ -475,6 +475,7 @@ export default function AppTaxFormModal({ config, onClose }) {
               ))}
 
               <IonButton expand="block" color="light" onClick={handleNext}>
+                <IonIcon icon={eyeOutline} slot="start" />
                 Preview
               </IonButton>
 

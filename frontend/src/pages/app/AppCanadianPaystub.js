@@ -1273,9 +1273,9 @@ export default function AppCanadianPaystub() {
 
             <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
               <IonButton expand="block" color="light" onClick={handleNext} disabled={isGeneratingPreview}>
-                {isGeneratingPreview ? <IonSpinner name="crescent" /> : "Preview"}
+                {isGeneratingPreview ? <IonSpinner name="crescent" /> : <><IonIcon icon={eyeOutline} slot="start" />Preview</>}
               </IonButton>
-              <IonButton expand="block" color="danger" onClick={clearForm}>Clear Form</IonButton>
+              <IonButton expand="block" color="danger" onClick={clearForm}><IonIcon icon={trashOutline} slot="start" />Clear Form</IonButton>
             </div>
           </div>
           </div>

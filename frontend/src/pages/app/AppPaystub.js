@@ -612,24 +612,32 @@ export default function AppPaystub() {
   const [isValidatingCoupon,  setIsValidatingCoupon]  = useState(false);
   const [couponError,         setCouponError]         = useState("");
 
-  const validateCoupon = async () => {
-    if (!couponCode.trim()) { setCouponError("Please enter a coupon code"); return; }
-    setIsValidatingCoupon(true); setCouponError("");
-    try {
-      const { ok, data } = await nativePost(`${BACKEND_URL}/api/validate-coupon`, { code: couponCode.trim(), generatorType: "paystub" });
-      if (!data) { setCouponError("Server error. Please try again."); setAppliedDiscount(null); return; }
-      if (ok && data.valid) {
-        const base = calculateNumStubs * 9.99;
-        const discountAmount = base * data.discountPercent / 100;
-        setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, originalPrice: base, discountedPrice: parseFloat((base - discountAmount).toFixed(2)) });
-        showToast(`Coupon applied: ${data.discountPercent}% off!`, "success");
-      } else {
-        setCouponError(data.detail || "Invalid coupon code");
-        setAppliedDiscount(null);
-      }
-    } catch { setCouponError("Connection error. Please try again."); setAppliedDiscount(null); }
-    finally { setIsValidatingCoupon(false); }
-  };
+  // Auto-apply: as the user types or pastes a code we look it up (debounced)
+  // and apply it with a toast — no Apply button.
+  useEffect(() => {
+    const code = couponCode.trim();
+    if (!code || appliedDiscount) { setIsValidatingCoupon(false); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setIsValidatingCoupon(true);
+      try {
+        const { ok, data } = await nativePost(`${BACKEND_URL}/api/validate-coupon`, { code, generatorType: "paystub" });
+        if (cancelled) return;
+        if (ok && data?.valid) {
+          const base = calculateNumStubs * 9.99;
+          const discountAmount = base * data.discountPercent / 100;
+          setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, originalPrice: base, discountedPrice: parseFloat((base - discountAmount).toFixed(2)) });
+          setCouponError("");
+          showToast(`Coupon ${data.code} applied: ${data.discountPercent}% off!`, "success");
+        } else {
+          setCouponError(data?.detail || "Invalid coupon code");
+          setAppliedDiscount(null);
+        }
+      } catch { if (!cancelled) { setCouponError("Connection error. Please try again."); setAppliedDiscount(null); } }
+      finally { if (!cancelled) setIsValidatingCoupon(false); }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [couponCode]); // eslint-disable-line
 
   const removeCoupon = () => { setCouponCode(""); setAppliedDiscount(null); setCouponError(""); };
 
@@ -1383,16 +1391,14 @@ export default function AppPaystub() {
                 <div style={{ marginTop: 20 }}>
                   {!appliedDiscount ? (
                     <>
-                      <div style={{ display: "flex", gap: 8 }}>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <IonInput
                           fill="outline" labelPlacement="floating" label="Coupon code"
                           value={couponCode}
                           onIonInput={e => { setCouponCode((e.detail.value || "").toUpperCase()); setCouponError(""); }}
                           style={{ flex: 1, fontFamily: "monospace" }}
                         />
-                        <IonButton fill="outline" onClick={validateCoupon} disabled={isValidatingCoupon || !couponCode.trim()} style={{ flexShrink: 0 }}>
-                          {isValidatingCoupon ? <IonSpinner name="crescent" /> : "Apply"}
-                        </IonButton>
+                        {isValidatingCoupon && <IonSpinner name="crescent" style={{ flexShrink: 0 }} />}
                       </div>
                       {couponError && <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{couponError}</IonNote>}
                     </>

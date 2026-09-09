@@ -881,7 +881,7 @@ export default function AppPaystub() {
                       ) : (
                         <>
                           <p style={{ color: "var(--ion-color-medium)", fontSize: "0.875rem", marginBottom: 8 }}>Drag &amp; drop or click to select (PNG/JPG, max 2MB)</p>
-                          <IonButton fill="outline" size="small" onClick={() => logoInputRef.current?.click()}>Select File</IonButton>
+                          <IonButton color="primary" size="small" onClick={() => logoInputRef.current?.click()}>Select File</IonButton>
                           <input ref={logoInputRef} type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" onChange={handleLogoSelect} style={{ display: "none" }} />
                         </>
                       )}
@@ -1174,7 +1174,7 @@ export default function AppPaystub() {
                     </div>
                   ))}
                   <div style={{ textAlign: "center" }}>
-                    <IonButton fill="outline" size="small" onClick={addDeduction}>
+                    <IonButton color="primary" size="small" onClick={addDeduction}>
                       <IonIcon slot="start" icon={addOutline} />
                       Add Deduction
                     </IonButton>
@@ -1219,7 +1219,7 @@ export default function AppPaystub() {
                     </div>
                   ))}
                   <div style={{ textAlign: "center" }}>
-                    <IonButton fill="outline" size="small" onClick={addContribution}>
+                    <IonButton color="primary" size="small" onClick={addContribution}>
                       <IonIcon slot="start" icon={addOutline} />
                       Add Contribution
                     </IonButton>
@@ -1270,7 +1270,7 @@ export default function AppPaystub() {
                       </div>
                     ))}
                     <div style={{ textAlign: "center" }}>
-                      <IonButton fill="outline" size="small" onClick={addEmployerBenefit}>
+                      <IonButton color="primary" size="small" onClick={addEmployerBenefit}>
                         <IonIcon slot="start" icon={addOutline} />
                         Add Employer Benefit
                       </IonButton>
@@ -1307,7 +1307,7 @@ export default function AppPaystub() {
                       </div>
                     ))}
                     <div style={{ textAlign: "center" }}>
-                      <IonButton fill="outline" size="small" onClick={addAbsencePlan}>
+                      <IonButton color="primary" size="small" onClick={addAbsencePlan}>
                         <IonIcon slot="start" icon={addOutline} />
                         Add Absence Plan
                       </IonButton>
@@ -1403,12 +1403,12 @@ export default function AppPaystub() {
                       {couponError && <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{couponError}</IonNote>}
                     </>
                   ) : (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "rgba(var(--ion-color-success-rgb),0.15)", borderRadius: 6 }}>
-                      <span style={{ color: "var(--ion-color-success-shade)", fontWeight: 600, fontSize: "0.85rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--ion-color-success)", borderRadius: 6 }}>
+                      <span style={{ color: "var(--ion-color-success-contrast)", fontWeight: 600, fontSize: "0.85rem" }}>
                         {appliedDiscount.code} — {appliedDiscount.discountPercent}% off
                       </span>
-                      <IonButton fill="clear" color="danger" size="small" onClick={removeCoupon}>
-                        <IonIcon icon={closeOutline} />
+                      <IonButton fill="clear" size="small" onClick={removeCoupon} style={{ "--color": "var(--ion-color-success-contrast)" }}>
+                        <IonIcon slot="icon-only" icon={closeOutline} />
                       </IonButton>
                     </div>
                   )}
@@ -1416,7 +1416,7 @@ export default function AppPaystub() {
               )}
 
               {!hasActiveSubscription && calculateNumStubs > 0 && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ion-color-light-shade)", textAlign: "center" }}>
+                <div style={{ marginTop: 12, paddingTop: 12, textAlign: "center" }}>
                   {appliedDiscount ? (
                     <>
                       <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: "0 0 4px" }}>${(calculateNumStubs * 9.99).toFixed(2)}</p>
@@ -1476,8 +1476,6 @@ export default function AppPaystub() {
           basePrice={calculateNumStubs * 9.99}
           discount={appliedDiscount}
           quantity={calculateNumStubs}
-          prefillEmail={user?.email || ""}
-          prefillName={user?.name || ""}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPendingCheckout(null)}
         />

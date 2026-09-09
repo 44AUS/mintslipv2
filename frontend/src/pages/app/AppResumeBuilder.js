@@ -703,8 +703,6 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           documentType="ai-resume"
           template={formData.template}
           basePrice={9.99}
-          prefillEmail={user?.email || formData.personalInfo?.email || ""}
-          prefillName={user?.name || formData.personalInfo?.fullName || ""}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPaymentOpen(false)}
         />

@@ -508,8 +508,6 @@ export default function AppOfferLetter({ isOpen, onClose }) {
           documentType="offer-letter"
           template={formData.template}
           basePrice={9.99}
-          prefillEmail={user?.email || ""}
-          prefillName={user?.name || ""}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPaymentOpen(false)}
         />

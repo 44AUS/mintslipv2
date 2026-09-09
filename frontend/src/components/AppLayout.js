@@ -5,7 +5,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar, IonTitle,
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner,
+  IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner, IonBadge,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -596,13 +596,13 @@ export default function AppLayout({ children, fillHeight = false }) {
           <div style={{ display: "flex", alignItems: "center", padding: "0 12px", minHeight: 60, borderBottom: "1px solid var(--app-divider)", flexShrink: 0, gap: 8 }}>
             <span style={{ flex: 1, fontSize: "1rem", fontWeight: 700, color: "var(--ion-text-color)" }}>{t("Notifications")}</span>
             {notifications.length > 0 && (
-              <button
+              <IonBadge
+                color="danger"
                 onClick={() => { clearAllNotifications(); setNotifications([]); }}
-                className="admin-badge admin-badge-red"
-                style={{ border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                style={{ cursor: "pointer" }}
               >
                 {t("Clear all")}
-              </button>
+              </IonBadge>
             )}
             <button
               onClick={closeNotifDrawer}
@@ -657,30 +657,28 @@ export default function AppLayout({ children, fillHeight = false }) {
                   {/* Actions — Ionic badge buttons: success Download, danger Delete */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignItems: "stretch" }}>
                     {notif.status === "ready" && (
-                      <button
-                        onClick={() => handleRedownload(notif)}
-                        disabled={redownloadingId === notif.id}
-                        className="admin-badge admin-badge-green"
+                      <IonBadge
+                        color="success"
+                        onClick={() => { if (redownloadingId !== notif.id) handleRedownload(notif); }}
                         style={{
-                          border: "none", fontFamily: "inherit",
                           cursor: redownloadingId === notif.id ? "default" : "pointer",
                           opacity: redownloadingId === notif.id ? 0.7 : 1,
                           display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
                         }}
                       >
                         {redownloadingId === notif.id && (
-                          <IonSpinner name="crescent" style={{ width: 12, height: 12, color: "#000" }} />
+                          <IonSpinner name="crescent" style={{ width: 12, height: 12, color: "var(--ion-color-success-contrast)" }} />
                         )}
                         Download
-                      </button>
+                      </IonBadge>
                     )}
-                    <button
+                    <IonBadge
+                      color="danger"
                       onClick={() => { removeNotification(notif.id); setNotifications(getNotifications()); }}
-                      className="admin-badge admin-badge-red"
-                      style={{ border: "none", cursor: "pointer", fontFamily: "inherit" }}
+                      style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                     >
                       Delete
-                    </button>
+                    </IonBadge>
                   </div>
                 </div>
               ))}

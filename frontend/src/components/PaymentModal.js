@@ -4,7 +4,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
   IonSpinner, IonNote,
 } from "@ionic/react";
-import { closeOutline, lockClosedOutline, checkmarkCircle } from "ionicons/icons";
+import { closeOutline, lockClosedOutline, checkmarkCircle, cloudDownloadOutline } from "ionicons/icons";
 import {
   useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement,
 } from "@stripe/react-stripe-js";
@@ -20,7 +20,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 // shows the animated success screen.
 export default function PaymentModal({
   docLabel, documentType, template = null, basePrice, discount = null,
-  quantity = 1, prefillEmail = "", prefillName = "", onSuccess, onClose,
+  quantity = 1, onSuccess, onClose,
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -28,9 +28,11 @@ export default function PaymentModal({
 
   const finalAmount = discount ? discount.discountedPrice : basePrice;
   const discountValue = discount ? Math.max(0, basePrice - discount.discountedPrice) : 0;
+  // A 100%-off coupon makes the order free: no card form, just the download.
+  const isFree = finalAmount <= 0;
 
-  const [name, setName] = useState(prefillName);
-  const [email, setEmail] = useState(prefillEmail);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [focusedBox, setFocusedBox] = useState(null);
   const [cardErrors, setCardErrors] = useState({});
   const [error, setError] = useState("");
@@ -80,6 +82,23 @@ export default function PaymentModal({
     },
     options: { style: stripeStyle, ...(key === "number" ? { showIcon: true } : {}) },
   });
+
+  // Free order (100%-off coupon): skip Stripe entirely and deliver the
+  // document straight away.
+  const handleFreeDownload = async () => {
+    setError("");
+    let freeEmail = "";
+    try { freeEmail = JSON.parse(localStorage.getItem("userInfo") || "null")?.email || ""; } catch {}
+    setStage("delivering");
+    try {
+      await onSuccess({ email: freeEmail, name: "", paymentIntentId: `free_${Date.now().toString(36)}` });
+      setStage("delivered");
+      onClose();
+    } catch (deliverErr) {
+      console.error("Free download delivery failed:", deliverErr);
+      setStage("deliverFailed");
+    }
+  };
 
   const handlePay = async () => {
     setError("");
@@ -147,7 +166,7 @@ export default function PaymentModal({
         {stage === "delivering" || stage === "delivered" ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "56px 24px", gap: 12 }}>
             <IonIcon icon={checkmarkCircle} color="success" style={{ fontSize: "3rem" }} />
-            <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>Payment successful!</div>
+            <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>{isFree ? "Order confirmed!" : "Payment successful!"}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--ion-color-medium)", fontSize: "0.85rem" }}>
               <IonSpinner name="crescent" style={{ width: 18, height: 18 }} />
               Preparing your download…
@@ -156,9 +175,11 @@ export default function PaymentModal({
         ) : stage === "deliverFailed" ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 24px", gap: 12, textAlign: "center" }}>
             <IonIcon icon={checkmarkCircle} color="success" style={{ fontSize: "3rem" }} />
-            <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>Payment received</div>
+            <div style={{ fontWeight: 700, fontSize: "1.05rem" }}>{isFree ? "Order confirmed" : "Payment received"}</div>
             <div style={{ color: "var(--ion-color-medium)", fontSize: "0.85rem", maxWidth: 320 }}>
-              Your payment went through, but preparing the download failed. Your purchase is recorded — please contact support and we'll send your document.
+              {isFree
+                ? "Preparing the download failed. Please try again or contact support and we'll send your document."
+                : "Your payment went through, but preparing the download failed. Your purchase is recorded — please contact support and we'll send your document."}
             </div>
             <IonButton color="light" onClick={onClose} style={{ marginTop: 8 }}>Close</IonButton>
           </div>
@@ -184,7 +205,20 @@ export default function PaymentModal({
               <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>One-time payment · instant download</div>
             </div>
 
-            {/* Payment details */}
+            {/* Payment details — or a free download when a coupon covers it all */}
+            {isFree ? (
+            <div style={cardStyle}>
+              <div style={headingStyle}>No payment needed</div>
+              <div style={{ fontSize: "0.85rem", color: "var(--ion-color-medium)" }}>
+                Your coupon covers the full price — download your document for free.
+              </div>
+              {error && <IonNote color="danger" style={{ display: "block", fontSize: "0.8rem" }}>{error}</IonNote>}
+              <IonButton expand="block" color="success" style={{ "--border-radius": "8px" }} onClick={handleFreeDownload} disabled={busy}>
+                <IonIcon icon={cloudDownloadOutline} slot="start" />
+                Download — Free
+              </IonButton>
+            </div>
+            ) : (
             <div style={cardStyle}>
               <div style={headingStyle}>Payment details</div>
               <div>
@@ -253,6 +287,7 @@ export default function PaymentModal({
                 Payments are encrypted and processed securely by Stripe
               </div>
             </div>
+            )}
           </div>
         )}
       </div>

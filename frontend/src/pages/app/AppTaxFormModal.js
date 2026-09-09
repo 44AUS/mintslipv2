@@ -409,7 +409,7 @@ export default function AppTaxFormModal({ config, onClose }) {
                   </IonGrid>
                 </div>
               ))}
-              <IonButton fill="outline" size="small" style={{ alignSelf: "flex-start" }}
+              <IonButton color="primary" size="small" style={{ alignSelf: "flex-start" }}
                 onClick={() => setField(field.name, [...rows, field.newRow ? field.newRow() : {}])}>
                 <IonIcon slot="start" icon={addOutline} />
                 {field.addLabel || "Add Row"}
@@ -560,12 +560,12 @@ export default function AppTaxFormModal({ config, onClose }) {
                       {couponError && <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{couponError}</IonNote>}
                     </>
                   ) : (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "rgba(var(--ion-color-success-rgb),0.15)", borderRadius: 6 }}>
-                      <span style={{ color: "var(--ion-color-success-shade)", fontWeight: 600, fontSize: "0.85rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--ion-color-success)", borderRadius: 6 }}>
+                      <span style={{ color: "var(--ion-color-success-contrast)", fontWeight: 600, fontSize: "0.85rem" }}>
                         {appliedDiscount.code} — {appliedDiscount.discountPercent}% off
                       </span>
-                      <IonButton fill="clear" color="danger" size="small" onClick={removeCoupon}>
-                        <IonIcon icon={closeOutline} />
+                      <IonButton fill="clear" size="small" onClick={removeCoupon} style={{ "--color": "var(--ion-color-success-contrast)" }}>
+                        <IonIcon slot="icon-only" icon={closeOutline} />
                       </IonButton>
                     </div>
                   )}
@@ -573,7 +573,7 @@ export default function AppTaxFormModal({ config, onClose }) {
               )}
 
               {!hasActiveSubscription && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ion-color-light-shade)", textAlign: "center" }}>
+                <div style={{ marginTop: 12, paddingTop: 12, textAlign: "center" }}>
                   {appliedDiscount ? (
                     <>
                       <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: "0 0 4px" }}>${basePrice.toFixed(2)}</p>
@@ -628,8 +628,6 @@ export default function AppTaxFormModal({ config, onClose }) {
           template={pendingCheckout.checkoutTemplate}
           basePrice={basePrice}
           discount={appliedDiscount}
-          prefillEmail={user?.email || ""}
-          prefillName={user?.name || ""}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPendingCheckout(null)}
         />

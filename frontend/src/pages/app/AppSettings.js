@@ -52,7 +52,7 @@ function Row({ icon, label, right, below, last, clickable, onClick }) {
   return (
     <div
       onClick={onClick}
-      style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 0 0 20px", cursor: clickable ? "pointer" : "default" }}
+      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0 0 20px", cursor: clickable ? "pointer" : "default" }}
     >
       {icon && <IconWrap icon={icon} />}
       <div style={{

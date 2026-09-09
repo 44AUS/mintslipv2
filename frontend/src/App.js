@@ -247,6 +247,8 @@ function MobileApp() {
               <Route path="/app/terms" element={<AppTerms />} />
               <Route path="/app/privacy" element={<AppPrivacy />} />
               <Route path="/app/settings" element={<AppSettings />} />
+              {/* Embedded card checkout lands here after paying in-app */}
+              <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="*" element={<AppHome />} />
             </Routes>
           </BrowserRouter>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSpinner,
   IonInput, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonLabel,
@@ -9,7 +10,7 @@ import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOu
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import SignaturePad from "@/components/SignaturePad";
 import { IonDateInput } from "@/components/DateInput";
-import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
+import PaymentModal from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
@@ -45,6 +46,7 @@ export default function AppTaxFormModal({ config, onClose }) {
   const [sigModes, setSigModes] = useState({}); // per-signature-field draw|type|upload
   const fileInputRefs = useRef({});
 
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -212,19 +214,19 @@ export default function AppTaxFormModal({ config, onClose }) {
     setPendingCheckout({ derived, checkoutTemplate });
   };
 
-  // Runs after the card payment succeeds — generate + download in place
-  // (the webhook records the purchase from the payment-intent metadata).
-  const handlePaymentSuccess = async ({ email }) => {
-    const { derived, checkoutTemplate } = pendingCheckout;
-    const pdfBlob = await config.download(derived, taxYear, true);
-    await deliverPurchasedDocument({
-      blob: pdfBlob instanceof Blob ? pdfBlob : null,
-      documentType: config.docType,
-      template: checkoutTemplate,
-      email,
-    });
-    showToast("Payment successful — your document has downloaded!", "success");
-    setPreviewModalOpen(false);
+  // Runs after the card payment succeeds — store the pending form data (same
+  // keys the hosted-checkout flow used) and hand off to /payment-success,
+  // which generates + downloads + emails and shows the success screen. The
+  // webhook records the purchase from the payment-intent metadata.
+  const handlePaymentSuccess = ({ email, paymentIntentId }) => {
+    const { derived } = pendingCheckout;
+    const pendingEntries = config.buildPending
+      ? config.buildPending(derived, taxYear)
+      : { [config.pendingDataKey]: derived, ...(config.pendingYearKey ? { [config.pendingYearKey]: taxYear } : {}) };
+    Object.entries(pendingEntries).forEach(([k, v]) =>
+      localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v)));
+    localStorage.setItem("pendingCustomerEmail", email);
+    navigate(`/payment-success?type=${config.docType}&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 
   // ── Field renderer ──

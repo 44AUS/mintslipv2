@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
@@ -16,7 +17,7 @@ import { generateAndDownloadResume } from "@/utils/resumeGenerator";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
-import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
+import PaymentModal from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "resumeBuilderFormData";
@@ -91,6 +92,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     catch { return null; }
   });
 
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep]                       = useState(1);
   const [customTemplates, setCustomTemplates]               = useState([]);
   const [user, setUser]                                     = useState(null);
@@ -342,21 +344,14 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     setPaymentOpen(true);
   };
 
-  // Runs after the card payment succeeds — generate + download in place
-  // (the webhook records the purchase from the payment-intent metadata).
-  const handlePaymentSuccess = async ({ email }) => {
-    const pdfBlob = await generateAndDownloadResume({
-      ...generatedResume, template: formData.template, font: formData.font,
-      sectionLayout: formData.sectionLayout, onePage: formData.onePage,
-    }, true);
-    await deliverPurchasedDocument({
-      blob: pdfBlob instanceof Blob ? pdfBlob : null,
-      documentType: "ai-resume",
-      template: formData.template,
-      email,
-      userName: formData.personalInfo?.fullName || "",
-    });
-    showToast("Payment successful — your resume has downloaded!");
+  // Runs after the card payment succeeds — store the pending form data (same
+  // keys the hosted-checkout flow used) and hand off to /payment-success,
+  // which generates + downloads + emails and shows the success screen. The
+  // webhook records the purchase from the payment-intent metadata.
+  const handlePaymentSuccess = ({ email, paymentIntentId }) => {
+    localStorage.setItem("pendingResumeData", JSON.stringify({ generatedResume, formData, selectedTemplate: formData.template }));
+    localStorage.setItem("pendingCustomerEmail", email);
+    navigate(`/payment-success?type=ai-resume&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 
   // ── Helper components ───────────────────────────────────────────────────

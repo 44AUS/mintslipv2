@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
@@ -13,7 +14,7 @@ import { IonDateInput } from "@/components/DateInput";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
-import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
+import PaymentModal from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "offerLetterFormData";
@@ -112,6 +113,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
     } catch { return defaultFormData; }
   });
 
+  const navigate = useNavigate();
   const [user, setUser]                                   = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isProcessing, setIsProcessing]                   = useState(false);
@@ -222,18 +224,15 @@ export default function AppOfferLetter({ isOpen, onClose }) {
   // One-time purchase: open the in-app card checkout
   const handleStripeCheckout = () => setPaymentOpen(true);
 
-  // Runs after the card payment succeeds — generate + download in place
-  // (the webhook records the purchase from the payment-intent metadata).
-  const handlePaymentSuccess = async ({ email }) => {
-    const pdfBlob = await generateAndDownloadOfferLetter(formData, true);
-    await deliverPurchasedDocument({
-      blob: pdfBlob instanceof Blob ? pdfBlob : null,
-      documentType: "offer-letter",
-      template: formData.template,
-      email,
-      userName: formData.candidateName || "",
-    });
-    showToast("Payment successful — your offer letter has downloaded!");
+  // Runs after the card payment succeeds — store the pending form data (same
+  // keys the hosted-checkout flow used) and hand off to /payment-success,
+  // which generates + downloads + emails and shows the success screen. The
+  // webhook records the purchase from the payment-intent metadata.
+  const handlePaymentSuccess = ({ email, paymentIntentId }) => {
+    localStorage.setItem("pendingOfferLetterData",     JSON.stringify(formData));
+    localStorage.setItem("pendingOfferLetterTemplate", formData.template);
+    localStorage.setItem("pendingCustomerEmail", email);
+    navigate(`/payment-success?type=offer-letter&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 
   // ── Small sub-components ──────────────────────────────────────────────

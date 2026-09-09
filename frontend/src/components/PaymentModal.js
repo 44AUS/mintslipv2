@@ -2,62 +2,22 @@ import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
-  IonInput, IonSpinner, IonNote,
+  IonSpinner, IonNote,
 } from "@ionic/react";
 import { closeOutline, lockClosedOutline, checkmarkCircle } from "ionicons/icons";
 import {
   useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement,
 } from "@stripe/react-stripe-js";
 import { nativePost } from "@/utils/nativeHttp";
-import { sendDownloadEmailWithPdf } from "@/utils/emailWithPdf";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-// Shared post-purchase delivery: email the generated file to the buyer and
-// archive it to their account (logged-in) or the guest store (by email) so it
-// shows in admin Saved Docs and the purchase detail modal. Mirrors what
-// PaymentSuccess.js did for the hosted-checkout flow.
-export async function deliverPurchasedDocument({ blob, documentType, template = null, email, userName = "" }) {
-  if (!(blob instanceof Blob)) return;
-  const isZip = !!blob.type && (blob.type.includes("zip"));
-  if (email && email.includes("@")) {
-    sendDownloadEmailWithPdf({
-      email, userName, documentType, fileBlob: blob,
-      isGuest: !localStorage.getItem("userToken"), isZip,
-    }).catch(() => {});
-  }
-  try {
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    const fileName = `${documentType}_${new Date().toISOString().split("T")[0]}${isZip ? ".zip" : ".pdf"}`;
-    const token = localStorage.getItem("userToken");
-    if (token) {
-      await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ documentType, fileName, fileData: base64, template }),
-      });
-    } else if (email && email.includes("@")) {
-      await fetch(`${BACKEND_URL}/api/guest/saved-documents`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestEmail: email, documentType, fileName, fileData: base64, template }),
-      });
-    }
-  } catch (err) {
-    console.error("Failed to archive purchased document:", err);
-  }
-}
 
 // In-app card checkout modal — sits on top of the document form/preview modals
 // (z 10010) with the same portal + slide-up chrome. Card details live in
 // Stripe Elements iframes (never in our inputs); only the name and email are
-// regular Ionic inputs. On success the host modal generates and downloads the
-// document client-side while this modal shows a "preparing" state.
+// regular Ionic inputs. On success the host modal stores its pending form data
+// and hands off to /payment-success, which generates, downloads, emails, and
+// shows the animated success screen.
 export default function PaymentModal({
   docLabel, documentType, template = null, basePrice, discount = null,
   quantity = 1, prefillEmail = "", prefillName = "", onSuccess, onClose,
@@ -94,6 +54,14 @@ export default function PaymentModal({
   }, []);
 
   const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 14 };
+  // Name/email render exactly like the Stripe element boxes: the container
+  // carries the border/focus ring, the bare input matches Stripe's base style.
+  const nativeInputStyle = {
+    width: "100%", border: "none", outline: "none", background: "transparent",
+    padding: 0, margin: 0, color: stripeStyle.base.color,
+    fontSize: stripeStyle.base.fontSize, fontFamily: stripeStyle.base.fontFamily,
+    lineHeight: "1.2", WebkitTextFillColor: stripeStyle.base.color,
+  };
   const headingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)" };
   const smallLabelStyle = { fontSize: "0.75rem", color: "var(--ion-color-medium)", marginBottom: 4, display: "block" };
   const boxStyle = (key) => ({
@@ -161,7 +129,8 @@ export default function PaymentModal({
 
   return createPortal(
     <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10010, background: isMobile ? "var(--ion-background-color, #f2f2f7)" : "rgba(0,0,0,0.55)", display: "flex", alignItems: isMobile ? "stretch" : "center", justifyContent: isMobile ? "stretch" : "center" }}>
-      <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: isMobile ? "100%" : 440, height: isMobile ? "100%" : "auto", maxHeight: isMobile ? "100%" : "92vh", borderRadius: isMobile ? 0 : 6, overflow: "hidden" }}>
+      <style>{`.msh-pay-input::placeholder { color: ${stripeStyle.base["::placeholder"].color}; }`}</style>
+      <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: isMobile ? "100%" : 600, height: isMobile ? "100%" : "auto", maxHeight: isMobile ? "100%" : "90vh", overflow: "hidden" }}>
         <IonHeader>
           <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
             <IonButtons slot="start">
@@ -218,12 +187,35 @@ export default function PaymentModal({
             {/* Payment details */}
             <div style={cardStyle}>
               <div style={headingStyle}>Payment details</div>
-              <IonInput fill="outline" labelPlacement="floating" label="Name on card" value={name}
-                autocomplete="cc-name" disabled={busy}
-                onIonInput={(e) => setName(e.detail.value || "")} />
-              <IonInput fill="outline" labelPlacement="floating" label="Email for your receipt" type="email" value={email}
-                autocomplete="email" disabled={busy} helperText="Your document and receipt are sent here"
-                onIonInput={(e) => setEmail(e.detail.value || "")} />
+              <div>
+                <span style={smallLabelStyle}>Name on card</span>
+                <div style={boxStyle("name")}>
+                  <input
+                    className="msh-pay-input"
+                    type="text" value={name} placeholder="Jane Appleseed" autoComplete="cc-name"
+                    disabled={busy} style={nativeInputStyle}
+                    onFocus={() => setFocusedBox("name")}
+                    onBlur={() => setFocusedBox((f) => (f === "name" ? null : f))}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <span style={smallLabelStyle}>Email</span>
+                <div style={boxStyle("email")}>
+                  <input
+                    className="msh-pay-input"
+                    type="email" value={email} placeholder="jane@example.com" autoComplete="email"
+                    disabled={busy} style={nativeInputStyle}
+                    onFocus={() => setFocusedBox("email")}
+                    onBlur={() => setFocusedBox((f) => (f === "email" ? null : f))}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <span style={{ fontSize: "0.7rem", color: "var(--ion-color-medium)", marginTop: 4, display: "block" }}>
+                  Your document and receipt are sent here
+                </span>
+              </div>
               <div>
                 <span style={smallLabelStyle}>Card number</span>
                 <div style={boxStyle("number")}>

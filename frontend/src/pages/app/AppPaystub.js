@@ -17,7 +17,7 @@ import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import { saveGuestDocument } from "@/utils/guestSave";
-import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
+import PaymentModal from "@/components/PaymentModal";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "@/utils/federalTaxCalculator";
 import {
@@ -704,22 +704,17 @@ export default function AppPaystub() {
     setPendingCheckout({ fullFormData });
   };
 
-  // Runs after the card payment succeeds — generate + download in place
-  // (the webhook records the purchase from the payment-intent metadata).
-  const handlePaymentSuccess = async ({ email }) => {
+  // Runs after the card payment succeeds — store the pending form data (same
+  // keys the hosted-checkout flow used) and hand off to /payment-success,
+  // which generates + downloads + emails and shows the success screen. The
+  // webhook records the purchase from the payment-intent metadata.
+  const handlePaymentSuccess = ({ email, paymentIntentId }) => {
     const { fullFormData } = pendingCheckout;
-    const pdfBlob = await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs, true);
-    await deliverPurchasedDocument({
-      blob: pdfBlob instanceof Blob ? pdfBlob : null,
-      documentType: "paystub",
-      template: selectedTemplate,
-      email,
-      userName: fullFormData.name || "",
-    });
-    localStorage.removeItem("paystubCompanyLogo");
-    setCompanyLogo(null); setLogoPreview(null);
-    showToast("Payment successful — your pay stub(s) have downloaded!", "success");
-    setPreviewModalOpen(false);
+    localStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
+    localStorage.setItem("pendingPaystubTemplate", selectedTemplate);
+    localStorage.setItem("pendingPaystubCount", calculateNumStubs.toString());
+    localStorage.setItem("pendingCustomerEmail", email);
+    navigate(`/payment-success?type=paystub&count=${calculateNumStubs}&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 
   // ── Shared input style ────────────────────────────────────────────────────

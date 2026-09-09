@@ -12,7 +12,7 @@ import {
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
-import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
+import PaymentModal from "@/components/PaymentModal";
 import { generateAllCanadianPreviewImages } from "@/utils/canadianPaystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
@@ -671,22 +671,17 @@ export default function AppCanadianPaystub() {
     setPendingCheckout({ fullFormData });
   };
 
-  // Runs after the card payment succeeds — generate + download in place
-  // (the webhook records the purchase from the payment-intent metadata).
-  const handlePaymentSuccess = async ({ email }) => {
+  // Runs after the card payment succeeds — store the pending form data (same
+  // keys the hosted-checkout flow used) and hand off to /payment-success,
+  // which generates + downloads + emails and shows the success screen. The
+  // webhook records the purchase from the payment-intent metadata.
+  const handlePaymentSuccess = ({ email, paymentIntentId }) => {
     const { fullFormData } = pendingCheckout;
-    const pdfBlob = await generateAndDownloadCanadianPaystub(fullFormData, selectedTemplate, calculateNumStubs, true);
-    await deliverPurchasedDocument({
-      blob: pdfBlob instanceof Blob ? pdfBlob : null,
-      documentType: "canadian-paystub",
-      template: selectedTemplate,
-      email,
-      userName: fullFormData.name || "",
-    });
-    localStorage.removeItem("canadianPaystubCompanyLogo");
-    setCompanyLogo(null); setLogoPreview(null);
-    showToast("Payment successful — your pay stub(s) have downloaded!", "success");
-    setPreviewModalOpen(false);
+    localStorage.setItem("pendingCanadianPaystubData", JSON.stringify(fullFormData));
+    localStorage.setItem("pendingCanadianPaystubTemplate", selectedTemplate);
+    localStorage.setItem("pendingCanadianPaystubCount", calculateNumStubs.toString());
+    localStorage.setItem("pendingCustomerEmail", email);
+    navigate(`/payment-success?type=canadian-paystub&count=${calculateNumStubs}&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 
   const ionInputStyle = { marginBottom: 8 };

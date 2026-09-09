@@ -105,8 +105,27 @@ export default function PaymentSuccess() {
   const [searchParams] = useSearchParams();
   const orderType = searchParams.get('type') || 'paystub';
   const sessionId = searchParams.get('session_id');
+  // Set by the in-app embedded card checkout (PaymentModal) — the payment was
+  // already confirmed on-session by Stripe.js, so there is no checkout session
+  // to verify; we go straight to generating.
+  const paymentIntentId = searchParams.get('payment_intent');
   const fileCount = parseInt(searchParams.get('count') || '1', 10);
   const isFromApp = searchParams.get('source') === 'app';
+
+  // Where "back" leads for purchases made inside the app
+  const APP_RETURN_PATHS = {
+    'paystub': '/app/paystubs',
+    'canadian-paystub': '/app/canadian-paystub',
+    'ai-resume': '/app/resumes',
+    'offer-letter': '/app/resumes',
+    'w2': '/app/tax-forms', 'w9': '/app/tax-forms', '1099-nec': '/app/tax-forms',
+    '1099-misc': '/app/tax-forms', 'schedule-c': '/app/tax-forms',
+    'cease-and-desist': '/app/legal-forms', 'power-of-attorney': '/app/legal-forms',
+    'vehicle-bill-of-sale': '/app/legal-forms', 'legal-document': '/app/legal-forms',
+    'commercial-lease': '/app/business-forms', 'utility-bill': '/app/business-forms',
+    'bank-statement': '/app/business-forms',
+  };
+  const appReturnTo = APP_RETURN_PATHS[orderType] || '/app';
   
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -127,17 +146,27 @@ export default function PaymentSuccess() {
   // Clear any stale download data at the start of a new payment verification
   useEffect(() => {
     // Clear old download URLs when a new session starts
-    if (sessionId) {
+    if (sessionId || paymentIntentId) {
       localStorage.removeItem('lastDownloadUrl');
       localStorage.removeItem('lastDownloadFileName');
       sessionStorage.removeItem('lastDownloadUrl');
       sessionStorage.removeItem('lastDownloadFileName');
     }
-  }, [sessionId]);
+  }, [sessionId, paymentIntentId]);
 
   // Verify payment and generate document
   const verifyAndGenerate = useCallback(async () => {
     if (!sessionId) {
+      if (paymentIntentId) {
+        // Embedded card checkout: Stripe.js confirmed the payment on-session
+        // before navigating here, so skip session verification entirely.
+        const email = localStorage.getItem('pendingCustomerEmail') || '';
+        if (email) setCustomerEmail(email);
+        setPaymentVerified(true);
+        setIsVerifying(false);
+        await generateDocument(email);
+        return;
+      }
       // No session ID - show error (don't use old cached data)
       setError('No payment session found. Please contact support if you were charged.');
       setIsVerifying(false);
@@ -201,7 +230,7 @@ export default function PaymentSuccess() {
       setIsVerifying(false);
       await generateDocument();
     }
-  }, [sessionId]);
+  }, [sessionId, paymentIntentId]);
 
   // Helper function to send file email after generation (PDF or ZIP)
   const sendFileEmail = async (fileBlob, email, documentType, userName = '', isZip = false) => {
@@ -358,10 +387,14 @@ export default function PaymentSuccess() {
           if (generatedResume) {
             console.log('Generating AI resume with stored data...', { selectedTemplate });
             
-            // Prepare resume data for the generator
+            // Prepare resume data for the generator (carry the style options
+            // the builder chose)
             const resumeData = {
               ...generatedResume,
-              template: selectedTemplate || formData?.template || 'ats'
+              template: selectedTemplate || formData?.template || 'ats',
+              font: formData?.font,
+              sectionLayout: formData?.sectionLayout,
+              onePage: formData?.onePage,
             };
             
             pdfBlob = await generateAndDownloadResume(resumeData, true);
@@ -565,8 +598,10 @@ export default function PaymentSuccess() {
         // 'ai-resume' is stored under the 'resume' document type used elsewhere.
         await archiveDocument(pdfBlob, orderType === 'ai-resume' ? 'resume' : orderType, emailToUse);
 
-        // Navigate back to app for app-managed document types
-        if (appReturnPath) {
+        // Navigate back to app for app-managed document types — but only for
+        // the legacy hosted-checkout redirect. The embedded card checkout
+        // stays here so the buyer sees the full success screen.
+        if (appReturnPath && !paymentIntentId) {
           navigate(appReturnPath);
           return;
         }
@@ -831,7 +866,7 @@ export default function PaymentSuccess() {
   useEffect(() => {
     if (paymentVerified && typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'purchase', {
-        transaction_id: sessionId || `order_${Date.now()}`,
+        transaction_id: sessionId || paymentIntentId || `order_${Date.now()}`,
         value: orderType === 'paystub' ? 9.99 : 14.99,
         currency: 'USD',
         items: [{
@@ -841,7 +876,7 @@ export default function PaymentSuccess() {
         }]
       });
     }
-  }, [paymentVerified, sessionId, orderType]);
+  }, [paymentVerified, sessionId, paymentIntentId, orderType]);
 
   // Loading state while verifying payment
   if (isVerifying) {
@@ -865,8 +900,8 @@ export default function PaymentSuccess() {
             <h2 className="text-xl font-semibold text-slate-800 text-center mb-2">Something Went Wrong</h2>
             <p className="text-slate-600 text-center mb-6">{error}</p>
             <div className="space-y-3">
-              <Button 
-                onClick={() => navigate(`/${orderType}-generator`)}
+              <Button
+                onClick={() => navigate(isFromApp ? appReturnTo : `/${orderType}-generator`)}
                 className="w-full bg-amber-600 hover:bg-amber-700"
               >
                 Try Again
@@ -949,10 +984,10 @@ export default function PaymentSuccess() {
           {/* Content */}
           <div className="px-8 py-8 space-y-6">
             {/* Order confirmation */}
-            {sessionId && (
+            {(sessionId || paymentIntentId) && (
               <div className="bg-emerald-50 rounded-lg p-4 text-center">
-                <p className="text-sm text-emerald-700">Session ID</p>
-                <p className="font-mono text-sm font-semibold text-emerald-800 truncate">{sessionId}</p>
+                <p className="text-sm text-emerald-700">Order Reference</p>
+                <p className="font-mono text-sm font-semibold text-emerald-800 truncate">{sessionId || paymentIntentId}</p>
               </div>
             )}
             
@@ -1001,8 +1036,8 @@ export default function PaymentSuccess() {
                   <p className="text-sm text-slate-600 mb-4">
                     {error || 'We couldn\'t automatically generate your document. Please try creating it again.'}
                   </p>
-                  <Button 
-                    onClick={() => navigate(`/${orderType}-generator`)}
+                  <Button
+                    onClick={() => navigate(isFromApp ? appReturnTo : `/${orderType}-generator`)}
                     variant="outline"
                     className="border-amber-500 text-amber-600 hover:bg-amber-50"
                   >
@@ -1036,17 +1071,17 @@ export default function PaymentSuccess() {
             <div className="border-t border-slate-200"></div>
             
             {/* Back button */}
-            <Button 
-              onClick={() => navigate('/')}
+            <Button
+              onClick={() => navigate(isFromApp ? appReturnTo : '/')}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-lg font-semibold rounded-xl"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Home
+              {isFromApp ? 'Back to App' : 'Back to Home'}
             </Button>
-            
+
             {/* Create another */}
             <button
-              onClick={() => navigate(`/${orderType === 'canadian-paystub' ? 'canadian-paystub' : orderType}-generator`)}
+              onClick={() => navigate(isFromApp ? appReturnTo : `/${orderType === 'canadian-paystub' ? 'canadian-paystub' : orderType}-generator`)}
               className="w-full text-center text-emerald-600 hover:text-emerald-700 font-medium py-2"
             >
               Create Another Document →

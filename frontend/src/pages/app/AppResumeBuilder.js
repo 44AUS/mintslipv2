@@ -425,8 +425,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <span style={labelStyle}>Responsibilities / Bullets</span>
-              <IonButton fill="clear" size="small" onClick={() => generateAIBullets(exp.id)} disabled={isGeneratingBullets === exp.id}
-                style={{ "--color": "#7c3aed", fontSize: "0.72rem", height: 28 }}>
+              <IonButton color="tertiary" size="small" onClick={() => generateAIBullets(exp.id)} disabled={isGeneratingBullets === exp.id}>
                 {isGeneratingBullets === exp.id
                   ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} />
                   : <><IonIcon icon={sparklesOutline} slot="start" style={{ fontSize: 12 }} />AI Generate</>}
@@ -442,15 +441,13 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
                 )}
               </div>
             ))}
-            <IonButton fill="outline" size="small" onClick={() => addBullet(exp.id)}
-              style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
+            <IonButton color="light" size="small" onClick={() => addBullet(exp.id)}>
               <IonIcon icon={addOutline} slot="start" />Add Bullet
             </IonButton>
           </div>
         </div>
       ))}
-      <IonButton fill="outline" expand="block" onClick={addWork}
-        style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
+      <IonButton color="light" expand="block" onClick={addWork}>
         <IonIcon icon={addOutline} slot="start" />Add Job
       </IonButton>
     </div>
@@ -480,8 +477,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           </div>
         </div>
       ))}
-      <IonButton fill="outline" expand="block" onClick={addEdu}
-        style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
+      <IonButton color="light" expand="block" onClick={addEdu}>
         <IonIcon icon={addOutline} slot="start" />Add Education
       </IonButton>
     </div>
@@ -501,8 +497,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           )}
         </div>
       ))}
-      <IonButton fill="outline" expand="block" onClick={addSkill}
-        style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
+      <IonButton color="light" expand="block" onClick={addSkill}>
         <IonIcon icon={addOutline} slot="start" />Add Skill
       </IonButton>
     </div>
@@ -515,9 +510,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       <div style={{ display: "flex", gap: 8 }}>
         <IonInput value={formData.jobUrl} onIonInput={e => setField("jobUrl", e.detail.value)}
           fill="outline" labelPlacement="floating" label="Job Posting URL (Optional)" style={{ ...inputStyle, flex: 1 }} />
-        <IonButton onClick={scrapeJobUrl} disabled={isScrapingJob}
-          style={{ "--background": "#7c3aed", "--background-activated": "#6d28d9", flexShrink: 0 }}>
-          {isScrapingJob ? <IonSpinner name="crescent" style={{ color: "#fff", width: 18, height: 18 }} /> : "Extract"}
+        <IonButton color="tertiary" onClick={scrapeJobUrl} disabled={isScrapingJob} style={{ flexShrink: 0 }}>
+          {isScrapingJob ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : "Extract"}
         </IonButton>
       </div>
       <IonTextarea value={formData.jobDescription} onIonInput={e => setField("jobDescription", e.detail.value)}
@@ -548,10 +542,9 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
         <IonCheckbox checked={formData.onePage} onIonChange={e => setField("onePage", e.detail.checked)} />
         <span style={{ fontSize: "0.88rem", color: "var(--ion-text-color)" }}>Fit to one page</span>
       </div>
-      <IonButton expand="block" onClick={generateResume} disabled={isGenerating}
-        style={{ "--background": "#7c3aed", "--background-activated": "#6d28d9" }}>
+      <IonButton expand="block" color="tertiary" onClick={generateResume} disabled={isGenerating}>
         {isGenerating
-          ? <><IonSpinner name="crescent" slot="start" style={{ color: "#fff" }} />Generating with AI...</>
+          ? <><IonSpinner name="crescent" slot="start" />Generating with AI...</>
           : <><IonIcon icon={sparklesOutline} slot="start" />Generate Resume</>}
       </IonButton>
       {generatedResume && (
@@ -628,14 +621,12 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           {/* Prev / Next */}
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             {currentStep > 1 && (
-              <IonButton fill="outline" onClick={() => setCurrentStep(s => s - 1)}
-                style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)", flex: 1 }}>
+              <IonButton color="light" onClick={() => setCurrentStep(s => s - 1)} style={{ flex: 1 }}>
                 <IonIcon icon={chevronBackOutline} slot="start" />Back
               </IonButton>
             )}
             {currentStep < 6 && (
-              <IonButton expand="block" onClick={() => setCurrentStep(s => s + 1)}
-                style={{ "--background": "#059669", "--background-activated": "#047857", flex: 1 }}>
+              <IonButton color="primary" onClick={() => setCurrentStep(s => s + 1)} style={{ flex: 1 }}>
                 Next<IonIcon icon={chevronForwardOutline} slot="end" />
               </IonButton>
             )}

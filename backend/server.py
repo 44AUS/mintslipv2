@@ -2358,6 +2358,7 @@ async def create_payment_intent(request: dict, req: Request):
     email = request.get("email")
     discount_code = request.get("discountCode")
     discount_amount = request.get("discountAmount", 0)
+    quantity = request.get("quantity", 1)
     client_ip = get_client_ip(req)  # customer IP, carried through to the webhook
 
     if not amount:
@@ -2377,6 +2378,7 @@ async def create_payment_intent(request: dict, req: Request):
                 "email": email or "",
                 "discountCode": discount_code or "",
                 "discountAmount": str(discount_amount),
+                "quantity": str(quantity or 1),
                 "clientIp": client_ip
             }
         )
@@ -2845,24 +2847,56 @@ async def stripe_webhook(request: Request):
     
     elif event.type == "payment_intent.succeeded":
         payment_intent = event.data.object
-        
-        # Track purchase for one-time payments
+
+        # Track purchase for one-time payments (in-app card checkout and
+        # Apple/Google Pay). Mirrors the checkout.session.completed handling.
         metadata = payment_intent.metadata
         if metadata.get("documentType"):
+            # Dedup: Stripe may retry webhook delivery
+            existing_purchase = await purchases_collection.find_one({"stripePaymentIntentId": payment_intent.id})
+            if existing_purchase:
+                print(f"Purchase already recorded for payment intent {payment_intent.id}, skipping webhook duplicate")
+                return {"status": "ok"}
+
+            customer_email = metadata.get("email", "")
+            discount_code = metadata.get("discountCode", "")
+            try:
+                quantity = int(metadata.get("quantity") or 1)
+            except (TypeError, ValueError):
+                quantity = 1
+
             purchase = {
                 "id": str(uuid.uuid4()),
                 "documentType": metadata.get("documentType"),
                 "amount": payment_intent.amount / 100,
-                "email": metadata.get("email", ""),
+                "email": customer_email,
                 "stripePaymentIntentId": payment_intent.id,
-                "discountCode": metadata.get("discountCode"),
-                "discountAmount": float(metadata.get("discountAmount", 0)),
-                "template": metadata.get("template"),
-                "ipAddress": metadata.get("clientIp", ""),
+                "discountCode": discount_code if discount_code else None,
+                "discountAmount": float(metadata.get("discountAmount", 0) or 0),
+                "template": metadata.get("template") or None,
+                "quantity": quantity,
+                "isGuest": True,
+                "ipAddress": metadata.get("clientIp", "") or get_client_ip(request),
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await purchases_collection.insert_one(purchase)
-            asyncio.create_task(create_notification(metadata.get("documentType", ""), metadata.get("email", ""), payment_intent.amount / 100))
+            asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"]))
+
+            # Same follow-up emails as the hosted-checkout flow (the download
+            # confirmation with the attached file is sent from the frontend)
+            if customer_email:
+                asyncio.create_task(send_review_request(customer_email, "", purchase["documentType"], None))
+                asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
+
+            # Increment discount code usage if one was used
+            if discount_code:
+                customer_identifier = customer_email or payment_intent.id
+                update_ops = {"$inc": {"usageCount": 1}}
+                discount = await discounts_collection.find_one({"code": discount_code.upper()})
+                if discount and discount.get("usageType") == "one_per_customer" and customer_identifier:
+                    update_ops["$push"] = {"usedByCustomers": customer_identifier}
+                await discounts_collection.update_one({"code": discount_code.upper()}, update_ops)
+                print(f"Incremented usage count for discount code: {discount_code}")
     
     return {"status": "received"}
 

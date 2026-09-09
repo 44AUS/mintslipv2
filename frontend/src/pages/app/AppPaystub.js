@@ -15,8 +15,9 @@ import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
-import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
+import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import { saveGuestDocument } from "@/utils/guestSave";
+import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "@/utils/federalTaxCalculator";
 import {
@@ -581,6 +582,7 @@ export default function AppPaystub() {
   const [formModalOpen,       setFormModalOpen]       = useState(false);
   const [previewModalOpen,    setPreviewModalOpen]    = useState(false);
   const [previewPageIndex,    setPreviewPageIndex]    = useState(0);
+  const [pendingCheckout,     setPendingCheckout]     = useState(null); // {fullFormData} while the payment modal is open
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -697,33 +699,27 @@ export default function AppPaystub() {
     if (calculateNumStubs === 0) { showToast("Please configure at least one pay period"); return; }
     if (hasActiveSubscription) { await handleSubscriptionDownload(); return; }
 
-    setIsProcessing(true);
-    try {
-      const baseAmount = calculateNumStubs * 9.99;
-      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : baseAmount;
-      const origin = getStripeOrigin(BACKEND_URL);
-      const fullFormData = { ...formData, deductions, contributions, absencePlans, employerBenefits, companyLogo, logoDataUrl: logoPreview };
-      localStorage.setItem("pendingPaystubData", JSON.stringify(fullFormData));
-      localStorage.setItem("pendingPaystubTemplate", selectedTemplate);
-      localStorage.setItem("pendingPaystubCount", calculateNumStubs.toString());
+    // One-time purchase: open the in-app card checkout on top of the preview
+    const fullFormData = { ...formData, deductions, contributions, absencePlans, employerBenefits, companyLogo, logoDataUrl: logoPreview };
+    setPendingCheckout({ fullFormData });
+  };
 
-      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
-        amount: finalAmount,
-        documentType: "paystub",
-        template: selectedTemplate,
-        successUrl: `${origin}/payment-success?type=paystub&count=${calculateNumStubs}&source=app&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${origin}/app/paystub`,
-        quantity: calculateNumStubs,
-        discountCode: appliedDiscount?.code || null,
-        discountAmount: appliedDiscount ? parseFloat((baseAmount - finalAmount).toFixed(2)) : 0,
-      });
-      if (!data) throw new Error("Server error. Please try again.");
-      if (!ok) throw new Error(data.detail || "Failed to create checkout session");
-      if (data.url) window.location.href = data.url;
-      else throw new Error("No checkout URL received");
-    } catch (err) {
-      showToast(err.message || "Payment failed. Please try again.");
-    } finally { setIsProcessing(false); }
+  // Runs after the card payment succeeds — generate + download in place
+  // (the webhook records the purchase from the payment-intent metadata).
+  const handlePaymentSuccess = async ({ email }) => {
+    const { fullFormData } = pendingCheckout;
+    const pdfBlob = await generateAndDownloadPaystub(fullFormData, selectedTemplate, calculateNumStubs, true);
+    await deliverPurchasedDocument({
+      blob: pdfBlob instanceof Blob ? pdfBlob : null,
+      documentType: "paystub",
+      template: selectedTemplate,
+      email,
+      userName: fullFormData.name || "",
+    });
+    localStorage.removeItem("paystubCompanyLogo");
+    setCompanyLogo(null); setLogoPreview(null);
+    showToast("Payment successful — your pay stub(s) have downloaded!", "success");
+    setPreviewModalOpen(false);
   };
 
   // ── Shared input style ────────────────────────────────────────────────────
@@ -1469,6 +1465,21 @@ export default function AppPaystub() {
           </div>
         </div>,
         document.querySelector("ion-app") || document.body
+      )}
+
+      {pendingCheckout && (
+        <PaymentModal
+          docLabel={`Pay Stub${calculateNumStubs !== 1 ? `s × ${calculateNumStubs}` : ""}`}
+          documentType="paystub"
+          template={selectedTemplate}
+          basePrice={calculateNumStubs * 9.99}
+          discount={appliedDiscount}
+          quantity={calculateNumStubs}
+          prefillEmail={user?.email || ""}
+          prefillName={user?.name || ""}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setPendingCheckout(null)}
+        />
       )}
 
       <IonToast

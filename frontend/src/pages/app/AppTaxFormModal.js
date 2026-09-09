@@ -9,6 +9,7 @@ import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOu
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import SignaturePad from "@/components/SignaturePad";
 import { IonDateInput } from "@/components/DateInput";
+import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
@@ -50,6 +51,7 @@ export default function AppTaxFormModal({ config, onClose }) {
   const [previewImg, setPreviewImg] = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [pendingCheckout, setPendingCheckout] = useState(null); // {derived, checkoutTemplate} while the payment modal is open
   const [couponCode, setCouponCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
@@ -206,31 +208,23 @@ export default function AppTaxFormModal({ config, onClose }) {
       return;
     }
 
-    setIsProcessing(true);
-    try {
-      const pendingEntries = config.buildPending
-        ? config.buildPending(derived, taxYear)
-        : { [config.pendingDataKey]: derived, ...(config.pendingYearKey ? { [config.pendingYearKey]: taxYear } : {}) };
-      Object.entries(pendingEntries).forEach(([k, v]) =>
-        localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v)));
-      const origin = getStripeOrigin(BACKEND_URL);
-      const finalAmount = appliedDiscount ? appliedDiscount.discountedPrice : basePrice;
-      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
-        amount: finalAmount,
-        documentType: config.docType,
-        template: checkoutTemplate,
-        successUrl: `${origin}/payment-success?type=${config.docType}&source=app&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${origin}${config.cancelPath || "/app/tax-forms"}`,
-        discountCode: appliedDiscount?.code || null,
-        discountAmount: appliedDiscount ? parseFloat((basePrice - finalAmount).toFixed(2)) : 0,
-      });
-      if (!data) throw new Error("Server error. Please try again.");
-      if (!ok) throw new Error(data.detail || "Failed to create checkout session");
-      if (data.url) window.location.href = data.url;
-      else throw new Error("No checkout URL received");
-    } catch (e3) {
-      showToast(e3.message || "Payment failed. Please try again.");
-    } finally { setIsProcessing(false); }
+    // One-time purchase: open the in-app card checkout on top of the preview
+    setPendingCheckout({ derived, checkoutTemplate });
+  };
+
+  // Runs after the card payment succeeds — generate + download in place
+  // (the webhook records the purchase from the payment-intent metadata).
+  const handlePaymentSuccess = async ({ email }) => {
+    const { derived, checkoutTemplate } = pendingCheckout;
+    const pdfBlob = await config.download(derived, taxYear, true);
+    await deliverPurchasedDocument({
+      blob: pdfBlob instanceof Blob ? pdfBlob : null,
+      documentType: config.docType,
+      template: checkoutTemplate,
+      email,
+    });
+    showToast("Payment successful — your document has downloaded!", "success");
+    setPreviewModalOpen(false);
   };
 
   // ── Field renderer ──
@@ -617,6 +611,20 @@ export default function AppTaxFormModal({ config, onClose }) {
             </div>
           </div>
         </div>
+      )}
+
+      {pendingCheckout && (
+        <PaymentModal
+          docLabel={config.title}
+          documentType={config.docType}
+          template={pendingCheckout.checkoutTemplate}
+          basePrice={basePrice}
+          discount={appliedDiscount}
+          prefillEmail={user?.email || ""}
+          prefillName={user?.name || ""}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setPendingCheckout(null)}
+        />
       )}
 
       <IonToast

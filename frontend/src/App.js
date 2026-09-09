@@ -98,6 +98,10 @@ import SupportChatWidget from "@/components/SupportChatWidget";
 // Stripe Configuration - Use environment variable
 const STRIPE_PUBLISHABLE_KEY = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51SOOSM0OuJwef38xP0FqCJ3b45STthDKnJWP572LoODAaxGIq8ujrAwp1W0MeGkI6XczeweTr7lOLIKC6MnLadoX00iDo2VzYM";
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+// Loaded inside the Stripe card-element iframes so their text matches the app font
+const STRIPE_ELEMENT_FONTS = {
+  fonts: [{ cssSrc: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" }],
+};
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Messages API for minimized chats — swap out with real endpoints when ready
@@ -226,7 +230,7 @@ const IS_MOBILE_APP = process.env.REACT_APP_IS_MOBILE === "true";
 function MobileApp() {
   return (
     <HelmetProvider>
-      <Elements stripe={stripePromise}>
+      <Elements stripe={stripePromise} options={STRIPE_ELEMENT_FONTS}>
         <div className="App">
           <IonToaster />
           <BrowserRouter>
@@ -283,7 +287,7 @@ function App() {
 
   return (
     <HelmetProvider>
-      <Elements stripe={stripePromise}>
+      <Elements stripe={stripePromise} options={STRIPE_ELEMENT_FONTS}>
         <MaintenanceCheck>
           <IPBanCheck>
             <div className="App">

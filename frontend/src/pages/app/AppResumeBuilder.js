@@ -14,8 +14,9 @@ import {
 } from "ionicons/icons";
 import { generateAndDownloadResume } from "@/utils/resumeGenerator";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
-import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
+import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
+import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "resumeBuilderFormData";
@@ -104,6 +105,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
   const [toastOpen, setToastOpen]                           = useState(false);
   const [toastMessage, setToastMessage]                     = useState("");
   const [toastColor, setToastColor]                         = useState("success");
+  const [paymentOpen, setPaymentOpen]                       = useState(false);
 
   const showToast = (msg, color = "success") => { setToastMessage(msg); setToastColor(color); setToastOpen(true); };
   const setField = (f, v) => setFormData(p => ({ ...p, [f]: v }));
@@ -334,21 +336,27 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     finally { setIsProcessing(false); }
   };
 
-  const handleStripeCheckout = async () => {
+  // One-time purchase: open the in-app card checkout
+  const handleStripeCheckout = () => {
     if (!generatedResume) { showToast("Generate your resume first", "warning"); return; }
-    setIsProcessing(true);
-    try {
-      localStorage.setItem("pendingResumeData", JSON.stringify({ generatedResume, formData, selectedTemplate: formData.template }));
-      const origin = getStripeOrigin(BACKEND_URL);
-      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
-        amount: 9.99, documentType: "ai-resume", template: formData.template,
-        successUrl: `${origin}/payment-success?type=ai-resume&source=app&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl:  `${origin}/app/paystub`,
-      });
-      if (!ok || !data?.url) throw new Error(data?.detail || "Failed to create checkout session");
-      window.location.href = data.url;
-    } catch (err) { showToast(err.message || "Payment failed. Please try again.", "danger"); }
-    finally { setIsProcessing(false); }
+    setPaymentOpen(true);
+  };
+
+  // Runs after the card payment succeeds — generate + download in place
+  // (the webhook records the purchase from the payment-intent metadata).
+  const handlePaymentSuccess = async ({ email }) => {
+    const pdfBlob = await generateAndDownloadResume({
+      ...generatedResume, template: formData.template, font: formData.font,
+      sectionLayout: formData.sectionLayout, onePage: formData.onePage,
+    }, true);
+    await deliverPurchasedDocument({
+      blob: pdfBlob instanceof Blob ? pdfBlob : null,
+      documentType: "ai-resume",
+      template: formData.template,
+      email,
+      userName: formData.personalInfo?.fullName || "",
+    });
+    showToast("Payment successful — your resume has downloaded!");
   };
 
   // ── Helper components ───────────────────────────────────────────────────
@@ -692,6 +700,19 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
             </div>
           </div>
         </div>
+      )}
+
+      {paymentOpen && (
+        <PaymentModal
+          docLabel="AI Resume"
+          documentType="ai-resume"
+          template={formData.template}
+          basePrice={9.99}
+          prefillEmail={user?.email || formData.personalInfo?.email || ""}
+          prefillName={user?.name || formData.personalInfo?.fullName || ""}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setPaymentOpen(false)}
+        />
       )}
 
       <IonToast isOpen={toastOpen} onDidDismiss={() => setToastOpen(false)}

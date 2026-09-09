@@ -12,7 +12,8 @@ import {
 import { IonDateInput } from "@/components/DateInput";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
-import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp";
+import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
+import PaymentModal, { deliverPurchasedDocument } from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "offerLetterFormData";
@@ -120,6 +121,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
   const [toastOpen, setToastOpen]                         = useState(false);
   const [toastMessage, setToastMessage]                   = useState("");
   const [toastColor, setToastColor]                       = useState("success");
+  const [paymentOpen, setPaymentOpen]                     = useState(false);
 
   const showToast = (msg, color = "success") => {
     setToastMessage(msg); setToastColor(color); setToastOpen(true);
@@ -217,24 +219,21 @@ export default function AppOfferLetter({ isOpen, onClose }) {
     } finally { setIsProcessing(false); }
   };
 
-  const handleStripeCheckout = async () => {
-    setIsProcessing(true);
-    try {
-      localStorage.setItem("pendingOfferLetterData",     JSON.stringify(formData));
-      localStorage.setItem("pendingOfferLetterTemplate", formData.template);
-      const origin = getStripeOrigin(BACKEND_URL);
-      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-one-time-checkout`, {
-        amount: 9.99,
-        documentType: "offer-letter",
-        template: formData.template,
-        successUrl: `${origin}/payment-success?type=offer-letter&source=app&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl:  `${origin}/app/paystub`,
-      });
-      if (!ok || !data?.url) throw new Error(data?.detail || "Failed to create checkout session");
-      window.location.href = data.url;
-    } catch (err) {
-      showToast(err.message || "Payment failed. Please try again.", "danger");
-    } finally { setIsProcessing(false); }
+  // One-time purchase: open the in-app card checkout
+  const handleStripeCheckout = () => setPaymentOpen(true);
+
+  // Runs after the card payment succeeds — generate + download in place
+  // (the webhook records the purchase from the payment-intent metadata).
+  const handlePaymentSuccess = async ({ email }) => {
+    const pdfBlob = await generateAndDownloadOfferLetter(formData, true);
+    await deliverPurchasedDocument({
+      blob: pdfBlob instanceof Blob ? pdfBlob : null,
+      documentType: "offer-letter",
+      template: formData.template,
+      email,
+      userName: formData.candidateName || "",
+    });
+    showToast("Payment successful — your offer letter has downloaded!");
   };
 
   // ── Small sub-components ──────────────────────────────────────────────
@@ -503,6 +502,19 @@ export default function AppOfferLetter({ isOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      {paymentOpen && (
+        <PaymentModal
+          docLabel="Offer Letter"
+          documentType="offer-letter"
+          template={formData.template}
+          basePrice={9.99}
+          prefillEmail={user?.email || ""}
+          prefillName={user?.name || ""}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setPaymentOpen(false)}
+        />
+      )}
 
       <IonToast isOpen={toastOpen} onDidDismiss={() => setToastOpen(false)}
         message={toastMessage} duration={3500} position="top" color={toastColor} />

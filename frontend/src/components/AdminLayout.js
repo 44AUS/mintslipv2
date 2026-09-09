@@ -875,7 +875,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                     showCancelButton="always"
                     placeholder="Search users, purchases, support…"
                     style={{
-                      "--background": darkMode ? "#16161f" : "#ffffff",
+                      "--background": darkMode ? "var(--admin-card-bg)" : "#ffffff",
                       "--color": darkMode ? "#ffffff" : "#000000",
                       "--placeholder-color": darkMode ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.4)",
                       "--icon-color": darkMode ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.5)",
@@ -896,7 +896,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                   fill="clear"
                   aria-label="Search"
                   onClick={() => setSearchOpen(true)}
-                  style={{ "--color": "rgba(255,255,255,0.8)", "--border-radius": "50%", opacity: searchOpen ? 0 : 1, pointerEvents: searchOpen ? "none" : "auto" }}
+                  style={{ "--color": "rgba(255,255,255,0.8)", "--border-radius": "50%", display: searchOpen ? "none" : undefined }}
                 >
                   <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "20px" }}>
                     <IonIcon icon={searchOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />

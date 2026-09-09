@@ -474,8 +474,7 @@ export default function AppTaxFormModal({ config, onClose }) {
                 </div>
               ))}
 
-              <IonButton expand="block" onClick={handleNext}
-                style={{ "--background": "#059669", "--background-activated": "#047857" }}>
+              <IonButton expand="block" color="light" onClick={handleNext}>
                 Preview
               </IonButton>
 

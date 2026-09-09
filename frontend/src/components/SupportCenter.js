@@ -2,17 +2,16 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   IonList, IonItem, IonLabel, IonAvatar, IonButton, IonIcon,
   IonSegment, IonSegmentButton, IonReorderGroup, IonReorder,
-  IonTextarea, IonModal, IonHeader, IonToolbar, IonTitle,
-  IonContent, IonSearchbar, IonButtons, IonProgressBar,
+  IonTextarea, IonContent, IonProgressBar,
   IonPopover,
 } from '@ionic/react';
 import {
   chatbubbleOutline, chatbubblesOutline, star, starOutline,
   sendOutline, imageOutline, copyOutline, trashOutline,
   closeOutline, banOutline, shieldOutline, folderOutline,
-  linkOutline, removeOutline, chevronForwardOutline,
+  linkOutline, removeOutline,
   menuOutline, closeCircleOutline, checkmarkDoneOutline,
-  checkmarkOutline, addOutline, checkmarkCircleOutline,
+  checkmarkOutline, checkmarkCircleOutline,
   ellipsisVertical,
 } from 'ionicons/icons';
 
@@ -190,8 +189,6 @@ export default function SupportCenter({
   const [inputText, setInputText] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [showNewModal, setShowNewModal] = useState(false);
-  const [modalSearch, setModalSearch] = useState('');
   const [actionsMenu, setActionsMenu] = useState({ open: false, event: undefined });
   const [hoveredConvId, setHoveredConvId] = useState(null);
   const [hoveredMsgId, setHoveredMsgId] = useState(null);
@@ -263,10 +260,6 @@ export default function SupportCenter({
       return prev.filter((_, i) => i !== idx);
     });
   };
-
-  const filteredContacts = contacts.filter(c =>
-    !modalSearch || c.name?.toLowerCase().includes(modalSearch.toLowerCase())
-  );
 
   // ── conversation row ─────────────────────────────────────────────────────────
 
@@ -476,15 +469,6 @@ export default function SupportCenter({
                 </IonSegmentButton>
               </IonSegment>
 
-              <IonButton
-                fill="clear"
-                size="small"
-                color="medium"
-                onClick={() => setShowNewModal(true)}
-                style={{ '--border-radius': '50%', flexShrink: 0 }}
-              >
-                <IonIcon slot="icon-only" icon={addOutline} style={{ fontSize: 20 }} />
-              </IonButton>
             </div>
 
             {/* conversation list */}
@@ -536,30 +520,13 @@ export default function SupportCenter({
                     </>
                   )}
 
-                  {/* empty state */}
-                  {openConvs.length === 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 16px', gap: 12 }}>
-                      <IonIcon icon={chatbubbleOutline} style={{ fontSize: 36, color: 'var(--ion-color-medium)' }} />
-                      <span style={{ fontSize: '0.875rem', color: 'var(--ion-color-medium)', textAlign: 'center' }}>No open conversations</span>
-                      <IonButton fill="outline" size="small" onClick={() => setShowNewModal(true)}>
-                        New Message
-                      </IonButton>
-                    </div>
-                  )}
                 </>
               ) : (
-                <>
-                  {closedConvs.length > 0 ? (
-                    <IonList lines="full" style={{ padding: 0 }}>
-                      {closedConvs.map(c => <ConvRow key={c.id} conv={c} />)}
-                    </IonList>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 16px', gap: 12 }}>
-                      <IonIcon icon={chatbubblesOutline} style={{ fontSize: 36, color: 'var(--ion-color-medium)' }} />
-                      <span style={{ fontSize: '0.875rem', color: 'var(--ion-color-medium)' }}>No archived conversations</span>
-                    </div>
-                  )}
-                </>
+                closedConvs.length > 0 && (
+                  <IonList lines="full" style={{ padding: 0 }}>
+                    {closedConvs.map(c => <ConvRow key={c.id} conv={c} />)}
+                  </IonList>
+                )
               )}
             </div>
           </div>
@@ -818,79 +785,12 @@ export default function SupportCenter({
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                 <IonIcon icon={chatbubblesOutline} style={{ fontSize: 48, color: 'var(--ion-color-medium)' }} />
                 <span style={{ fontSize: '1rem', color: 'var(--ion-color-medium)' }}>Select a conversation to start chatting</span>
-                <IonButton fill="outline" onClick={() => setShowNewModal(true)}>
-                  <IonIcon slot="start" icon={addOutline} />
-                  Create a Message
-                </IonButton>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* ── NEW MESSAGE MODAL ── */}
-      <IonModal
-        isOpen={showNewModal}
-        onDidDismiss={() => { setShowNewModal(false); setModalSearch(''); }}
-        style={{ '--width': '580px', '--max-height': '85vh', '--border-radius': '12px' }}
-        breakpoints={isMobile ? [0, 1] : undefined}
-        initialBreakpoint={isMobile ? 1 : undefined}
-      >
-        <IonHeader>
-          <IonToolbar style={{ '--background': 'var(--ion-card-background)' }}>
-            <IonButtons slot="start">
-              <IonButton fill="clear" color="medium" onClick={() => setShowNewModal(false)}>
-                <IonIcon slot="icon-only" icon={closeOutline} />
-              </IonButton>
-            </IonButtons>
-            <IonTitle style={{ fontWeight: 700 }}>New Message</IonTitle>
-          </IonToolbar>
-          <IonToolbar style={{ '--background': 'var(--ion-card-background)' }}>
-            <IonSearchbar
-              mode="md"
-              value={modalSearch}
-              onIonInput={(e) => setModalSearch(e.detail.value || '')}
-              placeholder="Search contacts..."
-              style={{ '--box-shadow': 'none', '--background': 'rgba(0,0,0,0.05)' }}
-            />
-          </IonToolbar>
-        </IonHeader>
-
-        <IonContent style={{ '--background': 'var(--ion-card-background)' }}>
-          {filteredContacts.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 24px', gap: 12 }}>
-              <IonIcon icon={chatbubbleOutline} style={{ fontSize: 36, color: 'var(--ion-color-medium)' }} />
-              <span style={{ fontSize: '0.875rem', color: 'var(--ion-color-medium)' }}>No contacts found</span>
-            </div>
-          ) : (
-            filteredContacts.map(contact => (
-              <div
-                key={contact.id}
-                onClick={() => { onNewConversation?.(contact.id); setShowNewModal(false); setModalSearch(''); }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 24px',
-                  borderBottom: '1px solid var(--ion-border-color)',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(var(--ion-color-primary-rgb),0.05)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <Avatar name={contact.name} src={contact.avatar} size={40} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--ion-text-color)' }}>{contact.name}</div>
-                  {(contact.company || contact.role) && (
-                    <div style={{ fontSize: '0.72rem', color: 'var(--ion-color-medium)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {[contact.role, contact.company].filter(Boolean).join(' · ')}
-                    </div>
-                  )}
-                </div>
-                <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: 'var(--ion-color-medium)', flexShrink: 0 }} />
-              </div>
-            ))
-          )}
-        </IonContent>
-      </IonModal>
     </>
   );
 }

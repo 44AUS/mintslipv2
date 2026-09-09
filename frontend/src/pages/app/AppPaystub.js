@@ -1319,12 +1319,11 @@ export default function AppPaystub() {
 
             </div>
 
-            <div style={{ marginTop: 12 }}>
-              <IonButton expand="block" onClick={handleNext} disabled={isGeneratingPreview}
-                style={{ "--background": "#059669", "--background-activated": "#047857" }}>
-                {isGeneratingPreview ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : "Preview"}
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+              <IonButton expand="block" color="light" onClick={handleNext} disabled={isGeneratingPreview}>
+                {isGeneratingPreview ? <IonSpinner name="crescent" /> : "Preview"}
               </IonButton>
-              <IonButton expand="block" fill="outline" color="medium" onClick={clearForm}>Clear Form</IonButton>
+              <IonButton expand="block" color="danger" onClick={clearForm}>Clear Form</IonButton>
             </div>
           </div>
           </div>

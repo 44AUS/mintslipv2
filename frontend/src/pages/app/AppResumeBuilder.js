@@ -291,7 +291,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       });
       if (!res.ok) { const err = await res.json(); throw new Error(err.detail || "Generation failed"); }
       const result = await res.json();
-      setGeneratedResume(result);
+      setGeneratedResume({ ...result, generatedAt: Date.now() });
       showToast("Resume generated! Review and download below.");
     } catch (err) { showToast(err.message || "Failed to generate resume. Please try again.", "danger"); }
     finally { setIsGenerating(false); }
@@ -549,10 +549,21 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       </IonButton>
       {generatedResume && (
         <>
-          <div style={{ padding: 14, borderRadius: 8, background: "rgba(5,150,105,0.08)", border: "1px solid rgba(5,150,105,0.3)", display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#059669", flexShrink: 0 }} />
-            <span style={{ fontSize: "0.85rem", color: "var(--ion-text-color)", fontWeight: 500, flex: 1 }}>Resume generated — ready to download</span>
-            <IonButton fill="clear" size="small" onClick={generateResume} style={{ "--color": "var(--ion-color-medium)", flexShrink: 0 }}>
+          <div style={{ padding: 14, borderRadius: 8, background: "var(--ion-color-success)", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: "var(--ion-color-success-contrast)", flexShrink: 0 }} />
+            <span style={{ fontSize: "0.85rem", color: "var(--ion-color-success-contrast)", fontWeight: 500, flex: 1 }}>
+              {(() => {
+                const ts = generatedResume.generatedAt;
+                if (!ts) return "Resume generated — ready to download";
+                const d = new Date(ts);
+                const sameDay = d.toDateString() === new Date().toDateString();
+                const when = sameDay
+                  ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+                  : d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+                return `Resume generated at ${when} — ready to download`;
+              })()}
+            </span>
+            <IonButton fill="clear" size="small" onClick={generateResume} style={{ "--color": "var(--ion-color-success-contrast)", flexShrink: 0 }}>
               <IonIcon icon={refreshOutline} slot="icon-only" style={{ fontSize: 16 }} />
             </IonButton>
           </div>

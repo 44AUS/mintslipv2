@@ -136,6 +136,15 @@ export default function AppLayout({ children, fillHeight = false }) {
       pending.forEach(n => markToastShown(n.id));
       refreshNotifications();
     }
+    // Returning from the in-app checkout: the payment-success screen sets
+    // this flag so the drawer opens with the fresh download waiting.
+    try {
+      if (localStorage.getItem("appOpenNotifDrawer") === "1") {
+        localStorage.removeItem("appOpenNotifDrawer");
+        refreshNotifications();
+        setNotifDrawerOpen(true);
+      }
+    } catch {}
   }, []); // eslint-disable-line
 
   const handleMenuToggle = () => {

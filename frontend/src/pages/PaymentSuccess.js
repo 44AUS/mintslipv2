@@ -302,6 +302,13 @@ export default function PaymentSuccess() {
     let appReturnPath = null;
 
     try {
+      // In-app checkout: the generators finish almost instantly, which used
+      // to cut the leaf animation off before it completed — hold the
+      // processing screen for a few seconds before the download fires.
+      if (paymentIntentId && isFromApp) {
+        await new Promise((r) => setTimeout(r, 5500));
+      }
+
       let generated = false;
       let pdfBlob = null;
 
@@ -599,10 +606,27 @@ export default function PaymentSuccess() {
         await archiveDocument(pdfBlob, orderType === 'ai-resume' ? 'resume' : orderType, emailToUse);
 
         // Navigate back to app for app-managed document types — but only for
-        // the legacy hosted-checkout redirect. The embedded card checkout
-        // stays here so the buyer sees the full success screen.
+        // the legacy hosted-checkout redirect.
         if (appReturnPath && !paymentIntentId) {
           navigate(appReturnPath);
+          return;
+        }
+
+        // Embedded in-app checkout: once the animation has played and the
+        // download fired, return to the app and open the notifications
+        // drawer (the web success card is for hosted-checkout buyers).
+        if (paymentIntentId && isFromApp) {
+          if (!notifId) {
+            // Paystub types add their own richly-named notification above;
+            // every other document type gets one here so the drawer has
+            // the download ready.
+            const fileName = getDefaultFileName(orderType, fileCount);
+            const nid = `notif_${Date.now()}`;
+            addGeneratingNotification({ id: nid, type: orderType, fileName, fileType: fileName.endsWith('.zip') ? 'zip' : 'pdf' });
+            markNotificationReady(nid);
+          }
+          try { localStorage.setItem('appOpenNotifDrawer', '1'); } catch {}
+          navigate(appReturnTo);
           return;
         }
 

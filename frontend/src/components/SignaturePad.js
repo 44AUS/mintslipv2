@@ -1,12 +1,9 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { IonButton } from "@ionic/react";
 import { Undo2, Trash2, Check } from "lucide-react";
 
-const PEN_COLORS = [
-  { label: "Black", value: "#111827" },
-  { label: "Blue",  value: "#1d4ed8" },
-  { label: "Red",   value: "#b91c1c" },
-];
+// Signatures are always black — no colour picker.
+const PEN_COLOR = "#111827";
 
 const PEN_SIZES = [
   { label: "Thin",   value: 2 },
@@ -25,7 +22,7 @@ export default function SignaturePad({ onChange, height = 200 }) {
   const pointsRef  = useRef([]);     // current stroke
   const strokesRef = useRef([]);     // completed strokes (for undo)
 
-  const [color, setColor]   = useState(PEN_COLORS[0].value);
+  const color = PEN_COLOR;
   const [size, setSize]     = useState(PEN_SIZES[1].value);
   const [isEmpty, setEmpty] = useState(true);
 
@@ -217,22 +214,6 @@ export default function SignaturePad({ onChange, height = 200 }) {
       {/* Pen controls */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">Color</span>
-          {PEN_COLORS.map(c => (
-            <button
-              key={c.value}
-              type="button"
-              title={c.label}
-              onClick={() => setColor(c.value)}
-              className={`w-6 h-6 rounded-full border-2 transition-transform ${
-                color === c.value ? "border-slate-900 scale-110" : "border-slate-200"
-              }`}
-              style={{ backgroundColor: c.value }}
-            />
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
           <span className="text-xs text-slate-500">Size</span>
           {PEN_SIZES.map(s => (
             <button
@@ -254,8 +235,8 @@ export default function SignaturePad({ onChange, height = 200 }) {
       {/* Canvas */}
       <div
         ref={wrapRef}
-        className="relative rounded-lg border-2 border-dashed border-slate-300 bg-white overflow-hidden"
-        style={{ height }}
+        className="relative rounded-lg border-2 border-dashed border-slate-300 overflow-hidden"
+        style={{ height, background: "#ffffff" /* always white, even in dark mode */ }}
       >
         <canvas
           ref={canvasRef}
@@ -282,12 +263,12 @@ export default function SignaturePad({ onChange, height = 200 }) {
           {!isEmpty && <><Check className="w-3 h-3 text-emerald-600" /> Signature captured</>}
         </p>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={handleUndo} disabled={isEmpty}>
+          <IonButton color="primary" size="small" onClick={handleUndo} disabled={isEmpty}>
             <Undo2 className="w-4 h-4 mr-1" /> Undo
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={handleClear} disabled={isEmpty}>
+          </IonButton>
+          <IonButton color="danger" size="small" onClick={handleClear} disabled={isEmpty}>
             <Trash2 className="w-4 h-4 mr-1" /> Clear
-          </Button>
+          </IonButton>
         </div>
       </div>
     </div>

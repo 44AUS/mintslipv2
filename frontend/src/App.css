@@ -180,6 +180,14 @@ ion-button.button-clear:has([slot="icon-only"]) {
   --ion-toolbar-color: var(--ion-text-color);
 }
 
+/* Section grids inside the form modals content-shrink in their flex-column
+   cards, so field widths wobble as conditional fields appear (e.g. the
+   template segment growing when "Custom" reveals the colour pickers). Pin
+   them to the card width. */
+.modal-slide-up ion-grid {
+  width: 100%;
+}
+
 /* Sample cards float in with a small staggered rise when a section opens */
 @keyframes appCardIn {
   from { opacity: 0; transform: translateY(14px) scale(0.98); }

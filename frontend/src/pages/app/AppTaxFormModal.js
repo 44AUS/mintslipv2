@@ -132,6 +132,20 @@ export default function AppTaxFormModal({ config, onClose }) {
   };
   const removeCoupon = () => { setCouponCode(""); setAppliedDiscount(null); setCouponError(""); };
 
+  // ── Clear form (same behaviour as the paystub modals) ──
+  const clearForm = () => {
+    let fresh = {};
+    try { fresh = config.derive ? config.derive({}) : {}; } catch {}
+    setFormData(fresh);
+    setSigModes({});
+    setTaxYear(config.defaultYear || "");
+    try {
+      localStorage.removeItem(config.storageKey);
+      localStorage.removeItem(`${config.storageKey}Year`);
+    } catch {}
+    showToast("Form cleared successfully", "success");
+  };
+
   // ── Checkmark → preview modal ──
   const handleNext = () => {
     const err = config.validate(formData);
@@ -238,7 +252,7 @@ export default function AppTaxFormModal({ config, onClose }) {
         return col(
           <div style={{ marginBottom: 8 }}>
             <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", display: "block", marginBottom: 4 }}>{field.label}</span>
-            <IonSegment mode="ios" value={value ?? field.options[0].value} onIonChange={e => setField(field.name, e.detail.value)}>
+            <IonSegment mode="ios" style={{ width: "100%" }} value={value ?? field.options[0].value} onIonChange={e => setField(field.name, e.detail.value)}>
               {field.options.map(o => (
                 <IonSegmentButton key={o.value} value={o.value}><IonLabel>{o.label}</IonLabel></IonSegmentButton>
               ))}
@@ -296,7 +310,7 @@ export default function AppTaxFormModal({ config, onClose }) {
         return col(
           <div style={{ marginBottom: 8 }}>
             <span style={labelStyle}>{field.label}</span>
-            <IonSegment mode="ios" value={mode} style={{ marginBottom: 8 }}
+            <IonSegment mode="ios" value={mode} style={{ marginBottom: 8, width: "100%" }}
               onIonChange={e => { const m = e.detail.value; setSigModes(prev => ({ ...prev, [field.name]: m })); setField(field.name, null); }}>
               {modes.map(m => (
                 <IonSegmentButton key={m} value={m}>
@@ -448,7 +462,7 @@ export default function AppTaxFormModal({ config, onClose }) {
               </IonButtons>
             </IonToolbar>
           </IonHeader>
-          <div style={{ flex: 1, overflowY: "auto", padding: "16px 16px 40px" }}>
+          <div style={{ flex: 1, overflowY: "auto", scrollbarGutter: "stable", padding: "16px 16px 40px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
               {/* Tax year (tax forms only) */}
@@ -474,10 +488,16 @@ export default function AppTaxFormModal({ config, onClose }) {
                 </div>
               ))}
 
-              <IonButton expand="block" color="light" onClick={handleNext}>
-                <IonIcon icon={eyeOutline} slot="start" />
-                Preview
-              </IonButton>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <IonButton expand="block" color="light" onClick={handleNext}>
+                  <IonIcon icon={eyeOutline} slot="start" />
+                  Preview
+                </IonButton>
+                <IonButton expand="block" color="danger" onClick={clearForm}>
+                  <IonIcon icon={trashOutline} slot="start" />
+                  Clear Form
+                </IonButton>
+              </div>
 
             </div>
           </div>

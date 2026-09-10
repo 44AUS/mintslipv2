@@ -13,14 +13,17 @@ export default function CheckoutWithPaywall({
 }) {
   const [showPaywall, setShowPaywall] = useState(false);
   const [offerPrice, setOfferPrice] = useState(null); // discounted price once unlocked via the paywall
+  const [offerEnforced, setOfferEnforced] = useState(false); // server-enforced vs client discount
   const paidRef = useRef(false);
   const showPaywallRef = useRef(false); // synchronous mirror of showPaywall (guards double-taps)
 
-  // A discounted offer price reopens checkout in server-enforced offer mode;
-  // an unlock at full price (offer unavailable) is just a normal checkout.
-  const effectiveDiscount = offerPrice != null
-    ? (offerPrice < basePrice ? { discountedPrice: offerPrice, offer: true } : null)
-    : discount;
+  // Reopen at the offer price: server-enforced offer mode when the backend
+  // stamped a window, otherwise a plain client discount (charged like a coupon).
+  const effectiveDiscount = offerPrice != null && offerPrice < basePrice
+    ? (offerEnforced
+        ? { discountedPrice: offerPrice, offer: true }
+        : { discountedPrice: offerPrice, code: "LASTCHANCE", discountPercent: Math.round((1 - offerPrice / basePrice) * 100) })
+    : (offerPrice != null ? null : discount);
 
   // Free orders (100%-off coupon) never need a discount pitch.
   const freeNow = (effectiveDiscount?.discountedPrice ?? basePrice) <= 0;
@@ -38,7 +41,12 @@ export default function CheckoutWithPaywall({
     setShowPaywall(true);
   };
 
-  const unlock = (discountedPrice) => { showPaywallRef.current = false; setOfferPrice(discountedPrice); setShowPaywall(false); };
+  const unlock = (discountedPrice, serverEnforced) => {
+    showPaywallRef.current = false;
+    setOfferEnforced(!!serverEnforced);
+    setOfferPrice(discountedPrice);
+    setShowPaywall(false);
+  };
   const dismissPaywall = () => { showPaywallRef.current = false; setShowPaywall(false); onClose?.(); };
 
   return (

@@ -7,6 +7,12 @@ import "@/styles/paywall.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
+// Client-side defaults so the discount + countdown always show, even if the
+// server offer endpoint isn't reachable. When the server offer IS available it
+// overrides these and is enforced at charge time.
+const DEFAULT_PERCENT = 20;
+const DEFAULT_MINUTES = 10;
+
 const money = (n) => {
   const v = Number(n) || 0;
   return Number.isInteger(v) ? `$${v}` : `$${v.toFixed(2)}`;
@@ -26,19 +32,23 @@ const Stars = () => (
 );
 
 // Exit-intent paywall: shown when a buyer closes the checkout without paying.
-// It ALWAYS appears on abandon (that's the point) and only stays hidden when an
-// admin has explicitly turned the offer off. When there's an active offer it
-// shows the discounted, server-enforced price + countdown; if the offer can't
-// be fetched it falls back to the full price (never overcharging) so the paywall
-// still shows and the failure is diagnosable in the console.
+// It ALWAYS appears on abandon with a live discount + countdown. The offer is
+// server-enforced when the backend offer endpoint is available; otherwise it
+// falls back to a client-side discount applied through the normal checkout (the
+// same trust model as coupons). It only stays hidden if an admin turns it off.
 export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, onDismiss }) {
-  // offer: undefined = loading, "disabled" = admin off (dismiss), object = active,
-  //        "failed" = couldn't fetch (still show at full price)
-  const [offer, setOffer] = useState(undefined);
+  const [offer, setOffer] = useState(() => ({
+    pct: DEFAULT_PERCENT,
+    expiresAt: new Date(Date.now() + DEFAULT_MINUTES * 60000).toISOString(),
+    serverEnforced: false,
+  }));
+  const [dismissed, setDismissed] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const dismissedRef = useRef(false);
 
+  // Refine with the server offer when available; only an explicit "disabled"
+  // from the server hides the paywall.
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -51,37 +61,31 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
         const data = res.ok ? await res.json() : null;
         if (!alive) return;
         if (data?.success && data.active && data.discountPercent > 0) {
-          setOffer({ pct: data.discountPercent, expiresAt: data.expiresAt });
+          setOffer({ pct: data.discountPercent, expiresAt: data.expiresAt, serverEnforced: true });
         } else if (data?.success && data.active === false) {
-          setOffer("disabled"); // admin turned it off
+          setDismissed(true); // admin turned it off
         } else {
-          console.warn(`Paywall: offer unavailable (HTTP ${res.status}); showing at full price.`);
-          setOffer("failed");
+          console.warn(`Paywall: server offer unavailable (HTTP ${res.status}); using client-side offer.`);
         }
       } catch (e) {
-        console.warn("Paywall: offer request failed; showing at full price.", e);
-        if (alive) setOffer("failed");
+        console.warn("Paywall: offer request failed; using client-side offer.", e);
       }
     })();
     return () => { alive = false; };
   }, []);
 
-  // Admin turned the offer off → behave like a normal close.
   useEffect(() => {
-    if (offer === "disabled" && !dismissedRef.current) { dismissedRef.current = true; onDismiss?.(); }
-  }, [offer, onDismiss]);
-
-  const active = offer && typeof offer === "object";
+    if (dismissed && !dismissedRef.current) { dismissedRef.current = true; onDismiss?.(); }
+  }, [dismissed, onDismiss]);
 
   // Countdown to the offer's expiry.
   useEffect(() => {
-    if (!active) return undefined;
     const deadline = new Date(offer.expiresAt).getTime();
     const tick = () => setSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
     tick();
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
-  }, [active, offer]);
+  }, [offer.expiresAt]);
 
   // Rotate testimonials.
   useEffect(() => {
@@ -90,25 +94,16 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
   }, []);
 
   const { discountedPrice, pct } = useMemo(() => {
-    if (!active) return { discountedPrice: basePrice, pct: 0 };
     const baseCents = Math.round(basePrice * 100);
     const discCents = Math.max(50, Math.round(baseCents * (100 - offer.pct) / 100));
     return { discountedPrice: discCents / 100, pct: offer.pct };
-  }, [active, offer, basePrice]);
+  }, [offer, basePrice]);
 
-  const loading = offer === undefined;
-  const expired = active && secondsLeft <= 0;
+  const expired = secondsLeft <= 0;
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
-  // Only stay hidden when the admin disabled the offer (the dismiss effect closes it).
-  if (offer === "disabled") return null;
-
-  const ctaLabel = loading
-    ? "Just a sec…"
-    : active
-      ? (expired ? "Offer expired" : `Unlock for ${money(discountedPrice)}`)
-      : `Complete for ${money(basePrice)}`;
+  if (dismissed) return null;
 
   return createPortal(
     <div className="pw">
@@ -124,15 +119,11 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
       </div>
 
       <div className="pw-head pw-swap">
-        {active
-          ? <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>
-          : <span className="pw-badge"><IonIcon icon={lockClosedOutline} /> Almost There</span>}
-        <h1 className="pw-title">{active ? `Wait — here's ${pct}% off` : "Wait — don't miss out"}</h1>
-        <p className="pw-subtitle">
-          {active ? `Finish your ${docLabel} at a one-time special price` : `Finish your ${docLabel} — you're one step away`}
-        </p>
+        <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>
+        <h1 className="pw-title">Wait — here's {pct}% off</h1>
+        <p className="pw-subtitle">Finish your {docLabel} at a one-time special price</p>
         <Stars />
-        {active && !expired && (
+        {!expired && (
           <>
             <p className="pw-expires">Offer expires in</p>
             <div className="pw-countdown">
@@ -175,15 +166,19 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
           </span>
           <span className="pw-plan-price">
             <strong>
-              {active && <s className="pw-strike">{money(basePrice)}</s>}
+              <s className="pw-strike">{money(basePrice)}</s>
               {money(discountedPrice)}
             </strong>
-            {active && <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>}
+            <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>
           </span>
         </div>
 
-        <button className="pw-cta" onClick={() => onUnlock?.(discountedPrice)} disabled={loading || expired}>
-          <IonIcon icon={lockClosedOutline} /> {ctaLabel}
+        <button
+          className="pw-cta"
+          onClick={() => onUnlock?.(discountedPrice, offer.serverEnforced)}
+          disabled={expired}
+        >
+          <IonIcon icon={lockClosedOutline} /> {expired ? "Offer expired" : `Unlock for ${money(discountedPrice)}`}
         </button>
         {expired
           ? <button className="pw-textbtn" onClick={() => onDismiss?.()}>Close</button>

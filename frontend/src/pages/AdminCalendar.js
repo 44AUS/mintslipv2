@@ -278,35 +278,62 @@ export default function AdminCalendar() {
         </div>
       );
     }
+    // Group into day sections
+    const groups = [];
+    sorted.forEach((p) => {
+      const k = dateKey(new Date(p.createdAt));
+      let g = groups.find((x) => x.key === k);
+      if (!g) { g = { key: k, date: new Date(p.createdAt), items: [] }; groups.push(g); }
+      g.items.push(p);
+    });
     return (
-      <div style={{ overflow: "auto", height: "100%", padding: "8px 0" }}>
-        {sorted.map((p, i) => {
-          const color = DOC_COLORS[p.documentType] || "#64748b";
-          const d = new Date(p.createdAt);
+      <div style={{ overflow: "auto", height: "100%" }}>
+        {groups.map((g) => {
+          const dayTotal = g.items.reduce((s, p) => s + (p.amount || 0), 0);
           return (
-            <div
-              key={i}
-              onClick={() => setDetail(p)}
-              onMouseEnter={e => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
-              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-              style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}
-            >
-              <div style={{ width: 44, textAlign: "center", flexShrink: 0 }}>
-                <div style={{ fontSize: "0.7rem", color: "var(--ion-color-medium)", fontWeight: 600 }}>{DAYS[d.getDay()]}</div>
-                <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--ion-text-color)" }}>{d.getDate()}</div>
+            <div key={g.key}>
+              {/* Sticky day header — click opens the day modal, with ripple */}
+              <div className="ion-activatable"
+                onClick={() => setDayModal(g.date)}
+                style={{ position: "sticky", top: 0, zIndex: 2, overflow: "hidden", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "8px 24px", background: "var(--ion-color-step-50)", borderBottom: "1px solid var(--ion-border-color)" }}>
+                <ion-ripple-effect />
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--ion-text-color)" }}>
+                  {isToday(g.date) ? "Today · " : ""}{g.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                </span>
+                <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#10b981" }}>${dayTotal.toFixed(2)}</span>
               </div>
-              <div style={{ width: 4, height: 40, borderRadius: 2, background: color, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: "0.875rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {DOC_LABELS[p.documentType] || p.documentType}
-                </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {p.paypalEmail || p.userEmail || "—"}
-                </div>
-              </div>
-              <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#10b981", flexShrink: 0 }}>
-                ${(p.amount || 0).toFixed(2)}
-              </div>
+              {g.items.map((p, i) => {
+                const color = DOC_COLORS[p.documentType] || "#64748b";
+                const d = new Date(p.createdAt);
+                const email = p.email || p.paypalEmail || "—";
+                return (
+                  <div
+                    key={i}
+                    onClick={() => setDetail(p)}
+                    onMouseEnter={e => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}
+                  >
+                    <div style={{ width: 52, textAlign: "center", flexShrink: 0, fontSize: "0.72rem", color: "var(--ion-color-medium)", fontWeight: 600 }}>
+                      {d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                    </div>
+                    <div style={{ width: 4, height: 40, borderRadius: 2, background: color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "0.875rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {DOC_LABELS[p.documentType] || p.documentType}{p.quantity > 1 ? ` ×${p.quantity}` : ""}
+                      </div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {email}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: "0.875rem", fontWeight: 700, color: p.refunded ? "var(--ion-color-warning)" : "#10b981", flexShrink: 0 }}>
+                      ${(p.amount || 0).toFixed(2)}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         })}

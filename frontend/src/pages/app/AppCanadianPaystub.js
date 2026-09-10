@@ -796,10 +796,10 @@ export default function AppCanadianPaystub() {
                 <span style={sectionHeadingStyle}>Template</span>
                 <div>
                   <IonSelect fill="outline" labelPlacement="floating" label="Template" value={selectedTemplate} onIonChange={e => handleTemplateChange(e.detail.value)} style={ionInputStyle}>
-                    <IonSelectOption value="template-a">Gusto Style (Template A)</IonSelectOption>
-                    <IonSelectOption value="template-c">Workday Style (Template C)</IonSelectOption>
-                    <IonSelectOption value="template-h">OnPay Style (Template H)</IonSelectOption>
-                    {isLocalhost && <IonSelectOption value="template-b">ADP Style (Template B)</IonSelectOption>}
+                    <IonSelectOption value="template-a">Gusto Style</IonSelectOption>
+                    <IonSelectOption value="template-c">Workday Style</IonSelectOption>
+                    <IonSelectOption value="template-h">OnPay Style</IonSelectOption>
+                    {isLocalhost && <IonSelectOption value="template-b">ADP Style</IonSelectOption>}
                     {customTemplates.map(t => <IonSelectOption key={t.id} value={`custom:${t.id}`}>{t.name}</IonSelectOption>)}
                   </IonSelect>
 

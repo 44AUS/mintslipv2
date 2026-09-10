@@ -155,9 +155,24 @@ export default function AdminCalendar() {
     cells.push({ day: cells.length - first - dim + 1, cur: false, date: new Date(year, month + 1, cells.length - first - dim + 1) });
   const weeks = Array.from({ length: 6 }, (_, i) => cells.slice(i * 7, i * 7 + 7));
 
-  const prevMonth = () => setCurDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurDate(new Date(year, month + 1, 1));
-  const goToday  = () => setCurDate(new Date(today.getFullYear(), today.getMonth(), 1));
+  // View-aware navigation: month view steps by month (snapped to the 1st),
+  // week view by 7 days, day view by 1 day.
+  const addDays = (base, n) => { const d = new Date(base); d.setDate(d.getDate() + n); return d; };
+  const step = (dir) => {
+    if (view === "week") setCurDate(addDays(curDate, dir * 7));
+    else if (view === "day") setCurDate(addDays(curDate, dir));
+    else setCurDate(new Date(year, month + dir, 1));
+  };
+  const prevMonth = () => step(-1);
+  const nextMonth = () => step(1);
+  const goToday  = () => setCurDate(view === "month"
+    ? new Date(today.getFullYear(), today.getMonth(), 1)
+    : new Date(today.getFullYear(), today.getMonth(), today.getDate()));
+
+  // Week containing curDate (Sun–Sat)
+  const weekStart = addDays(curDate, -curDate.getDay());
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const purchasesForDate = (d) => (byDate[dateKey(d)] || []).slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -299,11 +314,103 @@ export default function AdminCalendar() {
     );
   };
 
-  const renderWeekOrDay = () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
-      {view.charAt(0).toUpperCase() + view.slice(1)} view coming soon
+  // ── Week view: 7 day columns, each a scrollable list of purchase pills ──
+  const renderWeek = () => (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", flex: "1 1 0%", minHeight: 0 }}>
+        {weekDays.map((d, ci) => {
+          const evts = purchasesForDate(d);
+          const dayTotal = evts.reduce((s, p) => s + (p.amount || 0), 0);
+          const tdy = isToday(d);
+          return (
+            <div key={ci} style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none" }}>
+              {/* Column header — click opens the day modal, with ripple */}
+              <div className="ion-activatable"
+                onClick={() => setDayModal(d)}
+                style={{ position: "relative", overflow: "hidden", cursor: "pointer", textAlign: "center", padding: "8px 4px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+                <ion-ripple-effect />
+                <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--ion-color-medium)", letterSpacing: "0.04em" }}>{DAYS[d.getDay()]}</div>
+                <div style={{ margin: "3px auto 0", width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: tdy ? "#E65100" : "transparent" }}>
+                  <span style={{ fontSize: "0.85rem", fontWeight: tdy ? 800 : 600, color: tdy ? "#fff" : "var(--ion-text-color)" }}>{d.getDate()}</span>
+                </div>
+                {evts.length > 0 && (
+                  <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "#10b981", marginTop: 2 }}>${dayTotal.toFixed(2)}</div>
+                )}
+              </div>
+              {/* Pills */}
+              <div style={{ flex: "1 1 0%", overflowY: "auto", padding: "6px 4px", display: "flex", flexDirection: "column", gap: 4 }}>
+                {evts.map((p, pi) => {
+                  const color = DOC_COLORS[p.documentType] || "#64748b";
+                  return (
+                    <div key={pi} onClick={() => setDetail(p)} title={`${DOC_LABELS[p.documentType] || p.documentType} — $${(p.amount || 0).toFixed(2)}`}
+                      style={{ background: color, color: "#fff", borderRadius: 4, fontSize: "0.66rem", fontWeight: 600, padding: "3px 6px", cursor: "pointer", lineHeight: 1.25 }}>
+                      <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{DOC_LABELS[p.documentType] || p.documentType}</div>
+                      <div style={{ opacity: 0.9 }}>${(p.amount || 0).toFixed(2)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
+
+  // ── Day view: condensed agenda-style list of the selected day's purchases ──
+  const renderDay = () => {
+    const evts = purchasesForDate(curDate);
+    const dayTotal = evts.reduce((s, p) => s + (p.amount || 0), 0);
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+          <div>
+            <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-color-medium)" }}>{DAYS[curDate.getDay()]}</div>
+            <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--ion-text-color)" }}>
+              {curDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>{evts.length} purchase{evts.length === 1 ? "" : "s"}</div>
+            <div style={{ fontSize: "1rem", fontWeight: 800, color: "#10b981" }}>${dayTotal.toFixed(2)}</div>
+          </div>
+        </div>
+        {evts.length === 0 ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flex: "1 1 0%", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
+            No purchases on this day
+          </div>
+        ) : (
+          <div style={{ overflowY: "auto", flex: "1 1 0%" }}>
+            {evts.map((p, i) => {
+              const color = DOC_COLORS[p.documentType] || "#64748b";
+              const d = new Date(p.createdAt);
+              const email = p.email || p.paypalEmail || "—";
+              return (
+                <div key={i} onClick={() => setDetail(p)}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}>
+                  <div style={{ width: 52, textAlign: "center", flexShrink: 0, fontSize: "0.72rem", color: "var(--ion-color-medium)", fontWeight: 600 }}>
+                    {d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                  </div>
+                  <div style={{ width: 4, height: 40, borderRadius: 2, background: color, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: "0.875rem", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {DOC_LABELS[p.documentType] || p.documentType}
+                    </div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{email}</div>
+                  </div>
+                  <div style={{ fontSize: "0.875rem", fontWeight: 700, color: p.refunded ? "var(--ion-color-warning)" : "#10b981", flexShrink: 0 }}>
+                    ${(p.amount || 0).toFixed(2)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <AdminLayout fillHeight>
@@ -388,12 +495,32 @@ export default function AdminCalendar() {
                   </IonButton>
                 </div>
 
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-text-color)", lineHeight: 1.3 }}>{MONTHS[month]}</div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981", lineHeight: 1.2 }}>
-                    ${monthRevenue.toFixed(2)}
-                  </div>
-                </div>
+                {(() => {
+                  // Context label + revenue for the current view
+                  let ctxLabel, ctxRevenue;
+                  if (view === "week") {
+                    const wEnd = weekDays[6];
+                    const sameMonth = weekStart.getMonth() === wEnd.getMonth();
+                    ctxLabel = sameMonth
+                      ? `${MONTHS[weekStart.getMonth()].slice(0, 3)} ${weekStart.getDate()}–${wEnd.getDate()}`
+                      : `${MONTHS[weekStart.getMonth()].slice(0, 3)} ${weekStart.getDate()} – ${MONTHS[wEnd.getMonth()].slice(0, 3)} ${wEnd.getDate()}`;
+                    ctxRevenue = weekDays.reduce((s, d) => s + purchasesForDate(d).reduce((t, p) => t + (p.amount || 0), 0), 0);
+                  } else if (view === "day") {
+                    ctxLabel = `${MONTHS[curDate.getMonth()].slice(0, 3)} ${curDate.getDate()}`;
+                    ctxRevenue = purchasesForDate(curDate).reduce((t, p) => t + (p.amount || 0), 0);
+                  } else {
+                    ctxLabel = MONTHS[month];
+                    ctxRevenue = monthRevenue;
+                  }
+                  return (
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-text-color)", lineHeight: 1.3 }}>{ctxLabel}</div>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981", lineHeight: 1.2 }}>
+                        ${ctxRevenue.toFixed(2)}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -404,8 +531,9 @@ export default function AdminCalendar() {
                   <IonSpinner name="crescent" />
                 </div>
               ) : view === "month" ? renderMonth()
-                : view === "agenda" ? renderAgenda()
-                : renderWeekOrDay()}
+                : view === "week" ? renderWeek()
+                : view === "day" ? renderDay()
+                : renderAgenda()}
             </div>
 
           </div>

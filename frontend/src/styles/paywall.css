@@ -28,29 +28,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Blurred replica of the document behind the paywall (whodat's approach —
-   filter:blur on an element renders on every device). Scaled up to hide the
-   soft blur edges. */
-.pw-bgimg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100dvh;
-  object-fit: cover;
-  object-position: top;
-  pointer-events: none;
-  filter: blur(13px) saturate(1.08);
-  transform: scale(1.12);
-}
-.pw-bgfill { position: fixed; inset: 0; z-index: 0; background: var(--pw-bg); }
-/* Dark gradient over the blurred backdrop — lighter at the top so the blurred
-   document reads through, heavier toward the bottom so the buttons stay clean. */
+/* Blurs the live /app screen + the preview modal painted behind the overlay,
+   with a dark gradient over it — lighter at the top so the blurred app reads
+   through, heavier toward the bottom so the buttons stay clean. */
 .pw-scrim {
   position: fixed;
   inset: 0;
   height: 100dvh;
-  z-index: 1;
+  z-index: 0;
+  backdrop-filter: blur(20px) saturate(1.12);
+  -webkit-backdrop-filter: blur(20px) saturate(1.12);
   background: linear-gradient(180deg, rgba(7, 17, 13, 0.42), rgba(7, 17, 13, 0.78) 55%, rgba(7, 17, 13, 0.96));
 }
 

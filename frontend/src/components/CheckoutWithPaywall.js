@@ -66,6 +66,7 @@ export default function CheckoutWithPaywall({
       {showPaywall && (
         <Paywall
           docLabel={docLabel}
+          documentType={documentType}
           basePrice={basePrice}
           previewImage={previewImage}
           onUnlock={unlock}

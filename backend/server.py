@@ -139,6 +139,7 @@ blog_categories_collection = db["blog_categories"]
 blog_images_collection = db["blog_images"]
 saved_documents_collection = db["saved_documents"]
 site_settings_collection = db["site_settings"]
+paywall_offers_collection = db["paywall_offers"]  # exit-intent offer window, keyed by client IP
 phone_entries_collection = db["phone_entries"]
 address_entries_collection = db["address_entries"]
 banned_ips_collection = db["banned_ips"]
@@ -2391,6 +2392,7 @@ async def create_checkout_session(data: CreateCheckoutSession, session: dict = D
 PAYWALL_OFFER_ENABLED_DEFAULT = True
 PAYWALL_OFFER_PERCENT_DEFAULT = 20       # % off the document's base price
 PAYWALL_OFFER_MINUTES_DEFAULT = 10       # how long the countdown window runs
+PAYWALL_OFFER_COOLDOWN_DAYS = 7          # each IP gets one offer, then a weekly reset
 
 
 async def get_paywall_offer_config() -> dict:
@@ -2417,24 +2419,56 @@ def _paywall_offer_cents(base_cents: int, percent: int) -> int:
     return max(50, round(base_cents * (100 - percent) / 100))
 
 
+def _parse_iso(s):
+    try:
+        d = datetime.fromisoformat(s)
+        return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+    except Exception:
+        return None
+
+
+async def _ip_offer_state(ip: str, cfg: dict, stamp_if_new: bool):
+    """The offer window for a client IP. Each IP gets ONE countdown window per
+    cooldown period (weekly); it persists (same expiresAt) across reopens until
+    it runs out, then nothing until the cooldown resets. Only the paywall view
+    (stamp_if_new=True) may open a new window — charge-time checks never do."""
+    now = datetime.now(timezone.utc)
+    rec = await paywall_offers_collection.find_one({"ip": ip}) if ip else None
+    cooldown_until = _parse_iso(rec.get("cooldownUntil")) if rec else None
+    if rec and cooldown_until and now < cooldown_until:
+        # Within this period's window — reuse the existing countdown, no reset.
+        expires = _parse_iso(rec.get("expiresAt"))
+        active = bool(expires and now < expires)
+        return active, (rec.get("expiresAt") if active else None)
+    # First time for this IP, or the weekly cooldown has passed → a fresh window.
+    if not stamp_if_new:
+        return False, None
+    expires = now + timedelta(minutes=cfg["minutes"])
+    cooldown = now + timedelta(days=PAYWALL_OFFER_COOLDOWN_DAYS)
+    await paywall_offers_collection.update_one(
+        {"ip": ip},
+        {"$set": {"ip": ip, "stampedAt": now.isoformat(),
+                  "expiresAt": expires.isoformat(), "cooldownUntil": cooldown.isoformat()}},
+        upsert=True,
+    )
+    return True, expires.isoformat()
+
+
 @app.get("/api/paywall/offer")
-async def get_paywall_offer(session: dict = Depends(get_current_user)):
-    """Return the current user's exit-intent offer, (re)stamping a fresh window
-    so the paywall reliably appears with a live countdown on every abandon."""
+async def get_paywall_offer(req: Request):
+    """The exit-intent offer for this client IP. One countdown per IP per week;
+    the countdown persists across reopens and doesn't reset."""
     cfg = await get_paywall_offer_config()
     if not cfg["enabled"]:
-        return {"success": True, "active": False, "discountPercent": 0, "expiresAt": None}
-    now = datetime.now(timezone.utc)
-    expires = now + timedelta(minutes=cfg["minutes"])
-    stamp = {"stampedAt": now.isoformat(), "expiresAt": expires.isoformat()}
-    await users_collection.update_one(
-        {"id": session["userId"]}, {"$set": {"paywallOffer": stamp}}
-    )
+        return {"success": True, "enabled": False, "active": False, "discountPercent": 0, "expiresAt": None}
+    ip = get_client_ip(req)
+    active, expires_at = await _ip_offer_state(ip, cfg, stamp_if_new=True)
     return {
         "success": True,
-        "active": True,
-        "discountPercent": cfg["percent"],
-        "expiresAt": stamp["expiresAt"],
+        "enabled": True,
+        "active": active,
+        "discountPercent": cfg["percent"] if active else 0,
+        "expiresAt": expires_at,
     }
 
 
@@ -2465,18 +2499,6 @@ async def admin_set_paywall_offer(data: dict, session: dict = Depends(get_curren
     return {"success": True, "enabled": enabled, "percent": percent, "minutes": minutes}
 
 
-async def _resolve_offer_user(authorization: Optional[str]):
-    """Best-effort user lookup from a Bearer token for the payment-intent call
-    (which is otherwise unauthenticated)."""
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    token = authorization.split(" ", 1)[1]
-    sess = await sessions_collection.find_one({"token": token})
-    if not sess:
-        return None
-    return await users_collection.find_one({"id": sess["userId"]}, {"_id": 0})
-
-
 @app.post("/api/stripe/create-payment-intent")
 async def create_payment_intent(request: dict, req: Request, authorization: Optional[str] = Header(None)):
     """Create a Stripe payment intent for one-time purchase"""
@@ -2497,23 +2519,15 @@ async def create_payment_intent(request: dict, req: Request, authorization: Opti
         # Convert to cents
         amount_cents = int(float(amount) * 100)
 
-        # Server-enforced exit-intent offer: honor it only when the user already
-        # has an unexpired stamped window (stamped by GET /api/paywall/offer when
-        # the paywall was shown). We never stamp here, so the discount can't be
-        # claimed by calling this endpoint directly or after the window expires.
+        # Server-enforced exit-intent offer: honor it only when this IP's offer
+        # window is still counting down (opened by GET /api/paywall/offer when the
+        # paywall was shown). We never open a window here (stamp_if_new=False), so
+        # the discount can't be claimed directly or after the window/weekly limit.
         if paywall_offer:
             cfg = await get_paywall_offer_config()
-            offer_user = await _resolve_offer_user(authorization)
-            stamp = (offer_user or {}).get("paywallOffer") or {}
             active = False
-            if cfg["enabled"] and stamp.get("expiresAt"):
-                try:
-                    exp = datetime.fromisoformat(stamp["expiresAt"])
-                    if exp.tzinfo is None:
-                        exp = exp.replace(tzinfo=timezone.utc)
-                    active = datetime.now(timezone.utc) < exp
-                except Exception:
-                    active = False
+            if cfg["enabled"]:
+                active, _ = await _ip_offer_state(client_ip, cfg, stamp_if_new=False)
             if active:
                 base_cents = amount_cents
                 amount_cents = _paywall_offer_cents(base_cents, cfg["percent"])

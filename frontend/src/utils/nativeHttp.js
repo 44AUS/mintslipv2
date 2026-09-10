@@ -9,11 +9,13 @@ export const isNative = (() => {
 
 // POST JSON, returns { ok, status, data }
 // data is already parsed (or null if the body wasn't valid JSON)
-export async function nativePost(url, body) {
+// extraHeaders lets callers attach e.g. Authorization for authed POSTs.
+export async function nativePost(url, body, extraHeaders = {}) {
+  const headers = { 'Content-Type': 'application/json', ...extraHeaders };
   if (isNative) {
     const response = await CapacitorHttp.post({
       url,
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       data: body,
     });
     const data = (() => {
@@ -25,7 +27,7 @@ export async function nativePost(url, body) {
 
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   });
   const text = await res.text();

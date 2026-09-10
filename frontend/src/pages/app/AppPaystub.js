@@ -18,7 +18,7 @@ import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import { saveGuestDocument } from "@/utils/guestSave";
-import PaymentModal from "@/components/PaymentModal";
+import CheckoutWithPaywall from "@/components/CheckoutWithPaywall";
 import PreviewPager from "@/components/PreviewPager";
 import { getLocalTaxRate, getSUTARate } from "@/utils/taxRates";
 import { calculateFederalTax, calculateStateTax, getStateTaxRate } from "@/utils/federalTaxCalculator";
@@ -1448,7 +1448,7 @@ export default function AppPaystub() {
       )}
 
       {pendingCheckout && (
-        <PaymentModal
+        <CheckoutWithPaywall
           docLabel={`Pay Stub${calculateNumStubs !== 1 ? `s × ${calculateNumStubs}` : ""}`}
           documentType="paystub"
           template={selectedTemplate}

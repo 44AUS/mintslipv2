@@ -2379,16 +2379,88 @@ async def create_checkout_session(data: CreateCheckoutSession, session: dict = D
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ── Exit-intent paywall offer ────────────────────────────────────────────────
+# When a user reaches the card checkout and closes it without paying, the app
+# shows a last-chance paywall offering the same document at a discount. The
+# offer is server-authoritative and one-time per user: the first time it's
+# requested we stamp a short window on the user; once it expires it's gone for
+# that user (no restarts), and the discount is re-derived and enforced at charge
+# time so the shown price is the charged price.
+PAYWALL_OFFER_ENABLED = True
+PAYWALL_OFFER_PERCENT = 30       # % off the document's base price
+PAYWALL_OFFER_MINUTES = 10       # how long the window stays open, per user
+
+
+def _paywall_offer_state(user: dict):
+    """Return (active, discount_percent, expires_at_iso) for a user's offer,
+    stamping a fresh window on first use. Returns the possibly-updated stamp so
+    the caller can persist it. Never restarts an expired window."""
+    if not PAYWALL_OFFER_ENABLED:
+        return {"active": False, "discountPercent": 0, "expiresAt": None}, None
+    now = datetime.now(timezone.utc)
+    stamp = (user or {}).get("paywallOffer") or {}
+    expires_raw = stamp.get("expiresAt")
+    new_stamp = None
+    if not expires_raw:
+        expires = now + timedelta(minutes=PAYWALL_OFFER_MINUTES)
+        new_stamp = {"stampedAt": now.isoformat(), "expiresAt": expires.isoformat()}
+        expires_raw = new_stamp["expiresAt"]
+    try:
+        expires = datetime.fromisoformat(expires_raw)
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+    except Exception:
+        expires = now
+    active = now < expires
+    return {
+        "active": active,
+        "discountPercent": PAYWALL_OFFER_PERCENT if active else 0,
+        "expiresAt": expires_raw,
+    }, new_stamp
+
+
+def _paywall_offer_cents(base_cents: int) -> int:
+    """Discounted charge for an active offer, honoring Stripe's 50¢ floor."""
+    return max(50, round(base_cents * (100 - PAYWALL_OFFER_PERCENT) / 100))
+
+
+@app.get("/api/paywall/offer")
+async def get_paywall_offer(session: dict = Depends(get_current_user)):
+    """The current user's one-time exit-intent offer (stamped on first call)."""
+    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    state, new_stamp = _paywall_offer_state(user)
+    if new_stamp:
+        await users_collection.update_one(
+            {"id": session["userId"]}, {"$set": {"paywallOffer": new_stamp}}
+        )
+    return {"success": True, **state}
+
+
+async def _resolve_offer_user(authorization: Optional[str]):
+    """Best-effort user lookup from a Bearer token for the payment-intent call
+    (which is otherwise unauthenticated)."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.split(" ", 1)[1]
+    sess = await sessions_collection.find_one({"token": token})
+    if not sess:
+        return None
+    return await users_collection.find_one({"id": sess["userId"]}, {"_id": 0})
+
+
 @app.post("/api/stripe/create-payment-intent")
-async def create_payment_intent(request: dict, req: Request):
+async def create_payment_intent(request: dict, req: Request, authorization: Optional[str] = Header(None)):
     """Create a Stripe payment intent for one-time purchase"""
-    amount = request.get("amount")  # Amount in dollars
+    amount = request.get("amount")  # Amount in dollars (base price when paywallOffer)
     document_type = request.get("documentType")
     template = request.get("template")
     email = request.get("email")
     discount_code = request.get("discountCode")
     discount_amount = request.get("discountAmount", 0)
     quantity = request.get("quantity", 1)
+    paywall_offer = bool(request.get("paywallOffer", False))
     client_ip = get_client_ip(req)  # customer IP, carried through to the webhook
 
     if not amount:
@@ -2397,6 +2469,29 @@ async def create_payment_intent(request: dict, req: Request):
     try:
         # Convert to cents
         amount_cents = int(float(amount) * 100)
+
+        # Server-enforced exit-intent offer: honor it only when the user already
+        # has an unexpired stamped window (stamped by GET /api/paywall/offer when
+        # the paywall was shown). We never stamp here, so the discount can't be
+        # claimed by calling this endpoint directly or after the window expires.
+        if paywall_offer:
+            offer_user = await _resolve_offer_user(authorization)
+            stamp = (offer_user or {}).get("paywallOffer") or {}
+            active = False
+            if PAYWALL_OFFER_ENABLED and stamp.get("expiresAt"):
+                try:
+                    exp = datetime.fromisoformat(stamp["expiresAt"])
+                    if exp.tzinfo is None:
+                        exp = exp.replace(tzinfo=timezone.utc)
+                    active = datetime.now(timezone.utc) < exp
+                except Exception:
+                    active = False
+            if active:
+                base_cents = amount_cents
+                amount_cents = _paywall_offer_cents(base_cents)
+                discount_code = discount_code or "LASTCHANCE"
+                discount_amount = round((base_cents - amount_cents) / 100, 2)
+            # If there's no active window we simply charge the base amount.
 
         # Create payment intent
         intent = stripe.PaymentIntent.create(
@@ -2409,16 +2504,17 @@ async def create_payment_intent(request: dict, req: Request):
                 "discountCode": discount_code or "",
                 "discountAmount": str(discount_amount),
                 "quantity": str(quantity or 1),
+                "paywallOffer": "1" if paywall_offer else "",
                 "clientIp": client_ip
             }
         )
-        
+
         return {
             "success": True,
             "clientSecret": intent.client_secret,
             "paymentIntentId": intent.id
         }
-        
+
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

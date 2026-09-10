@@ -32,6 +32,28 @@ export default function PaymentModal({
   // A 100%-off coupon makes the order free: no card form, just the download.
   const isFree = finalAmount <= 0;
 
+  // Exit-intent offer: the discount is server-enforced. We send the BASE price
+  // plus a paywallOffer flag and an auth token; the backend re-derives the
+  // discount from the user's one-time window so the shown price is the charged
+  // price and an expired offer can't be replayed.
+  const isOffer = discount?.offer === true;
+  const offerAuthHeaders = () => {
+    if (!isOffer) return {};
+    let token = "";
+    try { token = localStorage.getItem("userToken") || ""; } catch {}
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+  const intentBody = (payerEmail) => ({
+    amount: isOffer ? basePrice : finalAmount,
+    documentType,
+    template,
+    email: payerEmail || "",
+    discountCode: isOffer ? null : (discount?.code || null),
+    discountAmount: isOffer ? 0 : (discount ? parseFloat(discountValue.toFixed(2)) : 0),
+    paywallOffer: isOffer,
+    quantity,
+  });
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [focusedBox, setFocusedBox] = useState(null);
@@ -59,15 +81,7 @@ export default function PaymentModal({
       setError("");
       setStage("paying");
       try {
-        const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-payment-intent`, {
-          amount: finalAmount,
-          documentType,
-          template,
-          email: ev.payerEmail || "",
-          discountCode: discount?.code || null,
-          discountAmount: discount ? parseFloat(discountValue.toFixed(2)) : 0,
-          quantity,
-        });
+        const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-payment-intent`, intentBody(ev.payerEmail), offerAuthHeaders());
         if (!ok || !data?.clientSecret) { ev.complete("fail"); throw new Error(data?.detail || "Could not start the payment. Please try again."); }
         const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
           data.clientSecret, { payment_method: ev.paymentMethod.id }, { handleActions: false }
@@ -168,15 +182,7 @@ export default function PaymentModal({
 
     setStage("paying");
     try {
-      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-payment-intent`, {
-        amount: finalAmount,
-        documentType,
-        template,
-        email: email.trim(),
-        discountCode: discount?.code || null,
-        discountAmount: discount ? parseFloat(discountValue.toFixed(2)) : 0,
-        quantity,
-      });
+      const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-payment-intent`, intentBody(email.trim()), offerAuthHeaders());
       if (!data) throw new Error("Server error. Please try again.");
       if (!ok || !data.clientSecret) throw new Error(data.detail || "Could not start the payment. Please try again.");
 

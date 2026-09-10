@@ -13,7 +13,7 @@ import {
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
-import PaymentModal from "@/components/PaymentModal";
+import CheckoutWithPaywall from "@/components/CheckoutWithPaywall";
 import PreviewPager from "@/components/PreviewPager";
 import { generateAllCanadianPreviewImages } from "@/utils/canadianPaystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
@@ -1400,7 +1400,7 @@ export default function AppCanadianPaystub() {
       )}
 
       {pendingCheckout && (
-        <PaymentModal
+        <CheckoutWithPaywall
           docLabel={`Canadian Pay Stub${calculateNumStubs !== 1 ? `s × ${calculateNumStubs}` : ""}`}
           documentType="canadian-paystub"
           template={selectedTemplate}

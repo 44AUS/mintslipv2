@@ -13,7 +13,7 @@ import SignaturePad from "@/components/SignaturePad";
 import PreviewPager from "@/components/PreviewPager";
 import AiTransactionsGenerator from "@/components/AiTransactionsGenerator";
 import { IonDateInput, IonMonthInput } from "@/components/DateInput";
-import PaymentModal from "@/components/PaymentModal";
+import CheckoutWithPaywall from "@/components/CheckoutWithPaywall";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const cardStyle = { backgroundColor: "var(--ion-card-background)", borderRadius: 8, boxShadow: "rgba(0,0,0,0.18) 0px 4px 24px", padding: 16, display: "flex", flexDirection: "column", gap: 16 };
@@ -668,12 +668,13 @@ export default function AppTaxFormModal({ config, onClose }) {
       )}
 
       {pendingCheckout && (
-        <PaymentModal
+        <CheckoutWithPaywall
           docLabel={config.title}
           documentType={config.docType}
           template={pendingCheckout.checkoutTemplate}
           basePrice={basePrice}
           discount={appliedDiscount}
+          previewImage={previewPages[0] || null}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPendingCheckout(null)}
         />

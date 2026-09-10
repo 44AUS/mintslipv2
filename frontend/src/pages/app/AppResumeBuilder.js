@@ -17,7 +17,7 @@ import { generateAndDownloadResume } from "@/utils/resumeGenerator";
 import { generateResumePreview } from "@/utils/resumePreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
-import PaymentModal from "@/components/PaymentModal";
+import CheckoutWithPaywall from "@/components/CheckoutWithPaywall";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "resumeBuilderFormData";
@@ -787,12 +787,13 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       )}
 
       {paymentOpen && (
-        <PaymentModal
+        <CheckoutWithPaywall
           docLabel="AI Resume"
           documentType="ai-resume"
           template={formData.template}
           basePrice={RESUME_PRICE}
           discount={appliedDiscount}
+          previewImage={pdfPreview || null}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPaymentOpen(false)}
         />

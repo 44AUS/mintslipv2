@@ -16,7 +16,7 @@ import PreviewPager from "@/components/PreviewPager";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreviewPages } from "@/utils/offerLetterPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
-import PaymentModal from "@/components/PaymentModal";
+import CheckoutWithPaywall from "@/components/CheckoutWithPaywall";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const STORAGE_KEY = "offerLetterFormData";
@@ -635,12 +635,13 @@ export default function AppOfferLetter({ isOpen, onClose }) {
       })()}
 
       {paymentOpen && (
-        <PaymentModal
+        <CheckoutWithPaywall
           docLabel="Offer Letter"
           documentType="offer-letter"
           template={formData.template}
           basePrice={OFFER_PRICE}
           discount={appliedDiscount}
+          previewImage={previewPages[0] || null}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPaymentOpen(false)}
         />

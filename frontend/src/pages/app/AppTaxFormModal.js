@@ -433,9 +433,11 @@ export default function AppTaxFormModal({ config, onClose }) {
                           )}
                         </IonCol>
                       ))}
-                      <IonCol size="12" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <IonButton fill="clear" color="danger" size="small" onClick={() => setField(field.name, rows.filter((_, i) => i !== idx))}>
-                          <IonIcon icon={trashOutline} />
+                      <IonCol size="12">
+                        <IonButton expand="block" color="danger" size="small" style={{ width: "100%" }}
+                          onClick={() => setField(field.name, rows.filter((_, i) => i !== idx))}>
+                          <IonIcon icon={trashOutline} slot="start" />
+                          Remove
                         </IonButton>
                       </IonCol>
                     </IonRow>

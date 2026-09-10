@@ -11,7 +11,7 @@ import {
   IonText, IonBadge, IonToast, IonSkeletonText, IonRange,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
-import { Haptics } from "@capacitor/haptics";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
@@ -1130,7 +1130,7 @@ export default function AppPaystub() {
                       <IonCol size="12">
                         <IonItem lines="none">
                           <IonLabel>Include Local Tax</IonLabel>
-                          <IonToggle slot="end" checked={formData.includeLocalTax} onIonChange={e => setFormData(prev => ({ ...prev, includeLocalTax: e.detail.checked }))} />
+                          <IonToggle slot="end" checked={formData.includeLocalTax} onIonChange={e => { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); setFormData(prev => ({ ...prev, includeLocalTax: e.detail.checked })); }} />
                         </IonItem>
                       </IonCol>
                     </IonRow>
@@ -1167,7 +1167,7 @@ export default function AppPaystub() {
                           <IonCol size="12">
                             <IonItem lines="none">
                               <IonLabel style={{ fontSize: "0.8rem" }}>Pre-Tax Deduction</IonLabel>
-                              <IonToggle slot="end" checked={d.preTax} onIonChange={e => updateDeduction(d.id, "preTax", e.detail.checked)} />
+                              <IonToggle slot="end" checked={d.preTax} onIonChange={e => { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); updateDeduction(d.id, "preTax", e.detail.checked); }} />
                             </IonItem>
                           </IonCol>
                         </IonRow>
@@ -1212,7 +1212,7 @@ export default function AppPaystub() {
                           <IonCol size="12">
                             <IonItem lines="none">
                               <IonLabel style={{ fontSize: "0.8rem" }}>Pre-Tax Contribution</IonLabel>
-                              <IonToggle slot="end" checked={c.preTax} onIonChange={e => updateContribution(c.id, "preTax", e.detail.checked)} />
+                              <IonToggle slot="end" checked={c.preTax} onIonChange={e => { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); updateContribution(c.id, "preTax", e.detail.checked); }} />
                             </IonItem>
                           </IonCol>
                         </IonRow>

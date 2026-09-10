@@ -11,7 +11,7 @@ import {
   IonBadge, IonToast, IonSkeletonText, IonRange,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
-import { Haptics } from "@capacitor/haptics";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import PaymentModal from "@/components/PaymentModal";
 import { generateAllCanadianPreviewImages } from "@/utils/canadianPaystubPreviewGenerator";
@@ -1119,7 +1119,7 @@ export default function AppCanadianPaystub() {
                           <IonCol size="12">
                             <IonItem lines="none">
                               <IonLabel style={{ fontSize: "0.8rem" }}>Pre-Tax Deduction</IonLabel>
-                              <IonToggle slot="end" checked={d.preTax} onIonChange={e => updateDeduction(d.id, "preTax", e.detail.checked)} />
+                              <IonToggle slot="end" checked={d.preTax} onIonChange={e => { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); updateDeduction(d.id, "preTax", e.detail.checked); }} />
                             </IonItem>
                           </IonCol>
                         </IonRow>
@@ -1164,7 +1164,7 @@ export default function AppCanadianPaystub() {
                           <IonCol size="12">
                             <IonItem lines="none">
                               <IonLabel style={{ fontSize: "0.8rem" }}>Pre-Tax Contribution</IonLabel>
-                              <IonToggle slot="end" checked={c.preTax} onIonChange={e => updateContribution(c.id, "preTax", e.detail.checked)} />
+                              <IonToggle slot="end" checked={c.preTax} onIonChange={e => { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); updateContribution(c.id, "preTax", e.detail.checked); }} />
                             </IonItem>
                           </IonCol>
                         </IonRow>

@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon,
   IonButton, IonSpinner, IonPopover, IonDatetime,
-  IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent,
+  IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonList,
 } from "@ionic/react";
 import {
   chevronBackOutline, chevronForwardOutline, chevronDownOutline, closeOutline,
 } from "ionicons/icons";
 import AdminLayout from "@/components/AdminLayout";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
+import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -90,7 +91,15 @@ export default function AdminCalendar() {
   const [loading, setLoading] = useState(true);
   const [pickerMenu, setPickerMenu] = useState({ open: false, event: undefined });
   const [dayModal, setDayModal] = useState(null); // Date whose purchases are listed
+  const [monthModalOpen, setMonthModalOpen] = useState(false);
   const [detail, setDetail] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const year = curDate.getFullYear();
   const month = curDate.getMonth();
@@ -169,9 +178,10 @@ export default function AdminCalendar() {
         {weeks.map((week, wi) => {
           return (
             <div key={wi} style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(7,1fr)", minHeight: 0, overflow: "hidden", borderBottom: wi < 5 ? "1px solid var(--ion-border-color)" : "none" }}>
-              {/* Day cells — click opens the day's purchases */}
+              {/* Day cells — click opens the day's purchases, with ripple */}
               {week.map((cell, ci) => (
                 <div key={ci}
+                  className="ion-activatable"
                   onClick={() => setDayModal(cell.date)}
                   style={{
                     padding: "6px 8px",
@@ -179,7 +189,10 @@ export default function AdminCalendar() {
                     background: !cell.cur ? "rgba(0,0,0,0.024)" : "transparent",
                     minHeight: 0,
                     cursor: "pointer",
+                    position: "relative",
+                    overflow: "hidden",
                   }}>
+                  <ion-ripple-effect />
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <div style={{
                       width: 26, height: 26,
@@ -350,8 +363,9 @@ export default function AdminCalendar() {
                   </IonSegment>
                 </div>
 
-                {/* Purchase count chip */}
-                <IonButton fill="solid" size="small" color="medium" style={{ flexShrink: 0 }}>
+                {/* Purchase count chip — opens the month's purchase list */}
+                <IonButton fill="solid" size="small" color="medium" style={{ flexShrink: 0 }}
+                  onClick={() => setMonthModalOpen(true)}>
                   {monthPurchases.length} Purchases
                 </IonButton>
               </div>
@@ -398,24 +412,29 @@ export default function AdminCalendar() {
         </div>
       </div>
 
-      {/* ── Day purchases modal — the purchases table, scoped to one day ── */}
-      {dayModal && (() => {
-        const k = dateKey(dayModal);
-        const dayList = (byDate[k] || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        const dayLabel = dayModal.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-        const dayTotal = dayList.reduce((s, p) => s + (p.amount || 0), 0);
+      {/* ── Day / month purchases modal — the purchases page, scoped ── */}
+      {(dayModal || monthModalOpen) && (() => {
+        const list = dayModal
+          ? (byDate[dateKey(dayModal)] || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          : [...monthPurchases].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const label = dayModal
+          ? dayModal.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+          : `${MONTHS[month]} ${year}`;
+        const total = list.reduce((s, p) => s + (p.amount || 0), 0);
+        const close = () => { setDayModal(null); setMonthModalOpen(false); };
         const tdBase = { padding: "10px 12px", borderBottom: "1px solid var(--ion-border-color)", verticalAlign: "middle" };
+        const fmtDate = (iso) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
         return (
           <IonModal
             isOpen={true}
-            onDidDismiss={() => setDayModal(null)}
+            onDidDismiss={close}
             className="admin-detail-modal admin-day-modal"
           >
             <IonHeader>
               <IonToolbar>
-                <IonTitle>{dayLabel}</IonTitle>
+                <IonTitle>{label}</IonTitle>
                 <IonButtons slot="end">
-                  <IonButton onClick={() => setDayModal(null)} aria-label="Close">
+                  <IonButton onClick={close} aria-label="Close">
                     <IonIcon icon={closeOutline} slot="icon-only" />
                   </IonButton>
                 </IonButtons>
@@ -424,14 +443,43 @@ export default function AdminCalendar() {
             <IonContent>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 4px" }}>
                 <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
-                  {dayList.length} purchase{dayList.length === 1 ? "" : "s"}
+                  {list.length} purchase{list.length === 1 ? "" : "s"}
                 </span>
-                <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981" }}>${dayTotal.toFixed(2)}</span>
+                <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981" }}>${total.toFixed(2)}</span>
               </div>
-              {dayList.length === 0 ? (
+              {list.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
-                  No purchases on this day
+                  No purchases found
                 </div>
+              ) : isMobile ? (
+                /* Condensed whodat-style rows, same as the purchases page */
+                <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+                  {list.map((p) => {
+                    const email = p.email || p.paypalEmail || "N/A";
+                    const docLabel = DOC_LABELS[p.documentType] || p.documentType || "-";
+                    const qty = p.quantity > 1 ? ` ×${p.quantity}` : "";
+                    return (
+                      <AdminListItem
+                        key={p.id}
+                        onClick={() => setDetail(p)}
+                        start={
+                          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ fontSize: "0.65rem", color: "#fff", fontWeight: 700 }}>{getInitials(email)}</span>
+                          </div>
+                        }
+                        title={`$${Number(p.amount || 0).toFixed(2)}`}
+                        badges={<>
+                          {p.refunded
+                            ? <span className="admin-badge admin-badge-amber">Refunded</span>
+                            : <span className="admin-badge admin-badge-green">Paid</span>}
+                          {!p.userId && <span className="admin-badge admin-badge-slate">Guest</span>}
+                        </>}
+                        subtitle={email}
+                        meta={[`${docLabel}${qty}`, fmtDate(p.createdAt), timeAgo(p.createdAt)].filter(Boolean).join(" · ")}
+                      />
+                    );
+                  })}
+                </IonList>
               ) : (
                 <div style={{ overflowX: "auto", padding: "0 4px 16px" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
@@ -445,15 +493,21 @@ export default function AdminCalendar() {
                       </tr>
                     </thead>
                     <tbody>
-                      {dayList.map((p) => {
+                      {list.map((p) => {
                         const email = p.email || p.paypalEmail || "N/A";
                         const docLabel = DOC_LABELS[p.documentType] || p.documentType || "-";
                         const qty = p.quantity > 1 ? ` ×${p.quantity}` : "";
                         return (
-                          <tr key={p.id} onClick={() => setDetail(p)} style={{ height: 56, cursor: "pointer" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                          <tr key={p.id} onClick={() => setDetail(p)} style={{ position: "relative", transform: "translateZ(0)", height: 56, cursor: "pointer" }}>
+                            {/* Age — hosts the row-wide ripple overlay (same
+                                pattern as the purchases page table) */}
                             <td style={tdBase}>
+                              <div
+                                className="ion-activatable"
+                                style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", zIndex: 1 }}
+                              >
+                                <ion-ripple-effect />
+                              </div>
                               <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>{timeAgo(p.createdAt)}</span>
                             </td>
                             <td style={{ ...tdBase, minWidth: 170 }}>

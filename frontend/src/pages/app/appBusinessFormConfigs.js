@@ -267,12 +267,24 @@ const BANK_CONFIG = {
     pendingBankStatementTemplate: bankFor(fd).template,
   }),
   checkoutTemplate: (fd) => bankFor(fd).template,
+  // Every field is required except the beginning balance (which sensibly
+  // defaults to 0.00). Each transaction row must also be fully filled in.
   validate: (fd) => {
-    if (!String(fd.accountName || "").trim())   return "Please enter the account holder name";
-    if (!String(fd.accountNumber || "").trim()) return "Please enter the account number";
-    if (!String(fd.selectedMonth || "").trim()) return "Please choose the statement month";
-    const txs = (fd.transactions || []).filter(t => t.description || t.amount);
-    if (!txs.length)                            return "Please add at least one transaction";
+    if (!String(fd.accountName || "").trim())     return "Please enter the account holder name";
+    if (!String(fd.accountNumber || "").trim())   return "Please enter the account number";
+    if (!String(fd.accountAddress1 || "").trim()) return "Please enter address line 1";
+    if (!String(fd.accountAddress2 || "").trim()) return "Please enter address line 2 (city, state ZIP)";
+    if (!String(fd.selectedMonth || "").trim())   return "Please choose the statement month";
+    const rows = Array.isArray(fd.transactions) ? fd.transactions : [];
+    if (!rows.length)                             return "Please add at least one transaction";
+    for (let i = 0; i < rows.length; i++) {
+      const t = rows[i] || {};
+      const n = i + 1;
+      if (!String(t.date || "").trim())              return `Please enter a date for transaction ${n}`;
+      if (!String(t.description || "").trim())       return `Please enter a description for transaction ${n}`;
+      if (!String(t.type || "").trim())              return `Please choose a type for transaction ${n}`;
+      if (String(t.amount ?? "").trim() === "")      return `Please enter an amount for transaction ${n}`;
+    }
     return null;
   },
   sections: [
@@ -285,20 +297,20 @@ const BANK_CONFIG = {
     { title: "Account Holder", fields: [
       { name: "accountName", label: "Account Holder Name *", size: "6" },
       { name: "accountNumber", label: "Account Number *", size: "6" },
-      { name: "accountAddress1", label: "Address Line 1", size: "12" },
-      { name: "accountAddress2", label: "Address Line 2 (City, State ZIP)", size: "12" },
+      { name: "accountAddress1", label: "Address Line 1 *", size: "12" },
+      { name: "accountAddress2", label: "Address Line 2 (City, State ZIP) *", size: "12" },
     ]},
     { title: "Transactions", note: "Deposits and refunds are credits; everything else is a debit.", fields: [
       { name: "aiTransactions", type: "aiTransactions", size: "12" },
       { name: "transactions", type: "rowList", size: "12", addLabel: "Add Transaction",
         newRow: () => ({ date: "", description: "", type: "Purchase", amount: "" }),
         columns: [
-          { name: "date", label: "Date", type: "date", size: "6", sizeSm: "6" },
-          { name: "description", label: "Description", size: "6", sizeSm: "6" },
-          { name: "type", label: "Type", type: "select", size: "6", sizeSm: "6", options: [
+          { name: "date", label: "Date *", type: "date", size: "6", sizeSm: "6" },
+          { name: "description", label: "Description *", size: "6", sizeSm: "6" },
+          { name: "type", label: "Type *", type: "select", size: "6", sizeSm: "6", options: [
             "Purchase", "Deposit", "Transfer", "Refund", "Withdrawal",
           ].map(t => ({ value: t, label: t })) },
-          { name: "amount", label: "Amount ($)", type: "number", size: "6", sizeSm: "6" },
+          { name: "amount", label: "Amount ($) *", size: "6", sizeSm: "6", type: "number" },
         ]},
     ]},
   ],

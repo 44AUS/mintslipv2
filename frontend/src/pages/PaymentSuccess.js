@@ -69,10 +69,6 @@ function ProcessingScreen({ title, messages }) {
           <Leaf3D height={190} />
         </div>
 
-        {/* Brand + progress (whodat's scan-brandhead treatment) */}
-        <div style={{ fontFamily: "Outfit, sans-serif", fontWeight: 900, fontSize: 22, letterSpacing: "0.02em", color: ink, marginBottom: 14 }}>
-          mint<span style={{ color: "#059669" }}>slip</span>
-        </div>
         <IonProgressBar value={progress} style={{ "--progress-background": "#059669", "--background": track, borderRadius: 99, height: 6, overflow: "hidden", marginBottom: 22 }} />
 
         <h2 style={{ fontFamily: "Outfit, sans-serif", fontWeight: 700, fontSize: 20, color: ink, margin: "0 0 8px" }}>{title}</h2>

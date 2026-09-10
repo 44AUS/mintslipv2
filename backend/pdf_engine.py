@@ -1250,8 +1250,12 @@ def clean_bank_statement_pdf(pdf_bytes: bytes, template: str = 'chime', statemen
     # Template metadata mapping for bank statements
     TEMPLATE_METADATA = {
         'chime': {
+            # Matched byte-for-byte to a real Chime statement export:
+            # Producer "Qt 4.8.7", Creator "wkhtmltopdf 0.12.6" (no patch
+            # suffix), Title "{First}_{Month}_{Year}_Statement | Chime",
+            # CreationDate = render moment in D:...Z form, no ModDate, no XMP.
             'producer': 'Qt 4.8.7',
-            'creator': 'wkhtmltopdf 0.12.6.1',
+            'creator': 'wkhtmltopdf 0.12.6',
             'pdf_version': '1.4',
             'title_format': '{name}_{month}_{year}_Statement | Chime',
         },
@@ -1282,38 +1286,29 @@ def clean_bank_statement_pdf(pdf_bytes: bytes, template: str = 'chime', statemen
             new_docinfo[pikepdf.Name('/Producer')] = metadata['producer']
             new_docinfo[pikepdf.Name('/Creator')] = metadata['creator']
             
-            # Calculate creation date as last day of the statement month
+            # Real Chime statements are rendered on demand, so their
+            # CreationDate is the moment of download — mirror that. The
+            # statement month only feeds the title.
+            creation_dt = datetime.now(timezone.utc)
+            title = metadata.get('title_format', 'Statement')
             if statement_month:
                 try:
                     year, month = statement_month.split('-')
                     year = int(year)
                     month = int(month)
-                    # Get last day of the month
-                    if month == 12:
-                        creation_dt = datetime(year + 1, 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
-                    else:
-                        creation_dt = datetime(year, month + 1, 1, tzinfo=timezone.utc) - timedelta(days=1)
-                    
-                    # Generate title with name, month, year
-                    month_name = creation_dt.strftime('%B')
+                    month_name = datetime(year, month, 1).strftime('%B')
                     if template == 'chime' and account_name:
                         # Extract first name
                         first_name = account_name.split()[0] if account_name else 'Account'
                         title = f"{first_name}_{month_name}_{year}_Statement | Chime"
-                    else:
-                        title = metadata.get('title_format', 'Statement')
                 except:
-                    creation_dt = datetime.now(timezone.utc)
-                    title = metadata.get('title_format', 'Statement')
-            else:
-                creation_dt = datetime.now(timezone.utc)
-                title = metadata.get('title_format', 'Statement')
-            
+                    pass
+
             # Set title
             new_docinfo[pikepdf.Name('/Title')] = title
-            
-            # Format as PDF date string: D:YYYYMMDDHHmmSS+00'00'
-            pdf_date = f"D:{creation_dt.strftime('%Y%m%d%H%M%S')}+00'00'"
+
+            # PDF date string in the reference's D:YYYYMMDDHHmmSSZ form
+            pdf_date = f"D:{creation_dt.strftime('%Y%m%d%H%M%S')}Z"
             new_docinfo[pikepdf.Name('/CreationDate')] = pdf_date
             # Don't set ModDate - fresh documents shouldn't have modification date
             

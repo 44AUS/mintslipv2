@@ -420,7 +420,7 @@ export default function AppTaxFormModal({ config, onClose }) {
                   </IonGrid>
                 </div>
               ))}
-              <IonButton color="primary" size="small" style={{ alignSelf: "flex-start" }}
+              <IonButton color="primary" size="small" style={{ alignSelf: "center" }}
                 onClick={() => setField(field.name, [...rows, field.newRow ? field.newRow() : {}])}>
                 <IonIcon slot="start" icon={addOutline} />
                 {field.addLabel || "Add Row"}

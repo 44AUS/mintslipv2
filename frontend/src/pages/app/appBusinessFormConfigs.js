@@ -221,7 +221,6 @@ const BANKS = [
     { id: "bank-of-america", name: "Bank of America", template: "template-b" },
     { id: "chase", name: "Chase", template: "template-c" },
   ] : []),
-  { id: "other", name: "Other (upload logo)", template: "template-a" },
 ];
 const bankFor = (fd) => BANKS.find(b => b.id === fd.bankId) || BANKS[0];
 const flatBank = (fd) => ({
@@ -229,7 +228,7 @@ const flatBank = (fd) => ({
   accountNumber: fd.accountNumber, selectedMonth: fd.selectedMonth,
   beginningBalance: fd.beginningBalance || "0.00",
   transactions: Array.isArray(fd.transactions) ? fd.transactions : [],
-  bankName: fd.bankId === "other" ? (fd.customBankName || "") : bankFor(fd).name,
+  bankName: bankFor(fd).name,
   bankLogo: fd.bankLogo || null,
 });
 
@@ -274,8 +273,6 @@ const BANK_CONFIG = {
     { title: "Bank & Statement", fields: [
       { name: "bankId", label: "Bank Style", type: "select", size: "6",
         options: BANKS.map(b => ({ value: b.id, label: b.name })) },
-      { name: "customBankName", label: "Bank name", size: "6", showIf: fd => fd.bankId === "other" },
-      { name: "bankLogo", label: "Bank logo (optional)", type: "image", size: "12", showIf: fd => fd.bankId === "other" },
       { name: "selectedMonth", label: "Statement Month *", type: "month", size: "6" },
       { name: "beginningBalance", label: "Beginning Balance ($)", type: "number", size: "6" },
     ]},

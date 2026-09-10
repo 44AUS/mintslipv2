@@ -618,8 +618,11 @@ export default function PaymentSuccess() {
           if (!notifId) {
             // Paystub types add their own richly-named notification above;
             // every other document type gets one here so the drawer has
-            // the download ready.
-            const fileName = getDefaultFileName(orderType, fileCount);
+            // the download ready. Prefer the real file name the generator
+            // just saved (e.g. ChimeCheckingStatementAugust2026.pdf).
+            const fileName = sessionStorage.getItem('lastDownloadFileName')
+              || localStorage.getItem('lastDownloadFileName')
+              || getDefaultFileName(orderType, fileCount);
             const nid = `notif_${Date.now()}`;
             addGeneratingNotification({ id: nid, type: orderType, fileName, fileType: fileName.endsWith('.zip') ? 'zip' : 'pdf' });
             markNotificationReady(nid);
@@ -643,15 +646,32 @@ export default function PaymentSuccess() {
       } else {
         // No stored data found - show manual download option
         console.log('No stored form data found for type:', orderType);
+        if (returnAppOnFailure(notifId)) return;
         setError('Unable to generate document automatically. Your form data may have been lost. Please try creating your document again.');
       }
     } catch (err) {
       console.error('Error generating document:', err);
       if (notifId) markNotificationError(notifId);
+      if (returnAppOnFailure(notifId)) return;
       setError('There was an issue generating your document. Please contact support.');
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Embedded in-app purchases must never strand the buyer on the web card —
+  // on a generation failure, drop a failed notification in the drawer and
+  // return to the app (support can resend the file; the purchase is recorded).
+  const returnAppOnFailure = (existingNotifId) => {
+    if (!(paymentIntentId && isFromApp)) return false;
+    if (!existingNotifId) {
+      const nid = `notif_${Date.now()}`;
+      addGeneratingNotification({ id: nid, type: orderType, fileName: getDefaultFileName(orderType, fileCount), fileType: 'pdf' });
+      markNotificationError(nid);
+    }
+    try { localStorage.setItem('appOpenNotifDrawer', '1'); } catch {}
+    navigate(appReturnTo);
+    return true;
   };
 
   const getDefaultFileName = (type, count) => {

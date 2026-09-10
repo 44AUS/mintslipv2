@@ -193,7 +193,14 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     );
   }
 
-  const pdfFileName = `Chime-Statement-${accountName || "statement"}.pdf`;
+  // Real Chime downloads are named ChimeCheckingStatement{Month}{Year}.pdf
+  const [selYear, selMonth] = String(selectedMonth || "").split("-").map(Number);
+  const monthName = selYear && selMonth
+    ? new Date(selYear, selMonth - 1, 1).toLocaleDateString("en-US", { month: "long" })
+    : "";
+  const pdfFileName = monthName
+    ? `ChimeCheckingStatement${monthName}${selYear}.pdf`
+    : `ChimeCheckingStatement.pdf`;
   
   // Get PDF blob and clean it via backend
   let pdfBlob = doc.output('blob');
@@ -206,7 +213,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   };
   const backendTemplate = templateMap[template] || 'chime';
   
-  // Clean PDF with proper metadata (creation date = last day of statement month)
+  // Clean PDF with the real provider metadata (Chime-matched docinfo)
   pdfBlob = await cleanBankStatementPdfViaBackend(pdfBlob, backendTemplate, selectedMonth, accountName);
   
   // Store download info for payment success page

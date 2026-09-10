@@ -8,9 +8,9 @@ import {
   IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonBadge, IonToast, IonSkeletonText,
+  IonBadge, IonToast, IonSkeletonText, IonRange,
 } from "@ionic/react";
-import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, chevronBackOutline, chevronForwardOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
+import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import PaymentModal from "@/components/PaymentModal";
 import { generateAllCanadianPreviewImages } from "@/utils/canadianPaystubPreviewGenerator";
@@ -1316,18 +1316,23 @@ export default function AppCanadianPaystub() {
                     />
                   </div>
                   {pdfPreviews.length > 1 && (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12 }}>
-                      <IonButton fill="clear" size="small" disabled={previewPageIndex === 0} onClick={() => setPreviewPageIndex(i => Math.max(0, i - 1))}>
-                        <IonIcon icon={chevronBackOutline} />
-                      </IonButton>
-                      {pdfPreviews.map((_, idx) => (
-                        <button key={idx} onClick={() => setPreviewPageIndex(idx)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", cursor: "pointer", fontWeight: 600, fontSize: "0.75rem", background: idx === previewPageIndex ? "var(--ion-color-success)" : "var(--ion-color-step-150)", color: idx === previewPageIndex ? "#fff" : "var(--ion-color-dark)" }}>
-                          {idx + 1}
-                        </button>
-                      ))}
-                      <IonButton fill="clear" size="small" disabled={previewPageIndex === pdfPreviews.length - 1} onClick={() => setPreviewPageIndex(i => Math.min(pdfPreviews.length - 1, i + 1))}>
-                        <IonIcon icon={chevronForwardOutline} />
-                      </IonButton>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", flexShrink: 0, whiteSpace: "nowrap" }}>
+                        Page {previewPageIndex + 1} of {pdfPreviews.length}
+                      </span>
+                      <IonRange
+                        color="primary"
+                        min={1}
+                        max={pdfPreviews.length}
+                        step={1}
+                        snaps={true}
+                        ticks={true}
+                        pin={true}
+                        pinFormatter={(v) => `${v}`}
+                        value={previewPageIndex + 1}
+                        onIonInput={(e) => setPreviewPageIndex(Number(e.detail.value) - 1)}
+                        style={{ flex: 1 }}
+                      />
                     </div>
                   )}
                   <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 8 }}>Watermark removed after payment</p>

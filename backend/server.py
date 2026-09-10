@@ -2387,7 +2387,7 @@ async def create_checkout_session(data: CreateCheckoutSession, session: dict = D
 # that user (no restarts), and the discount is re-derived and enforced at charge
 # time so the shown price is the charged price.
 PAYWALL_OFFER_ENABLED = True
-PAYWALL_OFFER_PERCENT = 30       # % off the document's base price
+PAYWALL_OFFER_PERCENT = 20       # % off the document's base price
 PAYWALL_OFFER_MINUTES = 10       # how long the window stays open, per user
 
 

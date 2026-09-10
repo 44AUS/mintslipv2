@@ -14,6 +14,7 @@ import {
   arrowBackOutline, closeOutline, searchOutline,
 } from "ionicons/icons";
 import { t, setLanguage as setAppLanguage, useLanguage } from "@/utils/i18n";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -140,6 +141,7 @@ export default function AppSettings() {
   }, []);
 
   const handleDark = () => {
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
     const next = !darkMode;
     setDarkMode(next);
     localStorage.setItem("appDarkMode", String(next));
@@ -153,6 +155,7 @@ export default function AppSettings() {
 
   // Shows/hides the floating support chat bubble everywhere in the app
   const handleChatToggle = () => {
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
     const next = !showChat;
     setShowChat(next);
     localStorage.setItem("appShowSupportChat", String(next));

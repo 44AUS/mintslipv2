@@ -5,7 +5,7 @@
 
 import { generateCommercialLeasePreviewPages } from "@/utils/commercialLeasePreviewGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
-import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
+import { generateBankStatementPreviewPages } from "@/utils/bankStatementPreviewGenerator";
 import { generateAndDownloadCommercialLease, LEASE_TYPES } from "@/utils/commercialLeaseGenerator";
 import { generateAndDownloadUtilityBill } from "@/utils/utilityBillGenerator";
 import { generateAndDownloadBankStatement } from "@/utils/bankStatementGenerator";
@@ -246,7 +246,7 @@ const BANK_CONFIG = {
   storageKey: "appBankStatementFormData",
   cancelPath: "/app/business-forms",
   customTemplatesFor: "bank-statement",
-  preview: (fd) => generateBankStatementPreview(flatBank(fd), bankFor(fd).template),
+  preview: (fd) => generateBankStatementPreviewPages(flatBank(fd), bankFor(fd).template),
   download: (fd, _year, returnBlob) => generateAndDownloadBankStatement(flatBank(fd), bankFor(fd).template, returnBlob),
   derive: (fd) => ({
     bankId: "chime",

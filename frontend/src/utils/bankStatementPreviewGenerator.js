@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import { addPreviewWatermarkJsPdf } from "./previewWatermark";
 import { generateBankTemplateA, generateBankTemplateB, generateBankTemplateC } from "./bankStatementTemplates";
 import { fetchPublishedLayout, renderLayout } from "./layoutEngine";
+import { pdfToPageImages } from "./pdfPageImages";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker using unpkg CDN with correct version
@@ -74,9 +75,10 @@ function formatDateLong(dateStr) {
 
 
 // Generate preview PDF as base64 data URL
-export const generateBankStatementPreview = async (formData, template = 'template-a') => {
-  try {
-    const {
+// Builds the watermarked preview document (all pages) — shared by the
+// single-image and all-pages exports below.
+async function buildPreviewDoc(formData, template = 'template-a') {
+  const {
       accountName,
       accountAddress1,
       accountAddress2,
@@ -204,15 +206,30 @@ export const generateBankStatementPreview = async (formData, template = 'templat
     // Add watermark on ALL pages
     await addPreviewWatermarkJsPdf(doc, pageWidth, pageHeight);
 
-    // Convert to base64 data URL (PDF)
-    const pdfDataUrl = doc.output('dataurlstring');
-    
-    // Convert PDF to image for preview display
-    const imageDataUrl = await convertPdfToImage(pdfDataUrl);
-    
+    return doc;
+}
+
+export const generateBankStatementPreview = async (formData, template = 'template-a') => {
+  try {
+    const doc = await buildPreviewDoc(formData, template);
+    if (!doc) return null;
+    // Convert first page to image for card/sample display
+    const imageDataUrl = await convertPdfToImage(doc.output('dataurlstring'));
     return imageDataUrl;
   } catch (error) {
     console.error("Error generating bank statement preview:", error);
+    return null;
+  }
+};
+
+// All pages, for the in-app preview modal's page slider + swipe
+export const generateBankStatementPreviewPages = async (formData, template = 'template-a') => {
+  try {
+    const doc = await buildPreviewDoc(formData, template);
+    if (!doc) return null;
+    return await pdfToPageImages(doc.output('arraybuffer'));
+  } catch (error) {
+    console.error("Error generating bank statement preview pages:", error);
     return null;
   }
 };

@@ -38,7 +38,7 @@ DOCUMENT_TYPES = {
         "description": "Paycheck stub or earnings statement",
     },
     "bank_statement": {
-        "name": "Bank Statement",
+        "name": "Accounting Mockup",
         "description": "Bank account statement",
     },
     "tax_form": {

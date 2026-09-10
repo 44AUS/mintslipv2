@@ -37,7 +37,7 @@ const ALL_DOCUMENT_TYPES = {
   "commercial-lease": "Commercial Lease",
   "vehicle-bill-of-sale": "Vehicle Bill of Sale",
   "schedule-c": "Schedule C",
-  "bank-statement": "Bank Statement",
+  "bank-statement": "Accounting Mockup",
   "utility-bill": "Utility Bill"
 };
 

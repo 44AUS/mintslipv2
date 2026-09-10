@@ -379,7 +379,7 @@ export default function PaymentSuccess() {
             sendFileEmail(pdfBlob, emailToUse, 'bank-statement', formData.accountHolder);
           }
           
-          toast.success('Your bank statement has been downloaded!');
+          toast.success('Your accounting mockup has been downloaded!');
         }
       } else if (orderType === 'ai-resume') {
         const resumeDataStr = localStorage.getItem('pendingResumeData');

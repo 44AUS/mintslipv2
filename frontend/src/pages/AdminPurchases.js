@@ -21,7 +21,7 @@ const DOCUMENT_TYPES = {
   "w9":                  "W-9 Form",
   "1099-nec":            "1099-NEC",
   "1099-misc":           "1099-MISC",
-  "bank-statement":      "Bank Statement",
+  "bank-statement":      "Accounting Mockup",
   "offer-letter":        "Offer Letter",
   "cease-and-desist":    "Cease and Desist",
   "legal-document":      "Legal Document",

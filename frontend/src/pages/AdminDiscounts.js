@@ -25,7 +25,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const GENERATORS = [
   { id: "paystub", name: "Pay Stub Generator" },
   { id: "canadian-paystub", name: "Canadian Pay Stub Generator" },
-  { id: "bank-statement", name: "Bank Statement Generator" },
+  { id: "bank-statement", name: "Accounting Mockup Generator" },
   { id: "w2", name: "W-2 Generator" },
   { id: "w9", name: "W-9 Generator" },
   { id: "1099-nec", name: "1099-NEC Generator" },

@@ -55,7 +55,7 @@ const DOCUMENT_TYPES = {
     textColor: "text-blue-700"
   },
   bank_statement: {
-    name: "Bank Statement",
+    name: "Accounting Mockup",
     description: "Bank account statement",
     icon: Landmark,
     color: "bg-emerald-500",
@@ -790,7 +790,7 @@ export default function PDFEngine() {
                 </h4>
                 <ul className="text-sm text-slate-600 space-y-1">
                   <li><strong>Pay Stub:</strong> ADP, Paychex, Gusto, QuickBooks, Workday...</li>
-                  <li><strong>Bank Statement:</strong> Chase, BofA, Wells Fargo, Citi...</li>
+                  <li><strong>Accounting Mockup:</strong> Chase, BofA, Wells Fargo, Citi...</li>
                   <li>• Matches against 50+ legitimate producer patterns</li>
                   <li>• Detects known fake document generators</li>
                   {aiEnabled && <li className="text-purple-600">• <strong>AI:</strong> Math verification, anomaly detection, legitimacy assessment</li>}

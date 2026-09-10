@@ -100,7 +100,7 @@ const DOCUMENT_TYPES = {
 // All document types for display purposes (includes all)
 const ALL_DOCUMENT_TYPES = {
   ...DOCUMENT_TYPES,
-  "bank-statement": "Bank Statement",
+  "bank-statement": "Accounting Mockup",
   "utility-bill": "Utility Bill"
 };
 

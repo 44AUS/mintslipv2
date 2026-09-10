@@ -37,8 +37,10 @@ All documents are generated directly in your browser. We do not store your perso
     title: "Payment Terms",
     content: `Our payment terms are as follows:
 
-• **Pricing**: Pay stubs are $10 each, accounting mockups are $50-$70, and W-2 forms are $15 each.
-• **Payment Processing**: All payments are processed securely through PayPal.
+• **Pricing**: Pay stubs (US and Canadian) are $9.99 each. Tax forms (W-2, W-9, 1099-NEC, 1099-MISC, and Schedule C) are $14.99 each. Offer letters, AI resumes, legal forms (cease and desist, power of attorney, vehicle bill of sale), commercial lease agreements, and utility bills are $9.99 each. Accounting mockups are $49.99–$69.99 depending on the template.
+• **Subscriptions**: Optional subscription plans with monthly download allowances are available at the prices shown in the app.
+• **Discounts**: Coupon codes, when available, are applied at checkout and reflected in the total before you pay.
+• **Payment Processing**: All payments are processed securely through Stripe.
 • **Immediate Delivery**: Documents are generated and available for download immediately upon successful payment.
 • **Currency**: All prices are in US Dollars (USD).
 • **No Hidden Fees**: The price shown is the total price you pay.`,
@@ -52,7 +54,7 @@ All documents are generated directly in your browser. We do not store your perso
 • **Duplicate Purchases**: If you accidentally made a duplicate purchase, contact us with your transaction details for review.
 • **Quality Issues**: If there's a genuine error in our calculations or document generation, we will work with you to resolve the issue.
 
-To request assistance, contact us at support@mintslip.com with your PayPal transaction ID.`,
+To request assistance, contact us at support@mintslip.com with the order reference from your receipt email.`,
   },
   {
     title: "Limitation of Liability",
@@ -106,7 +108,7 @@ export default function AppTerms() {
                 Terms of Service
               </h1>
               <p style={{ color: "var(--ion-color-medium)", fontSize: "0.85rem", marginBottom: 24 }}>
-                Last updated: January 2025
+                Last updated: September 2026
               </p>
               <p style={{ color: "var(--ion-color-medium)", lineHeight: 1.7, marginBottom: 32 }}>
                 Welcome to MintSlip. These Terms of Service ("Terms") govern your use of our website and document

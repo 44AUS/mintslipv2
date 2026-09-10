@@ -618,7 +618,7 @@ export default function ComparisonPage() {
     { name: "Professional Templates", icon: FileText, mintslip: "Modern Templates", others: "Generic Templates" },
     { name: "Real-Time Preview", icon: Eye, mintslip: true, others: true },
     { name: "Mobile Friendly", icon: Smartphone, mintslip: true, others: "Limited" },
-    { name: "Secure Payment (PayPal)", icon: CreditCard, mintslip: true, others: "Varies" },
+    { name: "Secure Payment (Stripe)", icon: CreditCard, mintslip: true, others: "Varies" },
     { name: "No Data Storage", icon: Lock, mintslip: true, others: false },
     { name: "Auto Tax Calculations", icon: Zap, mintslip: true, others: "Sometimes" },
     { name: "YTD Calculations", icon: Clock, mintslip: true, others: false },

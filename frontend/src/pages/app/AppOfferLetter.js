@@ -343,7 +343,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             <IonTitle style={{ fontWeight: 700 }}>Offer Letter</IonTitle>
             <IonButtons slot="end">
               <IonButton fill="clear" shape="round" onClick={handleNext}>
-                <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-color-success)" }}>
                   <IonIcon icon={checkmarkOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
                 </span>
               </IonButton>

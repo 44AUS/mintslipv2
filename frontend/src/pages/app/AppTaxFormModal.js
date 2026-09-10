@@ -263,6 +263,8 @@ export default function AppTaxFormModal({ config, onClose }) {
     Object.entries(pendingEntries).forEach(([k, v]) =>
       localStorage.setItem(k, typeof v === "string" ? v : JSON.stringify(v)));
     localStorage.setItem("pendingCustomerEmail", email);
+    // Reset this form only after the payment succeeds and the file downloads.
+    localStorage.setItem("pendingResetKeys", JSON.stringify([config.storageKey, `${config.storageKey}Year`]));
     navigate(`/payment-success?type=${config.docType}&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 

@@ -691,6 +691,8 @@ export default function AppCanadianPaystub() {
     localStorage.setItem("pendingCanadianPaystubTemplate", selectedTemplate);
     localStorage.setItem("pendingCanadianPaystubCount", calculateNumStubs.toString());
     localStorage.setItem("pendingCustomerEmail", email);
+    // Reset this form only after the payment succeeds and the file downloads.
+    localStorage.setItem("pendingResetKeys", JSON.stringify([STORAGE_KEY, "canadianPaystubTemplate", "canadianPaystubCompanyLogo"]));
     navigate(`/payment-success?type=canadian-paystub&count=${calculateNumStubs}&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 

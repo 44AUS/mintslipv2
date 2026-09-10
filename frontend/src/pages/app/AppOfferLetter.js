@@ -285,6 +285,8 @@ export default function AppOfferLetter({ isOpen, onClose }) {
     localStorage.setItem("pendingOfferLetterData",     JSON.stringify(formData));
     localStorage.setItem("pendingOfferLetterTemplate", formData.template);
     localStorage.setItem("pendingCustomerEmail", email);
+    // Reset this form only after the payment succeeds and the file downloads.
+    localStorage.setItem("pendingResetKeys", JSON.stringify([STORAGE_KEY]));
     navigate(`/payment-success?type=offer-letter&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 

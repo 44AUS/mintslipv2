@@ -432,6 +432,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
   const handlePaymentSuccess = ({ email, paymentIntentId }) => {
     localStorage.setItem("pendingResumeData", JSON.stringify({ generatedResume, formData, selectedTemplate: formData.template }));
     localStorage.setItem("pendingCustomerEmail", email);
+    // Reset this form only after the payment succeeds and the file downloads.
+    localStorage.setItem("pendingResetKeys", JSON.stringify([STORAGE_KEY, GENERATED_KEY]));
     navigate(`/payment-success?type=ai-resume&source=app&payment_intent=${encodeURIComponent(paymentIntentId)}`);
   };
 

@@ -297,6 +297,21 @@ export default function PaymentSuccess() {
     }
   };
 
+  // After a successful pay-and-download, reset the originating /app modal's
+  // saved form so it doesn't reopen pre-filled. Each modal records exactly
+  // which localStorage keys to clear (form data, template, logo…) in
+  // `pendingResetKeys` before handing off to checkout. Only called on success —
+  // an abandoned or failed payment keeps its data. The flag itself is always
+  // dropped in the generateDocument `finally`, so a failed attempt can't leak.
+  const clearPaidFormData = () => {
+    try {
+      const raw = localStorage.getItem('pendingResetKeys');
+      if (!raw) return;
+      const keys = JSON.parse(raw);
+      if (Array.isArray(keys)) keys.forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+    } catch {}
+  };
+
   // Generate document based on type
   const generateDocument = async (email = null) => {
     setIsGenerating(true);
@@ -611,6 +626,9 @@ export default function PaymentSuccess() {
         // 'ai-resume' is stored under the 'resume' document type used elsewhere.
         await archiveDocument(pdfBlob, orderType === 'ai-resume' ? 'resume' : orderType, emailToUse);
 
+        // Paid and downloaded — clear the originating /app modal's saved form.
+        clearPaidFormData();
+
         // Navigate back to app for app-managed document types — but only for
         // the legacy hosted-checkout redirect.
         if (appReturnPath && !paymentIntentId) {
@@ -665,6 +683,9 @@ export default function PaymentSuccess() {
       setError('There was an issue generating your document. Please contact support.');
     } finally {
       setIsGenerating(false);
+      // Always drop the reset flag — cleared forms already consumed it, and a
+      // failed attempt must not leave it to clear a later, unrelated form.
+      try { localStorage.removeItem('pendingResetKeys'); } catch {}
     }
   };
 

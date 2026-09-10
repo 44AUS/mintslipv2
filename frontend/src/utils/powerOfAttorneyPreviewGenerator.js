@@ -1,4 +1,5 @@
 import { generatePowerOfAttorneyPDF } from './powerOfAttorneyGenerator';
+import { pdfToPageImages } from './pdfPageImages';
 import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -27,6 +28,17 @@ export const generatePowerOfAttorneyPreview = async (formData) => {
     return await convertPdfToImage(pdfBytes);
   } catch (error) {
     console.error("Error generating Power of Attorney preview:", error);
+    throw error;
+  }
+};
+
+// All pages, for the in-app preview modal's page slider
+export const generatePowerOfAttorneyPreviewPages = async (formData) => {
+  try {
+    const pdfBytes = await generatePowerOfAttorneyPDF(formData, true);
+    return await pdfToPageImages(pdfBytes);
+  } catch (error) {
+    console.error("Error generating Power of Attorney preview pages:", error);
     throw error;
   }
 };

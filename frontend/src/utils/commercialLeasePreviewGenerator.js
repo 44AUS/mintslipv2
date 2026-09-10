@@ -1,4 +1,5 @@
 import { generateCommercialLeasePDF } from './commercialLeaseGenerator';
+import { pdfToPageImages } from './pdfPageImages';
 import * as pdfjsLib from 'pdfjs-dist';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -27,6 +28,17 @@ export const generateCommercialLeasePreview = async (formData) => {
     return await convertPdfToImage(pdfBytes);
   } catch (error) {
     console.error("Error generating Commercial Lease preview:", error);
+    throw error;
+  }
+};
+
+// All pages, for the in-app preview modal's page slider
+export const generateCommercialLeasePreviewPages = async (formData) => {
+  try {
+    const pdfBytes = await generateCommercialLeasePDF(formData, true);
+    return await pdfToPageImages(pdfBytes);
+  } catch (error) {
+    console.error("Error generating Commercial Lease preview pages:", error);
     throw error;
   }
 };

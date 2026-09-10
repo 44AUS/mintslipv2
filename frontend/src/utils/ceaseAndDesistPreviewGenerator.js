@@ -1,4 +1,5 @@
 import { generateCeaseAndDesistPDF } from './ceaseAndDesistGenerator';
+import { pdfToPageImages } from './pdfPageImages';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker using unpkg CDN with correct version
@@ -28,6 +29,17 @@ async function convertPdfToImage(pdfBytes) {
 }
 
 // Generate cease and desist preview with watermark
+// All pages, for the in-app preview modal's page slider
+export const generateCeaseAndDesistPreviewPages = async (formData) => {
+  try {
+    const pdfBytes = await generateCeaseAndDesistPDF(formData, true);
+    return await pdfToPageImages(pdfBytes);
+  } catch (error) {
+    console.error("Error generating Cease and Desist preview pages:", error);
+    throw error;
+  }
+};
+
 export const generateCeaseAndDesistPreview = async (formData) => {
   try {
     const pdfBytes = await generateCeaseAndDesistPDF(formData, true);

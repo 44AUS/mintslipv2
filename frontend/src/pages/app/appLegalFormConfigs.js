@@ -3,8 +3,8 @@
 // generators consume, so previews, downloads, and PaymentSuccess all work
 // off the same data and pending localStorage keys.
 
-import { generateCeaseAndDesistPreview } from "@/utils/ceaseAndDesistPreviewGenerator";
-import { generatePowerOfAttorneyPreview } from "@/utils/powerOfAttorneyPreviewGenerator";
+import { generateCeaseAndDesistPreviewPages } from "@/utils/ceaseAndDesistPreviewGenerator";
+import { generatePowerOfAttorneyPreviewPages } from "@/utils/powerOfAttorneyPreviewGenerator";
 import { generateVehicleBillOfSalePreview } from "@/utils/vehicleBillOfSalePreviewGenerator";
 import { generateAndDownloadCeaseAndDesist } from "@/utils/ceaseAndDesistGenerator";
 import { generateAndDownloadPowerOfAttorney, POA_POWERS } from "@/utils/powerOfAttorneyGenerator";
@@ -23,7 +23,7 @@ const CEASE_CONFIG = {
   key: "cease-and-desist", docType: "cease-and-desist", title: "Cease and Desist Letter", price: 9.99,
   storageKey: "appCeaseAndDesistFormData",
   cancelPath: "/app/legal-forms",
-  preview: (fd) => generateCeaseAndDesistPreview(fd),
+  preview: (fd) => generateCeaseAndDesistPreviewPages(fd),
   download: (fd, _year, returnBlob) => generateAndDownloadCeaseAndDesist(fd, returnBlob),
   derive: (fd) => ({ template: "professional", violationType: "harassment", deliveryMethod: "certified-mail", complianceDays: "10", ...fd }),
   checkoutTemplate: (fd) => fd.template || "professional",
@@ -99,7 +99,7 @@ const POA_CONFIG = {
   key: "power-of-attorney", docType: "power-of-attorney", title: "Power of Attorney", price: 9.99,
   storageKey: "appPowerOfAttorneyFormData",
   cancelPath: "/app/legal-forms",
-  preview: (fd) => generatePowerOfAttorneyPreview(fd),
+  preview: (fd) => generatePowerOfAttorneyPreviewPages(fd),
   download: (fd, _year, returnBlob) => generateAndDownloadPowerOfAttorney(fd, returnBlob),
   derive: (fd) => {
     const out = {

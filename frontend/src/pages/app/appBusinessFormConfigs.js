@@ -3,7 +3,7 @@
 // match the web forms, so the shared generators and PaymentSuccess work
 // unchanged.
 
-import { generateCommercialLeasePreview } from "@/utils/commercialLeasePreviewGenerator";
+import { generateCommercialLeasePreviewPages } from "@/utils/commercialLeasePreviewGenerator";
 import { generateUtilityBillPreview } from "@/utils/utilityBillPreviewGenerator";
 import { generateBankStatementPreview } from "@/utils/bankStatementPreviewGenerator";
 import { generateAndDownloadCommercialLease, LEASE_TYPES } from "@/utils/commercialLeaseGenerator";
@@ -25,7 +25,7 @@ const LEASE_CONFIG = {
   key: "commercial-lease", docType: "commercial-lease", title: "Commercial Lease Agreement", price: 9.99,
   storageKey: "appCommercialLeaseFormData",
   cancelPath: "/app/business-forms",
-  preview: (fd) => generateCommercialLeasePreview(fd),
+  preview: (fd) => generateCommercialLeasePreviewPages(fd),
   download: (fd, _year, returnBlob) => generateAndDownloadCommercialLease(fd, returnBlob),
   derive: (fd) => ({
     agreementDate: new Date().toISOString().slice(0, 10),

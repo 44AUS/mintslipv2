@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSpinner,
   IonInput, IonSelect, IonSelectOption, IonSegment, IonSegmentButton, IonLabel,
-  IonCheckbox, IonGrid, IonRow, IonCol, IonNote, IonToast, IonTextarea,
+  IonCheckbox, IonGrid, IonRow, IonCol, IonNote, IonToast, IonTextarea, IonRange,
 } from "@ionic/react";
+import { Haptics } from "@capacitor/haptics";
 import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOutline, trashOutline, imageOutline } from "ionicons/icons";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import SignaturePad from "@/components/SignaturePad";
@@ -51,6 +52,7 @@ export default function AppTaxFormModal({ config, onClose }) {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [previewImg, setPreviewImg] = useState(null);
+  const [previewPageIndex, setPreviewPageIndex] = useState(0);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [pendingCheckout, setPendingCheckout] = useState(null); // {derived, checkoutTemplate} while the payment modal is open
@@ -64,6 +66,11 @@ export default function AppTaxFormModal({ config, onClose }) {
   const setField = (name, value) => setFormData(prev => ({ ...prev, [name]: value }));
 
   const basePrice = typeof config.price === "function" ? config.price(formData) : config.price;
+
+  // Preview generators may return one image or an array of page images —
+  // normalize so multi-page documents get the page slider.
+  const previewPages = Array.isArray(previewImg) ? previewImg : previewImg ? [previewImg] : [];
+  const pageIdx = Math.min(previewPageIndex, Math.max(0, previewPages.length - 1));
 
   useEffect(() => {
     try {
@@ -530,11 +537,42 @@ export default function AppTaxFormModal({ config, onClose }) {
                   <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
                   <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
                 </div>
-              ) : previewImg ? (
+              ) : previewPages.length > 0 ? (
                 <>
                   <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                    <img src={previewImg} alt={`${config.title} preview`} style={{ width: "100%", display: "block" }} />
+                    {/* All pages sit side by side; the track slides with the range */}
+                    <div className="msh-preview-track" style={{ display: "flex", transform: `translateX(-${pageIdx * 100}%)` }}>
+                      {previewPages.map((src, idx) => (
+                        <img key={idx} src={src} alt={`${config.title} preview ${idx + 1}`} style={{ width: "100%", flexShrink: 0, display: "block" }} />
+                      ))}
+                    </div>
                   </div>
+                  {previewPages.length > 1 && (
+                    <div style={{ display: "flex", flexDirection: "column", marginTop: 8, padding: "0 16px" }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", textAlign: "center", whiteSpace: "nowrap" }}>
+                        Page {pageIdx + 1} of {previewPages.length}
+                      </span>
+                      <IonRange
+                        color="primary"
+                        min={1}
+                        max={previewPages.length}
+                        step={1}
+                        snaps={true}
+                        ticks={true}
+                        pin={true}
+                        pinFormatter={(v) => `${v}`}
+                        value={pageIdx + 1}
+                        onIonKnobMoveStart={() => Haptics.selectionStart().catch(() => {})}
+                        onIonKnobMoveEnd={() => Haptics.selectionEnd().catch(() => {})}
+                        onIonInput={(e) => {
+                          const next = Number(e.detail.value) - 1;
+                          if (next !== pageIdx) Haptics.selectionChanged().catch(() => {});
+                          setPreviewPageIndex(next);
+                        }}
+                        style={{ width: "100%", paddingTop: 4, paddingBottom: 4 }}
+                      />
+                    </div>
+                  )}
                   <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 8 }}>Watermark removed after payment</p>
                 </>
               ) : (

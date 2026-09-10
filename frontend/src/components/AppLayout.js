@@ -5,7 +5,7 @@ import {
   IonApp, IonSplitPane, IonMenu, IonHeader, IonToolbar, IonTitle,
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
-  IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner,
+  IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner, IonRippleEffect,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -423,7 +423,7 @@ export default function AppLayout({ children, fillHeight = false }) {
                 <button
                   key={label}
                   onClick={() => { navigate(path); setSidebarOpen(false); }}
-                  className="sidebar-nav-btn"
+                  className="sidebar-nav-btn ion-activatable"
                   style={{
                     width: "100%",
                     background: "transparent",
@@ -438,10 +438,13 @@ export default function AppLayout({ children, fillHeight = false }) {
                     color: "var(--ion-text-color)",
                     fontFamily: "var(--ion-font-family, system-ui)",
                     fontSize: "0.9375rem",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
                 >
                   <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
                   {t(label)}
+                  <IonRippleEffect />
                 </button>
               ))}
             </div>
@@ -805,16 +808,19 @@ export default function AppLayout({ children, fillHeight = false }) {
               <button
                 key={label}
                 onClick={() => { navigate(path); setMobileSidebarOpen(false); }}
+                className="ion-activatable"
                 style={{
                   width: "100%", background: "none", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 16,
                   padding: "0 20px", minHeight: 48, textAlign: "left",
                   color: "var(--ion-text-color)",
                   fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
+                  position: "relative", overflow: "hidden",
                 }}
               >
                 <IonIcon icon={icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
                 {t(label)}
+                <IonRippleEffect />
               </button>
             ))}
           </div>

@@ -5,7 +5,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
   IonButton, IonIcon, IonSpinner, IonTextarea, IonToast,
-  IonSegment, IonSegmentButton, IonLabel,
+  IonSegment, IonSegmentButton, IonLabel, IonNote,
 } from "@ionic/react";
 import {
   cloudDownloadOutline, eyeOutline, closeOutline, imageOutline,
@@ -116,10 +116,44 @@ export default function AppOfferLetter({ isOpen, onClose }) {
   const [toastMessage, setToastMessage]                   = useState("");
   const [toastColor, setToastColor]                       = useState("success");
   const [paymentOpen, setPaymentOpen]                     = useState(false);
+  const [couponCode, setCouponCode]                       = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon]       = useState(false);
+  const [couponError, setCouponError]                     = useState("");
+  const [appliedDiscount, setAppliedDiscount]             = useState(null);
 
   const showToast = (msg, color = "success") => {
     setToastMessage(msg); setToastColor(color); setToastOpen(true);
   };
+
+  // ── Coupon ──
+  // Auto-apply: as the user types or pastes a code we look it up (debounced)
+  // and apply it with a toast — no Apply button.
+  const OFFER_PRICE = 9.99;
+  useEffect(() => {
+    const code = couponCode.trim();
+    if (!code || appliedDiscount) { setIsValidatingCoupon(false); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setIsValidatingCoupon(true);
+      try {
+        const { ok, data } = await nativePost(`${BACKEND_URL}/api/validate-coupon`, { code, generatorType: "offer-letter" });
+        if (cancelled) return;
+        if (ok && data?.valid) {
+          const discountAmount = OFFER_PRICE * data.discountPercent / 100;
+          setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, discountedPrice: parseFloat((OFFER_PRICE - discountAmount).toFixed(2)) });
+          setCouponError("");
+          showToast(`Coupon ${data.code} applied: ${data.discountPercent}% off!`);
+        } else {
+          setCouponError(data?.detail || "Invalid coupon code");
+          setAppliedDiscount(null);
+        }
+      } catch { if (!cancelled) { setCouponError("Connection error. Please try again."); setAppliedDiscount(null); } }
+      finally { if (!cancelled) setIsValidatingCoupon(false); }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [couponCode]); // eslint-disable-line
+  const removeCoupon = () => { setCouponCode(""); setAppliedDiscount(null); setCouponError(""); };
+  const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : OFFER_PRICE;
 
   const setField = (field, value) =>
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -447,19 +481,52 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             {/* Preview & Download */}
             <div style={cardStyle}>
               <div style={headingStyle}>Preview & Download</div>
-              {formData.companyName && formData.candidateName && (
-                <IonButton fill="outline" expand="block" onClick={() => setShowPreview(v => !v)}
-                  disabled={isGeneratingPreview}
-                  style={{ "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-300)" }}>
-                  {isGeneratingPreview
-                    ? <IonSpinner name="crescent" slot="start" style={{ width: 16, height: 16 }} />
-                    : <IonIcon icon={eyeOutline} slot="start" />}
-                  {showPreview ? "Hide Preview" : "Show Preview"}
-                </IonButton>
+              <IonButton expand="block" color="light" onClick={() => setShowPreview(v => !v)}
+                disabled={isGeneratingPreview}>
+                {isGeneratingPreview
+                  ? <IonSpinner name="crescent" slot="start" style={{ width: 16, height: 16 }} />
+                  : <IonIcon icon={eyeOutline} slot="start" />}
+                {showPreview ? "Hide Preview" : "Preview"}
+              </IonButton>
+              {showPreview && (
+                pdfPreview ? (
+                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-step-200)" }}>
+                    <iframe src={pdfPreview} style={{ width: "100%", height: 420, border: "none" }} title="Preview" />
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 220, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
+                    <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
+                    <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>
+                      Enter the company and candidate names to see a preview
+                    </p>
+                  </div>
+                )
               )}
-              {showPreview && pdfPreview && (
-                <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-step-200)" }}>
-                  <iframe src={pdfPreview} style={{ width: "100%", height: 420, border: "none" }} title="Preview" />
+              {!hasActiveSubscription && (
+                <div>
+                  {!appliedDiscount ? (
+                    <>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <IonInput
+                          fill="outline" labelPlacement="floating" label="Coupon code"
+                          value={couponCode}
+                          onIonInput={e => { setCouponCode((e.detail.value || "").toUpperCase()); setCouponError(""); }}
+                          style={{ flex: 1, fontFamily: "monospace" }}
+                        />
+                        {isValidatingCoupon && <IonSpinner name="crescent" style={{ flexShrink: 0 }} />}
+                      </div>
+                      {couponError && <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{couponError}</IonNote>}
+                    </>
+                  ) : (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--ion-color-success)", borderRadius: 6 }}>
+                      <span style={{ color: "var(--ion-color-success-contrast)", fontWeight: 600, fontSize: "0.85rem" }}>
+                        {appliedDiscount.code} — {appliedDiscount.discountPercent}% off
+                      </span>
+                      <IonButton fill="clear" size="small" onClick={removeCoupon} style={{ "--color": "var(--ion-color-success-contrast)" }}>
+                        <IonIcon slot="icon-only" icon={closeOutline} />
+                      </IonButton>
+                    </div>
+                  )}
                 </div>
               )}
               {hasActiveSubscription ? (
@@ -472,7 +539,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
                 <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
                   style={{ "--background": "#059669", "--background-activated": "#047857" }}>
                   {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} />
-                    : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
+                    : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — ${finalPrice.toFixed(2)}</>}
                 </IonButton>
               )}
             </div>
@@ -486,7 +553,8 @@ export default function AppOfferLetter({ isOpen, onClose }) {
           docLabel="Offer Letter"
           documentType="offer-letter"
           template={formData.template}
-          basePrice={9.99}
+          basePrice={OFFER_PRICE}
+          discount={appliedDiscount}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPaymentOpen(false)}
         />

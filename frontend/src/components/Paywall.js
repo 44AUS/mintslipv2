@@ -126,6 +126,8 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
   }, [offer, onDismiss]);
 
   const active = !!(offer && offer.active && offer.expiresAt);
+  const expired = active && secondsLeft <= 0;
+  const offerLive = active && !expired; // discount is live only while counting down
 
   // Countdown to the server's expiry (persists across reopens — same expiresAt).
   useEffect(() => {
@@ -149,14 +151,12 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
   }, [screen]);
 
   const { discountedPrice, pct } = useMemo(() => {
-    if (!active) return { discountedPrice: basePrice, pct: 0 };
+    if (!offerLive) return { discountedPrice: basePrice, pct: 0 };
     const baseCents = Math.round(basePrice * 100);
     const discCents = Math.max(50, Math.round(baseCents * (100 - offer.pct) / 100));
     return { discountedPrice: discCents / 100, pct: offer.pct };
-  }, [active, offer, basePrice]);
+  }, [offerLive, offer, basePrice]);
 
-  const expired = active && secondsLeft <= 0;
-  const showCountdown = active && !expired;
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
 
@@ -174,13 +174,13 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
         </span>
         <span className="pw-plan-price">
           <strong>
-            {active && <s className="pw-strike">{money(basePrice)}</s>}
+            {offerLive && <s className="pw-strike">{money(basePrice)}</s>}
             {money(discountedPrice)}
           </strong>
-          {active && <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>}
+          {offerLive && <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>}
         </span>
       </div>
-      <button className="pw-cta" onClick={() => onUnlock?.(discountedPrice, active)}>
+      <button className="pw-cta" onClick={() => onUnlock?.(discountedPrice, offerLive)}>
         <IonIcon icon={lockClosedOutline} /> Complete for {money(discountedPrice)}
       </button>
       <p className="pw-fine">One-time purchase. No subscription required.</p>
@@ -208,13 +208,13 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
       {screen === "offer" ? (
         <>
           <div className="pw-head pw-swap" key="offer-head">
-            {active && <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>}
+            {offerLive && <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>}
             <h1 className="pw-title">Download your {docLabel}</h1>
             <p className="pw-subtitle">The #1 Document Creation App</p>
             <Stars />
-            {showCountdown && (
+            {active && (
               <>
-                <p className="pw-expires">Offer expires in</p>
+                {!expired && <p className="pw-expires">Offer expires in</p>}
                 <div className="pw-countdown">
                   <div className="pw-cd-box">
                     <span className="pw-cd-num">{mm}</span>
@@ -226,6 +226,7 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
                     <span className="pw-cd-label">Seconds</span>
                   </div>
                 </div>
+                {expired && <p className="pw-expired">Your offer has expired</p>}
               </>
             )}
           </div>
@@ -237,7 +238,7 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
       ) : (
         <>
           <div className="pw-head pw-swap" key="sure-head">
-            {active && <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>}
+            {offerLive && <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>}
             <h1 className="pw-title">Are you sure?</h1>
           </div>
 

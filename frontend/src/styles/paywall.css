@@ -149,6 +149,7 @@
 }
 .pw-cd-label { margin-top: 8px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
 .pw-cd-sep { font-size: 34px; font-weight: 800; color: color-mix(in srgb, var(--pw-accent) 65%, #fff); margin-top: 14px; }
+.pw-expired { margin: 14px 0 0; font-size: 15px; font-weight: 700; color: var(--ion-color-danger, #eb445a); }
 
 /* Testimonials */
 .pw-reviews { width: 100%; overflow: hidden; margin-top: 16px; }

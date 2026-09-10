@@ -147,7 +147,12 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
 
   return createPortal(
     <div className="pw">
-      {/* Blurs the actual /app screen + the modal behind the paywall. */}
+      {/* Blurred replica of the document behind the paywall (what was in the
+          modal), the same approach whodat uses — filter:blur renders reliably
+          on every device, unlike backdrop-filter. */}
+      {previewImage
+        ? <img className="pw-bgimg" src={previewImage} alt="" aria-hidden="true" />
+        : <span className="pw-bgfill" aria-hidden="true" />}
       <span className="pw-scrim" aria-hidden="true" />
 
       <button className="pw-x" onClick={onX} aria-label="Close">

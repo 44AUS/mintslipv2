@@ -272,18 +272,25 @@ export default function PaymentSuccess() {
       const fileName = `${docType}_${new Date().toISOString().split("T")[0]}${isZip ? ".zip" : ".pdf"}`;
       const template = localStorage.getItem(`pending${docType.replace(/(^|-)(\w)/g, (_, __, c) => c.toUpperCase())}Template`) || null;
       const token = localStorage.getItem("userToken");
+      let res = null;
       if (token) {
-        await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
+        res = await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ documentType: docType, fileName, fileData: base64, template }),
         });
       } else if (email && email.includes("@")) {
-        await fetch(`${BACKEND_URL}/api/guest/saved-documents`, {
+        res = await fetch(`${BACKEND_URL}/api/guest/saved-documents`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ guestEmail: email, documentType: docType, fileName, fileData: base64, template }),
         });
+      }
+      // Surface a rejected archive (e.g. oversized body) rather than dropping it
+      // silently — this is the only reason a paid document would be missing from
+      // the admin Saved Docs.
+      if (res && !res.ok) {
+        console.error(`Failed to archive ${docType}: HTTP ${res.status}`);
       }
     } catch (err) {
       console.error("Failed to archive document:", err);

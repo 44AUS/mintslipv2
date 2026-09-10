@@ -331,7 +331,26 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Failed to process download");
-      await generateAndDownloadResume({ ...generatedResume, template: formData.template, font: formData.font, sectionLayout: formData.sectionLayout, onePage: formData.onePage });
+      const zipBlob = await generateAndDownloadResume({ ...generatedResume, template: formData.template, font: formData.font, sectionLayout: formData.sectionLayout, onePage: formData.onePage }, !!user);
+      // Archive to the account so it appears in downloads and the admin Saved Docs.
+      if (user && zipBlob instanceof Blob) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                documentType: "resume",
+                fileName: `resume_${new Date().toISOString().split("T")[0]}.zip`,
+                fileData: reader.result.split(",")[1],
+                template: formData.template,
+              }),
+            });
+          };
+          reader.readAsDataURL(zipBlob);
+        } catch (e) { console.error("Failed to save document:", e); }
+      }
       if (data.downloadsRemaining !== undefined) {
         const u = { ...user, subscription: { ...user.subscription, downloads_remaining: data.downloadsRemaining } };
         setUser(u); localStorage.setItem("userInfo", JSON.stringify(u));

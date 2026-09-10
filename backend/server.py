@@ -1910,6 +1910,36 @@ async def update_user_preferences(data: UserPreferencesUpdate, session: dict = D
 
 # ========== SAVED DOCUMENTS ENDPOINTS ==========
 
+# MongoDB rejects any single document over 16MB. We embed the file's base64 in
+# the record as a durable backup alongside the on-disk copy, but a large PDF
+# (multi-page legal docs, statements with logos, resume ZIPs) can push the
+# record past that limit — which used to make the whole insert throw and the
+# document silently never appear in the admin Saved Docs. Keep the inline copy
+# only when it comfortably fits; otherwise rely on the on-disk file (the admin
+# list and downloads already read from disk first and only fall back to the
+# inline content). Threshold leaves headroom under the 16MB hard cap.
+MAX_INLINE_DOC_BYTES = 12 * 1024 * 1024
+
+
+async def _insert_saved_document(document: dict):
+    """Insert a saved-documents record so it always lands even when the inline
+    base64 backup would exceed MongoDB's per-document size limit. Falls back to
+    persisting metadata without the inline content (the on-disk file remains)."""
+    file_data = document.get("fileContent") or ""
+    if len(file_data) > MAX_INLINE_DOC_BYTES:
+        # Too large to embed safely — store metadata only; the disk file is the
+        # source of truth for downloads.
+        document = {**document, "fileContent": None, "inlineTooLarge": True}
+    try:
+        await saved_documents_collection.insert_one(document)
+    except Exception as e:
+        # Any residual size/encoding failure: retry once without the inline
+        # backup so the document still registers in the admin list.
+        logger.warning(f"saved document insert failed, retrying without inline content: {e}")
+        document = {**document, "fileContent": None, "inlineTooLarge": True}
+        await saved_documents_collection.insert_one(document)
+
+
 @app.get("/api/user/saved-documents")
 async def get_saved_documents(
     session: dict = Depends(get_current_user),
@@ -2012,8 +2042,8 @@ async def save_document(data: SaveDocumentRequest, session: dict = Depends(get_c
         "fileContent": data.fileData,  # Store base64 content in MongoDB for persistence
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
-    
-    await saved_documents_collection.insert_one(document)
+
+    await _insert_saved_document(document)
 
     retention_days = await get_doc_retention_days()
     if retention_days > 0:
@@ -2174,7 +2204,7 @@ async def save_guest_document(data: GuestSaveDocumentRequest):
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
 
-    await saved_documents_collection.insert_one(document)
+    await _insert_saved_document(document)
 
     retention_days = await get_doc_retention_days()
     if retention_days > 0:

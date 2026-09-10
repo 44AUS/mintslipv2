@@ -242,7 +242,26 @@ export default function AppOfferLetter({ isOpen, onClose }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Failed to process download");
-      await generateAndDownloadOfferLetter(formData, !!user);
+      const pdfBlob = await generateAndDownloadOfferLetter(formData, !!user);
+      // Archive to the account so it appears in downloads and the admin Saved Docs.
+      if (user && pdfBlob instanceof Blob) {
+        try {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            await fetch(`${BACKEND_URL}/api/user/saved-documents`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({
+                documentType: "offer-letter",
+                fileName: `Offer_Letter_${formData.candidateName?.replace(/\s+/g, "_") || "Candidate"}.pdf`,
+                fileData: reader.result.split(",")[1],
+                template: formData.template,
+              }),
+            });
+          };
+          reader.readAsDataURL(pdfBlob);
+        } catch (e) { console.error("Failed to save document:", e); }
+      }
       if (data.downloadsRemaining !== undefined) {
         const u = { ...user, subscription: { ...user.subscription, downloads_remaining: data.downloadsRemaining } };
         setUser(u);

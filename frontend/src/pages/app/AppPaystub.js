@@ -11,6 +11,7 @@ import {
   IonText, IonBadge, IonToast, IonSkeletonText, IonRange,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
+import { Haptics } from "@capacitor/haptics";
 import { generateAndDownloadPaystub } from "@/utils/paystubGenerator";
 import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
@@ -1384,7 +1385,13 @@ export default function AppPaystub() {
                         pin={true}
                         pinFormatter={(v) => `${v}`}
                         value={previewPageIndex + 1}
-                        onIonInput={(e) => setPreviewPageIndex(Number(e.detail.value) - 1)}
+                        onIonKnobMoveStart={() => Haptics.selectionStart().catch(() => {})}
+                        onIonKnobMoveEnd={() => Haptics.selectionEnd().catch(() => {})}
+                        onIonInput={(e) => {
+                          const next = Number(e.detail.value) - 1;
+                          if (next !== previewPageIndex) Haptics.selectionChanged().catch(() => {});
+                          setPreviewPageIndex(next);
+                        }}
                         style={{ width: "100%", paddingTop: 4, paddingBottom: 4 }}
                       />
                     </div>

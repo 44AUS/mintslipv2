@@ -11,6 +11,7 @@ import {
   cloudDownloadOutline, eyeOutline, closeOutline, imageOutline,
 } from "ionicons/icons";
 import { IonDateInput } from "@/components/DateInput";
+import SignaturePad from "@/components/SignaturePad";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
@@ -30,15 +31,6 @@ const cardStyle = {
 };
 const headingStyle = { fontWeight: 700, fontSize: "0.95rem", color: "var(--ion-text-color)" };
 const labelStyle = { fontSize: "0.75rem", color: "var(--ion-color-medium)", marginBottom: 4, display: "block" };
-const inputStyle = {
-  "--background": "var(--ion-color-step-50)",
-  "--color": "var(--ion-text-color)",
-  "--border-color": "var(--ion-color-step-200)",
-  "--border-radius": "6px",
-  "--padding-start": "10px",
-  "--padding-end": "10px",
-  fontSize: "0.9rem",
-};
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN",
@@ -237,37 +229,38 @@ export default function AppOfferLetter({ isOpen, onClose }) {
 
   // ── Small sub-components ──────────────────────────────────────────────
 
-  const Field = ({ label, field, type = "text", placeholder = "" }) => (
-    <div>
-      {label && <span style={labelStyle}>{label}</span>}
-      {type === "date" ? (
-        <IonDateInput value={formData[field]} onChange={v => setField(field, v)} style={inputStyle} />
-      ) : (
-        <IonInput value={formData[field]} onIonInput={e => setField(field, e.detail.value)}
-          type={type} placeholder={placeholder} fill="outline" style={inputStyle} />
-      )}
-    </div>
+  // Plain render functions (not inline components) so the Ionic inputs and
+  // the signature canvas never remount mid-typing/mid-drawing — same
+  // pattern as the tax/legal/business modal.
+  const renderField = (label, field, type = "text", placeholder = "") => (
+    type === "date" ? (
+      <IonDateInput label={label} value={formData[field]} onChange={v => setField(field, v)} />
+    ) : (
+      <IonInput value={formData[field]} onIonInput={e => setField(field, e.detail.value)}
+        type={type} placeholder={placeholder} fill="outline" labelPlacement="floating" label={label} />
+    )
   );
 
-  const SelectField = ({ label, field, options }) => (
-    <div>
-      {label && <span style={labelStyle}>{label}</span>}
-      <IonSelect value={formData[field]} onIonChange={e => setField(field, e.detail.value)}
-        fill="outline" style={inputStyle}>
-        {options.map(o => (
-          <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>
-        ))}
-      </IonSelect>
-    </div>
+  const renderSelect = (label, field, options) => (
+    <IonSelect fill="outline" labelPlacement="floating" label={label} value={formData[field]}
+      onIonChange={e => setField(field, e.detail.value)}>
+      {options.map(o => (
+        <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>
+      ))}
+    </IonSelect>
   );
 
-  const SigToggle = ({ typeField, imageField, sigRef }) => (
+  const renderSigToggle = (typeField, imageField, sigRef) => (
     <div>
-      <IonSegment mode="ios" value={formData[typeField]} style={{ marginBottom: 8 }}
-        onIonChange={e => setField(typeField, e.detail.value)}>
-        <IonSegmentButton value="generated"><IonLabel>Auto-generate</IonLabel></IonSegmentButton>
-        <IonSegmentButton value="custom"><IonLabel>Upload Image</IonLabel></IonSegmentButton>
+      <IonSegment mode="ios" value={formData[typeField]} style={{ marginBottom: 8, width: "100%" }}
+        onIonChange={e => { const m = e.detail.value; setFormData(p => ({ ...p, [typeField]: m, [imageField]: null })); }}>
+        <IonSegmentButton value="generated"><IonLabel>Auto</IonLabel></IonSegmentButton>
+        <IonSegmentButton value="draw"><IonLabel>Draw</IonLabel></IonSegmentButton>
+        <IonSegmentButton value="custom"><IonLabel>Upload</IonLabel></IonSegmentButton>
       </IonSegment>
+      {formData[typeField] === "draw" && (
+        <SignaturePad height={150} onChange={dataUrl => setField(imageField, dataUrl)} />
+      )}
       {formData[typeField] === "custom" && (
         formData[imageField] ? (
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--ion-color-step-200)", background: "var(--ion-color-step-50)" }}>
@@ -315,20 +308,14 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             {/* Template */}
             <div style={cardStyle}>
               <div style={headingStyle}>Template Style</div>
-              <div style={{ display: "flex", gap: 8 }}>
+              <IonSegment mode="ios" value={formData.template} style={{ width: "100%" }}
+                onIonChange={e => setField("template", e.detail.value)}>
                 {TEMPLATES.map(t => (
-                  <button key={t.value} onClick={() => setField("template", t.value)}
-                    style={{
-                      flex: 1, padding: "10px 6px", borderRadius: 8,
-                      border: `2px solid ${formData.template === t.value ? "var(--ion-color-primary)" : "var(--ion-color-step-200)"}`,
-                      background: formData.template === t.value ? "rgba(var(--ion-color-primary-rgb),0.08)" : "transparent",
-                      cursor: "pointer", textAlign: "center",
-                    }}>
-                    <div style={{ fontSize: "0.8rem", fontWeight: 700, color: formData.template === t.value ? "var(--ion-color-primary)" : "var(--ion-text-color)" }}>{t.label}</div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{t.desc}</div>
-                  </button>
+                  <IonSegmentButton key={t.value} value={t.value}>
+                    <IonLabel>{t.label}</IonLabel>
+                  </IonSegmentButton>
                 ))}
-              </div>
+              </IonSegment>
               {formData.template === "custom" && (
                 <div style={{ display: "flex", gap: 12 }}>
                   <div style={{ flex: 1 }}>
@@ -348,7 +335,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             {/* Company Info */}
             <div style={cardStyle}>
               <div style={headingStyle}>Company Information</div>
-              <Field label="Company Name *" field="companyName" />
+              {renderField("Company Name *", "companyName")}
               <div>
                 <span style={labelStyle}>Company Logo (Optional)</span>
                 {formData.companyLogo ? (
@@ -368,45 +355,45 @@ export default function AppOfferLetter({ isOpen, onClose }) {
                 )}
                 <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleLogoFile(e.target.files?.[0])} />
               </div>
-              <Field label="Address" field="companyAddress" />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 8 }}>
-                <Field label="City" field="companyCity" />
-                <SelectField label="State" field="companyState" options={US_STATES.map(s => ({ value: s, label: s }))} />
-                <Field label="ZIP" field="companyZip" />
+              {renderField("Address", "companyAddress")}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px", gap: 8 }}>
+                {renderField("City", "companyCity")}
+                {renderSelect("State", "companyState", US_STATES.map(s => ({ value: s, label: s })))}
+                {renderField("ZIP", "companyZip")}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <Field label="Phone" field="companyPhone" type="tel" />
-                <Field label="Email" field="companyEmail" type="email" />
+                {renderField("Phone", "companyPhone", "tel")}
+                {renderField("Email", "companyEmail", "email")}
               </div>
-              <Field label="Website" field="companyWebsite" />
+              {renderField("Website", "companyWebsite")}
             </div>
 
             {/* Candidate Info */}
             <div style={cardStyle}>
               <div style={headingStyle}>Candidate Information</div>
-              <Field label="Candidate Full Name *" field="candidateName" />
-              <Field label="Address" field="candidateAddress" />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px", gap: 8 }}>
-                <Field label="City" field="candidateCity" />
-                <SelectField label="State" field="candidateState" options={US_STATES.map(s => ({ value: s, label: s }))} />
-                <Field label="ZIP" field="candidateZip" />
+              {renderField("Candidate Full Name *", "candidateName")}
+              {renderField("Address", "candidateAddress")}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px", gap: 8 }}>
+                {renderField("City", "candidateCity")}
+                {renderSelect("State", "candidateState", US_STATES.map(s => ({ value: s, label: s })))}
+                {renderField("ZIP", "candidateZip")}
               </div>
             </div>
 
             {/* Position Details */}
             <div style={cardStyle}>
               <div style={headingStyle}>Position Details</div>
-              <Field label="Job Title *" field="jobTitle" />
-              <Field label="Department" field="department" />
+              {renderField("Job Title *", "jobTitle")}
+              {renderField("Department", "department")}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <SelectField label="Employment Type" field="employmentType" options={EMPLOYMENT_TYPES} />
-                <SelectField label="Work Location" field="workLocation" options={WORK_LOCATIONS} />
+                {renderSelect("Employment Type", "employmentType", EMPLOYMENT_TYPES)}
+                {renderSelect("Work Location", "workLocation", WORK_LOCATIONS)}
               </div>
-              {formData.workLocation !== "remote" && <Field label="Work Address" field="workAddress" />}
-              <Field label="Start Date" field="startDate" type="date" />
+              {formData.workLocation !== "remote" && renderField("Work Address", "workAddress")}
+              {renderField("Start Date", "startDate", "date")}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <Field label="Reporting Manager" field="reportingManager" />
-                <Field label="Manager's Title" field="reportingTitle" />
+                {renderField("Reporting Manager", "reportingManager")}
+                {renderField("Manager's Title", "reportingTitle")}
               </div>
             </div>
 
@@ -414,41 +401,33 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             <div style={cardStyle}>
               <div style={headingStyle}>Compensation</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <SelectField label="Compensation Type" field="compensationType" options={COMPENSATION_TYPES} />
-                <SelectField label="Pay Frequency" field="payFrequency" options={PAY_FREQUENCIES} />
+                {renderSelect("Compensation Type", "compensationType", COMPENSATION_TYPES)}
+                {renderSelect("Pay Frequency", "payFrequency", PAY_FREQUENCIES)}
               </div>
-              <Field label="Amount ($)" field="compensationAmount" type="number" />
+              {renderField("Amount ($)", "compensationAmount", "number")}
             </div>
 
             {/* Benefits */}
             <div style={cardStyle}>
               <div style={headingStyle}>Benefits & Terms</div>
-              <div>
-                <span style={labelStyle}>Benefits Package</span>
-                <IonTextarea value={formData.benefits} onIonInput={e => setField("benefits", e.detail.value)}
-                  rows={6} fill="outline"
-                  style={{ "--background": "var(--ion-color-step-50)", "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-200)", fontSize: "0.88rem" }} />
-              </div>
-              <div>
-                <span style={labelStyle}>Additional Terms (Optional)</span>
-                <IonTextarea value={formData.additionalTerms} onIonInput={e => setField("additionalTerms", e.detail.value)}
-                  rows={3} placeholder="Any additional terms or conditions..." fill="outline"
-                  style={{ "--background": "var(--ion-color-step-50)", "--color": "var(--ion-text-color)", "--border-color": "var(--ion-color-step-200)", fontSize: "0.88rem" }} />
-              </div>
-              <Field label="Response Deadline" field="responseDeadline" type="date" />
+              <IonTextarea value={formData.benefits} onIonInput={e => setField("benefits", e.detail.value)}
+                rows={6} fill="outline" labelPlacement="floating" label="Benefits Package" />
+              <IonTextarea value={formData.additionalTerms} onIonInput={e => setField("additionalTerms", e.detail.value)}
+                rows={3} placeholder="Any additional terms or conditions..." fill="outline" labelPlacement="floating" label="Additional Terms (Optional)" />
+              {renderField("Response Deadline", "responseDeadline", "date")}
             </div>
 
             {/* HR Signature */}
             <div style={cardStyle}>
               <div style={headingStyle}>HR Signature</div>
-              <Field label="Letter Date" field="letterDate" type="date" />
+              {renderField("Letter Date", "letterDate", "date")}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <Field label="Signer Name" field="signerName" />
-                <Field label="Signer Title" field="signerTitle" />
+                {renderField("Signer Name", "signerName")}
+                {renderField("Signer Title", "signerTitle")}
               </div>
               <div>
                 <span style={labelStyle}>HR Signature Style</span>
-                <SigToggle typeField="hrSignatureType" imageField="hrSignatureImage" sigRef={hrSigRef} />
+                {renderSigToggle("hrSignatureType", "hrSignatureImage", hrSigRef)}
               </div>
             </div>
 
@@ -456,12 +435,12 @@ export default function AppOfferLetter({ isOpen, onClose }) {
             <div style={cardStyle}>
               <div style={headingStyle}>Employee Signature (Optional)</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <Field label="Employee Full Name" field="employeeSignatureName" />
-                <Field label="Sign Date" field="employeeSignDate" type="date" />
+                {renderField("Employee Full Name", "employeeSignatureName")}
+                {renderField("Sign Date", "employeeSignDate", "date")}
               </div>
               <div>
                 <span style={labelStyle}>Employee Signature Style</span>
-                <SigToggle typeField="employeeSignatureType" imageField="employeeSignatureImage" sigRef={empSigRef} />
+                {renderSigToggle("employeeSignatureType", "employeeSignatureImage", empSigRef)}
               </div>
             </div>
 

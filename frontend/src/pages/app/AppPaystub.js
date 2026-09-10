@@ -1370,8 +1370,8 @@ export default function AppPaystub() {
                     </div>
                   </div>
                   {pdfPreviews.length > 1 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
-                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", flexShrink: 0, whiteSpace: "nowrap" }}>
+                    <div style={{ display: "flex", flexDirection: "column", marginTop: 8 }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", textAlign: "center", whiteSpace: "nowrap" }}>
                         Page {previewPageIndex + 1} of {pdfPreviews.length}
                       </span>
                       <IonRange
@@ -1385,7 +1385,7 @@ export default function AppPaystub() {
                         pinFormatter={(v) => `${v}`}
                         value={previewPageIndex + 1}
                         onIonInput={(e) => setPreviewPageIndex(Number(e.detail.value) - 1)}
-                        style={{ flex: 1 }}
+                        style={{ width: "100%" }}
                       />
                     </div>
                   )}

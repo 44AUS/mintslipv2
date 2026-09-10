@@ -290,12 +290,12 @@ const BANK_CONFIG = {
       { name: "transactions", type: "rowList", size: "12", addLabel: "Add Transaction",
         newRow: () => ({ date: "", description: "", type: "Purchase", amount: "" }),
         columns: [
-          { name: "date", label: "Date", type: "date", size: "3", sizeSm: "6" },
-          { name: "description", label: "Description", size: "4", sizeSm: "6" },
-          { name: "type", label: "Type", type: "select", size: "2", sizeSm: "6", options: [
+          { name: "date", label: "Date", type: "date", size: "6", sizeSm: "6" },
+          { name: "description", label: "Description", size: "6", sizeSm: "6" },
+          { name: "type", label: "Type", type: "select", size: "6", sizeSm: "6", options: [
             "Purchase", "Deposit", "Transfer", "Refund", "Withdrawal",
           ].map(t => ({ value: t, label: t })) },
-          { name: "amount", label: "Amount ($)", type: "number", size: "2", sizeSm: "6" },
+          { name: "amount", label: "Amount ($)", type: "number", size: "6", sizeSm: "6" },
         ]},
     ]},
   ],

@@ -24,6 +24,18 @@ import {
 import { generateAndDownloadCanadianPaystub } from "../utils/canadianPaystubGenerator";
 import { generateAndDownloadOfferLetter } from "../utils/offerLetterGenerator";
 import { generateAndDownloadResume } from "../utils/resumeGenerator";
+import { generateAndDownloadW2 } from "../utils/w2Generator";
+import { generateAndDownloadW9 } from "../utils/w9Generator";
+import { generateAndDownload1099NEC } from "../utils/1099necGenerator";
+import { generateAndDownload1099MISC } from "../utils/1099miscGenerator";
+import { generateAndDownloadScheduleC } from "../utils/scheduleCGenerator";
+import { generateAndDownloadBankStatement } from "../utils/bankStatementGenerator";
+import { generateAndDownloadCeaseAndDesist } from "../utils/ceaseAndDesistGenerator";
+import { generateAndDownloadLegalDocument } from "../utils/legalDocumentGenerator";
+import { generateAndDownloadPowerOfAttorney } from "../utils/powerOfAttorneyGenerator";
+import { generateAndDownloadCommercialLease } from "../utils/commercialLeaseGenerator";
+import { generateAndDownloadUtilityBill } from "../utils/utilityBillGenerator";
+import { generateAndDownloadVehicleBillOfSale } from "../utils/vehicleBillOfSaleGenerator";
 import AppOfferLetter from "../pages/app/AppOfferLetter";
 import AppResumeBuilder from "../pages/app/AppResumeBuilder";
 import SupportChatWidget from "./SupportChatWidget";
@@ -281,6 +293,29 @@ export default function AppLayout({ children, fillHeight = false }) {
           sectionLayout: formData?.sectionLayout || "standard",
           onePage: formData?.onePage || false,
         });
+      } else {
+        // Tax, legal, and business documents regenerate from the same
+        // pending form data the payment flow stored (keys match
+        // PaymentSuccess). Types without extra args share one shape.
+        const REDOWNLOAD = {
+          "w2":                   { key: "pendingW2Data",                run: (d) => generateAndDownloadW2(d, localStorage.getItem("pendingW2TaxYear") || "2024") },
+          "w9":                   { key: "pendingW9Data",                run: (d) => generateAndDownloadW9(d) },
+          "1099-nec":             { key: "pending1099NECData",           run: (d) => generateAndDownload1099NEC(d, localStorage.getItem("pending1099NECTaxYear") || "2024") },
+          "1099-misc":            { key: "pending1099MISCData",          run: (d) => generateAndDownload1099MISC(d, localStorage.getItem("pending1099MISCTaxYear") || "2024") },
+          "schedule-c":           { key: "pendingScheduleCData",         run: (d) => generateAndDownloadScheduleC(d, localStorage.getItem("pendingScheduleCTaxYear") || "2024") },
+          "bank-statement":       { key: "pendingBankStatementData",     run: (d) => generateAndDownloadBankStatement(d, localStorage.getItem("pendingBankStatementTemplate") || "chase") },
+          "cease-and-desist":     { key: "pendingCeaseAndDesistData",    run: (d) => generateAndDownloadCeaseAndDesist(d) },
+          "legal-document":       { key: "pendingLegalDocumentData",     run: (d) => generateAndDownloadLegalDocument(d) },
+          "power-of-attorney":    { key: "pendingPowerOfAttorneyData",   run: (d) => generateAndDownloadPowerOfAttorney(d) },
+          "commercial-lease":     { key: "pendingCommercialLeaseData",   run: (d) => generateAndDownloadCommercialLease(d) },
+          "utility-bill":         { key: "pendingUtilityBillData",       run: (d) => generateAndDownloadUtilityBill(d, localStorage.getItem("pendingUtilityBillTemplate") || "electric") },
+          "vehicle-bill-of-sale": { key: "pendingVehicleBillOfSaleData", run: (d) => generateAndDownloadVehicleBillOfSale(d) },
+        };
+        const entry = REDOWNLOAD[notif.type];
+        if (!entry) throw new Error("unsupported type");
+        const str = localStorage.getItem(entry.key);
+        if (!str) throw new Error("no data");
+        await entry.run(JSON.parse(str));
       }
     } catch {
       setToastMessage("Form data no longer available. Please create a new document.");

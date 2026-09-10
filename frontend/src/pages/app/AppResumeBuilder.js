@@ -5,7 +5,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
   IonButton, IonIcon, IonSpinner, IonTextarea, IonToast,
-  IonSegment, IonSegmentButton, IonLabel, IonCheckbox,
+  IonSegment, IonSegmentButton, IonLabel, IonCheckbox, IonNote,
 } from "@ionic/react";
 import {
   cloudDownloadOutline, cloudUploadOutline, documentTextOutline, eyeOutline, trashOutline, addOutline,
@@ -108,6 +108,10 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
   const [toastMessage, setToastMessage]                     = useState("");
   const [toastColor, setToastColor]                         = useState("success");
   const [paymentOpen, setPaymentOpen]                       = useState(false);
+  const [couponCode, setCouponCode]                         = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon]         = useState(false);
+  const [couponError, setCouponError]                       = useState("");
+  const [appliedDiscount, setAppliedDiscount]               = useState(null);
 
   const showToast = (msg, color = "success") => { setToastMessage(msg); setToastColor(color); setToastOpen(true); };
   const setField = (f, v) => setFormData(p => ({ ...p, [f]: v }));
@@ -337,6 +341,64 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     } catch (err) { showToast(err.message || "Download failed. Please try again.", "danger"); }
     finally { setIsProcessing(false); }
   };
+
+  // ── Coupon ──
+  // Auto-apply: as the user types or pastes a code we look it up (debounced)
+  // and apply it with a toast — no Apply button.
+  const RESUME_PRICE = 9.99;
+  useEffect(() => {
+    const code = couponCode.trim();
+    if (!code || appliedDiscount) { setIsValidatingCoupon(false); return; }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setIsValidatingCoupon(true);
+      try {
+        const { ok, data } = await nativePost(`${BACKEND_URL}/api/validate-coupon`, { code, generatorType: "ai-resume" });
+        if (cancelled) return;
+        if (ok && data?.valid) {
+          const discountAmount = RESUME_PRICE * data.discountPercent / 100;
+          setAppliedDiscount({ code: data.code, discountPercent: data.discountPercent, discountedPrice: parseFloat((RESUME_PRICE - discountAmount).toFixed(2)) });
+          setCouponError("");
+          showToast(`Coupon ${data.code} applied: ${data.discountPercent}% off!`);
+        } else {
+          setCouponError(data?.detail || "Invalid coupon code");
+          setAppliedDiscount(null);
+        }
+      } catch { if (!cancelled) { setCouponError("Connection error. Please try again."); setAppliedDiscount(null); } }
+      finally { if (!cancelled) setIsValidatingCoupon(false); }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [couponCode]); // eslint-disable-line
+  const removeCoupon = () => { setCouponCode(""); setAppliedDiscount(null); setCouponError(""); };
+  const finalPrice = appliedDiscount ? appliedDiscount.discountedPrice : RESUME_PRICE;
+
+  const renderCouponBlock = () => (
+    <div>
+      {!appliedDiscount ? (
+        <>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <IonInput
+              fill="outline" labelPlacement="floating" label="Coupon code"
+              value={couponCode}
+              onIonInput={e => { setCouponCode((e.detail.value || "").toUpperCase()); setCouponError(""); }}
+              style={{ flex: 1, fontFamily: "monospace" }}
+            />
+            {isValidatingCoupon && <IonSpinner name="crescent" style={{ flexShrink: 0 }} />}
+          </div>
+          {couponError && <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{couponError}</IonNote>}
+        </>
+      ) : (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", background: "var(--ion-color-success)", borderRadius: 6 }}>
+          <span style={{ color: "var(--ion-color-success-contrast)", fontWeight: 600, fontSize: "0.85rem" }}>
+            {appliedDiscount.code} — {appliedDiscount.discountPercent}% off
+          </span>
+          <IonButton fill="clear" size="small" onClick={removeCoupon} style={{ "--color": "var(--ion-color-success-contrast)" }}>
+            <IonIcon slot="icon-only" icon={closeOutline} />
+          </IonButton>
+        </div>
+      )}
+    </div>
+  );
 
   // One-time purchase: open the in-app card checkout
   const handleStripeCheckout = () => {
@@ -580,10 +642,13 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
               {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
             </IonButton>
           ) : (
-            <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
-              style={{ "--background": "#059669", "--background-activated": "#047857" }}>
-              {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
-            </IonButton>
+            <>
+              {renderCouponBlock()}
+              <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
+                style={{ "--background": "#059669", "--background-activated": "#047857" }}>
+                {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — ${finalPrice.toFixed(2)}</>}
+              </IonButton>
+            </>
           )}
         </>
       )}
@@ -687,10 +752,13 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
                   {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
                 </IonButton>
               ) : (
-                <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
-                  style={{ marginTop: 20, "--background": "#059669", "--background-activated": "#047857" }}>
-                  {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — $9.99</>}
-                </IonButton>
+                <>
+                  <div style={{ marginTop: 20 }}>{renderCouponBlock()}</div>
+                  <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
+                    style={{ marginTop: 12, "--background": "#059669", "--background-activated": "#047857" }}>
+                    {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} /> : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — ${finalPrice.toFixed(2)}</>}
+                  </IonButton>
+                </>
               )}
             </div>
           </div>
@@ -702,7 +770,8 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
           docLabel="AI Resume"
           documentType="ai-resume"
           template={formData.template}
-          basePrice={9.99}
+          basePrice={RESUME_PRICE}
+          discount={appliedDiscount}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPaymentOpen(false)}
         />

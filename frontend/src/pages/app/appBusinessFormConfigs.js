@@ -234,7 +234,7 @@ const flatBank = (fd) => ({
 });
 
 const BANK_CONFIG = {
-  key: "bank-statement", docType: "bank-statement", title: "Accounting Mockup (Bank Statement)",
+  key: "bank-statement", docType: "bank-statement", title: "Accounting Mockup",
   price: (fd) => {
     const t = bankFor(fd).template;
     return (t === "template-b" || t === "template-c") ? 69.99 : 49.99;

@@ -38,6 +38,8 @@ import { generateAndDownloadUtilityBill } from "../utils/utilityBillGenerator";
 import { generateAndDownloadVehicleBillOfSale } from "../utils/vehicleBillOfSaleGenerator";
 import AppOfferLetter from "../pages/app/AppOfferLetter";
 import AppResumeBuilder from "../pages/app/AppResumeBuilder";
+import AppTaxFormModal from "../pages/app/AppTaxFormModal";
+import { BUSINESS_FORM_CONFIGS } from "../pages/app/appBusinessFormConfigs";
 import SupportChatWidget from "./SupportChatWidget";
 import PromoBanner from "./PromoBanner";
 import { t, useLanguage } from "../utils/i18n";
@@ -125,6 +127,7 @@ export default function AppLayout({ children, fillHeight = false }) {
   useEffect(() => { setLandingSidebarOpen(false); }, [location.pathname]);
   const [createOpen,        setCreateOpen]          = useState(false);
   const [offerLetterOpen,   setOfferLetterOpen]     = useState(false);
+  const [accountingOpen,    setAccountingOpen]      = useState(false);
   const [resumeBuilderOpen, setResumeBuilderOpen]   = useState(false);
 
   // Notifications state
@@ -609,6 +612,8 @@ export default function AppLayout({ children, fillHeight = false }) {
             { text: t("Create Canadian Paystub"), handler: () => navigate("/app/canadian-paystub") },
           !disabledGenerators.has("offer-letter") &&
             { text: t("Create Offer Letter"),     handler: () => setOfferLetterOpen(true) },
+          !disabledGenerators.has("bank-statement") &&
+            { text: t("Create Accounting Mockup"), handler: () => setAccountingOpen(true) },
           !disabledGenerators.has("ai-resume") &&
             { text: t("Build AI Resume"),         handler: () => setResumeBuilderOpen(true) },
           !groupAllDisabled(TAX_GENERATOR_IDS) &&
@@ -829,6 +834,11 @@ export default function AppLayout({ children, fillHeight = false }) {
 
       {/* ── Offer Letter modal ── */}
       <AppOfferLetter isOpen={offerLetterOpen} onClose={() => setOfferLetterOpen(false)} />
+
+      {/* ── Accounting Mockup modal (config-driven, same flow as the doc modals) ── */}
+      {accountingOpen && (
+        <AppTaxFormModal config={BUSINESS_FORM_CONFIGS["bank-statement"]} onClose={() => setAccountingOpen(false)} />
+      )}
 
       {/* ── Resume Builder modal ── */}
       <AppResumeBuilder isOpen={resumeBuilderOpen} onClose={() => setResumeBuilderOpen(false)} />

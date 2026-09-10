@@ -681,7 +681,7 @@ export default function PaymentSuccess() {
       'w9': 'W-9 Form',
       '1099-misc': '1099-MISC Form',
       '1099-nec': '1099-NEC Form',
-      'bank-statement': 'Bank Statement',
+      'bank-statement': 'Accounting Mockup',
       'offer-letter': 'Offer Letter',
       'cease-and-desist': 'Cease and Desist Letter',
       'legal-document': 'Legal Document',

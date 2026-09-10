@@ -69,7 +69,7 @@ const BUSINESS_FORMS = [
     preview: () => generateCommercialLeasePreview(LEASE_SAMPLE) },
   { key: "utility-bill", name: "Utility Bill", title: "Utility Bill", color: "#64748b",
     preview: () => generateUtilityBillPreview({ ...UTILITY_SAMPLE, uploadedLogo: makeTextLogo("City Power", "#6d28d9") }, "template-a") },
-  { key: "bank-statement", name: "Bank Statement", title: "Accounting Mockup", color: "#059669",
+  { key: "bank-statement", name: "Accounting Mockup", title: "Accounting Mockup", color: "#059669",
     preview: () => generateBankStatementPreview({ ...BANK_SAMPLE, bankName: "Chime", bankLogo: null }, "template-a") },
 ];
 

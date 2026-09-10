@@ -84,7 +84,7 @@ export const GENERATOR_GROUPS = [
       { id: "vehicle-bill-of-sale", label: "Vehicle Bill of Sale" },
       { id: "commercial-lease", label: "Commercial Lease" },
       { id: "utility-bill", label: "Utility Bill" },
-      { id: "bank-statement", label: "Bank Statement" },
+      { id: "bank-statement", label: "Accounting Mockup" },
     ],
   },
 ];

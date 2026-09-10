@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IonSpinner } from "@ionic/react";
-import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock, Smartphone, Plus, X, SlidersHorizontal } from "lucide-react";
+import { Wrench, UserX, Save, CheckCircle, AlertCircle, Download, Search, GripVertical, Navigation, Clock, Smartphone, Plus, X, SlidersHorizontal, Tag } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { GENERATOR_GROUPS, clearGeneratorAvailabilityCache } from "@/utils/generatorAvailability";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -85,6 +85,11 @@ export default function AdminSiteSettings() {
   const [retentionLoading, setRetentionLoading] = useState(false);
   const [retentionMsg, setRetentionMsg] = useState(null);
 
+  // Exit-intent paywall offer
+  const [paywallOffer, setPaywallOffer] = useState({ enabled: true, percent: 20, minutes: 10 });
+  const [paywallLoading, setPaywallLoading] = useState(false);
+  const [paywallMsg, setPaywallMsg] = useState(null);
+
   // App Settings
   const [appSettings, setAppSettings] = useState({ version: "1.0.0", status: "normal", videoUrl: "", whatsNew: [], knownIssues: [] });
   const [appSettingsLoading, setAppSettingsLoading] = useState(false);
@@ -117,6 +122,7 @@ export default function AdminSiteSettings() {
     fetchPSPrices();
     fetchNavOrder();
     fetchRetention();
+    fetchPaywallOffer();
     fetchAppSettings();
     fetchTutorialCategories();
     fetchGenerators();
@@ -305,6 +311,42 @@ export default function AdminSiteSettings() {
       setRetentionMsg({ type: "error", text: "An error occurred." });
     } finally {
       setRetentionLoading(false);
+    }
+  };
+
+  const fetchPaywallOffer = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/paywall-offer`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setPaywallOffer({ enabled: !!data.enabled, percent: data.percent ?? 20, minutes: data.minutes ?? 10 });
+    } catch (e) {}
+  };
+
+  const savePaywallOffer = async () => {
+    setPaywallLoading(true);
+    setPaywallMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/paywall-offer`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(paywallOffer)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPaywallOffer({ enabled: !!data.enabled, percent: data.percent, minutes: data.minutes });
+        setPaywallMsg({ type: "success", text: data.enabled ? `Paywall offer set to ${data.percent}% off for ${data.minutes} min.` : "Paywall offer turned off." });
+        setTimeout(() => setPaywallMsg(null), 4000);
+      } else {
+        setPaywallMsg({ type: "error", text: data.detail || "Failed to save the paywall offer." });
+      }
+    } catch (e) {
+      setPaywallMsg({ type: "error", text: "An error occurred." });
+    } finally {
+      setPaywallLoading(false);
     }
   };
 
@@ -807,6 +849,70 @@ export default function AdminSiteSettings() {
             >
               {retentionLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Retention Setting
+            </button>
+          </div>
+
+          {/* Exit-Intent Paywall Offer */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-50">
+                <Tag className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Exit-Intent Paywall Offer</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Shown when a buyer closes the checkout without paying — a last-chance discount on the same document,
+                  enforced at charge time. Set the discount and how long the countdown runs.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-1 border-t border-slate-100 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-700">Enable paywall offer</p>
+                  <p className="text-xs text-slate-500 mt-0.5">When off, closing the checkout just closes it.</p>
+                </div>
+                <Toggle on={paywallOffer.enabled} onClick={() => setPaywallOffer(p => ({ ...p, enabled: !p.enabled }))} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Discount (%)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="90"
+                    value={paywallOffer.percent}
+                    onChange={e => setPaywallOffer(p => ({ ...p, percent: Math.max(1, Math.min(90, parseInt(e.target.value, 10) || 0)) }))}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-slate-400 mt-1.5">% off the document's price.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Countdown (minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    value={paywallOffer.minutes}
+                    onChange={e => setPaywallOffer(p => ({ ...p, minutes: Math.max(1, Math.min(1440, parseInt(e.target.value, 10) || 0)) }))}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-slate-400 mt-1.5">How long the offer stays live.</p>
+                </div>
+              </div>
+            </div>
+
+            <Msg msg={paywallMsg} />
+
+            <button
+              onClick={savePaywallOffer}
+              disabled={paywallLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {paywallLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
+              Save Paywall Offer
             </button>
           </div>
 

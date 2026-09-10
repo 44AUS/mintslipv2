@@ -2387,24 +2387,45 @@ async def create_checkout_session(data: CreateCheckoutSession, session: dict = D
 # a live countdown, and the discount is re-derived and enforced at charge time
 # from that stamp — so the shown price is the charged price and it can't be
 # forged or claimed after the window closes.
-PAYWALL_OFFER_ENABLED = True
-PAYWALL_OFFER_PERCENT = 20       # % off the document's base price
-PAYWALL_OFFER_MINUTES = 10       # how long the countdown window runs
+# Defaults — the live values are admin-configurable (site_settings "paywall_offer").
+PAYWALL_OFFER_ENABLED_DEFAULT = True
+PAYWALL_OFFER_PERCENT_DEFAULT = 20       # % off the document's base price
+PAYWALL_OFFER_MINUTES_DEFAULT = 10       # how long the countdown window runs
 
 
-def _paywall_offer_cents(base_cents: int) -> int:
+async def get_paywall_offer_config() -> dict:
+    """Admin-configurable exit-intent offer settings, with safe defaults."""
+    setting = await site_settings_collection.find_one({"key": "paywall_offer"}) or {}
+    try:
+        percent = int(setting.get("percent", PAYWALL_OFFER_PERCENT_DEFAULT))
+    except (TypeError, ValueError):
+        percent = PAYWALL_OFFER_PERCENT_DEFAULT
+    try:
+        minutes = int(setting.get("minutes", PAYWALL_OFFER_MINUTES_DEFAULT))
+    except (TypeError, ValueError):
+        minutes = PAYWALL_OFFER_MINUTES_DEFAULT
+    enabled = setting.get("enabled", PAYWALL_OFFER_ENABLED_DEFAULT)
+    return {
+        "enabled": bool(enabled),
+        "percent": max(1, min(90, percent)),
+        "minutes": max(1, min(1440, minutes)),
+    }
+
+
+def _paywall_offer_cents(base_cents: int, percent: int) -> int:
     """Discounted charge for an active offer, honoring Stripe's 50¢ floor."""
-    return max(50, round(base_cents * (100 - PAYWALL_OFFER_PERCENT) / 100))
+    return max(50, round(base_cents * (100 - percent) / 100))
 
 
 @app.get("/api/paywall/offer")
 async def get_paywall_offer(session: dict = Depends(get_current_user)):
     """Return the current user's exit-intent offer, (re)stamping a fresh window
     so the paywall reliably appears with a live countdown on every abandon."""
-    if not PAYWALL_OFFER_ENABLED:
+    cfg = await get_paywall_offer_config()
+    if not cfg["enabled"]:
         return {"success": True, "active": False, "discountPercent": 0, "expiresAt": None}
     now = datetime.now(timezone.utc)
-    expires = now + timedelta(minutes=PAYWALL_OFFER_MINUTES)
+    expires = now + timedelta(minutes=cfg["minutes"])
     stamp = {"stampedAt": now.isoformat(), "expiresAt": expires.isoformat()}
     await users_collection.update_one(
         {"id": session["userId"]}, {"$set": {"paywallOffer": stamp}}
@@ -2412,9 +2433,36 @@ async def get_paywall_offer(session: dict = Depends(get_current_user)):
     return {
         "success": True,
         "active": True,
-        "discountPercent": PAYWALL_OFFER_PERCENT,
+        "discountPercent": cfg["percent"],
         "expiresAt": stamp["expiresAt"],
     }
+
+
+@app.get("/api/admin/paywall-offer")
+async def admin_get_paywall_offer(session: dict = Depends(get_current_admin)):
+    """Read the exit-intent paywall offer settings (admin)."""
+    check_permission(session, "view_site_settings")
+    return {"success": True, **(await get_paywall_offer_config())}
+
+
+@app.put("/api/admin/paywall-offer")
+async def admin_set_paywall_offer(data: dict, session: dict = Depends(get_current_admin)):
+    """Update the exit-intent paywall offer settings (admin)."""
+    check_permission(session, "view_site_settings")
+    try:
+        percent = max(1, min(90, int(data.get("percent", PAYWALL_OFFER_PERCENT_DEFAULT))))
+        minutes = max(1, min(1440, int(data.get("minutes", PAYWALL_OFFER_MINUTES_DEFAULT))))
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="percent and minutes must be whole numbers")
+    enabled = bool(data.get("enabled", PAYWALL_OFFER_ENABLED_DEFAULT))
+    await site_settings_collection.update_one(
+        {"key": "paywall_offer"},
+        {"$set": {"key": "paywall_offer", "enabled": enabled, "percent": percent, "minutes": minutes,
+                  "updatedAt": datetime.now(timezone.utc).isoformat(), "updatedBy": session.get("email")}},
+        upsert=True,
+    )
+    await log_action(session, "update_paywall_offer", "site_settings", "paywall_offer", f"{percent}% / {minutes}min / {'on' if enabled else 'off'}")
+    return {"success": True, "enabled": enabled, "percent": percent, "minutes": minutes}
 
 
 async def _resolve_offer_user(authorization: Optional[str]):
@@ -2454,10 +2502,11 @@ async def create_payment_intent(request: dict, req: Request, authorization: Opti
         # the paywall was shown). We never stamp here, so the discount can't be
         # claimed by calling this endpoint directly or after the window expires.
         if paywall_offer:
+            cfg = await get_paywall_offer_config()
             offer_user = await _resolve_offer_user(authorization)
             stamp = (offer_user or {}).get("paywallOffer") or {}
             active = False
-            if PAYWALL_OFFER_ENABLED and stamp.get("expiresAt"):
+            if cfg["enabled"] and stamp.get("expiresAt"):
                 try:
                     exp = datetime.fromisoformat(stamp["expiresAt"])
                     if exp.tzinfo is None:
@@ -2467,7 +2516,7 @@ async def create_payment_intent(request: dict, req: Request, authorization: Opti
                     active = False
             if active:
                 base_cents = amount_cents
-                amount_cents = _paywall_offer_cents(base_cents)
+                amount_cents = _paywall_offer_cents(base_cents, cfg["percent"])
                 discount_code = discount_code or "LASTCHANCE"
                 discount_amount = round((base_cents - amount_cents) / 100, 2)
             # If there's no active window we simply charge the base amount.

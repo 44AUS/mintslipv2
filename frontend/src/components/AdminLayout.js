@@ -101,8 +101,10 @@ function NavItem({ tab, isActive, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="sidebar-nav-btn"
+      className="sidebar-nav-btn ion-activatable"
       style={{
+        position: "relative",
+        overflow: "hidden",
         width: "100%",
         background: isActive ? "var(--ion-color-step-100)" : "transparent",
         border: "none",
@@ -122,6 +124,7 @@ function NavItem({ tab, isActive, onClick }) {
     >
       <IonIcon icon={tab.icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
       {tab.label}
+      <ion-ripple-effect />
     </button>
   );
 }
@@ -673,8 +676,10 @@ export default function AdminLayout({ children, fillHeight = false }) {
             <div slot="fixed" style={{ bottom: 0, left: 0, right: 0, background: "var(--app-sidebar-bg, #fff)", borderTop: "1px solid var(--app-divider)", zIndex: 10 }}>
               <button
                 onClick={() => { navigate("/admin/settings"); handleCloseSidebar(); }}
-                className="sidebar-nav-btn"
+                className="sidebar-nav-btn ion-activatable"
                 style={{
+                  position: "relative",
+                  overflow: "hidden",
                   width: "100%",
                   background: activeTab === "settings" ? "var(--ion-color-step-100)" : "transparent",
                   border: "none",
@@ -693,6 +698,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
               >
                 <IonIcon icon={settingsOutline} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
                 Settings
+                <ion-ripple-effect />
               </button>
             </div>
           </IonContent>

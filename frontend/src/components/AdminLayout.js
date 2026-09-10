@@ -632,80 +632,6 @@ export default function AdminLayout({ children, fillHeight = false }) {
               </div>
             </div>
 
-            {/* Business popover */}
-            <FreshPopover
-              open={bizMenu.open}
-              event={bizMenu.event}
-              onClose={() => setBizMenu({ open: false, event: undefined })}
-              side="bottom"
-              alignment="start"
-              style={{ "--width": "284px", "--offset-y": "4px" }}
-            >
-              <IonContent>
-                <IonList lines="none" style={{ padding: "4px 0" }}>
-                  <IonItem
-                    button
-                    detail={false}
-                    onClick={() => { setBizMenu({ open: false, event: undefined }); navigate("/admin/site-settings"); }}
-                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
-                  >
-                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
-                      <IonIcon icon={settingsOutline} style={{ fontSize: 18 }} />
-                    </div>
-                    <IonLabel>Site Settings</IonLabel>
-                  </IonItem>
-                </IonList>
-              </IonContent>
-            </FreshPopover>
-
-            {/* User profile popover */}
-            <FreshPopover
-              open={userMenu.open}
-              event={userMenu.event}
-              onClose={() => setUserMenu({ open: false, event: undefined })}
-              side="bottom"
-              alignment="start"
-              style={{ "--width": "284px", "--offset-y": "4px" }}
-            >
-              <IonContent>
-                <IonList lines="none" style={{ padding: "4px 0" }}>
-                  <IonItem
-                    button
-                    detail={false}
-                    onClick={() => { setUserMenu({ open: false, event: undefined }); navigate("/admin/settings"); }}
-                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
-                  >
-                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
-                      <IonIcon icon={personOutline} style={{ fontSize: 18 }} />
-                    </div>
-                    <IonLabel>Profile &amp; Settings</IonLabel>
-                  </IonItem>
-                  <IonItem
-                    button
-                    detail={false}
-                    onClick={() => { setUserMenu({ open: false, event: undefined }); navigate("/admin/settings?tab=password"); }}
-                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
-                  >
-                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
-                      <IonIcon icon={lockClosedOutline} style={{ fontSize: 18 }} />
-                    </div>
-                    <IonLabel>Change Password</IonLabel>
-                  </IonItem>
-                  <div style={{ height: 1, background: "var(--app-divider)", margin: "2px 0" }} />
-                  <IonItem
-                    button
-                    detail={false}
-                    onClick={() => { setUserMenu({ open: false, event: undefined }); handleLogout(); }}
-                    style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", "--color": "var(--ion-color-danger)", fontSize: "0.88rem" }}
-                  >
-                    <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
-                      <IonIcon icon={logOutOutline} style={{ fontSize: 18, color: "var(--ion-color-danger)" }} />
-                    </div>
-                    <IonLabel>Log Out</IonLabel>
-                  </IonItem>
-                </IonList>
-              </IonContent>
-            </FreshPopover>
 
             {/* Support Center button */}
             <div style={{ padding: "0 16px 12px", flexShrink: 0 }}>
@@ -1028,7 +954,84 @@ export default function AdminLayout({ children, fillHeight = false }) {
         </div>
       </div>
 
-      {mobileSidebarOpen && createPortal(<>
+      {/* ── Shared identity popovers (used by both the desktop rail and the mobile drawer) ── */}
+      <FreshPopover
+        open={bizMenu.open}
+        event={bizMenu.event}
+        onClose={() => setBizMenu({ open: false, event: undefined })}
+        side="bottom"
+        alignment="start"
+        style={{ "--width": "284px", "--offset-y": "4px" }}
+      >
+        <IonContent>
+          <IonList lines="none" style={{ padding: "4px 0" }}>
+            <IonItem
+              button
+              detail={false}
+              onClick={() => { setBizMenu({ open: false, event: undefined }); setMobileSidebarOpen(false); navigate("/admin/site-settings"); }}
+              style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
+            >
+              <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                <IonIcon icon={settingsOutline} style={{ fontSize: 18 }} />
+              </div>
+              <IonLabel>Site Settings</IonLabel>
+            </IonItem>
+          </IonList>
+        </IonContent>
+      </FreshPopover>
+
+      <FreshPopover
+        open={userMenu.open}
+        event={userMenu.event}
+        onClose={() => setUserMenu({ open: false, event: undefined })}
+        side="bottom"
+        alignment="start"
+        style={{ "--width": "284px", "--offset-y": "4px" }}
+      >
+        <IonContent>
+          <IonList lines="none" style={{ padding: "4px 0" }}>
+            <IonItem
+              button
+              detail={false}
+              onClick={() => { setUserMenu({ open: false, event: undefined }); setMobileSidebarOpen(false); navigate("/admin/settings"); }}
+              style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
+            >
+              <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                <IonIcon icon={personOutline} style={{ fontSize: 18 }} />
+              </div>
+              <IonLabel>Profile &amp; Settings</IonLabel>
+            </IonItem>
+            <IonItem
+              button
+              detail={false}
+              onClick={() => { setUserMenu({ open: false, event: undefined }); setMobileSidebarOpen(false); navigate("/admin/settings?tab=password"); }}
+              style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
+            >
+              <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                <IonIcon icon={lockClosedOutline} style={{ fontSize: 18 }} />
+              </div>
+              <IonLabel>Change Password</IonLabel>
+            </IonItem>
+            <div style={{ height: 1, background: "var(--app-divider)", margin: "2px 0" }} />
+            <IonItem
+              button
+              detail={false}
+              onClick={() => { setUserMenu({ open: false, event: undefined }); setMobileSidebarOpen(false); handleLogout(); }}
+              style={{ "--min-height": "44px", "--padding-start": "14px", "--inner-padding-end": "14px", "--color": "var(--ion-color-danger)", fontSize: "0.88rem" }}
+            >
+              <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                <IonIcon icon={logOutOutline} style={{ fontSize: 18, color: "var(--ion-color-danger)" }} />
+              </div>
+              <IonLabel>Log Out</IonLabel>
+            </IonItem>
+          </IonList>
+        </IonContent>
+      </FreshPopover>
+
+      {/* Rendered inline inside IonApp (not portaled to document.body) so the identity
+          popovers can anchor to these rows — Ionic can only position a popover against a
+          node that lives inside ion-app. The fixed overlay still covers the whole viewport. */}
+      {mobileSidebarOpen && (<>
       {/* ── Mobile sidebar overlay ── */}
       <div
         className="mob-sidebar-backdrop"
@@ -1059,32 +1062,32 @@ export default function AdminLayout({ children, fillHeight = false }) {
           </button>
         </div>
 
-        {/* Profile card */}
+        {/* Profile card — same popover-driven rows as the desktop rail */}
         <div style={{ padding: "12px 8px", flexShrink: 0 }}>
           <div style={{ borderRadius: 10, overflow: "hidden", background: "var(--ion-card-background)", border: "1px solid var(--app-divider)" }}>
-            <button onClick={() => { navigate("/admin/site-settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", borderBottom: "1px solid var(--app-divider)", textAlign: "left" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <img src={MintSlipLogo} alt="MintSlip" style={{ width: 30, height: 30, objectFit: "contain" }} />
-              </div>
+            <div onClick={(e) => setBizMenu({ open: true, event: e.nativeEvent })} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer", borderBottom: "1px solid var(--app-divider)" }}>
+              <IonAvatar style={{ width: 40, height: 40, flexShrink: 0 }}>
+                <img src={MintSlipLogo} alt="MintSlip" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%", background: "var(--ion-color-step-100)" }} />
+              </IonAvatar>
               <div style={{ minWidth: 0, flex: "1 1 0%" }}>
                 <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)", lineHeight: 1.2, marginBottom: 1 }}>Business</div>
                 <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>MintSlip</div>
               </div>
-              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--ion-color-medium)", flexShrink: 0 }} />
-            </button>
-            <button onClick={() => { navigate("/admin/settings"); setMobileSidebarOpen(false); }} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", textAlign: "left" }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--ion-color-primary)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--ion-color-medium)", flexShrink: 0, pointerEvents: "none" }} />
+            </div>
+            <div onClick={(e) => setUserMenu({ open: true, event: e.nativeEvent })} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 20px", cursor: "pointer" }}>
+              <IonAvatar style={{ width: 40, height: 40, flexShrink: 0 }}>
                 {adminProfile?.photo
-                  ? <img src={adminProfile.photo} alt="admin" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  : <span style={{ color: "#fff", fontSize: "1rem", fontWeight: 700 }}>{adminInitials}</span>
+                  ? <img src={adminProfile.photo} alt={adminProfile?.name || "Admin"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                  : <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "var(--ion-color-primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", fontWeight: 700 }}>{adminInitials}</div>
                 }
-              </div>
+              </IonAvatar>
               <div style={{ minWidth: 0, flex: "1 1 0%" }}>
                 <div style={{ fontSize: "0.9rem", color: "var(--ion-text-color)", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{adminProfile?.name || adminProfile?.email || "Admin"}</div>
                 <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", lineHeight: 1.2 }}>{adminRole === "admin" ? "Super Admin" : "Moderator"}</div>
               </div>
-              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--ion-color-medium)", flexShrink: 0 }} />
-            </button>
+              <IonIcon icon={chevronForwardOutline} style={{ fontSize: 18, color: "var(--ion-color-medium)", flexShrink: 0, pointerEvents: "none" }} />
+            </div>
           </div>
         </div>
 
@@ -1113,46 +1116,28 @@ export default function AdminLayout({ children, fillHeight = false }) {
         </div>
         <hr style={{ margin: 0, border: "none", borderTop: `1px solid ${darkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}` }} />
 
-        {/* Nav links */}
+        {/* Nav links — same NavItem rows as the desktop rail */}
         <div style={{ flex: 1, overflowY: "auto" }}>
           {tabs.filter(t => !SIDEBAR_EXCLUDE.has(t.id)).map(tab => (
-            <button
+            <NavItem
               key={tab.id}
+              tab={tab}
+              isActive={activeTab === tab.id}
               onClick={() => { navigate(tab.path); setMobileSidebarOpen(false); }}
-              style={{
-                width: "100%", background: activeTab === tab.id ? "rgba(0,0,0,0.08)" : "none",
-                border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
-                padding: "0 20px", minHeight: 48, textAlign: "left",
-                color: activeTab === tab.id ? "#059669" : "var(--ion-text-color)",
-                fontWeight: activeTab === tab.id ? 600 : 400,
-                fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
-              }}
-            >
-              <IonIcon icon={tab.icon} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
-              {tab.label}
-            </button>
+            />
           ))}
         </div>
 
         {/* Settings pinned at bottom */}
         <div style={{ borderTop: "1px solid var(--app-divider)", flexShrink: 0 }}>
-          <button
+          <NavItem
+            tab={{ id: "settings", icon: settingsOutline, label: "Settings" }}
+            isActive={activeTab === "settings"}
             onClick={() => { navigate("/admin/settings"); setMobileSidebarOpen(false); }}
-            style={{
-              width: "100%", background: activeTab === "settings" ? "rgba(0,0,0,0.08)" : "none",
-              border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
-              padding: "0 20px", minHeight: 48, textAlign: "left",
-              color: activeTab === "settings" ? "#059669" : "var(--ion-text-color)",
-              fontWeight: activeTab === "settings" ? 600 : 400,
-              fontFamily: "var(--ion-font-family)", fontSize: "0.9375rem",
-            }}
-          >
-            <IonIcon icon={settingsOutline} style={{ fontSize: 20, flexShrink: 0, color: "inherit" }} />
-            Settings
-          </button>
+          />
         </div>
       </div>
-      </>, document.body)}
+      </>)}
 
     </IonApp>
   );

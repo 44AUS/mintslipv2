@@ -95,7 +95,16 @@ async function buildPreviewDoc(formData, template = 'template-a') {
     }
 
     const doc = new jsPDF({ unit: "pt", format: "letter" });
-    
+
+    // Mirror the download generator: coerce every jsPDF.text argument so blank
+    // optional fields (address lines, empty cells) can't throw and blank the
+    // live preview.
+    const _origText = doc.text.bind(doc);
+    doc.text = (txt, ...rest) => _origText(
+      txt == null ? "" : (Array.isArray(txt) ? txt.map((t) => (t == null ? "" : String(t))) : String(txt)),
+      ...rest
+    );
+
     const margin = 25;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();

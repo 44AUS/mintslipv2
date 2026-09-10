@@ -91,7 +91,20 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   } = data;
 
   const doc = new jsPDF({ unit: "pt", format: "letter" });
-  
+
+  // jsPDF.text throws "Invalid arguments passed to jsPDF.text" on a null,
+  // undefined or non-string value. Optional fields (address lines, blank
+  // transaction cells, AI-filled values) can legitimately be empty, so coerce
+  // every text argument to a safe string/array. Scoped to this fresh document,
+  // this guards the built-in templates, the page-number footer and any custom
+  // layout rendered into the same doc, so a blank field can never fail the
+  // whole generation.
+  const _origText = doc.text.bind(doc);
+  doc.text = (txt, ...rest) => _origText(
+    txt == null ? "" : (Array.isArray(txt) ? txt.map((t) => (t == null ? "" : String(t))) : String(txt)),
+    ...rest
+  );
+
   const margin = 25;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

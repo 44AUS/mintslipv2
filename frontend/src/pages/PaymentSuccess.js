@@ -652,12 +652,14 @@ export default function PaymentSuccess() {
         }
       } else {
         // No stored data found - show manual download option
-        console.log('No stored form data found for type:', orderType);
+        console.error(`Generation skipped: no pending form data found for orderType="${orderType}" (expected a matching "pending…Data" key in localStorage)`);
         if (returnAppOnFailure(notifId)) return;
         setError('Unable to generate document automatically. Your form data may have been lost. Please try creating your document again.');
       }
     } catch (err) {
-      console.error('Error generating document:', err);
+      // Surface the real reason — this is what a "generation failed" drawer
+      // notification actually means, and it was previously invisible.
+      console.error(`Error generating document (orderType="${orderType}"):`, err && err.stack ? err.stack : err);
       if (notifId) markNotificationError(notifId);
       if (returnAppOnFailure(notifId)) return;
       setError('There was an issue generating your document. Please contact support.');

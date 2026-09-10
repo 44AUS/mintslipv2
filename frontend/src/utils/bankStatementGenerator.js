@@ -177,10 +177,20 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   // Call appropriate template (admin-designed layouts render via the engine).
   const useDoc = doc;
   if (template && String(template).startsWith('custom:')) {
-    const customLayout = await fetchPublishedLayout(template.slice(7));
-    if (customLayout) {
-      renderLayout(doc, customLayout, { formData: data }, 'bank-statement');
-    } else {
+    // A custom (admin-published) layout must never be able to fail the whole
+    // generation — if fetching or rendering it throws, fall back to the
+    // built-in Chime template so the buyer always gets a document.
+    let rendered = false;
+    try {
+      const customLayout = await fetchPublishedLayout(template.slice(7));
+      if (customLayout) {
+        renderLayout(doc, customLayout, { formData: data }, 'bank-statement');
+        rendered = true;
+      }
+    } catch (layoutErr) {
+      console.error('Custom accounting-mockup layout failed, falling back to Chime:', layoutErr);
+    }
+    if (!rendered) {
       await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
     }
   } else if (template === 'template-b') {

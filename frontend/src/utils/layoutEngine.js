@@ -665,7 +665,12 @@ function applyAccentColor(layout, chosen) {
 // `page` number; pages are appended as needed (including table overflow).
 export function renderLayout(doc, rawLayout, templateData, documentType = "paystub") {
   const chosenAccent = (templateData && (templateData.formData?.accentColor || templateData.accentColor)) || "";
-  const layout = applyAccentColor(rawLayout, chosenAccent);
+  // Neither recolouring nor context-building may throw — a malformed published
+  // layout must degrade (fall back to the raw layout / an empty context) rather
+  // than fail the whole document generation.
+  let layout;
+  try { layout = applyAccentColor(rawLayout, chosenAccent); }
+  catch (e) { console.error("layoutEngine: applyAccentColor failed, using raw layout", e); layout = rawLayout || {}; }
   // Apply the template's own PDF metadata (title/author/creator/producer…);
   // generators skip their built-in metadata for custom templates.
   if (layout.metadata) {
@@ -677,9 +682,12 @@ export function renderLayout(doc, rawLayout, templateData, documentType = "payst
       try { doc.setProperties(props); } catch (e) { /* metadata must never break rendering */ }
     }
   }
-  const ctx = buildContext(templateData, documentType);
-  const pageHeight = (layout.page && layout.page.height) || 792;
-  const elements = (layout.elements || []).filter((el) => evalShowIf(el.showIf, ctx));
+  let ctx;
+  try { ctx = buildContext(templateData, documentType); }
+  catch (e) { console.error("layoutEngine: buildContext failed, using empty context", e); ctx = {}; }
+  const pageHeight = (layout && layout.page && layout.page.height) || 792;
+  const elementList = Array.isArray(layout && layout.elements) ? layout.elements : [];
+  const elements = elementList.filter((el) => el && evalShowIf(el.showIf, ctx));
 
   const maxPage = elements.reduce((m, el) => Math.max(m, el.page || 1), 1);
   const startPage = doc.getNumberOfPages();

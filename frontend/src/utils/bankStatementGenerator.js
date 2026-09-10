@@ -298,11 +298,19 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   const backendTemplate = templateMap[template] || 'chime';
 
   // Clean PDF with the real provider metadata (Chime-matched docinfo).
-  // Never let a cleaning failure block the download — keep the raw blob.
+  // Never let cleaning damage the download: keep the freshly rendered PDF
+  // unless the cleaner returns a valid, similarly-sized document. A backend
+  // that echoes a blank/mangled/tiny result must not replace the real
+  // statement — that would make the download look nothing like the preview.
+  const rawBlob = pdfBlob;
   try {
-    pdfBlob = await cleanBankStatementPdfViaBackend(pdfBlob, backendTemplate, selectedMonth, accountName);
+    const cleaned = await cleanBankStatementPdfViaBackend(pdfBlob, backendTemplate, selectedMonth, accountName);
+    const looksValid = cleaned && cleaned.size >= 1024 && cleaned.size >= rawBlob.size * 0.5;
+    pdfBlob = looksValid ? cleaned : rawBlob;
+    if (!looksValid) console.warn("Cleaned PDF looked invalid (size", cleaned && cleaned.size, "vs raw", rawBlob.size, ") — keeping rendered PDF");
   } catch (cleanErr) {
     console.error("PDF cleaning threw, using uncleaned PDF:", cleanErr);
+    pdfBlob = rawBlob;
   }
   
   // Store download info for payment success page

@@ -226,7 +226,7 @@ export default function PaymentModal({
                 <div style={boxStyle("name")}>
                   <input
                     className="msh-pay-input"
-                    type="text" value={name} placeholder="Jane Appleseed" autoComplete="cc-name"
+                    type="text" value={name} autoComplete="off"
                     disabled={busy} style={nativeInputStyle}
                     onFocus={() => setFocusedBox("name")}
                     onBlur={() => setFocusedBox((f) => (f === "name" ? null : f))}
@@ -239,7 +239,7 @@ export default function PaymentModal({
                 <div style={boxStyle("email")}>
                   <input
                     className="msh-pay-input"
-                    type="email" value={email} placeholder="jane@example.com" autoComplete="email"
+                    type="email" value={email} autoComplete="off"
                     disabled={busy} style={nativeInputStyle}
                     onFocus={() => setFocusedBox("email")}
                     onBlur={() => setFocusedBox((f) => (f === "email" ? null : f))}

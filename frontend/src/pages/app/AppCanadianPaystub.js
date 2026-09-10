@@ -8,12 +8,13 @@ import {
   IonInput, IonSelect, IonSelectOption,
   IonList, IonItem, IonLabel, IonButton, IonIcon, IonGrid, IonRow, IonCol,
   IonNote, IonSpinner, IonSegment, IonSegmentButton, IonCheckbox, IonToggle,
-  IonBadge, IonToast, IonSkeletonText, IonRange,
+  IonBadge, IonToast, IonSkeletonText,
 } from "@ionic/react";
 import { trashOutline, addOutline, cloudDownloadOutline, eyeOutline, closeOutline, checkmarkOutline, pricetagOutline, arrowBackOutline, personOutline, briefcaseOutline } from "ionicons/icons";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { generateAndDownloadCanadianPaystub } from "@/utils/canadianPaystubGenerator";
 import PaymentModal from "@/components/PaymentModal";
+import PreviewPager from "@/components/PreviewPager";
 import { generateAllCanadianPreviewImages } from "@/utils/canadianPaystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
@@ -1309,45 +1310,7 @@ export default function AppCanadianPaystub() {
                 </div>
               ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
                 <>
-                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                    {/* All pages sit side by side; the track slides with the range */}
-                    <div className="msh-preview-track" style={{ display: "flex", transform: `translateX(-${previewPageIndex * 100}%)` }}>
-                      {pdfPreviews.map((src, idx) => (
-                        <img
-                          key={idx}
-                          src={src}
-                          alt={`Canadian pay stub preview ${idx + 1}`}
-                          style={{ width: "100%", flexShrink: 0, display: "block" }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  {pdfPreviews.length > 1 && (
-                    <div style={{ display: "flex", flexDirection: "column", marginTop: 8, padding: "0 16px" }}>
-                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", textAlign: "center", whiteSpace: "nowrap" }}>
-                        Page {previewPageIndex + 1} of {pdfPreviews.length}
-                      </span>
-                      <IonRange
-                        color="primary"
-                        min={1}
-                        max={pdfPreviews.length}
-                        step={1}
-                        snaps={true}
-                        ticks={true}
-                        pin={true}
-                        pinFormatter={(v) => `${v}`}
-                        value={previewPageIndex + 1}
-                        onIonKnobMoveStart={() => Haptics.selectionStart().catch(() => {})}
-                        onIonKnobMoveEnd={() => Haptics.selectionEnd().catch(() => {})}
-                        onIonInput={(e) => {
-                          const next = Number(e.detail.value) - 1;
-                          if (next !== previewPageIndex) Haptics.selectionChanged().catch(() => {});
-                          setPreviewPageIndex(next);
-                        }}
-                        style={{ width: "100%", paddingTop: 4, paddingBottom: 4 }}
-                      />
-                    </div>
-                  )}
+                  <PreviewPager pages={pdfPreviews} index={previewPageIndex} onIndexChange={setPreviewPageIndex} altPrefix="Canadian pay stub preview" />
                   <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 8 }}>Watermark removed after payment</p>
                 </>
               ) : (

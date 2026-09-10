@@ -5,14 +5,14 @@ import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
   IonButton, IonIcon, IonSpinner, IonTextarea, IonToast,
-  IonSegment, IonSegmentButton, IonLabel, IonNote, IonRange,
+  IonSegment, IonSegmentButton, IonLabel, IonNote,
 } from "@ionic/react";
 import {
   cloudDownloadOutline, eyeOutline, closeOutline, imageOutline, checkmarkOutline,
 } from "ionicons/icons";
-import { Haptics } from "@capacitor/haptics";
 import { IonDateInput } from "@/components/DateInput";
 import SignaturePad from "@/components/SignaturePad";
+import PreviewPager from "@/components/PreviewPager";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
 import { generateOfferLetterPreviewPages } from "@/utils/offerLetterPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
@@ -534,40 +534,7 @@ export default function AppOfferLetter({ isOpen, onClose }) {
                 </div>
               ) : previewPages.length > 0 ? (
                 <>
-                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                    {/* All pages sit side by side; the track slides with the range */}
-                    <div className="msh-preview-track" style={{ display: "flex", transform: `translateX(-${pageIdx * 100}%)` }}>
-                      {previewPages.map((src, idx) => (
-                        <img key={idx} src={src} alt={`Offer letter preview ${idx + 1}`} style={{ width: "100%", flexShrink: 0, display: "block" }} />
-                      ))}
-                    </div>
-                  </div>
-                  {previewPages.length > 1 && (
-                    <div style={{ display: "flex", flexDirection: "column", marginTop: 8, padding: "0 16px" }}>
-                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", textAlign: "center", whiteSpace: "nowrap" }}>
-                        Page {pageIdx + 1} of {previewPages.length}
-                      </span>
-                      <IonRange
-                        color="primary"
-                        min={1}
-                        max={previewPages.length}
-                        step={1}
-                        snaps={true}
-                        ticks={true}
-                        pin={true}
-                        pinFormatter={(v) => `${v}`}
-                        value={pageIdx + 1}
-                        onIonKnobMoveStart={() => Haptics.selectionStart().catch(() => {})}
-                        onIonKnobMoveEnd={() => Haptics.selectionEnd().catch(() => {})}
-                        onIonInput={(e) => {
-                          const next = Number(e.detail.value) - 1;
-                          if (next !== pageIdx) Haptics.selectionChanged().catch(() => {});
-                          setPreviewPageIndex(next);
-                        }}
-                        style={{ width: "100%", paddingTop: 4, paddingBottom: 4 }}
-                      />
-                    </div>
-                  )}
+                  <PreviewPager pages={previewPages} index={pageIdx} onIndexChange={setPreviewPageIndex} altPrefix="Offer letter preview" />
                   <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 8 }}>Watermark removed after payment</p>
                 </>
               ) : (

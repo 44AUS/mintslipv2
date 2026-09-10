@@ -11,7 +11,7 @@ import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // e
 import SignaturePad from "@/components/SignaturePad";
 import PreviewPager from "@/components/PreviewPager";
 import AiTransactionsGenerator from "@/components/AiTransactionsGenerator";
-import { IonDateInput } from "@/components/DateInput";
+import { IonDateInput, IonMonthInput } from "@/components/DateInput";
 import PaymentModal from "@/components/PaymentModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -402,6 +402,9 @@ export default function AppTaxFormModal({ config, onClose }) {
                               onIonChange={e => updateRow(idx, c.name, e.detail.value)} style={ionInputStyle}>
                               {c.options.map(o => <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>)}
                             </IonSelect>
+                          ) : c.type === "date" ? (
+                            <IonDateInput label={c.label} value={row[c.name] ?? ""}
+                              onChange={v => updateRow(idx, c.name, v)} style={ionInputStyle} />
                           ) : (
                             <IonInput fill="outline" labelPlacement="floating" label={c.label} type={c.type || "text"}
                               value={row[c.name] ?? ""} onIonInput={e => updateRow(idx, c.name, e.detail.value)} style={ionInputStyle} />
@@ -429,6 +432,11 @@ export default function AppTaxFormModal({ config, onClose }) {
       case "date":
         return col(
           <IonDateInput label={field.label} value={value ?? ""}
+            onChange={v => setField(field.name, v)} style={ionInputStyle} />
+        );
+      case "month":
+        return col(
+          <IonMonthInput label={field.label} value={value ?? ""}
             onChange={v => setField(field.name, v)} style={ionInputStyle} />
         );
       case "aiTransactions":

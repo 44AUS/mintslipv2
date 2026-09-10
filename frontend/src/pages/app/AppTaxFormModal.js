@@ -8,6 +8,7 @@ import {
 } from "@ionic/react";
 import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOutline, trashOutline, imageOutline } from "ionicons/icons";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
+import { useDisabledGenerators } from "@/utils/generatorAvailability";
 import SignaturePad from "@/components/SignaturePad";
 import PreviewPager from "@/components/PreviewPager";
 import AiTransactionsGenerator from "@/components/AiTransactionsGenerator";
@@ -63,6 +64,26 @@ export default function AppTaxFormModal({ config, onClose }) {
   const [couponError, setCouponError] = useState("");
   const [toastState, setToastState] = useState({ isOpen: false, message: "", color: "danger" });
   const showToast = (message, color = "danger") => setToastState({ isOpen: true, message, color });
+
+  // Published admin layouts for this document type (e.g. custom accounting
+  // mockups) — appended to any select field marked appendCustomTemplates.
+  const disabledGenerators = useDisabledGenerators();
+  const [customTplOptions, setCustomTplOptions] = useState([]);
+  useEffect(() => {
+    if (!config.customTemplatesFor) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/doc-templates?documentType=${config.customTemplatesFor}`);
+        const d = await res.json();
+        if (alive && d.success) {
+          setCustomTplOptions((d.templates || []).map(t => ({ value: `custom:${t.id}`, label: t.name })));
+        }
+      } catch {}
+    })();
+    return () => { alive = false; };
+  }, []); // eslint-disable-line
+  const visibleCustomTplOptions = customTplOptions.filter(o => !disabledGenerators.has(o.value));
 
   const setField = (name, value) => setFormData(prev => ({ ...prev, [name]: value }));
 
@@ -257,7 +278,8 @@ export default function AppTaxFormModal({ config, onClose }) {
         return col(
           <IonSelect fill="outline" labelPlacement="floating" label={field.label} value={value ?? ""}
             onIonChange={e => setField(field.name, e.detail.value)} style={ionInputStyle}>
-            {field.options.map(o => <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>)}
+            {(field.appendCustomTemplates ? [...field.options, ...visibleCustomTplOptions] : field.options)
+              .map(o => <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>)}
           </IonSelect>
         );
       case "segment":

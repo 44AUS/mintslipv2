@@ -222,7 +222,12 @@ const BANKS = [
     { id: "chase", name: "Chase", template: "template-c" },
   ] : []),
 ];
-const bankFor = (fd) => BANKS.find(b => b.id === fd.bankId) || BANKS[0];
+const bankFor = (fd) => {
+  const id = String(fd.bankId || "");
+  // Admin-published custom layouts ride through as their own template id
+  if (id.startsWith("custom:")) return { id, name: "Chime", template: id };
+  return BANKS.find(b => b.id === fd.bankId) || BANKS[0];
+};
 const flatBank = (fd) => ({
   accountName: fd.accountName, accountAddress1: fd.accountAddress1, accountAddress2: fd.accountAddress2,
   accountNumber: fd.accountNumber, selectedMonth: fd.selectedMonth,
@@ -240,6 +245,7 @@ const BANK_CONFIG = {
   },
   storageKey: "appBankStatementFormData",
   cancelPath: "/app/business-forms",
+  customTemplatesFor: "bank-statement",
   preview: (fd) => generateBankStatementPreview(flatBank(fd), bankFor(fd).template),
   download: (fd, _year, returnBlob) => generateAndDownloadBankStatement(flatBank(fd), bankFor(fd).template, returnBlob),
   derive: (fd) => ({
@@ -271,7 +277,7 @@ const BANK_CONFIG = {
   },
   sections: [
     { title: "Bank & Statement", fields: [
-      { name: "bankId", label: "Bank Style", type: "select", size: "6",
+      { name: "bankId", label: "Bank Style", type: "select", size: "6", appendCustomTemplates: true,
         options: BANKS.map(b => ({ value: b.id, label: b.name })) },
       { name: "selectedMonth", label: "Statement Month *", type: "month", size: "6" },
       { name: "beginningBalance", label: "Beginning Balance ($)", type: "number", size: "6" },

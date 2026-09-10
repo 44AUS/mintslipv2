@@ -400,12 +400,92 @@ function buildResumeContext(td) {
   };
 }
 
+function buildBankStatementContext(td) {
+  const f = td.formData || {};
+  const money = (n) => `$${Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const parseAmt = (v) => { const n = parseFloat(String(v ?? "").replace(/[^0-9.-]/g, "")); return isNaN(n) ? 0 : n; };
+  const shortDate = (s) => {
+    const [y, m, d] = String(s || "").split("-").map(Number);
+    if (!y || !m || !d) return String(s || "");
+    return new Date(y, m - 1, d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
+
+  const [year, month] = String(f.selectedMonth || "").split("-").map(Number);
+  const start = year && month ? new Date(year, month - 1, 1) : null;
+  const end = year && month ? new Date(year, month, 0) : null;
+  const monthText = start ? start.toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "";
+
+  const beginning = parseAmt(f.beginningBalance);
+  let running = beginning;
+  let deposits = 0, purchases = 0, transfers = 0, refunds = 0, withdrawals = 0;
+  const rawTx = Array.isArray(f.transactions) ? f.transactions : [];
+  const transactions = rawTx
+    .filter((t) => t && (t.description || t.amount))
+    .map((t) => {
+      const amt = parseAmt(t.amount);
+      const credit = t.type === "Deposit" || t.type === "Refund";
+      if (t.type === "Deposit") deposits += amt;
+      else if (t.type === "Refund") refunds += amt;
+      else if (t.type === "Transfer") transfers += amt;
+      else if (t.type === "Withdrawal") withdrawals += amt;
+      else purchases += amt;
+      running += credit ? amt : -amt;
+      return {
+        date: shortDate(t.date),
+        rawDate: t.date || "",
+        description: t.description || "",
+        type: t.type || "",
+        amount: money(amt),
+        signedAmount: `${credit ? "+" : "-"}${money(amt)}`,
+        balance: money(running),
+      };
+    });
+
+  const summaryRows = [
+    { label: "Beginning Balance", value: money(beginning) },
+    { label: "Deposits", value: money(deposits) },
+    { label: "Purchases", value: money(purchases) },
+    { label: "Withdrawals", value: money(withdrawals) },
+    { label: "Transfers", value: money(transfers) },
+    { label: "Refunds", value: money(refunds) },
+    { label: "Ending Balance", value: money(running) },
+  ];
+
+  const acct = String(f.accountNumber || "");
+  return {
+    bankName: f.bankName || "Chime",
+    accountName: f.accountName || "",
+    accountAddress1: f.accountAddress1 || "",
+    accountAddress2: f.accountAddress2 || "",
+    accountNumber: acct,
+    accountNumberMasked: acct ? `••••${acct.slice(-4)}` : "",
+    monthText,
+    dateRange: start && end ? `${shortDate(f.selectedMonth + "-01")} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : "",
+    statementStart: start ? shortDate(`${f.selectedMonth}-01`) : "",
+    statementEnd: end ? end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+    beginningBalance: money(beginning),
+    endingBalance: money(running),
+    totalDeposits: money(deposits),
+    totalPurchases: money(purchases),
+    totalWithdrawals: money(withdrawals),
+    totalTransfers: money(transfers),
+    totalRefunds: money(refunds),
+    transactionCount: String(transactions.length),
+    logoDataUrl: f.bankLogo || "",
+    hasLogo: f.bankLogo ? "true" : "",
+    hasTransactions: transactions.length ? "true" : "",
+    transactions,
+    summaryRows,
+  };
+}
+
 const CONTEXT_BUILDERS = {
   paystub: buildPaystubContext,
   "canadian-paystub": buildPaystubContext,
   "offer-letter": buildOfferLetterContext,
   "legal-document": buildLegalDocumentContext,
   resume: buildResumeContext,
+  "bank-statement": buildBankStatementContext,
 };
 
 export function buildContext(templateData, documentType = "paystub") {
@@ -840,10 +920,44 @@ const RESUME_TABLE_BINDINGS = [
   { binding: "skillRows", label: "Skill rows", rowTokens: ["{name}"] },
 ];
 
+const BANK_STATEMENT_TOKEN_GROUPS = [
+  { group: "Bank & Period", tokens: [
+    ["{bankName}", "Bank name"],
+    ["{logoDataUrl}", "Bank logo image"],
+    ["{monthText}", "Statement month (August 2026)"],
+    ["{dateRange}", "Statement period range"],
+    ["{statementStart}", "Period start date"],
+    ["{statementEnd}", "Period end date"],
+  ]},
+  { group: "Account Holder", tokens: [
+    ["{accountName}", "Account holder name"],
+    ["{accountAddress1}", "Address line 1"],
+    ["{accountAddress2}", "Address line 2 (city, state ZIP)"],
+    ["{accountNumber}", "Account number"],
+    ["{accountNumberMasked}", "Masked account number (••••1234)"],
+  ]},
+  { group: "Summary", tokens: [
+    ["{beginningBalance}", "Beginning balance"],
+    ["{endingBalance}", "Ending balance"],
+    ["{totalDeposits}", "Total deposits"],
+    ["{totalPurchases}", "Total purchases"],
+    ["{totalWithdrawals}", "Total withdrawals"],
+    ["{totalTransfers}", "Total transfers"],
+    ["{totalRefunds}", "Total refunds"],
+    ["{transactionCount}", "Number of transactions"],
+  ]},
+];
+
+const BANK_STATEMENT_TABLE_BINDINGS = [
+  { binding: "transactions", label: "Transaction rows", rowTokens: ["{date}", "{description}", "{type}", "{amount}", "{signedAmount}", "{balance}"] },
+  { binding: "summaryRows", label: "Summary rows", rowTokens: ["{label}", "{value}"] },
+];
+
 export function getTokenGroups(documentType) {
   if (documentType === "offer-letter") return OFFER_LETTER_TOKEN_GROUPS;
   if (documentType === "legal-document") return LEGAL_DOCUMENT_TOKEN_GROUPS;
   if (documentType === "resume") return RESUME_TOKEN_GROUPS;
+  if (documentType === "bank-statement") return BANK_STATEMENT_TOKEN_GROUPS;
   if (documentType === "canadian-paystub") return [...PAYSTUB_TOKEN_GROUPS, CANADIAN_EXTRA_GROUP];
   return PAYSTUB_TOKEN_GROUPS;
 }
@@ -852,6 +966,7 @@ export function getTableBindings(documentType) {
   if (documentType === "offer-letter") return OFFER_LETTER_TABLE_BINDINGS;
   if (documentType === "legal-document") return LEGAL_DOCUMENT_TABLE_BINDINGS;
   if (documentType === "resume") return RESUME_TABLE_BINDINGS;
+  if (documentType === "bank-statement") return BANK_STATEMENT_TABLE_BINDINGS;
   return PAYSTUB_TABLE_BINDINGS;
 }
 
@@ -884,6 +999,13 @@ export function getShowIfPresets(documentType) {
       ["hasSkills", "Has skills"],
       ["hasLinkedin", "Has LinkedIn"],
       ["hasWebsite", "Has website"],
+    ];
+  }
+  if (documentType === "bank-statement") {
+    return [
+      ["", "Always"],
+      ["hasLogo", "Has bank logo"],
+      ["hasTransactions", "Has transactions"],
     ];
   }
   return [
@@ -1013,9 +1135,34 @@ const RESUME_SAMPLE = {
 };
 
 // Variant samples the editor can switch between to test conditionals.
+const BANK_STATEMENT_SAMPLE = {
+  formData: {
+    accountName: "John Smith",
+    accountAddress1: "123 Main Street",
+    accountAddress2: "New York, NY 10001",
+    accountNumber: "8834",
+    selectedMonth: "2026-08",
+    beginningBalance: "2450.00",
+    bankName: "Chime",
+    bankLogo: "",
+    transactions: [
+      { date: "2026-08-01", description: "Payroll Deposit — Acme Corp", type: "Deposit", amount: "1963.08" },
+      { date: "2026-08-03", description: "Whole Foods Market", type: "Purchase", amount: "86.42" },
+      { date: "2026-08-07", description: "Shell Gas Station", type: "Purchase", amount: "48.10" },
+      { date: "2026-08-12", description: "Netflix.com", type: "Purchase", amount: "15.49" },
+      { date: "2026-08-15", description: "Payroll Deposit — Acme Corp", type: "Deposit", amount: "1963.08" },
+      { date: "2026-08-21", description: "Con Edison Utility", type: "Purchase", amount: "134.75" },
+      { date: "2026-08-26", description: "ATM Withdrawal", type: "Withdrawal", amount: "100.00" },
+    ],
+  },
+};
+
 export function getSampleVariants(documentType) {
   if (documentType === "offer-letter") {
     return [{ key: "default", label: "Sample offer", data: OFFER_LETTER_SAMPLE }];
+  }
+  if (documentType === "bank-statement") {
+    return [{ key: "default", label: "Sample statement", data: BANK_STATEMENT_SAMPLE }];
   }
   if (documentType === "legal-document") {
     const unsigned = {
@@ -1521,6 +1668,43 @@ export const DEFAULT_RESUME_LAYOUT = {
   ],
 };
 
+// Chime-inspired accounting mockup: green wordmark header, member block,
+// balance summary, and the running-balance transaction table.
+export const DEFAULT_BANK_STATEMENT_LAYOUT = {
+  page: { width: 612, height: 792 },
+  elements: [
+    { id: "b-logo", type: "image", x: 40, y: 36, w: 90, h: 30, src: "{logoDataUrl}", showIf: "hasLogo" },
+    { id: "b-bank", type: "text", x: 40, y: 40, w: 220, content: "{bankName}", fontSize: 22, bold: true, color: "#1ec677", showIf: "!hasLogo" },
+    { id: "b-title", type: "text", x: 40, y: 74, w: 320, content: "Checking Account Statement", fontSize: 12, bold: true, color: "#233332" },
+    { id: "b-period", type: "text", x: 372, y: 44, w: 200, align: "right", content: "{monthText}", fontSize: 10, bold: true, color: "#233332" },
+    { id: "b-range", type: "text", x: 372, y: 58, w: 200, align: "right", content: "{dateRange}", fontSize: 8.5, color: "#64748b" },
+    { id: "b-rule", type: "line", x: 40, y: 94, w: 532, h: 0, color: "#1ec677", lineWidth: 1.5 },
+    { id: "b-name", type: "text", x: 40, y: 110, w: 300, content: "{accountName}", fontSize: 10.5, bold: true, color: "#233332" },
+    { id: "b-addr1", type: "text", x: 40, y: 124, w: 300, content: "{accountAddress1}", fontSize: 9, color: "#334155" },
+    { id: "b-addr2", type: "text", x: 40, y: 136, w: 300, content: "{accountAddress2}", fontSize: 9, color: "#334155" },
+    { id: "b-acct", type: "text", x: 372, y: 110, w: 200, align: "right", content: "Account: {accountNumberMasked}", fontSize: 9, color: "#334155" },
+    { id: "b-sum-title", type: "text", x: 40, y: 168, w: 200, content: "Summary", fontSize: 11, bold: true, color: "#1ec677" },
+    { id: "b-summary", type: "table", x: 40, y: 184, w: 250, binding: "summaryRows",
+      rowHeight: 16, fontSize: 8.5, headerFill: "none", headerColor: "#64748b", color: "#233332", zebra: false, rowLines: true,
+      columns: [
+        { header: "", token: "{label}", width: 0.6, align: "left" },
+        { header: "", token: "{value}", width: 0.4, align: "right" },
+      ]},
+    { id: "b-tx-title", type: "text", x: 40, y: 322, w: 200, content: "Transactions", fontSize: 11, bold: true, color: "#1ec677" },
+    { id: "b-tx", type: "table", x: 40, y: 338, w: 532, binding: "transactions",
+      rowHeight: 16, fontSize: 8.5, headerFill: "#eef6f2", headerColor: "#233332", color: "#233332", zebra: true, zebraFill: "#fafcfb", rowLines: false,
+      columns: [
+        { header: "DATE", token: "{date}", width: 0.15, align: "left" },
+        { header: "DESCRIPTION", token: "{description}", width: 0.41, align: "left" },
+        { header: "TYPE", token: "{type}", width: 0.14, align: "left" },
+        { header: "AMOUNT", token: "{signedAmount}", width: 0.15, align: "right" },
+        { header: "BALANCE", token: "{balance}", width: 0.15, align: "right" },
+      ]},
+    { id: "b-foot", type: "text", x: 40, y: 744, w: 532, align: "center", fontSize: 7.5, color: "#94a3b8",
+      content: "{bankName} Checking Account  •  Statement period {dateRange}  •  {transactionCount} transactions" },
+  ],
+};
+
 export const STARTER_LAYOUTS = [
   { key: "paystub-gusto", name: "Gusto-Style Paystub (ported)", description: "Gusto Style Inspired Template", documentType: "paystub", layout: GUSTO_PAYSTUB_LAYOUT },
   { key: "paystub-onpay", name: "OnPay-Style Paystub (ported)", description: "OnPay Style Inspired Template", documentType: "paystub", layout: ONPAY_PAYSTUB_LAYOUT },
@@ -1530,4 +1714,5 @@ export const STARTER_LAYOUTS = [
   { key: "offer-letter", name: "Offer Letter", description: "Professional offer of employment", documentType: "offer-letter", layout: DEFAULT_OFFER_LETTER_LAYOUT },
   { key: "legal-document", name: "Legal Document", description: "Two-party agreement with signature blocks", documentType: "legal-document", layout: DEFAULT_LEGAL_DOCUMENT_LAYOUT },
   { key: "resume", name: "Resume", description: "Custom AI resume design", documentType: "resume", layout: DEFAULT_RESUME_LAYOUT },
+  { key: "bank-statement-chime", name: "Accounting Mockup (Chime)", description: "Chime-style checking statement", documentType: "bank-statement", layout: DEFAULT_BANK_STATEMENT_LAYOUT },
 ];

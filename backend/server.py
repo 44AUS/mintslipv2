@@ -6476,6 +6476,16 @@ _TEMPLATE_ASSISTANT_TOKENS = {
         "education — {degree} {institution} {institutionLine} {gpa} {date}; skillRows — {name}. "
         "Tables render one line per row (no wrapping), so prefer the text blocks for bullets."
     ),
+    "bank-statement": (
+        "Scalar tokens: {bankName} {logoDataUrl} {monthText} {dateRange} {statementStart} {statementEnd} "
+        "{accountName} {accountAddress1} {accountAddress2} {accountNumber} {accountNumberMasked} "
+        "{beginningBalance} {endingBalance} {totalDeposits} {totalPurchases} {totalWithdrawals} "
+        "{totalTransfers} {totalRefunds} {transactionCount}\n"
+        "showIf flags: hasLogo, hasTransactions\n"
+        "Table bindings: transactions — row fields {date} {description} {type} {amount} {signedAmount} {balance}; "
+        "summaryRows — row fields {label} {value}. Amounts arrive preformatted with $ signs; {signedAmount} "
+        "carries a +/- prefix and {balance} is the running balance after each row."
+    ),
 }
 
 

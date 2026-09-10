@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { addPreviewWatermarkJsPdf } from "./previewWatermark";
 import { generateBankTemplateA, generateBankTemplateB, generateBankTemplateC } from "./bankStatementTemplates";
+import { fetchPublishedLayout, renderLayout } from "./layoutEngine";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker using unpkg CDN with correct version
@@ -177,18 +178,27 @@ export const generateBankStatementPreview = async (formData, template = 'templat
       bankLogo: bankLogo || null  // Use uploaded logo in preview
     };
 
-    // Generate the template based on selection
-    switch (template) {
-      case 'template-b':
-        generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
-        break;
-      case 'template-c':
-        await generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
-        break;
-      case 'template-a':
-      default:
+    // Generate the template based on selection (custom = admin layout)
+    if (template && String(template).startsWith('custom:')) {
+      const customLayout = await fetchPublishedLayout(template.slice(7));
+      if (customLayout) {
+        renderLayout(doc, customLayout, { formData }, 'bank-statement');
+      } else {
         await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
-        break;
+      }
+    } else {
+      switch (template) {
+        case 'template-b':
+          generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+          break;
+        case 'template-c':
+          await generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
+          break;
+        case 'template-a':
+        default:
+          await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+          break;
+      }
     }
 
     // Add watermark on ALL pages

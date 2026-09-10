@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
 import { generateBankTemplateA, generateBankTemplateB, generateBankTemplateC } from "./bankStatementTemplates";
+import { fetchPublishedLayout, renderLayout } from "./layoutEngine";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
@@ -170,8 +171,15 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     bankLogo: bankLogo || null
   };
 
-  // Call appropriate template
-  if (template === 'template-b') {
+  // Call appropriate template (admin-designed layouts render via the engine)
+  if (template && String(template).startsWith('custom:')) {
+    const customLayout = await fetchPublishedLayout(template.slice(7));
+    if (customLayout) {
+      renderLayout(doc, customLayout, { formData: data }, 'bank-statement');
+    } else {
+      await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+    }
+  } else if (template === 'template-b') {
     generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
   } else if (template === 'template-c') {
     await generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);

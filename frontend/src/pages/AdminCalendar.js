@@ -193,7 +193,7 @@ export default function AdminCalendar() {
                     overflow: "hidden",
                   }}>
                   <ion-ripple-effect />
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ display: "flex", justifyContent: isMobile ? "center" : "flex-end" }}>
                     <div style={{
                       width: 26, height: 26,
                       display: "flex", alignItems: "center", justifyContent: "center",

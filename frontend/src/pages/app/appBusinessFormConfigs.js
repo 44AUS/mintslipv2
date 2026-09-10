@@ -286,6 +286,7 @@ const BANK_CONFIG = {
       { name: "accountAddress2", label: "Address Line 2 (City, State ZIP)", size: "12" },
     ]},
     { title: "Transactions", note: "Deposits and refunds are credits; everything else is a debit.", fields: [
+      { name: "aiTransactions", type: "aiTransactions", size: "12" },
       { name: "transactions", type: "rowList", size: "12", addLabel: "Add Transaction",
         newRow: () => ({ date: "", description: "", type: "Purchase", amount: "" }),
         columns: [

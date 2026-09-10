@@ -10,6 +10,7 @@ import { closeOutline, checkmarkOutline, cloudDownloadOutline, eyeOutline, addOu
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import SignaturePad from "@/components/SignaturePad";
 import PreviewPager from "@/components/PreviewPager";
+import AiTransactionsGenerator from "@/components/AiTransactionsGenerator";
 import { IonDateInput } from "@/components/DateInput";
 import PaymentModal from "@/components/PaymentModal";
 
@@ -429,6 +430,12 @@ export default function AppTaxFormModal({ config, onClose }) {
         return col(
           <IonDateInput label={field.label} value={value ?? ""}
             onChange={v => setField(field.name, v)} style={ionInputStyle} />
+        );
+      case "aiTransactions":
+        return col(
+          <div style={{ marginBottom: 8 }}>
+            <AiTransactionsGenerator formData={formData} setField={setField} showToast={showToast} />
+          </div>
         );
       default:
         return col(

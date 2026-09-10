@@ -38,8 +38,8 @@
   object-fit: cover;
   object-position: top;
   pointer-events: none;
-  filter: blur(11px) saturate(1.08);
-  transform: scale(1.12);
+  filter: blur(6px) saturate(1.08);
+  transform: scale(1.08);
 }
 /* When no preview is available, stay transparent so the scrim's backdrop-filter
    can blur the live /app instead. */
@@ -52,8 +52,8 @@
   inset: 0;
   height: 100dvh;
   z-index: 1;
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
   background: linear-gradient(180deg, rgba(7, 17, 13, 0.42), rgba(7, 17, 13, 0.78) 55%, rgba(7, 17, 13, 0.96));
 }
 

@@ -2382,41 +2382,14 @@ async def create_checkout_session(data: CreateCheckoutSession, session: dict = D
 # ── Exit-intent paywall offer ────────────────────────────────────────────────
 # When a user reaches the card checkout and closes it without paying, the app
 # shows a last-chance paywall offering the same document at a discount. The
-# offer is server-authoritative and one-time per user: the first time it's
-# requested we stamp a short window on the user; once it expires it's gone for
-# that user (no restarts), and the discount is re-derived and enforced at charge
-# time so the shown price is the charged price.
+# offer is server-authoritative: each time the paywall is shown we (re)stamp a
+# fresh short window on the user, so it reliably comes up on every abandon with
+# a live countdown, and the discount is re-derived and enforced at charge time
+# from that stamp — so the shown price is the charged price and it can't be
+# forged or claimed after the window closes.
 PAYWALL_OFFER_ENABLED = True
 PAYWALL_OFFER_PERCENT = 20       # % off the document's base price
-PAYWALL_OFFER_MINUTES = 10       # how long the window stays open, per user
-
-
-def _paywall_offer_state(user: dict):
-    """Return (active, discount_percent, expires_at_iso) for a user's offer,
-    stamping a fresh window on first use. Returns the possibly-updated stamp so
-    the caller can persist it. Never restarts an expired window."""
-    if not PAYWALL_OFFER_ENABLED:
-        return {"active": False, "discountPercent": 0, "expiresAt": None}, None
-    now = datetime.now(timezone.utc)
-    stamp = (user or {}).get("paywallOffer") or {}
-    expires_raw = stamp.get("expiresAt")
-    new_stamp = None
-    if not expires_raw:
-        expires = now + timedelta(minutes=PAYWALL_OFFER_MINUTES)
-        new_stamp = {"stampedAt": now.isoformat(), "expiresAt": expires.isoformat()}
-        expires_raw = new_stamp["expiresAt"]
-    try:
-        expires = datetime.fromisoformat(expires_raw)
-        if expires.tzinfo is None:
-            expires = expires.replace(tzinfo=timezone.utc)
-    except Exception:
-        expires = now
-    active = now < expires
-    return {
-        "active": active,
-        "discountPercent": PAYWALL_OFFER_PERCENT if active else 0,
-        "expiresAt": expires_raw,
-    }, new_stamp
+PAYWALL_OFFER_MINUTES = 10       # how long the countdown window runs
 
 
 def _paywall_offer_cents(base_cents: int) -> int:
@@ -2426,16 +2399,22 @@ def _paywall_offer_cents(base_cents: int) -> int:
 
 @app.get("/api/paywall/offer")
 async def get_paywall_offer(session: dict = Depends(get_current_user)):
-    """The current user's one-time exit-intent offer (stamped on first call)."""
-    user = await users_collection.find_one({"id": session["userId"]}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    state, new_stamp = _paywall_offer_state(user)
-    if new_stamp:
-        await users_collection.update_one(
-            {"id": session["userId"]}, {"$set": {"paywallOffer": new_stamp}}
-        )
-    return {"success": True, **state}
+    """Return the current user's exit-intent offer, (re)stamping a fresh window
+    so the paywall reliably appears with a live countdown on every abandon."""
+    if not PAYWALL_OFFER_ENABLED:
+        return {"success": True, "active": False, "discountPercent": 0, "expiresAt": None}
+    now = datetime.now(timezone.utc)
+    expires = now + timedelta(minutes=PAYWALL_OFFER_MINUTES)
+    stamp = {"stampedAt": now.isoformat(), "expiresAt": expires.isoformat()}
+    await users_collection.update_one(
+        {"id": session["userId"]}, {"$set": {"paywallOffer": stamp}}
+    )
+    return {
+        "success": True,
+        "active": True,
+        "discountPercent": PAYWALL_OFFER_PERCENT,
+        "expiresAt": stamp["expiresAt"],
+    }
 
 
 async def _resolve_offer_user(authorization: Optional[str]):

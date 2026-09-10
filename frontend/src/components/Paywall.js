@@ -50,9 +50,11 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
         if (data?.success && data.active && data.discountPercent > 0) {
           setOffer({ pct: data.discountPercent, expiresAt: data.expiresAt });
         } else {
+          console.warn(`Paywall: no active offer (HTTP ${res.status}) — closing. Is the backend updated/restarted?`);
           setOffer(null);
         }
-      } catch {
+      } catch (e) {
+        console.warn("Paywall: offer request failed — closing.", e);
         if (alive) setOffer(null);
       }
     })();

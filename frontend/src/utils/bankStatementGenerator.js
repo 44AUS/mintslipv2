@@ -78,6 +78,69 @@ function formatDateLong(dateStr) {
   });
 }
 
+// Last-resort statement renderer — plain jsPDF text/lines only, no external
+// template modules, no images, no backend. Whatever else fails, this always
+// produces a valid, readable statement from the same data so the customer's
+// download never comes back empty.
+function drawFallbackStatement(doc, td, pageWidth, pageHeight, margin) {
+  const money = (n) => `$${Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  let y = 60;
+  doc.setTextColor(30, 51, 50);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+  doc.text(td.bankName || "Chime", margin, y);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+  doc.text("Checking Account Statement", margin, y + 22);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(100, 116, 139);
+  doc.text(td.monthText || "", pageWidth - margin, y, { align: "right" });
+  y += 48;
+  doc.setDrawColor(30, 198, 119); doc.setLineWidth(1.5);
+  doc.line(margin, y, pageWidth - margin, y); y += 22;
+
+  doc.setTextColor(30, 51, 50); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
+  doc.text(td.accountName || "", margin, y); y += 14;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(51, 65, 85);
+  if (td.accountAddress1) { doc.text(String(td.accountAddress1), margin, y); y += 12; }
+  if (td.accountAddress2) { doc.text(String(td.accountAddress2), margin, y); y += 12; }
+  const acct = String(td.accountNumber || "");
+  if (acct) doc.text(`Account: ****${acct.slice(-4)}`, pageWidth - margin, y - 12, { align: "right" });
+  y += 12;
+
+  const summary = [
+    ["Beginning Balance", td.beginning],
+    ["Deposits", td.deposits], ["Purchases", td.purchases],
+    ["Transfers", td.transfers], ["Refunds", td.refunds],
+    ["Ending Balance", td.ending],
+  ];
+  doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(30, 198, 119);
+  doc.text("Summary", margin, y); y += 16;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(30, 51, 50);
+  summary.forEach(([label, val]) => {
+    doc.text(label, margin, y);
+    doc.text(money(val), margin + 220, y, { align: "right" });
+    y += 15;
+  });
+  y += 12;
+
+  doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(30, 198, 119);
+  doc.text("Transactions", margin, y); y += 16;
+  doc.setFontSize(8.5); doc.setTextColor(100, 116, 139);
+  doc.text("DATE", margin, y); doc.text("DESCRIPTION", margin + 70, y);
+  doc.text("TYPE", margin + 330, y); doc.text("AMOUNT", pageWidth - margin, y, { align: "right" });
+  y += 6; doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.5);
+  doc.line(margin, y, pageWidth - margin, y); y += 14;
+
+  doc.setFont("helvetica", "normal"); doc.setTextColor(30, 51, 50);
+  (Array.isArray(td.transactions) ? td.transactions : []).forEach((tx) => {
+    if (y > pageHeight - 60) { doc.addPage(); y = 60; }
+    const credit = tx.type === "Deposit" || tx.type === "Refund";
+    doc.text(String(tx.date || ""), margin, y);
+    doc.text(String(tx.description || "").slice(0, 46), margin + 70, y);
+    doc.text(String(tx.type || ""), margin + 330, y);
+    doc.text(`${credit ? "+" : "-"}${money(td.parseCurrency ? td.parseCurrency(tx.amount) : tx.amount)}`, pageWidth - margin, y, { align: "right" });
+    y += 14;
+  });
+}
+
 export const generateAndDownloadBankStatement = async (data, template = 'template-a', returnBlob = false) => {
   const {
     accountName,
@@ -96,8 +159,10 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Calculate statement dates
-  const [year, month] = selectedMonth.split("-").map(Number);
+  // Calculate statement dates — tolerate a missing/blank month
+  const now = new Date();
+  let [year, month] = String(selectedMonth || "").split("-").map(Number);
+  if (!year || !month) { year = now.getFullYear(); month = now.getMonth() + 1; }
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0);
   const statementStart = start.toISOString().split("T")[0];
@@ -107,8 +172,9 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
   const beginning = parseCurrency(beginningBalance);
   let ending = beginning;
   let deposits = 0, purchases = 0, transfers = 0, refunds = 0;
+  const txList = Array.isArray(transactions) ? transactions : [];
 
-  transactions.forEach((tx) => {
+  txList.forEach((tx) => {
     const amount = parseCurrency(tx.amount);
     switch (tx.type) {
       case "Deposit":
@@ -163,7 +229,7 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     refunds,
     monthText,
     dateRange,
-    transactions,
+    transactions: txList,
     toFixed,
     formatShortDate,
     formatDateLong,
@@ -171,32 +237,42 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     bankLogo: bankLogo || null
   };
 
-  // Call appropriate template (admin-designed layouts render via the engine)
-  if (template && String(template).startsWith('custom:')) {
-    const customLayout = await fetchPublishedLayout(template.slice(7));
-    if (customLayout) {
-      renderLayout(doc, customLayout, { formData: data }, 'bank-statement');
+  // Call appropriate template (admin-designed layouts render via the engine).
+  // If any template path throws, fall back to a plain but complete statement
+  // so the download always succeeds. A fresh jsPDF is used for the fallback
+  // in case the primary attempt left partial content on the page.
+  let useDoc = doc;
+  try {
+    if (template && String(template).startsWith('custom:')) {
+      const customLayout = await fetchPublishedLayout(template.slice(7));
+      if (customLayout) {
+        renderLayout(doc, customLayout, { formData: data }, 'bank-statement');
+      } else {
+        await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+      }
+    } else if (template === 'template-b') {
+      generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
+    } else if (template === 'template-c') {
+      await generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
     } else {
       await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
     }
-  } else if (template === 'template-b') {
-    generateBankTemplateB(doc, templateData, pageWidth, pageHeight, margin);
-  } else if (template === 'template-c') {
-    await generateBankTemplateC(doc, templateData, pageWidth, pageHeight, margin);
-  } else {
-    await generateBankTemplateA(doc, templateData, pageWidth, pageHeight, margin);
+  } catch (tplErr) {
+    console.error("Statement template failed, using fallback layout:", tplErr);
+    useDoc = new jsPDF({ unit: "pt", format: "letter" });
+    drawFallbackStatement(useDoc, templateData, pageWidth, pageHeight, margin);
   }
 
   // Add page numbers
-  const totalPages = doc.getNumberOfPages();
+  const totalPages = useDoc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFontSize(9);
-    doc.setTextColor(102, 102, 102);
-    doc.text(
+    useDoc.setPage(i);
+    useDoc.setFontSize(9);
+    useDoc.setTextColor(102, 102, 102);
+    useDoc.text(
       `Page ${i} of ${totalPages}`,
       pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 30,
+      useDoc.internal.pageSize.getHeight() - 30,
       { align: "center" }
     );
   }
@@ -211,8 +287,8 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     : `ChimeCheckingStatement.pdf`;
   
   // Get PDF blob and clean it via backend
-  let pdfBlob = doc.output('blob');
-  
+  let pdfBlob = useDoc.output('blob');
+
   // Map template to backend template name
   const templateMap = {
     'template-a': 'chime',
@@ -220,9 +296,14 @@ export const generateAndDownloadBankStatement = async (data, template = 'templat
     'template-c': 'chase'
   };
   const backendTemplate = templateMap[template] || 'chime';
-  
-  // Clean PDF with the real provider metadata (Chime-matched docinfo)
-  pdfBlob = await cleanBankStatementPdfViaBackend(pdfBlob, backendTemplate, selectedMonth, accountName);
+
+  // Clean PDF with the real provider metadata (Chime-matched docinfo).
+  // Never let a cleaning failure block the download — keep the raw blob.
+  try {
+    pdfBlob = await cleanBankStatementPdfViaBackend(pdfBlob, backendTemplate, selectedMonth, accountName);
+  } catch (cleanErr) {
+    console.error("PDF cleaning threw, using uncleaned PDF:", cleanErr);
+  }
   
   // Store download info for payment success page
   const blobUrl = URL.createObjectURL(pdfBlob);

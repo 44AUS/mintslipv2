@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IonIcon } from "@ionic/react";
-import { closeOutline, timeOutline, lockClosedOutline, checkmarkCircle, star } from "ionicons/icons";
+import { closeOutline, timeOutline, lockClosedOutline, checkmarkCircle } from "ionicons/icons";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import MintSlipLogo from "@/assests/mintslip-logo.png";
+import FiveStars from "@/assests/images/5star.png";
+import { launchConfetti } from "@/utils/confetti";
 import "@/styles/paywall.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
 // Client-side defaults so the discount + countdown always show, even if the
-// server offer endpoint isn't reachable. When the server offer IS available it
+// server offer endpoint isn't reachable. The server offer (when available)
 // overrides these and is enforced at charge time.
 const DEFAULT_PERCENT = 20;
 const DEFAULT_MINUTES = 10;
@@ -25,18 +28,22 @@ const REVIEWS = [
   { quote: "“Super easy to fill out and the download was instant. Worth every penny.”", name: "Jessica M." },
 ];
 
-const Stars = () => (
-  <span className="pw-stars" aria-label="5 star rating">
-    {[0, 1, 2, 3, 4].map((i) => <IonIcon key={i} icon={star} />)}
-  </span>
+const Stars = ({ className = "" }) => (
+  <img className={`pw-stars-img ${className}`} src={FiveStars} alt="5 star rating" />
 );
 
-// Exit-intent paywall: shown when a buyer closes the checkout without paying.
-// It ALWAYS appears on abandon with a live discount + countdown. The offer is
-// server-enforced when the backend offer endpoint is available; otherwise it
-// falls back to a client-side discount applied through the normal checkout (the
-// same trust model as coupons). It only stays hidden if an admin turns it off.
+function hapticCelebrate() {
+  try {
+    [0, 120, 240, 420, 600].forEach((ms) =>
+      setTimeout(() => Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {}), ms));
+  } catch (_) { /* best-effort */ }
+}
+
+// Exit-intent paywall. Two screens: an offer screen ("Download your …") and, if
+// that's closed, an "Are you sure?" last-chance screen with testimonials +
+// confetti. Always shows on abandon; only an admin "off" hides it.
 export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, onDismiss }) {
+  const [screen, setScreen] = useState("offer"); // "offer" | "sure"
   const [offer, setOffer] = useState(() => ({
     pct: DEFAULT_PERCENT,
     expiresAt: new Date(Date.now() + DEFAULT_MINUTES * 60000).toISOString(),
@@ -47,8 +54,6 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
   const [reviewIdx, setReviewIdx] = useState(0);
   const dismissedRef = useRef(false);
 
-  // Refine with the server offer when available; only an explicit "disabled"
-  // from the server hides the paywall.
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -78,7 +83,7 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
     if (dismissed && !dismissedRef.current) { dismissedRef.current = true; onDismiss?.(); }
   }, [dismissed, onDismiss]);
 
-  // Countdown to the offer's expiry.
+  // Countdown to expiry.
   useEffect(() => {
     const deadline = new Date(offer.expiresAt).getTime();
     const tick = () => setSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
@@ -87,11 +92,18 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
     return () => clearInterval(iv);
   }, [offer.expiresAt]);
 
-  // Rotate testimonials.
+  // Rotate testimonials (only relevant on the "sure" screen).
   useEffect(() => {
+    if (screen !== "sure") return undefined;
+    setReviewIdx(0);
     const iv = setInterval(() => setReviewIdx((i) => (i + 1) % REVIEWS.length), 4000);
     return () => clearInterval(iv);
-  }, []);
+  }, [screen]);
+
+  // Celebrate when the last-chance screen appears.
+  useEffect(() => {
+    if (screen === "sure") { launchConfetti(); hapticCelebrate(); }
+  }, [screen]);
 
   const { discountedPrice, pct } = useMemo(() => {
     const baseCents = Math.round(basePrice * 100);
@@ -105,12 +117,40 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
 
   if (dismissed) return null;
 
+  const onX = () => { if (screen === "offer") setScreen("sure"); else onDismiss?.(); };
+
+  // Shared offer card + CTA (full width).
+  const OfferBlock = () => (
+    <>
+      <div className="pw-feature"><IonIcon icon={checkmarkCircle} /> Instant download · No subscription</div>
+      <div className="pw-plan">
+        <span className="pw-plan-info">
+          <strong>{docLabel}</strong>
+          <span>One-time purchase</span>
+        </span>
+        <span className="pw-plan-price">
+          <strong>
+            <s className="pw-strike">{money(basePrice)}</s>
+            {money(discountedPrice)}
+          </strong>
+          <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>
+        </span>
+      </div>
+      <button className="pw-cta" onClick={() => onUnlock?.(discountedPrice, offer.serverEnforced)} disabled={expired}>
+        <IonIcon icon={lockClosedOutline} /> {expired ? "Offer expired" : `Complete for ${money(discountedPrice)}`}
+      </button>
+      {expired
+        ? <button className="pw-textbtn" onClick={() => onDismiss?.()}>Close</button>
+        : <p className="pw-fine">One-time purchase. No subscription required.</p>}
+    </>
+  );
+
   return createPortal(
     <div className="pw">
-      {previewImage ? <img className="pw-bgimg" src={previewImage} alt="" aria-hidden="true" /> : null}
+      {/* Blurs the actual /app screen + the modal behind the paywall. */}
       <span className="pw-scrim" aria-hidden="true" />
 
-      <button className="pw-x" onClick={() => onDismiss?.()} aria-label="Close">
+      <button className="pw-x" onClick={onX} aria-label="Close">
         <IonIcon icon={closeOutline} />
       </button>
 
@@ -118,72 +158,61 @@ export default function Paywall({ docLabel, basePrice, previewImage, onUnlock, o
         <img className="pw-logo" src={MintSlipLogo} alt="MintSlip" />
       </div>
 
-      <div className="pw-head pw-swap">
-        <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>
-        <h1 className="pw-title">Wait — here's {pct}% off</h1>
-        <p className="pw-subtitle">Finish your {docLabel} at a one-time special price</p>
-        <Stars />
-        {!expired && (
-          <>
-            <p className="pw-expires">Offer expires in</p>
-            <div className="pw-countdown">
-              <div className="pw-cd-box">
-                <span className="pw-cd-num">{mm}</span>
-                <span className="pw-cd-label">Minutes</span>
+      {screen === "offer" ? (
+        <>
+          <div className="pw-head pw-swap" key="offer-head">
+            <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>
+            <h1 className="pw-title">Download your {docLabel}</h1>
+            <p className="pw-subtitle">The #1 Document Creation App</p>
+            <Stars />
+            {!expired && (
+              <>
+                <p className="pw-expires">Offer expires in</p>
+                <div className="pw-countdown">
+                  <div className="pw-cd-box">
+                    <span className="pw-cd-num">{mm}</span>
+                    <span className="pw-cd-label">Minutes</span>
+                  </div>
+                  <span className="pw-cd-sep">:</span>
+                  <div className="pw-cd-box">
+                    <span className="pw-cd-num">{ss}</span>
+                    <span className="pw-cd-label">Seconds</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="pw-foot pw-swap" key="offer-foot">
+            <OfferBlock />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="pw-head pw-swap" key="sure-head">
+            <span className="pw-badge"><IonIcon icon={timeOutline} /> {pct}% Off — Limited Time</span>
+            <h1 className="pw-title">Are you sure?</h1>
+          </div>
+
+          <div className="pw-foot pw-swap" key="sure-foot">
+            <div className="pw-reviews">
+              <div className="pw-reviews-track" style={{ transform: `translateX(-${reviewIdx * 100}%)` }}>
+                {REVIEWS.map((r, i) => (
+                  <div className="pw-review" key={i}>
+                    <Stars className="pw-review-stars" />
+                    <p>{r.quote}</p>
+                    <span>— {r.name}</span>
+                  </div>
+                ))}
               </div>
-              <span className="pw-cd-sep">:</span>
-              <div className="pw-cd-box">
-                <span className="pw-cd-num">{ss}</span>
-                <span className="pw-cd-label">Seconds</span>
+              <div className="pw-dots" aria-hidden="true">
+                {REVIEWS.map((_, i) => <span key={i} className={i === reviewIdx ? "on" : ""} />)}
               </div>
             </div>
-          </>
-        )}
-      </div>
-
-      <div className="pw-foot">
-        <div className="pw-reviews">
-          <div className="pw-reviews-track" style={{ transform: `translateX(-${reviewIdx * 100}%)` }}>
-            {REVIEWS.map((r, i) => (
-              <div className="pw-review" key={i}>
-                <Stars />
-                <p>{r.quote}</p>
-                <span>— {r.name}</span>
-              </div>
-            ))}
+            <OfferBlock />
           </div>
-          <div className="pw-dots" aria-hidden="true">
-            {REVIEWS.map((_, i) => <span key={i} className={i === reviewIdx ? "on" : ""} />)}
-          </div>
-        </div>
-
-        <div className="pw-feature"><IonIcon icon={checkmarkCircle} /> Instant download · No subscription</div>
-
-        <div className="pw-plan">
-          <span className="pw-plan-info">
-            <strong>{docLabel}</strong>
-            <span>One-time purchase</span>
-          </span>
-          <span className="pw-plan-price">
-            <strong>
-              <s className="pw-strike">{money(basePrice)}</s>
-              {money(discountedPrice)}
-            </strong>
-            <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>
-          </span>
-        </div>
-
-        <button
-          className="pw-cta"
-          onClick={() => onUnlock?.(discountedPrice, offer.serverEnforced)}
-          disabled={expired}
-        >
-          <IonIcon icon={lockClosedOutline} /> {expired ? "Offer expired" : `Unlock for ${money(discountedPrice)}`}
-        </button>
-        {expired
-          ? <button className="pw-textbtn" onClick={() => onDismiss?.()}>Close</button>
-          : <p className="pw-fine">One-time purchase. No subscription required.</p>}
-      </div>
+        </>
+      )}
     </div>,
     document.body,
   );

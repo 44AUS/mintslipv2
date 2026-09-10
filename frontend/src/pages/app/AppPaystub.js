@@ -1455,6 +1455,7 @@ export default function AppPaystub() {
           basePrice={calculateNumStubs * 9.99}
           discount={appliedDiscount}
           quantity={calculateNumStubs}
+          previewImage={pdfPreviews[0] || null}
           onSuccess={handlePaymentSuccess}
           onClose={() => setPendingCheckout(null)}
         />

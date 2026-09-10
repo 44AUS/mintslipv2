@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon,
@@ -7,6 +7,7 @@ import {
 import { closeOutline, lockClosedOutline, checkmarkCircle, cloudDownloadOutline } from "ionicons/icons";
 import {
   useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement,
+  PaymentRequestButtonElement,
 } from "@stripe/react-stripe-js";
 import { nativePost } from "@/utils/nativeHttp";
 
@@ -37,8 +38,65 @@ export default function PaymentModal({
   const [cardErrors, setCardErrors] = useState({});
   const [error, setError] = useState("");
   const [stage, setStage] = useState("form"); // form | paying | delivering | delivered | deliverFailed
+  const [paymentRequest, setPaymentRequest] = useState(null);
 
   const busy = stage === "paying" || stage === "delivering";
+
+  // Apple Pay (iOS/Safari) and Google Pay (Android/Chrome) via Stripe's
+  // Payment Request button — it renders only when the device has a wallet.
+  useEffect(() => {
+    if (!stripe || isFree) return;
+    const pr = stripe.paymentRequest({
+      country: "US",
+      currency: "usd",
+      total: { label: `MintSlip — ${docLabel}`, amount: Math.round(finalAmount * 100) },
+      requestPayerName: true,
+      requestPayerEmail: true,
+    });
+    let cancelled = false;
+    pr.canMakePayment().then((result) => { if (!cancelled && result) setPaymentRequest(pr); });
+    pr.on("paymentmethod", async (ev) => {
+      setError("");
+      setStage("paying");
+      try {
+        const { ok, data } = await nativePost(`${BACKEND_URL}/api/stripe/create-payment-intent`, {
+          amount: finalAmount,
+          documentType,
+          template,
+          email: ev.payerEmail || "",
+          discountCode: discount?.code || null,
+          discountAmount: discount ? parseFloat(discountValue.toFixed(2)) : 0,
+          quantity,
+        });
+        if (!ok || !data?.clientSecret) { ev.complete("fail"); throw new Error(data?.detail || "Could not start the payment. Please try again."); }
+        const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+          data.clientSecret, { payment_method: ev.paymentMethod.id }, { handleActions: false }
+        );
+        if (confirmError) { ev.complete("fail"); throw new Error(confirmError.message || "Payment failed. Please try again."); }
+        ev.complete("success");
+        let pi = paymentIntent;
+        if (pi.status === "requires_action") {
+          const followUp = await stripe.confirmCardPayment(data.clientSecret);
+          if (followUp.error) throw new Error(followUp.error.message || "Payment authentication failed.");
+          pi = followUp.paymentIntent;
+        }
+        if (pi.status !== "succeeded") throw new Error("Payment did not complete. Please try again.");
+        setStage("delivering");
+        try {
+          await onSuccess({ email: ev.payerEmail || "", name: ev.payerName || "", paymentIntentId: pi.id });
+          setStage("delivered");
+          onClose();
+        } catch (deliverErr) {
+          console.error("Post-payment delivery failed:", deliverErr);
+          setStage("deliverFailed");
+        }
+      } catch (err) {
+        setError(err.message || "Payment failed. Please try again.");
+        setStage("form");
+      }
+    });
+    return () => { cancelled = true; };
+  }, [stripe]); // eslint-disable-line
 
   // Stripe iframes can't read our CSS variables, so resolve theme colors once.
   const stripeStyle = useMemo(() => {
@@ -221,6 +279,18 @@ export default function PaymentModal({
             ) : (
             <div style={cardStyle}>
               <div style={headingStyle}>Payment details</div>
+              {paymentRequest && (
+                <>
+                  <PaymentRequestButtonElement
+                    options={{ paymentRequest, style: { paymentRequestButton: { theme: "dark", height: "44px" } } }}
+                  />
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ flex: 1, height: 1, background: "var(--ion-color-step-150, rgba(0,0,0,0.12))" }} />
+                    <span style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>or pay with card</span>
+                    <div style={{ flex: 1, height: 1, background: "var(--ion-color-step-150, rgba(0,0,0,0.12))" }} />
+                  </div>
+                </>
+              )}
               <div>
                 <span style={smallLabelStyle}>Name on card</span>
                 <div style={boxStyle("name")}>

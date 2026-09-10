@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import {
-  IonPage, IonContent, IonIcon, IonBadge, IonToggle,
+  IonPage, IonContent, IonIcon, IonBadge, IonToggle, IonRippleEffect,
   IonSegment, IonSegmentButton, IonLabel,
   IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonSearchbar,
   IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle,
@@ -53,8 +53,10 @@ function Row({ icon, label, right, below, last, clickable, onClick }) {
   return (
     <div
       onClick={onClick}
-      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0 0 20px", cursor: clickable ? "pointer" : "default" }}
+      className={clickable ? "ion-activatable" : undefined}
+      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0 0 20px", cursor: clickable ? "pointer" : "default", position: clickable ? "relative" : undefined, overflow: clickable ? "hidden" : undefined }}
     >
+      {clickable && <IonRippleEffect />}
       {icon && <IconWrap icon={icon} />}
       <div style={{
         flex: "1 1 0%", display: "flex", flexDirection: "column",

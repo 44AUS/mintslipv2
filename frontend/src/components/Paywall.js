@@ -10,6 +10,33 @@ import "@/styles/paywall.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
+// Client-side offer defaults so the countdown + discount show even when the
+// server offer endpoint isn't reachable. The server offer (per-IP, enforced)
+// overrides this whenever it's available.
+const DEFAULT_PERCENT = 20;
+const DEFAULT_MINUTES = 10;
+const DEFAULT_COOLDOWN_DAYS = 7;
+const PW_OFFER_KEY = "pw_offer"; // { expiresAt, cooldownUntil, pct }
+
+// A persistent, per-browser fallback offer: one countdown per weekly cooldown,
+// kept in localStorage so it doesn't reset on reopen (mirrors the server rule).
+function clientFallbackOffer() {
+  const now = Date.now();
+  let rec = null;
+  try { rec = JSON.parse(localStorage.getItem(PW_OFFER_KEY) || "null"); } catch { /* private mode */ }
+  const cooldownUntil = rec?.cooldownUntil ? new Date(rec.cooldownUntil).getTime() : 0;
+  if (rec && cooldownUntil > now) {
+    const exp = new Date(rec.expiresAt).getTime();
+    return exp > now
+      ? { active: true, pct: rec.pct || DEFAULT_PERCENT, expiresAt: rec.expiresAt, serverEnforced: false }
+      : { active: false, pct: 0, expiresAt: null }; // used this week
+  }
+  const expiresAt = new Date(now + DEFAULT_MINUTES * 60000).toISOString();
+  const cd = new Date(now + DEFAULT_COOLDOWN_DAYS * 86400000).toISOString();
+  try { localStorage.setItem(PW_OFFER_KEY, JSON.stringify({ expiresAt, cooldownUntil: cd, pct: DEFAULT_PERCENT })); } catch { /* private mode */ }
+  return { active: true, pct: DEFAULT_PERCENT, expiresAt, serverEnforced: false };
+}
+
 const money = (n) => {
   const v = Number(n) || 0;
   return Number.isInteger(v) ? `$${v}` : `$${v.toFixed(2)}`;
@@ -86,7 +113,9 @@ function hapticCelebrate() {
 // a nudge, at full price. Only an admin "off" hides it.
 export default function Paywall({ docLabel, documentType, basePrice, previewImage, onUnlock, onDismiss }) {
   const [screen, setScreen] = useState("offer"); // "offer" | "sure"
-  const [offer, setOffer] = useState(undefined);  // undefined=loading, null=dismiss, {active,pct,expiresAt}
+  // Start from the persistent client offer so the countdown shows immediately;
+  // the server offer overrides it below when reachable.
+  const [offer, setOffer] = useState(clientFallbackOffer); // null=dismiss, {active,pct,expiresAt,serverEnforced}
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const dismissedRef = useRef(false);
@@ -106,16 +135,17 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
         if (data?.success && data.enabled === false) {
           setOffer(null); // admin turned it off
         } else if (data?.success && data.active && data.discountPercent > 0) {
-          setOffer({ active: true, pct: data.discountPercent, expiresAt: data.expiresAt });
-        } else {
-          // Enabled but no active offer for this IP (already used this week), or
-          // unreachable → show the paywall at full price (never a fake discount).
-          if (!data) console.warn(`Paywall: offer request failed (HTTP ${res.status}); showing at full price.`);
+          setOffer({ active: true, pct: data.discountPercent, expiresAt: data.expiresAt, serverEnforced: true });
+        } else if (data?.success) {
+          // Server reachable but no active offer for this IP (used this week).
           setOffer({ active: false, pct: 0, expiresAt: null });
+        } else {
+          // Unreachable → keep the persistent client fallback offer.
+          console.warn(`Paywall: server offer unavailable (HTTP ${res.status}); using client offer.`);
         }
       } catch (e) {
-        console.warn("Paywall: offer request failed; showing at full price.", e);
-        if (alive) setOffer({ active: false, pct: 0, expiresAt: null });
+        // Unreachable → keep the persistent client fallback offer.
+        console.warn("Paywall: offer request failed; using client offer.", e);
       }
     })();
     return () => { alive = false; };
@@ -180,7 +210,7 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
           {offerLive && <span className="pw-plan-save">You save {money(basePrice - discountedPrice)}</span>}
         </span>
       </div>
-      <button className="pw-cta" onClick={() => onUnlock?.(discountedPrice, offerLive)}>
+      <button className="pw-cta" onClick={() => onUnlock?.(discountedPrice, offerLive && offer.serverEnforced)}>
         <IonIcon icon={lockClosedOutline} /> Complete for {money(discountedPrice)}
       </button>
       <p className="pw-fine">One-time purchase. No subscription required.</p>

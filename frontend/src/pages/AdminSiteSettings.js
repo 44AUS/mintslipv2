@@ -501,7 +501,7 @@ export default function AdminSiteSettings() {
 
   return (
     <AdminLayout>
-      <div className="max-w-2xl mx-auto">
+      <div className="admin-site-settings max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-slate-800">Site Settings</h1>
           <p className="text-sm text-slate-500 mt-1">Control site-wide features and availability.</p>

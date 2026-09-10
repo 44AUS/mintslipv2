@@ -1042,6 +1042,37 @@ ion-modal ion-footer ion-toolbar {
   --color: var(--admin-text);
 }
 
+/* ── Site Settings: theme the Tailwind slate/white markup to the /app
+   settings card look (soft-shadow themed cards, no hard border) and make
+   it dark-mode aware. Scoped to the page so no other view is affected. ── */
+.admin-site-settings .bg-white {
+  background: var(--ion-card-background) !important;
+  border-color: transparent !important;
+  box-shadow: rgba(0, 0, 0, 0.18) 0 4px 24px;
+  border-radius: 12px;
+}
+.admin-site-settings h1,
+.admin-site-settings .text-slate-800,
+.admin-site-settings .text-slate-700 { color: var(--ion-text-color) !important; }
+.admin-site-settings .text-slate-500,
+.admin-site-settings .text-slate-400 { color: var(--ion-color-medium) !important; }
+.admin-site-settings .bg-slate-50 { background: var(--ion-color-step-50) !important; }
+.admin-site-settings .border-slate-100,
+.admin-site-settings .border-slate-200,
+.admin-site-settings .border-slate-300 { border-color: var(--ion-border-color) !important; }
+.admin-site-settings .divide-slate-100 > * + * { border-color: var(--ion-border-color) !important; }
+.admin-site-settings input,
+.admin-site-settings textarea,
+.admin-site-settings select {
+  background: var(--ion-card-background) !important;
+  color: var(--ion-text-color) !important;
+  border-color: var(--ion-border-color) !important;
+}
+.admin-site-settings input::placeholder,
+.admin-site-settings textarea::placeholder { color: var(--ion-color-medium) !important; }
+/* Category-name input sits on a step-50 header strip — keep it transparent */
+.admin-site-settings .bg-slate-50 input { background: transparent !important; }
+
 /* ── Table action buttons ── */
 .admin-action-btn {
   width: 30px;

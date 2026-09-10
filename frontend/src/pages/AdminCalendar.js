@@ -409,7 +409,7 @@ export default function AdminCalendar() {
           <IonModal
             isOpen={true}
             onDidDismiss={() => setDayModal(null)}
-            style={{ "--width": "720px", "--height": "540px", "--border-radius": "8px", "--max-width": "94vw" }}
+            className="admin-detail-modal admin-day-modal"
           >
             <IonHeader>
               <IonToolbar>

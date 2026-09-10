@@ -1009,6 +1009,10 @@ ion-modal.admin-detail-modal {
 @media only screen and (min-width: 768px) and (min-height: 768px) {
   ion-modal.admin-detail-modal { --height: 600px; }
 }
+/* Calendar day-purchases modal: same chrome, wider for its table */
+@media only screen and (min-width: 820px) and (min-height: 600px) {
+  ion-modal.admin-detail-modal.admin-day-modal { --width: 760px; }
+}
 ion-modal.admin-detail-modal ion-toolbar {
   --background: transparent;
   --border-color: transparent;

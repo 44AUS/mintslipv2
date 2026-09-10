@@ -129,8 +129,10 @@ function NavItem({ tab, isActive, onClick }) {
   );
 }
 
-// Persists sidebar state across route-driven remounts
+// Persists sidebar state across route-driven remounts (each admin page mounts
+// its own AdminLayout, so navigation fully remounts this component)
 let _adminSidebarOpen = true;
+let _adminMobileSidebarOpen = false;
 
 // A controlled IonPopover that mounts fresh on open and fully unmounts on
 // close, anchored to the click event. Trigger-based popovers here would leave
@@ -286,7 +288,14 @@ export default function AdminLayout({ children, fillHeight = false }) {
       return next;
     });
   };
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mobileSidebarOpen, _setMobileSidebarOpen] = useState(_adminMobileSidebarOpen);
+  const setMobileSidebarOpen = (valOrFn) => {
+    _setMobileSidebarOpen(prev => {
+      const next = typeof valOrFn === "function" ? valOrFn(prev) : valOrFn;
+      _adminMobileSidebarOpen = next;
+      return next;
+    });
+  };
 
   const handleMenuToggle = () => {
     if (window.innerWidth < 768) {
@@ -712,7 +721,13 @@ export default function AdminLayout({ children, fillHeight = false }) {
                 {isInnerPage ? (
                   <IonButton
                     fill="clear"
-                    onClick={() => { setSidebarOpen(true); navigate(-1); }}
+                    onClick={() => {
+                      // Restore the sidebar to its open state when going back, matching
+                      // desktop: reopen the rail on desktop, the drawer on mobile.
+                      if (window.innerWidth < 768) setMobileSidebarOpen(true);
+                      else setSidebarOpen(true);
+                      navigate(-1);
+                    }}
                     style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%" }}
                   >
                     <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>
@@ -1037,7 +1052,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
       {/* Rendered inline inside IonApp (not portaled to document.body) so the identity
           popovers can anchor to these rows — Ionic can only position a popover against a
           node that lives inside ion-app. The fixed overlay still covers the whole viewport. */}
-      {mobileSidebarOpen && (<>
+      {isMobile && mobileSidebarOpen && (<>
       {/* ── Mobile sidebar overlay ── */}
       <div
         className="mob-sidebar-backdrop"

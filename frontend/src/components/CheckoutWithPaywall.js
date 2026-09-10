@@ -16,8 +16,10 @@ export default function CheckoutWithPaywall({
   const paidRef = useRef(false);
   const showPaywallRef = useRef(false); // synchronous mirror of showPaywall (guards double-taps)
 
+  // A discounted offer price reopens checkout in server-enforced offer mode;
+  // an unlock at full price (offer unavailable) is just a normal checkout.
   const effectiveDiscount = offerPrice != null
-    ? { discountedPrice: offerPrice, offer: true }
+    ? (offerPrice < basePrice ? { discountedPrice: offerPrice, offer: true } : null)
     : discount;
 
   // Free orders (100%-off coupon) never need a discount pitch.

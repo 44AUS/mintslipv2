@@ -1309,11 +1309,17 @@ export default function AppCanadianPaystub() {
               ) : pdfPreviews.length > 0 && pdfPreviews[previewPageIndex] ? (
                 <>
                   <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-                    <img
-                      src={pdfPreviews[previewPageIndex]}
-                      alt={`Canadian pay stub preview ${previewPageIndex + 1}`}
-                      style={{ width: "100%", display: "block" }}
-                    />
+                    {/* All pages sit side by side; the track slides with the range */}
+                    <div className="msh-preview-track" style={{ display: "flex", transform: `translateX(-${previewPageIndex * 100}%)` }}>
+                      {pdfPreviews.map((src, idx) => (
+                        <img
+                          key={idx}
+                          src={src}
+                          alt={`Canadian pay stub preview ${idx + 1}`}
+                          style={{ width: "100%", flexShrink: 0, display: "block" }}
+                        />
+                      ))}
+                    </div>
                   </div>
                   {pdfPreviews.length > 1 && (
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>

@@ -188,6 +188,15 @@ ion-button.button-clear:has([slot="icon-only"]) {
   width: 100%;
 }
 
+/* Preview pages sit side by side in a track that slides along with the
+   page range slider, so scrubbing feels like flipping through the pages. */
+.msh-preview-track {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .msh-preview-track { transition: none; }
+}
+
 /* Sample cards float in with a small staggered rise when a section opens */
 @keyframes appCardIn {
   from { opacity: 0; transform: translateY(14px) scale(0.98); }

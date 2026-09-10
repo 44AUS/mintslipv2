@@ -28,16 +28,32 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Blurs the live /app screen + the preview modal painted behind the overlay,
-   with a dark gradient over it — lighter at the top so the blurred app reads
-   through, heavier toward the bottom so the buttons stay clean. */
+/* Blurred backdrop of the preview document (renders on every device). */
+.pw-bgimg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100dvh;
+  object-fit: cover;
+  object-position: top;
+  pointer-events: none;
+  filter: blur(11px) saturate(1.08);
+  transform: scale(1.12);
+}
+/* When no preview is available, stay transparent so the scrim's backdrop-filter
+   can blur the live /app instead. */
+.pw-bgfill { position: fixed; inset: 0; z-index: 0; }
+/* Also backdrop-blurs the live /app chrome (where supported) and lays a dark
+   gradient over the backdrop — lighter at the top so the blur reads through,
+   heavier toward the bottom so the buttons stay clean. */
 .pw-scrim {
   position: fixed;
   inset: 0;
   height: 100dvh;
-  z-index: 0;
-  backdrop-filter: blur(20px) saturate(1.12);
-  -webkit-backdrop-filter: blur(20px) saturate(1.12);
+  z-index: 1;
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
   background: linear-gradient(180deg, rgba(7, 17, 13, 0.42), rgba(7, 17, 13, 0.78) 55%, rgba(7, 17, 13, 0.96));
 }
 

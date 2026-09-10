@@ -189,7 +189,12 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
 
   return createPortal(
     <div className="pw">
-      {/* The scrim blurs the live /app screen + the preview modal behind it. */}
+      {/* Blurred backdrop. filter:blur on the preview image renders on every
+          device (unlike backdrop-filter), guaranteeing the preview is blurred;
+          the scrim also backdrop-blurs the live app chrome where supported. */}
+      {previewImage
+        ? <img className="pw-bgimg" src={previewImage} alt="" aria-hidden="true" />
+        : <span className="pw-bgfill" aria-hidden="true" />}
       <span className="pw-scrim" aria-hidden="true" />
 
       <button className="pw-x" onClick={onX} aria-label="Close">

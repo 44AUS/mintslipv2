@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon,
-  IonButton, IonSpinner,
+  IonButton, IonSpinner, IonPopover, IonDatetime,
+  IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent,
 } from "@ionic/react";
 import {
-  chevronBackOutline, chevronForwardOutline, chevronDownOutline,
+  chevronBackOutline, chevronForwardOutline, chevronDownOutline, closeOutline,
 } from "ionicons/icons";
 import AdminLayout from "@/components/AdminLayout";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
@@ -38,7 +39,7 @@ const DOC_LABELS = {
   "w9":                    "W-9",
   "1099-nec":              "1099-NEC",
   "1099-misc":             "1099-MISC",
-  "bank-statement":        "Bank Stmt",
+  "bank-statement":        "Accounting Mockup",
   "offer-letter":          "Offer Letter",
   "cease-and-desist":      "Cease and Desist",
   "power-of-attorney":     "Power of Attorney",
@@ -66,6 +67,18 @@ function isToday(d) {
   return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
 }
 
+function timeAgo(iso) {
+  if (!iso) return "—";
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
+function getInitials(email) {
+  return String(email || "?").slice(0, 2).toUpperCase();
+}
+
 
 export default function AdminCalendar() {
   const navigate = useNavigate();
@@ -75,7 +88,8 @@ export default function AdminCalendar() {
   const [curDate, setCurDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showPicker, setShowPicker] = useState(false);
+  const [pickerMenu, setPickerMenu] = useState({ open: false, event: undefined });
+  const [dayModal, setDayModal] = useState(null); // Date whose purchases are listed
   const [detail, setDetail] = useState(null);
 
   const year = curDate.getFullYear();
@@ -149,23 +163,23 @@ export default function AdminCalendar() {
         ))}
       </div>
 
-      {/* Week rows */}
-      <div style={{ flex: "1 1 0%", display: "grid", gridTemplateRows: "repeat(6,1fr)" }}>
+      {/* Week rows — minmax(0,1fr) keeps all six rows the exact same height
+          regardless of how many event pills a week carries */}
+      <div style={{ flex: "1 1 0%", display: "grid", gridTemplateRows: "repeat(6, minmax(0, 1fr))" }}>
         {weeks.map((week, wi) => {
-          // Count max events across the week for bottom-padding
-          const maxEvts = Math.max(...week.map(c => Math.min((byDate[dateKey(c.date)] || []).length, 3)));
-          const bottomPad = maxEvts > 0 ? maxEvts * 24 + 8 : 8;
-
           return (
-            <div key={wi} style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: wi < 5 ? "1px solid var(--ion-border-color)" : "none" }}>
-              {/* Day cells */}
+            <div key={wi} style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(7,1fr)", minHeight: 0, overflow: "hidden", borderBottom: wi < 5 ? "1px solid var(--ion-border-color)" : "none" }}>
+              {/* Day cells — click opens the day's purchases */}
               {week.map((cell, ci) => (
-                <div key={ci} style={{
-                  padding: `6px 8px ${bottomPad}px`,
-                  borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none",
-                  background: !cell.cur ? "rgba(0,0,0,0.024)" : "transparent",
-                  minHeight: 100,
-                }}>
+                <div key={ci}
+                  onClick={() => setDayModal(cell.date)}
+                  style={{
+                    padding: "6px 8px",
+                    borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none",
+                    background: !cell.cur ? "rgba(0,0,0,0.024)" : "transparent",
+                    minHeight: 0,
+                    cursor: "pointer",
+                  }}>
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <div style={{
                       width: 26, height: 26,
@@ -280,14 +294,6 @@ export default function AdminCalendar() {
 
   return (
     <AdminLayout fillHeight>
-      {/* Dismiss month picker on outside click */}
-      {showPicker && (
-        <div
-          style={{ position: "fixed", inset: 0, zIndex: 99 }}
-          onClick={() => setShowPicker(false)}
-        />
-      )}
-
       <div style={{ padding: 10, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ padding: "4px 6px", position: "relative", height: "100%", display: "flex", flexDirection: "column" }}>
           <div style={{ borderRadius: 6, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.18)", background: "var(--ion-card-background)", flex: "1 1 0%", display: "flex", flexDirection: "column" }}>
@@ -299,52 +305,40 @@ export default function AdminCalendar() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", minWidth: "max-content", gap: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
 
-                  {/* Month / Year button */}
-                  <div style={{ position: "relative" }}>
-                    <IonButton
-                      fill="clear"
-                      onClick={() => setShowPicker(p => !p)}
-                      style={{ fontWeight: 700, fontSize: "1rem", "--color": "var(--ion-text-color)" }}
+                  {/* Month / Year button — opens the Ionic month-year wheels
+                      (same picker the /app date inputs use, fresh-mounted) */}
+                  <IonButton
+                    fill="clear"
+                    onClick={(e) => setPickerMenu({ open: true, event: e.nativeEvent })}
+                    style={{ fontWeight: 700, fontSize: "1rem", "--color": "var(--ion-text-color)" }}
+                  >
+                    {MONTHS[month]} {year}
+                    <span slot="end" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
+                      <IonIcon icon={chevronDownOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                  {pickerMenu.open && (
+                    <IonPopover
+                      isOpen={true}
+                      event={pickerMenu.event}
+                      onDidDismiss={() => setPickerMenu({ open: false, event: undefined })}
+                      side="bottom"
+                      alignment="start"
+                      style={{ "--width": "auto" }}
                     >
-                      {MONTHS[month]} {year}
-                      <span slot="end" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem" }}>
-                        <IonIcon icon={chevronDownOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
-                      </span>
-                    </IonButton>
-
-                    {/* Month picker popover */}
-                    {showPicker && (
-                      <div style={{
-                        position: "absolute", top: "100%", left: 0, zIndex: 100,
-                        background: "var(--ion-card-background)",
-                        border: "1px solid var(--ion-border-color)",
-                        borderRadius: 8, boxShadow: "0 4px 20px rgba(0,0,0,0.22)",
-                        padding: 10, minWidth: 230,
-                      }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, padding: "0 4px" }}>
-                          <IonButton fill="clear" size="small" onClick={e => { e.stopPropagation(); setCurDate(new Date(year - 1, month, 1)); }}>‹</IonButton>
-                          <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--ion-text-color)" }}>{year}</span>
-                          <IonButton fill="clear" size="small" onClick={e => { e.stopPropagation(); setCurDate(new Date(year + 1, month, 1)); }}>›</IonButton>
-                        </div>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4 }}>
-                          {MONTHS.map((m, i) => (
-                            <button
-                              key={m}
-                              onClick={e => { e.stopPropagation(); setCurDate(new Date(year, i, 1)); setShowPicker(false); }}
-                              style={{
-                                padding: "6px 4px", borderRadius: 6, border: "none", cursor: "pointer",
-                                fontSize: "0.8rem", fontWeight: i === month ? 700 : 400,
-                                background: i === month ? "var(--ion-color-primary)" : "transparent",
-                                color: i === month ? "#fff" : "var(--ion-text-color)",
-                              }}
-                            >
-                              {m.slice(0, 3)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                      <IonDatetime
+                        presentation="month-year"
+                        value={`${year}-${String(month + 1).padStart(2, "0")}-01`}
+                        onIonChange={(e) => {
+                          const v = e.detail.value;
+                          if (typeof v === "string" && v) {
+                            const [yy, mm] = v.split("-").map(Number);
+                            if (yy && mm) setCurDate(new Date(yy, mm - 1, 1));
+                          }
+                        }}
+                      />
+                    </IonPopover>
+                  )}
 
                   {/* View segment — stock Ionic segment in iOS mode, untouched */}
                   <IonSegment mode="ios" value={view} onIonChange={e => setView(e.detail.value)}>
@@ -403,6 +397,100 @@ export default function AdminCalendar() {
           </div>
         </div>
       </div>
+
+      {/* ── Day purchases modal — the purchases table, scoped to one day ── */}
+      {dayModal && (() => {
+        const k = dateKey(dayModal);
+        const dayList = (byDate[k] || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const dayLabel = dayModal.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+        const dayTotal = dayList.reduce((s, p) => s + (p.amount || 0), 0);
+        const tdBase = { padding: "10px 12px", borderBottom: "1px solid var(--ion-border-color)", verticalAlign: "middle" };
+        return (
+          <IonModal
+            isOpen={true}
+            onDidDismiss={() => setDayModal(null)}
+            style={{ "--width": "720px", "--height": "540px", "--border-radius": "8px", "--max-width": "94vw" }}
+          >
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>{dayLabel}</IonTitle>
+                <IonButtons slot="end">
+                  <IonButton onClick={() => setDayModal(null)} aria-label="Close">
+                    <IonIcon icon={closeOutline} slot="icon-only" />
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 4px" }}>
+                <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
+                  {dayList.length} purchase{dayList.length === 1 ? "" : "s"}
+                </span>
+                <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981" }}>${dayTotal.toFixed(2)}</span>
+              </div>
+              {dayList.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 12px", color: "var(--ion-color-medium)", fontSize: "0.875rem" }}>
+                  No purchases on this day
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto", padding: "0 4px 16px" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
+                    <thead>
+                      <tr>
+                        {["Age", "Customer", "Document", "Amount", "Status"].map((h) => (
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: "0.72rem", fontWeight: 400, color: "var(--ion-color-medium)", background: "var(--ion-background-color)", whiteSpace: "nowrap" }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dayList.map((p) => {
+                        const email = p.email || p.paypalEmail || "N/A";
+                        const docLabel = DOC_LABELS[p.documentType] || p.documentType || "-";
+                        const qty = p.quantity > 1 ? ` ×${p.quantity}` : "";
+                        return (
+                          <tr key={p.id} onClick={() => setDetail(p)} style={{ height: 56, cursor: "pointer" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                            <td style={tdBase}>
+                              <span style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", whiteSpace: "nowrap" }}>{timeAgo(p.createdAt)}</span>
+                            </td>
+                            <td style={{ ...tdBase, minWidth: 170 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: "var(--ion-color-primary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <span style={{ fontSize: "0.58rem", color: "#fff", fontWeight: 700 }}>{getInitials(email)}</span>
+                                </div>
+                                <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>{email}</span>
+                              </div>
+                            </td>
+                            <td style={tdBase}>
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.78rem", whiteSpace: "nowrap" }}>
+                                <span style={{ width: 8, height: 8, borderRadius: "50%", background: DOC_COLORS[p.documentType] || "#64748b", display: "inline-block" }} />
+                                {docLabel}{qty}
+                              </span>
+                            </td>
+                            <td style={tdBase}>
+                              <span style={{ fontSize: "0.875rem", fontWeight: 700, whiteSpace: "nowrap", color: p.refunded ? "var(--ion-color-warning)" : "var(--ion-color-success)" }}>
+                                ${Number(p.amount || 0).toFixed(2)}
+                              </span>
+                            </td>
+                            <td style={tdBase}>
+                              {p.refunded
+                                ? <span className="admin-badge admin-badge-amber">Refunded</span>
+                                : <span className="admin-badge admin-badge-green">Paid</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </IonContent>
+          </IonModal>
+        );
+      })()}
 
       {/* ── Payment detail modal (whodat admin payments style) ── */}
       <PurchaseDetailModal

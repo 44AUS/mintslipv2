@@ -367,18 +367,21 @@ export default function PaymentSuccess() {
         }
       } else if (orderType === 'bank-statement') {
         const formDataStr = localStorage.getItem('pendingBankStatementData');
-        
+
         if (formDataStr) {
-          const formData = JSON.parse(formDataStr);
-          const template = localStorage.getItem('pendingBankStatementTemplate') || 'chase';
-          
+          // Pending data is stored as { formData: {...}, ... } — the generator
+          // wants the inner flat object (older saves may already be flat).
+          const parsed = JSON.parse(formDataStr);
+          const formData = parsed.formData || parsed;
+          const template = localStorage.getItem('pendingBankStatementTemplate') || 'template-a';
+
           pdfBlob = await generateAndDownloadBankStatement(formData, template, true);
           generated = true;
-          
+
           if (emailToUse && pdfBlob) {
-            sendFileEmail(pdfBlob, emailToUse, 'bank-statement', formData.accountHolder);
+            sendFileEmail(pdfBlob, emailToUse, 'bank-statement', formData.accountName);
           }
-          
+
           toast.success('Your accounting mockup has been downloaded!');
         }
       } else if (orderType === 'ai-resume') {
@@ -659,7 +662,7 @@ export default function PaymentSuccess() {
       'w9': 'w9_form.pdf',
       '1099-misc': '1099_misc.pdf',
       '1099-nec': '1099_nec.pdf',
-      'bank-statement': 'bank_statement.pdf',
+      'bank-statement': 'accounting_mockup.pdf',
       'offer-letter': 'offer_letter.pdf',
       'cease-and-desist': 'cease_and_desist_letter.pdf',
       'legal-document': 'legal_document.pdf',
@@ -735,8 +738,9 @@ export default function PaymentSuccess() {
       } else if (orderType === 'bank-statement') {
         const formDataStr = localStorage.getItem('pendingBankStatementData');
         if (formDataStr) {
-          const formData = JSON.parse(formDataStr);
-          const template = localStorage.getItem('pendingBankStatementTemplate') || 'chase';
+          const parsed = JSON.parse(formDataStr);
+          const formData = parsed.formData || parsed;
+          const template = localStorage.getItem('pendingBankStatementTemplate') || 'template-a';
           await generateAndDownloadBankStatement(formData, template);
           regenerated = true;
           toast.success('Download started!');

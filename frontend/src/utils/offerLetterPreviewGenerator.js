@@ -1,4 +1,5 @@
 import { generateOfferLetterPDF } from './offerLetterGenerator';
+import { pdfToPageImages } from './pdfPageImages';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up pdf.js worker using unpkg CDN with correct version
@@ -33,6 +34,17 @@ async function convertPdfToImage(pdfBytes) {
   
   return imageDataUrl;
 }
+
+// All pages, for the in-app preview modal's page slider
+export const generateOfferLetterPreviewPages = async (formData) => {
+  try {
+    const pdfBytes = await generateOfferLetterPDF(formData, true);
+    return await pdfToPageImages(pdfBytes);
+  } catch (error) {
+    console.error("Error generating Offer Letter preview pages:", error);
+    throw error;
+  }
+};
 
 // Generate offer letter preview with watermark
 export const generateOfferLetterPreview = async (formData) => {

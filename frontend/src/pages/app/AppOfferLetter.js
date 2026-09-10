@@ -5,15 +5,16 @@ import {
   IonHeader, IonToolbar, IonTitle, IonButtons,
   IonInput, IonSelect, IonSelectOption,
   IonButton, IonIcon, IonSpinner, IonTextarea, IonToast,
-  IonSegment, IonSegmentButton, IonLabel, IonNote,
+  IonSegment, IonSegmentButton, IonLabel, IonNote, IonRange,
 } from "@ionic/react";
 import {
-  cloudDownloadOutline, eyeOutline, closeOutline, imageOutline,
+  cloudDownloadOutline, eyeOutline, closeOutline, imageOutline, checkmarkOutline,
 } from "ionicons/icons";
+import { Haptics } from "@capacitor/haptics";
 import { IonDateInput } from "@/components/DateInput";
 import SignaturePad from "@/components/SignaturePad";
 import { generateAndDownloadOfferLetter } from "@/utils/offerLetterGenerator";
-import { generateOfferLetterPreview } from "@/utils/offerLetterPreviewGenerator";
+import { generateOfferLetterPreviewPages } from "@/utils/offerLetterPreviewGenerator";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
 import PaymentModal from "@/components/PaymentModal";
 
@@ -109,9 +110,10 @@ export default function AppOfferLetter({ isOpen, onClose }) {
   const [user, setUser]                                   = useState(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isProcessing, setIsProcessing]                   = useState(false);
-  const [pdfPreview, setPdfPreview]                       = useState(null);
+  const [previewPages, setPreviewPages]                   = useState([]);
+  const [previewPageIndex, setPreviewPageIndex]           = useState(0);
+  const [previewModalOpen, setPreviewModalOpen]           = useState(false);
   const [isGeneratingPreview, setIsGeneratingPreview]     = useState(false);
-  const [showPreview, setShowPreview]                     = useState(false);
   const [toastOpen, setToastOpen]                         = useState(false);
   const [toastMessage, setToastMessage]                   = useState("");
   const [toastColor, setToastColor]                       = useState("success");
@@ -190,19 +192,25 @@ export default function AppOfferLetter({ isOpen, onClose }) {
     } catch {}
   };
 
-  // Debounced preview
+  // Debounced live preview (all pages, for the preview modal's slider)
   useEffect(() => {
-    if (!formData.companyName || !formData.candidateName) return;
+    if (!formData.companyName || !formData.candidateName) { setPreviewPages([]); return; }
     const t = setTimeout(async () => {
       setIsGeneratingPreview(true);
       try {
-        const url = await generateOfferLetterPreview(formData);
-        setPdfPreview(url);
+        setPreviewPages(await generateOfferLetterPreviewPages(formData));
       } catch {}
       setIsGeneratingPreview(false);
     }, 900);
     return () => clearTimeout(t);
   }, [formData]);
+
+  // ── Checkmark / Preview → preview modal ──
+  const handleNext = () => {
+    if (!String(formData.companyName || "").trim())   { showToast("Please enter the company name", "danger"); return; }
+    if (!String(formData.candidateName || "").trim()) { showToast("Please enter the candidate's full name", "danger"); return; }
+    setPreviewModalOpen(true);
+  };
 
   const handleLogoFile = file => {
     if (!file) return;
@@ -333,6 +341,13 @@ export default function AppOfferLetter({ isOpen, onClose }) {
               </IonButton>
             </IonButtons>
             <IonTitle style={{ fontWeight: 700 }}>Offer Letter</IonTitle>
+            <IonButtons slot="end">
+              <IonButton fill="clear" shape="round" onClick={handleNext}>
+                <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                  <IonIcon icon={checkmarkOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                </span>
+              </IonButton>
+            </IonButtons>
           </IonToolbar>
         </IonHeader>
 
@@ -478,32 +493,92 @@ export default function AppOfferLetter({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Preview & Download */}
+            {/* Preview */}
             <div style={cardStyle}>
               <div style={headingStyle}>Preview & Download</div>
-              <IonButton expand="block" color="light" onClick={() => setShowPreview(v => !v)}
-                disabled={isGeneratingPreview}>
-                {isGeneratingPreview
-                  ? <IonSpinner name="crescent" slot="start" style={{ width: 16, height: 16 }} />
-                  : <IonIcon icon={eyeOutline} slot="start" />}
-                {showPreview ? "Hide Preview" : "Preview"}
+              <IonButton expand="block" color="light" onClick={handleNext}>
+                <IonIcon icon={eyeOutline} slot="start" />
+                Preview
               </IonButton>
-              {showPreview && (
-                pdfPreview ? (
-                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-step-200)" }}>
-                    <iframe src={pdfPreview} style={{ width: "100%", height: 420, border: "none" }} title="Preview" />
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* ── Preview modal — same flow as the paystub modals ── */}
+      {previewModalOpen && (() => {
+        const pageIdx = Math.min(previewPageIndex, Math.max(0, previewPages.length - 1));
+        return (
+        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10001, background: isMobile ? "var(--ion-background-color, #f2f2f7)" : "rgba(0,0,0,0.5)", display: "flex", alignItems: isMobile ? "stretch" : "center", justifyContent: isMobile ? "stretch" : "center" }}>
+          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: isMobile ? "100%" : 600, height: isMobile ? "100%" : "auto", maxHeight: isMobile ? "100%" : "90vh", overflow: "hidden" }}>
+            <IonHeader>
+              <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
+                <IonButtons slot="start">
+                  <IonButton fill="clear" shape="round" onClick={() => setPreviewModalOpen(false)}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                      <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                </IonButtons>
+                <IonTitle style={{ fontWeight: 700 }}>
+                  Preview {previewPages.length > 1 ? `(${pageIdx + 1} of ${previewPages.length})` : ""}
+                </IonTitle>
+              </IonToolbar>
+            </IonHeader>
+            <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+              {isGeneratingPreview ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
+                  <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
+                  <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>Generating preview…</span>
+                </div>
+              ) : previewPages.length > 0 ? (
+                <>
+                  <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--ion-color-light-shade)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+                    {/* All pages sit side by side; the track slides with the range */}
+                    <div className="msh-preview-track" style={{ display: "flex", transform: `translateX(-${pageIdx * 100}%)` }}>
+                      {previewPages.map((src, idx) => (
+                        <img key={idx} src={src} alt={`Offer letter preview ${idx + 1}`} style={{ width: "100%", flexShrink: 0, display: "block" }} />
+                      ))}
+                    </div>
                   </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 220, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
-                    <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
-                    <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>
-                      Enter the company and candidate names to see a preview
-                    </p>
-                  </div>
-                )
+                  {previewPages.length > 1 && (
+                    <div style={{ display: "flex", flexDirection: "column", marginTop: 8, padding: "0 16px" }}>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ion-color-medium)", textAlign: "center", whiteSpace: "nowrap" }}>
+                        Page {pageIdx + 1} of {previewPages.length}
+                      </span>
+                      <IonRange
+                        color="primary"
+                        min={1}
+                        max={previewPages.length}
+                        step={1}
+                        snaps={true}
+                        ticks={true}
+                        pin={true}
+                        pinFormatter={(v) => `${v}`}
+                        value={pageIdx + 1}
+                        onIonKnobMoveStart={() => Haptics.selectionStart().catch(() => {})}
+                        onIonKnobMoveEnd={() => Haptics.selectionEnd().catch(() => {})}
+                        onIonInput={(e) => {
+                          const next = Number(e.detail.value) - 1;
+                          if (next !== pageIdx) Haptics.selectionChanged().catch(() => {});
+                          setPreviewPageIndex(next);
+                        }}
+                        style={{ width: "100%", paddingTop: 4, paddingBottom: 4 }}
+                      />
+                    </div>
+                  )}
+                  <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 8 }}>Watermark removed after payment</p>
+                </>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
+                  <IonIcon icon={eyeOutline} style={{ fontSize: "2.5rem", color: "var(--ion-color-medium)", marginBottom: 8 }} />
+                  <p style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)", textAlign: "center", margin: 0 }}>No preview available yet</p>
+                </div>
               )}
+
               {!hasActiveSubscription && (
-                <div>
+                <div style={{ marginTop: 20 }}>
                   {!appliedDiscount ? (
                     <>
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -529,24 +604,47 @@ export default function AppOfferLetter({ isOpen, onClose }) {
                   )}
                 </div>
               )}
-              {hasActiveSubscription ? (
-                <IonButton expand="block" onClick={handleSubscriptionDownload} disabled={isProcessing}
-                  style={{ "--background": "#059669", "--background-activated": "#047857" }}>
-                  {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} />
-                    : <><IonIcon icon={cloudDownloadOutline} slot="start" />Download (Subscription)</>}
-                </IonButton>
-              ) : (
-                <IonButton expand="block" onClick={handleStripeCheckout} disabled={isProcessing}
-                  style={{ "--background": "#059669", "--background-activated": "#047857" }}>
-                  {isProcessing ? <IonSpinner name="crescent" style={{ color: "#fff" }} />
-                    : <><IonIcon icon={cloudDownloadOutline} slot="start" />Buy &amp; Download — ${finalPrice.toFixed(2)}</>}
-                </IonButton>
-              )}
-            </div>
 
+              {!hasActiveSubscription && (
+                <div style={{ marginTop: 12, paddingTop: 12, textAlign: "center" }}>
+                  {appliedDiscount ? (
+                    <>
+                      <p style={{ textDecoration: "line-through", color: "var(--ion-color-medium)", fontSize: "0.9rem", margin: "0 0 4px" }}>${OFFER_PRICE.toFixed(2)}</p>
+                      <p style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${appliedDiscount.discountedPrice.toFixed(2)}</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-success)", margin: 0 }}>{appliedDiscount.discountPercent}% discount applied</p>
+                    </>
+                  ) : (
+                    <>
+                      <p style={{ fontWeight: 700, fontSize: "1.2rem", color: "var(--ion-color-success-shade)", margin: "0 0 4px" }}>${OFFER_PRICE.toFixed(2)}</p>
+                      <p style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", margin: 0 }}>One-time payment · instant download</p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              <IonButton
+                expand="block"
+                color="success"
+                style={{ marginTop: 20, "--border-radius": "8px" }}
+                disabled={isProcessing}
+                onClick={hasActiveSubscription ? handleSubscriptionDownload : handleStripeCheckout}
+              >
+                {isProcessing ? (
+                  <IonSpinner name="crescent" style={{ marginRight: 8 }} />
+                ) : (
+                  <IonIcon slot="start" icon={cloudDownloadOutline} />
+                )}
+                {isProcessing
+                  ? "Processing..."
+                  : hasActiveSubscription
+                    ? "Download Document"
+                    : `Pay & Download — $${finalPrice.toFixed(2)}`}
+              </IonButton>
+            </div>
           </div>
         </div>
-      </div>
+        );
+      })()}
 
       {paymentOpen && (
         <PaymentModal

@@ -364,7 +364,7 @@ export default function AdminCalendar() {
                 </div>
 
                 {/* Purchase count chip — opens the month's purchase list */}
-                <IonButton fill="solid" size="small" color="medium" style={{ flexShrink: 0 }}
+                <IonButton fill="solid" size="small" color="dark" style={{ flexShrink: 0 }}
                   onClick={() => setMonthModalOpen(true)}>
                   {monthPurchases.length} Purchases
                 </IonButton>

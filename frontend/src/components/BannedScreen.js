@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { IonIcon } from "@ionic/react";
 import { banOutline, mailOutline } from "ionicons/icons";
 import MintSlipLogo from "@/assests/mintslip-logo.png";
+import AppBackdrop from "@/assests/images/app-backdrop.jpg";
 import "@/styles/paywall.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -35,6 +36,11 @@ export default function BannedScreen({ overlay = false }) {
 
   return (
     <div className={`pw pw-banned${overlay ? " pw-banned-overlay" : ""}`}>
+      {/* Blurred /app backdrop — the paywall's .pw-bgimg technique (an image
+          with filter: blur), so the frosted app shows on every device even
+          where backdrop-filter is unreliable and on direct /banned visits
+          where no live app sits behind the screen. */}
+      <img className="pw-bgimg" src={AppBackdrop} alt="" aria-hidden="true" />
       <span className="pw-scrim" aria-hidden="true" />
 
       {/* Brand bar — same as the paywall (no close button: not dismissible) */}

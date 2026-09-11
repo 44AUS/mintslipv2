@@ -52,180 +52,6 @@ const TelegramIcon = ({ className }) => (
   </svg>
 );
 
-// Instant Paystub Generation Animation Component
-const EnvelopeAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center">
-    <svg viewBox="0 0 280 240" className="w-full h-full max-w-md">
-      {/* Background circle pulse */}
-      <circle cx="140" cy="120" r="100" fill="#d1fae5" opacity="0.3"
-        style={{ 
-          animation: isVisible ? 'pulse 2s ease-in-out infinite' : 'none',
-          transformOrigin: '140px 120px'
-        }}/>
-
-      {/* Input form (left side) */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateX(0)' : 'translateX(-30px)',
-        transition: 'all 0.5s ease-out'
-      }}>
-        <rect x="20" y="60" width="70" height="90" rx="6" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
-        <rect x="20" y="60" width="70" height="20" rx="6" fill="#1a4731"/>
-        <text x="55" y="74" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">INPUT</text>
-        {/* Form fields */}
-        <rect x="28" y="88" width="54" height="8" rx="2" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1"/>
-        <rect x="28" y="102" width="54" height="8" rx="2" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1"/>
-        <rect x="28" y="116" width="40" height="8" rx="2" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1"/>
-        <rect x="28" y="130" width="48" height="8" rx="2" fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1"/>
-        {/* Typing cursor animation */}
-        <rect x="50" y="90" width="2" height="5" fill="#1a4731"
-          style={{ animation: isVisible ? 'blink 0.8s infinite 0.5s' : 'none' }}/>
-      </g>
-
-      {/* Arrow 1 - Input to Processing */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeIn 0.3s ease-out 0.6s forwards' : 'none'
-      }}>
-        <path d="M95,105 L115,105" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"
-          style={{ strokeDasharray: 20, strokeDashoffset: isVisible ? 0 : 20, transition: 'stroke-dashoffset 0.4s ease-out 0.6s' }}/>
-        <path d="M112,100 L118,105 L112,110" fill="none" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-
-      {/* Processing gear (center) */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.4s ease-out 0.8s'
-      }}>
-        <circle cx="140" cy="105" r="22" fill="#1a4731"/>
-        {/* Gear teeth */}
-        <g style={{ 
-          transformOrigin: '140px 105px',
-          animation: isVisible ? 'spin 2s linear infinite 1s' : 'none'
-        }}>
-          <rect x="136" y="80" width="8" height="10" rx="2" fill="#1a4731"/>
-          <rect x="136" y="120" width="8" height="10" rx="2" fill="#1a4731"/>
-          <rect x="115" y="101" width="10" height="8" rx="2" fill="#1a4731"/>
-          <rect x="155" y="101" width="10" height="8" rx="2" fill="#1a4731"/>
-          <rect x="119" y="85" width="8" height="8" rx="2" fill="#1a4731" transform="rotate(45 123 89)"/>
-          <rect x="153" y="85" width="8" height="8" rx="2" fill="#1a4731" transform="rotate(45 157 89)"/>
-          <rect x="119" y="117" width="8" height="8" rx="2" fill="#1a4731" transform="rotate(45 123 121)"/>
-          <rect x="153" y="117" width="8" height="8" rx="2" fill="#1a4731" transform="rotate(45 157 121)"/>
-        </g>
-        <circle cx="140" cy="105" r="12" fill="#ffffff"/>
-        <text x="140" y="109" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">⚡</text>
-      </g>
-
-      {/* Arrow 2 - Processing to Output */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeIn 0.3s ease-out 1.2s forwards' : 'none'
-      }}>
-        <path d="M165,105 L185,105" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"
-          style={{ strokeDasharray: 20, strokeDashoffset: isVisible ? 0 : 20, transition: 'stroke-dashoffset 0.4s ease-out 1.2s' }}/>
-        <path d="M182,100 L188,105 L182,110" fill="none" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-
-      {/* Output paystub (right side) */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(30px) scale(0.9)',
-        transition: 'all 0.6s ease-out 1.4s'
-      }}>
-        <rect x="195" y="50" width="75" height="110" rx="6" fill="#ffffff" stroke="#10b981" strokeWidth="3" filter="url(#glowGreen)"/>
-        <rect x="195" y="50" width="75" height="22" rx="6" fill="#1a4731"/>
-        <text x="232" y="65" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">PAYSTUB</text>
-        {/* Paystub content lines */}
-        <line x1="203" y1="82" x2="262" y2="82" stroke="#1a4731" strokeWidth="1.5" opacity="0.7"
-          style={{ strokeDasharray: 60, strokeDashoffset: isVisible ? 0 : 60, transition: 'stroke-dashoffset 0.3s ease-out 1.6s' }}/>
-        <line x1="203" y1="94" x2="250" y2="94" stroke="#1a4731" strokeWidth="1.5" opacity="0.5"
-          style={{ strokeDasharray: 50, strokeDashoffset: isVisible ? 0 : 50, transition: 'stroke-dashoffset 0.3s ease-out 1.7s' }}/>
-        <line x1="203" y1="106" x2="255" y2="106" stroke="#1a4731" strokeWidth="1.5" opacity="0.5"
-          style={{ strokeDasharray: 55, strokeDashoffset: isVisible ? 0 : 55, transition: 'stroke-dashoffset 0.3s ease-out 1.8s' }}/>
-        {/* Amount box */}
-        <rect x="203" y="118" width="62" height="18" rx="3" fill="#d1fae5" stroke="#10b981" strokeWidth="1"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 1.9s forwards' : 'none' }}/>
-        <text x="234" y="131" textAnchor="middle" fill="#065f46" fontSize="9" fontWeight="bold"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 2s forwards' : 'none' }}>$2,450.00</text>
-        {/* Checkmark badge */}
-        <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 2.1s forwards' : 'none' }}>
-          <circle cx="262" cy="58" r="12" fill="#10b981" stroke="#ffffff" strokeWidth="2"/>
-          <path d="M256,58 L260,63 L270,52" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </g>
-      </g>
-
-      {/* "INSTANT" badge */}
-      <g style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 2.3s forwards' : 'none' }}>
-        <rect x="105" y="165" width="70" height="24" rx="12" fill="#1a4731"/>
-        <text x="140" y="181" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">⚡ INSTANT</text>
-      </g>
-
-      {/* Time indicator */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 2.5s forwards' : 'none' }}>
-        <circle cx="140" cy="210" r="15" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2"/>
-        <text x="140" y="214" textAnchor="middle" fill="#92400e" fontSize="8" fontWeight="bold">2min</text>
-      </g>
-
-      {/* Sparkles */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 2.2s' }}>
-        <circle cx="270" cy="40" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite 2.2s' : 'none' }}/>
-        <circle cx="20" cy="170" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 2.4s' : 'none' }}/>
-        <circle cx="275" cy="150" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 2.6s' : 'none' }}/>
-        <circle cx="100" cy="40" r="2.5" fill="#10b981" style={{ animation: isVisible ? 'sparkle 2s ease-in-out infinite 2.3s' : 'none' }}/>
-      </g>
-
-      {/* Flow lines connecting everything */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.5s ease-out 0.4s forwards' : 'none' }}>
-        <path d="M55,155 Q55,175 80,175 Q100,175 120,165" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.4"/>
-        <path d="M225,165 Q240,175 255,175 Q270,175 270,190" fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.4"/>
-      </g>
-
-      {/* SVG filter for glow effect */}
-      <defs>
-        <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-          <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-      </defs>
-    </svg>
-
-    <style>{`
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.3; }
-        50% { transform: scale(1.1); opacity: 0.5; }
-      }
-      @keyframes blink {
-        0%, 50% { opacity: 1; }
-        51%, 100% { opacity: 0; }
-      }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      @keyframes slideUp {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes bounceIn {
-        0% { opacity: 0; transform: scale(0); }
-        60% { transform: scale(1.2); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes sparkle {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.5); }
-      }
-    `}</style>
-  </div>
-);
-
 // Testimonials — social proof for the trust section (replaces the old
 // Secure & Instant animation). Portraits are the same ones the paywall uses.
 const HOME_TESTIMONIALS = [
@@ -731,72 +557,6 @@ export default function Home() {
         );
       })()}
 
-      {/* Quick Solution Section */}
-      {(() => {
-        const [quickSolutionRef, quickSolutionInView] = useInView();
-        return (
-          <section ref={quickSolutionRef} className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                {/* Left Content - appears below animation on mobile */}
-                <div className="space-y-6 order-2 lg:order-1">
-                  <span className="inline-block text-sm font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-4 py-1.5 rounded-full">
-                    Quick Solution
-                  </span>
-                  <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight leading-tight text-slate-900">
-                    How MintSlip Makes{' '}
-                    <span className="relative inline-block" style={{ color: '#1a4731' }}>
-                      Pay Stubs
-                      <svg 
-                        className="absolute -bottom-2 left-0 w-full" 
-                        viewBox="0 0 120 20" 
-                        preserveAspectRatio="none"
-                        style={{ overflow: 'visible', height: '12px' }}
-                      >
-                        <path 
-                          d="M2,14 Q30,14 60,12 Q90,10 105,8 Q112,6 118,3" 
-                          stroke="#1a4731" 
-                          strokeWidth="4" 
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          style={{
-                            strokeDasharray: 150,
-                            strokeDashoffset: quickSolutionInView ? 0 : 150,
-                            transition: 'stroke-dashoffset 0.6s ease-out 0.3s'
-                          }}
-                        />
-                      </svg>
-                    </span>
-                    {' '}Instantly
-                  </h2>
-                  <p className="text-lg text-slate-600 leading-relaxed">
-                    With MintSlip, you can instantly create accurate paycheck stubs for any situation. Our platform simplifies the process, offering customized pay stubs ready for use in minutes. Choose from PDF or other digital file types for fast, secure download.
-                  </p>
-                  <p className="text-lg text-slate-600 leading-relaxed">
-                    Whether you need detailed pay stubs or record keeping, MintSlip makes it quick and easy to create accurate and reliable paycheck documentation anytime.
-                  </p>
-                  <button
-                    onClick={() => navigate("/app")}
-                    className="group inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-7 py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-emerald-900/10 hover:shadow-lg"
-                  >
-                    Get Your Pay Stub Now
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
-                  </button>
-                </div>
-
-                {/* Right - Animation - appears above text on mobile */}
-                <div className="flex justify-center items-center order-1 lg:order-2">
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl overflow-hidden h-96 w-full border border-emerald-100 shadow-sm flex items-center justify-center">
-                    <EnvelopeAnimation isVisible={quickSolutionInView} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-      })()}
-
       {/* How it works — Kikoff-style: three gray cards, each with a step
           bubble and a cropped iPhone mockup walking the MintSlip flow. */}
       {(() => {
@@ -991,14 +751,20 @@ export default function Home() {
         );
       })()}
 
-      {/* Latest Blog Posts Section */}
+      {/* Latest Blog Posts Section — hidden unless the admin turns it on in
+          Site Settings (homepage_sections.showBlog). */}
       {(() => {
         const [blogRef, blogInView] = useInView();
         const [latestPosts, setLatestPosts] = useState([]);
         const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+        const [showBlog, setShowBlog] = useState(false);
         const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-        
+
         useEffect(() => {
+          fetch(`${BACKEND_URL}/api/homepage-sections`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => { if (d?.sections?.showBlog) setShowBlog(true); })
+            .catch(() => {});
           const fetchLatestPosts = async () => {
             try {
               const response = await fetch(`${BACKEND_URL}/api/blog/posts?limit=3&sort=newest`);
@@ -1023,7 +789,8 @@ export default function Home() {
           });
         };
 
-        // Only render if there are posts
+        // Hidden until the admin toggle says otherwise; also skip when empty
+        if (!showBlog) return null;
         if (!isLoadingPosts && latestPosts.length === 0) return null;
 
         return (

@@ -962,7 +962,15 @@ ion-modal {
 ion-modal ion-header ion-toolbar {
   --background: var(--admin-card-bg);
   --color: var(--admin-text);
+  /* The global toolbar color is white (for the green app bar); modal toolbars
+     are light in light mode, so pin the toolbar color to the theme text so the
+     header icons (e.g. the close X) don't render white-on-white. */
+  --ion-toolbar-color: var(--admin-text);
   --min-height: 56px;
+}
+ion-modal ion-header ion-toolbar ion-icon,
+ion-modal ion-header ion-toolbar ion-button {
+  color: var(--admin-text);
 }
 
 ion-modal ion-content  { --background: var(--admin-card-bg); }

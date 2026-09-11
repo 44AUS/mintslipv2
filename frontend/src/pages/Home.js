@@ -2028,18 +2028,6 @@ export default function Home() {
               </AccordionItem>
             ))}
           </Accordion>
-
-          <div className="text-center mt-10">
-            <Button
-              onClick={() => navigate("/faq")}
-              variant="outline"
-              size="lg"
-              className="group gap-2 rounded-xl border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-800 hover:bg-emerald-50/60 transition-all duration-200"
-            >
-              View All FAQs
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-            </Button>
-          </div>
         </div>
       </section>
 

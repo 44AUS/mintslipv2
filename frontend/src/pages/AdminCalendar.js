@@ -7,7 +7,7 @@ import {
   createGesture,
 } from "@ionic/react";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import {
   chevronBackOutline, chevronForwardOutline, chevronDownOutline, closeOutline,
 } from "ionicons/icons";
@@ -422,13 +422,16 @@ export default function AdminCalendar() {
   // ── Week view: 7 day columns, each a scrollable list of purchase pills ──
   // One week's 7 columns (reused by all three carousel panels).
   const weekColumns = (days) => (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", height: "100%", minHeight: 0 }}>
+    // minmax(0,1fr) forces truly equal columns — plain 1fr can't shrink below
+    // content width, which let wide revenue text squeeze Sat/Sun into an
+    // overlapping scrunch on phones.
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", height: "100%", minHeight: 0 }}>
       {days.map((d, ci) => {
         const evts = purchasesForDate(d);
         const dayTotal = evts.reduce((s, p) => s + (p.amount || 0), 0);
         const tdy = isToday(d);
         return (
-          <div key={ci} style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none" }}>
+          <div key={ci} style={{ display: "flex", flexDirection: "column", minHeight: 0, minWidth: 0, overflow: "hidden", borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none" }}>
             {/* Column header — click opens the day modal, with ripple */}
             <div className="ion-activatable"
               onClick={() => setDayModal(d)}
@@ -439,7 +442,7 @@ export default function AdminCalendar() {
                 <span style={{ fontSize: "0.85rem", fontWeight: tdy ? 800 : 600, color: tdy ? "#fff" : "var(--ion-text-color)" }}>{d.getDate()}</span>
               </div>
               {/* Revenue always shown, even $0.00 */}
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: evts.length ? "#10b981" : "var(--ion-color-medium)", marginTop: 2 }}>${dayTotal.toFixed(2)}</div>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: evts.length ? "#10b981" : "var(--ion-color-medium)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>${dayTotal.toFixed(2)}</div>
             </div>
             {/* Pills */}
             <div style={{ flex: "1 1 0%", overflowY: "auto", padding: "6px 4px", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -793,46 +796,95 @@ export default function AdminCalendar() {
         );
       })()}
 
-      {/* ── Revenue charts modal — scoped to the current view's period ── */}
+      {/* ── Revenue charts modal — full screen, comparing the current view's
+          period against the previous one (month vs last month, week vs last
+          week, day vs yesterday). ── */}
       {chartModalOpen && (() => {
-        let title, bars, periodPurchases;
+        const sum = (arr) => arr.reduce((s, p) => s + (p.amount || 0), 0);
+        let title, bars, periodPurchases, prevPurchases, curName, prevName;
         if (view === "week") {
           const wEnd = weekDays[6];
+          const prevWeek = weekDays.map((d) => addDays(d, -7));
           title = `Revenue · ${MONTHS[weekStart.getMonth()].slice(0, 3)} ${weekStart.getDate()}–${wEnd.getDate()}`;
+          curName = "This week"; prevName = "Last week";
           periodPurchases = weekDays.flatMap((d) => purchasesForDate(d));
-          bars = weekDays.map((d) => ({
+          prevPurchases = prevWeek.flatMap((d) => purchasesForDate(d));
+          bars = weekDays.map((d, i) => ({
             label: `${DAYS[d.getDay()]} ${d.getDate()}`,
-            revenue: purchasesForDate(d).reduce((s, p) => s + (p.amount || 0), 0),
+            revenue: sum(purchasesForDate(d)),
+            prev: sum(purchasesForDate(prevWeek[i])),
           }));
         } else if (view === "day") {
+          const prevDay = addDays(curDate, -1);
           title = `Revenue · ${curDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-          const evts = purchasesForDate(curDate);
-          periodPurchases = evts;
-          const map = {};
-          evts.forEach((p) => {
-            const k = DOC_LABELS[p.documentType] || p.documentType || "Other";
-            map[k] = (map[k] || 0) + (p.amount || 0);
-          });
-          bars = Object.entries(map).map(([label, revenue]) => ({ label, revenue }));
+          curName = "Today"; prevName = "Yesterday";
+          periodPurchases = purchasesForDate(curDate);
+          prevPurchases = purchasesForDate(prevDay);
+          const cur = {}, prv = {};
+          periodPurchases.forEach((p) => { const k = DOC_LABELS[p.documentType] || p.documentType || "Other"; cur[k] = (cur[k] || 0) + (p.amount || 0); });
+          prevPurchases.forEach((p) => { const k = DOC_LABELS[p.documentType] || p.documentType || "Other"; prv[k] = (prv[k] || 0) + (p.amount || 0); });
+          bars = [...new Set([...Object.keys(cur), ...Object.keys(prv)])]
+            .map((label) => ({ label, revenue: cur[label] || 0, prev: prv[label] || 0 }));
         } else {
+          const pm = month === 0 ? 11 : month - 1;
+          const py = month === 0 ? year - 1 : year;
+          const prevDim = daysInMonth(py, pm);
           title = `Revenue · ${MONTHS[month]} ${year}`;
+          curName = "This month"; prevName = "Last month";
           periodPurchases = monthPurchases;
-          bars = Array.from({ length: dim }, (_, i) => {
+          prevPurchases = Array.from({ length: prevDim }, (_, i) => byDate[dateKey(new Date(py, pm, i + 1))] || []).flat();
+          bars = Array.from({ length: Math.max(dim, prevDim) }, (_, i) => {
             const day = i + 1;
             return {
               label: String(day),
-              revenue: (byDate[dateKey(new Date(year, month, day))] || []).reduce((s, p) => s + (p.amount || 0), 0),
+              revenue: day <= dim ? sum(byDate[dateKey(new Date(year, month, day))] || []) : 0,
+              prev: day <= prevDim ? sum(byDate[dateKey(new Date(py, pm, day))] || []) : 0,
             };
           });
         }
-        const totalRev = periodPurchases.reduce((s, p) => s + (p.amount || 0), 0);
-        const count = periodPurchases.length;
-        const avg = count ? totalRev / count : 0;
-        const empty = !bars.length || bars.every((b) => b.revenue === 0);
+
+        // Cumulative revenue race: current vs previous period. The day view
+        // accumulates by hour; week/month accumulate across the bars.
+        let cumData;
+        if (view === "day") {
+          const hourRev = (list, h) => sum(list.filter((p) => new Date(p.createdAt).getHours() === h));
+          let a = 0, b = 0;
+          cumData = Array.from({ length: 24 }, (_, h) => {
+            a += hourRev(periodPurchases, h); b += hourRev(prevPurchases, h);
+            return { label: `${h}:00`, current: +a.toFixed(2), previous: +b.toFixed(2) };
+          });
+        } else {
+          let a = 0, b = 0;
+          cumData = bars.map((r) => {
+            a += r.revenue; b += r.prev;
+            return { label: r.label, current: +a.toFixed(2), previous: +b.toFixed(2) };
+          });
+        }
+
+        const totalRev = sum(periodPurchases), prevRev = sum(prevPurchases);
+        const count = periodPurchases.length, prevCount = prevPurchases.length;
+        const avg = count ? totalRev / count : 0, prevAvg = prevCount ? prevRev / prevCount : 0;
+        const empty = !bars.length || bars.every((r) => r.revenue === 0 && r.prev === 0);
         const close = () => setChartModalOpen(false);
         const card = { background: "var(--ion-color-step-50)", borderRadius: 10, padding: "12px", textAlign: "center" };
+        const chartCard = { background: "var(--ion-color-step-50)", borderRadius: 12, padding: "14px 12px 8px" };
+        const sectionLabel = { fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-color-medium)", margin: "0 0 8px 4px" };
+        const tooltipStyle = { background: "var(--ion-card-background)", border: "1px solid var(--ion-border-color)", borderRadius: 8, color: "var(--ion-text-color)" };
+        // Change vs the previous period, shown under each summary number
+        const DeltaChip = ({ cur, prev, money }) => {
+          if (!prev) {
+            return <div style={{ fontSize: "0.66rem", color: "var(--ion-color-medium)", marginTop: 2 }}>— vs {prevName.toLowerCase()}</div>;
+          }
+          const pct = ((cur - prev) / prev) * 100;
+          const up = pct >= 0;
+          return (
+            <div style={{ fontSize: "0.66rem", fontWeight: 700, color: up ? "#10b981" : "#ef4444", marginTop: 2 }}>
+              {up ? "▲" : "▼"} {Math.abs(pct).toFixed(0)}% vs {prevName.toLowerCase()} ({money ? `$${prev.toFixed(2)}` : prev})
+            </div>
+          );
+        };
         return (
-          <IonModal isOpen={true} onDidDismiss={close} className="admin-detail-modal admin-day-modal">
+          <IonModal isOpen={true} onDidDismiss={close} className="admin-detail-modal admin-fullscreen-modal">
             <IonHeader>
               <IonToolbar>
                 <IonTitle>{title}</IonTitle>
@@ -844,37 +896,74 @@ export default function AdminCalendar() {
               </IonToolbar>
             </IonHeader>
             <IonContent>
-              <div style={{ padding: 16 }}>
+              <div style={{ padding: 16, maxWidth: 1400, margin: "0 auto" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
-                  {[["Revenue", `$${totalRev.toFixed(2)}`], ["Purchases", String(count)], ["Avg / sale", `$${avg.toFixed(2)}`]].map(([k, v]) => (
-                    <div key={k} style={card}>
-                      <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)" }}>{k}</div>
-                      <div style={{ fontSize: "1.05rem", fontWeight: 800, color: k === "Revenue" ? "#10b981" : "var(--ion-text-color)" }}>{v}</div>
+                  <div style={card}>
+                    <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)" }}>Revenue</div>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 800, color: "#10b981" }}>${totalRev.toFixed(2)}</div>
+                    <DeltaChip cur={totalRev} prev={prevRev} money />
+                  </div>
+                  <div style={card}>
+                    <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)" }}>Purchases</div>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--ion-text-color)" }}>{count}</div>
+                    <DeltaChip cur={count} prev={prevCount} />
+                  </div>
+                  <div style={card}>
+                    <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)" }}>Avg / sale</div>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 800, color: "var(--ion-text-color)" }}>${avg.toFixed(2)}</div>
+                    <DeltaChip cur={avg} prev={prevAvg} money />
+                  </div>
+                </div>
+
+                {/* Side-by-side on wide screens, stacked when narrow */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(460px, 100%), 1fr))", gap: 14 }}>
+                  <div style={chartCard}>
+                    <div style={sectionLabel}>
+                      {view === "day" ? "Revenue by document" : "Revenue by day"} — {curName.toLowerCase()} vs {prevName.toLowerCase()}
                     </div>
-                  ))}
+                    <div style={{ width: "100%", height: 320 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={bars} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.22)" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} interval={view === "month" ? "preserveStartEnd" : 0}
+                            angle={view === "day" ? -20 : 0} textAnchor={view === "day" ? "end" : "middle"} height={view === "day" ? 60 : 24} />
+                          <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} width={52} tickFormatter={(v) => `$${v}`} />
+                          <Tooltip
+                            cursor={{ fill: "rgba(16,185,129,0.08)" }}
+                            contentStyle={tooltipStyle}
+                            formatter={(v, name) => [`$${Number(v).toFixed(2)}`, name]}
+                          />
+                          <Legend wrapperStyle={{ fontSize: 12 }} />
+                          <Bar dataKey="prev" name={prevName} fill="#94a3b8" fillOpacity={0.55} radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="revenue" name={curName} fill="#10b981" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div style={chartCard}>
+                    <div style={sectionLabel}>
+                      Cumulative revenue — {curName.toLowerCase()} vs {prevName.toLowerCase()}{view === "day" ? " (by hour)" : ""}
+                    </div>
+                    <div style={{ width: "100%", height: 320 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={cumData} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.22)" vertical={false} />
+                          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} interval="preserveStartEnd" />
+                          <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} width={52} tickFormatter={(v) => `$${v}`} />
+                          <Tooltip contentStyle={tooltipStyle} formatter={(v, name) => [`$${Number(v).toFixed(2)}`, name]} />
+                          <Legend wrapperStyle={{ fontSize: 12 }} />
+                          <Line type="monotone" dataKey="previous" name={prevName} stroke="#94a3b8" strokeWidth={2} strokeDasharray="6 4" dot={false} />
+                          <Line type="monotone" dataKey="current" name={curName} stroke="#10b981" strokeWidth={2.5} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-color-medium)", margin: "0 0 8px 2px" }}>
-                  {view === "day" ? "Revenue by document" : "Revenue by day"}
-                </div>
-                <div style={{ width: "100%", height: 300 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={bars} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.22)" vertical={false} />
-                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} interval={view === "month" ? "preserveStartEnd" : 0}
-                        angle={view === "day" ? -20 : 0} textAnchor={view === "day" ? "end" : "middle"} height={view === "day" ? 60 : 24} />
-                      <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} width={52} tickFormatter={(v) => `$${v}`} />
-                      <Tooltip
-                        cursor={{ fill: "rgba(16,185,129,0.08)" }}
-                        contentStyle={{ background: "var(--ion-card-background)", border: "1px solid var(--ion-border-color)", borderRadius: 8, color: "var(--ion-text-color)" }}
-                        formatter={(v) => [`$${Number(v).toFixed(2)}`, "Revenue"]}
-                      />
-                      <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+
                 {empty && (
-                  <div style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.85rem", marginTop: 8 }}>
-                    No revenue in this period
+                  <div style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.85rem", marginTop: 12 }}>
+                    No revenue in this period or the previous one
                   </div>
                 )}
               </div>

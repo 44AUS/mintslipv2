@@ -6,7 +6,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { IonButton, IonIcon } from "@ionic/react";
+import { IonButton, IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSelect, IonSelectOption } from "@ionic/react";
 import { refreshOutline } from "ionicons/icons";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -64,24 +64,28 @@ function MetricCard({ label, value, sub, subPositive }) {
   );
 }
 
-// Small pill control group — the same look as the existing 7D/30D/90D switch,
-// reused so every chart gets its own type/metric/period controls.
+// Chart data switches as native iOS Ionic segments — the same segment style
+// used across the app (support center tabs, form modals).
 function PillGroup({ value, onChange, options }) {
   return (
-    <div className="flex gap-1 bg-gray-100 rounded-lg p-1" style={{ flexShrink: 0 }}>
+    <IonSegment
+      mode="ios"
+      value={value}
+      onIonChange={(e) => onChange(e.detail.value)}
+      style={{ width: "auto", flexShrink: 0 }}
+    >
       {options.map(([val, label]) => (
-        <button
-          key={val}
-          onClick={() => onChange(val)}
-          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-            value === val ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          {label}
-        </button>
+        <IonSegmentButton key={val} value={val} style={{ minWidth: 58, minHeight: 26, "--padding-top": "1px", "--padding-bottom": "1px" }}>
+          <IonLabel style={{ fontSize: "0.72rem", fontWeight: 600 }}>{label}</IonLabel>
+        </IonSegmentButton>
       ))}
-    </div>
+    </IonSegment>
   );
+}
+
+function monthLabel(ym) {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
 // Renders one timeseries as the picked chart type (area / line / bar) with a
@@ -131,6 +135,8 @@ export default function AdminRevenue() {
 
   // Per-chart controls
   const [period, setPeriod] = useState("30");            // over-time range
+  const [fromMonth, setFromMonth] = useState("");        // custom month range
+  const [toMonth, setToMonth] = useState("");
   const [otType, setOtType] = useState("area");          // over-time chart type
   const [otMetric, setOtMetric] = useState("revenue");   // revenue | orders | cumulative
   const [docView, setDocView] = useState("pie");         // pie | bar
@@ -158,9 +164,16 @@ export default function AdminRevenue() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // ── Over time (period slice + metric transform) ──
+  // ── Over time: preset period slice, or the custom From/To month range ──
+  const monthsAvailable = data
+    ? [...new Set(data.dailyData.map(d => d.date.slice(0, 7)))].sort()
+    : [];
+  const usingRange = period === "custom" && fromMonth && toMonth;
+  const [rangeLo, rangeHi] = fromMonth <= toMonth ? [fromMonth, toMonth] : [toMonth, fromMonth];
   const sliced = data
-    ? (period === "all" ? data.dailyData : data.dailyData.slice(-Number(period)))
+    ? (usingRange
+        ? data.dailyData.filter(d => { const m = d.date.slice(0, 7); return m >= rangeLo && m <= rangeHi; })
+        : (period === "all" ? data.dailyData : data.dailyData.slice(-Number(period === "custom" ? 30 : period))))
     : [];
   let running = 0;
   const overTime = sliced.map(d => ({
@@ -261,10 +274,36 @@ export default function AdminRevenue() {
         <div className="chart-card" style={{ marginBottom: 32 }}>
           <div className="flex items-center justify-between mb-5" style={{ flexWrap: "wrap", gap: 8 }}>
             <h2 className="chart-title" style={{ marginBottom: 0 }}>Revenue Over Time</h2>
-            <div className="flex" style={{ gap: 8, flexWrap: "wrap" }}>
+            <div className="flex items-center" style={{ gap: 8, flexWrap: "wrap" }}>
               <PillGroup value={otMetric} onChange={setOtMetric} options={[["revenue", "Revenue"], ["orders", "Orders"], ["cumulative", "Cumulative"]]} />
               <PillGroup value={otType} onChange={setOtType} options={[["area", "Area"], ["line", "Line"], ["bar", "Bar"]]} />
-              <PillGroup value={period} onChange={setPeriod} options={[["7", "7D"], ["30", "30D"], ["90", "90D"], ["all", "All"]]} />
+              <PillGroup
+                value={period}
+                onChange={(v) => { setPeriod(v); if (v !== "custom") { setFromMonth(""); setToMonth(""); } }}
+                options={[["7", "7D"], ["30", "30D"], ["90", "90D"], ["all", "All"], ["custom", "Months"]]}
+              />
+              {period === "custom" && (
+                <div className="flex items-center" style={{ gap: 6 }}>
+                  <IonSelect
+                    className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                    label="From" interface="popover"
+                    value={fromMonth}
+                    onIonChange={(e) => setFromMonth(e.detail.value)}
+                    style={{ minWidth: 128 }}
+                  >
+                    {monthsAvailable.map((m) => <IonSelectOption key={m} value={m}>{monthLabel(m)}</IonSelectOption>)}
+                  </IonSelect>
+                  <IonSelect
+                    className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                    label="To" interface="popover"
+                    value={toMonth}
+                    onIonChange={(e) => setToMonth(e.detail.value)}
+                    style={{ minWidth: 128 }}
+                  >
+                    {monthsAvailable.map((m) => <IonSelectOption key={m} value={m}>{monthLabel(m)}</IonSelectOption>)}
+                  </IonSelect>
+                </div>
+              )}
             </div>
           </div>
           <div className="h-[280px]">
@@ -272,7 +311,7 @@ export default function AdminRevenue() {
               <ResponsiveContainer width="100%" height="100%">
                 {FlexChart({ type: otType, data: overTime, dataKey: otKey, money: otMoney, gradId: "revGrad" })}
               </ResponsiveContainer>
-            ) : empty("No data for this period")}
+            ) : empty(period === "custom" && !(fromMonth && toMonth) ? "Pick From and To months" : "No data for this period")}
           </div>
         </div>
 

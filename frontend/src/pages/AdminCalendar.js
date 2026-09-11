@@ -94,7 +94,16 @@ export default function AdminCalendar() {
     try { return localStorage.getItem("adminCalendarView") || "month"; } catch { return "month"; }
   });
   const setView = (v) => { setViewState(v); try { localStorage.setItem("adminCalendarView", v); } catch {} };
-  const [curDate, setCurDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  // Month view steps by month so it anchors on day 1; every other saved view
+  // (week/day/agenda) must open on TODAY — anchoring on the 1st made the
+  // persisted week view land on the week containing the 1st, not this week.
+  const [curDate, setCurDate] = useState(() => {
+    let saved = "month";
+    try { saved = localStorage.getItem("adminCalendarView") || "month"; } catch {}
+    return saved === "month"
+      ? new Date(today.getFullYear(), today.getMonth(), 1)
+      : new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  });
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickerMenu, setPickerMenu] = useState({ open: false, event: undefined });

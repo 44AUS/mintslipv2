@@ -3,10 +3,11 @@ import AdminLayout from "@/components/AdminLayout";
 import { confirmAlert } from "@/utils/confirmAlert";
 import {
   IonButton, IonIcon, IonList, IonSpinner, IonSegment, IonSegmentButton, IonLabel,
+  IonInput, IonSelect, IonSelectOption,
 } from "@ionic/react";
 import {
-  clipboardOutline, refreshOutline, trashOutline, searchOutline,
-  chevronBackOutline, chevronForwardOutline, filterOutline,
+  clipboardOutline, refreshOutline, trashOutline,
+  chevronBackOutline, chevronForwardOutline,
 } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 import AdminDetailModal from "@/components/AdminDetailModal";
@@ -83,16 +84,6 @@ const RESOURCE_OPTIONS = [
   { value: "site_settings",  label: "Site Settings"  },
   { value: "support_ticket", label: "Support Ticket" },
 ];
-
-const selectStyle = {
-  padding: "7px 12px",
-  borderRadius: 8,
-  border: "1px solid var(--ion-border-color)",
-  background: "var(--ion-background-color)",
-  color: "var(--ion-text-color)",
-  fontSize: "0.82rem",
-  outline: "none",
-};
 
 export default function AdminAuditLog() {
   const [logs,           setLogs]           = useState([]);
@@ -177,18 +168,13 @@ export default function AdminAuditLog() {
 
             {/* ── header ── */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", flexShrink: 0, borderBottom: "1px solid var(--ion-border-color)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(var(--ion-color-primary-rgb),0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <IonIcon icon={clipboardOutline} style={{ color: "var(--ion-color-primary)", fontSize: 18 }} />
-                </div>
-                <div>
-                  <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.05rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>
-                    Audit Log
-                  </h2>
-                  <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
-                    {total} total entries
-                  </p>
-                </div>
+              <div>
+                <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.05rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>
+                  Audit Log
+                </h2>
+                <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
+                  {total} total entries
+                </p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <IonButton fill="clear" color="medium" size="small" onClick={fetchLogs} disabled={loading} style={{ "--border-radius": "50%" }}>
@@ -226,39 +212,33 @@ export default function AdminAuditLog() {
               </IonSegment>
             </div>
 
-            {/* ── filter bar ── */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0, flexWrap: "wrap" }}>
-              <IonIcon icon={filterOutline} style={{ fontSize: 16, color: "var(--ion-color-medium)", flexShrink: 0 }} />
-
-              {/* search */}
-              <div style={{ position: "relative", flex: "1 1 160px", minWidth: 160 }}>
-                <IonIcon icon={searchOutline} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--ion-color-medium)", pointerEvents: "none" }} />
-                <input
-                  type="text"
-                  placeholder="Search by actor email…"
-                  value={search}
-                  onChange={e => { setSearch(e.target.value); setPage(0); }}
-                  style={{ ...selectStyle, paddingLeft: 28, width: "100%", boxSizing: "border-box" }}
-                />
+            {/* ── filter bar — standard admin Ionic fields: search on its own
+                row, the two dropdowns share the row below ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "12px 16px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+              <IonInput
+                className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                label="Search by actor email"
+                value={search}
+                onIonInput={e => { setSearch(e.detail.value ?? ""); setPage(0); }}
+              />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <IonSelect
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="Action" interface="popover"
+                  value={actionFilter}
+                  onIonChange={e => { setActionFilter(e.detail.value); setPage(0); }}
+                >
+                  {ACTION_OPTIONS.map(o => <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>)}
+                </IonSelect>
+                <IonSelect
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="Resource" interface="popover"
+                  value={resourceFilter}
+                  onIonChange={e => { setResourceFilter(e.detail.value); setPage(0); }}
+                >
+                  {RESOURCE_OPTIONS.map(o => <IonSelectOption key={o.value} value={o.value}>{o.label}</IonSelectOption>)}
+                </IonSelect>
               </div>
-
-              {/* action filter */}
-              <select
-                value={actionFilter}
-                onChange={e => { setActionFilter(e.target.value); setPage(0); }}
-                style={{ ...selectStyle, flex: "0 0 auto" }}
-              >
-                {ACTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-
-              {/* resource filter */}
-              <select
-                value={resourceFilter}
-                onChange={e => { setResourceFilter(e.target.value); setPage(0); }}
-                style={{ ...selectStyle, flex: "0 0 auto" }}
-              >
-                {RESOURCE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
             </div>
 
             {/* ── table ── */}

@@ -385,11 +385,10 @@ export default function AdminBannedIPs() {
                 <div style={{
                   display: "flex", alignItems: "flex-start", gap: 10,
                   padding: 12, borderRadius: 8,
-                  background: "rgba(245,158,11,0.08)",
-                  border: "1px solid rgba(245,158,11,0.25)",
+                  background: "rgba(var(--ion-color-warning-rgb), 0.16)",
                 }}>
-                  <IonIcon icon={alertCircleOutline} style={{ color: "#d97706", fontSize: 18, flexShrink: 0, marginTop: 1 }} />
-                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#92400e", lineHeight: 1.5 }}>
+                  <IonIcon icon={alertCircleOutline} style={{ color: "var(--ion-color-warning-shade)", fontSize: 18, flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--ion-text-color)", opacity: 0.8, lineHeight: 1.5 }}>
                     Banned IPs see a "You are banned" page. Banned IPs and emails are blocked from making purchases, and the reason is shown to them.
                   </p>
                 </div>

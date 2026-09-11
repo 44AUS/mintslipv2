@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import AdminLayout from "@/components/AdminLayout";
-import { IonButton, IonRippleEffect, IonSpinner, IonInput, IonTextarea, IonSelect, IonSelectOption, IonCheckbox } from "@ionic/react";
+import { IonButton, IonRippleEffect, IonSpinner, IonInput, IonTextarea, IonSelect, IonSelectOption, IonCheckbox, IonIcon } from "@ionic/react";
+import { closeOutline, closeCircleOutline, imageOutline, sendOutline, sparklesOutline } from "ionicons/icons";
+import { pdfToPageImages } from "@/utils/pdfPageImages";
 import {
   ArrowLeft, Type, Square, Minus, Table, Image as ImageIcon, Trash2, Copy,
   Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X, Sparkles, Send, PenTool,
@@ -342,7 +345,7 @@ export default function AdminTemplateEditor() {
   const sendAi = async () => {
     const text = aiInput.trim();
     if ((!text && aiImages.length === 0) || aiBusy || !layout) return;
-    const userMsg = { role: "user", content: text };
+    const userMsg = { role: "user", content: text, ts: Date.now() };
     if (aiImages.length) userMsg.images = aiImages;
     const nextMsgs = [...aiMessages, userMsg];
     setAiMessages(nextMsgs);
@@ -353,7 +356,8 @@ export default function AdminTemplateEditor() {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/assistant`, {
         method: "POST",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMsgs, layout, documentType: docType }),
+        // ts is UI-only chrome (bubble timestamps) — keep it out of the model payload
+        body: JSON.stringify({ messages: nextMsgs.map(({ ts, ...m }) => m), layout, documentType: docType }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.detail || "Assistant request failed");
@@ -364,9 +368,10 @@ export default function AdminTemplateEditor() {
       setAiMessages((m) => [...m, {
         role: "assistant",
         content: (data.reply || "Done.") + (data.layout ? "\n\n✓ Applied to the canvas — Undo reverts it." : ""),
+        ts: Date.now(),
       }]);
     } catch (err) {
-      setAiMessages((m) => [...m, { role: "assistant", content: `Something went wrong: ${err.message}` }]);
+      setAiMessages((m) => [...m, { role: "assistant", content: `Something went wrong: ${err.message}`, ts: Date.now() }]);
     } finally {
       setAiBusy(false);
     }
@@ -545,12 +550,18 @@ export default function AdminTemplateEditor() {
     }
   };
 
-  const previewPdf = () => {
+  // Render the PDF, then convert every page to an image — images scale to the
+  // modal's width so the whole document is visible on any screen (an <iframe>
+  // PDF viewer overflows off the right edge on phones).
+  const previewPdf = async () => {
     try {
       const doc = new jsPDF({ unit: "pt", format: "letter" });
       renderLayout(doc, layout, sampleData, docType);
-      setPreviewUrl(doc.output("bloburl"));
+      setPreviewUrl({ loading: true });
+      const pages = await pdfToPageImages(doc.output("arraybuffer"), { scale: 2 });
+      setPreviewUrl({ pages });
     } catch (err) {
+      setPreviewUrl(null);
       toast.error("Preview failed: " + err.message);
     }
   };
@@ -961,123 +972,215 @@ export default function AdminTemplateEditor() {
         </div>
       </div>
 
-      {/* PDF preview overlay */}
-      {previewUrl && (
+      {/* PDF preview overlay — portalled to <body> above the admin topbar;
+          pages render as width-fitted images so the whole document is visible
+          on any screen */}
+      {previewUrl && createPortal(
         <div onClick={() => setPreviewUrl(null)}
-          style={{ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--ion-card-background)", borderRadius: 8, width: "min(760px, 95vw)", height: "90vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", borderBottom: "1px solid var(--ion-border-color)" }}>
+          style={{ position: "fixed", inset: 0, zIndex: 20000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--ion-card-background)", borderRadius: 8, width: "min(760px, 96vw)", maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
               <span style={{ fontWeight: 700, color: "var(--admin-text)" }}>PDF Preview — sample data</span>
               <button className="ion-activatable admin-action-btn" onClick={() => setPreviewUrl(null)}><X size={16} /><IonRippleEffect /></button>
             </div>
-            <iframe title="Template preview" src={previewUrl} style={{ flex: 1, border: "none", width: "100%" }} />
-          </div>
-        </div>
-      )}
-
-      {/* AI design assistant panel */}
-      {aiOpen && (
-        <div style={{
-          position: "fixed", right: 24, bottom: 24, width: 390, height: 540, zIndex: 2500,
-          display: "flex", flexDirection: "column", overflow: "hidden",
-          background: "var(--ion-card-background)", borderRadius: 14,
-          border: "1px solid var(--ion-border-color)", boxShadow: "0 14px 44px rgba(0,0,0,0.30)",
-        }}>
-          {/* header */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "linear-gradient(135deg,#10b981,#047857)", flexShrink: 0 }}>
-            <Sparkles size={18} style={{ color: "#fff", flexShrink: 0 }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem", lineHeight: 1.2 }}>AI Design Assistant</div>
-              <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.7rem" }}>Designs straight onto the canvas</div>
-            </div>
-            <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, lineHeight: 0 }}>
-              <X size={18} style={{ color: "rgba(255,255,255,0.85)" }} />
-            </button>
-          </div>
-
-          {/* messages */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "12px 12px 4px", display: "flex", flexDirection: "column", gap: 8 }}>
-            {aiMessages.length === 0 && (
-              <div style={{ background: "var(--ion-color-step-50, rgba(0,0,0,0.04))", borderRadius: "4px 12px 12px 12px", padding: "10px 12px", fontSize: "0.82rem", lineHeight: 1.55, color: "var(--admin-text)", whiteSpace: "pre-wrap" }}>
-                Tell me what to design and I'll build it on the canvas. Try:
-                {"\n"}• "Create a clean, modern pay stub with a navy header"
-                {"\n"}• "Add a YTD summary table at the bottom"
-                {"\n"}• Attach a screenshot of any document and say "make it look like this"
-                {"\n\n"}Use the image button to add reference images (any size). Every change applies instantly — Undo reverts it, and nothing is permanent until you Save.
+            {previewUrl.loading ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "60px 24px", color: "var(--admin-text-muted)" }}>
+                <IonSpinner name="crescent" style={{ width: 22, height: 22 }} /> Rendering preview…
+              </div>
+            ) : (
+              <div style={{ overflowY: "auto", padding: 12, background: "var(--ion-background-color)" }}>
+                {(previewUrl.pages || []).map((src, i) => (
+                  <img key={i} src={src} alt={`Page ${i + 1}`}
+                    style={{ display: "block", width: "100%", marginBottom: i < previewUrl.pages.length - 1 ? 12 : 0, boxShadow: "0 2px 10px rgba(0,0,0,0.18)", borderRadius: 2 }} />
+                ))}
               </div>
             )}
-            {aiMessages.map((m, i) => (
-              <div key={i} style={{
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "85%",
-                background: m.role === "user" ? "#059669" : "var(--ion-color-step-50, rgba(0,0,0,0.04))",
-                color: m.role === "user" ? "#fff" : "var(--admin-text)",
-                borderRadius: m.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px",
-                padding: "8px 12px", fontSize: "0.82rem", lineHeight: 1.55,
-                whiteSpace: "pre-wrap", wordBreak: "break-word",
-              }}>
-                {m.images?.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: m.content ? 6 : 0 }}>
-                    {m.images.map((src, j) => (
-                      <img key={j} src={src} alt="" onClick={() => window.open(src, "_blank", "noopener")}
-                        style={{ width: 84, height: 64, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(255,255,255,0.35)", cursor: "pointer" }} />
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* AI design assistant — same chat chrome as the customer support
+          widget: gradient header with round bot avatar, avatar-anchored
+          message bubbles, bouncing typing dots, transparent composer with the
+          green SEND button. */}
+      {aiOpen && (() => {
+        const chatMobile = viewportW < 600;
+        const BotAvatar = ({ size = 28 }) => (
+          <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: "linear-gradient(135deg,#10b981,#047857)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <IonIcon icon={sparklesOutline} style={{ color: "#fff", fontSize: size * 0.52 }} />
+          </div>
+        );
+        const YouAvatar = ({ size = 28 }) => (
+          <div style={{ width: size, height: size, borderRadius: "50%", flexShrink: 0, background: "var(--ion-color-primary)", color: "#fff", fontSize: size * 0.42, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {(() => { try { return (JSON.parse(localStorage.getItem("adminInfo") || "{}").name || "A")[0].toUpperCase(); } catch { return "A"; } })()}
+          </div>
+        );
+        const fmtTime = (ts) => (ts ? new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : null);
+        return (
+          <div style={{
+            position: "fixed", right: chatMobile ? 16 : 24, bottom: chatMobile ? 16 : 24,
+            width: chatMobile ? viewportW - 32 : 360, height: 520, zIndex: 10000,
+            borderRadius: 16, overflow: "hidden",
+            display: "flex", flexDirection: "column",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.25)",
+            background: "var(--ion-card-background)",
+          }}>
+            <style>{`
+              @keyframes aiw-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+              .aiw-msg-input textarea { caret-color: #10b981 !important; }
+            `}</style>
+
+            {/* header — widget style */}
+            <div style={{ background: "linear-gradient(135deg,#10b981,#047857)", padding: "14px 16px 12px", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <BotAvatar size={36} />
+                  <div>
+                    <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.95rem", lineHeight: 1.2 }}>AI Design Assistant</div>
+                    <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.72rem" }}>Designs straight onto the canvas</div>
+                  </div>
+                </div>
+                <IonButton fill="clear" onClick={() => setAiOpen(false)} style={{ "--color": "rgba(255,255,255,0.85)", "--border-radius": "50%", margin: 0, flexShrink: 0 }}>
+                  <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: 22 }}>
+                    <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                  </span>
+                </IonButton>
+              </div>
+            </div>
+
+            {/* messages — widget bubbles */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
+              {aiMessages.length === 0 && (
+                <div style={{ display: "flex", gap: 10, padding: "6px 16px" }}>
+                  <BotAvatar size={30} />
+                  <div style={{ background: "var(--ion-background-color)", borderRadius: "4px 16px 16px 16px", padding: "10px 14px", fontSize: "0.85rem", lineHeight: 1.5, color: "var(--ion-text-color)", maxWidth: "85%", whiteSpace: "pre-wrap" }}>
+                    {'Tell me what to design and I\'ll build it on the canvas. Try:\n• "Create a clean, modern pay stub with a navy header"\n• "Add a YTD summary table at the bottom"\n• Attach a screenshot and say "make it look like this"\n\nEvery change applies instantly — Undo reverts it, and nothing is permanent until you Save.'}
+                  </div>
+                </div>
+              )}
+              {aiMessages.map((m, i) => {
+                const prev = aiMessages[i - 1];
+                const grouped = i > 0 && prev.role === m.role && m.ts && prev.ts && m.ts - prev.ts < 120000;
+                const isBot = m.role === "assistant";
+                return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "flex-end", gap: 8,
+                    padding: grouped ? "1px 16px" : "6px 16px 1px",
+                    flexDirection: isBot ? "row" : "row-reverse",
+                  }}>
+                    <div style={{ width: 28, flexShrink: 0, visibility: grouped ? "hidden" : "visible" }}>
+                      {isBot ? <BotAvatar size={28} /> : <YouAvatar size={28} />}
+                    </div>
+                    <div style={{
+                      maxWidth: "72%",
+                      background: isBot ? "var(--ion-background-color)" : "#10b981",
+                      color: isBot ? "var(--ion-text-color)" : "#fff",
+                      borderRadius: isBot
+                        ? (grouped ? "4px 16px 16px 4px" : "4px 16px 16px 16px")
+                        : (grouped ? "16px 4px 4px 16px" : "16px 16px 4px 16px"),
+                      padding: "8px 12px",
+                      fontSize: "0.85rem", lineHeight: 1.5,
+                      whiteSpace: "pre-wrap", wordBreak: "break-word",
+                    }}>
+                      {!grouped && (
+                        <div style={{ fontSize: "0.65rem", opacity: 0.65, marginBottom: 2 }}>
+                          {isBot ? "Design Assistant" : "You"}{fmtTime(m.ts) ? ` · ${fmtTime(m.ts)}` : ""}
+                        </div>
+                      )}
+                      {m.content}
+                      {m.images?.length > 0 && (
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: m.content ? 6 : 2 }}>
+                          {m.images.map((src, j) => (
+                            <img key={j} src={src} alt="" onClick={() => window.open(src, "_blank", "noopener")}
+                              style={{ width: 120, height: 90, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(0,0,0,0.15)", cursor: "pointer" }} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {aiBusy && (
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 8, padding: "6px 16px 2px" }}>
+                  <BotAvatar size={28} />
+                  <div style={{ background: "var(--ion-background-color)", borderRadius: "4px 16px 16px 16px", padding: "10px 14px", display: "flex", alignItems: "center", gap: 4 }}>
+                    {[0, 1, 2].map((d) => (
+                      <div key={d} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--ion-color-medium)", animation: "aiw-bounce 0.6s infinite", animationDelay: `${d * 0.2}s` }} />
                     ))}
                   </div>
-                )}
-                {m.content}
-              </div>
-            ))}
-            {aiBusy && (
-              <div style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--ion-color-step-50, rgba(0,0,0,0.04))", borderRadius: "4px 12px 12px 12px" }}>
-                <IonSpinner name="dots" style={{ width: 26, height: 16, color: "var(--ion-color-primary)" }} />
-                <span style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)" }}>Designing…</span>
-              </div>
-            )}
-            <div ref={aiEndRef} />
-          </div>
-
-          {/* queued reference images */}
-          {aiImages.length > 0 && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", padding: "8px 12px 0", flexShrink: 0 }}>
-              {aiImages.map((src, i) => (
-                <div key={i} style={{ position: "relative", width: 52, height: 52 }}>
-                  <img src={src} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, border: "1px solid var(--ion-border-color)" }} />
-                  <button onClick={() => setAiImages((prev) => prev.filter((_, j) => j !== i))}
-                    style={{ position: "absolute", top: -6, right: -6, padding: 0, background: "var(--ion-card-background)", border: "none", borderRadius: "50%", cursor: "pointer", lineHeight: 0 }}>
-                    <X size={16} style={{ color: "var(--ion-color-danger)", background: "var(--ion-card-background)", borderRadius: "50%" }} />
-                  </button>
                 </div>
-              ))}
+              )}
+              <div ref={aiEndRef} />
             </div>
-          )}
 
-          {/* composer */}
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 6, padding: "8px 10px 10px", borderTop: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
-            <input ref={aiFileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleAiImageAdd} />
-            <IonButton fill="clear" color="medium" size="small" onClick={() => aiFileRef.current?.click()}
-              title="Attach reference images — the assistant designs the document to match them"
-              style={{ margin: 0, "--border-radius": "50%" }}>
-              <ImageIcon size={16} />
-            </IonButton>
-            <div onKeyDown={onAiKey} style={{ flex: 1, minWidth: 0 }}>
-              <IonTextarea
-                {...FIELD_PROPS}
-                labelPlacement={undefined}
-                aria-label="Message the design assistant"
-                autoGrow
-                rows={2}
-                value={aiInput}
-                onIonInput={(e) => setAiInput(e.detail.value ?? "")}
-                placeholder='e.g. "Make it look like the attached screenshot"'
-              />
+            {/* footer — widget composer */}
+            <div style={{ borderTop: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+              {aiImages.length > 0 && (
+                <div style={{ display: "flex", gap: 8, padding: "8px 16px 0", flexWrap: "wrap" }}>
+                  {aiImages.map((src, i) => (
+                    <div key={i} style={{ position: "relative", width: 56, height: 56 }}>
+                      <img src={src} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid var(--ion-border-color)" }} />
+                      <button onClick={() => setAiImages((prev) => prev.filter((_, j) => j !== i))} style={{
+                        position: "absolute", top: -6, right: -6, padding: 0,
+                        background: "var(--ion-card-background)", border: "none", borderRadius: "50%",
+                        cursor: "pointer", lineHeight: 0,
+                      }}>
+                        <IonIcon icon={closeCircleOutline} style={{ fontSize: 18, color: "var(--ion-color-danger)" }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="aiw-msg-input" onKeyDown={onAiKey} style={{ padding: "4px 8px 0" }}>
+                <IonTextarea
+                  autoGrow
+                  rows={2}
+                  placeholder="Write your message here"
+                  value={aiInput}
+                  onIonInput={(e) => setAiInput(e.detail.value ?? "")}
+                  style={{
+                    "--background": "transparent",
+                    "--color": "var(--ion-text-color)",
+                    "--placeholder-color": "var(--ion-color-medium)",
+                    "--padding-start": "16px",
+                    "--highlight-height": "0px",
+                  }}
+                />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 8px 8px" }}>
+                <div>
+                  <input ref={aiFileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleAiImageAdd} />
+                  <IonButton fill="clear" color="medium" size="small" style={{ "--border-radius": "50%" }}
+                    title="Attach reference images — the assistant designs the document to match them"
+                    onClick={() => aiFileRef.current?.click()}>
+                    <IonIcon slot="icon-only" icon={imageOutline} style={{ fontSize: 20 }} />
+                  </IonButton>
+                </div>
+                <IonButton
+                  size="small"
+                  disabled={aiBusy || (!aiInput.trim() && aiImages.length === 0)}
+                  onClick={sendAi}
+                  style={{
+                    "--background": "#10b981",
+                    "--background-activated": "#0ea371",
+                    "--color": "#fff",
+                    "--border-radius": "8px",
+                  }}
+                >
+                  {aiBusy
+                    ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
+                    : <>
+                        <IonIcon slot="start" icon={sendOutline} style={{ fontSize: 14 }} />
+                        <span style={{ fontWeight: 700, letterSpacing: "0.05em", fontSize: "0.8rem" }}>SEND</span>
+                      </>}
+                </IonButton>
+              </div>
             </div>
-            <IonButton size="small" onClick={sendAi} disabled={aiBusy || (!aiInput.trim() && aiImages.length === 0)}
-              style={{ "--background": "#059669", "--background-activated": "#047857", "--color": "#fff", "--border-radius": "8px", margin: 0 }}>
-              <Send size={14} />
-            </IonButton>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </AdminLayout>
   );
 }

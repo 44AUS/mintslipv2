@@ -587,6 +587,13 @@ export default function AppPaystub() {
   const [previewPageIndex,    setPreviewPageIndex]    = useState(0);
   const [pendingCheckout,     setPendingCheckout]     = useState(null); // {fullFormData} while the payment modal is open
 
+  // Hero preview mode: the marketing homepage embeds this page inside the
+  // hero's iPhone mockup with ?heroPreview=1 — open the form immediately so
+  // the phone shows the live create flow.
+  useEffect(() => {
+    if (searchParams.get("heroPreview")) setFormModalOpen(true);
+  }, []); // eslint-disable-line
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (formData.startDate && formData.endDate && (formData.rate || formData.annualSalary)) {

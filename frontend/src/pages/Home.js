@@ -162,98 +162,38 @@ const LANDING_FAQS = [
   },
 ];
 
-// Product mockup for the hero: a browser window running the paystub generator
-// with a live preview, built from plain markup so it stays lightweight.
-function HeroProductPreview() {
-  const fieldRow = (label, filled, focused) => (
-    <div>
-      <div className="text-[10px] font-medium text-slate-500 mb-1">{label}</div>
-      <div className={`h-7 rounded-md border px-2 flex items-center ${focused ? "border-emerald-600 ring-2 ring-emerald-100 bg-white" : "border-slate-200 bg-slate-50"}`}>
-        <div className={`h-1.5 rounded-full ${filled ? "bg-slate-300" : "bg-transparent"}`} style={{ width: filled }} />
-      </div>
-    </div>
-  );
+// iOS status bar shared by the hero phone and the How-it-works phone cards.
+const StatusBar = () => (
+  <div className="relative flex items-center justify-between text-[13px] font-semibold text-slate-900 pt-3 px-5">
+    <span>9:41</span>
+    <span className="absolute left-1/2 -translate-x-1/2 top-[10px] w-24 h-[26px] bg-[#111] rounded-full" aria-hidden="true" />
+    <span className="flex items-center gap-1.5" aria-hidden="true">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1" /><rect x="4.5" y="5" width="3" height="6" rx="1" /><rect x="9" y="2.5" width="3" height="8.5" rx="1" /><rect x="13.5" y="0" width="3" height="11" rx="1" /></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><path d="M7.5 10 L10 7.4 A3.8 3.8 0 0 0 5 7.4 Z" /><path d="M2.9 5.2 A6.8 6.8 0 0 1 12.1 5.2 L10.6 6.8 A4.8 4.8 0 0 0 4.4 6.8 Z" /><path d="M0.6 2.8 A10 10 0 0 1 14.4 2.8 L12.9 4.4 A7.9 7.9 0 0 0 2.1 4.4 Z" /></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" fill="none" stroke="currentColor" opacity="0.4" /><rect x="2" y="2" width="18" height="8" rx="2" fill="currentColor" /><path d="M23 4 A2.2 2.2 0 0 1 23 8 Z" fill="currentColor" opacity="0.4" /></svg>
+    </span>
+  </div>
+);
 
+// Live product preview for the hero: the REAL /app/paystubs page running in
+// an iframe inside the iPhone frame, with the create form opened via
+// ?heroPreview=1. Non-interactive (pointer-events none) — it is a preview.
+function HeroPhonePreview() {
   return (
-    <div className="relative mx-auto w-full max-w-xl lg:max-w-none select-none" aria-hidden="true">
-      {/* Browser window */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_32px_64px_-28px_rgba(16,63,40,0.28)] overflow-hidden">
-        {/* Title bar */}
-        <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-100 bg-slate-50/80">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
-          <div className="ml-3 h-6 flex-1 max-w-[210px] rounded-md bg-white border border-slate-200 flex items-center gap-1.5 px-2.5">
-            <Lock className="w-2.5 h-2.5 text-emerald-700" />
-            <span className="text-[10px] text-slate-500 tracking-wide">mintslip.com/paystub-generator</span>
-          </div>
+    <div className="relative flex justify-center" aria-hidden="true">
+      <div className="relative w-[330px] md:w-[350px] bg-[#111] rounded-[52px] p-[10px] shadow-2xl pointer-events-none select-none">
+        <div className="bg-white rounded-[44px] overflow-hidden relative">
+          <StatusBar />
+          <iframe
+            src="/app/paystubs?heroPreview=1"
+            title="Live MintSlip app preview"
+            loading="lazy"
+            scrolling="no"
+            tabIndex={-1}
+            className="w-full border-0 block"
+            style={{ height: 640 }}
+          />
         </div>
-        {/* App body */}
-        <div className="grid grid-cols-5">
-          {/* Form column */}
-          <div className="col-span-2 p-4 space-y-3 border-r border-slate-100">
-            <div className="flex items-center gap-1.5">
-              <Receipt className="w-3.5 h-3.5 text-emerald-700" />
-              <span className="text-[11px] font-semibold text-slate-800">Pay Stub Details</span>
-            </div>
-            {fieldRow("Company name", "80%")}
-            {fieldRow("Employee name", "65%")}
-            {fieldRow("Hourly rate", "40%", true)}
-            {fieldRow("Pay period", "55%")}
-            <div className="h-8 rounded-lg bg-emerald-700 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-sm">
-              Generate Pay Stub
-              <ArrowRight className="w-3 h-3" />
-            </div>
-          </div>
-          {/* Live preview column */}
-          <div className="col-span-3 bg-slate-100/70 p-4 sm:p-5">
-            <div className="rounded-lg bg-white border border-slate-200 shadow-sm overflow-hidden">
-              <div className="bg-emerald-800 px-3 py-2 flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-widest text-white">MINTSLIP CORP.</span>
-                <span className="text-[9px] text-emerald-200">EARNINGS STATEMENT</span>
-              </div>
-              <div className="p-3 space-y-2.5">
-                <div className="flex justify-between gap-3">
-                  <div className="space-y-1.5 flex-1">
-                    <div className="h-1.5 w-3/4 rounded-full bg-slate-200" />
-                    <div className="h-1.5 w-1/2 rounded-full bg-slate-100" />
-                  </div>
-                  <div className="space-y-1.5 flex-1">
-                    <div className="h-1.5 w-2/3 rounded-full bg-slate-200 ml-auto" />
-                    <div className="h-1.5 w-1/2 rounded-full bg-slate-100 ml-auto" />
-                  </div>
-                </div>
-                <div className="border-t border-slate-100 pt-2 space-y-1.5">
-                  {["w-full", "w-11/12", "w-full", "w-10/12"].map((w, i) => (
-                    <div key={i} className={`h-1.5 ${w} rounded-full ${i % 2 ? "bg-slate-100" : "bg-slate-200"}`} />
-                  ))}
-                </div>
-                <div className="flex items-center justify-between rounded-md bg-emerald-50 border border-emerald-100 px-2.5 py-2">
-                  <span className="text-[9px] font-semibold text-emerald-900 tracking-wide">NET PAY</span>
-                  <span className="text-xs font-bold text-emerald-800">$2,847.50</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating chip: instant download */}
-      <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white rounded-xl border border-slate-200 shadow-lg px-3.5 py-2.5 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-          <Download className="w-4 h-4 text-emerald-700" />
-        </div>
-        <div className="leading-tight">
-          <p className="text-[11px] font-semibold text-slate-800">paystub.pdf</p>
-          <p className="text-[10px] text-slate-500">Downloaded instantly</p>
-        </div>
-        <CheckCircle className="w-4 h-4 text-emerald-600" />
-      </div>
-
-      {/* Floating chip: secure checkout */}
-      <div className="absolute -top-4 right-2 sm:-right-4 bg-white rounded-xl border border-slate-200 shadow-lg px-3 py-2 flex items-center gap-2">
-        <Shield className="w-3.5 h-3.5 text-emerald-700" />
-        <span className="text-[11px] font-semibold text-slate-700">Secure checkout</span>
       </div>
     </div>
   );
@@ -387,7 +327,7 @@ export default function Home() {
           </div>
 
           {/* Right: product preview */}
-          <HeroProductPreview />
+          <HeroPhonePreview />
         </div>
 
       </section>
@@ -567,17 +507,6 @@ export default function Home() {
           bubble and a cropped iPhone mockup walking the MintSlip flow. */}
       {(() => {
         const [howRef, howInView] = useInView();
-        const StatusBar = () => (
-          <div className="relative flex items-center justify-between text-[13px] font-semibold text-slate-900 pt-3 px-5">
-            <span>9:41</span>
-            <span className="absolute left-1/2 -translate-x-1/2 top-[10px] w-24 h-[26px] bg-[#111] rounded-full" aria-hidden="true" />
-            <span className="flex items-center gap-1.5" aria-hidden="true">
-              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1" /><rect x="4.5" y="5" width="3" height="6" rx="1" /><rect x="9" y="2.5" width="3" height="8.5" rx="1" /><rect x="13.5" y="0" width="3" height="11" rx="1" /></svg>
-              <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><path d="M7.5 10 L10 7.4 A3.8 3.8 0 0 0 5 7.4 Z" /><path d="M2.9 5.2 A6.8 6.8 0 0 1 12.1 5.2 L10.6 6.8 A4.8 4.8 0 0 0 4.4 6.8 Z" /><path d="M0.6 2.8 A10 10 0 0 1 14.4 2.8 L12.9 4.4 A7.9 7.9 0 0 0 2.1 4.4 Z" /></svg>
-              <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" fill="none" stroke="currentColor" opacity="0.4" /><rect x="2" y="2" width="18" height="8" rx="2" fill="currentColor" /><path d="M23 4 A2.2 2.2 0 0 1 23 8 Z" fill="currentColor" opacity="0.4" /></svg>
-            </span>
-          </div>
-        );
         const Phone = ({ children }) => (
           <div className="relative mx-auto mt-auto w-[88%] max-w-[330px] bg-[#111] rounded-[46px] p-[9px] shadow-2xl -mb-14">
             <div className="bg-white rounded-[38px] overflow-hidden min-h-[560px]">

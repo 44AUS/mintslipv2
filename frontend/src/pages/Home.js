@@ -986,14 +986,6 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="text-center mt-7">
-                <button
-                  onClick={() => navigate("/mintslip-vs-other-paystub-generators")}
-                  className="text-slate-900 underline underline-offset-4 text-[15px] hover:text-emerald-700 transition-colors"
-                >
-                  See the full comparison against other paystub generators.
-                </button>
-              </div>
             </div>
           </section>
         );

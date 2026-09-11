@@ -620,13 +620,13 @@ export default function AdminTemplateEditor() {
             label="Template name"
             value={meta.name}
             onIonInput={(e) => { const v = e.detail.value ?? ""; setMeta((m) => ({ ...m, name: v })); setDirty(true); }}
-            style={{ width: isNarrow ? "min(100%, 260px)" : 260, fontWeight: 600 }}
+            style={{ width: isNarrow ? "calc(100% - 46px)" : 260, fontWeight: 600, minWidth: 0 }}
           />
           {meta.status === "published"
             ? <span className="admin-badge admin-badge-green">Published{meta.version ? ` v${meta.version}` : ""}</span>
             : <span className="admin-badge admin-badge-amber">Draft</span>}
           {dirty && <span className="admin-badge admin-badge-slate">Unsaved changes</span>}
-          <div style={{ flex: 1 }} />
+          {!isNarrow && <div style={{ flex: 1 }} />}
           {variants.length > 1 && (
             <IonSelect
               {...FIELD_PROPS}
@@ -635,26 +635,49 @@ export default function AdminTemplateEditor() {
               value={activeVariant.key}
               onIonChange={(e) => setVariantKey(e.detail.value)}
               title="Preview the layout against different sample data"
-              style={{ width: 190 }}
+              style={{ width: isNarrow ? "100%" : 190 }}
             >
               {variants.map((v) => <IonSelectOption key={v.key} value={v.key}>{v.label}</IonSelectOption>)}
             </IonSelect>
           )}
-          <IonButton fill={aiOpen ? "solid" : "outline"} color="tertiary" size="small" onClick={() => setAiOpen((o) => !o)}>
-            <Sparkles size={14} style={{ marginRight: 5 }} />AI Assistant
-          </IonButton>
-          <IonButton fill="outline" color="medium" size="small" onClick={undo} disabled={!history.length}>
-            <Undo2 size={14} style={{ marginRight: 5 }} />Undo
-          </IonButton>
-          <IonButton fill="outline" color="medium" size="small" onClick={previewPdf}>
-            <Eye size={14} style={{ marginRight: 5 }} />Preview PDF
-          </IonButton>
-          <IonButton fill="outline" color="primary" size="small" onClick={save} disabled={saving}>
-            <Save size={14} style={{ marginRight: 5 }} />Save Draft
-          </IonButton>
-          <IonButton color="primary" size="small" onClick={publish} disabled={saving}>
-            <Upload size={14} style={{ marginRight: 5 }} />Publish
-          </IonButton>
+          {isNarrow ? (
+            /* Mobile: two columns of action buttons, Publish full width below */
+            <div style={{ width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <IonButton expand="block" color="tertiary" onClick={() => setAiOpen((o) => !o)}>
+                <Sparkles size={15} style={{ marginRight: 6 }} />AI Assistant
+              </IonButton>
+              <IonButton expand="block" color="danger" onClick={undo} disabled={!history.length}>
+                <Undo2 size={15} style={{ marginRight: 6 }} />Undo
+              </IonButton>
+              <IonButton expand="block" color="light" onClick={previewPdf}>
+                <Eye size={15} style={{ marginRight: 6 }} />Preview PDF
+              </IonButton>
+              <IonButton expand="block" color="warning" onClick={save} disabled={saving}>
+                <Save size={15} style={{ marginRight: 6 }} />Save Draft
+              </IonButton>
+              <IonButton expand="block" color="primary" onClick={publish} disabled={saving} style={{ gridColumn: "1 / -1" }}>
+                <Upload size={15} style={{ marginRight: 6 }} />Publish
+              </IonButton>
+            </div>
+          ) : (
+            <>
+              <IonButton color="tertiary" size="small" onClick={() => setAiOpen((o) => !o)}>
+                <Sparkles size={14} style={{ marginRight: 5 }} />AI Assistant
+              </IonButton>
+              <IonButton color="danger" size="small" onClick={undo} disabled={!history.length}>
+                <Undo2 size={14} style={{ marginRight: 5 }} />Undo
+              </IonButton>
+              <IonButton color="light" size="small" onClick={previewPdf}>
+                <Eye size={14} style={{ marginRight: 5 }} />Preview PDF
+              </IonButton>
+              <IonButton color="warning" size="small" onClick={save} disabled={saving}>
+                <Save size={14} style={{ marginRight: 5 }} />Save Draft
+              </IonButton>
+              <IonButton color="primary" size="small" onClick={publish} disabled={saving}>
+                <Upload size={14} style={{ marginRight: 5 }} />Publish
+              </IonButton>
+            </>
+          )}
         </div>
 
         {/* Narrow screens stack: canvas first, then properties, then palette */}

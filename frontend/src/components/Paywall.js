@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IonIcon } from "@ionic/react";
 import { closeOutline, timeOutline, lockClosedOutline, checkmarkCircle } from "ionicons/icons";
@@ -155,12 +155,14 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
     if (offer === null && !dismissedRef.current) { dismissedRef.current = true; onDismiss?.(); }
   }, [offer, onDismiss]);
 
-  const active = !!(offer && offer.active && offer.expiresAt);
-  const expired = active && secondsLeft <= 0;
-  const offerLive = active && !expired; // discount is live only while counting down
+  const active = !!(offer && offer.active && offer.expiresAt); // a window was granted
+  const offerLive = active && secondsLeft > 0;                  // discount currently counting down
+  const expired = !offerLive;                                   // otherwise show the expired countdown
 
-  // Countdown to the server's expiry (persists across reopens — same expiresAt).
-  useEffect(() => {
+  // Countdown to the window's expiry. useLayoutEffect so the first paint already
+  // has the right remaining time (no "expired" flash on a live offer). When
+  // there's no live window, seconds pin to 0 so the boxes read 00:00.
+  useLayoutEffect(() => {
     if (!active) { setSecondsLeft(0); return undefined; }
     const deadline = new Date(offer.expiresAt).getTime();
     const tick = () => setSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
@@ -242,23 +244,22 @@ export default function Paywall({ docLabel, documentType, basePrice, previewImag
             <h1 className="pw-title">Download your {docLabel}</h1>
             <p className="pw-subtitle">The #1 Document Creation App</p>
             <Stars />
-            {active && (
-              <>
-                {!expired && <p className="pw-expires">Offer expires in</p>}
-                <div className="pw-countdown">
-                  <div className="pw-cd-box">
-                    <span className="pw-cd-num">{mm}</span>
-                    <span className="pw-cd-label">Minutes</span>
-                  </div>
-                  <span className="pw-cd-sep">:</span>
-                  <div className="pw-cd-box">
-                    <span className="pw-cd-num">{ss}</span>
-                    <span className="pw-cd-label">Seconds</span>
-                  </div>
-                </div>
-                {expired && <p className="pw-expired">Your offer has expired</p>}
-              </>
-            )}
+            {/* Countdown is always shown — ticking while live, frozen at 00:00
+                with the expired note once the offer is used up (persists on
+                reopen too). */}
+            <p className="pw-expires">{expired ? "This offer has ended" : "Offer expires in"}</p>
+            <div className="pw-countdown">
+              <div className="pw-cd-box">
+                <span className="pw-cd-num">{mm}</span>
+                <span className="pw-cd-label">Minutes</span>
+              </div>
+              <span className="pw-cd-sep">:</span>
+              <div className="pw-cd-box">
+                <span className="pw-cd-num">{ss}</span>
+                <span className="pw-cd-label">Seconds</span>
+              </div>
+            </div>
+            {expired && <p className="pw-expired">Your offer has expired</p>}
           </div>
 
           <div className="pw-foot pw-swap" key="offer-foot">

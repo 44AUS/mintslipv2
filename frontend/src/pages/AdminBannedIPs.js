@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonButton, IonIcon, IonList, IonSpinner,
-  IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButtons, IonInput,
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonInput,
 } from "@ionic/react";
 import {
   shieldOutline, addOutline, refreshOutline,
@@ -204,7 +204,7 @@ export default function AdminBannedIPs() {
                 </IonButton>
                 <IonButton color="danger" size="small" onClick={() => setIsDialogOpen(true)} style={{ "--border-radius": "8px" }}>
                   <IonIcon slot="start" icon={addOutline} style={{ fontSize: 16 }} />
-                  Ban IP / Email
+                  Ban
                 </IonButton>
               </div>
             </div>
@@ -347,65 +347,69 @@ export default function AdminBannedIPs() {
         )}
       </AdminDetailModal>
 
-      {/* ── Ban IP / email modal ── */}
-      <IonModal isOpen={isDialogOpen} onDidDismiss={closeDialog} style={{ "--width": "460px", "--max-width": "95vw", "--height": "auto" }}>
-        <IonHeader>
-          <IonToolbar style={{ "--background": "var(--ion-card-background)" }}>
-            <IonTitle style={{ fontWeight: 700 }}>Ban IP or Email</IonTitle>
-            <IonButtons slot="end">
-              <IonButton fill="clear" color="medium" onClick={closeDialog}>
-                <IonIcon slot="icon-only" icon={closeOutline} />
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
+      {/* ── Ban modal — same portalled slide-up style as the /app paystub
+          modals: full-screen on mobile, centered card on desktop ── */}
+      {isDialogOpen && createPortal(
+        <div className="modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 10001, background: window.innerWidth >= 768 ? "rgba(0,0,0,0.5)" : "var(--ion-background-color, #f2f2f7)", display: "flex", alignItems: window.innerWidth >= 768 ? "center" : "stretch", justifyContent: window.innerWidth >= 768 ? "center" : "stretch" }}>
+          <div className="modal-slide-up" style={{ background: "var(--ion-background-color, #f2f2f7)", color: "var(--ion-text-color)", display: "flex", flexDirection: "column", width: "100%", maxWidth: window.innerWidth >= 768 ? 600 : "100%", height: window.innerWidth >= 768 ? "auto" : "100%", maxHeight: window.innerWidth >= 768 ? "90vh" : "100%", overflow: "hidden" }}>
+            <IonHeader>
+              <IonToolbar style={{ "--background": "var(--ion-card-background)", "--color": "var(--ion-text-color)" }}>
+                <IonButtons slot="start">
+                  <IonButton fill="clear" shape="round" onClick={closeDialog}>
+                    <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", color: "var(--ion-text-color)" }}>
+                      <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+                    </span>
+                  </IonButton>
+                </IonButtons>
+                <IonTitle style={{ fontWeight: 700 }}>Ban IP or Email</IonTitle>
+              </IonToolbar>
+            </IonHeader>
+            <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <IonInput
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="IP address or email *"
+                  placeholder="192.168.1.1 or user@example.com"
+                  value={newValue}
+                  onIonInput={e => setNewValue(e.detail.value ?? "")}
+                  onKeyDown={e => e.key === "Enter" && ban()}
+                  style={{ fontFamily: "monospace" }}
+                />
+                <IonInput
+                  className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+                  label="Reason"
+                  placeholder="e.g. Chargeback fraud, abuse"
+                  value={newReason}
+                  onIonInput={e => setNewReason(e.detail.value ?? "")}
+                />
+                <div style={{
+                  display: "flex", alignItems: "flex-start", gap: 10,
+                  padding: 12, borderRadius: 8,
+                  background: "rgba(245,158,11,0.08)",
+                  border: "1px solid rgba(245,158,11,0.25)",
+                }}>
+                  <IonIcon icon={alertCircleOutline} style={{ color: "#d97706", fontSize: 18, flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#92400e", lineHeight: 1.5 }}>
+                    Banned IPs see a "You are banned" page. Banned IPs and emails are blocked from making purchases, and the reason is shown to them.
+                  </p>
+                </div>
+              </div>
 
-        <IonModalContent style={{ "--background": "var(--ion-card-background)", padding: 0 }}>
-          <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
-            <IonInput
-              className="admin-field" mode="md" fill="outline" labelPlacement="floating"
-              label="IP address or email *"
-              placeholder="192.168.1.1 or user@example.com"
-              value={newValue}
-              onIonInput={e => setNewValue(e.detail.value ?? "")}
-              onKeyDown={e => e.key === "Enter" && ban()}
-              style={{ fontFamily: "monospace" }}
-            />
-            <IonInput
-              className="admin-field" mode="md" fill="outline" labelPlacement="floating"
-              label="Reason"
-              placeholder="e.g. Chargeback fraud, abuse"
-              value={newReason}
-              onIonInput={e => setNewReason(e.detail.value ?? "")}
-            />
-            <div style={{
-              display: "flex", alignItems: "flex-start", gap: 10,
-              padding: 12, borderRadius: 8,
-              background: "rgba(245,158,11,0.08)",
-              border: "1px solid rgba(245,158,11,0.25)",
-            }}>
-              <IonIcon icon={alertCircleOutline} style={{ color: "#d97706", fontSize: 18, flexShrink: 0, marginTop: 1 }} />
-              <p style={{ margin: 0, fontSize: "0.8rem", color: "#92400e", lineHeight: 1.5 }}>
-                Banned IPs see a "You are banned" page. Banned IPs and emails are blocked from making purchases, and the reason is shown to them — e.g. "You have been banned from using MintSlip because of {"{reason}"}".
-              </p>
+              {/* Stacked full-width Ionic buttons, paystub-modal style */}
+              <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+                <IonButton expand="block" color="danger" onClick={() => ban()} disabled={isAdding}>
+                  {isAdding && <IonSpinner name="crescent" slot="start" style={{ width: 14, height: 14 }} />}
+                  {isAdding ? "Banning…" : "Ban"}
+                </IonButton>
+                <IonButton expand="block" fill="outline" color="medium" onClick={closeDialog}>
+                  Cancel
+                </IonButton>
+              </div>
             </div>
           </div>
-        </IonModalContent>
-
-        <IonFooter>
-          <IonToolbar style={{ "--background": "var(--ion-card-background)", padding: "8px 16px" }}>
-            <IonButtons slot="end">
-              <IonButton fill="outline" color="medium" onClick={closeDialog}>Cancel</IonButton>
-              <IonButton color="danger" onClick={() => ban()} disabled={isAdding} style={{ "--border-radius": "8px" }}>
-                {isAdding
-                  ? <IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />
-                  : <IonIcon slot="start" icon={shieldOutline} style={{ fontSize: 14 }} />}
-                {isAdding ? "Banning…" : "Ban"}
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonFooter>
-      </IonModal>
+        </div>,
+        document.body
+      )}
     </AdminLayout>
   );
 }

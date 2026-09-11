@@ -39,6 +39,24 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Neutral ripples. Ionic ripples paint currentColor at low opacity, and the
+   app's text color (#0d1b2a) is a dark NAVY — so every custom ripple (table
+   rows, nav buttons, cards, list items) washed the surface with a blue tint.
+   Pin page-authored ripples and ion-item ripples to plain ink instead; Ionic
+   buttons keep their own contrast-colored shadow-DOM ripples. */
+ion-ripple-effect {
+    color: #0f0f0f;
+}
+body.dark ion-ripple-effect {
+    color: #ffffff;
+}
+ion-item {
+    --ripple-color: #0f0f0f;
+}
+body.dark ion-item {
+    --ripple-color: #ffffff;
+}
+
 /* Respect users who prefer less motion: collapse all animation/transitions */
 @media (prefers-reduced-motion: reduce) {
     *,

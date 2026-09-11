@@ -12,10 +12,12 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MintSlipLogo from '../assests/mintslip-logo.png';
-import EmilyPhoto from '../assests/images/Emily.png';
-import JakePhoto from '../assests/images/Jake.png';
-import KevinPhoto from '../assests/images/Kevin.png';
-import SophiaPhoto from '../assests/images/Sophia.png';
+// Compressed 480px JPEGs (the source PNGs are ~2MB each — they made the
+// mobile homepage crawl; these are ~35KB)
+import EmilyPhoto from '../assests/images/Emily.jpg';
+import JakePhoto from '../assests/images/Jake.jpg';
+import KevinPhoto from '../assests/images/Kevin.jpg';
+import SophiaPhoto from '../assests/images/Sophia.jpg';
 import LeftLeaf from '../assests/images/left-leaf.avif';
 import RightLeaf from '../assests/images/right-leaf.avif';
 
@@ -90,6 +92,7 @@ const TestimonialCard = ({ t, inView, delay }) => (
     <img
       src={t.img}
       alt={`${t.name}, MintSlip customer`}
+      loading="lazy"
       className="w-full sm:w-44 md:w-52 aspect-square rounded-xl object-cover flex-shrink-0"
     />
     <div className="flex-1 text-center px-1 sm:pr-4">
@@ -105,7 +108,10 @@ const TestimonialCard = ({ t, inView, delay }) => (
   </div>
 );
 
-// Custom hook for intersection observer
+// Custom hook for intersection observer.
+// Threshold is deliberately tiny: several sections are 2-3x the viewport on
+// mobile, so a 0.3 ratio is nearly unreachable there and the section would
+// stay invisible (opacity-0) — reading as a giant blank gap while scrolling.
 const useInView = (options = {}) => {
   const ref = useRef(null);
   const [isInView, setIsInView] = useState(false);
@@ -116,7 +122,7 @@ const useInView = (options = {}) => {
         setIsInView(true);
         observer.disconnect();
       }
-    }, { threshold: 0.3, ...options });
+    }, { threshold: 0.05, ...options });
 
     if (ref.current) {
       observer.observe(ref.current);

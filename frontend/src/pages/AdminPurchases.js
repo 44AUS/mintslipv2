@@ -256,9 +256,8 @@ export default function AdminPurchases() {
               </div>
               <div style={{ display: "flex", gap: 4 }}>
                 <IonButton
-                  fill="solid" size="small" onClick={syncStripe} disabled={syncing}
+                  fill="solid" size="small" color="tertiary" onClick={syncStripe} disabled={syncing}
                   title="Backfill purchases missed by the Stripe webhook (last 90 days)"
-                  style={{ "--background": "var(--ion-background-color)", "--color": "var(--ion-text-color)" }}
                 >
                   <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", marginInlineEnd: 6 }}>
                     {syncing

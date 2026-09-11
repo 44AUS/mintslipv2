@@ -84,7 +84,7 @@ function formatMonthDisplay(value) {
 // Month picker (YYYY-MM values) — same popover pattern with the Ionic
 // month-year wheels. No auto-close: the wheels fire a change per spin, so the
 // popover dismisses on outside tap once the user is done.
-export function IonMonthInput({ label, value, onChange, style, placeholder }) {
+export function IonMonthInput({ label, value, onChange, style, placeholder, ...inputProps }) {
   const [menu, setMenu] = useState({ open: false, event: undefined });
   const close = () => setMenu({ open: false, event: undefined });
   return (
@@ -98,6 +98,7 @@ export function IonMonthInput({ label, value, onChange, style, placeholder }) {
         placeholder={placeholder}
         onClick={(e) => setMenu({ open: true, event: e.nativeEvent })}
         style={{ cursor: "pointer", ...style }}
+        {...inputProps}
       />
       <FreshPopover
         open={menu.open}

@@ -6,8 +6,9 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { IonButton, IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSelect, IonSelectOption } from "@ionic/react";
+import { IonButton, IonIcon, IonSegment, IonSegmentButton, IonLabel } from "@ionic/react";
 import { refreshOutline } from "ionicons/icons";
+import { IonMonthInput } from "@/components/DateInput";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -81,11 +82,6 @@ function PillGroup({ value, onChange, options }) {
       ))}
     </IonSegment>
   );
-}
-
-function monthLabel(ym) {
-  const [y, m] = ym.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
 // Renders one timeseries as the picked chart type (area / line / bar) with a
@@ -165,9 +161,6 @@ export default function AdminRevenue() {
   useEffect(() => { fetchData(); }, []);
 
   // ── Over time: preset period slice, or the custom From/To month range ──
-  const monthsAvailable = data
-    ? [...new Set(data.dailyData.map(d => d.date.slice(0, 7)))].sort()
-    : [];
   const usingRange = period === "custom" && fromMonth && toMonth;
   const [rangeLo, rangeHi] = fromMonth <= toMonth ? [fromMonth, toMonth] : [toMonth, fromMonth];
   const sliced = data
@@ -284,24 +277,16 @@ export default function AdminRevenue() {
               />
               {period === "custom" && (
                 <div className="flex items-center" style={{ gap: 6 }}>
-                  <IonSelect
-                    className="admin-field" mode="md" fill="outline" labelPlacement="floating"
-                    label="From" interface="popover"
-                    value={fromMonth}
-                    onIonChange={(e) => setFromMonth(e.detail.value)}
-                    style={{ minWidth: 128 }}
-                  >
-                    {monthsAvailable.map((m) => <IonSelectOption key={m} value={m}>{monthLabel(m)}</IonSelectOption>)}
-                  </IonSelect>
-                  <IonSelect
-                    className="admin-field" mode="md" fill="outline" labelPlacement="floating"
-                    label="To" interface="popover"
-                    value={toMonth}
-                    onIonChange={(e) => setToMonth(e.detail.value)}
-                    style={{ minWidth: 128 }}
-                  >
-                    {monthsAvailable.map((m) => <IonSelectOption key={m} value={m}>{monthLabel(m)}</IonSelectOption>)}
-                  </IonSelect>
+                  <IonMonthInput
+                    className="admin-field" mode="md"
+                    label="From" value={fromMonth} onChange={setFromMonth}
+                    style={{ minWidth: 140, maxWidth: 160 }}
+                  />
+                  <IonMonthInput
+                    className="admin-field" mode="md"
+                    label="To" value={toMonth} onChange={setToMonth}
+                    style={{ minWidth: 140, maxWidth: 160 }}
+                  />
                 </div>
               )}
             </div>

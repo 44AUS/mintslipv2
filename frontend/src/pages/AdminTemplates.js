@@ -136,9 +136,6 @@ export default function AdminTemplates() {
                   onClick={() => createTemplate(s)}
                   style={{ "--min-height": "48px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
                 >
-                  <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
-                    <LayoutTemplate size={18} style={{ color: "var(--ion-color-primary)" }} />
-                  </div>
                   <IonLabel>
                     {s.name}
                     <p style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", margin: 0 }}>{DOC_TYPE_LABELS[s.documentType] || s.documentType}</p>
@@ -173,11 +170,6 @@ export default function AdminTemplates() {
                 <AdminListItem
                   key={t.id}
                   onClick={() => setDetail(t)}
-                  start={
-                    <div style={{ width: 34, height: 34, borderRadius: 8, background: "var(--ion-color-step-100)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <LayoutTemplate size={16} style={{ color: "var(--ion-color-primary)" }} />
-                    </div>
-                  }
                   title={t.name}
                   badges={t.status === "published"
                     ? <span className="admin-badge admin-badge-green" style={{ marginLeft: 6 }}>Published</span>

@@ -6,6 +6,7 @@ import {
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner, IonRippleEffect,
+  IonSkeletonText, IonAlert,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -138,6 +139,9 @@ export default function AppLayout({ children, fillHeight = false }) {
   const [toastOpen,         setToastOpen]           = useState(false);
   const [toastMessage,      setToastMessage]        = useState("");
   const [redownloadingId,   setRedownloadingId]     = useState(null);
+  // Destructive-action confirm (clear all / delete) — Ionic alert with the
+  // same cancel/ok colors as the tax-year select alerts.
+  const [confirmAlert,      setConfirmAlert]        = useState(null);
   // Notification preview modal — shows the pages of the document the user
   // bought, swipeable + slider via <PreviewPager>.
   const [previewNotif,      setPreviewNotif]        = useState(null);
@@ -152,6 +156,10 @@ export default function AppLayout({ children, fillHeight = false }) {
     if (notif.status !== "ready") return;
     setPreviewLoading(true);
     try {
+      // The preview generators are CPU-bound and largely synchronous (jsPDF),
+      // so yield a beat first — otherwise React flushes only the final state
+      // and the skeleton never paints.
+      await new Promise((r) => setTimeout(r, 50));
       const pages = await buildNotificationPreviewPages(notif);
       // Ignore if the modal was closed or switched while we were rendering.
       setPreviewNotif((cur) => {
@@ -684,17 +692,21 @@ export default function AppLayout({ children, fillHeight = false }) {
               <IonButton
                 color="danger"
                 size="small"
-                onClick={() => { clearAllNotifications(); setNotifications([]); }}
+                onClick={() => setConfirmAlert({
+                  header: t("Clear all notifications?"),
+                  message: t("This removes every notification from the list."),
+                  onConfirm: () => { clearAllNotifications(); setNotifications([]); },
+                })}
               >
                 {t("Clear all")}
               </IonButton>
             )}
-            <button
-              onClick={closeNotifDrawer}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 8, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}
-            >
-              <IonIcon icon={closeOutline} style={{ fontSize: 22, color: "var(--ion-text-color)" }} />
-            </button>
+            {/* Ionic button so the X gets the native ripple, matching admin */}
+            <IonButton fill="clear" onClick={closeNotifDrawer} style={{ "--color": "var(--ion-text-color)", "--border-radius": "50%" }}>
+              <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "22px" }}>
+                <IonIcon icon={closeOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+              </span>
+            </IonButton>
           </div>
 
           {/* Content */}
@@ -775,11 +787,11 @@ export default function AppLayout({ children, fillHeight = false }) {
             </IonHeader>
             <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
               {previewNotif.status === "generating" || previewLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8 }}>
-                  <IonSpinner name="crescent" style={{ marginBottom: 8 }} />
-                  <span style={{ fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
-                    {previewNotif.status === "generating" ? t("Generating...") : t("Loading preview...")}
-                  </span>
+                /* Same single full-size skeleton the sample cards use — one
+                   flash in place at the document's aspect ratio until the
+                   preview loads. */
+                <div style={{ position: "relative", paddingTop: "141.4%", overflow: "hidden", borderRadius: 8 }}>
+                  <IonSkeletonText animated={true} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", margin: 0, borderRadius: 0 }} />
                 </div>
               ) : previewNotif.status === "error" ? (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 320, background: "var(--ion-color-step-100)", borderRadius: 8, border: "2px dashed var(--ion-color-light-shade)" }}>
@@ -820,11 +832,15 @@ export default function AppLayout({ children, fillHeight = false }) {
                 <IonButton
                   expand="block"
                   color="danger"
-                  onClick={() => {
-                    removeNotification(previewNotif.id);
-                    setNotifications(getNotifications());
-                    closePreview();
-                  }}
+                  onClick={() => setConfirmAlert({
+                    header: t("Delete this notification?"),
+                    message: previewNotif.fileName || "",
+                    onConfirm: () => {
+                      removeNotification(previewNotif.id);
+                      setNotifications(getNotifications());
+                      closePreview();
+                    },
+                  })}
                 >
                   {t("Delete")}
                 </IonButton>
@@ -834,6 +850,19 @@ export default function AppLayout({ children, fillHeight = false }) {
         </div>,
         document.querySelector("ion-app") || document.body
       )}
+
+      {/* ── Destructive-action confirm alert (clear all / delete) — cancel is
+          red, confirm is primary green, same as the tax-year select alert ── */}
+      <IonAlert
+        isOpen={!!confirmAlert}
+        onDidDismiss={() => setConfirmAlert(null)}
+        header={confirmAlert?.header}
+        message={confirmAlert?.message}
+        buttons={[
+          { text: t("Cancel"), role: "cancel" },
+          { text: t("Confirm"), handler: () => confirmAlert?.onConfirm?.() },
+        ]}
+      />
 
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && createPortal(<>

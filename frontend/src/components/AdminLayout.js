@@ -6,7 +6,7 @@ import {
   IonContent, IonBadge, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem, IonAvatar, IonPopover, IonTitle,
-  IonSearchbar, IonSpinner,
+  IonSearchbar, IonSpinner, IonAlert,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline, arrowBackOutline, chevronDownOutline,
@@ -143,6 +143,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [notifOpen,     setNotifOpen]     = useState(false);
   const [detailPurchase, setDetailPurchase] = useState(null);
+  const [clearAlertOpen, setClearAlertOpen] = useState(false);
   const [isMobile,      setIsMobile]      = useState(window.innerWidth < 768);
   const [supportUnread, setSupportUnread] = useState(0);
   const [bizMenu,       setBizMenu]       = useState({ open: false, event: undefined });
@@ -945,7 +946,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
             </IonButton>
           )}
           {notifications.length > 0 && (
-            <IonButton color="danger" size="small" onClick={handleClearNotifications}>
+            <IonButton color="danger" size="small" onClick={() => setClearAlertOpen(true)}>
               Clear all
             </IonButton>
           )}
@@ -984,6 +985,19 @@ export default function AdminLayout({ children, fillHeight = false }) {
           )}
         </div>
       </div>
+
+      {/* Clear-all confirm — cancel is red, confirm is primary green, same as
+          the tax-year select alerts in /app. */}
+      <IonAlert
+        isOpen={clearAlertOpen}
+        onDidDismiss={() => setClearAlertOpen(false)}
+        header="Clear all notifications?"
+        message="This removes every notification from the list."
+        buttons={[
+          { text: "Cancel", role: "cancel" },
+          { text: "Confirm", handler: handleClearNotifications },
+        ]}
+      />
 
       {/* Same payment-detail modal the Purchases page uses, opened from a
           notification row. */}

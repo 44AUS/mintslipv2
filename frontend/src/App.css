@@ -213,6 +213,7 @@ ion-button.button-clear:has([slot="icon-only"]) {
 }
 .app-sample-card {
   animation: appCardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative; /* bounds the ion-ripple-effect on tap */
 }
 @media (prefers-reduced-motion: reduce) {
   .app-sample-card { animation: none; }

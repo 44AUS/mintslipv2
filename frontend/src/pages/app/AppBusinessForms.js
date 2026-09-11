@@ -108,12 +108,13 @@ export default function AppBusinessForms() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {visibleForms.map((form, cardIdx) => (
-              <div key={form.key} className="app-sample-card"
+              <div key={form.key} className="app-sample-card ion-activatable"
                 onClick={() => setActiveForm(form.key)}
                 style={{ animationDelay: `${cardIdx * 60}ms`, cursor: "pointer", borderRadius: 10, border: "1.5px solid var(--app-divider, rgba(0,0,0,0.12))", background: "var(--ion-card-background)", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "box-shadow 0.2s, transform 0.15s" }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.18)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "none"; }}
               >
+                <ion-ripple-effect />
                 <div style={{ position: "relative", background: "#fff", overflow: "hidden", minHeight: 160 }}>
                   <div style={{ position: "absolute", top: 10, left: 10, zIndex: 2, background: form.color, color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, boxShadow: "0 2px 8px rgba(0,0,0,0.28)" }}>
                     {form.name}

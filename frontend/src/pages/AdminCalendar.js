@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon,
   IonButton, IonSpinner, IonPopover, IonDatetime,
   IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonList,
 } from "@ionic/react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import {
   chevronBackOutline, chevronForwardOutline, chevronDownOutline, closeOutline,
 } from "ionicons/icons";
@@ -85,15 +86,21 @@ export default function AdminCalendar() {
   const navigate = useNavigate();
   const today = new Date();
 
-  const [view, setView] = useState("month");
+  // The selected view is remembered as an admin preference (per browser).
+  const [view, setViewState] = useState(() => {
+    try { return localStorage.getItem("adminCalendarView") || "month"; } catch { return "month"; }
+  });
+  const setView = (v) => { setViewState(v); try { localStorage.setItem("adminCalendarView", v); } catch {} };
   const [curDate, setCurDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickerMenu, setPickerMenu] = useState({ open: false, event: undefined });
   const [dayModal, setDayModal] = useState(null); // Date whose purchases are listed
   const [monthModalOpen, setMonthModalOpen] = useState(false);
+  const [chartModalOpen, setChartModalOpen] = useState(false); // revenue charts for the view
   const [detail, setDetail] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const touchStart = useRef(null); // week-view swipe tracking
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -169,6 +176,18 @@ export default function AdminCalendar() {
     ? new Date(today.getFullYear(), today.getMonth(), 1)
     : new Date(today.getFullYear(), today.getMonth(), today.getDate()));
 
+  // Horizontal swipe to move between periods (used on the week view): swipe
+  // left → next, right → previous. Ignores mostly-vertical drags (pill scroll).
+  const onSwipeStart = (e) => { const t = e.touches[0]; touchStart.current = { x: t.clientX, y: t.clientY }; };
+  const onSwipeEnd = (e) => {
+    if (!touchStart.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.current.x;
+    const dy = t.clientY - touchStart.current.y;
+    touchStart.current = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+  };
+
   // Week containing curDate (Sun–Sat)
   const weekStart = addDays(curDate, -curDate.getDay());
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -226,10 +245,25 @@ export default function AdminCalendar() {
                 </div>
               ))}
 
-              {/* Event pills */}
+              {/* Events — colored dots on mobile (cells are too narrow for a
+                  label), full text pills on desktop. Tapping the day opens the
+                  list with full labels either way. */}
               {week.map((cell, ci) => {
-                const evts = (byDate[dateKey(cell.date)] || []).slice(0, 3);
-                return evts.map((p, pi) => {
+                const all = byDate[dateKey(cell.date)] || [];
+                if (!all.length) return null;
+                if (isMobile) {
+                  const dots = all.slice(0, 4);
+                  return (
+                    <div key={`dots-${dateKey(cell.date)}`}
+                      style={{ position: "absolute", top: 34, left: `${(ci / 7) * 100}%`, width: `${100 / 7}%`,
+                        display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 3, pointerEvents: "none" }}>
+                      {dots.map((p, pi) => (
+                        <span key={pi} style={{ width: 6, height: 6, borderRadius: "50%", background: DOC_COLORS[p.documentType] || "#64748b" }} />
+                      ))}
+                    </div>
+                  );
+                }
+                return all.slice(0, 3).map((p, pi) => {
                   const color = DOC_COLORS[p.documentType] || "#64748b";
                   const label = `${DOC_LABELS[p.documentType] || p.documentType} — $${(p.amount || 0).toFixed(2)}`;
                   return (
@@ -297,7 +331,7 @@ export default function AdminCalendar() {
                 onClick={() => setDayModal(g.date)}
                 style={{ position: "sticky", top: 0, zIndex: 2, overflow: "hidden", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "8px 24px", background: "var(--ion-color-step-50)", borderBottom: "1px solid var(--ion-border-color)" }}>
+                  padding: "8px 24px", background: "var(--ion-card-background)", borderBottom: "1px solid var(--ion-border-color)" }}>
                 <ion-ripple-effect />
                 <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--ion-text-color)" }}>
                   {isToday(g.date) ? "Today · " : ""}{g.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
@@ -311,11 +345,13 @@ export default function AdminCalendar() {
                 return (
                   <div
                     key={i}
+                    className="ion-activatable"
                     onClick={() => setDetail(p)}
                     onMouseEnter={e => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}
+                    style={{ position: "relative", overflow: "hidden", display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}
                   >
+                    <ion-ripple-effect />
                     <div style={{ width: 52, textAlign: "center", flexShrink: 0, fontSize: "0.72rem", color: "var(--ion-color-medium)", fontWeight: 600 }}>
                       {d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                     </div>
@@ -343,7 +379,7 @@ export default function AdminCalendar() {
 
   // ── Week view: 7 day columns, each a scrollable list of purchase pills ──
   const renderWeek = () => (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div onTouchStart={onSwipeStart} onTouchEnd={onSwipeEnd} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", flex: "1 1 0%", minHeight: 0 }}>
         {weekDays.map((d, ci) => {
           const evts = purchasesForDate(d);
@@ -360,9 +396,8 @@ export default function AdminCalendar() {
                 <div style={{ margin: "3px auto 0", width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: tdy ? "#E65100" : "transparent" }}>
                   <span style={{ fontSize: "0.85rem", fontWeight: tdy ? 800 : 600, color: tdy ? "#fff" : "var(--ion-text-color)" }}>{d.getDate()}</span>
                 </div>
-                {evts.length > 0 && (
-                  <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "#10b981", marginTop: 2 }}>${dayTotal.toFixed(2)}</div>
-                )}
+                {/* Revenue always shown, even $0.00 */}
+                <div style={{ fontSize: "0.62rem", fontWeight: 700, color: evts.length ? "#10b981" : "var(--ion-color-medium)", marginTop: 2 }}>${dayTotal.toFixed(2)}</div>
               </div>
               {/* Pills */}
               <div style={{ flex: "1 1 0%", overflowY: "auto", padding: "6px 4px", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -414,9 +449,11 @@ export default function AdminCalendar() {
               const email = p.email || p.paypalEmail || "—";
               return (
                 <div key={i} onClick={() => setDetail(p)}
+                  className="ion-activatable"
                   onMouseEnter={e => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}>
+                  style={{ position: "relative", overflow: "hidden", display: "flex", alignItems: "center", gap: 12, padding: "10px 24px", borderBottom: "1px solid var(--ion-border-color)", cursor: "pointer", transition: "background 0.12s" }}>
+                  <ion-ripple-effect />
                   <div style={{ width: 52, textAlign: "center", flexShrink: 0, fontSize: "0.72rem", color: "var(--ion-color-medium)", fontWeight: 600 }}>
                     {d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                   </div>
@@ -540,7 +577,10 @@ export default function AdminCalendar() {
                     ctxRevenue = monthRevenue;
                   }
                   return (
-                    <div style={{ textAlign: "center" }}>
+                    <div className="ion-activatable" onClick={() => setChartModalOpen(true)}
+                      title="View revenue charts"
+                      style={{ position: "relative", overflow: "hidden", textAlign: "center", cursor: "pointer", padding: "4px 14px", borderRadius: 8 }}>
+                      <ion-ripple-effect />
                       <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-text-color)", lineHeight: 1.3 }}>{ctxLabel}</div>
                       <div style={{ fontSize: "0.9rem", fontWeight: 800, color: "#10b981", lineHeight: 1.2 }}>
                         ${ctxRevenue.toFixed(2)}
@@ -696,6 +736,96 @@ export default function AdminCalendar() {
                   </table>
                 </div>
               )}
+            </IonContent>
+          </IonModal>
+        );
+      })()}
+
+      {/* ── Revenue charts modal — scoped to the current view's period ── */}
+      {chartModalOpen && (() => {
+        let title, bars, periodPurchases;
+        if (view === "week") {
+          const wEnd = weekDays[6];
+          title = `Revenue · ${MONTHS[weekStart.getMonth()].slice(0, 3)} ${weekStart.getDate()}–${wEnd.getDate()}`;
+          periodPurchases = weekDays.flatMap((d) => purchasesForDate(d));
+          bars = weekDays.map((d) => ({
+            label: `${DAYS[d.getDay()]} ${d.getDate()}`,
+            revenue: purchasesForDate(d).reduce((s, p) => s + (p.amount || 0), 0),
+          }));
+        } else if (view === "day") {
+          title = `Revenue · ${curDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+          const evts = purchasesForDate(curDate);
+          periodPurchases = evts;
+          const map = {};
+          evts.forEach((p) => {
+            const k = DOC_LABELS[p.documentType] || p.documentType || "Other";
+            map[k] = (map[k] || 0) + (p.amount || 0);
+          });
+          bars = Object.entries(map).map(([label, revenue]) => ({ label, revenue }));
+        } else {
+          title = `Revenue · ${MONTHS[month]} ${year}`;
+          periodPurchases = monthPurchases;
+          bars = Array.from({ length: dim }, (_, i) => {
+            const day = i + 1;
+            return {
+              label: String(day),
+              revenue: (byDate[dateKey(new Date(year, month, day))] || []).reduce((s, p) => s + (p.amount || 0), 0),
+            };
+          });
+        }
+        const totalRev = periodPurchases.reduce((s, p) => s + (p.amount || 0), 0);
+        const count = periodPurchases.length;
+        const avg = count ? totalRev / count : 0;
+        const empty = !bars.length || bars.every((b) => b.revenue === 0);
+        const close = () => setChartModalOpen(false);
+        const card = { background: "var(--ion-color-step-50)", borderRadius: 10, padding: "12px", textAlign: "center" };
+        return (
+          <IonModal isOpen={true} onDidDismiss={close} className="admin-detail-modal admin-day-modal">
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>{title}</IonTitle>
+                <IonButtons slot="end">
+                  <IonButton onClick={close} aria-label="Close">
+                    <IonIcon icon={closeOutline} slot="icon-only" />
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent>
+              <div style={{ padding: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
+                  {[["Revenue", `$${totalRev.toFixed(2)}`], ["Purchases", String(count)], ["Avg / sale", `$${avg.toFixed(2)}`]].map(([k, v]) => (
+                    <div key={k} style={card}>
+                      <div style={{ fontSize: "0.68rem", color: "var(--ion-color-medium)" }}>{k}</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 800, color: k === "Revenue" ? "#10b981" : "var(--ion-text-color)" }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-color-medium)", margin: "0 0 8px 2px" }}>
+                  {view === "day" ? "Revenue by document" : "Revenue by day"}
+                </div>
+                <div style={{ width: "100%", height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={bars} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.22)" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} interval={view === "month" ? "preserveStartEnd" : 0}
+                        angle={view === "day" ? -20 : 0} textAnchor={view === "day" ? "end" : "middle"} height={view === "day" ? 60 : 24} />
+                      <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} width={52} tickFormatter={(v) => `$${v}`} />
+                      <Tooltip
+                        cursor={{ fill: "rgba(16,185,129,0.08)" }}
+                        contentStyle={{ background: "var(--ion-card-background)", border: "1px solid var(--ion-border-color)", borderRadius: 8, color: "var(--ion-text-color)" }}
+                        formatter={(v) => [`$${Number(v).toFixed(2)}`, "Revenue"]}
+                      />
+                      <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                {empty && (
+                  <div style={{ textAlign: "center", color: "var(--ion-color-medium)", fontSize: "0.85rem", marginTop: 8 }}>
+                    No revenue in this period
+                  </div>
+                )}
+              </div>
             </IonContent>
           </IonModal>
         );

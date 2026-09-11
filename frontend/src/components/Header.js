@@ -148,8 +148,8 @@ export default function Header({ title }) {
 
           <div className="navbar-links">
             <a onClick={() => goToSection("how-it-works")}>How it works</a>
-            <a href="/#">Reviews</a>
-            <a href="/#">Compare</a>
+            <a onClick={() => goToSection("reviews")}>Reviews</a>
+            <a onClick={() => goToSection("compare")}>Compare</a>
             <a onClick={() => goToSection("faq")}>FAQ</a>
           </div>
 

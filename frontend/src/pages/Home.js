@@ -163,8 +163,10 @@ const LANDING_FAQS = [
 ];
 
 // iOS status bar shared by the hero phone and the How-it-works phone cards.
-const StatusBar = () => (
-  <div className="relative flex items-center justify-between text-[13px] font-semibold text-slate-900 pt-3 px-5">
+// `dark` matches the strip to a dark app screen behind it (the hero iframe
+// renders in the visitor's saved /app theme).
+const StatusBar = ({ dark = false }) => (
+  <div className={`relative flex items-center justify-between text-[13px] font-semibold pt-3 px-5 ${dark ? 'text-white' : 'text-slate-900'}`}>
     <span>9:41</span>
     <span className="absolute left-1/2 -translate-x-1/2 top-[10px] w-24 h-[26px] bg-[#111] rounded-full" aria-hidden="true" />
     <span className="flex items-center gap-1.5" aria-hidden="true">
@@ -179,14 +181,20 @@ const StatusBar = () => (
 // an iframe inside the iPhone frame, with the create form opened via
 // ?heroPreview=1. Non-interactive (pointer-events none) — it is a preview.
 function HeroPhonePreview() {
+  // The iframe app renders in the visitor's saved /app theme (shared
+  // localStorage), so the status-bar strip matches the screen behind it:
+  // the modal toolbar's --ion-card-background (#fff light / #1e1e1e dark).
+  const appDark = (() => {
+    try { return localStorage.getItem("appDarkMode") === "true"; } catch { return false; }
+  })();
   return (
     <div className="relative flex justify-center" aria-hidden="true">
       {/* Cropped shell like the How-it-works cards: only the top ~500px of
           the phone shows, the bottom is cut off by this overflow window. */}
       <div className="relative w-[330px] md:w-[350px] h-[460px] md:h-[500px] overflow-hidden pointer-events-none select-none">
         <div className="absolute inset-x-0 top-0 bg-[#111] rounded-[52px] p-[10px] shadow-2xl">
-          <div className="bg-white rounded-[44px] overflow-hidden relative">
-            <StatusBar />
+          <div className="rounded-[44px] overflow-hidden relative" style={{ background: appDark ? '#1e1e1e' : '#ffffff' }}>
+            <StatusBar dark={appDark} />
             <iframe
               src="/app/paystubs?heroPreview=1"
               title="Live MintSlip app preview"
@@ -638,7 +646,7 @@ export default function Home() {
           ["Live human support", "Varies"],
         ];
         return (
-          <section ref={compareRef} className="py-20 md:py-24 bg-white">
+          <section id="compare" ref={compareRef} className="py-20 md:py-24 bg-white scroll-mt-24">
             <div className="max-w-[1288px] mx-auto px-6">
               <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-6 transition-all duration-700 ${compareInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                 How <span className="font-black">MintSlip</span> compares to others.
@@ -846,7 +854,7 @@ export default function Home() {
       {(() => {
         const [trustRef, trustInView] = useInView();
         return (
-          <section ref={trustRef} className="bg-white py-20 md:py-24">
+          <section id="reviews" ref={trustRef} className="bg-white py-20 md:py-24 scroll-mt-24">
             <div className="max-w-[1288px] mx-auto px-6">
               {/* Overlapping avatar strip */}
               <div className={`flex justify-center mb-10 transition-all duration-700 ${trustInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>

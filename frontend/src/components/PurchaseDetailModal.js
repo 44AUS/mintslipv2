@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { IonButton } from "@ionic/react";
 import { toast } from "@/utils/toast";
+import { confirmAlert } from "@/utils/confirmAlert";
 import AdminDetailModal from "@/components/AdminDetailModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -91,7 +92,7 @@ export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onD
     const email = p?.email || p?.paypalEmail;
     if (!available.length || !email) return;
     const label = available.length === 1 ? available[0].fileName : `${available.length} files`;
-    if (!window.confirm(`Email ${label} to ${email}?`)) return;
+    if (!(await confirmAlert({ header: "Resend files to customer?", message: `Email ${label} to ${email}.`, confirmText: "Send" }))) return;
     setResending(true);
     try {
       const token = localStorage.getItem("adminToken");
@@ -113,7 +114,7 @@ export default function PurchaseDetailModal({ purchase, onClose, onRefunded, onD
   const refund = async () => {
     if (!p || p.refunded || !p.stripePaymentIntentId) return;
     const amount = Number(p.amount) || 0;
-    if (!window.confirm(`Refund $${amount.toFixed(2)} to ${p.email || p.paypalEmail || "this customer"}?`)) return;
+    if (!(await confirmAlert({ header: `Refund $${amount.toFixed(2)}?`, message: `Issues a full refund to ${p.email || p.paypalEmail || "this customer"}. This cannot be undone.`, confirmText: "Refund" }))) return;
     setRefunding(true);
     try {
       const token = localStorage.getItem("adminToken");

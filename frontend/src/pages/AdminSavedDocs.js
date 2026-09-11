@@ -202,7 +202,7 @@ export default function AdminSavedDocs() {
   // Email the file to its owner again — for "I never got my download".
   const resendDoc = async (doc) => {
     const email = doc.userEmail && doc.userEmail.includes("@") ? doc.userEmail : null;
-    if (!window.confirm(`Email ${doc.fileName || "this file"} to ${email || "the customer on file"}?`)) return;
+    if (!(await confirmAlert({ header: "Resend file to user?", message: `Email ${doc.fileName || "this file"} to ${email || "the customer on file"}.`, confirmText: "Send" }))) return;
     setResending(true);
     try {
       const token = localStorage.getItem("adminToken");

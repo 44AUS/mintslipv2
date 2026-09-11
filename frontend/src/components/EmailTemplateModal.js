@@ -5,6 +5,7 @@ import {
 } from "@ionic/react";
 import { closeOutline } from "ionicons/icons";
 import { toast } from "@/utils/toast";
+import { confirmAlert } from "@/utils/confirmAlert";
 import { buildPreviewHtml, fillSampleVars } from "@/utils/emailPreview";
 import { DEFAULT_BODIES, DEFAULT_SUBJECTS } from "@/utils/emailDefaults";
 
@@ -81,7 +82,7 @@ export default function EmailTemplateModal({ template, isOpen, onClose, onSaved 
   };
 
   const reset = async () => {
-    if (!window.confirm("Reset this email to the built-in default text?")) return;
+    if (!(await confirmAlert({ header: "Reset this email template?", message: "Restores the built-in default text. Your customized version is discarded.", confirmText: "Reset" }))) return;
     setBusy(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/email-templates/${template.name}`, {

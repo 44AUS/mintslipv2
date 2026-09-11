@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Save, RotateCcw, Eye, Code2, ChevronRight, Lock, Clock } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { confirmAlert } from "@/utils/confirmAlert";
 import { buildPreviewHtml } from "@/utils/emailPreview";
 import { DEFAULT_BODIES } from "@/utils/emailDefaults";
 
@@ -119,7 +120,8 @@ export default function AdminEmailTemplates() {
   };
 
   const handleReset = async () => {
-    if (!selected || !window.confirm(`Reset "${selected.display_name}" to the default template?`)) return;
+    if (!selected) return;
+    if (!(await confirmAlert({ header: `Reset "${selected.display_name}"?`, message: "Restores the default template. Your customized version is discarded.", confirmText: "Reset" }))) return;
     try {
       const token = localStorage.getItem("adminToken");
       await fetch(`${BACKEND_URL}/api/admin/email-templates/${selected.name}`, {

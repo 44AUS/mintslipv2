@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { IonIcon } from "@ionic/react";
 import { banOutline, mailOutline } from "ionicons/icons";
 import MintSlipLogo from "@/assests/mintslip-logo.png";
-import RedX3D from "@/components/RedX3D";
 import "@/styles/paywall.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -44,10 +43,6 @@ export default function Banned() {
         <span className="pw-badge"><IonIcon icon={banOutline} /> Account Restricted</span>
         <h1 className="pw-title">You have been banned</h1>
         <p className="pw-subtitle">Access to the MintSlip app has been revoked</p>
-        {/* Where the paywall floats its stars, the banned screen floats a 3D red X */}
-        <div style={{ width: "100%", maxWidth: 320, margin: "6px auto 0" }}>
-          <RedX3D height={170} />
-        </div>
       </div>
 
       {/* Bottom: reason card + contact CTA — the paywall's offer card layout */}

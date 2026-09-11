@@ -62,6 +62,11 @@ export default function AdminSiteSettings() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authMsg, setAuthMsg] = useState(null);
 
+  // Homepage sections (blog visibility)
+  const [showBlogSection, setShowBlogSection] = useState(false);
+  const [blogSectionLoading, setBlogSectionLoading] = useState(false);
+  const [blogSectionMsg, setBlogSectionMsg] = useState(null);
+
   // Tier download settings
   const DEFAULT_TIERS = { starter: 10, professional: 30, business: -1 };
   const [tierDownloads, setTierDownloads] = useState(DEFAULT_TIERS);
@@ -126,7 +131,43 @@ export default function AdminSiteSettings() {
     fetchAppSettings();
     fetchTutorialCategories();
     fetchGenerators();
+    fetchHomepageSections();
   }, []);
+
+  const fetchHomepageSections = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/homepage-sections`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) setShowBlogSection(!!data.sections?.showBlog);
+    } catch (e) {}
+  };
+
+  const saveHomepageSections = async () => {
+    setBlogSectionLoading(true);
+    setBlogSectionMsg(null);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/homepage-sections`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ showBlog: showBlogSection })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setBlogSectionMsg({ type: "success", text: `Blog section is now ${showBlogSection ? "shown" : "hidden"} on the homepage.` });
+        setTimeout(() => setBlogSectionMsg(null), 3000);
+      } else {
+        setBlogSectionMsg({ type: "error", text: "Failed to save homepage sections." });
+      }
+    } catch (e) {
+      setBlogSectionMsg({ type: "error", text: "Failed to save homepage sections." });
+    } finally {
+      setBlogSectionLoading(false);
+    }
+  };
 
   const fetchGenerators = async () => {
     try {
@@ -640,6 +681,38 @@ export default function AdminSiteSettings() {
             >
               {authLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
               Save Auth Settings
+            </button>
+          </div>
+
+          {/* Homepage Sections */}
+          <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-50">
+                  <Navigation className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">Homepage Blog Section</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Show or hide the &ldquo;Latest articles &amp; guides&rdquo; section on the marketing homepage.
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                on={showBlogSection}
+                onClick={() => setShowBlogSection(v => !v)}
+              />
+            </div>
+
+            <Msg msg={blogSectionMsg} />
+
+            <button
+              onClick={saveHomepageSections}
+              disabled={blogSectionLoading}
+              className="flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+            >
+              {blogSectionLoading ? <IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> : <Save className="w-4 h-4" />}
+              Save Homepage Sections
             </button>
           </div>
 

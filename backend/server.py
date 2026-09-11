@@ -5476,6 +5476,49 @@ async def update_banner_settings(request: dict, session: dict = Depends(get_curr
     return {"success": True, "banner": banner_settings}
 
 
+# ========== HOMEPAGE SECTIONS ==========
+
+@app.get("/api/homepage-sections")
+async def get_homepage_sections():
+    """Public visibility flags for optional homepage sections."""
+    settings = await site_settings_collection.find_one({"key": "homepage_sections"})
+    return {
+        "success": True,
+        "sections": {
+            # Blog ("Latest articles & guides") is hidden until an admin turns it on.
+            "showBlog": bool(settings.get("showBlog", False)) if settings else False,
+        },
+    }
+
+
+@app.get("/api/admin/homepage-sections")
+async def get_homepage_sections_admin(session: dict = Depends(get_current_admin)):
+    """Homepage section flags (admin only)"""
+    check_permission(session, "view_site_settings")
+    settings = await site_settings_collection.find_one({"key": "homepage_sections"}, {"_id": 0})
+    return {"success": True, "sections": {"showBlog": bool(settings.get("showBlog", False)) if settings else False}}
+
+
+@app.put("/api/admin/homepage-sections")
+async def update_homepage_sections(request: dict, session: dict = Depends(get_current_admin)):
+    """Update homepage section flags (admin only)"""
+    check_permission(session, "manage_site_settings")
+    section_settings = {
+        "key": "homepage_sections",
+        "showBlog": bool(request.get("showBlog", False)),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "updatedBy": session.get("adminId", ""),
+    }
+    await site_settings_collection.update_one(
+        {"key": "homepage_sections"},
+        {"$set": section_settings},
+        upsert=True,
+    )
+    await log_action(session, "update_homepage_sections", "site_settings", "homepage_sections",
+                     f"blog {'shown' if section_settings['showBlog'] else 'hidden'}")
+    return {"success": True, "sections": {"showBlog": section_settings["showBlog"]}}
+
+
 # ========== MAINTENANCE MODE ==========
 
 @app.get("/api/maintenance-status")

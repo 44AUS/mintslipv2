@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonList, IonRippleEffect, IonSpinner } from "@ionic/react";
-import { refreshOutline, chevronForwardOutline } from "ionicons/icons";
+import {
+  refreshOutline, chevronForwardOutline, appsOutline,
+  documentTextOutline, leafOutline, calculatorOutline, scaleOutline, briefcaseOutline, readerOutline,
+} from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
@@ -68,18 +71,43 @@ const segBtnStyle = {
   flexShrink: 0,
 };
 
+// Same document categories as the /app topbar, plus ALL.
+const CATEGORY_TYPES = {
+  "paystub":          ["paystub"],
+  "canadian-paystub": ["canadian-paystub"],
+  "tax-forms":        ["w2", "w9", "1099-nec", "1099-misc", "schedule-c"],
+  "legal-forms":      ["cease-and-desist", "power-of-attorney", "vehicle-bill-of-sale", "legal-document"],
+  "business-forms":   ["bank-statement", "utility-bill", "commercial-lease", "offer-letter"],
+  "resumes":          ["resume", "ai-resume"],
+};
+
 const TABS = [
-  { value: "all",                  label: "ALL" },
-  { value: "paystub",              label: "PAY STUBS" },
-  { value: "bank-statement",       label: "BANK STMTS" },
-  { value: "resume",               label: "RESUMES" },
-  { value: "w2",                   label: "W-2 / W-9" },
+  { value: "all",              label: "ALL",            icon: appsOutline },
+  { value: "paystub",          label: "PAY STUBS",      icon: documentTextOutline },
+  { value: "canadian-paystub", label: "CANADIAN STUBS", icon: leafOutline },
+  { value: "tax-forms",        label: "TAX FORMS",      icon: calculatorOutline },
+  { value: "legal-forms",      label: "LEGAL FORMS",    icon: scaleOutline },
+  { value: "business-forms",   label: "BUSINESS FORMS", icon: briefcaseOutline },
+  { value: "resumes",          label: "RESUMES",        icon: readerOutline },
 ];
 
 function getInitials(email) {
   if (!email) return "?";
   const parts = email.split("@")[0].split(/[._-]/);
   return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : email[0].toUpperCase();
+}
+
+// "Expires in 2d" — from the server's expiresAt (retention-configurable);
+// docs saved before the backend sent expiresAt fall back to the default
+// 60-day window. null expiresAt = retention disabled (kept permanently).
+function expiryLabel(doc) {
+  let exp = null;
+  if (doc.expiresAt) exp = new Date(doc.expiresAt);
+  else if (doc.expiresAt === undefined && doc.createdAt) exp = new Date(new Date(doc.createdAt).getTime() + 60 * 86400000);
+  if (!exp || isNaN(exp.getTime())) return null;
+  const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+  if (days <= 0) return "Expires today";
+  return `Expires in ${days}d`;
 }
 
 export default function AdminSavedDocs() {
@@ -136,17 +164,14 @@ export default function AdminSavedDocs() {
 
   const filtered = docs.filter(d => {
     if (segment === "all") return true;
-    if (segment === "w2")  return d.documentType === "w2" || d.documentType === "w9";
-    return d.documentType === segment;
+    const types = CATEGORY_TYPES[segment] || [segment];
+    return types.includes(d.documentType);
   });
 
-  const counts = {
-    all:             docs.length,
-    paystub:         docs.filter(d => d.documentType === "paystub" || d.documentType === "canadian-paystub").length,
-    "bank-statement": docs.filter(d => d.documentType === "bank-statement").length,
-    resume:          docs.filter(d => d.documentType === "resume").length,
-    w2:              docs.filter(d => d.documentType === "w2" || d.documentType === "w9").length,
-  };
+  const counts = Object.fromEntries([
+    ["all", docs.length],
+    ...Object.entries(CATEGORY_TYPES).map(([cat, types]) => [cat, docs.filter(d => types.includes(d.documentType)).length]),
+  ]);
 
   const deleteDoc = async (docId, e) => {
     e?.stopPropagation();
@@ -215,6 +240,7 @@ export default function AdminSavedDocs() {
                 {TABS.map(tab => (
                   <IonSegmentButton key={tab.value} value={tab.value} layout="label-only" style={segBtnStyle}>
                     <IonLabel style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", whiteSpace: "nowrap" }}>
+                      <IonIcon icon={tab.icon} style={{ fontSize: 15, flexShrink: 0 }} />
                       {tab.label}
                       <span style={{ background: "var(--ion-background-color)", borderRadius: 4, padding: "1px 5px", fontSize: "0.65rem", fontWeight: 700, color: "var(--ion-color-medium)" }}>
                         {counts[tab.value]}
@@ -262,7 +288,7 @@ export default function AdminSavedDocs() {
                           title={label}
                           badges={doc.fileExists === false && <span className="admin-badge admin-badge-red">Missing</span>}
                           subtitle={doc.userEmail || "—"}
-                          meta={[doc.fileName, size, date].filter(Boolean).join(" · ")}
+                          meta={[doc.fileName, size, date, expiryLabel(doc)].filter(Boolean).join(" · ")}
                         />
                       );
                     })}
@@ -343,11 +369,16 @@ export default function AdminSavedDocs() {
                               </span>
                             </td>
 
-                            {/* Created */}
+                            {/* Created — date with the retention expiry underneath */}
                             <td style={{ ...tdBase, minWidth: 110 }}>
-                              <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                              <span style={{ fontSize: "0.75rem", whiteSpace: "nowrap", display: "block" }}>
                                 {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
                               </span>
+                              {expiryLabel(doc) && (
+                                <span style={{ fontSize: "0.68rem", whiteSpace: "nowrap", display: "block", marginTop: 2, color: /today|in [1-7]d/.test(expiryLabel(doc)) ? "var(--ion-color-warning)" : "var(--ion-color-medium)" }}>
+                                  {expiryLabel(doc)}
+                                </span>
+                              )}
                             </td>
 
                             {/* Actions — raised above the row overlay */}
@@ -400,6 +431,7 @@ export default function AdminSavedDocs() {
           )],
           ["Size", detail.fileSize ? `${(detail.fileSize / 1024).toFixed(1)} KB` : "—"],
           ["Saved", detail.createdAt ? new Date(detail.createdAt).toLocaleString() : "—"],
+          ["Expires", expiryLabel(detail) || "Never (retention disabled)"],
         ] : []}
       >
         {detail && (

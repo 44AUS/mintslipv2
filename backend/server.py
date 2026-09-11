@@ -3022,55 +3022,91 @@ async def stripe_webhook(request: Request):
 
         # Track purchase for one-time payments (in-app card checkout and
         # Apple/Google Pay). Mirrors the checkout.session.completed handling.
-        metadata = payment_intent.metadata
-        if metadata.get("documentType"):
-            # Dedup: Stripe may retry webhook delivery
-            existing_purchase = await purchases_collection.find_one({"stripePaymentIntentId": payment_intent.id})
-            if existing_purchase:
-                print(f"Purchase already recorded for payment intent {payment_intent.id}, skipping webhook duplicate")
-                return {"status": "ok"}
+        if payment_intent.metadata.get("documentType"):
+            await record_payment_intent_purchase(payment_intent, get_client_ip(request))
 
-            customer_email = metadata.get("email", "")
-            discount_code = metadata.get("discountCode", "")
-            try:
-                quantity = int(metadata.get("quantity") or 1)
-            except (TypeError, ValueError):
-                quantity = 1
-
-            purchase = {
-                "id": str(uuid.uuid4()),
-                "documentType": metadata.get("documentType"),
-                "amount": payment_intent.amount / 100,
-                "email": customer_email,
-                "stripePaymentIntentId": payment_intent.id,
-                "discountCode": discount_code if discount_code else None,
-                "discountAmount": float(metadata.get("discountAmount", 0) or 0),
-                "template": metadata.get("template") or None,
-                "quantity": quantity,
-                "isGuest": True,
-                "ipAddress": metadata.get("clientIp", "") or get_client_ip(request),
-                "createdAt": datetime.now(timezone.utc).isoformat()
-            }
-            await purchases_collection.insert_one(purchase)
-            asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"], purchase["id"]))
-
-            # Same follow-up emails as the hosted-checkout flow (the download
-            # confirmation with the attached file is sent from the frontend)
-            if customer_email:
-                asyncio.create_task(send_review_request(customer_email, "", purchase["documentType"], None))
-                asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
-
-            # Increment discount code usage if one was used
-            if discount_code:
-                customer_identifier = customer_email or payment_intent.id
-                update_ops = {"$inc": {"usageCount": 1}}
-                discount = await discounts_collection.find_one({"code": discount_code.upper()})
-                if discount and discount.get("usageType") == "one_per_customer" and customer_identifier:
-                    update_ops["$push"] = {"usedByCustomers": customer_identifier}
-                await discounts_collection.update_one({"code": discount_code.upper()}, update_ops)
-                print(f"Incremented usage count for discount code: {discount_code}")
-    
     return {"status": "received"}
+
+
+async def record_payment_intent_purchase(payment_intent, fallback_ip: str = "") -> bool:
+    """Record a one-time document purchase from a succeeded payment intent.
+
+    Idempotent (deduped by stripePaymentIntentId) and shared by the Stripe
+    webhook and the /payment-success fallback endpoint, so a missed webhook
+    can never leave a paid document without its purchase record."""
+    metadata = payment_intent.metadata
+    if not metadata.get("documentType"):
+        return False
+
+    # Dedup: Stripe may retry webhook delivery, and the frontend fallback may
+    # race the webhook.
+    existing_purchase = await purchases_collection.find_one({"stripePaymentIntentId": payment_intent.id})
+    if existing_purchase:
+        print(f"Purchase already recorded for payment intent {payment_intent.id}, skipping duplicate")
+        return False
+
+    customer_email = metadata.get("email", "")
+    discount_code = metadata.get("discountCode", "")
+    try:
+        quantity = int(metadata.get("quantity") or 1)
+    except (TypeError, ValueError):
+        quantity = 1
+
+    purchase = {
+        "id": str(uuid.uuid4()),
+        "documentType": metadata.get("documentType"),
+        "amount": payment_intent.amount / 100,
+        "email": customer_email,
+        "stripePaymentIntentId": payment_intent.id,
+        "discountCode": discount_code if discount_code else None,
+        "discountAmount": float(metadata.get("discountAmount", 0) or 0),
+        "template": metadata.get("template") or None,
+        "quantity": quantity,
+        "isGuest": True,
+        "ipAddress": metadata.get("clientIp", "") or fallback_ip,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await purchases_collection.insert_one(purchase)
+    asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"], purchase["id"]))
+
+    # Same follow-up emails as the hosted-checkout flow (the download
+    # confirmation with the attached file is sent from the frontend)
+    if customer_email:
+        asyncio.create_task(send_review_request(customer_email, "", purchase["documentType"], None))
+        asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
+
+    # Increment discount code usage if one was used
+    if discount_code:
+        customer_identifier = customer_email or payment_intent.id
+        update_ops = {"$inc": {"usageCount": 1}}
+        discount = await discounts_collection.find_one({"code": discount_code.upper()})
+        if discount and discount.get("usageType") == "one_per_customer" and customer_identifier:
+            update_ops["$push"] = {"usedByCustomers": customer_identifier}
+        await discounts_collection.update_one({"code": discount_code.upper()}, update_ops)
+        print(f"Incremented usage count for discount code: {discount_code}")
+    return True
+
+
+@app.post("/api/stripe/confirm-payment-intent")
+async def confirm_payment_intent(request: Request):
+    """Fallback purchase recording for the embedded card checkout.
+
+    /payment-success calls this with the intent id; we verify with Stripe that
+    the payment actually succeeded, then record the purchase if the webhook
+    hasn't already (idempotent). Fixes paid documents showing up in Saved
+    Documents with no matching purchase when a webhook is missed."""
+    data = await request.json()
+    pi_id = str(data.get("paymentIntentId") or "").strip()
+    if not pi_id.startswith("pi_"):
+        raise HTTPException(status_code=400, detail="paymentIntentId required")
+    try:
+        payment_intent = stripe.PaymentIntent.retrieve(pi_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Payment intent not found")
+    if payment_intent.status != "succeeded":
+        return {"success": False, "status": payment_intent.status}
+    recorded = await record_payment_intent_purchase(payment_intent, get_client_ip(request))
+    return {"success": True, "recorded": recorded}
 
 
 @app.post("/api/stripe/cancel-subscription")
@@ -4619,7 +4655,10 @@ async def get_all_saved_documents(
     # Get documents with pagination (exclude fileContent from response for performance)
     documents = await saved_documents_collection.find(query, {"_id": 0, "fileContent": 0}).sort("createdAt", -1).skip(skip).limit(limit).to_list(limit)
     total = await saved_documents_collection.count_documents(query)
-    
+
+    # Retention window so the admin list can show each document's expiry
+    retention_days = await get_doc_retention_days()
+
     # Enrich with user info and file existence check
     enriched_documents = []
     for doc in documents:
@@ -4655,19 +4694,33 @@ async def get_all_saved_documents(
                         logger.warning(f"Could not auto-restore file: {e}")
         
         guest_email = doc.get("guestEmail") or doc.get("userEmail", "")
+
+        # When the document is pruned by retention (None = kept permanently)
+        expires_at = None
+        if retention_days > 0 and doc.get("createdAt"):
+            try:
+                created = datetime.fromisoformat(str(doc["createdAt"]).replace("Z", "+00:00"))
+                if created.tzinfo is None:
+                    created = created.replace(tzinfo=timezone.utc)
+                expires_at = (created + timedelta(days=retention_days)).isoformat()
+            except ValueError:
+                pass
+
         enriched_documents.append({
             **doc,
             "userEmail": user.get("email", "Unknown") if user else (guest_email or "Deleted User"),
             "userName": user.get("name", "") if user else ("Guest" if guest_email else ""),
             "fileExists": file_exists,
-            "hasBackup": has_content_backup if not file_exists else True
+            "hasBackup": has_content_backup if not file_exists else True,
+            "expiresAt": expires_at
         })
-    
+
     return {
         "documents": enriched_documents,
         "total": total,
         "skip": skip,
-        "limit": limit
+        "limit": limit,
+        "retentionDays": retention_days
     }
 
 

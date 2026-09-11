@@ -156,6 +156,14 @@ export default function PaymentSuccess() {
       if (paymentIntentId) {
         // Embedded card checkout: Stripe.js confirmed the payment on-session
         // before navigating here, so skip session verification entirely.
+        // Fire the server-side purchase-record fallback in parallel — the
+        // webhook normally records it, but if that's ever missed this keeps
+        // Purchases/Calendar in sync with Saved Documents (idempotent).
+        fetch(`${BACKEND_URL}/api/stripe/confirm-payment-intent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentIntentId }),
+        }).catch(() => {});
         const email = localStorage.getItem('pendingCustomerEmail') || '';
         if (email) setCustomerEmail(email);
         setPaymentVerified(true);

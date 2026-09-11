@@ -796,7 +796,10 @@ export default function AdminLayout({ children, fillHeight = false }) {
                       </FreshPopover>
                     </>
                   ) : (
-                    /* Desktop: scrollable segment */
+                    /* Desktop: scrollable segment — flex:1 stretches it across
+                       the whole topbar middle (matching /app, where the
+                       toolbar stretches it), so the tabs span the full bar
+                       instead of hugging the left on wide screens. */
                     <IonSegment
                       scrollable
                       value={activeTab}
@@ -804,7 +807,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
                         const tab = topbarTabs.find(t => t.id === e.detail.value);
                         if (tab) navigate(tab.path);
                       }}
-                      style={{ "--background": "transparent", "--color": "rgba(255,255,255,0.65)", "--color-checked": "#ffffff", "--indicator-color": "#ffffff" }}
+                      style={{ "--background": "transparent", "--color": "rgba(255,255,255,0.65)", "--color-checked": "#ffffff", "--indicator-color": "#ffffff", flex: 1, minWidth: 0 }}
                     >
                       {topbarTabs.map(tab => (
                         <IonSegmentButton key={tab.id} value={tab.id} layout="icon-start" style={segmentBtnStyle}>

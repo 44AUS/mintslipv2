@@ -35,6 +35,7 @@ from email_service import (
     send_support_reply_email,
     send_support_chat_notification_email,
     send_support_chat_closed_email,
+    send_support_chat_reopened_email,
     send_discount_announcement_email,
     send_document_resend_email,
     schedule_getting_started_email,
@@ -6122,6 +6123,9 @@ async def start_support_chat(request: Request):
         "messages": [first],
         "createdAt": now,
         "updatedAt": now,
+        # Presence: bumped only by USER-side activity (widget polls, messages,
+        # typing) — never by admin actions, so "Online now" is honest.
+        "userLastSeen": now,
         "unreadByAdmin": 1,
         "unreadByUser": 0,
     }
@@ -6132,11 +6136,20 @@ async def start_support_chat(request: Request):
 
 
 @app.get("/api/support/chat/{chat_id}")
-async def get_support_chat(chat_id: str, mark_read: bool = False):
+async def get_support_chat(chat_id: str, request: Request, mark_read: bool = False):
     """Fetch a support chat conversation (optionally mark admin msgs read)."""
     chat = await support_chats_collection.find_one({"id": chat_id}, {"_id": 0})
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
+    # The user widget polls this endpoint with no Authorization header; the
+    # admin SupportCenter always sends one. Only the widget's polls count as
+    # user presence — admin reads must never make the customer look online.
+    if not request.headers.get("authorization"):
+        seen = datetime.now(timezone.utc).isoformat()
+        await support_chats_collection.update_one(
+            {"id": chat_id}, {"$set": {"userLastSeen": seen}}
+        )
+        chat["userLastSeen"] = seen
     if mark_read:
         await support_chats_collection.update_one(
             {"id": chat_id}, {"$set": {"unreadByUser": 0}}
@@ -6204,7 +6217,7 @@ async def send_support_chat_message(chat_id: str, request: Request):
     await support_chats_collection.update_one(
         {"id": chat_id},
         {"$push": {"messages": msg},
-         "$set":  {"updatedAt": msg["timestamp"]},
+         "$set":  {"updatedAt": msg["timestamp"], "userLastSeen": msg["timestamp"]},
          "$inc":  {"unreadByAdmin": 1}}
     )
 
@@ -6340,7 +6353,11 @@ async def user_typing(chat_id: str, request: Request):
     data = await request.json()
     is_typing = bool(data.get("isTyping", False))
     value = datetime.now(timezone.utc).isoformat() if is_typing else None
-    await support_chats_collection.update_one({"id": chat_id}, {"$set": {"userTyping": value}})
+    await support_chats_collection.update_one(
+        {"id": chat_id},
+        {"$set": {"userTyping": value,
+                  "userLastSeen": datetime.now(timezone.utc).isoformat()}}
+    )
     return {"success": True}
 
 
@@ -6382,6 +6399,16 @@ async def update_support_chat_status(chat_id: str, request: Request, session: di
             except Exception as e:
                 logger.warning(f"Chat closed email failed for {guest_email}: {e}")
         _spawn_email_task(_notify_closed())
+
+    # And tell them when it's reopened (closed→open transition) so they know
+    # to come back — the widget picks the open ticket back up on its next poll.
+    if new_status == "open" and chat.get("status") == "closed" and guest_email:
+        async def _notify_reopened():
+            try:
+                await send_support_chat_reopened_email(guest_email, chat.get("guestName") or "")
+            except Exception as e:
+                logger.warning(f"Chat reopened email failed for {guest_email}: {e}")
+        _spawn_email_task(_notify_reopened())
 
     return {"success": True}
 

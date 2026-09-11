@@ -12,7 +12,7 @@ import {
   linkOutline, removeOutline,
   menuOutline, closeCircleOutline, checkmarkDoneOutline,
   checkmarkOutline, checkmarkCircleOutline,
-  ellipsisVertical,
+  ellipsisVertical, refreshOutline,
 } from 'ionicons/icons';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -182,6 +182,7 @@ export default function SupportCenter({
   onMinimize,
   onTyping,
   onCloseConversation,
+  onReopenConversation,
 }) {
   const [activeTab, setActiveTab] = useState('open');
   const [showList, setShowList] = useState(true);
@@ -300,7 +301,8 @@ export default function SupportCenter({
             }}>
               {conv.name}
             </span>
-            <span style={{ fontSize: '0.68rem', color: 'var(--ion-color-medium)', marginLeft: 'auto', flexShrink: 0 }}>
+            {/* Time sits right beside the name (no auto-margin push to the far edge) */}
+            <span style={{ fontSize: '0.68rem', color: 'var(--ion-color-medium)', flexShrink: 0 }}>
               {formatListTime(conv.lastMessageTime)}
             </span>
           </div>
@@ -309,7 +311,7 @@ export default function SupportCenter({
           </div>
         </IonLabel>
 
-        {/* end: star + reorder */}
+        {/* end: star + reorder — closed tickets can't be reordered, so no drag handle */}
         <div slot="end" style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           <IonButton
             fill="clear"
@@ -320,7 +322,7 @@ export default function SupportCenter({
           >
             <IonIcon slot="icon-only" icon={conv.pinned ? star : starOutline} style={{ fontSize: 16 }} />
           </IonButton>
-          <IonReorder style={{ fontSize: 20, color: 'var(--ion-color-medium)' }} />
+          {!conv.archived && <IonReorder style={{ fontSize: 20, color: 'var(--ion-color-medium)' }} />}
         </div>
       </IonItem>
     );
@@ -595,15 +597,26 @@ export default function SupportCenter({
                       >
                         <IonIcon slot="icon-only" icon={activeConv.isBlocked ? shieldOutline : banOutline} style={{ fontSize: 18 }} />
                       </IonButton>
-                      {/* Close ticket */}
-                      <IonButton
-                        fill="clear" color="success" size="small"
-                        style={{ '--border-radius': '50%' }}
-                        title="Close ticket"
-                        onClick={() => onCloseConversation?.(activeConv.id)}
-                      >
-                        <IonIcon slot="icon-only" icon={checkmarkCircleOutline} style={{ fontSize: 18 }} />
-                      </IonButton>
+                      {/* Close (open ticket) / Reopen (closed ticket) */}
+                      {activeConv.archived ? (
+                        <IonButton
+                          fill="clear" color="primary" size="small"
+                          style={{ '--border-radius': '50%' }}
+                          title="Reopen ticket"
+                          onClick={() => onReopenConversation?.(activeConv.id)}
+                        >
+                          <IonIcon slot="icon-only" icon={refreshOutline} style={{ fontSize: 18 }} />
+                        </IonButton>
+                      ) : (
+                        <IonButton
+                          fill="clear" color="success" size="small"
+                          style={{ '--border-radius': '50%' }}
+                          title="Close ticket"
+                          onClick={() => onCloseConversation?.(activeConv.id)}
+                        >
+                          <IonIcon slot="icon-only" icon={checkmarkCircleOutline} style={{ fontSize: 18 }} />
+                        </IonButton>
+                      )}
                       {/* Delete ticket */}
                       <IonButton
                         fill="clear" color="danger" size="small"
@@ -645,14 +658,25 @@ export default function SupportCenter({
                 >
                   <IonContent>
                     <IonList lines="none" style={{ padding: '4px 0' }}>
-                      <IonItem button detail={false}
-                        onClick={() => { setActionsMenu({ open: false, event: undefined }); onCloseConversation?.(activeConv.id); }}
-                        style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
-                        <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
-                          <IonIcon icon={checkmarkCircleOutline} style={{ fontSize: 18, color: 'var(--ion-color-success)' }} />
-                        </div>
-                        <IonLabel>Close Ticket</IonLabel>
-                      </IonItem>
+                      {activeConv.archived ? (
+                        <IonItem button detail={false}
+                          onClick={() => { setActionsMenu({ open: false, event: undefined }); onReopenConversation?.(activeConv.id); }}
+                          style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
+                          <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                            <IonIcon icon={refreshOutline} style={{ fontSize: 18, color: 'var(--ion-color-primary)' }} />
+                          </div>
+                          <IonLabel>Reopen Ticket</IonLabel>
+                        </IonItem>
+                      ) : (
+                        <IonItem button detail={false}
+                          onClick={() => { setActionsMenu({ open: false, event: undefined }); onCloseConversation?.(activeConv.id); }}
+                          style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
+                          <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                            <IonIcon icon={checkmarkCircleOutline} style={{ fontSize: 18, color: 'var(--ion-color-success)' }} />
+                          </div>
+                          <IonLabel>Close Ticket</IonLabel>
+                        </IonItem>
+                      )}
                       <IonItem button detail={false}
                         onClick={() => { setActionsMenu({ open: false, event: undefined }); onMinimize?.(activeConv, messages); }}
                         style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>

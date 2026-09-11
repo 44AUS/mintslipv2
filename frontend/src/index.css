@@ -32,6 +32,13 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Kill the WebView's built-in tap highlight (a translucent blue flash on
+   Android/iOS) so taps show only the Ionic ripple — without this, every
+   activatable element ripples with a blue tint on mobile. */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* Respect users who prefer less motion: collapse all animation/transitions */
 @media (prefers-reduced-motion: reduce) {
     *,

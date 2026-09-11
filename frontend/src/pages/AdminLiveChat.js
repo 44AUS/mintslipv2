@@ -38,7 +38,10 @@ function chatToConv(chat) {
     type: "direct",
     lastMessage: last?.text || (last?.images?.length ? "📷 Photo" : ""),
     lastMessageTime: chat.updatedAt,
-    lastActive: chat.updatedAt,
+    // Presence comes ONLY from user-side activity (widget polls/messages/
+    // typing bump userLastSeen on the backend). updatedAt would light the
+    // "Online now" dot whenever the ADMIN replies or closes the ticket.
+    lastActive: chat.userLastSeen || null,
     unread: chat.unreadByAdmin || 0,
     pinned: chat.pinned || false,
     isBlocked: chat.isBlocked || false,
@@ -203,6 +206,18 @@ export default function AdminLiveChat() {
     if (activeId === id) setActiveId(null);
   }, [activeId]);
 
+  const handleReopen = useCallback(async (id) => {
+    const token = localStorage.getItem("adminToken");
+    const res = await fetch(`${BACKEND_URL}/api/admin/support-chats/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ status: "open" }),
+    }).catch(() => null);
+    if (!res || !res.ok) { toast.error("Failed to reopen ticket"); return; }
+    setChats(prev => prev.map(c => c.id === id ? { ...c, status: "open" } : c));
+    toast.success("Ticket reopened — the customer has been emailed");
+  }, []);
+
   const handleDelete = useCallback(async (id) => {
     if (!window.confirm("Permanently delete this conversation? This cannot be undone.")) return;
     const token = localStorage.getItem("adminToken");
@@ -267,6 +282,7 @@ export default function AdminLiveChat() {
         onMinimize={handleMinimize}
         onTyping={handleAdminTyping}
         onCloseConversation={handleClose}
+        onReopenConversation={handleReopen}
       />
     </AdminLayout>
   );

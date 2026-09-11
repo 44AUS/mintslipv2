@@ -959,14 +959,6 @@ export default function Home() {
                 Create Pay Stub
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
-              <Button
-                onClick={() => navigate("/generators")}
-                size="lg"
-                variant="outline"
-                className="gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-800 hover:bg-white transition-all duration-200"
-              >
-                Browse All Generators
-              </Button>
             </div>
           </div>
         </div>

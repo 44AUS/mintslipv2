@@ -1864,12 +1864,8 @@ export default function Home() {
             <div className="max-w-6xl mx-auto px-6">
               {/* Section Header */}
               <div className={`text-center mb-12 transition-all duration-700 ${blogInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-200 mb-4">
-                  <FileText className="w-4 h-4 text-emerald-700" />
-                  <span className="text-sm font-medium text-emerald-800">From Our Blog</span>
-                </div>
-                <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                  Latest Articles & Guides
+                <h3 className="font-display text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium max-w-4xl mx-auto mb-4">
+                  Latest <span className="font-black">articles & guides</span>
                 </h3>
                 <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                   Expert tips on pay stubs, tax forms, and financial documentation to help you succeed.
@@ -2012,11 +2008,8 @@ export default function Home() {
       <section id="faq" className="py-20 md:py-24 bg-white scroll-mt-24">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-4" style={{ letterSpacing: '0.15em' }}>
-              FAQ
-            </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-4">
-              Frequently Asked Questions
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-4">
+              Frequently asked <span className="font-black">questions</span>
             </h2>
             <p className="text-lg text-slate-600">
               Quick answers about how MintSlip works.

@@ -3472,6 +3472,7 @@ async def get_all_purchases(
     skip: int = 0,
     limit: int = 50,
     documentType: Optional[str] = None,
+    email: Optional[str] = None,
     startDate: Optional[str] = None,
     endDate: Optional[str] = None
 ):
@@ -3481,6 +3482,10 @@ async def get_all_purchases(
     query = {}
     if documentType:
         query["documentType"] = documentType
+    if email:
+        # Case-insensitive exact match — used by the Support Center's
+        # "view documents" folder to show everything this customer has made.
+        query["email"] = {"$regex": f"^{re.escape(email.strip())}$", "$options": "i"}
 
     date_filter = {}
     if startDate:

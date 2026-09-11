@@ -183,9 +183,13 @@ export default function SupportCenter({
   onTyping,
   onCloseConversation,
   onReopenConversation,
+  onViewDocuments,
 }) {
   const [activeTab, setActiveTab] = useState('open');
   const [showList, setShowList] = useState(true);
+  // Desktop-only: the hamburger in the chat header collapses/expands the
+  // conversation list panel (on mobile it goes back to the list instead).
+  const [listCollapsed, setListCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [inputText, setInputText] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
@@ -414,7 +418,7 @@ export default function SupportCenter({
 
   // ── render ───────────────────────────────────────────────────────────────────
 
-  const showLeftPanel = !isMobile || showList;
+  const showLeftPanel = isMobile ? showList : !listCollapsed;
   const showRightPanel = !isMobile || !showList;
 
   return (
@@ -548,11 +552,12 @@ export default function SupportCenter({
                   borderBottom: '1px solid var(--ion-border-color)',
                   background: 'var(--ion-background-color)',
                 }}>
-                  {/* back/hamburger */}
+                  {/* back (mobile) / collapse conversation list (desktop) */}
                   <IonButton
                     fill="clear" color="medium" size="small"
                     style={{ '--border-radius': '50%', flexShrink: 0 }}
-                    onClick={() => isMobile ? setShowList(true) : undefined}
+                    title={isMobile ? 'Back to conversations' : listCollapsed ? 'Show conversation list' : 'Hide conversation list'}
+                    onClick={() => (isMobile ? setShowList(true) : setListCollapsed(v => !v))}
                   >
                     <IonIcon slot="icon-only" icon={menuOutline} style={{ fontSize: 20 }} />
                   </IonButton>
@@ -587,7 +592,13 @@ export default function SupportCenter({
                           <IonIcon slot="icon-only" icon={linkOutline} style={{ fontSize: 18 }} />
                         </IonButton>
                       )}
-                      <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
+                      {/* View every document this customer has made */}
+                      <IonButton
+                        fill="clear" color="medium" size="small"
+                        style={{ '--border-radius': '50%' }}
+                        title="View documents"
+                        onClick={() => onViewDocuments?.(activeConv)}
+                      >
                         <IonIcon slot="icon-only" icon={folderOutline} style={{ fontSize: 18 }} />
                       </IonButton>
                       <IonButton
@@ -631,7 +642,13 @@ export default function SupportCenter({
                       >
                         <IonIcon slot="icon-only" icon={removeOutline} style={{ fontSize: 18 }} />
                       </IonButton>
-                      <IonButton fill="clear" color="medium" size="small" style={{ '--border-radius': '50%' }}>
+                      {/* X closes the current chat (deselects it) */}
+                      <IonButton
+                        fill="clear" color="medium" size="small"
+                        style={{ '--border-radius': '50%' }}
+                        title="Close chat"
+                        onClick={() => onSelectConversation?.(null)}
+                      >
                         <IonIcon slot="icon-only" icon={closeOutline} style={{ fontSize: 18 }} />
                       </IonButton>
                     </>
@@ -658,6 +675,14 @@ export default function SupportCenter({
                 >
                   <IonContent>
                     <IonList lines="none" style={{ padding: '4px 0' }}>
+                      <IonItem button detail={false}
+                        onClick={() => { setActionsMenu({ open: false, event: undefined }); onViewDocuments?.(activeConv); }}
+                        style={{ '--min-height': '44px', '--padding-start': '14px', '--inner-padding-end': '14px', fontSize: '0.88rem' }}>
+                        <div slot="start" style={{ display: 'inline-flex', alignItems: 'center', marginRight: 10 }}>
+                          <IonIcon icon={folderOutline} style={{ fontSize: 18 }} />
+                        </div>
+                        <IonLabel>View Documents</IonLabel>
+                      </IonItem>
                       {activeConv.archived ? (
                         <IonItem button detail={false}
                           onClick={() => { setActionsMenu({ open: false, event: undefined }); onReopenConversation?.(activeConv.id); }}

@@ -230,7 +230,7 @@ export default function Home() {
           <h1 className="font-display text-center text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.08 }}>
             Generate professional{' '}
             <span className="font-black text-emerald-700"><FlipWord /></span>{' '}
-            in <span className="font-black">minutes</span>
+            in minutes
             <svg className="inline-block w-7 h-7 md:w-9 md:h-9 ml-2 align-super text-emerald-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 0 C13 7 17 11 24 12 C17 13 13 17 12 24 C11 17 7 13 0 12 C7 11 11 7 12 0 Z" />
             </svg>

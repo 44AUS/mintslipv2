@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import AdminLayout from "@/components/AdminLayout";
-import { IonButton, IonRippleEffect, IonSpinner } from "@ionic/react";
+import { IonButton, IonRippleEffect, IonSpinner, IonInput, IonTextarea, IonSelect, IonSelectOption, IonCheckbox } from "@ionic/react";
 import {
   ArrowLeft, Type, Square, Minus, Table, Image as ImageIcon, Trash2, Copy,
   Undo2, Eye, Save, Upload, ChevronUp, ChevronDown, X, Sparkles, Send, PenTool,
@@ -64,27 +64,61 @@ const NEW_ELEMENTS = {
   }),
 };
 
-// ── small form controls ──────────────────────────────────────────────────────
+// ── small form controls — the same admin-field Ionic inputs used across the
+//    admin dashboard (MD mode, outline fill, floating label) ─────────────────
 
+const FIELD_PROPS = { className: "admin-field", mode: "md", fill: "outline", labelPlacement: "floating" };
+
+// Wrapper for composite controls (color pickers, checkbox clusters) that
+// still need an external caption.
 function Field({ label, children }) {
   return (
-    <label style={{ display: "block", marginBottom: 10 }}>
+    <div style={{ display: "block", marginBottom: 10 }}>
       <span style={{ display: "block", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)", marginBottom: 4 }}>{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 
-const inputStyle = {
-  width: "100%", boxSizing: "border-box", padding: "6px 8px", borderRadius: 6,
-  border: "1px solid var(--ion-border-color)", background: "var(--ion-background-color)",
-  color: "var(--ion-text-color)", fontSize: "0.8rem", outline: "none",
-};
-
-function NumInput({ value, onChange, step = 1, min, max }) {
+function TextField({ label, value, onChange, placeholder, style }) {
   return (
-    <input type="number" style={inputStyle} value={value ?? 0} step={step} min={min} max={max}
-      onChange={(e) => onChange(Number(e.target.value))} />
+    <IonInput {...FIELD_PROPS} label={label} placeholder={placeholder} value={value ?? ""}
+      onIonInput={(e) => onChange(e.detail.value ?? "")} style={{ marginBottom: 10, ...style }} />
+  );
+}
+
+function TextAreaField({ label, value, onChange, placeholder, rows = 2 }) {
+  return (
+    <IonTextarea {...FIELD_PROPS} label={label} placeholder={placeholder} autoGrow rows={rows} value={value ?? ""}
+      onIonInput={(e) => onChange(e.detail.value ?? "")} style={{ marginBottom: 10 }} />
+  );
+}
+
+function NumInput({ label, value, onChange, step = 1, min, max }) {
+  return (
+    <IonInput {...FIELD_PROPS} label={label} type="number" inputmode="decimal" step={String(step)} min={min} max={max}
+      value={value ?? 0}
+      onIonInput={(e) => { const n = Number(e.detail.value); if (!Number.isNaN(n)) onChange(n); }}
+      style={{ marginBottom: 10 }} />
+  );
+}
+
+function SelectField({ label, value, onChange, children, style }) {
+  return (
+    <IonSelect {...FIELD_PROPS} label={label} interface="popover" value={value}
+      onIonChange={(e) => onChange(e.detail.value)} style={{ marginBottom: 10, ...style }}>
+      {children}
+    </IonSelect>
+  );
+}
+
+// House checkbox pattern: IonCheckbox + span label
+function CheckField({ label, checked, onChange }) {
+  return (
+    <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.8rem", color: "var(--admin-text)", cursor: "pointer" }}>
+      <IonCheckbox checked={!!checked} onIonChange={(e) => onChange(e.detail.checked)} style={{ "--size": "18px", flexShrink: 0 }} />
+      <span>{label}</span>
+    </label>
   );
 }
 
@@ -92,13 +126,13 @@ function ColorInput({ value, onChange, allowNone }) {
   const isNone = !value || value === "none";
   return (
     <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-      <input type="color" value={isNone ? "#ffffff" : value} style={{ width: 34, height: 28, padding: 0, border: "1px solid var(--ion-border-color)", borderRadius: 6, background: "none", cursor: "pointer" }}
+      <input type="color" value={isNone ? "#ffffff" : value} style={{ width: 34, height: 34, padding: 0, border: "1px solid var(--ion-border-color)", borderRadius: 6, background: "none", cursor: "pointer", flexShrink: 0 }}
         onChange={(e) => onChange(e.target.value)} />
-      <input type="text" style={{ ...inputStyle, flex: 1 }} value={value || ""} placeholder="#000000"
-        onChange={(e) => onChange(e.target.value)} />
+      <IonInput {...FIELD_PROPS} labelPlacement={undefined} aria-label="Color hex" placeholder="#000000" value={value || ""}
+        onIonInput={(e) => onChange(e.detail.value ?? "")} style={{ flex: 1, minWidth: 0 }} />
       {allowNone && (
         <button type="button" onClick={() => onChange("none")}
-          style={{ fontSize: "0.68rem", padding: "4px 7px", borderRadius: 6, border: "1px solid var(--ion-border-color)", background: isNone ? "var(--ion-color-step-100)" : "transparent", color: "var(--admin-text-muted)", cursor: "pointer" }}>
+          style={{ fontSize: "0.68rem", padding: "4px 7px", borderRadius: 6, border: "1px solid var(--ion-border-color)", background: isNone ? "var(--ion-color-step-100)" : "transparent", color: "var(--admin-text-muted)", cursor: "pointer", flexShrink: 0 }}>
           none
         </button>
       )}
@@ -554,10 +588,12 @@ export default function AdminTemplateEditor() {
           }}>
             <ArrowLeft size={16} /><IonRippleEffect />
           </button>
-          <input
-            style={{ ...inputStyle, width: isNarrow ? "min(100%, 260px)" : 260, fontWeight: 600, fontSize: "0.95rem" }}
+          <IonInput
+            {...FIELD_PROPS}
+            label="Template name"
             value={meta.name}
-            onChange={(e) => { setMeta((m) => ({ ...m, name: e.target.value })); setDirty(true); }}
+            onIonInput={(e) => { const v = e.detail.value ?? ""; setMeta((m) => ({ ...m, name: v })); setDirty(true); }}
+            style={{ width: isNarrow ? "min(100%, 260px)" : 260, fontWeight: 600 }}
           />
           {meta.status === "published"
             ? <span className="admin-badge admin-badge-green">Published{meta.version ? ` v${meta.version}` : ""}</span>
@@ -565,14 +601,17 @@ export default function AdminTemplateEditor() {
           {dirty && <span className="admin-badge admin-badge-slate">Unsaved changes</span>}
           <div style={{ flex: 1 }} />
           {variants.length > 1 && (
-            <select
-              style={{ ...inputStyle, width: 170 }}
+            <IonSelect
+              {...FIELD_PROPS}
+              label="Preview data"
+              interface="popover"
               value={activeVariant.key}
-              onChange={(e) => setVariantKey(e.target.value)}
+              onIonChange={(e) => setVariantKey(e.detail.value)}
               title="Preview the layout against different sample data"
+              style={{ width: 190 }}
             >
-              {variants.map((v) => <option key={v.key} value={v.key}>Preview: {v.label}</option>)}
-            </select>
+              {variants.map((v) => <IonSelectOption key={v.key} value={v.key}>{v.label}</IonSelectOption>)}
+            </IonSelect>
           )}
           <IonButton fill={aiOpen ? "solid" : "outline"} color="tertiary" size="small" onClick={() => setAiOpen((o) => !o)}>
             <Sparkles size={14} style={{ marginRight: 5 }} />AI Assistant
@@ -681,15 +720,12 @@ export default function AdminTemplateEditor() {
                 <p style={{ margin: "0 0 10px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
                   Template settings
                 </p>
-                <Field label="Description (shown in the template picker)">
-                  <textarea
-                    rows={2}
-                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
-                    placeholder='e.g. "Workday Style Inspired Template"'
-                    value={meta.description || ""}
-                    onChange={(e) => { setMeta((m) => ({ ...m, description: e.target.value })); setDirty(true); }}
-                  />
-                </Field>
+                <TextAreaField
+                  label="Description (shown in the template picker)"
+                  placeholder='e.g. "Workday Style Inspired Template"'
+                  value={meta.description || ""}
+                  onChange={(v) => { setMeta((m) => ({ ...m, description: v })); setDirty(true); }}
+                />
                 <Field label="Badge color (shown on the template card in the app)">
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <input
@@ -698,11 +734,14 @@ export default function AdminTemplateEditor() {
                       onChange={(e) => { setMeta((m) => ({ ...m, badgeColor: e.target.value })); setDirty(true); }}
                       style={{ width: 40, height: 30, padding: 2, border: "1px solid var(--admin-border)", borderRadius: 6, background: "transparent", cursor: "pointer", flexShrink: 0 }}
                     />
-                    <input
-                      style={{ ...inputStyle, flex: 1 }}
+                    <IonInput
+                      {...FIELD_PROPS}
+                      labelPlacement={undefined}
+                      aria-label="Badge color hex"
                       value={meta.badgeColor || "#059669"}
                       placeholder="#059669"
-                      onChange={(e) => { setMeta((m) => ({ ...m, badgeColor: e.target.value })); setDirty(true); }}
+                      onIonInput={(e) => { const v = e.detail.value ?? ""; setMeta((m) => ({ ...m, badgeColor: v })); setDirty(true); }}
+                      style={{ flex: 1, minWidth: 0 }}
                     />
                     <span style={{ background: /^#[0-9a-fA-F]{3,6}$/.test(meta.badgeColor || "") ? meta.badgeColor : "#059669", color: "#fff", padding: "4px 12px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {meta.name || "Template"}
@@ -710,22 +749,19 @@ export default function AdminTemplateEditor() {
                   </div>
                 </Field>
                 <Field label="Customer color choice">
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.8rem", color: "var(--admin-text)", cursor: "pointer" }}>
-                    <input
-                      type="checkbox"
-                      checked={!!layout.accentOption?.enabled}
-                      onChange={(e) => commit((prev) => ({
-                        ...prev,
-                        accentOption: {
-                          baseColor: "#064e3b",
-                          swatches: ["#064e3b", "#0066cc", "#b91c1c", "#7c3aed", "#0f172a"],
-                          ...(prev.accentOption || {}),
-                          enabled: e.target.checked,
-                        },
-                      }))}
-                    />
-                    Let customers pick a document color
-                  </label>
+                  <CheckField
+                    label="Let customers pick a document color"
+                    checked={!!layout.accentOption?.enabled}
+                    onChange={(checked) => commit((prev) => ({
+                      ...prev,
+                      accentOption: {
+                        baseColor: "#064e3b",
+                        swatches: ["#064e3b", "#0066cc", "#b91c1c", "#7c3aed", "#0f172a"],
+                        ...(prev.accentOption || {}),
+                        enabled: checked,
+                      },
+                    }))}
+                  />
                   {layout.accentOption?.enabled && (
                     <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -736,11 +772,14 @@ export default function AdminTemplateEditor() {
                           onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: e.target.value } }))}
                           style={{ width: 34, height: 26, padding: 2, border: "1px solid var(--admin-border)", borderRadius: 6, background: "transparent", cursor: "pointer", flexShrink: 0 }}
                         />
-                        <input
-                          style={{ ...inputStyle, flex: 1 }}
+                        <IonInput
+                          {...FIELD_PROPS}
+                          labelPlacement={undefined}
+                          aria-label="Swap color hex"
                           value={layout.accentOption.baseColor || ""}
                           placeholder="#064e3b"
-                          onChange={(e) => commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: e.target.value } }))}
+                          onIonInput={(e) => { const v = e.detail.value ?? ""; commit((prev) => ({ ...prev, accentOption: { ...prev.accentOption, baseColor: v } })); }}
+                          style={{ flex: 1, minWidth: 0 }}
                         />
                       </div>
                       <div>
@@ -776,14 +815,13 @@ export default function AdminTemplateEditor() {
                   Embedded in the generated file's document properties.
                 </p>
                 {[["title", "Title"], ["author", "Author"], ["subject", "Subject"], ["keywords", "Keywords"], ["creator", "Creator"], ["producer", "Producer"]].map(([key, label]) => (
-                  <Field key={key} label={label}>
-                    <input
-                      style={inputStyle}
-                      value={(layout.metadata && layout.metadata[key]) || ""}
-                      placeholder={key === "creator" ? "e.g. wkhtmltopdf 0.12.6.1" : ""}
-                      onChange={(e) => commit((prev) => ({ ...prev, metadata: { ...(prev.metadata || {}), [key]: e.target.value } }), false)}
-                    />
-                  </Field>
+                  <TextField
+                    key={key}
+                    label={label}
+                    value={(layout.metadata && layout.metadata[key]) || ""}
+                    placeholder={key === "creator" ? "e.g. wkhtmltopdf 0.12.6.1" : ""}
+                    onChange={(v) => commit((prev) => ({ ...prev, metadata: { ...(prev.metadata || {}), [key]: v } }), false)}
+                  />
                 ))}
               </>
             ) : (
@@ -799,57 +837,47 @@ export default function AdminTemplateEditor() {
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <Field label="X"><NumInput value={selected.x} onChange={(v) => updateEl({ x: v })} /></Field>
-                  <Field label="Y"><NumInput value={selected.y} onChange={(v) => updateEl({ y: v })} /></Field>
-                  <Field label="Width"><NumInput value={selected.w} onChange={(v) => updateEl({ w: v })} /></Field>
+                  <NumInput label="X" value={selected.x} onChange={(v) => updateEl({ x: v })} />
+                  <NumInput label="Y" value={selected.y} onChange={(v) => updateEl({ y: v })} />
+                  <NumInput label="Width" value={selected.w} onChange={(v) => updateEl({ w: v })} />
                   {(selected.type === "rect" || selected.type === "image" || selected.type === "line") && (
-                    <Field label="Height"><NumInput value={selected.h} onChange={(v) => updateEl({ h: v })} /></Field>
+                    <NumInput label="Height" value={selected.h} onChange={(v) => updateEl({ h: v })} />
                   )}
-                  <Field label="Page"><NumInput value={selected.page || 1} min={1} max={9} onChange={(v) => updateEl({ page: Math.max(1, Math.round(v)) })} /></Field>
+                  <NumInput label="Page" value={selected.page || 1} min={1} max={9} onChange={(v) => updateEl({ page: Math.max(1, Math.round(v)) })} />
                 </div>
 
-                <Field label="Show when">
-                  <select
-                    style={{ ...inputStyle, marginBottom: 4 }}
-                    value={showIfPresets.some(([v]) => v === (selected.showIf || "")) ? (selected.showIf || "") : "__custom"}
-                    onChange={(e) => { if (e.target.value !== "__custom") updateEl({ showIf: e.target.value || undefined }); }}
-                  >
-                    {showIfPresets.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-                    <option value="__custom">Custom condition…</option>
-                  </select>
-                  <input
-                    style={inputStyle}
-                    placeholder='e.g. payType=salary or !hasLogo'
-                    value={selected.showIf || ""}
-                    onChange={(e) => updateEl({ showIf: e.target.value || undefined })}
-                  />
-                </Field>
+                <SelectField
+                  label="Show when"
+                  value={showIfPresets.some(([v]) => v === (selected.showIf || "")) ? (selected.showIf || "") : "__custom"}
+                  onChange={(v) => { if (v !== "__custom") updateEl({ showIf: v || undefined }); }}
+                >
+                  {showIfPresets.map(([v, label]) => <IonSelectOption key={v} value={v}>{label}</IonSelectOption>)}
+                  <IonSelectOption value="__custom">Custom condition…</IonSelectOption>
+                </SelectField>
+                <TextField
+                  label="Custom condition"
+                  placeholder="e.g. payType=salary or !hasLogo"
+                  value={selected.showIf || ""}
+                  onChange={(v) => updateEl({ showIf: v || undefined })}
+                />
 
                 {selected.type === "text" && (
                   <>
-                    <Field label="Content">
-                      <textarea rows={3} style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }} value={selected.content || ""}
-                        onChange={(e) => updateEl({ content: e.target.value })} />
-                    </Field>
+                    <TextAreaField label="Content" rows={3} value={selected.content || ""}
+                      onChange={(v) => updateEl({ content: v })} />
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      <Field label="Font size"><NumInput value={selected.fontSize} min={5} max={64} onChange={(v) => updateEl({ fontSize: v })} /></Field>
-                      <Field label="Align">
-                        <select style={inputStyle} value={selected.align || "left"} onChange={(e) => updateEl({ align: e.target.value })}>
-                          <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
-                        </select>
-                      </Field>
+                      <NumInput label="Font size" value={selected.fontSize} min={5} max={64} onChange={(v) => updateEl({ fontSize: v })} />
+                      <SelectField label="Align" value={selected.align || "left"} onChange={(v) => updateEl({ align: v })}>
+                        <IonSelectOption value="left">Left</IonSelectOption>
+                        <IonSelectOption value="center">Center</IonSelectOption>
+                        <IonSelectOption value="right">Right</IonSelectOption>
+                      </SelectField>
                     </div>
                     <Field label="Color"><ColorInput value={selected.color} onChange={(v) => updateEl({ color: v })} /></Field>
-                    <div style={{ display: "flex", gap: 14, marginBottom: 10 }}>
-                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="checkbox" checked={!!selected.bold} onChange={(e) => updateEl({ bold: e.target.checked })} />Bold
-                      </label>
-                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="checkbox" checked={!!selected.italic} onChange={(e) => updateEl({ italic: e.target.checked })} />Italic
-                      </label>
-                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="checkbox" checked={!!selected.wrap} onChange={(e) => updateEl({ wrap: e.target.checked })} />Wrap
-                      </label>
+                    <div style={{ display: "flex", gap: 14, marginBottom: 10, flexWrap: "wrap" }}>
+                      <CheckField label="Bold" checked={!!selected.bold} onChange={(c) => updateEl({ bold: c })} />
+                      <CheckField label="Italic" checked={!!selected.italic} onChange={(c) => updateEl({ italic: c })} />
+                      <CheckField label="Wrap" checked={!!selected.wrap} onChange={(c) => updateEl({ wrap: c })} />
                     </div>
                   </>
                 )}
@@ -859,8 +887,8 @@ export default function AdminTemplateEditor() {
                     <Field label="Fill"><ColorInput value={selected.fill} allowNone onChange={(v) => updateEl({ fill: v })} /></Field>
                     <Field label="Border"><ColorInput value={selected.stroke} allowNone onChange={(v) => updateEl({ stroke: v })} /></Field>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      <Field label="Border width"><NumInput value={selected.lineWidth} step={0.25} min={0} onChange={(v) => updateEl({ lineWidth: v })} /></Field>
-                      <Field label="Corner radius"><NumInput value={selected.radius} min={0} onChange={(v) => updateEl({ radius: v })} /></Field>
+                      <NumInput label="Border width" value={selected.lineWidth} step={0.25} min={0} onChange={(v) => updateEl({ lineWidth: v })} />
+                      <NumInput label="Corner radius" value={selected.radius} min={0} onChange={(v) => updateEl({ radius: v })} />
                     </div>
                   </>
                 )}
@@ -868,38 +896,28 @@ export default function AdminTemplateEditor() {
                 {selected.type === "line" && (
                   <>
                     <Field label="Color"><ColorInput value={selected.color} onChange={(v) => updateEl({ color: v })} /></Field>
-                    <Field label="Thickness"><NumInput value={selected.lineWidth} step={0.25} min={0.25} onChange={(v) => updateEl({ lineWidth: v })} /></Field>
+                    <NumInput label="Thickness" value={selected.lineWidth} step={0.25} min={0.25} onChange={(v) => updateEl({ lineWidth: v })} />
                   </>
                 )}
 
                 {selected.type === "image" && (
-                  <Field label="Source (token or data URL)">
-                    <input style={inputStyle} value={selected.src || ""} onChange={(e) => updateEl({ src: e.target.value })} />
-                  </Field>
+                  <TextField label="Source (token or data URL)" value={selected.src || ""} onChange={(v) => updateEl({ src: v })} />
                 )}
 
                 {selected.type === "table" && (
                   <>
-                    <Field label="Rows from">
-                      <select style={inputStyle} value={selected.binding} onChange={(e) => updateEl({ binding: e.target.value })}>
-                        {tableBindings.map((b) => <option key={b.binding} value={b.binding}>{b.label}</option>)}
-                      </select>
-                    </Field>
+                    <SelectField label="Rows from" value={selected.binding} onChange={(v) => updateEl({ binding: v })}>
+                      {tableBindings.map((b) => <IonSelectOption key={b.binding} value={b.binding}>{b.label}</IonSelectOption>)}
+                    </SelectField>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      <Field label="Row height"><NumInput value={selected.rowHeight} min={10} onChange={(v) => updateEl({ rowHeight: v })} /></Field>
-                      <Field label="Font size"><NumInput value={selected.fontSize} min={5} max={20} onChange={(v) => updateEl({ fontSize: v })} /></Field>
+                      <NumInput label="Row height" value={selected.rowHeight} min={10} onChange={(v) => updateEl({ rowHeight: v })} />
+                      <NumInput label="Font size" value={selected.fontSize} min={5} max={20} onChange={(v) => updateEl({ fontSize: v })} />
                     </div>
                     <Field label="Header fill"><ColorInput value={selected.headerFill} allowNone onChange={(v) => updateEl({ headerFill: v })} /></Field>
-                    <div style={{ display: "flex", gap: 14, marginBottom: 10 }}>
-                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="checkbox" checked={!!selected.zebra} onChange={(e) => updateEl({ zebra: e.target.checked })} />Zebra rows
-                      </label>
-                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="checkbox" checked={selected.rowLines !== false} onChange={(e) => updateEl({ rowLines: e.target.checked })} />Row lines
-                      </label>
-                      <label style={{ fontSize: "0.78rem", color: "var(--admin-text)", display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="checkbox" checked={!!selected.colLines} onChange={(e) => updateEl({ colLines: e.target.checked })} />Column lines
-                      </label>
+                    <div style={{ display: "flex", gap: 14, marginBottom: 10, flexWrap: "wrap" }}>
+                      <CheckField label="Zebra rows" checked={!!selected.zebra} onChange={(c) => updateEl({ zebra: c })} />
+                      <CheckField label="Row lines" checked={selected.rowLines !== false} onChange={(c) => updateEl({ rowLines: c })} />
+                      <CheckField label="Column lines" checked={!!selected.colLines} onChange={(c) => updateEl({ colLines: c })} />
                     </div>
                     <p style={{ fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)", margin: "12px 0 6px" }}>
                       Columns <span style={{ fontWeight: 400, textTransform: "none" }}>(row tokens: {(tableBindings.find((b) => b.binding === selected.binding)?.rowTokens || []).join(" ")})</span>
@@ -907,19 +925,22 @@ export default function AdminTemplateEditor() {
                     {(selected.columns || []).map((col, ci) => (
                       <div key={ci} style={{ border: "1px solid var(--ion-border-color)", borderRadius: 6, padding: 8, marginBottom: 8 }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 6 }}>
-                          <input style={inputStyle} value={col.header} placeholder="Header"
-                            onChange={(e) => updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, header: e.target.value } : c)) })} />
-                          <input style={inputStyle} value={col.token} placeholder="{token}"
-                            onChange={(e) => updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, token: e.target.value } : c)) })} />
+                          <IonInput {...FIELD_PROPS} label="Header" value={col.header}
+                            onIonInput={(e) => { const v = e.detail.value ?? ""; updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, header: v } : c)) }); }} />
+                          <IonInput {...FIELD_PROPS} label="Token" placeholder="{token}" value={col.token}
+                            onIonInput={(e) => { const v = e.detail.value ?? ""; updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, token: v } : c)) }); }} />
                         </div>
                         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                          <input type="number" style={{ ...inputStyle, width: 70 }} value={Math.round((col.width || 0) * 100)} min={5} max={95} title="Width %"
-                            onChange={(e) => updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, width: Number(e.target.value) / 100 } : c)) })} />
-                          <span style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)" }}>%</span>
-                          <select style={{ ...inputStyle, flex: 1 }} value={col.align || "left"}
-                            onChange={(e) => updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, align: e.target.value } : c)) })}>
-                            <option value="left">Left</option><option value="center">Center</option><option value="right">Right</option>
-                          </select>
+                          <IonInput {...FIELD_PROPS} label="Width %" type="number" inputmode="decimal" min={5} max={95}
+                            value={Math.round((col.width || 0) * 100)}
+                            onIonInput={(e) => { const n = Number(e.detail.value); if (!Number.isNaN(n)) updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, width: n / 100 } : c)) }); }}
+                            style={{ width: 88, flexShrink: 0 }} />
+                          <SelectField label="Align" value={col.align || "left"} style={{ flex: 1, marginBottom: 0 }}
+                            onChange={(v) => updateEl({ columns: selected.columns.map((c, i) => (i === ci ? { ...c, align: v } : c)) })}>
+                            <IonSelectOption value="left">Left</IonSelectOption>
+                            <IonSelectOption value="center">Center</IonSelectOption>
+                            <IonSelectOption value="right">Right</IonSelectOption>
+                          </SelectField>
                           <button className="ion-activatable admin-action-btn danger" title="Remove column"
                             onClick={() => updateEl({ columns: selected.columns.filter((_, i) => i !== ci) })}>
                             <X size={13} /><IonRippleEffect />
@@ -1038,14 +1059,18 @@ export default function AdminTemplateEditor() {
               style={{ margin: 0, "--border-radius": "50%" }}>
               <ImageIcon size={16} />
             </IonButton>
-            <textarea
-              rows={2}
-              value={aiInput}
-              onChange={(e) => setAiInput(e.target.value)}
-              onKeyDown={onAiKey}
-              placeholder='e.g. "Make it look like the attached screenshot"'
-              style={{ ...inputStyle, flex: 1, resize: "none", fontFamily: "inherit", lineHeight: 1.45 }}
-            />
+            <div onKeyDown={onAiKey} style={{ flex: 1, minWidth: 0 }}>
+              <IonTextarea
+                {...FIELD_PROPS}
+                labelPlacement={undefined}
+                aria-label="Message the design assistant"
+                autoGrow
+                rows={2}
+                value={aiInput}
+                onIonInput={(e) => setAiInput(e.detail.value ?? "")}
+                placeholder='e.g. "Make it look like the attached screenshot"'
+              />
+            </div>
             <IonButton size="small" onClick={sendAi} disabled={aiBusy || (!aiInput.trim() && aiImages.length === 0)}
               style={{ "--background": "#059669", "--background-activated": "#047857", "--color": "#fff", "--border-radius": "8px", margin: 0 }}>
               <Send size={14} />

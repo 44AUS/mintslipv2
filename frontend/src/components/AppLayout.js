@@ -49,6 +49,8 @@ import { confirmAlert } from "../utils/confirmAlert";
 import { t, useLanguage } from "../utils/i18n";
 import "../admin-theme.css";
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+
 const tabs = [
   { id: "paystub",          label: "Pay Stubs",      icon: documentTextOutline, path: "/app/paystubs" },
   { id: "canadian-paystub", label: "Canadian Stubs", icon: leafOutline,         path: "/app/canadian-paystub" },
@@ -178,6 +180,16 @@ export default function AppLayout({ children, fillHeight = false }) {
 
   const refreshNotifications = useCallback(() => {
     setNotifications(getNotifications());
+  }, []);
+
+  // Banned visitors can still browse the public site, but not /app: the root
+  // IPBanCheck only runs on full page loads, so cover SPA navigation into the
+  // app here (AppLayout mounts per /app page).
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/check-ip-ban`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.banned) window.location.href = "/banned"; })
+      .catch(() => {});
   }, []);
 
   // On mount, show toast for any newly ready notifications

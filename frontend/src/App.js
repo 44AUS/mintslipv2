@@ -188,12 +188,15 @@ function MaintenanceCheck({ children }) {
   return children;
 }
 
-// IP Ban Check Wrapper
+// IP Ban Check Wrapper — the ban page only guards the /app area; the public
+// marketing site stays reachable for banned visitors.
 function IPBanCheck({ children }) {
   const [isBanned, setIsBanned] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const inApp = window.location.pathname === "/app" || window.location.pathname.startsWith("/app/");
 
   useEffect(() => {
+    if (!inApp) { setIsChecking(false); return; }
     const checkBan = async () => {
       try {
         const response = await fetch(`${BACKEND_URL}/api/check-ip-ban`);
@@ -207,17 +210,17 @@ function IPBanCheck({ children }) {
         setIsChecking(false);
       }
     };
-    
+
     checkBan();
-  }, []);
+  }, [inApp]);
 
   // Don't block while checking - show app immediately
   if (isChecking) {
     return children;
   }
 
-  // If banned, redirect to banned page (except if already on banned page)
-  if (isBanned && window.location.pathname !== "/banned") {
+  // If banned and inside /app, redirect to the banned page
+  if (isBanned && inApp && window.location.pathname !== "/banned") {
     window.location.href = "/banned";
     return null;
   }

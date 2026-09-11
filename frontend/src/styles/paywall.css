@@ -258,3 +258,31 @@
   .pw-title, .pw-plan::before { animation: none; }
   .pw-title { color: var(--pw-accent-2); -webkit-text-fill-color: var(--pw-accent-2); }
 }
+
+/* ── Banned screen variant — the paywall retinted red. No close button: the
+   page is not dismissible. Rendered standalone (nothing behind to blur), so
+   it paints its own deep red-black wash. ── */
+.pw-banned {
+  --pw-accent: #dc2626;
+  --pw-accent-2: #f87171;
+  --pw-bg: #150808;
+  background: radial-gradient(1200px 700px at 50% -10%, #3b0d0d 0%, #150808 55%, #0a0404 100%);
+}
+.pw-banned .pw-scrim {
+  background: linear-gradient(180deg, rgba(21, 8, 8, 0.25), rgba(21, 8, 8, 0.6) 55%, rgba(21, 8, 8, 0.9));
+}
+.pw-banned .pw-title,
+.pw-banned .pw-plan::before {
+  background: linear-gradient(100deg, #991b1b 0%, #ef4444 32%, #fecaca 50%, #ef4444 68%, #991b1b 100%);
+  background-size: 220% 100%;
+}
+.pw-banned .pw-title {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.pw-banned .pw-plan { background: color-mix(in srgb, var(--pw-accent) 20%, rgba(22, 5, 5, 0.72)); }
+.pw-banned .pw-foot { background: linear-gradient(180deg, rgba(21, 8, 8, 0) 0%, rgba(21, 8, 8, 0.85) 22%, var(--pw-bg) 60%); }
+.pw-banned .pw-cta {
+  background: linear-gradient(180deg, #ef4444, #dc2626);
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}

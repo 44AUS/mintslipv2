@@ -14,6 +14,11 @@ import Footer from "@/components/Footer";
 import select from '../assests/select.png';
 import inputInfo from '../assests/inputInfo.png';
 import download from '../assests/download.png';
+import EmilyPhoto from '../assests/images/Emily.png';
+import JakePhoto from '../assests/images/Jake.png';
+import KevinPhoto from '../assests/images/Kevin.png';
+import SophiaPhoto from '../assests/images/Sophia.png';
+import FiveStars from '../assests/images/5star.png';
 
 // Rotating hero word: flips out, swaps, flips back in on a loop
 const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Documents"];
@@ -816,209 +821,52 @@ const NoDataStoredAnimation = ({ isVisible }) => (
   </div>
 );
 
-// Secure & Instant Animation Component - for Trust Section
-const SecureInstantAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center">
-    <svg viewBox="0 0 300 280" className="w-full h-full max-w-md">
-      {/* Background secure circle */}
-      <circle cx="150" cy="140" r="120" fill="#ecfdf5" opacity="0.5"
-        style={{ 
-          animation: isVisible ? 'securePulse 3s ease-in-out infinite' : 'none',
-          transformOrigin: '150px 140px'
-        }}/>
+// Testimonials — social proof for the trust section (replaces the old
+// Secure & Instant animation). Portraits are the same ones the paywall uses.
+const HOME_TESTIMONIALS = [
+  {
+    img: JakePhoto,
+    name: "Jake",
+    city: "Dallas, TX",
+    quote: "I needed proof of income for an apartment and didn't have a ton of options. MintSlip worked — clean, accurate stubs in under five minutes.",
+  },
+  {
+    img: SophiaPhoto,
+    name: "Sophia",
+    city: "Phoenix, AZ",
+    quote: "Every time I needed a document it was just there — paystubs, W-2s, even my offer letter. Everything matched perfectly and looked completely professional.",
+  },
+  {
+    img: EmilyPhoto,
+    name: "Emily",
+    city: "Atlanta, GA",
+    quote: "i couldn't find my old stubs to save my life n MintSlip let me remake them in like 2 minutes. def worked for me!!!! thank yoouuuu",
+    stars: true,
+  },
+  {
+    img: KevinPhoto,
+    name: "Kevin",
+    city: "Chicago, IL",
+    quote: "My lender wanted two months of pay stubs.... I had them done the same afternoon. Don't even think about it, just use it.",
+  },
+];
 
-      {/* Credit Card / Payment */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateX(0) rotate(0deg)' : 'translateX(-40px) rotate(-10deg)',
-        transition: 'all 0.6s ease-out'
-      }}>
-        <rect x="30" y="80" width="90" height="60" rx="8" fill="#1a4731"/>
-        <rect x="30" y="80" width="90" height="20" rx="8" fill="#065f46"/>
-        {/* Card chip */}
-        <rect x="42" y="105" width="18" height="14" rx="3" fill="#fbbf24"/>
-        <line x1="46" y1="109" x2="56" y2="109" stroke="#d97706" strokeWidth="1"/>
-        <line x1="46" y1="113" x2="56" y2="113" stroke="#d97706" strokeWidth="1"/>
-        {/* Card number dots */}
-        <g fill="#ffffff" opacity="0.8">
-          <circle cx="75" cy="125" r="2"/>
-          <circle cx="82" cy="125" r="2"/>
-          <circle cx="89" cy="125" r="2"/>
-          <circle cx="96" cy="125" r="2"/>
-          <circle cx="106" cy="125" r="2"/>
-          <circle cx="113" cy="125" r="2"/>
-        </g>
-      </g>
-
-      {/* Arrow from card to lock */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeIn 0.4s ease-out 0.5s forwards' : 'none'
-      }}>
-        <path d="M125,110 Q145,95 150,95" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"
-          style={{ strokeDasharray: 40, strokeDashoffset: isVisible ? 0 : 40, transition: 'stroke-dashoffset 0.5s ease-out 0.5s' }}/>
-        <circle cx="125" cy="110" r="4" fill="#10b981"/>
-      </g>
-
-      {/* Central Lock / Security */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'scale(1)' : 'scale(0.5)',
-        transformOrigin: '150px 115px',
-        transition: 'all 0.5s ease-out 0.7s'
-      }}>
-        {/* Lock body */}
-        <rect x="130" y="100" width="40" height="35" rx="6" fill="#10b981"/>
-        {/* Lock shackle */}
-        <path d="M137,100 L137,88 C137,75 163,75 163,88 L163,100" fill="none" stroke="#10b981" strokeWidth="7" strokeLinecap="round"/>
-        {/* Keyhole */}
-        <circle cx="150" cy="113" r="5" fill="#ffffff"/>
-        <rect x="148" y="115" width="4" height="10" rx="2" fill="#ffffff"/>
-        {/* Shine effect */}
-        <ellipse cx="142" cy="108" rx="4" ry="6" fill="#ffffff" opacity="0.3"/>
-      </g>
-
-      {/* Encryption circles around lock */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1s' }}>
-        <circle cx="150" cy="115" r="35" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="5 5"
-          style={{ animation: isVisible ? 'rotateSlow 10s linear infinite' : 'none', transformOrigin: '150px 115px' }}/>
-        <circle cx="150" cy="115" r="45" fill="none" stroke="#10b981" strokeWidth="1" strokeDasharray="8 4" opacity="0.5"
-          style={{ animation: isVisible ? 'rotateSlowReverse 15s linear infinite' : 'none', transformOrigin: '150px 115px' }}/>
-      </g>
-
-      {/* Arrow from lock to document */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeIn 0.4s ease-out 1.2s forwards' : 'none'
-      }}>
-        <path d="M175,110 Q195,95 210,100" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"
-          style={{ strokeDasharray: 40, strokeDashoffset: isVisible ? 0 : 40, transition: 'stroke-dashoffset 0.5s ease-out 1.2s' }}/>
-        <path d="M205,95 L212,100 L205,105" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-
-      {/* Document / PDF Output */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateX(0) rotate(0deg)' : 'translateX(40px) rotate(10deg)',
-        transition: 'all 0.6s ease-out 1.4s'
-      }}>
-        <rect x="200" y="75" width="70" height="90" rx="6" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
-        {/* PDF badge */}
-        <rect x="200" y="75" width="70" height="22" rx="6" fill="#ef4444"/>
-        <text x="235" y="90" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">PDF</text>
-        {/* Document lines */}
-        <line x1="210" y1="108" x2="260" y2="108" stroke="#1a4731" strokeWidth="2" opacity="0.3"
-          style={{ strokeDasharray: 50, strokeDashoffset: isVisible ? 0 : 50, transition: 'stroke-dashoffset 0.4s ease-out 1.6s' }}/>
-        <line x1="210" y1="122" x2="250" y2="122" stroke="#1a4731" strokeWidth="2" opacity="0.3"
-          style={{ strokeDasharray: 40, strokeDashoffset: isVisible ? 0 : 40, transition: 'stroke-dashoffset 0.4s ease-out 1.7s' }}/>
-        <line x1="210" y1="136" x2="255" y2="136" stroke="#1a4731" strokeWidth="2" opacity="0.3"
-          style={{ strokeDasharray: 45, strokeDashoffset: isVisible ? 0 : 45, transition: 'stroke-dashoffset 0.4s ease-out 1.8s' }}/>
-        {/* Download arrow on document */}
-        <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.4s ease-out 2s forwards' : 'none' }}>
-          <circle cx="235" cy="148" r="10" fill="#10b981"/>
-          <path d="M235,143 L235,153 M230,150 L235,155 L240,150" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </g>
-      </g>
-
-      {/* PayPal Logo representation */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeIn 0.5s ease-out 0.3s forwards' : 'none'
-      }}>
-        <rect x="45" y="150" width="55" height="25" rx="5" fill="#003087"/>
-        <text x="72" y="167" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold">PayPal</text>
-      </g>
-
-      {/* Secure badge */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'bounceIn 0.5s ease-out 2.2s forwards' : 'none'
-      }}>
-        <rect x="105" y="175" width="90" height="28" rx="14" fill="#1a4731"/>
-        <text x="127" y="193" fill="#ffffff" fontSize="9" fontWeight="bold">🔒 SECURE</text>
-      </g>
-
-      {/* Instant badge */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'bounceIn 0.5s ease-out 2.4s forwards' : 'none'
-      }}>
-        <rect x="105" y="210" width="90" height="28" rx="14" fill="#10b981"/>
-        <text x="127" y="228" fill="#ffffff" fontSize="9" fontWeight="bold">⚡ INSTANT</text>
-      </g>
-
-      {/* Time indicator */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeIn 0.4s ease-out 2.6s forwards' : 'none'
-      }}>
-        <circle cx="235" cy="195" r="18" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2"/>
-        <text x="235" y="192" textAnchor="middle" fill="#92400e" fontSize="7" fontWeight="bold">Under</text>
-        <text x="235" y="202" textAnchor="middle" fill="#92400e" fontSize="8" fontWeight="bold">2 min</text>
-      </g>
-
-      {/* Floating shield icons */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 2s' }}>
-        <path d="M25,50 L25,62 C25,70 35,75 35,75 C35,75 45,70 45,62 L45,50 L35,45 Z" fill="#10b981" opacity="0.6"
-          style={{ animation: isVisible ? 'floatShield 3s ease-in-out infinite' : 'none' }}/>
-        <path d="M265,180 L265,190 C265,196 273,200 273,200 C273,200 281,196 281,190 L281,180 L273,176 Z" fill="#10b981" opacity="0.5"
-          style={{ animation: isVisible ? 'floatShield 3.5s ease-in-out infinite 0.5s' : 'none' }}/>
-      </g>
-
-      {/* Sparkles */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 2.3s' }}>
-        <circle cx="280" cy="60" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite' : 'none' }}/>
-        <circle cx="20" cy="200" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 0.2s' : 'none' }}/>
-        <circle cx="290" cy="240" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.4s' : 'none' }}/>
-        <circle cx="15" cy="120" r="2" fill="#10b981" style={{ animation: isVisible ? 'sparkle 2s ease-in-out infinite 0.3s' : 'none' }}/>
-      </g>
-
-      {/* Checkmarks showing completed steps */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 1s forwards' : 'none' }}>
-        <circle cx="75" cy="60" r="10" fill="#10b981"/>
-        <path d="M70,60 L73,64 L81,55" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 1.5s forwards' : 'none' }}>
-        <circle cx="150" cy="55" r="10" fill="#10b981"/>
-        <path d="M145,55 L148,59 L156,50" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 2s forwards' : 'none' }}>
-        <circle cx="235" cy="55" r="10" fill="#10b981"/>
-        <path d="M230,55 L233,59 L241,50" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-    </svg>
-
-    <style>{`
-      @keyframes securePulse {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.05); opacity: 0.7; }
-      }
-      @keyframes rotateSlow {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      @keyframes rotateSlowReverse {
-        0% { transform: rotate(360deg); }
-        100% { transform: rotate(0deg); }
-      }
-      @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      @keyframes bounceIn {
-        0% { opacity: 0; transform: scale(0); }
-        60% { transform: scale(1.15); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes floatShield {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
-      }
-      @keyframes sparkle {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.5); }
-      }
-    `}</style>
+const TestimonialCard = ({ t, inView, delay }) => (
+  <div
+    className={`bg-white border border-slate-200 rounded-2xl shadow-sm p-4 md:p-5 flex flex-col sm:flex-row items-center gap-5 md:gap-8 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+    style={{ transitionDelay: `${delay}ms` }}
+  >
+    <img
+      src={t.img}
+      alt={`${t.name}, MintSlip customer`}
+      className="w-full sm:w-44 md:w-52 aspect-square rounded-xl object-cover flex-shrink-0"
+    />
+    <div className="flex-1 text-center px-1 sm:pr-4">
+      <p className="text-slate-600 leading-relaxed">{t.quote}</p>
+      {t.stars && <img src={FiveStars} alt="Rated 5 out of 5 stars" className="h-20 mx-auto -my-5" />}
+      <p className="mt-4 font-bold" style={{ color: '#1a4731' }}>{t.name}</p>
+      <p className="text-slate-600">{t.city}</p>
+    </div>
   </div>
 );
 
@@ -2125,40 +1973,35 @@ export default function Home() {
         );
       })()}
 
-      {/* Trust Section - Secure & Instant */}
+      {/* Trust Section - Testimonials */}
       {(() => {
         const [trustRef, trustInView] = useInView();
         return (
-          <section ref={trustRef} className="bg-slate-50 border-y border-slate-200 py-20">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div className="order-2 md:order-1">
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl border border-emerald-100 shadow-sm h-[400px] flex items-center justify-center overflow-hidden">
-                    <SecureInstantAnimation isVisible={trustInView} />
-                  </div>
-                </div>
-                <div className="space-y-6 order-1 md:order-2">
-                  <h3 className="text-3xl md:text-4xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: '#1a4731' }}>
-                    Secure & Instant
-                  </h3>
-                  <p className="text-lg leading-relaxed text-slate-600">
-                    Your payment is processed securely through PayPal. Once payment is confirmed, your document is generated and downloaded immediately.
-                  </p>
-                  <ul className="space-y-4">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
-                      <span className="text-slate-700">Industry-standard encryption</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
-                      <span className="text-slate-700">No data storage after download</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
-                      <span className="text-slate-700">Instant PDF generation</span>
-                    </li>
-                  </ul>
-                </div>
+          <section ref={trustRef} className="bg-white py-20 md:py-24">
+            <div className="max-w-6xl mx-auto px-6">
+              {/* Overlapping avatar strip */}
+              <div className={`flex justify-center mb-10 transition-all duration-700 ${trustInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                {[EmilyPhoto, JakePhoto, SophiaPhoto, KevinPhoto].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt=""
+                    aria-hidden="true"
+                    className={`w-16 h-16 md:w-20 md:h-20 rounded-full object-cover ring-4 ring-white shadow-md ${i > 0 ? '-ml-3' : ''}`}
+                  />
+                ))}
+              </div>
+
+              {/* Headline */}
+              <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium max-w-4xl mx-auto mb-14 transition-all duration-700 delay-100 ${trustInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                We've helped people <span className="font-black">prove their income</span> and <span className="font-black">get approved</span> faster
+              </h2>
+
+              {/* Testimonial cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {HOME_TESTIMONIALS.map((t, i) => (
+                  <TestimonialCard key={t.name} t={t} inView={trustInView} delay={150 + i * 120} />
+                ))}
               </div>
             </div>
           </section>

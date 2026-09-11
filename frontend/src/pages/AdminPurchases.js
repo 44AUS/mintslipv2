@@ -253,8 +253,10 @@ export default function AdminPurchases() {
         <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "4px 6px" }}>
           <div style={{ display: "flex", flexDirection: "column", flex: "1 1 0%", overflow: "hidden", background: "var(--ion-card-background)", borderRadius: 6, boxShadow: "0 4px 24px rgba(0,0,0,0.18)" }}>
 
-            {/* ── Card header ── */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", flexShrink: 0 }}>
+            {/* ── Card header — on mobile the action buttons drop to their own
+                full-width row that scrolls left-right (the calendar segment
+                bar feel) instead of cramming beside the title ── */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "12px 16px" : "12px 24px", flexShrink: 0, flexWrap: "wrap", gap: 8 }}>
               <div>
                 <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.1rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>
                   Purchases
@@ -263,7 +265,7 @@ export default function AdminPurchases() {
                   {total} total purchases
                 </p>
               </div>
-              <div style={{ display: "flex", gap: 4 }}>
+              <div className="admin-header-actions" style={isMobile ? { flexBasis: "100%" } : undefined}>
                 <IonButton
                   fill="solid" size="small" color="tertiary" onClick={syncStripe} disabled={syncing}
                   title="Backfill purchases missed by the Stripe webhook (last 90 days)"

@@ -1218,3 +1218,18 @@ ion-alert.sync-report-alert .alert-message {
   white-space: pre-line;
   text-align: left;
 }
+
+/* Header action strips (Purchases: Sync/Filter/Export): one horizontal row
+   that scrolls left-right on narrow screens instead of cramming — the same
+   feel as the calendar's scrollable segment bar. Scrollbar hidden. */
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+}
+.admin-header-actions::-webkit-scrollbar { display: none; }
+.admin-header-actions > * { flex-shrink: 0; }

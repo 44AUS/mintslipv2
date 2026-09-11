@@ -1994,7 +1994,7 @@ export default function Home() {
 
               {/* Headline */}
               <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium max-w-4xl mx-auto mb-14 transition-all duration-700 delay-100 ${trustInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-                We've helped people <span className="font-black">prove their income</span> and <span className="font-black">get approved</span> faster
+                We've helped people <span className="font-black">prove their income</span> and <span className="font-black">save hours</span> on paperwork
               </h2>
 
               {/* Testimonial cards */}

@@ -44,6 +44,7 @@ import { BUSINESS_FORM_CONFIGS } from "../pages/app/appBusinessFormConfigs";
 import SupportChatWidget from "./SupportChatWidget";
 import PromoBanner from "./PromoBanner";
 import PreviewPager from "./PreviewPager";
+import BannedScreen from "./BannedScreen";
 import { buildNotificationPreviewPages } from "../utils/notificationPreview";
 import { confirmAlert } from "../utils/confirmAlert";
 import { t, useLanguage } from "../utils/i18n";
@@ -182,13 +183,14 @@ export default function AppLayout({ children, fillHeight = false }) {
     setNotifications(getNotifications());
   }, []);
 
-  // Banned visitors can still browse the public site, but not /app: the root
-  // IPBanCheck only runs on full page loads, so cover SPA navigation into the
-  // app here (AppLayout mounts per /app page).
+  // Banned visitors can still browse the public site, but not /app. The ban
+  // screen renders as a non-dismissible OVERLAY on top of the live app (the
+  // paywall pattern) so its scrim backdrop-blurs the real /app behind it.
+  const [isBanned, setIsBanned] = useState(false);
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/check-ip-ban`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (d?.banned) window.location.href = "/banned"; })
+      .then((d) => { if (d?.banned) setIsBanned(true); })
       .catch(() => {});
   }, []);
 
@@ -776,6 +778,13 @@ export default function AppLayout({ children, fillHeight = false }) {
           )}
         </div>
       </>, document.querySelector("ion-app") || document.body)}
+
+      {/* ── Banned overlay — sits over the live app so its scrim blurs the
+          real /app behind it, exactly like the paywall. Not dismissible. ── */}
+      {isBanned && createPortal(
+        <BannedScreen overlay />,
+        document.querySelector("ion-app") || document.body
+      )}
 
       {/* ── Notification preview modal — same portalled overlay style/size as
           the generator preview modals (e.g. the paystub preview): desktop is

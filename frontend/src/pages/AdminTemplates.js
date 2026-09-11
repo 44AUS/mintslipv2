@@ -30,7 +30,7 @@ function FreshPopover({ open, event, onClose, children, ...rest }) {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
-const DOC_TYPE_LABELS = { paystub: "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "offer-letter": "Offer Letter", "legal-document": "Legal Document", resume: "Resume", "bank-statement": "Accounting Mockup" };
+const DOC_TYPE_LABELS = { paystub: "Pay Stub", "canadian-paystub": "Canadian Pay Stub", "offer-letter": "Offer Letter", "legal-document": "Legal Document", resume: "Resume", "bank-statement": "Accounting Mockup", blank: "Uncategorized" };
 
 export default function AdminTemplates() {
   const navigate = useNavigate();

@@ -489,6 +489,16 @@ const CONTEXT_BUILDERS = {
 };
 
 export function buildContext(templateData, documentType = "paystub") {
+  // Blank canvas: merge every category's sample context so any field from
+  // any category resolves in the editor preview. Paystub is merged last so
+  // its table bindings win the few name collisions (e.g. "summary").
+  if (documentType === "blank") {
+    const merged = {};
+    for (const t of ["resume", "legal-document", "offer-letter", "bank-statement", "canadian-paystub", "paystub"]) {
+      try { Object.assign(merged, buildContext(getSampleVariants(t)[0].data, t)); } catch { /* keep going */ }
+    }
+    return merged;
+  }
   return (CONTEXT_BUILDERS[documentType] || buildPaystubContext)(templateData);
 }
 
@@ -961,12 +971,26 @@ const BANK_STATEMENT_TABLE_BINDINGS = [
   { binding: "summaryRows", label: "Summary rows", rowTokens: ["{label}", "{value}"] },
 ];
 
+// Blank canvas: every category's fields, with the group names prefixed by
+// their category so the Data fields panel stays organized.
+const prefixGroups = (category, groups) => groups.map((g) => ({ ...g, group: `${category} · ${g.group}` }));
+
 export function getTokenGroups(documentType) {
   if (documentType === "offer-letter") return OFFER_LETTER_TOKEN_GROUPS;
   if (documentType === "legal-document") return LEGAL_DOCUMENT_TOKEN_GROUPS;
   if (documentType === "resume") return RESUME_TOKEN_GROUPS;
   if (documentType === "bank-statement") return BANK_STATEMENT_TOKEN_GROUPS;
   if (documentType === "canadian-paystub") return [...PAYSTUB_TOKEN_GROUPS, CANADIAN_EXTRA_GROUP];
+  if (documentType === "blank") {
+    return [
+      ...prefixGroups("Pay Stub", PAYSTUB_TOKEN_GROUPS),
+      ...prefixGroups("Canadian Pay Stub", [CANADIAN_EXTRA_GROUP]),
+      ...prefixGroups("Offer Letter", OFFER_LETTER_TOKEN_GROUPS),
+      ...prefixGroups("Legal Document", LEGAL_DOCUMENT_TOKEN_GROUPS),
+      ...prefixGroups("Resume", RESUME_TOKEN_GROUPS),
+      ...prefixGroups("Accounting Mockup", BANK_STATEMENT_TOKEN_GROUPS),
+    ];
+  }
   return PAYSTUB_TOKEN_GROUPS;
 }
 
@@ -975,11 +999,34 @@ export function getTableBindings(documentType) {
   if (documentType === "legal-document") return LEGAL_DOCUMENT_TABLE_BINDINGS;
   if (documentType === "resume") return RESUME_TABLE_BINDINGS;
   if (documentType === "bank-statement") return BANK_STATEMENT_TABLE_BINDINGS;
+  if (documentType === "blank") {
+    const tag = (category, bindings) => bindings.map((b) => ({ ...b, label: `${category} · ${b.label}` }));
+    return [
+      ...tag("Pay Stub", PAYSTUB_TABLE_BINDINGS),
+      ...tag("Offer Letter", OFFER_LETTER_TABLE_BINDINGS),
+      ...tag("Legal Document", LEGAL_DOCUMENT_TABLE_BINDINGS),
+      ...tag("Resume", RESUME_TABLE_BINDINGS),
+      ...tag("Accounting Mockup", BANK_STATEMENT_TABLE_BINDINGS),
+    ];
+  }
   return PAYSTUB_TABLE_BINDINGS;
 }
 
 // "Show when" presets offered in the editor per document type.
 export function getShowIfPresets(documentType) {
+  if (documentType === "blank") {
+    // Union of every category's presets, deduped by condition
+    const seen = new Set();
+    const all = [];
+    for (const t of ["paystub", "offer-letter", "legal-document", "resume", "bank-statement"]) {
+      for (const [value, label] of getShowIfPresets(t)) {
+        if (seen.has(value)) continue;
+        seen.add(value);
+        all.push([value, label]);
+      }
+    }
+    return all;
+  }
   if (documentType === "offer-letter") {
     return [
       ["", "Always"],
@@ -1166,6 +1213,11 @@ const BANK_STATEMENT_SAMPLE = {
 };
 
 export function getSampleVariants(documentType) {
+  if (documentType === "blank") {
+    // buildContext("blank") merges every category's sample, so one variant
+    // covers all fields.
+    return [{ key: "default", label: "Sample data (all categories)", data: {} }];
+  }
   if (documentType === "offer-letter") {
     return [{ key: "default", label: "Sample offer", data: OFFER_LETTER_SAMPLE }];
   }
@@ -1714,6 +1766,7 @@ export const DEFAULT_BANK_STATEMENT_LAYOUT = {
 };
 
 export const STARTER_LAYOUTS = [
+  { key: "blank-canvas", name: "Blank Canvas", description: "Empty page — design anything, assign a category when ready", documentType: "blank", layout: { page: { width: 612, height: 792 }, elements: [] } },
   { key: "paystub-gusto", name: "Gusto-Style Paystub (ported)", description: "Gusto Style Inspired Template", documentType: "paystub", layout: GUSTO_PAYSTUB_LAYOUT },
   { key: "paystub-onpay", name: "OnPay-Style Paystub (ported)", description: "OnPay Style Inspired Template", documentType: "paystub", layout: ONPAY_PAYSTUB_LAYOUT },
   { key: "paystub-classic", name: "Classic Green Paystub", description: "Clean MintSlip paystub with header band", documentType: "paystub", layout: DEFAULT_PAYSTUB_LAYOUT },

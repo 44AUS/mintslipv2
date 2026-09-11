@@ -6707,6 +6707,12 @@ async def update_doc_template(template_id: str, request: Request, session: dict 
         updates["description"] = str(data["description"] or "").strip()[:300]
     if "badgeColor" in data:
         updates["badgeColor"] = _clean_badge_color(data["badgeColor"]) or DEFAULT_BADGE_COLOR
+    if "documentType" in data:
+        # Category assignment — decides which generator's picker shows the
+        # template once published ("blank" = not assigned yet).
+        dt = str(data["documentType"] or "").strip()
+        if dt in {"blank", "paystub", "canadian-paystub", "offer-letter", "legal-document", "resume", "bank-statement"}:
+            updates["documentType"] = dt
     if "layout" in data:
         updates["layout"] = data["layout"]
     result = await doc_templates_collection.update_one({"id": template_id}, {"$set": updates})
@@ -6723,6 +6729,8 @@ async def publish_doc_template(template_id: str, session: dict = Depends(get_cur
         raise HTTPException(status_code=404, detail="Template not found")
     if not (template.get("layout") or {}).get("elements"):
         raise HTTPException(status_code=400, detail="Template has no elements to publish")
+    if (template.get("documentType") or "paystub") == "blank":
+        raise HTTPException(status_code=400, detail="Assign this template a category before publishing")
     new_version = int(template.get("version") or 0) + 1
     now = datetime.now(timezone.utc).isoformat()
     await doc_templates_collection.update_one(
@@ -6856,6 +6864,21 @@ _TEMPLATE_ASSISTANT_TOKENS = {
         "carries a +/- prefix and {balance} is the running balance after each row."
     ),
 }
+
+
+# Blank canvas: the admin can design anything and assign a category later, so
+# hand the assistant every category's vocabulary, clearly sectioned.
+_TEMPLATE_ASSISTANT_TOKENS["blank"] = (
+    "This template is a BLANK CANVAS — the admin can design any document and assign it a "
+    "category afterwards. You may draw on ANY category's fields below, but prefer keeping one "
+    "category's fields per design so the template works once it is assigned to that category.\n\n"
+    "═══ PAY STUB FIELDS ═══\n" + _TEMPLATE_ASSISTANT_TOKENS["paystub"] + "\n\n"
+    "═══ CANADIAN PAY STUB FIELDS ═══\n" + _TEMPLATE_ASSISTANT_TOKENS["canadian-paystub"] + "\n\n"
+    "═══ OFFER LETTER FIELDS ═══\n" + _TEMPLATE_ASSISTANT_TOKENS["offer-letter"] + "\n\n"
+    "═══ LEGAL DOCUMENT FIELDS ═══\n" + _TEMPLATE_ASSISTANT_TOKENS["legal-document"] + "\n\n"
+    "═══ RESUME FIELDS ═══\n" + _TEMPLATE_ASSISTANT_TOKENS["resume"] + "\n\n"
+    "═══ ACCOUNTING MOCKUP FIELDS ═══\n" + _TEMPLATE_ASSISTANT_TOKENS["bank-statement"]
+)
 
 
 def _template_assistant_system(document_type: str) -> str:

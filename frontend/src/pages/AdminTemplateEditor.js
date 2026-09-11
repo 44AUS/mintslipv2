@@ -20,6 +20,18 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const PAGE_W = 612;
 const PAGE_H = 792;
 
+// Categories a template can be assigned to — the category decides which
+// generator's template picker it appears in once published.
+const CATEGORY_OPTIONS = [
+  ["blank", "Blank / Unassigned"],
+  ["paystub", "Pay Stubs"],
+  ["canadian-paystub", "Canadian Paystubs"],
+  ["legal-document", "Legal Documents"],
+  ["offer-letter", "Offer Letters"],
+  ["bank-statement", "Business / Accounting Mockups"],
+  ["resume", "Resumes"],
+];
+
 let idCounter = 0;
 const newId = (prefix) => `${prefix}-${Date.now().toString(36)}-${idCounter++}`;
 
@@ -520,7 +532,7 @@ export default function AdminTemplateEditor() {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}`, {
         method: "PUT",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify({ name: meta.name, description: meta.description || "", badgeColor: meta.badgeColor || "#059669", layout }),
+        body: JSON.stringify({ name: meta.name, description: meta.description || "", badgeColor: meta.badgeColor || "#059669", documentType: meta.documentType || "paystub", layout }),
       });
       if (!res.ok) throw new Error("Failed to save");
       setDirty(false);
@@ -535,6 +547,10 @@ export default function AdminTemplateEditor() {
   };
 
   const publish = async () => {
+    if (docType === "blank") {
+      toast.error("Assign this template a category first (Template settings → Category) so it knows which generator to appear in.");
+      return;
+    }
     if (!(await save())) return;
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates/${id}/publish`, { method: "POST", headers: authHeaders() });
@@ -731,6 +747,20 @@ export default function AdminTemplateEditor() {
                 <p style={{ margin: "0 0 10px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
                   Template settings
                 </p>
+                <SelectField
+                  label="Category"
+                  value={docType}
+                  onChange={(v) => { if (v && v !== meta.documentType) { setMeta((m) => ({ ...m, documentType: v })); setDirty(true); } }}
+                >
+                  {CATEGORY_OPTIONS.map(([value, label]) => (
+                    <IonSelectOption key={value} value={value}>{label}</IonSelectOption>
+                  ))}
+                </SelectField>
+                {docType === "blank" && (
+                  <p style={{ fontSize: "0.72rem", color: "var(--admin-text-muted)", margin: "-4px 0 10px", lineHeight: 1.5 }}>
+                    Blank canvas — every category's data fields are available below. Assign a category before publishing so the template appears in that generator's picker.
+                  </p>
+                )}
                 <TextAreaField
                   label="Description (shown in the template picker)"
                   placeholder='e.g. "Workday Style Inspired Template"'

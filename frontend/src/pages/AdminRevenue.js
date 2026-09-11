@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { toast } from "@/utils/toast";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { IonButton } from "@ionic/react";
-import { RefreshCw } from "lucide-react";
+import { IonButton, IonIcon } from "@ionic/react";
+import { refreshOutline } from "ionicons/icons";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -34,6 +35,8 @@ const PIE_COLORS = [
   '#f97316', '#6366f1', '#14b8a6', '#a855f7',
 ];
 
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 const TOOLTIP_STYLE = {
   backgroundColor: '#fff',
   border: '1px solid #e2e8f0',
@@ -46,7 +49,7 @@ function fmt(n) {
 }
 
 // KPI card matching the whodat analytics page (.kpi): uppercase label,
-// serif value, optional green/red delta line.
+// bold value, optional green/red delta line.
 function MetricCard({ label, value, sub, subPositive }) {
   return (
     <div className="kpi">
@@ -61,10 +64,80 @@ function MetricCard({ label, value, sub, subPositive }) {
   );
 }
 
+// Small pill control group — the same look as the existing 7D/30D/90D switch,
+// reused so every chart gets its own type/metric/period controls.
+function PillGroup({ value, onChange, options }) {
+  return (
+    <div className="flex gap-1 bg-gray-100 rounded-lg p-1" style={{ flexShrink: 0 }}>
+      {options.map(([val, label]) => (
+        <button
+          key={val}
+          onClick={() => onChange(val)}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            value === val ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Renders one timeseries as the picked chart type (area / line / bar) with a
+// shared axis/tooltip setup — the "manipulative" half of every chart below.
+function FlexChart({ type, data, dataKey, money, color = "#059669", gradId }) {
+  const common = (
+    <>
+      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} interval="preserveStartEnd" />
+      <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} tickFormatter={v => (money ? `$${v}` : v)} />
+      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(val) => [money ? fmt(val) : val, money ? "Revenue" : "Orders"]} />
+    </>
+  );
+  if (type === "bar") {
+    return (
+      <BarChart data={data}>
+        {common}
+        <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} />
+      </BarChart>
+    );
+  }
+  if (type === "line") {
+    return (
+      <LineChart data={data}>
+        {common}
+        <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} dot={false} />
+      </LineChart>
+    );
+  }
+  return (
+    <AreaChart data={data}>
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="95%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      {common}
+      <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} fillOpacity={1} fill={`url(#${gradId})`} />
+    </AreaChart>
+  );
+}
+
 export default function AdminRevenue() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [period, setPeriod] = useState("30");
+
+  // Per-chart controls
+  const [period, setPeriod] = useState("30");            // over-time range
+  const [otType, setOtType] = useState("area");          // over-time chart type
+  const [otMetric, setOtMetric] = useState("revenue");   // revenue | orders | cumulative
+  const [docView, setDocView] = useState("pie");         // pie | bar
+  const [docMetric, setDocMetric] = useState("revenue"); // revenue | orders
+  const [dowMetric, setDowMetric] = useState("revenue");
+  const [moType, setMoType] = useState("bar");
+  const [moMetric, setMoMetric] = useState("revenue");
 
   const fetchData = async () => {
     setLoading(true);
@@ -85,28 +158,62 @@ export default function AdminRevenue() {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Slice daily data based on selected period
-  const chartData = data
-    ? data.dailyData.slice(-Number(period)).map(d => ({
-        name: d.date.slice(5), // MM-DD
-        revenue: d.revenue,
-        count: d.count,
-      }))
+  // ── Over time (period slice + metric transform) ──
+  const sliced = data
+    ? (period === "all" ? data.dailyData : data.dailyData.slice(-Number(period)))
     : [];
+  let running = 0;
+  const overTime = sliced.map(d => ({
+    name: d.date.slice(5), // MM-DD
+    revenue: d.revenue,
+    count: d.count,
+    cumulative: +(running += d.revenue).toFixed(2),
+  }));
+  const otKey = otMetric === "orders" ? "count" : otMetric === "cumulative" ? "cumulative" : "revenue";
+  const otMoney = otMetric !== "orders";
 
+  // ── By document type ──
   const pieData = data
     ? data.byDocType.map((d, i) => ({
         name: DOCUMENT_TYPES[d.documentType] || d.documentType,
-        value: d.revenue,
+        value: docMetric === "orders" ? d.count : d.revenue,
         fill: PIE_COLORS[i % PIE_COLORS.length],
       }))
     : [];
+
+  // ── Day-of-week aggregate (respects the over-time period) ──
+  const dowAgg = DOW.map((name) => ({ name, revenue: 0, count: 0 }));
+  sliced.forEach((d) => {
+    const day = new Date(`${d.date}T12:00:00`).getDay();
+    dowAgg[day].revenue = +(dowAgg[day].revenue + d.revenue).toFixed(2);
+    dowAgg[day].count += d.count;
+  });
+
+  // ── Monthly trend (last 12 months from all daily data) ──
+  const monthMap = new Map();
+  (data?.dailyData || []).forEach((d) => {
+    const key = d.date.slice(0, 7); // YYYY-MM
+    const cur = monthMap.get(key) || { revenue: 0, count: 0 };
+    cur.revenue = +(cur.revenue + d.revenue).toFixed(2);
+    cur.count += d.count;
+    monthMap.set(key, cur);
+  });
+  const monthly = [...monthMap.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .slice(-12)
+    .map(([key, v]) => ({ name: key.slice(2), ...v })); // YY-MM
 
   // Month-over-month change
   const momChange = data && data.lastMonthRevenue > 0
     ? ((data.thisMonthRevenue - data.lastMonthRevenue) / data.lastMonthRevenue * 100).toFixed(1)
     : null;
   const momPositive = momChange !== null && Number(momChange) >= 0;
+
+  const empty = (label) => (
+    <div className="h-full flex items-center justify-center text-gray-400">
+      {loading ? "Loading..." : label}
+    </div>
+  );
 
   return (
     <AdminLayout>
@@ -117,8 +224,10 @@ export default function AdminRevenue() {
             <h1 className="text-2xl font-bold text-gray-900">Revenue</h1>
             <p className="text-sm text-gray-500 mt-1">One-time purchase analytics</p>
           </div>
-          <IonButton fill="outline" color="medium" size="small" onClick={fetchData} disabled={loading}>
-            <RefreshCw size={14} style={{ marginRight: 6 }} />Refresh
+          <IonButton title="Refresh" fill="clear" shape="round" color="medium" onClick={fetchData} disabled={loading}>
+            <span slot="icon-only" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1.1rem" }}>
+              <IonIcon icon={refreshOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />
+            </span>
           </IonButton>
         </div>
 
@@ -148,89 +257,75 @@ export default function AdminRevenue() {
           />
         </div>
 
-        {/* Revenue over time chart */}
+        {/* Revenue over time — period, chart type, and metric are all switchable */}
         <div className="chart-card" style={{ marginBottom: 32 }}>
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5" style={{ flexWrap: "wrap", gap: 8 }}>
             <h2 className="chart-title" style={{ marginBottom: 0 }}>Revenue Over Time</h2>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-              {[["7", "7D"], ["30", "30D"], ["90", "90D"]].map(([val, label]) => (
-                <button
-                  key={val}
-                  onClick={() => setPeriod(val)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    period === val ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="flex" style={{ gap: 8, flexWrap: "wrap" }}>
+              <PillGroup value={otMetric} onChange={setOtMetric} options={[["revenue", "Revenue"], ["orders", "Orders"], ["cumulative", "Cumulative"]]} />
+              <PillGroup value={otType} onChange={setOtType} options={[["area", "Area"], ["line", "Line"], ["bar", "Bar"]]} />
+              <PillGroup value={period} onChange={setPeriod} options={[["7", "7D"], ["30", "30D"], ["90", "90D"], ["all", "All"]]} />
             </div>
           </div>
           <div className="h-[280px]">
-            {chartData.length > 0 ? (
+            {overTime.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#059669" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#059669" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} tickFormatter={v => `$${v}`} />
-                  <Tooltip
-                    contentStyle={TOOLTIP_STYLE}
-                    formatter={(val, name) => [
-                      name === "revenue" ? fmt(val) : val,
-                      name === "revenue" ? "Revenue" : "Orders",
-                    ]}
-                  />
-                  <Area type="monotone" dataKey="revenue" stroke="#059669" strokeWidth={2} fillOpacity={1} fill="url(#revGrad)" />
-                </AreaChart>
+                {FlexChart({ type: otType, data: overTime, dataKey: otKey, money: otMoney, gradId: "revGrad" })}
               </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-400">
-                {loading ? "Loading..." : "No data for this period"}
-              </div>
-            )}
+            ) : empty("No data for this period")}
           </div>
         </div>
 
         {/* Revenue by document type */}
-        <div className="chart-grid-even">
-          {/* Pie chart */}
+        <div className="chart-grid-even" style={{ marginBottom: 32 }}>
+          {/* Pie / bar view */}
           <div className="chart-card">
-            <h2 className="chart-title" style={{ marginBottom: 16 }}>Revenue by Document Type</h2>
+            <div className="flex items-center justify-between" style={{ flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              <h2 className="chart-title" style={{ marginBottom: 0 }}>Revenue by Document Type</h2>
+              <div className="flex" style={{ gap: 8, flexWrap: "wrap" }}>
+                <PillGroup value={docMetric} onChange={setDocMetric} options={[["revenue", "Revenue"], ["orders", "Orders"]]} />
+                <PillGroup value={docView} onChange={setDocView} options={[["pie", "Pie"], ["bar", "Bar"]]} />
+              </div>
+            </div>
             <div className="h-[280px]">
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, i) => (
-                        <Cell key={i} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={TOOLTIP_STYLE}
-                      formatter={(val) => [fmt(val), "Revenue"]}
-                    />
-                    <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: "12px" }} />
-                  </PieChart>
+                  {docView === "pie" ? (
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, i) => (
+                          <Cell key={i} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        formatter={(val) => [docMetric === "orders" ? val : fmt(val), docMetric === "orders" ? "Orders" : "Revenue"]}
+                      />
+                      <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: "12px" }} />
+                    </PieChart>
+                  ) : (
+                    <BarChart data={pieData} layout="vertical" margin={{ left: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} tickFormatter={v => (docMetric === "orders" ? v : `$${v}`)} />
+                      <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(val) => [docMetric === "orders" ? val : fmt(val), docMetric === "orders" ? "Orders" : "Revenue"]} />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                        {pieData.map((entry, i) => (
+                          <Cell key={i} fill={entry.fill} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  )}
                 </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-400">
-                  {loading ? "Loading..." : "No data"}
-                </div>
-              )}
+              ) : empty("No data")}
             </div>
           </div>
 
@@ -267,6 +362,41 @@ export default function AdminRevenue() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Day-of-week + monthly trend */}
+        <div className="chart-grid-even">
+          <div className="chart-card">
+            <div className="flex items-center justify-between" style={{ flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              <h2 className="chart-title" style={{ marginBottom: 0 }}>By Day of Week</h2>
+              <PillGroup value={dowMetric} onChange={setDowMetric} options={[["revenue", "Revenue"], ["orders", "Orders"]]} />
+            </div>
+            <div className="h-[260px]">
+              {sliced.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  {FlexChart({ type: "bar", data: dowAgg, dataKey: dowMetric === "orders" ? "count" : "revenue", money: dowMetric !== "orders", color: "#0891b2", gradId: "dowGrad" })}
+                </ResponsiveContainer>
+              ) : empty("No data for this period")}
+            </div>
+            <p className="text-xs text-gray-400" style={{ margin: "6px 0 0" }}>Follows the period picked on Revenue Over Time.</p>
+          </div>
+
+          <div className="chart-card">
+            <div className="flex items-center justify-between" style={{ flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              <h2 className="chart-title" style={{ marginBottom: 0 }}>Monthly Trend</h2>
+              <div className="flex" style={{ gap: 8, flexWrap: "wrap" }}>
+                <PillGroup value={moMetric} onChange={setMoMetric} options={[["revenue", "Revenue"], ["orders", "Orders"]]} />
+                <PillGroup value={moType} onChange={setMoType} options={[["bar", "Bar"], ["line", "Line"], ["area", "Area"]]} />
+              </div>
+            </div>
+            <div className="h-[260px]">
+              {monthly.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  {FlexChart({ type: moType, data: monthly, dataKey: moMetric === "orders" ? "count" : "revenue", money: moMetric !== "orders", color: "#8b5cf6", gradId: "moGrad" })}
+                </ResponsiveContainer>
+              ) : empty("No data")}
             </div>
           </div>
         </div>

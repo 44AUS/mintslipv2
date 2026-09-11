@@ -876,7 +876,7 @@ export default function AdminCalendar() {
         const empty = !bars.length || bars.every((r) => r.revenue === 0 && r.prev === 0);
         const close = () => setChartModalOpen(false);
         const card = { background: "var(--ion-color-step-50)", borderRadius: 10, padding: "12px", textAlign: "center" };
-        const chartCard = { background: "var(--ion-color-step-50)", borderRadius: 12, padding: "14px 12px 8px" };
+        const chartCard = { padding: "14px 12px 8px" };
         const sectionLabel = { fontSize: "0.72rem", fontWeight: 600, color: "var(--ion-color-medium)", margin: "0 0 8px 4px" };
         const tooltipStyle = { background: "var(--ion-card-background)", border: "1px solid var(--ion-border-color)", borderRadius: 8, color: "var(--ion-text-color)" };
         // Change vs the previous period, shown under each summary number

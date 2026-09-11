@@ -106,7 +106,11 @@ function expiryLabel(doc) {
   if (doc.expiresAt) exp = new Date(doc.expiresAt);
   else if (doc.expiresAt === undefined && doc.createdAt) exp = new Date(new Date(doc.createdAt).getTime() + 60 * 86400000);
   if (!exp || isNaN(exp.getTime())) return null;
-  const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+  // Calendar-day countdown — ceil counted any partial day as a whole one, so
+  // a document created yesterday still read "60d". Comparing dates instead
+  // makes yesterday's document read 59d and today's 60d.
+  const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(exp) - startOfDay(new Date())) / 86400000);
   if (days <= 0) return "Expires today";
   return `Expires in ${days}d`;
 }

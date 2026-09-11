@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonIcon,
   IonButton, IonSpinner, IonPopover, IonDatetime,
   IonModal, IonHeader, IonToolbar, IonTitle, IonButtons, IonContent, IonList,
+  createGesture,
 } from "@ionic/react";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import {
   chevronBackOutline, chevronForwardOutline, chevronDownOutline, closeOutline,
@@ -56,6 +58,7 @@ const MONTHS = [
   "July","August","September","October","November","December",
 ];
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const TRACK_MID = "translateX(-33.3333%)"; // week carousel: show the middle (current) panel
 
 function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function firstDayOfWeek(y, m) { return new Date(y, m, 1).getDay(); }
@@ -100,7 +103,10 @@ export default function AdminCalendar() {
   const [chartModalOpen, setChartModalOpen] = useState(false); // revenue charts for the view
   const [detail, setDetail] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const touchStart = useRef(null); // week-view swipe tracking
+  // Week-view swipe carousel
+  const weekViewportRef = useRef(null);
+  const weekTrackRef = useRef(null);
+  const pendingStepRef = useRef(0);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -176,21 +182,54 @@ export default function AdminCalendar() {
     ? new Date(today.getFullYear(), today.getMonth(), 1)
     : new Date(today.getFullYear(), today.getMonth(), today.getDate()));
 
-  // Horizontal swipe to move between periods (used on the week view): swipe
-  // left → next, right → previous. Ignores mostly-vertical drags (pill scroll).
-  const onSwipeStart = (e) => { const t = e.touches[0]; touchStart.current = { x: t.clientX, y: t.clientY }; };
-  const onSwipeEnd = (e) => {
-    if (!touchStart.current) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStart.current.x;
-    const dy = t.clientY - touchStart.current.y;
-    touchStart.current = null;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+  // Smooth week-view swipe: a 3-panel carousel (prev / current / next week)
+  // that follows the finger and animates the snap. On completion the week
+  // steps and the track re-centers with no visible jump.
+  const onWeekTransitionEnd = () => {
+    const dir = pendingStepRef.current;
+    if (!dir) return;
+    pendingStepRef.current = 0;
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+    step(dir); // curDate ±7 → panels re-render, layout effect re-centers the track
   };
 
-  // Week containing curDate (Sun–Sat)
+  // Re-center the track (no animation) whenever the week changes.
+  useLayoutEffect(() => {
+    const track = weekTrackRef.current;
+    if (track && view === "week") { track.style.transition = "none"; track.style.transform = TRACK_MID; }
+  }, [curDate, view]);
+
+  // Attach the drag gesture while the week view is mounted.
+  useEffect(() => {
+    if (view !== "week") return undefined;
+    const el = weekViewportRef.current;
+    if (!el) return undefined;
+    const gesture = createGesture({
+      el,
+      gestureName: "week-swipe",
+      direction: "x",
+      threshold: 8,
+      onStart: () => { const t = weekTrackRef.current; if (t) t.style.transition = "none"; },
+      onMove: (d) => { const t = weekTrackRef.current; if (t) t.style.transform = `translateX(calc(-33.3333% + ${d.deltaX}px))`; },
+      onEnd: (d) => {
+        const t = weekTrackRef.current; if (!t) return;
+        const w = el.offsetWidth || 1;
+        const min = Math.min(90, w * 0.22);
+        t.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)";
+        if (d.deltaX <= -min) { t.style.transform = "translateX(-66.6666%)"; pendingStepRef.current = 1; }
+        else if (d.deltaX >= min) { t.style.transform = "translateX(0%)"; pendingStepRef.current = -1; }
+        else { t.style.transform = TRACK_MID; pendingStepRef.current = 0; }
+      },
+    });
+    gesture.enable();
+    return () => gesture.destroy();
+  }, [view]); // eslint-disable-line
+
+  // Week containing curDate (Sun–Sat), plus the neighbours for the swipe carousel
   const weekStart = addDays(curDate, -curDate.getDay());
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const prevWeekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i - 7));
+  const nextWeekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i + 7));
   const purchasesForDate = (d) => (byDate[dateKey(d)] || []).slice().sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -378,43 +417,53 @@ export default function AdminCalendar() {
   };
 
   // ── Week view: 7 day columns, each a scrollable list of purchase pills ──
-  const renderWeek = () => (
-    <div onTouchStart={onSwipeStart} onTouchEnd={onSwipeEnd} style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", flex: "1 1 0%", minHeight: 0 }}>
-        {weekDays.map((d, ci) => {
-          const evts = purchasesForDate(d);
-          const dayTotal = evts.reduce((s, p) => s + (p.amount || 0), 0);
-          const tdy = isToday(d);
-          return (
-            <div key={ci} style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none" }}>
-              {/* Column header — click opens the day modal, with ripple */}
-              <div className="ion-activatable"
-                onClick={() => setDayModal(d)}
-                style={{ position: "relative", overflow: "hidden", cursor: "pointer", textAlign: "center", padding: "8px 4px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
-                <ion-ripple-effect />
-                <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--ion-color-medium)", letterSpacing: "0.04em" }}>{DAYS[d.getDay()]}</div>
-                <div style={{ margin: "3px auto 0", width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: tdy ? "#E65100" : "transparent" }}>
-                  <span style={{ fontSize: "0.85rem", fontWeight: tdy ? 800 : 600, color: tdy ? "#fff" : "var(--ion-text-color)" }}>{d.getDate()}</span>
-                </div>
-                {/* Revenue always shown, even $0.00 */}
-                <div style={{ fontSize: "0.62rem", fontWeight: 700, color: evts.length ? "#10b981" : "var(--ion-color-medium)", marginTop: 2 }}>${dayTotal.toFixed(2)}</div>
+  // One week's 7 columns (reused by all three carousel panels).
+  const weekColumns = (days) => (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", height: "100%", minHeight: 0 }}>
+      {days.map((d, ci) => {
+        const evts = purchasesForDate(d);
+        const dayTotal = evts.reduce((s, p) => s + (p.amount || 0), 0);
+        const tdy = isToday(d);
+        return (
+          <div key={ci} style={{ display: "flex", flexDirection: "column", minHeight: 0, borderRight: ci < 6 ? "1px solid var(--ion-border-color)" : "none" }}>
+            {/* Column header — click opens the day modal, with ripple */}
+            <div className="ion-activatable"
+              onClick={() => setDayModal(d)}
+              style={{ position: "relative", overflow: "hidden", cursor: "pointer", textAlign: "center", padding: "8px 4px", borderBottom: "1px solid var(--ion-border-color)", flexShrink: 0 }}>
+              <ion-ripple-effect />
+              <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--ion-color-medium)", letterSpacing: "0.04em" }}>{DAYS[d.getDay()]}</div>
+              <div style={{ margin: "3px auto 0", width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: tdy ? "#E65100" : "transparent" }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: tdy ? 800 : 600, color: tdy ? "#fff" : "var(--ion-text-color)" }}>{d.getDate()}</span>
               </div>
-              {/* Pills */}
-              <div style={{ flex: "1 1 0%", overflowY: "auto", padding: "6px 4px", display: "flex", flexDirection: "column", gap: 4 }}>
-                {evts.map((p, pi) => {
-                  const color = DOC_COLORS[p.documentType] || "#64748b";
-                  return (
-                    <div key={pi} onClick={() => setDetail(p)} title={`${DOC_LABELS[p.documentType] || p.documentType} — $${(p.amount || 0).toFixed(2)}`}
-                      style={{ background: color, color: "#fff", borderRadius: 4, fontSize: "0.66rem", fontWeight: 600, padding: "3px 6px", cursor: "pointer", lineHeight: 1.25 }}>
-                      <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{DOC_LABELS[p.documentType] || p.documentType}</div>
-                      <div style={{ opacity: 0.9 }}>${(p.amount || 0).toFixed(2)}</div>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Revenue always shown, even $0.00 */}
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: evts.length ? "#10b981" : "var(--ion-color-medium)", marginTop: 2 }}>${dayTotal.toFixed(2)}</div>
             </div>
-          );
-        })}
+            {/* Pills */}
+            <div style={{ flex: "1 1 0%", overflowY: "auto", padding: "6px 4px", display: "flex", flexDirection: "column", gap: 4 }}>
+              {evts.map((p, pi) => {
+                const color = DOC_COLORS[p.documentType] || "#64748b";
+                return (
+                  <div key={pi} onClick={() => setDetail(p)} title={`${DOC_LABELS[p.documentType] || p.documentType} — $${(p.amount || 0).toFixed(2)}`}
+                    style={{ background: color, color: "#fff", borderRadius: 4, fontSize: "0.66rem", fontWeight: 600, padding: "3px 6px", cursor: "pointer", lineHeight: 1.25 }}>
+                    <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{DOC_LABELS[p.documentType] || p.documentType}</div>
+                    <div style={{ opacity: 0.9 }}>${(p.amount || 0).toFixed(2)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const renderWeek = () => (
+    <div ref={weekViewportRef} style={{ height: "100%", overflow: "hidden", position: "relative", touchAction: "pan-y" }}>
+      <div ref={weekTrackRef} onTransitionEnd={onWeekTransitionEnd}
+        style={{ display: "flex", height: "100%", width: "300%", transform: TRACK_MID, willChange: "transform" }}>
+        <div style={{ width: "33.3333%", flexShrink: 0, height: "100%" }}>{weekColumns(prevWeekDays)}</div>
+        <div style={{ width: "33.3333%", flexShrink: 0, height: "100%" }}>{weekColumns(weekDays)}</div>
+        <div style={{ width: "33.3333%", flexShrink: 0, height: "100%" }}>{weekColumns(nextWeekDays)}</div>
       </div>
     </div>
   );

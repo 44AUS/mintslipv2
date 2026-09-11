@@ -136,6 +136,10 @@ export default function AppPaystub() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const templateFromUrl = searchParams.get("template");
+  // Hero preview mode: the marketing homepage embeds this page inside the
+  // hero's iPhone mockup — only the form modal shows (page hidden, sample
+  // preview generation skipped).
+  const heroPreview = !!searchParams.get("heroPreview");
 
   // ── Auth / subscription ──────────────────────────────────────────────────
   const [user,                  setUser]                  = useState(null);
@@ -559,6 +563,7 @@ export default function AppPaystub() {
   ];
 
   useEffect(() => {
+    if (heroPreview) return; // hero phone never shows the sample cards
     Promise.all([
       generateAllPreviewImages(PREVIEW_SAMPLE_DATA, "template-a", 1),
       generateAllPreviewImages(PREVIEW_SAMPLE_DATA, "template-c", 1),
@@ -582,17 +587,10 @@ export default function AppPaystub() {
   // ── PDF preview state ─────────────────────────────────────────────────────
   const [pdfPreviews,         setPdfPreviews]         = useState([]);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-  const [formModalOpen,       setFormModalOpen]       = useState(false);
+  const [formModalOpen,       setFormModalOpen]       = useState(heroPreview); // hero phone boots straight into the form
   const [previewModalOpen,    setPreviewModalOpen]    = useState(false);
   const [previewPageIndex,    setPreviewPageIndex]    = useState(0);
   const [pendingCheckout,     setPendingCheckout]     = useState(null); // {fullFormData} while the payment modal is open
-
-  // Hero preview mode: the marketing homepage embeds this page inside the
-  // hero's iPhone mockup with ?heroPreview=1 — open the form immediately so
-  // the phone shows the live create flow.
-  useEffect(() => {
-    if (searchParams.get("heroPreview")) setFormModalOpen(true);
-  }, []); // eslint-disable-line
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -742,7 +740,7 @@ export default function AppPaystub() {
 
   return (
     <AppLayout fillHeight>
-      <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box", ...(heroPreview ? { display: "none" } : null) }}>
         <div style={{ background: "var(--ion-card-background)", borderRadius: 6, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {templateCards.map((company, cardIdx) => (

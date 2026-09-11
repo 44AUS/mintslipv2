@@ -3,16 +3,17 @@ import { useNavigate } from "react-router-dom";
 import {
   IonSegment, IonSegmentButton, IonLabel, IonButton, IonIcon, IonList, IonSpinner,
   IonModal, IonHeader, IonToolbar, IonTitle, IonContent as IonModalContent,
-  IonFooter, IonButtons,
+  IonFooter, IonButtons, IonInput,
 } from "@ionic/react";
 import {
-  shieldOutline, addOutline, checkmarkOutline, refreshOutline,
+  shieldOutline, addOutline, refreshOutline,
   alertCircleOutline, closeOutline, globeOutline,
 } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
-import { confirmAlert } from "@/utils/confirmAlert";
+import AdminDetailModal from "@/components/AdminDetailModal";
 import AdminListItem from "@/components/AdminListItem";
+import { confirmAlert } from "@/utils/confirmAlert";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -21,6 +22,12 @@ const segBtnStyle = {
   "--padding-top":     "0",
   "--padding-bottom":  "0",
 };
+
+const IPV4_RE = /^(\d{1,3}\.){3}\d{1,3}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+const banValue = (b) => b.ip || b.email || "—";
+const banType = (b) => (b.email ? "Email" : "IP");
 
 function formatDate(d) {
   if (!d) return "—";
@@ -41,6 +48,8 @@ const thStyle = {
   zIndex: 1,
 };
 
+// Cells stay unpositioned so the row-wide ripple overlay (inside the first
+// cell) resolves its 100% width/height against the position:relative <tr>.
 const tdStyle = {
   padding: "0 12px",
   fontSize: "0.82rem",
@@ -55,6 +64,7 @@ export default function AdminBannedIPs() {
   const [bannedIps,       setBannedIps]       = useState([]);
   const [loading,         setLoading]         = useState(true);
   const [segment,         setSegment]         = useState("active");
+  const [detail,          setDetail]          = useState(null);
   const [isMobile,        setIsMobile]        = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -63,7 +73,7 @@ export default function AdminBannedIPs() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
   const [isDialogOpen,    setIsDialogOpen]    = useState(false);
-  const [newIp,           setNewIp]           = useState("");
+  const [newValue,        setNewValue]        = useState("");
   const [newReason,       setNewReason]       = useState("");
   const [isAdding,        setIsAdding]        = useState(false);
 
@@ -71,7 +81,7 @@ export default function AdminBannedIPs() {
     const token = localStorage.getItem("adminToken");
     if (!token) { navigate("/admin/login"); return; }
     verifyAdminSession(token);
-  }, [navigate]);
+  }, [navigate]); // eslint-disable-line
 
   const verifyAdminSession = async (token) => {
     try {
@@ -102,20 +112,24 @@ export default function AdminBannedIPs() {
         const data = await res.json();
         setBannedIps(data.bannedIps || []);
       } else {
-        toast.error("Failed to fetch banned IPs");
+        toast.error("Failed to fetch the ban list");
       }
     } catch {
-      toast.error("Error fetching banned IPs");
+      toast.error("Error fetching the ban list");
     } finally {
       setLoading(false);
     }
   };
 
-  const banIp = async () => {
-    if (!newIp.trim()) { toast.error("Please enter an IP address"); return; }
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    if (!ipRegex.test(newIp.trim())) {
-      toast.error("Please enter a valid IPv4 address (e.g., 192.168.1.1)");
+  // Bans an IP or an email (the input accepts either)
+  const ban = async (rawValue, rawReason) => {
+    const value = (rawValue ?? newValue).trim();
+    const reason = ((rawReason ?? newReason) || "").trim();
+    if (!value) { toast.error("Enter an IP address or an email address"); return; }
+    const isIp = IPV4_RE.test(value);
+    const isEmail = EMAIL_RE.test(value);
+    if (!isIp && !isEmail) {
+      toast.error("Enter a valid IPv4 address (e.g. 192.168.1.1) or email address");
       return;
     }
     setIsAdding(true);
@@ -123,42 +137,44 @@ export default function AdminBannedIPs() {
       const res = await fetch(`${BACKEND_URL}/api/admin/banned-ips`, {
         method: "POST",
         headers: { Authorization: `Bearer ${adminToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ ip: newIp.trim(), reason: newReason.trim() || null }),
+        body: JSON.stringify({ ...(isIp ? { ip: value } : { email: value.toLowerCase() }), reason: reason || null }),
       });
       if (res.ok) {
-        toast.success(`IP ${newIp} has been banned`);
+        toast.success(`${value} has been banned`);
         closeDialog();
+        setDetail(null);
         fetchBannedIps();
       } else {
-        const data = await res.json();
-        toast.error(data.detail || "Failed to ban IP");
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.detail || "Failed to add the ban");
       }
     } catch {
-      toast.error("Error banning IP");
+      toast.error("Error adding the ban");
     } finally {
       setIsAdding(false);
     }
   };
 
-  const unbanIp = async (ip) => {
-    if (!(await confirmAlert({ header: `Unban IP ${ip}?`, message: "This removes the ban immediately." }))) return;
+  const unban = async (value) => {
+    if (!(await confirmAlert({ header: `Unban ${value}?`, message: "This removes the ban immediately.", confirmText: "Unban" }))) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/admin/banned-ips/${encodeURIComponent(ip)}`, {
+      const res = await fetch(`${BACKEND_URL}/api/admin/banned-ips/${encodeURIComponent(value)}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${adminToken}` },
       });
       if (res.ok) {
-        toast.success(`IP ${ip} has been unbanned`);
+        toast.success(`${value} has been unbanned`);
+        setDetail(null);
         fetchBannedIps();
       } else {
-        toast.error("Failed to unban IP");
+        toast.error("Failed to remove the ban");
       }
     } catch {
-      toast.error("Error unbanning IP");
+      toast.error("Error removing the ban");
     }
   };
 
-  const closeDialog = () => { setIsDialogOpen(false); setNewIp(""); setNewReason(""); };
+  const closeDialog = () => { setIsDialogOpen(false); setNewValue(""); setNewReason(""); };
 
   if (!isAuthenticated) return null;
 
@@ -174,18 +190,13 @@ export default function AdminBannedIPs() {
 
             {/* ── header ── */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", flexShrink: 0, borderBottom: "1px solid var(--ion-border-color)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(235,68,90,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <IonIcon icon={shieldOutline} style={{ color: "var(--ion-color-danger)", fontSize: 18 }} />
-                </div>
-                <div>
-                  <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.05rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>
-                    Banned IP Addresses
-                  </h2>
-                  <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
-                    {activeIps.length} active · {inactiveIps.length} previously unbanned
-                  </p>
-                </div>
+              <div>
+                <h2 style={{ margin: "0 0 2px", fontWeight: 700, fontSize: "1.05rem", color: "var(--ion-text-color)", letterSpacing: "-0.01em" }}>
+                  Banned
+                </h2>
+                <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--ion-color-medium)" }}>
+                  {activeIps.length} active · {inactiveIps.length} previously unbanned
+                </p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <IonButton fill="clear" color="medium" size="small" onClick={() => fetchBannedIps()} style={{ "--border-radius": "50%" }}>
@@ -193,7 +204,7 @@ export default function AdminBannedIPs() {
                 </IonButton>
                 <IonButton color="danger" size="small" onClick={() => setIsDialogOpen(true)} style={{ "--border-radius": "8px" }}>
                   <IonIcon slot="start" icon={addOutline} style={{ fontSize: 16 }} />
-                  Ban IP
+                  Ban IP / Email
                 </IonButton>
               </div>
             </div>
@@ -207,8 +218,8 @@ export default function AdminBannedIPs() {
                 style={{ "--background": "transparent", flex: "1 1 0%" }}
               >
                 {[
-                  { value: "active",   label: "Active Bans",          count: activeIps.length,   color: "var(--ion-color-danger)"  },
-                  { value: "inactive", label: "Previously Unbanned",   count: inactiveIps.length, color: "var(--ion-color-success)" },
+                  { value: "active",   label: "Active Bans",          count: activeIps.length },
+                  { value: "inactive", label: "Previously Unbanned",   count: inactiveIps.length },
                 ].map(tab => (
                   <IonSegmentButton key={tab.value} value={tab.value} layout="label-only" style={segBtnStyle}>
                     <IonLabel style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
@@ -222,7 +233,7 @@ export default function AdminBannedIPs() {
               </IonSegment>
             </div>
 
-            {/* ── table ── */}
+            {/* ── list ── */}
             <div style={{ flex: "1 1 0%", overflow: "auto" }}>
               {loading ? (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
@@ -232,40 +243,26 @@ export default function AdminBannedIPs() {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 10, color: "var(--ion-color-medium)" }}>
                   <IonIcon icon={segment === "active" ? shieldOutline : globeOutline} style={{ fontSize: 40 }} />
                   <span style={{ fontSize: "0.875rem" }}>
-                    {segment === "active" ? "No IP addresses are currently banned" : "No previously unbanned IPs"}
+                    {segment === "active" ? "Nothing is currently banned" : "No previously unbanned entries"}
                   </span>
                   {segment === "active" && (
                     <IonButton size="small" fill="outline" color="danger" onClick={() => setIsDialogOpen(true)}>
-                      <IonIcon slot="start" icon={addOutline} />Ban an IP
+                      <IonIcon slot="start" icon={addOutline} />Ban an IP or email
                     </IonButton>
                   )}
                 </div>
               ) : isMobile ? (
-                /* Condensed whodat-style rows for narrow screens */
+                /* Condensed purchases-style rows — tap opens the detail modal
+                   where the unban/re-ban actions live */
                 <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
                   {rows.map(banned => (
                     <AdminListItem
                       key={banned.id}
-                      start={
-                        <div style={{
-                          width: 10, height: 10, borderRadius: "50%",
-                          background: segment === "active" ? "var(--ion-color-danger)" : "var(--ion-color-success)",
-                        }} />
-                      }
-                      title={<span style={{ fontFamily: "monospace" }}>{banned.ip}</span>}
+                      onClick={() => setDetail(banned)}
+                      title={<span style={{ fontFamily: "monospace" }}>{banValue(banned)}</span>}
+                      badges={<span className="admin-badge admin-badge-slate" style={{ marginLeft: 6 }}>{banType(banned)}</span>}
                       subtitle={banned.reason || "—"}
                       meta={`${segment === "active" ? "Banned" : "Unbanned"} ${formatDate(segment === "active" ? banned.bannedAt : banned.unbannedAt)}`}
-                      status={segment === "active" ? (
-                        <IonButton fill="clear" size="small" color="success" onClick={() => unbanIp(banned.ip)}>
-                          <IonIcon slot="start" icon={checkmarkOutline} style={{ fontSize: 14 }} />
-                          Unban
-                        </IonButton>
-                      ) : (
-                        <IonButton fill="clear" size="small" color="danger" onClick={() => { setNewIp(banned.ip); setNewReason(banned.reason || ""); setIsDialogOpen(true); }}>
-                          <IonIcon slot="start" icon={shieldOutline} style={{ fontSize: 14 }} />
-                          Re-ban
-                        </IonButton>
-                      )}
                     />
                   ))}
                 </IonList>
@@ -274,42 +271,40 @@ export default function AdminBannedIPs() {
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600 }}>
                     <thead>
                       <tr>
-                        <th style={{ ...thStyle, width: 180 }}>IP Address</th>
+                        <th style={{ ...thStyle, width: 220 }}>IP / Email</th>
+                        <th style={{ ...thStyle, width: 90 }}>Type</th>
                         <th style={thStyle}>Reason</th>
-                        <th style={{ ...thStyle, width: 160 }}>{segment === "active" ? "Banned At" : "Unbanned At"}</th>
-                        <th style={{ ...thStyle, width: 100, textAlign: "right" }}>Actions</th>
+                        <th style={{ ...thStyle, width: 180 }}>{segment === "active" ? "Banned At" : "Unbanned At"}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {rows.map(banned => (
-                        <tr key={banned.id} style={{ height: 56, background: segment === "active" ? "rgba(235,68,90,0.03)" : "transparent" }}>
+                        <tr key={banned.id} style={{ position: "relative", height: 56, transform: "translateZ(0)", cursor: "pointer" }}>
+                          {/* Value — also hosts the row-wide click/ripple overlay */}
                           <td style={tdStyle}>
+                            <div
+                              className="ion-activatable"
+                              onClick={() => setDetail(banned)}
+                              style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", overflow: "hidden", cursor: "pointer", zIndex: 1 }}
+                            >
+                              <ion-ripple-effect />
+                            </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{
                                 width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
                                 background: segment === "active" ? "var(--ion-color-danger)" : "var(--ion-color-success)",
                               }} />
-                              <span style={{ fontFamily: "monospace", fontWeight: 600, fontSize: "0.88rem" }}>{banned.ip}</span>
+                              <span style={{ fontFamily: "monospace", fontWeight: 600, fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 190 }}>{banValue(banned)}</span>
                             </div>
+                          </td>
+                          <td style={tdStyle}>
+                            <span className="admin-badge admin-badge-slate">{banType(banned)}</span>
                           </td>
                           <td style={{ ...tdStyle, color: "var(--ion-color-medium)", fontSize: "0.8rem" }}>
                             {banned.reason || "—"}
                           </td>
                           <td style={{ ...tdStyle, color: "var(--ion-color-medium)", fontSize: "0.78rem" }}>
                             {segment === "active" ? formatDate(banned.bannedAt) : formatDate(banned.unbannedAt)}
-                          </td>
-                          <td style={{ ...tdStyle, textAlign: "right" }}>
-                            {segment === "active" ? (
-                              <IonButton fill="clear" size="small" color="success" onClick={() => unbanIp(banned.ip)}>
-                                <IonIcon slot="start" icon={checkmarkOutline} style={{ fontSize: 14 }} />
-                                Unban
-                              </IonButton>
-                            ) : (
-                              <IonButton fill="clear" size="small" color="danger" onClick={() => { setNewIp(banned.ip); setNewReason(banned.reason || ""); setIsDialogOpen(true); }}>
-                                <IonIcon slot="start" icon={shieldOutline} style={{ fontSize: 14 }} />
-                                Re-ban
-                              </IonButton>
-                            )}
                           </td>
                         </tr>
                       ))}
@@ -323,14 +318,40 @@ export default function AdminBannedIPs() {
         </div>
       </div>
 
-      {/* ── Ban IP modal ── */}
+      {/* ── Ban detail modal (purchases style) — unban / re-ban live here ── */}
+      <AdminDetailModal
+        isOpen={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail ? banValue(detail) : "Ban"}
+        rows={detail ? [
+          ["Value", <span style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>{banValue(detail)}</span>],
+          ["Type", <span className="admin-badge admin-badge-slate">{banType(detail)} address</span>],
+          ["Status", detail.isActive
+            ? <span className="admin-badge admin-badge-red">Active ban</span>
+            : <span className="admin-badge admin-badge-green">Unbanned</span>],
+          ["Reason", detail.reason || "—"],
+          ["Banned At", formatDate(detail.bannedAt)],
+          !detail.isActive && ["Unbanned At", formatDate(detail.unbannedAt)],
+        ] : []}
+      >
+        {detail && (
+          detail.isActive ? (
+            <IonButton expand="block" color="success" onClick={() => unban(banValue(detail))}>
+              Unban
+            </IonButton>
+          ) : (
+            <IonButton expand="block" color="danger" onClick={() => ban(banValue(detail), detail.reason || "")} disabled={isAdding}>
+              {isAdding ? "Banning…" : "Re-ban"}
+            </IonButton>
+          )
+        )}
+      </AdminDetailModal>
+
+      {/* ── Ban IP / email modal ── */}
       <IonModal isOpen={isDialogOpen} onDidDismiss={closeDialog} style={{ "--width": "460px", "--max-width": "95vw", "--height": "auto" }}>
         <IonHeader>
           <IonToolbar style={{ "--background": "var(--ion-card-background)" }}>
-            <IonTitle style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}>
-              <IonIcon icon={shieldOutline} style={{ color: "var(--ion-color-danger)", fontSize: 16 }} />
-              Ban IP Address
-            </IonTitle>
+            <IonTitle style={{ fontWeight: 700 }}>Ban IP or Email</IonTitle>
             <IonButtons slot="end">
               <IonButton fill="clear" color="medium" onClick={closeDialog}>
                 <IonIcon slot="icon-only" icon={closeOutline} />
@@ -340,50 +361,23 @@ export default function AdminBannedIPs() {
         </IonHeader>
 
         <IonModalContent style={{ "--background": "var(--ion-card-background)", padding: 0 }}>
-          <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-              <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "var(--ion-color-medium)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                IP Address *
-              </label>
-              <input
-                value={newIp}
-                onChange={e => setNewIp(e.target.value)}
-                placeholder="e.g., 192.168.1.1"
-                onKeyDown={e => e.key === "Enter" && banIp()}
-                style={{
-                  width: "100%", boxSizing: "border-box",
-                  padding: "10px 14px", borderRadius: 8,
-                  border: "1px solid var(--ion-border-color)",
-                  background: "var(--ion-background-color)",
-                  color: "var(--ion-text-color)",
-                  fontFamily: "monospace", fontSize: "0.9rem",
-                  outline: "none",
-                }}
-              />
-              <p style={{ margin: "4px 0 0", fontSize: "0.72rem", color: "var(--ion-color-medium)" }}>
-                Enter the IPv4 address to block
-              </p>
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "var(--ion-color-medium)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Reason (optional)
-              </label>
-              <input
-                value={newReason}
-                onChange={e => setNewReason(e.target.value)}
-                placeholder="e.g., Spam, Abuse, Fraud"
-                style={{
-                  width: "100%", boxSizing: "border-box",
-                  padding: "10px 14px", borderRadius: 8,
-                  border: "1px solid var(--ion-border-color)",
-                  background: "var(--ion-background-color)",
-                  color: "var(--ion-text-color)",
-                  fontSize: "0.875rem", outline: "none",
-                }}
-              />
-            </div>
-
+          <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <IonInput
+              className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+              label="IP address or email *"
+              placeholder="192.168.1.1 or user@example.com"
+              value={newValue}
+              onIonInput={e => setNewValue(e.detail.value ?? "")}
+              onKeyDown={e => e.key === "Enter" && ban()}
+              style={{ fontFamily: "monospace" }}
+            />
+            <IonInput
+              className="admin-field" mode="md" fill="outline" labelPlacement="floating"
+              label="Reason"
+              placeholder="e.g. Chargeback fraud, abuse"
+              value={newReason}
+              onIonInput={e => setNewReason(e.detail.value ?? "")}
+            />
             <div style={{
               display: "flex", alignItems: "flex-start", gap: 10,
               padding: 12, borderRadius: 8,
@@ -392,7 +386,7 @@ export default function AdminBannedIPs() {
             }}>
               <IonIcon icon={alertCircleOutline} style={{ color: "#d97706", fontSize: 18, flexShrink: 0, marginTop: 1 }} />
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#92400e", lineHeight: 1.5 }}>
-                Banning this IP will show a "You are banned" page to all visitors from that address.
+                Banned IPs see a "You are banned" page. Banned IPs and emails are blocked from making purchases, and the reason is shown to them — e.g. "You have been banned from using MintSlip because of {"{reason}"}".
               </p>
             </div>
           </div>
@@ -402,11 +396,11 @@ export default function AdminBannedIPs() {
           <IonToolbar style={{ "--background": "var(--ion-card-background)", padding: "8px 16px" }}>
             <IonButtons slot="end">
               <IonButton fill="outline" color="medium" onClick={closeDialog}>Cancel</IonButton>
-              <IonButton color="danger" onClick={banIp} disabled={isAdding} style={{ "--border-radius": "8px" }}>
+              <IonButton color="danger" onClick={() => ban()} disabled={isAdding} style={{ "--border-radius": "8px" }}>
                 {isAdding
                   ? <IonSpinner name="crescent" style={{ width: 16, height: 16, marginRight: 6 }} />
                   : <IonIcon slot="start" icon={shieldOutline} style={{ fontSize: 14 }} />}
-                {isAdding ? "Banning…" : "Ban IP"}
+                {isAdding ? "Banning…" : "Ban"}
               </IonButton>
             </IonButtons>
           </IonToolbar>

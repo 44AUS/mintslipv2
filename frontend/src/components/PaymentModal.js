@@ -10,6 +10,7 @@ import {
   PaymentRequestButtonElement,
 } from "@stripe/react-stripe-js";
 import { nativePost } from "@/utils/nativeHttp";
+import { showErrorToast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -105,7 +106,10 @@ export default function PaymentModal({
           setStage("deliverFailed");
         }
       } catch (err) {
-        setError(err.message || "Payment failed. Please try again.");
+        const msg = err.message || "Payment failed. Please try again.";
+        // Banned customers get the ban reason as a prominent toast too
+        if (/banned from using MintSlip/i.test(msg)) showErrorToast(msg, { duration: 6000 });
+        setError(msg);
         setStage("form");
       }
     });
@@ -205,7 +209,10 @@ export default function PaymentModal({
         setStage("deliverFailed");
       }
     } catch (err) {
-      setError(err.message || "Payment failed. Please try again.");
+      const msg = err.message || "Payment failed. Please try again.";
+        // Banned customers get the ban reason as a prominent toast too
+        if (/banned from using MintSlip/i.test(msg)) showErrorToast(msg, { duration: 6000 });
+        setError(msg);
       setStage("form");
     }
   };

@@ -530,7 +530,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
     { id: "users",           label: "Users",           icon: peopleOutline,        path: "/admin/users",           perm: "view_users" },
     { id: "saved-docs",      label: "Saved Docs",      icon: folderOutline,        path: "/admin/saved-docs",      perm: "view_saved_docs" },
     { id: "discounts",       label: "Discounts",       icon: pricetagOutline,      path: "/admin/discounts",       perm: "view_discounts" },
-    { id: "banned-ips",      label: "Banned IPs",      icon: shieldOutline,        path: "/admin/banned-ips",      perm: "view_banned_ips" },
+    { id: "banned-ips",      label: "Banned",          icon: shieldOutline,        path: "/admin/banned-ips",      perm: "view_banned_ips" },
     { id: "blog",            label: "Blog",            icon: documentTextOutline,  path: "/admin/blog",            perm: "view_blog" },
     { id: "templates",       label: "Doc Templates",   icon: brushOutline,         path: "/admin/templates",       perm: "admin_only" },
     { id: "broadcast",       label: "Broadcast",       icon: sendOutline,          path: "/admin/broadcast",       perm: "send_mass_email" },

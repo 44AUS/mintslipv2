@@ -2516,6 +2516,16 @@ async def create_payment_intent(request: dict, req: Request, authorization: Opti
     paywall_offer = bool(request.get("paywallOffer", False))
     client_ip = get_client_ip(req)  # customer IP, carried through to the webhook
 
+    # Banned customers (by IP or email) cannot purchase — surface the ban
+    # reason so the app can show it in the error toast.
+    ban_or = [{"ip": client_ip}]
+    if email:
+        ban_or.append({"email": str(email).strip().lower()})
+    ban = await banned_ips_collection.find_one({"isActive": True, "$or": ban_or})
+    if ban:
+        ban_reason = (ban.get("reason") or "").strip() or "violating our terms of service"
+        raise HTTPException(status_code=403, detail=f"You have been banned from using MintSlip because of {ban_reason}")
+
     if not amount:
         raise HTTPException(status_code=400, detail="Amount is required")
 
@@ -5116,7 +5126,9 @@ async def update_user_downloads(user_id: str, data: UpdateUserDownloads, session
 # ========== BANNED IPS ENDPOINTS ==========
 
 class BannedIPCreate(BaseModel):
-    ip: str
+    # One of ip / email — the ban list holds both kinds of entries
+    ip: Optional[str] = None
+    email: Optional[str] = None
     reason: Optional[str] = None
 
 @app.get("/api/check-ip-ban")
@@ -5143,15 +5155,21 @@ async def get_banned_ips(session: dict = Depends(get_current_admin)):
 
 @app.post("/api/admin/banned-ips")
 async def ban_ip(data: BannedIPCreate, session: dict = Depends(get_current_admin)):
-    """Ban an IP address (admin only)"""
+    """Ban an IP address or email address (admin only)"""
     check_permission(session, "manage_banned_ips")
-    # Check if IP is already banned
-    existing = await banned_ips_collection.find_one({"ip": data.ip})
-    
+    ip = (data.ip or "").strip()
+    email = (data.email or "").strip().lower()
+    if not ip and not email:
+        raise HTTPException(status_code=400, detail="Provide an IP address or an email address to ban")
+
+    value = ip or email
+    query = {"ip": ip} if ip else {"email": email}
+    existing = await banned_ips_collection.find_one(query)
+
     if existing:
         # Reactivate if previously unbanned
         await banned_ips_collection.update_one(
-            {"ip": data.ip},
+            query,
             {
                 "$set": {
                     "isActive": True,
@@ -5161,31 +5179,31 @@ async def ban_ip(data: BannedIPCreate, session: dict = Depends(get_current_admin
                 }
             }
         )
-        return {"success": True, "message": f"IP {data.ip} has been banned"}
-    
+        return {"success": True, "message": f"{value} has been banned"}
+
     banned_ip = {
         "id": str(uuid.uuid4()),
-        "ip": data.ip,
+        **({"ip": ip} if ip else {"email": email}),
         "reason": data.reason,
         "isActive": True,
         "bannedAt": datetime.now(timezone.utc).isoformat(),
         "bannedBy": session.get("adminId")
     }
-    
+
     await banned_ips_collection.insert_one(banned_ip)
-    await log_action(session, "ban_ip", "banned_ip", data.ip, data.ip)
-    return {"success": True, "message": f"IP {data.ip} has been banned", "bannedIp": {k: v for k, v in banned_ip.items() if k != "_id"}}
+    await log_action(session, "ban_ip", "banned_ip", value, value)
+    return {"success": True, "message": f"{value} has been banned", "bannedIp": {k: v for k, v in banned_ip.items() if k != "_id"}}
 
 @app.delete("/api/admin/banned-ips/{ip}")
 async def unban_ip(ip: str, session: dict = Depends(get_current_admin)):
-    """Unban an IP address (admin only)"""
+    """Unban an IP or email address (admin only)"""
     check_permission(session, "manage_banned_ips")
-    # URL decode the IP (in case it was encoded)
+    # URL decode the value (in case it was encoded)
     from urllib.parse import unquote
     decoded_ip = unquote(ip)
-    
+
     result = await banned_ips_collection.update_one(
-        {"ip": decoded_ip},
+        {"$or": [{"ip": decoded_ip}, {"email": decoded_ip.lower()}]},
         {
             "$set": {
                 "isActive": False,

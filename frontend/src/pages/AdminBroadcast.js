@@ -240,12 +240,17 @@ export default function AdminBroadcast() {
         onSaved={fetchTemplates}
       />
 
-      <BroadcastUserPicker
-        isOpen={pickerOpen}
-        initialSelected={picked}
-        onClose={() => setPickerOpen(false)}
-        onConfirm={setPicked}
-      />
+      {/* Mounted fresh per open — a permanently mounted controlled IonModal
+          desyncs its presented flag under the layout's polling re-renders,
+          after which "Pick specific users" silently stops opening. */}
+      {pickerOpen && (
+        <BroadcastUserPicker
+          isOpen
+          initialSelected={picked}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={setPicked}
+        />
+      )}
 
       {/* Email preview overlay */}
       {previewHtml && (

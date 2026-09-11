@@ -18,7 +18,6 @@ import EmilyPhoto from '../assests/images/Emily.png';
 import JakePhoto from '../assests/images/Jake.png';
 import KevinPhoto from '../assests/images/Kevin.png';
 import SophiaPhoto from '../assests/images/Sophia.png';
-import FiveStars from '../assests/images/5star.png';
 import LeftLeaf from '../assests/images/left-leaf.avif';
 import RightLeaf from '../assests/images/right-leaf.avif';
 
@@ -865,7 +864,11 @@ const TestimonialCard = ({ t, inView, delay }) => (
     />
     <div className="flex-1 text-center px-1 sm:pr-4">
       <p className="text-slate-600 leading-relaxed">{t.quote}</p>
-      {t.stars && <img src={FiveStars} alt="Rated 5 out of 5 stars" className="h-20 mx-auto -my-5" />}
+      {t.stars && (
+        <div className="mt-2 text-xl tracking-wide" role="img" aria-label="Rated 5 out of 5 stars">
+          ⭐⭐⭐⭐⭐
+        </div>
+      )}
       <p className="mt-4 font-bold" style={{ color: '#1a4731' }}>{t.name}</p>
       <p className="text-slate-600">{t.city}</p>
     </div>
@@ -1148,7 +1151,6 @@ export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
   // Hero stats are hardcoded (the live API numbers read too small)
   const userCount = "1,000+";
-  const docsCount = "10K+";
 
   // Animation on mount
   useEffect(() => {
@@ -1275,20 +1277,6 @@ export default function Home() {
           <HeroProductPreview />
         </div>
 
-        {/* Quick Stats Bar */}
-        <div className={`relative mt-16 md:mt-24 grid grid-cols-2 md:grid-cols-4 rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm overflow-hidden transition-all duration-700 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-          {[
-            { number: docsCount, label: "Documents Created" },
-            { number: userCount, label: "Happy Users" },
-            { number: "99.9%", label: "Uptime" },
-            { number: "24/7", label: "Support" },
-          ].map((stat, index) => (
-            <div key={index} className="text-center px-4 py-6 border-slate-100 [&:nth-child(even)]:border-l md:[&:not(:first-child)]:border-l">
-              <p className="font-display text-2xl md:text-3xl font-bold text-emerald-800">{stat.number}</p>
-              <p className="text-sm text-slate-500 mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* Most-loved laurel section: rotating stats between the leaf marks.
@@ -1305,7 +1293,7 @@ export default function Home() {
           <section ref={lovedRef} className="bg-white py-20 md:py-24">
             <div className="max-w-5xl mx-auto px-6 text-center">
               <h2 className={`font-display text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-6 transition-all duration-700 ${lovedInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-                The most-loved <span className="font-black">paystub generator</span>.
+                The most-loved <span className="font-black">document generator</span>.
               </h2>
               <p className={`text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-14 transition-all duration-700 delay-100 ${lovedInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                 We've helped thousands of people just like you take control of their paperwork.
@@ -1330,10 +1318,10 @@ export default function Home() {
             <style>{`
               .laurel-stats {
                 --laurel-slide-h: 130px;
-                display: flex; align-items: center; justify-content: center; gap: 10px;
+                display: flex; align-items: center; justify-content: center; gap: 0;
               }
-              .laurel-img { height: 180px; width: auto; flex-shrink: 0; }
-              .laurel-ticker { height: var(--laurel-slide-h); min-width: 250px; overflow: hidden; }
+              .laurel-img { height: 215px; width: auto; flex-shrink: 0; }
+              .laurel-ticker { height: var(--laurel-slide-h); min-width: 215px; overflow: hidden; }
               .laurel-track { display: flex; flex-direction: column; animation: laurelScroll 14s infinite; }
               .laurel-slide {
                 height: var(--laurel-slide-h); flex-shrink: 0;
@@ -1353,8 +1341,8 @@ export default function Home() {
               }
               @media (max-width: 640px) {
                 .laurel-stats { --laurel-slide-h: 104px; }
-                .laurel-img { height: 130px; }
-                .laurel-ticker { min-width: 190px; }
+                .laurel-img { height: 155px; }
+                .laurel-ticker { min-width: 165px; }
                 .laurel-big { font-size: 42px; }
                 .laurel-small { font-size: 15px; }
               }

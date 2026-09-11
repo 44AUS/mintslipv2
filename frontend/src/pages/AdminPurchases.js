@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner, IonList,
+  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner, IonList, IonAlert,
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline,
@@ -210,6 +210,7 @@ export default function AdminPurchases() {
   // Backfill purchases the Stripe webhook missed (paid documents that show in
   // Saved Docs but never landed here or on the calendar).
   const [syncing, setSyncing] = useState(false);
+  const [orphanReport, setOrphanReport] = useState(null);
   const syncStripe = async () => {
     setSyncing(true);
     try {
@@ -225,8 +226,11 @@ export default function AdminPurchases() {
         toast.success(`Recovered ${data.recoveredCount} missing purchase${data.recoveredCount !== 1 ? "s" : ""} (checked ${data.checked} payments)`);
         fetchPurchases();
       } else {
-        toast.success(`All good — no missing purchases (checked ${data.checked} payments)`);
+        toast.success(`No missing Stripe payments (checked ${data.checked})`);
       }
+      // Saved documents with no payment behind them at all — nothing to
+      // recover; show what they are so the mystery is solved on the spot.
+      if (data.orphanCount > 0) setOrphanReport(data);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -481,6 +485,22 @@ export default function AdminPurchases() {
           </div>
         </div>
       </div>
+
+      {/* Post-sync report: saved documents that have no Stripe payment at all
+          (subscription/free downloads) — no purchase can exist for these. */}
+      <IonAlert
+        isOpen={!!orphanReport}
+        onDidDismiss={() => setOrphanReport(null)}
+        cssClass="sync-report-alert"
+        header={orphanReport ? `${orphanReport.orphanCount} saved document${orphanReport.orphanCount !== 1 ? "s" : ""} without a payment` : ""}
+        message={orphanReport ? (
+          (orphanReport.orphans || [])
+            .map(o => `• ${DOCUMENT_TYPES[o.documentType] || o.documentType || "Document"} — ${o.email || "no email"} — ${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "unknown date"}`)
+            .join("\n")
+          + "\n\nNo Stripe payment exists for these, so there is no purchase to recover — they were saved by a non-payment flow such as a subscription or free download."
+        ) : ""}
+        buttons={["OK"]}
+      />
 
       {/* ── Payment detail modal (whodat admin payments style) ── */}
       <PurchaseDetailModal

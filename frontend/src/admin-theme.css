@@ -1212,3 +1212,9 @@ ion-searchbar {
 .font-semibold { font-weight: 600; }
 .font-bold     { font-weight: 700; }
 .truncate      { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Sync-Stripe report alert: keep the per-document lines on separate rows */
+ion-alert.sync-report-alert .alert-message {
+  white-space: pre-line;
+  text-align: left;
+}

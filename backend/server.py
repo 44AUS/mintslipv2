@@ -3160,7 +3160,56 @@ async def reconcile_purchases(request: Request, session: dict = Depends(get_curr
             break
         starting_after = batch.data[-1].id
 
-    return {"success": True, "days": days, "checked": checked, "recoveredCount": len(recovered), "recovered": recovered}
+    # Diagnose what's left: saved documents in the window that STILL have no
+    # matching purchase (same type + email within 48h). These have no Stripe
+    # payment behind them — e.g. subscription or free downloads — so no
+    # amount of webhook reconciling can produce a purchase for them.
+    def _ts(x):
+        try:
+            d = datetime.fromisoformat(str(x).replace("Z", "+00:00"))
+            if d.tzinfo is None:
+                d = d.replace(tzinfo=timezone.utc)
+            return d.timestamp()
+        except (TypeError, ValueError):
+            return None
+
+    window_start = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    docs = await saved_documents_collection.find(
+        {"createdAt": {"$gte": window_start}},
+        {"_id": 0, "fileContent": 0, "id": 1, "userId": 1, "guestEmail": 1, "documentType": 1, "fileName": 1, "createdAt": 1},
+    ).to_list(2000)
+    purchases_window = await purchases_collection.find(
+        {"createdAt": {"$gte": (datetime.now(timezone.utc) - timedelta(days=days + 2)).isoformat()}},
+        {"_id": 0, "email": 1, "documentType": 1, "createdAt": 1},
+    ).to_list(5000)
+
+    orphans = []
+    for doc in docs:
+        email = (doc.get("guestEmail") or "").strip().lower()
+        if not email and doc.get("userId"):
+            u = await users_collection.find_one({"id": doc["userId"]}, {"_id": 0, "email": 1})
+            email = ((u or {}).get("email") or "").strip().lower()
+        dts = _ts(doc.get("createdAt"))
+        matched = any(
+            p.get("documentType") == doc.get("documentType")
+            and (p.get("email") or "").strip().lower() == email
+            and dts is not None and _ts(p.get("createdAt")) is not None
+            and abs(_ts(p["createdAt"]) - dts) < 48 * 3600
+            for p in purchases_window
+        )
+        if not matched:
+            orphans.append({
+                "fileName": doc.get("fileName"),
+                "email": email or None,
+                "documentType": doc.get("documentType"),
+                "createdAt": doc.get("createdAt"),
+            })
+
+    return {
+        "success": True, "days": days, "checked": checked,
+        "recoveredCount": len(recovered), "recovered": recovered,
+        "orphanCount": len(orphans), "orphans": orphans[:20],
+    }
 
 
 @app.post("/api/stripe/cancel-subscription")

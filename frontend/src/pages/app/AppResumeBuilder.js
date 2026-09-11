@@ -100,6 +100,7 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
   const [isGenerating, setIsGenerating]                     = useState(false);
   const [isGeneratingBullets, setIsGeneratingBullets]       = useState(null);
   const [isScrapingJob, setIsScrapingJob]                   = useState(false);
+  const [jobUrlError, setJobUrlError]                       = useState("");
   const [isProcessing, setIsProcessing]                     = useState(false);
   const [pdfPreview, setPdfPreview]                         = useState(null);
   const [isGeneratingPreview, setIsGeneratingPreview]       = useState(false);
@@ -305,18 +306,46 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     finally { setIsGenerating(false); }
   };
 
-  const scrapeJobUrl = async () => {
-    if (!formData.jobUrl) { showToast("Enter a job posting URL first", "warning"); return; }
-    setIsScrapingJob(true);
+  // Job-posting URL: validated and extracted automatically as the user types
+  // or pastes (debounced) — no Extract button. Returns a normalized href or
+  // null when the value isn't a usable http(s) URL yet.
+  const normalizeJobUrl = (v) => {
+    const s = (v || "").trim();
+    if (!s || /\s/.test(s)) return null;
+    const candidate = /^https?:\/\//i.test(s) ? s : `https://${s}`;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/scrape-job`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: formData.jobUrl }) });
-      if (!res.ok) throw new Error("Failed to extract job posting");
-      const data = await res.json();
-      setField("jobDescription", data.jobDescription);
-      showToast("Job description extracted!");
-    } catch (err) { showToast(err.message || "Failed to extract. Paste the description manually.", "danger"); }
-    finally { setIsScrapingJob(false); }
+      const u = new URL(candidate);
+      if (!/^https?:$/.test(u.protocol)) return null;
+      // Require a real dotted hostname with a plausible TLD
+      if (!/^[^.]+(\.[^.]+)+$/.test(u.hostname) || !/\.[a-z]{2,}$/i.test(u.hostname)) return null;
+      return u.href;
+    } catch { return null; }
   };
+
+  const lastScrapedUrl = useRef(null);
+  useEffect(() => {
+    const raw = (formData.jobUrl || "").trim();
+    if (!raw) { setJobUrlError(""); return undefined; }
+    const t = setTimeout(async () => {
+      const normalized = normalizeJobUrl(raw);
+      if (!normalized) { setJobUrlError("Enter a valid URL, e.g. https://company.com/jobs/123"); return; }
+      setJobUrlError("");
+      if (normalized === lastScrapedUrl.current) return; // already extracted this one
+      lastScrapedUrl.current = normalized;
+      setIsScrapingJob(true);
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/scrape-job`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: normalized }) });
+        if (!res.ok) throw new Error("Failed to extract job posting");
+        const data = await res.json();
+        setField("jobDescription", data.jobDescription);
+        showToast("Job description extracted!");
+      } catch (err) {
+        lastScrapedUrl.current = null; // editing the URL again retries
+        showToast(err.message || "Failed to extract. Paste the description manually.", "danger");
+      } finally { setIsScrapingJob(false); }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [formData.jobUrl]); // eslint-disable-line
 
   // ── Download handlers ───────────────────────────────────────────────────
   const handleSubscriptionDownload = async () => {
@@ -593,12 +622,20 @@ export default function AppResumeBuilder({ isOpen, onClose }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={headingStyle}>Target Job</div>
       <Field label="Target Job Title" value={formData.targetJobTitle} onChange={v => setField("targetJobTitle", v)} placeholder="e.g. Senior Software Engineer" />
-      <div style={{ display: "flex", gap: 8 }}>
-        <IonInput value={formData.jobUrl} onIonInput={e => setField("jobUrl", e.detail.value)}
-          fill="outline" labelPlacement="floating" label="Job Posting URL (Optional)" style={{ ...inputStyle, flex: 1 }} />
-        <IonButton color="tertiary" onClick={scrapeJobUrl} disabled={isScrapingJob} style={{ flexShrink: 0 }}>
-          {isScrapingJob ? <IonSpinner name="crescent" style={{ width: 18, height: 18 }} /> : "Extract"}
-        </IonButton>
+      {/* Paste or type a job URL — validated and extracted automatically */}
+      <div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <IonInput value={formData.jobUrl} onIonInput={e => setField("jobUrl", e.detail.value)}
+            type="url" inputmode="url" placeholder="https://company.com/jobs/123"
+            fill="outline" labelPlacement="floating" label="Job Posting URL (Optional)" style={{ ...inputStyle, flex: 1 }} />
+          {isScrapingJob && <IonSpinner name="crescent" style={{ width: 20, height: 20, flexShrink: 0 }} />}
+        </div>
+        {jobUrlError && (
+          <IonNote color="danger" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>{jobUrlError}</IonNote>
+        )}
+        {isScrapingJob && (
+          <IonNote color="medium" style={{ display: "block", marginTop: 4, fontSize: "0.75rem" }}>Extracting job description…</IonNote>
+        )}
       </div>
       <IonTextarea value={formData.jobDescription} onIonInput={e => setField("jobDescription", e.detail.value)}
         rows={10} fill="outline" labelPlacement="floating" label="Job Description *"

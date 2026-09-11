@@ -199,9 +199,12 @@ export default function AdminCalendar() {
     if (track && view === "week") { track.style.transition = "none"; track.style.transform = TRACK_MID; }
   }, [curDate, view]);
 
-  // Attach the drag gesture while the week view is mounted.
+  // Attach the drag gesture while the week view is mounted. `loading` is a
+  // dependency because on a fresh page load with the saved view already
+  // "week", the first run happens while the spinner is up — the viewport div
+  // isn't mounted yet, so we must re-attach once loading finishes.
   useEffect(() => {
-    if (view !== "week") return undefined;
+    if (view !== "week" || loading) return undefined;
     const el = weekViewportRef.current;
     if (!el) return undefined;
     const gesture = createGesture({
@@ -223,7 +226,7 @@ export default function AdminCalendar() {
     });
     gesture.enable();
     return () => gesture.destroy();
-  }, [view]); // eslint-disable-line
+  }, [view, loading]); // eslint-disable-line
 
   // Week containing curDate (Sun–Sat), plus the neighbours for the swipe carousel
   const weekStart = addDays(curDate, -curDate.getDay());

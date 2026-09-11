@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { IonButton, IonRippleEffect, IonSpinner } from "@ionic/react";
+import AdminDetailModal from "@/components/AdminDetailModal";
+import AdminListItem from "@/components/AdminListItem";
+import { IonButton, IonRippleEffect, IonSpinner, IonList } from "@ionic/react";
 import { Plus, Pencil, Copy, Trash2, Upload, Undo2, LayoutTemplate } from "lucide-react";
 import { toast } from "@/utils/toast";
 import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
@@ -16,6 +18,14 @@ export default function AdminTemplates() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [starterOpen, setStarterOpen] = useState(false);
+  const [detail, setDetail] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("adminToken")}` });
 
@@ -88,7 +98,7 @@ export default function AdminTemplates() {
   return (
     <AdminLayout>
       <div>
-        <div className="flex items-center justify-between" style={{ marginBottom: 24 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 24, flexWrap: "wrap", gap: 10 }}>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
             <p className="text-sm text-gray-500 mt-1">Design, edit, and publish custom document layouts</p>
@@ -117,6 +127,28 @@ export default function AdminTemplates() {
                 <Plus size={16} style={{ marginRight: 6 }} />Create Template
               </IonButton>
             </div>
+          ) : isMobile ? (
+            /* Condensed whodat-style rows: readable without sideways
+               scrolling; actions live in the detail modal. */
+            <IonList lines="full" style={{ background: "transparent", padding: 0 }}>
+              {templates.map((t) => (
+                <AdminListItem
+                  key={t.id}
+                  onClick={() => setDetail(t)}
+                  start={
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: "var(--ion-color-step-100)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <LayoutTemplate size={16} style={{ color: "var(--ion-color-primary)" }} />
+                    </div>
+                  }
+                  title={t.name}
+                  badges={t.status === "published"
+                    ? <span className="admin-badge admin-badge-green" style={{ marginLeft: 6 }}>Published</span>
+                    : <span className="admin-badge admin-badge-amber" style={{ marginLeft: 6 }}>Draft</span>}
+                  subtitle={DOC_TYPE_LABELS[t.documentType] || t.documentType}
+                  meta={[t.version ? `v${t.version}` : null, t.updatedAt ? new Date(t.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null].filter(Boolean).join(" · ")}
+                />
+              ))}
+            </IonList>
           ) : (
             <div className="overflow-x-auto">
               <table className="admin-table">
@@ -181,6 +213,52 @@ export default function AdminTemplates() {
           )}
         </div>
       </div>
+
+      {/* ── Template detail modal (mobile actions live here) ── */}
+      <AdminDetailModal
+        isOpen={!!detail}
+        onClose={() => setDetail(null)}
+        title={detail ? detail.name : "Template"}
+        rows={detail ? [
+          detail.description && ["Description", detail.description],
+          ["Document", <span className="admin-badge admin-badge-slate">{DOC_TYPE_LABELS[detail.documentType] || detail.documentType}</span>],
+          ["Status", detail.status === "published"
+            ? <span className="admin-badge admin-badge-green">Published</span>
+            : <span className="admin-badge admin-badge-amber">Draft</span>],
+          ["Version", detail.version ? `v${detail.version}` : "—"],
+          ["Updated", detail.updatedAt ? new Date(detail.updatedAt).toLocaleString() : "—"],
+        ] : []}
+      >
+        {detail && (
+          <>
+            <IonButton expand="block" color="primary" onClick={() => navigate(`/admin/templates/edit/${detail.id}`)}>
+              Edit Template
+            </IonButton>
+            {detail.status === "published" ? (
+              <IonButton expand="block" fill="outline" color="warning" disabled={busy === detail.id + "/unpublish"}
+                onClick={async () => { if (await act(detail.id, "/unpublish")) setDetail(null); }}>
+                Unpublish
+              </IonButton>
+            ) : (
+              <IonButton expand="block" fill="outline" color="primary" disabled={busy === detail.id + "/publish"}
+                onClick={async () => { if (await act(detail.id, "/publish")) { toast.success("Template published"); setDetail(null); } }}>
+                Publish
+              </IonButton>
+            )}
+            <IonButton expand="block" fill="outline" color="medium" disabled={busy === detail.id + "/duplicate"}
+              onClick={async () => { if (await act(detail.id, "/duplicate")) setDetail(null); }}>
+              Duplicate
+            </IonButton>
+            <IonButton expand="block" fill="outline" color="danger"
+              onClick={async () => {
+                if (!window.confirm(`Delete "${detail.name}"? This cannot be undone.`)) return;
+                if (await act(detail.id, "", "DELETE")) setDetail(null);
+              }}>
+              Delete Template
+            </IonButton>
+          </>
+        )}
+      </AdminDetailModal>
     </AdminLayout>
   );
 }

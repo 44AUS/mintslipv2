@@ -111,25 +111,28 @@ function ColorInput({ value, onChange, allowNone }) {
 function CanvasElement({ el, ctx, selected, dimmed, onMouseDown, onResizeStart }) {
   const base = {
     position: "absolute", left: el.x, top: el.y, cursor: "move", userSelect: "none",
+    // Pointer events power the drag, so stop the browser from treating a
+    // touch drag as a page scroll.
+    touchAction: "none",
     outline: selected ? "1.5px solid #2563eb" : dimmed ? "1px dashed #cbd5e1" : "1px dashed transparent",
     outlineOffset: 1,
     opacity: dimmed ? 0.35 : 1,
   };
   const handle = selected && (
-    <div onMouseDown={onResizeStart}
-      style={{ position: "absolute", right: -5, bottom: -5, width: 9, height: 9, background: "#2563eb", borderRadius: 2, cursor: "nwse-resize", zIndex: 5 }} />
+    <div onPointerDown={onResizeStart}
+      style={{ position: "absolute", right: -6, bottom: -6, width: 12, height: 12, background: "#2563eb", borderRadius: 2, cursor: "nwse-resize", zIndex: 5, touchAction: "none" }} />
   );
 
   if (el.type === "rect") {
     return (
-      <div onMouseDown={onMouseDown} style={{ ...base, width: el.w, height: el.h, background: el.fill === "none" ? "transparent" : el.fill, border: el.stroke && el.stroke !== "none" ? `${Math.max(el.lineWidth || 0.5, 0.5)}px solid ${el.stroke}` : "none", borderRadius: el.radius || 0 }}>
+      <div onPointerDown={onMouseDown} style={{ ...base, width: el.w, height: el.h, background: el.fill === "none" ? "transparent" : el.fill, border: el.stroke && el.stroke !== "none" ? `${Math.max(el.lineWidth || 0.5, 0.5)}px solid ${el.stroke}` : "none", borderRadius: el.radius || 0 }}>
         {handle}
       </div>
     );
   }
   if (el.type === "line") {
     return (
-      <div onMouseDown={onMouseDown} style={{ ...base, width: Math.max(el.w, 4), height: Math.max(el.lineWidth || 1, 3), display: "flex", alignItems: "center" }}>
+      <div onPointerDown={onMouseDown} style={{ ...base, width: Math.max(el.w, 4), height: Math.max(el.lineWidth || 1, 3), display: "flex", alignItems: "center" }}>
         <div style={{ width: "100%", height: Math.max(el.lineWidth || 0.5, 1), background: el.color || "#cbd5e1" }} />
         {handle}
       </div>
@@ -138,7 +141,7 @@ function CanvasElement({ el, ctx, selected, dimmed, onMouseDown, onResizeStart }
   if (el.type === "image") {
     const src = resolveTokens(el.src, ctx);
     return (
-      <div onMouseDown={onMouseDown} style={{ ...base, width: el.w, height: el.h, background: "#f8fafc", border: "1px dashed #cbd5e1", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+      <div onPointerDown={onMouseDown} style={{ ...base, width: el.w, height: el.h, background: "#f8fafc", border: "1px dashed #cbd5e1", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
         {src && src.startsWith("data:")
           ? <img src={src} alt="" style={{ maxWidth: "100%", maxHeight: "100%", pointerEvents: "none" }} />
           : <ImageIcon size={16} style={{ color: "#94a3b8" }} />}
@@ -150,7 +153,7 @@ function CanvasElement({ el, ctx, selected, dimmed, onMouseDown, onResizeStart }
     const rows = Array.isArray(ctx[el.binding]) ? ctx[el.binding] : [];
     const rowH = el.rowHeight || 16;
     return (
-      <div onMouseDown={onMouseDown} style={{ ...base, width: el.w }}>
+      <div onPointerDown={onMouseDown} style={{ ...base, width: el.w }}>
         <div style={{ display: "flex", height: rowH, background: el.headerFill === "none" ? "transparent" : el.headerFill, alignItems: "center" }}>
           {(el.columns || []).map((c, i) => (
             <div key={i} style={{ width: `${(c.width || 0) * 100}%`, padding: "0 6px", boxSizing: "border-box", fontSize: el.fontSize || 8, fontWeight: 700, color: el.headerColor || "#334155", textAlign: c.align || "left", overflow: "hidden", whiteSpace: "nowrap", borderLeft: el.colLines && i > 0 ? "0.5px solid #c8c8c8" : "none" }}>
@@ -173,7 +176,7 @@ function CanvasElement({ el, ctx, selected, dimmed, onMouseDown, onResizeStart }
   }
   // text
   return (
-    <div onMouseDown={onMouseDown} style={{
+    <div onPointerDown={onMouseDown} style={{
       ...base, width: el.w || "auto", minHeight: (el.fontSize || 9) + 4,
       fontSize: el.fontSize || 9, fontWeight: el.bold ? 700 : 400, fontStyle: el.italic ? "italic" : "normal",
       color: el.color || "#1a1a1a", textAlign: el.align || "left", fontFamily: "Helvetica, Arial, sans-serif",
@@ -203,6 +206,30 @@ export default function AdminTemplateEditor() {
 
   const canvasRef = useRef(null);
   const dragRef = useRef(null);
+
+  // ── responsive: stack the three panels on narrow screens and scale the
+  //    fixed-size page to fit whatever width the canvas column actually has ──
+  const [viewportW, setViewportW] = useState(window.innerWidth);
+  const [canvasColW, setCanvasColW] = useState(null);
+  const canvasColRef = useRef(null);
+  const scaleRef = useRef(1);
+  const editorReady = !!(meta && layout);
+  useEffect(() => {
+    const onResize = () => setViewportW(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    // The canvas column only exists once loading finishes, hence editorReady
+    // in the deps — attaching on mount would observe nothing.
+    const el = canvasColRef.current;
+    let ro;
+    if (el && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver((entries) => setCanvasColW(entries[0]?.contentRect?.width || null));
+      ro.observe(el);
+    }
+    return () => { window.removeEventListener("resize", onResize); if (ro) ro.disconnect(); };
+  }, [editorReady]);
+  const isNarrow = viewportW < 1024;
+  const editorScale = Math.min(1, canvasColW ? Math.max(0.3, (canvasColW - 4) / PAGE_W) : 1);
+  scaleRef.current = editorScale;
 
   const docType = meta?.documentType || "paystub";
   const variants = useMemo(() => getSampleVariants(docType), [docType]);
@@ -372,7 +399,7 @@ export default function AdminTemplateEditor() {
     });
   };
 
-  // ── drag & resize ──
+  // ── drag & resize — pointer events so touch drags work on mobile ──
   const startDrag = (e, el, mode) => {
     e.preventDefault();
     e.stopPropagation();
@@ -382,8 +409,11 @@ export default function AdminTemplateEditor() {
     const onMove = (ev) => {
       const d = dragRef.current;
       if (!d) return;
-      const dx = ev.clientX - d.startX;
-      const dy = ev.clientY - d.startY;
+      // Screen deltas → canvas coordinates (the canvas is scaled down to fit
+      // narrow screens, so a 1px finger move is 1/scale canvas points).
+      const s = scaleRef.current || 1;
+      const dx = (ev.clientX - d.startX) / s;
+      const dy = (ev.clientY - d.startY) / s;
       if (!d.moved && Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
       if (!d.moved) {
         d.moved = true;
@@ -411,11 +441,13 @@ export default function AdminTemplateEditor() {
     };
     const onUp = () => {
       dragRef.current = null;
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   };
 
   // ── keyboard: nudge, delete, undo ──
@@ -523,7 +555,7 @@ export default function AdminTemplateEditor() {
             <ArrowLeft size={16} /><IonRippleEffect />
           </button>
           <input
-            style={{ ...inputStyle, width: 260, fontWeight: 600, fontSize: "0.95rem" }}
+            style={{ ...inputStyle, width: isNarrow ? "min(100%, 260px)" : 260, fontWeight: 600, fontSize: "0.95rem" }}
             value={meta.name}
             onChange={(e) => { setMeta((m) => ({ ...m, name: e.target.value })); setDirty(true); }}
           />
@@ -559,9 +591,10 @@ export default function AdminTemplateEditor() {
           </IonButton>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "190px 1fr 280px", gap: 16, alignItems: "start" }}>
+        {/* Narrow screens stack: canvas first, then properties, then palette */}
+        <div style={{ display: "grid", gridTemplateColumns: isNarrow ? "1fr" : "190px 1fr 280px", gap: 16, alignItems: "start" }}>
           {/* Left: palette */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, order: isNarrow ? 3 : 0, minWidth: 0 }}>
             <div style={panelCard}>
               <p style={{ margin: "0 0 8px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>Add element</p>
               {[["text", "Text", Type], ["rect", "Box", Square], ["line", "Line", Minus], ["table", "Table", Table], ["image", "Logo / Image", ImageIcon]].map(([type, label, Icon]) => (
@@ -597,7 +630,7 @@ export default function AdminTemplateEditor() {
           </div>
 
           {/* Center: canvas */}
-          <div style={{ overflow: "auto", paddingBottom: 24 }}>
+          <div ref={canvasColRef} style={{ overflow: "auto", paddingBottom: 24, order: isNarrow ? 1 : 0, minWidth: 0 }}>
             {/* Page switcher */}
             <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 10 }}>
               {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
@@ -611,10 +644,13 @@ export default function AdminTemplateEditor() {
                 + Page
               </button>
             </div>
+            {/* Fixed-size page scaled down to fit narrow columns; the outer
+                wrapper reserves the scaled footprint so layout stays correct */}
+            <div style={{ width: PAGE_W * editorScale, height: PAGE_H * editorScale, margin: "0 auto" }}>
             <div
               ref={canvasRef}
-              onMouseDown={() => setSelectedId(null)}
-              style={{ position: "relative", width: PAGE_W, height: PAGE_H, margin: "0 auto", background: "#ffffff", boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 12px 32px rgba(0,0,0,0.12)", borderRadius: 2 }}
+              onPointerDown={() => setSelectedId(null)}
+              style={{ position: "relative", width: PAGE_W, height: PAGE_H, transform: `scale(${editorScale})`, transformOrigin: "top left", background: "#ffffff", boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 12px 32px rgba(0,0,0,0.12)", borderRadius: 2 }}
             >
               {layout.elements.filter((el) => (el.page || 1) === currentPage).map((el) => (
                 <CanvasElement
@@ -628,14 +664,15 @@ export default function AdminTemplateEditor() {
                 />
               ))}
             </div>
+            </div>
             <p style={{ textAlign: "center", fontSize: "0.72rem", color: "var(--admin-text-muted)", marginTop: 10 }}>
-              US Letter (612 × 792 pt) · drag to move · corner handle resizes · arrow keys nudge (Shift = 10) · Delete removes · Ctrl+Z undo
+              US Letter (612 × 792 pt) · drag to move (touch works) · corner handle resizes · arrow keys nudge (Shift = 10) · Delete removes · Ctrl+Z undo
               · faded elements are hidden for the current preview variant
             </p>
           </div>
 
           {/* Right: properties */}
-          <div style={{ ...panelCard, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
+          <div style={{ ...panelCard, maxHeight: isNarrow ? "none" : "calc(100vh - 220px)", overflowY: "auto", order: isNarrow ? 2 : 0, minWidth: 0 }}>
             {!selected ? (
               <>
                 <p style={{ fontSize: "0.78rem", color: "var(--admin-text-muted)", margin: "0 0 14px" }}>

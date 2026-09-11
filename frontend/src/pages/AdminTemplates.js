@@ -3,10 +3,30 @@ import { useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import AdminDetailModal from "@/components/AdminDetailModal";
 import AdminListItem from "@/components/AdminListItem";
-import { IonButton, IonRippleEffect, IonSpinner, IonList } from "@ionic/react";
+import { IonButton, IonRippleEffect, IonSpinner, IonList, IonPopover, IonContent, IonItem, IonLabel } from "@ionic/react";
 import { Plus, Pencil, Copy, Trash2, Upload, Undo2, LayoutTemplate } from "lucide-react";
 import { toast } from "@/utils/toast";
 import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
+
+// A controlled IonPopover that mounts fresh on open and fully unmounts on
+// close, anchored to the click event — the same pattern as the admin sidebar
+// business/user menus (a permanently mounted popover desyncs its internal
+// presented flag under the layout's polling re-renders).
+function FreshPopover({ open, event, onClose, children, ...rest }) {
+  const [render, setRender] = useState(open);
+  useEffect(() => { if (open) setRender(true); }, [open]);
+  if (!render) return null;
+  return (
+    <IonPopover
+      isOpen={open}
+      event={event}
+      onDidDismiss={() => { onClose?.(); setRender(false); }}
+      {...rest}
+    >
+      {children}
+    </IonPopover>
+  );
+}
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -17,7 +37,7 @@ export default function AdminTemplates() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
-  const [starterOpen, setStarterOpen] = useState(false);
+  const [starterMenu, setStarterMenu] = useState({ open: false, event: undefined });
   const [detail, setDetail] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -46,7 +66,7 @@ export default function AdminTemplates() {
   useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
   const createTemplate = async (starter) => {
-    setStarterOpen(false);
+    setStarterMenu({ open: false, event: undefined });
     setBusy("create");
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/doc-templates`, {
@@ -63,21 +83,6 @@ export default function AdminTemplates() {
       setBusy(null);
     }
   };
-
-  const StarterMenu = () => (
-    <div style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50, minWidth: 230, background: "var(--ion-card-background)", borderRadius: 8, boxShadow: "0 8px 30px rgba(0,0,0,0.18)", border: "1px solid var(--ion-border-color)", padding: "6px 0" }}>
-      <p style={{ margin: "4px 12px 6px", fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>Start from</p>
-      {STARTER_LAYOUTS.map((s) => (
-        <button key={s.key} onClick={() => createTemplate(s)}
-          style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", border: "none", background: "transparent", color: "var(--admin-text)", fontSize: "0.85rem", cursor: "pointer" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--ion-color-step-50)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-          {s.name}
-          <span style={{ display: "block", fontSize: "0.7rem", color: "var(--admin-text-muted)" }}>{DOC_TYPE_LABELS[s.documentType]}</span>
-        </button>
-      ))}
-    </div>
-  );
 
   const act = async (id, action, method = "POST") => {
     setBusy(id + action);
@@ -103,13 +108,46 @@ export default function AdminTemplates() {
             <h1 className="text-2xl font-bold text-gray-900">Document Templates</h1>
             <p className="text-sm text-gray-500 mt-1">Design, edit, and publish custom document layouts</p>
           </div>
-          <div style={{ position: "relative" }}>
-            <IonButton color="primary" onClick={() => setStarterOpen((o) => !o)} disabled={busy === "create"}>
-              <Plus size={16} style={{ marginRight: 6 }} />New Template
-            </IonButton>
-            {starterOpen && <StarterMenu />}
-          </div>
+          <IonButton color="primary" onClick={(e) => setStarterMenu({ open: true, event: e.nativeEvent })} disabled={busy === "create"}>
+            <Plus size={16} style={{ marginRight: 6 }} />New Template
+          </IonButton>
         </div>
+
+        {/* Starter picker — the same fresh-mounted, event-anchored popover the
+            admin sidebar business/user menus use */}
+        <FreshPopover
+          open={starterMenu.open}
+          event={starterMenu.event}
+          onClose={() => setStarterMenu({ open: false, event: undefined })}
+          side="bottom"
+          alignment="end"
+          style={{ "--width": "284px", "--offset-y": "4px" }}
+        >
+          <IonContent>
+            <IonList lines="none" style={{ padding: "4px 0" }}>
+              <div style={{ padding: "8px 14px 4px", fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)" }}>
+                Start from
+              </div>
+              {STARTER_LAYOUTS.map((s) => (
+                <IonItem
+                  key={s.key}
+                  button
+                  detail={false}
+                  onClick={() => createTemplate(s)}
+                  style={{ "--min-height": "48px", "--padding-start": "14px", "--inner-padding-end": "14px", fontSize: "0.88rem" }}
+                >
+                  <div slot="start" style={{ display: "inline-flex", alignItems: "center", marginRight: 10 }}>
+                    <LayoutTemplate size={18} style={{ color: "var(--ion-color-primary)" }} />
+                  </div>
+                  <IonLabel>
+                    {s.name}
+                    <p style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", margin: 0 }}>{DOC_TYPE_LABELS[s.documentType] || s.documentType}</p>
+                  </IonLabel>
+                </IonItem>
+              ))}
+            </IonList>
+          </IonContent>
+        </FreshPopover>
 
         <div className="table-card">
           {loading ? (

@@ -47,13 +47,6 @@ const FlipWord = () => {
   );
 };
 
-// Telegram icon SVG component
-const TelegramIcon = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-  </svg>
-);
-
 // Testimonials — social proof for the trust section (replaces the old
 // Secure & Instant animation). Portraits are the same ones the paywall uses.
 const HOME_TESTIMONIALS = [
@@ -180,67 +173,13 @@ const StatusBar = ({ dark = false }) => (
 // Live product preview for the hero: the REAL /app/paystubs page running in
 // an iframe inside the iPhone frame, with the create form opened via
 // ?heroPreview=1. Non-interactive (pointer-events none) — it is a preview.
-// One cropped phone shell: the app renders in an iframe at phone width (330)
-// and is scaled to this shell's screen width, so the small side phones show
-// the same layout as the big one, just smaller.
-function CroppedPhone({ src, title, frameW, winH, frameRadius, screenRadius, dark, className = "" }) {
-  const innerW = frameW - 18;
-  const scale = innerW / 330;
-  return (
-    <div className={`relative overflow-hidden pointer-events-none select-none flex-shrink-0 ${className}`} style={{ width: frameW, height: winH }}>
-      <div className="absolute inset-x-0 top-0 bg-[#111] shadow-2xl" style={{ borderRadius: frameRadius, padding: 9 }}>
-        <div className="overflow-hidden relative" style={{ borderRadius: screenRadius, background: dark ? '#1e1e1e' : '#ffffff', height: winH }}>
-          <div style={{ width: 330, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
-            <StatusBar dark={dark} />
-            <iframe
-              src={src}
-              title={title}
-              loading="lazy"
-              scrolling="no"
-              tabIndex={-1}
-              className="border-0 block"
-              style={{ width: 330, height: 700 }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HeroPhonePreview() {
-  // The iframe apps render in the visitor's saved /app theme (shared
-  // localStorage), so each status-bar strip matches the screen behind it.
-  const appDark = (() => {
-    try { return localStorage.getItem("appDarkMode") === "true"; } catch { return false; }
-  })();
-  return (
-    <div className="relative flex items-start justify-center" aria-hidden="true">
-      {/* Resume builder — small phone, tucked behind on the left */}
-      <CroppedPhone
-        src="/app/resumes?heroPreview=1" title="Live resume builder preview"
-        frameW={200} winH={360} frameRadius={32} screenRadius={25}
-        dark={appDark} className="hidden lg:block mt-24 -mr-[52px] z-0"
-      />
-      {/* Paystub form — the main phone */}
-      <CroppedPhone
-        src="/app/paystubs?heroPreview=1" title="Live MintSlip app preview"
-        frameW={330} winH={500} frameRadius={50} screenRadius={42}
-        dark={appDark} className="z-10"
-      />
-      {/* W-2 generator — small phone, tucked behind on the right */}
-      <CroppedPhone
-        src="/app/tax-forms?heroPreview=1" title="Live W-2 generator preview"
-        frameW={200} winH={360} frameRadius={32} screenRadius={25}
-        dark={appDark} className="hidden lg:block mt-24 -ml-[52px] z-0"
-      />
-    </div>
-  );
-}
-
 export default function Home() {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  // The hero phone's iframe renders in the visitor's saved /app theme
+  const heroAppDark = (() => {
+    try { return localStorage.getItem("appDarkMode") === "true"; } catch { return false; }
+  })();
   // Hero stats are hardcoded (the live API numbers read too small)
   const userCount = "1,000+";
 
@@ -259,12 +198,6 @@ export default function Home() {
     }, 300);
     return () => clearTimeout(t);
   }, []);
-
-  const trustPoints = [
-    { icon: CheckCircle, text: "Instant download" },
-    { icon: Shield, text: "Secure payment" },
-    { icon: Clock, text: "No sign-up required" },
-  ];
 
   return (
     // overflow-x: clip contains the decorative blur circles without creating a
@@ -289,86 +222,97 @@ export default function Home() {
       
       <Header title="MintSlip" />
 
-      {/* Hero Section */}
-      <section className="relative max-w-[1288px] mx-auto px-6 pt-14 pb-20 md:pt-20 md:pb-28">
-        {/* Background Decorations */}
-        <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
-        <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
+      {/* Hero Section — Kikoff-style: centered headline + CTA, then a bento
+          grid of stat cards around one live /app phone. */}
+      <section className="relative max-w-[1288px] mx-auto px-6 pt-14 pb-20 md:pt-20 md:pb-24">
+        <div className={`relative transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          {/* Centered headline with the mint sparkle */}
+          <h1 className="font-display text-center text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.08 }}>
+            Generate professional{' '}
+            <span className="font-black text-emerald-700"><FlipWord /></span>{' '}
+            in <span className="font-black">minutes</span>
+            <svg className="inline-block w-7 h-7 md:w-9 md:h-9 ml-2 align-super text-emerald-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 0 C13 7 17 11 24 12 C17 13 13 17 12 24 C11 17 7 13 0 12 C7 11 11 7 12 0 Z" />
+            </svg>
+          </h1>
+          <p className="text-center text-lg md:text-xl leading-relaxed text-slate-600 max-w-2xl mx-auto mb-8">
+            Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.
+          </p>
 
-        <div className={`relative grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-14 lg:gap-10 items-center transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-          {/* Left: copy */}
-          <div className="text-center lg:text-left">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-50 rounded-full border border-emerald-200/80 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-              <span className="text-sm font-medium text-emerald-900">Trusted by {userCount} users</span>
-              <div className="flex gap-0.5" aria-hidden="true">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} xmlns="http://www.w3.org/2000/svg" width="11" height="10" viewBox="0 0 27.39 25.547">
-                    <path d="M88.4,376.72l3.246,9.758H102.1l-8.476,6.031,3.226,9.758L88.4,396.236l-8.456,6.031,3.226-9.758-8.456-6.031H85.169Z" transform="translate(-74.71 -376.72)" fill="#ffb600"/>
-                  </svg>
-                ))}
+          {/* CTA */}
+          <div className="flex justify-center mb-4">
+            <Button
+              onClick={() => navigate("/app")}
+              size="lg"
+              className="cta-shine group gap-2 text-base px-8 py-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10 hover:shadow-lg hover:shadow-emerald-900/15 transition-all duration-200"
+            >
+              <FileText className="w-5 h-5" />
+              Create Pay Stub
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </Button>
+          </div>
+          <p className="text-center text-slate-500 mb-14">Instant download. No sign-up required.</p>
+
+          {/* Bento grid around the phone */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.05fr_1fr] gap-5">
+            {/* Mint headline stat */}
+            <div className="lg:col-span-2 rounded-[28px] bg-emerald-400 px-8 py-14 flex flex-col items-center justify-center text-center">
+              <span className="font-display font-black text-6xl md:text-7xl text-slate-900">1,000+</span>
+              <span className="mt-4 text-lg text-emerald-950 max-w-md">people just like you have created professional documents with MintSlip</span>
+            </div>
+
+            {/* Pricing */}
+            <div className="rounded-[28px] bg-slate-100 px-8 py-14 flex flex-col items-center justify-center text-center lg:col-start-4 lg:row-start-1">
+              <span className="text-xl text-slate-800">Documents start at</span>
+              <span className="font-display font-black text-6xl md:text-7xl text-slate-900 my-2">$9.99</span>
+              <span className="text-xl text-slate-800">each</span>
+            </div>
+
+            {/* Document count */}
+            <div className="rounded-[28px] bg-[#0b0b0b] px-8 py-14 flex flex-col items-center justify-center text-center lg:col-start-1 lg:row-start-2">
+              <span className="font-display font-black text-6xl md:text-7xl text-white">15<span className="text-emerald-400">+</span></span>
+              <span className="mt-3 text-lg text-slate-300">document types ready to generate</span>
+            </div>
+
+            {/* Tagline */}
+            <div className="rounded-[28px] bg-slate-100 px-8 py-14 flex items-center justify-center lg:col-start-2 lg:row-start-2">
+              <span className="font-display text-4xl md:text-5xl text-slate-900 font-medium text-center leading-tight">One form.<br />Done in minutes.</span>
+            </div>
+
+            {/* Live /app phone with mint diagonal accents */}
+            <div className="relative flex items-center justify-center lg:col-start-3 lg:row-start-1 lg:row-span-2 py-6 lg:py-0">
+              <div aria-hidden="true" className="absolute top-3 right-1 w-40 h-40 bg-emerald-400" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+              <div aria-hidden="true" className="absolute bottom-3 left-1 w-40 h-40 bg-emerald-400" style={{ clipPath: 'polygon(0 100%, 0 0, 100% 100%)' }} />
+              <div className="relative bg-[#111] rounded-[48px] p-[10px] shadow-2xl pointer-events-none select-none" aria-hidden="true">
+                <div className="rounded-[40px] overflow-hidden relative" style={{ background: heroAppDark ? '#1e1e1e' : '#ffffff', width: 280 }}>
+                  <StatusBar dark={heroAppDark} />
+                  <iframe
+                    src="/app"
+                    title="Live MintSlip app"
+                    loading="lazy"
+                    scrolling="no"
+                    tabIndex={-1}
+                    className="w-full border-0 block"
+                    style={{ height: 596 }}
+                  />
+                </div>
               </div>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.08 }}>
-              Generate professional{' '}
-              <span className="font-black text-emerald-700"><FlipWord /></span>{' '}
-              in <span className="font-black">minutes</span>
-            </h1>
-            <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl mx-auto lg:mx-0 mb-8">
-              Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <Button
-                onClick={() => navigate("/app")}
-                size="lg"
-                className="cta-shine group gap-2 text-base px-7 py-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10 hover:shadow-lg hover:shadow-emerald-900/15 transition-all duration-200"
-              >
-                <FileText className="w-5 h-5" />
-                Create Pay Stub
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-              </Button>
-              <Button
-                onClick={() => navigate("/app/resumes")}
-                size="lg"
-                variant="outline"
-                className="group gap-2 text-base px-7 py-6 rounded-xl border-slate-300 text-slate-700 hover:border-emerald-600 hover:text-emerald-800 hover:bg-emerald-50/60 transition-all duration-200"
-              >
-                <Sparkles className="w-5 h-5" />
-                AI Resume Builder
-              </Button>
+            {/* Brand gauge */}
+            <div className="rounded-[28px] bg-[#0b0b0b] px-8 py-14 flex items-center justify-center lg:col-start-4 lg:row-start-2">
+              <div className="relative w-40 h-40 flex items-center justify-center">
+                <svg viewBox="0 0 160 160" className="absolute inset-0 w-full h-full" aria-hidden="true">
+                  <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="14" strokeLinecap="round" strokeDasharray="300 500" transform="rotate(115 80 80)" />
+                  <circle cx="80" cy="80" r="66" fill="none" stroke="#34d399" strokeWidth="14" strokeLinecap="round" strokeDasharray="110 500" transform="rotate(115 80 80)" />
+                </svg>
+                <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                  <img src={MintSlipLogo} alt="MintSlip" className="w-16 h-auto" />
+                </div>
+              </div>
             </div>
-
-            {/* Trust indicators */}
-            <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-6 justify-center lg:justify-start">
-              {trustPoints.map((point) => (
-                <li key={point.text} className="flex items-center gap-1.5 text-sm text-slate-500">
-                  <point.icon className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                  {point.text}
-                </li>
-              ))}
-            </ul>
-
-            {/* Telegram Support link */}
-            <a
-              href="https://t.me/+oV7eIADvNlozYTYx"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 mt-6 text-sm font-medium text-slate-500 hover:text-[#0088cc] transition-colors duration-200"
-            >
-              <TelegramIcon className="w-4 h-4" />
-              <span>Join our Telegram support community</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
           </div>
-
-          {/* Right: product preview */}
-          <HeroPhonePreview />
         </div>
-
       </section>
 
       {/* Most-loved laurel section: rotating stats between the leaf marks.

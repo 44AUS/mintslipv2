@@ -181,18 +181,22 @@ const StatusBar = () => (
 function HeroPhonePreview() {
   return (
     <div className="relative flex justify-center" aria-hidden="true">
-      <div className="relative w-[330px] md:w-[350px] bg-[#111] rounded-[52px] p-[10px] shadow-2xl pointer-events-none select-none">
-        <div className="bg-white rounded-[44px] overflow-hidden relative">
-          <StatusBar />
-          <iframe
-            src="/app/paystubs?heroPreview=1"
-            title="Live MintSlip app preview"
-            loading="lazy"
-            scrolling="no"
-            tabIndex={-1}
-            className="w-full border-0 block"
-            style={{ height: 640 }}
-          />
+      {/* Cropped shell like the How-it-works cards: only the top ~500px of
+          the phone shows, the bottom is cut off by this overflow window. */}
+      <div className="relative w-[330px] md:w-[350px] h-[460px] md:h-[500px] overflow-hidden pointer-events-none select-none">
+        <div className="absolute inset-x-0 top-0 bg-[#111] rounded-[52px] p-[10px] shadow-2xl">
+          <div className="bg-white rounded-[44px] overflow-hidden relative">
+            <StatusBar />
+            <iframe
+              src="/app/paystubs?heroPreview=1"
+              title="Live MintSlip app preview"
+              loading="lazy"
+              scrolling="no"
+              tabIndex={-1}
+              className="w-full border-0 block"
+              style={{ height: 640 }}
+            />
+          </div>
         </div>
       </div>
     </div>

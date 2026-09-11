@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, ArrowUp, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Download, Lock } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, ArrowUp, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Download, Lock, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -221,400 +221,6 @@ const EnvelopeAnimation = ({ isVisible }) => (
       @keyframes sparkle {
         0%, 100% { opacity: 0.4; transform: scale(1); }
         50% { opacity: 1; transform: scale(1.5); }
-      }
-    `}</style>
-  </div>
-);
-
-// Why Choose Us Animation - Comparison Animation Component
-const SpeedServiceAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center">
-    <svg viewBox="0 0 280 220" className="w-full h-full max-w-md">
-      {/* Left side - "Others" (faded, outdated) */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateX(0)' : 'translateX(-20px)',
-        transition: 'all 0.5s ease-out'
-      }}>
-        {/* Outdated document */}
-        <rect x="20" y="40" width="80" height="110" rx="4" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="2" strokeDasharray="4 2"/>
-        {/* Messy/faded lines */}
-        <line x1="30" y1="60" x2="85" y2="60" stroke="#cbd5e1" strokeWidth="2" opacity="0.5"/>
-        <line x1="30" y1="75" x2="70" y2="75" stroke="#cbd5e1" strokeWidth="2" opacity="0.4"/>
-        <line x1="30" y1="90" x2="80" y2="90" stroke="#cbd5e1" strokeWidth="2" opacity="0.3"/>
-        <line x1="30" y1="105" x2="65" y2="105" stroke="#cbd5e1" strokeWidth="2" opacity="0.4"/>
-        <line x1="30" y1="120" x2="75" y2="120" stroke="#cbd5e1" strokeWidth="2" opacity="0.3"/>
-        {/* Question mark indicating confusion */}
-        <text x="60" y="145" textAnchor="middle" fill="#94a3b8" fontSize="24" fontWeight="bold"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.6s forwards' : 'none' }}>?</text>
-        {/* "OTHERS" label */}
-        <rect x="30" y="160" width="60" height="18" rx="4" fill="#94a3b8"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.4s forwards' : 'none' }}/>
-        <text x="60" y="173" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 0.4s forwards' : 'none' }}>OTHERS</text>
-        {/* X mark */}
-        <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.3s ease-out 0.8s forwards' : 'none' }}>
-          <circle cx="60" cy="95" r="20" fill="#fee2e2" stroke="#ef4444" strokeWidth="2"/>
-          <path d="M52,87 L68,103 M68,87 L52,103" stroke="#ef4444" strokeWidth="3" strokeLinecap="round"/>
-        </g>
-      </g>
-
-      {/* VS divider */}
-      <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.5s ease-out 0.3s forwards' : 'none' }}>
-        <circle cx="140" cy="105" r="22" fill="#1a4731"/>
-        <text x="140" y="112" textAnchor="middle" fill="#ffffff" fontSize="14" fontWeight="bold">VS</text>
-      </g>
-
-      {/* Right side - "MintSlip" (professional, modern) */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(20px) scale(0.95)',
-        transition: 'all 0.6s ease-out 0.2s'
-      }}>
-        {/* Professional document with glow */}
-        <rect x="175" y="35" width="90" height="120" rx="6" fill="#ffffff" stroke="#1a4731" strokeWidth="3" filter="url(#glow)"/>
-        {/* Document header */}
-        <rect x="175" y="35" width="90" height="25" rx="6" fill="#1a4731"/>
-        <text x="220" y="52" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold">MINTSLIP</text>
-        {/* Clean organized lines */}
-        <line x1="185" y1="72" x2="255" y2="72" stroke="#1a4731" strokeWidth="2" opacity="0.8"
-          style={{ strokeDasharray: 70, strokeDashoffset: isVisible ? 0 : 70, transition: 'stroke-dashoffset 0.5s ease-out 0.7s' }}/>
-        <line x1="185" y1="87" x2="245" y2="87" stroke="#1a4731" strokeWidth="2" opacity="0.6"
-          style={{ strokeDasharray: 60, strokeDashoffset: isVisible ? 0 : 60, transition: 'stroke-dashoffset 0.5s ease-out 0.8s' }}/>
-        <line x1="185" y1="102" x2="250" y2="102" stroke="#1a4731" strokeWidth="2" opacity="0.6"
-          style={{ strokeDasharray: 65, strokeDashoffset: isVisible ? 0 : 65, transition: 'stroke-dashoffset 0.5s ease-out 0.9s' }}/>
-        {/* Amount highlight */}
-        <rect x="185" y="115" width="70" height="20" rx="3" fill="#d1fae5" stroke="#10b981" strokeWidth="1"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1s forwards' : 'none' }}/>
-        <text x="220" y="129" textAnchor="middle" fill="#065f46" fontSize="10" fontWeight="bold"
-          style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.1s forwards' : 'none' }}>$2,450.00</text>
-        {/* MINTSLIP label */}
-        <rect x="185" y="165" width="70" height="18" rx="4" fill="#1a4731"
-          style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}/>
-        <text x="220" y="178" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold"
-          style={{ opacity: 0, animation: isVisible ? 'slideUp 0.4s ease-out 0.5s forwards' : 'none' }}>MINTSLIP</text>
-        {/* Checkmark */}
-        <g style={{ opacity: 0, animation: isVisible ? 'bounceIn 0.5s ease-out 1.2s forwards' : 'none' }}>
-          <circle cx="220" cy="95" r="18" fill="#10b981"/>
-          <path d="M212,95 L217,101 L230,86" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-        </g>
-      </g>
-
-      {/* Floating benefits */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.4s ease-out 1.4s forwards' : 'none' }}>
-        {/* Speed badge */}
-        <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.5s' : 'none' }}>
-          <rect x="170" y="5" width="50" height="20" rx="10" fill="#fbbf24"/>
-          <text x="195" y="18" textAnchor="middle" fill="#1a1a1a" fontSize="7" fontWeight="bold">⚡ FAST</text>
-        </g>
-        {/* Accurate badge */}
-        <g style={{ animation: isVisible ? 'floatBadge 3s ease-in-out infinite 1.8s' : 'none' }}>
-          <rect x="230" y="15" width="48" height="20" rx="10" fill="#10b981"/>
-          <text x="254" y="28" textAnchor="middle" fill="#ffffff" fontSize="7" fontWeight="bold">✓ ACCURATE</text>
-        </g>
-      </g>
-
-      {/* Sparkles around MintSlip */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.3s' }}>
-        <circle cx="270" cy="50" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite' : 'none' }}/>
-        <circle cx="175" cy="165" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 0.2s' : 'none' }}/>
-        <circle cx="268" cy="140" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.4s' : 'none' }}/>
-      </g>
-
-      {/* Arrow pointing to MintSlip */}
-      <g style={{ opacity: 0, animation: isVisible ? 'slideRight 0.5s ease-out 1s forwards' : 'none' }}>
-        <path d="M120,200 Q140,185 160,195" fill="none" stroke="#1a4731" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M155,190 L162,196 L154,200" fill="#1a4731"/>
-        <text x="130" y="215" textAnchor="middle" fill="#1a4731" fontSize="8" fontWeight="bold">CHOOSE BETTER</text>
-      </g>
-
-      {/* SVG filter for glow effect */}
-      <defs>
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-          <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
-          </feMerge>
-        </filter>
-      </defs>
-    </svg>
-
-    <style>{`
-      @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      @keyframes popIn {
-        0% { opacity: 0; transform: scale(0); }
-        70% { transform: scale(1.15); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes bounceIn {
-        0% { opacity: 0; transform: scale(0); }
-        60% { transform: scale(1.2); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes slideUp {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes slideRight {
-        0% { opacity: 0; transform: translateX(-10px); }
-        100% { opacity: 1; transform: translateX(0); }
-      }
-      @keyframes floatBadge {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-5px); }
-      }
-      @keyframes sparkle {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.5); }
-      }
-    `}</style>
-  </div>
-);
-
-// Instant Download Animation Component - for "Instant Download" card
-const InstantDownloadAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center">
-    <svg viewBox="0 0 200 200" className="w-full h-full max-w-xs">
-      {/* Cloud shape */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
-        transition: 'all 0.5s ease-out'
-      }}>
-        <ellipse cx="100" cy="50" rx="50" ry="25" fill="#e8f5e9"/>
-        <ellipse cx="70" cy="55" rx="30" ry="18" fill="#e8f5e9"/>
-        <ellipse cx="130" cy="55" rx="30" ry="18" fill="#e8f5e9"/>
-        <ellipse cx="100" cy="60" rx="45" ry="20" fill="#e8f5e9"/>
-      </g>
-
-      {/* Document with download animation */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        animation: isVisible ? 'downloadSlide 1.5s ease-out 0.3s infinite' : 'none'
-      }}>
-        {/* Document */}
-        <rect x="75" y="70" width="50" height="65" rx="4" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
-        {/* Document corner fold */}
-        <path d="M115,70 L115,82 L125,82 Z" fill="#e8f5e9" stroke="#1a4731" strokeWidth="1"/>
-        {/* Document lines */}
-        <line x1="82" y1="90" x2="108" y2="90" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
-        <line x1="82" y1="100" x2="115" y2="100" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
-        <line x1="82" y1="110" x2="105" y2="110" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
-        <line x1="82" y1="120" x2="112" y2="120" stroke="#1a4731" strokeWidth="2" strokeLinecap="round" opacity="0.3"/>
-      </g>
-
-      {/* Download arrow */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        animation: isVisible ? 'arrowBounce 1.5s ease-out 0.3s infinite' : 'none'
-      }}>
-        <path d="M100,140 L100,175" stroke="#1a4731" strokeWidth="4" strokeLinecap="round"/>
-        <path d="M88,163 L100,178 L112,163" fill="none" stroke="#1a4731" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-
-      {/* Download base/device */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.4s ease-out 0.5s'
-      }}>
-        <rect x="60" y="180" width="80" height="12" rx="3" fill="#1a4731"/>
-        <rect x="70" y="176" width="60" height="8" rx="2" fill="#1a4731"/>
-      </g>
-
-      {/* Speed lines */}
-      <g style={{ 
-        opacity: isVisible ? 0.5 : 0,
-        animation: isVisible ? 'speedLines 1.5s ease-out 0.3s infinite' : 'none'
-      }}>
-        <line x1="55" y1="95" x2="45" y2="95" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="55" y1="105" x2="40" y2="105" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="55" y1="115" x2="48" y2="115" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="95" x2="155" y2="95" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="105" x2="160" y2="105" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="145" y1="115" x2="152" y2="115" stroke="#10b981" strokeWidth="2" strokeLinecap="round"/>
-      </g>
-
-      {/* Checkmark that appears */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'checkAppear 1.5s ease-out 0.3s infinite' : 'none'
-      }}>
-        <circle cx="130" cy="160" r="15" fill="#10b981"/>
-        <path d="M122,160 L128,167 L140,152" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-
-      {/* Sparkles */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 0.8s' }}>
-        <circle cx="45" cy="70" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.2s ease-in-out infinite' : 'none' }}/>
-        <circle cx="160" cy="75" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite 0.2s' : 'none' }}/>
-        <circle cx="170" cy="140" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.3s ease-in-out infinite 0.4s' : 'none' }}/>
-      </g>
-    </svg>
-
-    <style>{`
-      @keyframes downloadSlide {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(15px); }
-      }
-      @keyframes arrowBounce {
-        0%, 100% { transform: translateY(0); opacity: 1; }
-        50% { transform: translateY(8px); opacity: 0.7; }
-      }
-      @keyframes speedLines {
-        0%, 100% { opacity: 0; }
-        40%, 60% { opacity: 0.6; }
-      }
-      @keyframes checkAppear {
-        0%, 60% { opacity: 0; transform: scale(0); }
-        70% { opacity: 1; transform: scale(1.2); }
-        80%, 100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes sparkle {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.4); }
-      }
-    `}</style>
-  </div>
-);
-
-// No Data Stored Animation Component - for "No Data Stored" card  
-const NoDataStoredAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center">
-    <svg viewBox="0 0 200 200" className="w-full h-full max-w-xs">
-      {/* Shield shape */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'scale(1)' : 'scale(0.8)',
-        transformOrigin: '100px 100px',
-        transition: 'all 0.6s ease-out'
-      }}>
-        <path 
-          d="M100,20 L160,45 L160,100 C160,140 130,170 100,185 C70,170 40,140 40,100 L40,45 Z" 
-          fill="#fef2f2" 
-          stroke="#ef4444" 
-          strokeWidth="3"
-        />
-        {/* Shield inner glow */}
-        <path 
-          d="M100,35 L145,55 L145,100 C145,130 120,155 100,167 C80,155 55,130 55,100 L55,55 Z" 
-          fill="#ffffff" 
-          opacity="0.7"
-        />
-      </g>
-
-      {/* Lock icon */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'all 0.5s ease-out 0.3s'
-      }}>
-        {/* Lock body */}
-        <rect x="80" y="90" width="40" height="35" rx="5" fill="#dc2626"/>
-        {/* Lock shackle */}
-        <path 
-          d="M85,90 L85,75 C85,60 115,60 115,75 L115,90" 
-          fill="none" 
-          stroke="#dc2626" 
-          strokeWidth="6"
-          strokeLinecap="round"
-        />
-        {/* Keyhole */}
-        <circle cx="100" cy="102" r="6" fill="#ffffff"/>
-        <rect x="97" y="105" width="6" height="12" rx="2" fill="#ffffff"/>
-      </g>
-
-      {/* Crossed out data/document */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.4s ease-out 0.6s'
-      }}>
-        {/* Small document icon */}
-        <rect x="145" y="60" width="30" height="40" rx="3" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
-        <line x1="150" y1="72" x2="170" y2="72" stroke="#ef4444" strokeWidth="1.5" opacity="0.5"/>
-        <line x1="150" y1="80" x2="165" y2="80" stroke="#ef4444" strokeWidth="1.5" opacity="0.5"/>
-        <line x1="150" y1="88" x2="168" y2="88" stroke="#ef4444" strokeWidth="1.5" opacity="0.5"/>
-        {/* X over document */}
-        <line x1="143" y1="55" x2="178" y2="105" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
-          style={{
-            strokeDasharray: 70,
-            strokeDashoffset: isVisible ? 0 : 70,
-            transition: 'stroke-dashoffset 0.5s ease-out 0.8s'
-          }}/>
-        <line x1="178" y1="55" x2="143" y2="105" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
-          style={{
-            strokeDasharray: 70,
-            strokeDashoffset: isVisible ? 0 : 70,
-            transition: 'stroke-dashoffset 0.5s ease-out 1s'
-          }}/>
-      </g>
-
-      {/* Database icon crossed out */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.4s ease-out 0.7s'
-      }}>
-        {/* Database shape */}
-        <ellipse cx="40" cy="75" rx="18" ry="8" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
-        <path d="M22,75 L22,105 C22,113 58,113 58,105 L58,75" fill="#fecaca" stroke="#ef4444" strokeWidth="1.5"/>
-        <ellipse cx="40" cy="90" rx="18" ry="5" fill="none" stroke="#ef4444" strokeWidth="1" opacity="0.5"/>
-        {/* X over database */}
-        <line x1="20" y1="65" x2="60" y2="115" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
-          style={{
-            strokeDasharray: 60,
-            strokeDashoffset: isVisible ? 0 : 60,
-            transition: 'stroke-dashoffset 0.5s ease-out 0.9s'
-          }}/>
-        <line x1="60" y1="65" x2="20" y2="115" stroke="#dc2626" strokeWidth="3" strokeLinecap="round"
-          style={{
-            strokeDasharray: 60,
-            strokeDashoffset: isVisible ? 0 : 60,
-            transition: 'stroke-dashoffset 0.5s ease-out 1.1s'
-          }}/>
-      </g>
-
-      {/* Privacy checkmarks */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'fadeInCheck 0.4s ease-out 1.3s forwards' : 'none'
-      }}>
-        <circle cx="100" cy="155" r="12" fill="#10b981"/>
-        <path d="M94,155 L98,160 L108,148" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </g>
-
-      {/* "PRIVATE" badge */}
-      <g style={{ 
-        opacity: 0,
-        animation: isVisible ? 'slideBadge 0.5s ease-out 1.5s forwards' : 'none'
-      }}>
-        <rect x="70" y="175" width="60" height="18" rx="9" fill="#1a4731"/>
-        <text x="100" y="187" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold">PRIVATE</text>
-      </g>
-
-      {/* Floating secure icons */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.5s ease-out 1.2s' }}>
-        <circle cx="25" cy="140" r="3" fill="#10b981" style={{ animation: isVisible ? 'float 2s ease-in-out infinite' : 'none' }}/>
-        <circle cx="175" cy="145" r="2.5" fill="#10b981" style={{ animation: isVisible ? 'float 2.5s ease-in-out infinite 0.3s' : 'none' }}/>
-        <circle cx="170" cy="30" r="2" fill="#10b981" style={{ animation: isVisible ? 'float 2.2s ease-in-out infinite 0.6s' : 'none' }}/>
-      </g>
-    </svg>
-
-    <style>{`
-      @keyframes fadeInCheck {
-        0% { opacity: 0; transform: scale(0); }
-        70% { transform: scale(1.2); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes slideBadge {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-8px); }
       }
     `}</style>
   </div>
@@ -1320,99 +926,76 @@ export default function Home() {
         );
       })()}
 
-      {/* Why Choose Our Paystub Generator Section */}
+      {/* How MintSlip compares — whodat's landing compare table in the mint
+          palette: green gradient check pills with the looping shine, gray X
+          or muted text for the Others column. */}
       {(() => {
-        const [whyChooseRef, whyChooseInView] = useInView();
+        const [compareRef, compareInView] = useInView();
+        const rows = [
+          ["Automatic tax & deduction math", "Some"],
+          ["Modern, professional templates", "no"],
+          ["Instant PDF download", "Some"],
+          ["No account or subscription required", "no"],
+          ["Live human support", "Varies"],
+        ];
         return (
-          <section ref={whyChooseRef} className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-6">
-              {/* Top Section - Why Choose Us (Full Width) */}
-              <div className="bg-slate-50/70 rounded-3xl border border-slate-200/80 p-8 md:p-12 mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                  <div className="space-y-6 order-2 md:order-1">
-                    <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-                      Why Choose Our{' '}
-                      <span className="relative inline-block" style={{ color: '#1a4731' }}>
-                        Paystub
-                        <svg 
-                          className="absolute -bottom-2 left-0 w-full" 
-                          viewBox="0 0 120 20" 
-                          preserveAspectRatio="none"
-                          style={{ overflow: 'visible', height: '12px' }}
-                        >
-                          <path 
-                            d="M2,14 Q30,14 60,12 Q90,10 105,8 Q112,6 118,3" 
-                            stroke="#1a4731" 
-                            strokeWidth="4" 
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            style={{
-                              strokeDasharray: 150,
-                              strokeDashoffset: whyChooseInView ? 0 : 150,
-                              transition: 'stroke-dashoffset 0.6s ease-out 0.3s'
-                            }}
-                          />
-                        </svg>
-                      </span>
-                      <br />Generator Vs. Others
-                    </h2>
-                    <p className="text-lg leading-relaxed text-slate-600">
-                      Unlike other paystub generators that rely on generic, outdated templates, our paystub generator delivers meticulously designed paystub templates built for a modern, professional look. Each pay stub template is crafted for clarity, accuracy, and real world usability. Our advanced pay stub calculator makes generating accurate, professional pay stubs fast, easy, and problem-free.
-                    </p>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                        <span className="text-slate-700">Lightning-Fast Paystub Generation</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                        <span className="text-slate-700">Top-Notch Customer Support</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="flex justify-center items-center order-1 md:order-2">
-                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl overflow-hidden h-72 w-full border border-emerald-100 shadow-sm flex items-center justify-center">
-                      <SpeedServiceAnimation isVisible={whyChooseInView} />
-                    </div>
-                  </div>
+          <section ref={compareRef} className="py-20 md:py-24 bg-white">
+            <div className="max-w-[1288px] mx-auto px-6">
+              <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-6 transition-all duration-700 ${compareInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                How <span className="font-black">MintSlip</span> compares to others.
+              </h2>
+              <p className={`text-center text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-12 transition-all duration-700 delay-100 ${compareInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                Most generators hand you a generic template and leave the math to you. MintSlip calculates everything, looks professional, and downloads instantly.
+              </p>
+
+              <div className={`overflow-x-auto transition-all duration-700 delay-200 ${compareInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <div className="rounded-[20px] border border-slate-200 overflow-hidden bg-white min-w-[520px] max-w-4xl mx-auto">
+                  <table className="w-full border-collapse text-[15px]">
+                    <thead>
+                      <tr>
+                        <th className="px-5 md:px-6 py-4 text-left bg-slate-50 font-medium text-slate-900 border-b border-slate-200">Capability</th>
+                        <th className="px-5 md:px-6 py-4 text-center bg-slate-50 font-medium text-slate-900 border-b border-slate-200 w-[150px]">MintSlip</th>
+                        <th className="px-5 md:px-6 py-4 text-center bg-slate-50 font-medium text-slate-900 border-b border-slate-200 w-[150px]">Others</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map(([cap, o], i) => {
+                        const bb = i === rows.length - 1 ? "" : " border-b border-slate-200";
+                        return (
+                          <tr key={cap}>
+                            <td className={`px-5 md:px-6 py-4 text-slate-800${bb}`}>{cap}</td>
+                            <td className={`px-5 md:px-6 py-4 text-center${bb}`}>
+                              <span
+                                className="cta-shine inline-flex items-center justify-center min-w-[96px] h-9 px-5 rounded-full text-white"
+                                style={{ background: 'linear-gradient(180deg, #34d399, #10b981)', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.4)' }}
+                                aria-label="Yes"
+                              >
+                                <Check className="w-5 h-5" strokeWidth={3} />
+                              </span>
+                            </td>
+                            <td className={`px-5 md:px-6 py-4 text-center${bb}`}>
+                              {o === "no"
+                                ? <X className="w-5 h-5 text-slate-300 inline" strokeWidth={2.5} aria-label="No" />
+                                : <span className="text-sm text-slate-500">{o}</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-          {/* Bottom Section - Two Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Instant Download Card */}
-            <div className="bg-emerald-50/80 rounded-3xl border border-emerald-100 p-8 overflow-hidden">
-              <h3 className="font-display text-2xl md:text-3xl font-bold mb-2 text-center text-slate-900">
-                Instant Download
-              </h3>
-              <p className="text-slate-600 mb-5 text-center">
-                Download your generated documents immediately after creation
-              </p>
-              <div className="relative">
-                <div className="bg-white rounded-2xl overflow-hidden border border-emerald-100 shadow-sm h-64 flex items-center justify-center">
-                  <InstantDownloadAnimation isVisible={whyChooseInView} />
-                </div>
+              <div className="text-center mt-7">
+                <button
+                  onClick={() => navigate("/mintslip-vs-other-paystub-generators")}
+                  className="text-slate-900 underline underline-offset-4 text-[15px] hover:text-emerald-700 transition-colors"
+                >
+                  See the full comparison against other paystub generators.
+                </button>
               </div>
             </div>
-
-            {/* No Data Stored Card */}
-            <div className="bg-slate-50/80 rounded-3xl border border-slate-200 p-8 overflow-hidden">
-              <h3 className="font-display text-2xl md:text-3xl font-bold mb-2 text-center text-slate-900">
-                No Data Stored
-              </h3>
-              <p className="text-slate-600 mb-5 text-center">
-                We don&apos;t save your personal information or generated documents
-              </p>
-              <div className="relative">
-                <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm h-64 flex items-center justify-center">
-                  <NoDataStoredAnimation isVisible={whyChooseInView} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
         );
       })()}
 

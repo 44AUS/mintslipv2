@@ -71,6 +71,7 @@ import BlogPost from "@/pages/BlogPost";
 import ScrollToTop from "@/components/ScrollToTop";
 import PromoBanner from "@/components/PromoBanner";
 import IonToaster from "@/components/IonToaster";
+import UpdateNotifier from "@/components/UpdateNotifier";
 import Reviews from "@/pages/Reviews";
 import ComparisonPage from "@/pages/ComparisonPage";
 import DocumentDirectory from "@/pages/DocumentDirectory";
@@ -203,6 +204,7 @@ function MobileApp() {
       <Elements stripe={stripePromise} options={STRIPE_ELEMENT_FONTS}>
         <div className="App">
           <IonToaster />
+          <UpdateNotifier />
           <BrowserRouter>
             <BodyThemeSync />
             <Routes>
@@ -264,6 +266,7 @@ function App() {
           <IPBanCheck>
             <div className="App">
               <IonToaster />
+              <UpdateNotifier />
               <BrowserRouter>
                 <MinimizedChatsProvider currentUser={currentUser} messagesApi={messagesApi}>
                 <MinimizedChatsFAB currentUser={currentUser} />

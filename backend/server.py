@@ -3028,12 +3028,15 @@ async def stripe_webhook(request: Request):
     return {"status": "received"}
 
 
-async def record_payment_intent_purchase(payment_intent, fallback_ip: str = "") -> bool:
+async def record_payment_intent_purchase(payment_intent, fallback_ip: str = "", created_at: str = None, quiet: bool = False) -> bool:
     """Record a one-time document purchase from a succeeded payment intent.
 
     Idempotent (deduped by stripePaymentIntentId) and shared by the Stripe
-    webhook and the /payment-success fallback endpoint, so a missed webhook
-    can never leave a paid document without its purchase record."""
+    webhook, the /payment-success fallback endpoint, and the admin Stripe
+    reconcile, so a missed webhook can never leave a paid document without
+    its purchase record. `created_at` backdates a reconciled purchase to the
+    original payment time; `quiet` skips the notification/follow-up emails
+    (used when backfilling old records)."""
     metadata = payment_intent.metadata
     if not metadata.get("documentType"):
         return False
@@ -3064,16 +3067,17 @@ async def record_payment_intent_purchase(payment_intent, fallback_ip: str = "") 
         "quantity": quantity,
         "isGuest": True,
         "ipAddress": metadata.get("clientIp", "") or fallback_ip,
-        "createdAt": datetime.now(timezone.utc).isoformat()
+        "createdAt": created_at or datetime.now(timezone.utc).isoformat()
     }
     await purchases_collection.insert_one(purchase)
-    asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"], purchase["id"]))
+    if not quiet:
+        asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"], purchase["id"]))
 
-    # Same follow-up emails as the hosted-checkout flow (the download
-    # confirmation with the attached file is sent from the frontend)
-    if customer_email:
-        asyncio.create_task(send_review_request(customer_email, "", purchase["documentType"], None))
-        asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
+        # Same follow-up emails as the hosted-checkout flow (the download
+        # confirmation with the attached file is sent from the frontend)
+        if customer_email:
+            asyncio.create_task(send_review_request(customer_email, "", purchase["documentType"], None))
+            asyncio.create_task(cancel_abandoned_checkout_email(customer_email))
 
     # Increment discount code usage if one was used
     if discount_code:
@@ -3107,6 +3111,56 @@ async def confirm_payment_intent(request: Request):
         return {"success": False, "status": payment_intent.status}
     recorded = await record_payment_intent_purchase(payment_intent, get_client_ip(request))
     return {"success": True, "recorded": recorded}
+
+
+@app.post("/api/admin/purchases/reconcile")
+async def reconcile_purchases(request: Request, session: dict = Depends(get_current_admin)):
+    """Backfill purchases missed by the Stripe webhook.
+
+    Scans succeeded payment intents from the last N days (default 30) that
+    carry documentType metadata and records any without a purchase, dated to
+    the original payment time so the calendar shows them on the right day.
+    Idempotent — already-recorded intents are skipped."""
+    check_permission(session, "view_purchases")
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    try:
+        days = min(90, max(1, int(data.get("days") or 30)))
+    except (TypeError, ValueError):
+        days = 30
+
+    created_gte = int((datetime.now(timezone.utc) - timedelta(days=days)).timestamp())
+    checked = 0
+    recovered = []
+    starting_after = None
+    while True:
+        params = {"limit": 100, "created": {"gte": created_gte}}
+        if starting_after:
+            params["starting_after"] = starting_after
+        try:
+            batch = stripe.PaymentIntent.list(**params)
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Stripe error: {e}")
+        for pi in batch.data:
+            checked += 1
+            if pi.status != "succeeded" or not (pi.metadata or {}).get("documentType"):
+                continue
+            paid_at = datetime.fromtimestamp(pi.created, tz=timezone.utc).isoformat()
+            if await record_payment_intent_purchase(pi, "", created_at=paid_at, quiet=True):
+                recovered.append({
+                    "paymentIntentId": pi.id,
+                    "documentType": pi.metadata.get("documentType"),
+                    "amount": pi.amount / 100,
+                    "email": pi.metadata.get("email", ""),
+                    "paidAt": paid_at,
+                })
+        if not getattr(batch, "has_more", False) or checked >= 2000:
+            break
+        starting_after = batch.data[-1].id
+
+    return {"success": True, "days": days, "checked": checked, "recoveredCount": len(recovered), "recovered": recovered}
 
 
 @app.post("/api/stripe/cancel-subscription")

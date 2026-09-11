@@ -5,11 +5,12 @@ import {
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline,
-  funnelOutline,
+  funnelOutline, syncOutline,
 } from "ionicons/icons";
 import AdminLayout from "@/components/AdminLayout";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 import AdminListItem from "@/components/AdminListItem";
+import { toast } from "@/utils/toast";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -206,6 +207,33 @@ export default function AdminPurchases() {
     a.click();
   };
 
+  // Backfill purchases the Stripe webhook missed (paid documents that show in
+  // Saved Docs but never landed here or on the calendar).
+  const [syncing, setSyncing] = useState(false);
+  const syncStripe = async () => {
+    setSyncing(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/purchases/reconcile`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ days: 90 }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Sync failed");
+      if (data.recoveredCount > 0) {
+        toast.success(`Recovered ${data.recoveredCount} missing purchase${data.recoveredCount !== 1 ? "s" : ""} (checked ${data.checked} payments)`);
+        fetchPurchases();
+      } else {
+        toast.success(`All good — no missing purchases (checked ${data.checked} payments)`);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <AdminLayout fillHeight>
       <div style={{ padding: 10, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -223,6 +251,18 @@ export default function AdminPurchases() {
                 </p>
               </div>
               <div style={{ display: "flex", gap: 4 }}>
+                <IonButton
+                  fill="solid" size="small" onClick={syncStripe} disabled={syncing}
+                  title="Backfill purchases missed by the Stripe webhook (last 90 days)"
+                  style={{ "--background": "var(--ion-background-color)", "--color": "var(--ion-text-color)" }}
+                >
+                  <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", marginInlineEnd: 6 }}>
+                    {syncing
+                      ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} />
+                      : <IonIcon icon={syncOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />}
+                  </span>
+                  {syncing ? "Syncing…" : "Sync Stripe"}
+                </IonButton>
                 <IonButton fill="solid" size="small" style={{ "--background": "var(--ion-background-color)", "--color": "var(--ion-text-color)" }}>
                   <span slot="start" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 0, flexShrink: 0, fontSize: "1rem", marginInlineEnd: 6 }}>
                     <IonIcon icon={funnelOutline} style={{ fontSize: "inherit", color: "inherit", pointerEvents: "none" }} />

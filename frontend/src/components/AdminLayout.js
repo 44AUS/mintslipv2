@@ -50,6 +50,13 @@ const saveRecent = (uid, r) => {
     return list;
   } catch { return []; }
 };
+const deleteRecent = (uid, route) => {
+  try {
+    const list = loadRecents(uid).filter((x) => x.route !== route);
+    localStorage.setItem(recentsKey(uid), JSON.stringify(list));
+    return list;
+  } catch { return []; }
+};
 const initialOf = (s) => ((s || "").trim().charAt(0) || "?").toUpperCase();
 
 // Tabs hidden from the top-bar segment (shown in sidebar or settings)
@@ -236,23 +243,47 @@ export default function AdminLayout({ children, fillHeight = false }) {
     if (e.key === "Enter" && searchFlatRows.length) openSearchResult(searchFlatRows[Math.min(activeIdx, searchFlatRows.length - 1)]);
   };
 
-  // One search-result row: an initials circle (no category icon chips);
-  // `is-active` tracks the arrow-key/hover selection, Enter opens it.
-  const renderSearchRow = (r, idx) => (
-    <button
+  // One search-result row: an IonItem (native Ionic ripple) with an initials
+  // circle; `is-active` tracks the arrow-key/hover selection, Enter opens it.
+  // Recents rows (`clearable`) get an X beside the arrow that removes just
+  // that entry from the recently-viewed list without opening it.
+  const renderSearchRow = (r, idx, clearable = false) => (
+    <IonItem
       key={`${r.type}-${idx}`}
-      type="button"
+      button
+      detail={false}
+      lines="none"
       className={`admin-search-row${idx === activeIdx ? " is-active" : ""}`}
       onMouseEnter={() => setActiveIdx(idx)}
       onClick={() => openSearchResult(r)}
     >
-      <span className="admin-search-row-fallback">{initialOf(r.title)}</span>
-      <span className="admin-search-row-main">
-        <span className="admin-search-row-title">{r.title}</span>
-        {r.subtitle && <span className="admin-search-row-sub">{r.subtitle}</span>}
-      </span>
-      <IonIcon icon={arrowForwardOutline} className="admin-search-row-go" />
-    </button>
+      <div className="admin-search-row-inner">
+        <span className="admin-search-row-fallback">{initialOf(r.title)}</span>
+        <span className="admin-search-row-main">
+          <span className="admin-search-row-title">{r.title}</span>
+          {r.subtitle && <span className="admin-search-row-sub">{r.subtitle}</span>}
+        </span>
+        {clearable && (
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label={`Remove ${r.title} from recently viewed`}
+            className="admin-search-row-clear ion-activatable"
+            onClick={(e) => { e.stopPropagation(); setRecents(deleteRecent(adminIdForRecents, r.route)); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault(); e.stopPropagation();
+                setRecents(deleteRecent(adminIdForRecents, r.route));
+              }
+            }}
+          >
+            <IonIcon icon={closeOutline} />
+            <ion-ripple-effect />
+          </span>
+        )}
+        <IonIcon icon={arrowForwardOutline} className="admin-search-row-go" />
+      </div>
+    </IonItem>
   );
 
   const [adminProfile, setAdminProfile] = useState(null);
@@ -890,7 +921,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
               {showingRecents ? (
                 <>
                   <div className="admin-search-group">Recently viewed</div>
-                  {recents.map((r, i) => renderSearchRow(r, i))}
+                  {recents.map((r, i) => renderSearchRow(r, i, true))}
                 </>
               ) : searching && searchResults.length === 0 ? (
                 <div className="admin-search-empty"><IonSpinner name="crescent" style={{ width: 16, height: 16 }} /> Searching…</div>

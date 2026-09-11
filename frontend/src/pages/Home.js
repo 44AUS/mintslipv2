@@ -180,33 +180,60 @@ const StatusBar = ({ dark = false }) => (
 // Live product preview for the hero: the REAL /app/paystubs page running in
 // an iframe inside the iPhone frame, with the create form opened via
 // ?heroPreview=1. Non-interactive (pointer-events none) — it is a preview.
-function HeroPhonePreview() {
-  // The iframe app renders in the visitor's saved /app theme (shared
-  // localStorage), so the status-bar strip matches the screen behind it:
-  // the modal toolbar's --ion-card-background (#fff light / #1e1e1e dark).
-  const appDark = (() => {
-    try { return localStorage.getItem("appDarkMode") === "true"; } catch { return false; }
-  })();
+// One cropped phone shell: the app renders in an iframe at phone width (330)
+// and is scaled to this shell's screen width, so the small side phones show
+// the same layout as the big one, just smaller.
+function CroppedPhone({ src, title, frameW, winH, frameRadius, screenRadius, dark, className = "" }) {
+  const innerW = frameW - 18;
+  const scale = innerW / 330;
   return (
-    <div className="relative flex justify-center" aria-hidden="true">
-      {/* Cropped shell like the How-it-works cards: only the top ~500px of
-          the phone shows, the bottom is cut off by this overflow window. */}
-      <div className="relative w-[330px] md:w-[350px] h-[460px] md:h-[500px] overflow-hidden pointer-events-none select-none">
-        <div className="absolute inset-x-0 top-0 bg-[#111] rounded-[52px] p-[10px] shadow-2xl">
-          <div className="rounded-[44px] overflow-hidden relative" style={{ background: appDark ? '#1e1e1e' : '#ffffff' }}>
-            <StatusBar dark={appDark} />
+    <div className={`relative overflow-hidden pointer-events-none select-none flex-shrink-0 ${className}`} style={{ width: frameW, height: winH }}>
+      <div className="absolute inset-x-0 top-0 bg-[#111] shadow-2xl" style={{ borderRadius: frameRadius, padding: 9 }}>
+        <div className="overflow-hidden relative" style={{ borderRadius: screenRadius, background: dark ? '#1e1e1e' : '#ffffff', height: winH }}>
+          <div style={{ width: 330, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+            <StatusBar dark={dark} />
             <iframe
-              src="/app/paystubs?heroPreview=1"
-              title="Live MintSlip app preview"
+              src={src}
+              title={title}
               loading="lazy"
               scrolling="no"
               tabIndex={-1}
-              className="w-full border-0 block"
-              style={{ height: 640 }}
+              className="border-0 block"
+              style={{ width: 330, height: 700 }}
             />
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function HeroPhonePreview() {
+  // The iframe apps render in the visitor's saved /app theme (shared
+  // localStorage), so each status-bar strip matches the screen behind it.
+  const appDark = (() => {
+    try { return localStorage.getItem("appDarkMode") === "true"; } catch { return false; }
+  })();
+  return (
+    <div className="relative flex items-start justify-center" aria-hidden="true">
+      {/* Resume builder — small phone, tucked behind on the left */}
+      <CroppedPhone
+        src="/app/resumes?heroPreview=1" title="Live resume builder preview"
+        frameW={200} winH={360} frameRadius={32} screenRadius={25}
+        dark={appDark} className="hidden lg:block mt-24 -mr-[52px] z-0"
+      />
+      {/* Paystub form — the main phone */}
+      <CroppedPhone
+        src="/app/paystubs?heroPreview=1" title="Live MintSlip app preview"
+        frameW={330} winH={500} frameRadius={50} screenRadius={42}
+        dark={appDark} className="z-10"
+      />
+      {/* W-2 generator — small phone, tucked behind on the right */}
+      <CroppedPhone
+        src="/app/tax-forms?heroPreview=1" title="Live W-2 generator preview"
+        frameW={200} winH={360} frameRadius={32} screenRadius={25}
+        dark={appDark} className="hidden lg:block mt-24 -ml-[52px] z-0"
+      />
     </div>
   );
 }
@@ -263,12 +290,12 @@ export default function Home() {
       <Header title="MintSlip" />
 
       {/* Hero Section */}
-      <section className="relative max-w-7xl mx-auto px-6 pt-14 pb-20 md:pt-20 md:pb-28">
+      <section className="relative max-w-[1288px] mx-auto px-6 pt-14 pb-20 md:pt-20 md:pb-28">
         {/* Background Decorations */}
         <div aria-hidden="true" className="absolute top-10 -left-32 w-96 h-96 bg-emerald-100/60 rounded-full filter blur-3xl pointer-events-none" />
         <div aria-hidden="true" className="absolute bottom-0 -right-32 w-[28rem] h-[28rem] bg-emerald-50 rounded-full filter blur-3xl pointer-events-none" />
 
-        <div className={`relative grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-16 items-center transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+        <div className={`relative grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-14 lg:gap-10 items-center transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           {/* Left: copy */}
           <div className="text-center lg:text-left">
             {/* Badge */}
@@ -284,10 +311,10 @@ export default function Home() {
               </div>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.1 }}>
-              Generate Professional{' '}
-              <span className="text-emerald-700"><FlipWord /></span>{' '}
-              in Minutes
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-slate-900 mb-5" style={{ lineHeight: 1.08 }}>
+              Generate professional{' '}
+              <span className="font-black text-emerald-700"><FlipWord /></span>{' '}
+              in <span className="font-black">minutes</span>
             </h1>
             <p className="text-lg md:text-xl leading-relaxed text-slate-600 max-w-xl mx-auto lg:mx-0 mb-8">
               Create accurate pay stubs, ATS-optimized resumes, W-2 forms, and more in minutes. No sign-up required.

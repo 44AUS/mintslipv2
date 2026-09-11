@@ -67,13 +67,17 @@ const TAX_FORMS = [
 ];
 
 export default function AppTaxForms() {
+  // Hero preview mode: the marketing homepage embeds this page inside a hero
+  // phone — boot straight into the W-2 form modal, hide the page behind it.
+  const heroPreview = new URLSearchParams(window.location.search).has("heroPreview");
   const [previews, setPreviews] = useState({});
   const [loadingPreviews, setLoadingPreviews] = useState(true);
-  const [activeForm, setActiveForm] = useState(null); // key of the open form modal
+  const [activeForm, setActiveForm] = useState(heroPreview ? "w2" : null); // key of the open form modal
   const disabledGenerators = useDisabledGenerators();
   const visibleForms = TAX_FORMS.filter(form => !disabledGenerators.has(form.key));
 
   useEffect(() => {
+    if (heroPreview) return undefined; // hero phone never shows the cards
     let cancelled = false;
     (async () => {
       for (const form of TAX_FORMS) {
@@ -88,11 +92,11 @@ export default function AppTaxForms() {
       if (!cancelled) setLoadingPreviews(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, []); // eslint-disable-line
 
   return (
     <AppLayout fillHeight>
-      <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box", ...(heroPreview ? { display: "none" } : null) }}>
         <div style={{ background: "var(--ion-card-background)", borderRadius: 6, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
           {visibleForms.length === 0 && !loadingPreviews && (
             <p style={{ color: "var(--ion-color-medium)", fontSize: "0.9rem", textAlign: "center", padding: "32px 0" }}>

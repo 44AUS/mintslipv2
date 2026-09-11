@@ -54,10 +54,13 @@ const RESUME_SAMPLE = {
 };
 
 export default function AppResumes() {
+  // Hero preview mode: the marketing homepage embeds this page inside a hero
+  // phone — boot straight into the builder modal, hide the page behind it.
+  const heroPreview = new URLSearchParams(window.location.search).has("heroPreview");
   const [previews, setPreviews] = useState({});
   const [loadingPreviews, setLoadingPreviews] = useState(true);
   const [customTemplates, setCustomTemplates] = useState([]);
-  const [builderOpen, setBuilderOpen] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(heroPreview);
 
   // Admin-published custom resume templates join the grid
   useEffect(() => {
@@ -79,6 +82,7 @@ export default function AppResumes() {
 
   // Render each template's sample preview as its card image
   useEffect(() => {
+    if (heroPreview) return undefined; // hero phone never shows the cards
     let cancelled = false;
     (async () => {
       for (const tpl of templateCards) {
@@ -107,7 +111,7 @@ export default function AppResumes() {
 
   return (
     <AppLayout fillHeight>
-      <div style={{ padding: 10, height: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: 10, height: "100%", boxSizing: "border-box", ...(heroPreview ? { display: "none" } : null) }}>
         <div style={{ background: "var(--ion-card-background)", borderRadius: 6, padding: "20px 20px 24px", height: "100%", overflowY: "auto", boxShadow: "0 2px 12px rgba(0,0,0,0.10)", boxSizing: "border-box" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
             {templateCards.map((tpl, cardIdx) => (

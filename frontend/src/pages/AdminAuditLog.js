@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/AdminLayout";
+import { confirmAlert } from "@/utils/confirmAlert";
 import {
   IonButton, IonIcon, IonList, IonSpinner, IonSegment, IonSegmentButton, IonLabel,
 } from "@ionic/react";
@@ -139,7 +140,7 @@ export default function AdminAuditLog() {
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   const handleClear = async () => {
-    if (!window.confirm("Clear the entire audit log? This cannot be undone.")) return;
+    if (!(await confirmAlert({ header: "Clear the entire audit log?", message: "This cannot be undone." }))) return;
     setClearing(true);
     try {
       const token = localStorage.getItem("adminToken");

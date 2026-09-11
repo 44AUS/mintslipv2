@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
+import { confirmAlert } from "@/utils/confirmAlert";
 import AdminListItem from "@/components/AdminListItem";
 import { AdminDateInput } from "@/components/DateInput";
 
@@ -266,7 +267,7 @@ export default function AdminDiscounts() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this discount code?")) return;
+    if (!(await confirmAlert({ header: "Delete this discount code?", message: "This cannot be undone." }))) return;
     try {
       const response = await fetch(`${BACKEND_URL}/api/admin/discounts/${id}`, {
         method: "DELETE",

@@ -6,7 +6,7 @@ import {
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner, IonRippleEffect,
-  IonSkeletonText, IonAlert,
+  IonSkeletonText,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -45,6 +45,7 @@ import SupportChatWidget from "./SupportChatWidget";
 import PromoBanner from "./PromoBanner";
 import PreviewPager from "./PreviewPager";
 import { buildNotificationPreviewPages } from "../utils/notificationPreview";
+import { confirmAlert } from "../utils/confirmAlert";
 import { t, useLanguage } from "../utils/i18n";
 import "../admin-theme.css";
 
@@ -139,9 +140,6 @@ export default function AppLayout({ children, fillHeight = false }) {
   const [toastOpen,         setToastOpen]           = useState(false);
   const [toastMessage,      setToastMessage]        = useState("");
   const [redownloadingId,   setRedownloadingId]     = useState(null);
-  // Destructive-action confirm (clear all / delete) — Ionic alert with the
-  // same cancel/ok colors as the tax-year select alerts.
-  const [confirmAlert,      setConfirmAlert]        = useState(null);
   // Notification preview modal — shows the pages of the document the user
   // bought, swipeable + slider via <PreviewPager>.
   const [previewNotif,      setPreviewNotif]        = useState(null);
@@ -692,11 +690,11 @@ export default function AppLayout({ children, fillHeight = false }) {
               <IonButton
                 color="danger"
                 size="small"
-                onClick={() => setConfirmAlert({
-                  header: t("Clear all notifications?"),
-                  message: t("This removes every notification from the list."),
-                  onConfirm: () => { clearAllNotifications(); setNotifications([]); },
-                })}
+                onClick={async () => {
+                  if (await confirmAlert({ header: t("Clear all notifications?"), message: t("This removes every notification from the list.") })) {
+                    clearAllNotifications(); setNotifications([]);
+                  }
+                }}
               >
                 {t("Clear all")}
               </IonButton>
@@ -832,15 +830,13 @@ export default function AppLayout({ children, fillHeight = false }) {
                 <IonButton
                   expand="block"
                   color="danger"
-                  onClick={() => setConfirmAlert({
-                    header: t("Delete this notification?"),
-                    message: previewNotif.fileName || "",
-                    onConfirm: () => {
+                  onClick={async () => {
+                    if (await confirmAlert({ header: t("Delete this notification?"), message: previewNotif.fileName || "" })) {
                       removeNotification(previewNotif.id);
                       setNotifications(getNotifications());
                       closePreview();
-                    },
-                  })}
+                    }
+                  }}
                 >
                   {t("Delete")}
                 </IonButton>
@@ -850,19 +846,6 @@ export default function AppLayout({ children, fillHeight = false }) {
         </div>,
         document.querySelector("ion-app") || document.body
       )}
-
-      {/* ── Destructive-action confirm alert (clear all / delete) — cancel is
-          red, confirm is primary green, same as the tax-year select alert ── */}
-      <IonAlert
-        isOpen={!!confirmAlert}
-        onDidDismiss={() => setConfirmAlert(null)}
-        header={confirmAlert?.header}
-        message={confirmAlert?.message}
-        buttons={[
-          { text: t("Cancel"), role: "cancel" },
-          { text: t("Confirm"), handler: () => confirmAlert?.onConfirm?.() },
-        ]}
-      />
 
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && createPortal(<>

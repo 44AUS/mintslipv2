@@ -6,6 +6,7 @@ import AdminListItem from "@/components/AdminListItem";
 import { IonButton, IonRippleEffect, IonSpinner, IonList, IonPopover, IonContent, IonItem, IonLabel } from "@ionic/react";
 import { Plus, Pencil, Copy, Trash2, Upload, Undo2, LayoutTemplate } from "lucide-react";
 import { toast } from "@/utils/toast";
+import { confirmAlert } from "@/utils/confirmAlert";
 import { STARTER_LAYOUTS } from "@/utils/layoutEngine";
 
 // A controlled IonPopover that mounts fresh on open and fully unmounts on
@@ -230,7 +231,7 @@ export default function AdminTemplates() {
                             </button>
                           )}
                           <button className="ion-activatable admin-action-btn danger" title="Delete"
-                            onClick={() => { if (window.confirm(`Delete "${t.name}"? This cannot be undone.`)) act(t.id, "", "DELETE"); }}>
+                            onClick={async () => { if (await confirmAlert({ header: `Delete "${t.name}"?`, message: "This cannot be undone." })) act(t.id, "", "DELETE"); }}>
                             <Trash2 size={15} /><IonRippleEffect />
                           </button>
                         </div>
@@ -281,7 +282,7 @@ export default function AdminTemplates() {
             </IonButton>
             <IonButton expand="block" fill="outline" color="danger"
               onClick={async () => {
-                if (!window.confirm(`Delete "${detail.name}"? This cannot be undone.`)) return;
+                if (!(await confirmAlert({ header: `Delete "${detail.name}"?`, message: "This cannot be undone." }))) return;
                 if (await act(detail.id, "", "DELETE")) setDetail(null);
               }}>
               Delete Template

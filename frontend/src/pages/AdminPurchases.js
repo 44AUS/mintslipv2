@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner, IonList, IonAlert,
+  IonSegment, IonSegmentButton, IonLabel, IonIcon, IonButton, IonSpinner, IonList,
 } from "@ionic/react";
 import {
   refreshOutline, downloadOutline,
@@ -11,6 +11,7 @@ import AdminLayout from "@/components/AdminLayout";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 import AdminListItem from "@/components/AdminListItem";
 import { toast } from "@/utils/toast";
+import { confirmAlert, infoAlert } from "@/utils/confirmAlert";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 
@@ -210,7 +211,6 @@ export default function AdminPurchases() {
   // Backfill purchases the Stripe webhook missed (paid documents that show in
   // Saved Docs but never landed here or on the calendar).
   const [syncing, setSyncing] = useState(false);
-  const [orphanReport, setOrphanReport] = useState(null);
   const syncStripe = async () => {
     setSyncing(true);
     try {
@@ -230,7 +230,16 @@ export default function AdminPurchases() {
       }
       // Saved documents with no payment behind them at all — nothing to
       // recover; show what they are so the mystery is solved on the spot.
-      if (data.orphanCount > 0) setOrphanReport(data);
+      if (data.orphanCount > 0) {
+        infoAlert({
+          header: `${data.orphanCount} saved document${data.orphanCount !== 1 ? "s" : ""} without a payment`,
+          cssClass: "sync-report-alert",
+          message: (data.orphans || [])
+            .map(o => `• ${DOCUMENT_TYPES[o.documentType] || o.documentType || "Document"} — ${o.email || "no email"} — ${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "unknown date"}`)
+            .join("\n")
+            + "\n\nNo Stripe payment exists for these, so there is no purchase to recover — they were saved by a non-payment flow such as a subscription or free download.",
+        });
+      }
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -485,22 +494,6 @@ export default function AdminPurchases() {
         </div>
       </div>
 
-      {/* Post-sync report: saved documents that have no Stripe payment at all
-          (subscription/free downloads) — no purchase can exist for these. */}
-      <IonAlert
-        isOpen={!!orphanReport}
-        onDidDismiss={() => setOrphanReport(null)}
-        cssClass="sync-report-alert"
-        header={orphanReport ? `${orphanReport.orphanCount} saved document${orphanReport.orphanCount !== 1 ? "s" : ""} without a payment` : ""}
-        message={orphanReport ? (
-          (orphanReport.orphans || [])
-            .map(o => `• ${DOCUMENT_TYPES[o.documentType] || o.documentType || "Document"} — ${o.email || "no email"} — ${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "unknown date"}`)
-            .join("\n")
-          + "\n\nNo Stripe payment exists for these, so there is no purchase to recover — they were saved by a non-payment flow such as a subscription or free download."
-        ) : ""}
-        buttons={["OK"]}
-      />
-
       {/* ── Payment detail modal (whodat admin payments style) ── */}
       <PurchaseDetailModal
         purchase={detail}
@@ -510,7 +503,7 @@ export default function AdminPurchases() {
           setDetail(d => (d ? { ...d, refunded: true, refundedAmount: amount } : d));
         }}
         onDelete={async (p) => {
-          if (!window.confirm("Delete this purchase? This cannot be undone.")) return;
+          if (!(await confirmAlert({ header: "Delete this purchase?", message: "This cannot be undone." }))) return;
           const token = localStorage.getItem("adminToken");
           await fetch(`${BACKEND_URL}/api/admin/purchases/${p.id}`, {
             method: "DELETE",

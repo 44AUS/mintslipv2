@@ -17,6 +17,7 @@ import { generateAllPreviewImages } from "@/utils/paystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { useDisabledGenerators } from "@/utils/generatorAvailability";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
+import { confirmAlert } from "@/utils/confirmAlert";
 import { saveGuestDocument } from "@/utils/guestSave";
 import CheckoutWithPaywall from "@/components/CheckoutWithPaywall";
 import PreviewPager from "@/components/PreviewPager";
@@ -679,8 +680,8 @@ export default function AppPaystub() {
   }));
 
   // ── Clear form ────────────────────────────────────────────────────────────
-  const clearForm = () => {
-    if (!window.confirm("Clear the form? All entered data will be lost.")) return;
+  const clearForm = async () => {
+    if (!(await confirmAlert({ header: "Clear the form?", message: "All entered data will be lost.", confirmText: "Clear" }))) return;
     setFormData(defaultFormData);
     setDeductions([]); setContributions([]); setAbsencePlans([]); setEmployerBenefits([]); setHoursPerPeriod([]);
     setCompanyLogo(null); setLogoPreview(null); setSelectedPayrollCompany(null); setCompanySearchQuery("");

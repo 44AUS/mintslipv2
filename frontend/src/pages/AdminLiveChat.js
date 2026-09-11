@@ -10,6 +10,7 @@ import SupportCenter from "@/components/SupportCenter";
 import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 import { useMinimizedChats } from "@/contexts/MinimizedChatsContext";
 import { toast } from "@/utils/toast";
+import { confirmAlert } from "@/utils/confirmAlert";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
 const POLL_MS = 8000;
@@ -275,7 +276,7 @@ export default function AdminLiveChat() {
   }, []);
 
   const handleDelete = useCallback(async (id) => {
-    if (!window.confirm("Permanently delete this conversation? This cannot be undone.")) return;
+    if (!(await confirmAlert({ header: "Delete this conversation?", message: "Permanently deletes the ticket and its messages. This cannot be undone." }))) return;
     const token = localStorage.getItem("adminToken");
     await fetch(`${BACKEND_URL}/api/admin/support-chats/${id}`, {
       method: "DELETE",

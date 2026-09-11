@@ -11,6 +11,7 @@ import {
 } from "ionicons/icons";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
+import { confirmAlert } from "@/utils/confirmAlert";
 import AdminListItem from "@/components/AdminListItem";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
@@ -140,7 +141,7 @@ export default function AdminBannedIPs() {
   };
 
   const unbanIp = async (ip) => {
-    if (!window.confirm(`Unban IP ${ip}?`)) return;
+    if (!(await confirmAlert({ header: `Unban IP ${ip}?`, message: "This removes the ban immediately." }))) return;
     try {
       const res = await fetch(`${BACKEND_URL}/api/admin/banned-ips/${encodeURIComponent(ip)}`, {
         method: "DELETE",

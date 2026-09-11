@@ -18,6 +18,7 @@ import PreviewPager from "@/components/PreviewPager";
 import { generateAllCanadianPreviewImages } from "@/utils/canadianPaystubPreviewGenerator";
 import { fetchPublishedLayout } from "@/utils/layoutEngine";
 import { isNative, nativePost, getStripeOrigin } from "@/utils/nativeHttp"; // eslint-disable-line no-unused-vars
+import { confirmAlert } from "@/utils/confirmAlert";
 import {
   CANADIAN_PROVINCES,
   formatSIN, validateSIN,
@@ -646,8 +647,8 @@ export default function AppCanadianPaystub() {
   }));
 
   // ── Clear form ────────────────────────────────────────────────────────────
-  const clearForm = () => {
-    if (!window.confirm("Clear the form? All entered data will be lost.")) return;
+  const clearForm = async () => {
+    if (!(await confirmAlert({ header: "Clear the form?", message: "All entered data will be lost.", confirmText: "Clear" }))) return;
     setFormData(defaultFormData);
     setDeductions([]); setContributions([]); setAbsencePlans([]); setEmployerBenefits([]); setHoursPerPeriod([]);
     setCompanyLogo(null); setLogoPreview(null);

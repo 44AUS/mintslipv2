@@ -11,6 +11,7 @@ import {
 import { X, Clock } from "lucide-react";
 import { toast } from "@/utils/toast";
 import AdminLayout from "@/components/AdminLayout";
+import { confirmAlert } from "@/utils/confirmAlert";
 import AdminDetailModal from "@/components/AdminDetailModal";
 import AdminListItem from "@/components/AdminListItem";
 
@@ -138,7 +139,7 @@ export default function AdminUsers() {
 
   // ── actions ────────────────────────────────────────────────────────────────
   const deleteUser = async (userId) => {
-    if (!window.confirm("Delete this user? This will remove their subscription and session data.")) return false;
+    if (!(await confirmAlert({ header: "Delete this user?", message: "This will remove their subscription and session data." }))) return false;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/users/${userId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },

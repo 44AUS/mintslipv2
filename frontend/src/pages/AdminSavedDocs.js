@@ -7,6 +7,7 @@ import {
 } from "ionicons/icons";
 import { Eye, Trash2, X } from "lucide-react";
 import { toast } from "@/utils/toast";
+import { confirmAlert } from "@/utils/confirmAlert";
 import AdminLayout from "@/components/AdminLayout";
 import AdminDetailModal from "@/components/AdminDetailModal";
 import AdminListItem from "@/components/AdminListItem";
@@ -175,7 +176,7 @@ export default function AdminSavedDocs() {
 
   const deleteDoc = async (docId, e) => {
     e?.stopPropagation();
-    if (!window.confirm("Delete this saved document? This cannot be undone.")) return false;
+    if (!(await confirmAlert({ header: "Delete this saved document?", message: "This cannot be undone." }))) return false;
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`${BACKEND_URL}/api/admin/saved-documents/${docId}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },

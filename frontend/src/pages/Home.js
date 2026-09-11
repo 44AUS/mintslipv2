@@ -19,6 +19,8 @@ import JakePhoto from '../assests/images/Jake.png';
 import KevinPhoto from '../assests/images/Kevin.png';
 import SophiaPhoto from '../assests/images/Sophia.png';
 import FiveStars from '../assests/images/5star.png';
+import LeftLeaf from '../assests/images/left-leaf.avif';
+import RightLeaf from '../assests/images/right-leaf.avif';
 
 // Rotating hero word: flips out, swaps, flips back in on a loop
 const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Documents"];
@@ -1288,6 +1290,81 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Most-loved laurel section: rotating stats between the leaf marks.
+          The "Featured in" logo strip is intentionally hidden for now. */}
+      {(() => {
+        const [lovedRef, lovedInView] = useInView();
+        const stats = [
+          { big: "4.9", small: "App Store Rating" },
+          { big: "1,000+", small: "User Reviews" },
+          { big: "15+", small: "Document Types" },
+          { big: "24/7", small: "Live Chat Support" },
+        ];
+        return (
+          <section ref={lovedRef} className="bg-white py-20 md:py-24">
+            <div className="max-w-5xl mx-auto px-6 text-center">
+              <h2 className={`font-display text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-6 transition-all duration-700 ${lovedInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                The most-loved <span className="font-black">paystub generator</span>.
+              </h2>
+              <p className={`text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-14 transition-all duration-700 delay-100 ${lovedInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                We've helped thousands of people just like you take control of their paperwork.
+              </p>
+
+              <div className={`laurel-stats transition-all duration-700 delay-200 ${lovedInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                <img src={LeftLeaf} alt="" aria-hidden="true" className="laurel-img" />
+                <div className="laurel-ticker" aria-label="MintSlip highlights">
+                  <div className="laurel-track">
+                    {[...stats, stats[0]].map((s, i) => (
+                      <div className="laurel-slide" key={i}>
+                        <span className="laurel-big">{s.big}</span>
+                        <span className="laurel-small">{s.small}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <img src={RightLeaf} alt="" aria-hidden="true" className="laurel-img" />
+              </div>
+            </div>
+
+            <style>{`
+              .laurel-stats {
+                --laurel-slide-h: 130px;
+                display: flex; align-items: center; justify-content: center; gap: 10px;
+              }
+              .laurel-img { height: 180px; width: auto; flex-shrink: 0; }
+              .laurel-ticker { height: var(--laurel-slide-h); min-width: 250px; overflow: hidden; }
+              .laurel-track { display: flex; flex-direction: column; animation: laurelScroll 14s infinite; }
+              .laurel-slide {
+                height: var(--laurel-slide-h); flex-shrink: 0;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+              }
+              .laurel-big {
+                font-family: 'Outfit', sans-serif; font-weight: 900;
+                font-size: 56px; line-height: 1.05; color: #0f172a;
+              }
+              .laurel-small { margin-top: 4px; font-size: 17px; color: #475569; }
+              @keyframes laurelScroll {
+                0%, 21%   { transform: translateY(0); }
+                25%, 46%  { transform: translateY(calc(var(--laurel-slide-h) * -1)); }
+                50%, 71%  { transform: translateY(calc(var(--laurel-slide-h) * -2)); }
+                75%, 96%  { transform: translateY(calc(var(--laurel-slide-h) * -3)); }
+                100%      { transform: translateY(calc(var(--laurel-slide-h) * -4)); }
+              }
+              @media (max-width: 640px) {
+                .laurel-stats { --laurel-slide-h: 104px; }
+                .laurel-img { height: 130px; }
+                .laurel-ticker { min-width: 190px; }
+                .laurel-big { font-size: 42px; }
+                .laurel-small { font-size: 15px; }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .laurel-track { animation: none; }
+              }
+            `}</style>
+          </section>
+        );
+      })()}
 
       {/* What is a Pay stub? Section - with scroll-triggered animation */}
       {(() => {

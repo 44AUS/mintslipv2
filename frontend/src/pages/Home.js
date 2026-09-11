@@ -11,9 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import select from '../assests/select.png';
-import inputInfo from '../assests/inputInfo.png';
-import download from '../assests/download.png';
+import MintSlipLogo from '../assests/mintslip-logo.png';
 import EmilyPhoto from '../assests/images/Emily.png';
 import JakePhoto from '../assests/images/Jake.png';
 import KevinPhoto from '../assests/images/Kevin.png';
@@ -377,206 +375,6 @@ const SpeedServiceAnimation = ({ isVisible }) => (
   </div>
 );
 
-// Paystub Reveal Animation Component - for "What is a Pay Stub?" section
-const PaystubRevealAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center p-4">
-    <svg viewBox="0 0 300 380" className="w-full h-full max-w-md drop-shadow-2xl">
-      {/* Main paystub document */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0, 
-        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        transition: 'all 0.6s ease-out'
-      }}>
-        {/* Document shadow */}
-        <rect x="18" y="18" width="264" height="344" rx="8" fill="rgba(0,0,0,0.1)"/>
-        {/* Document background */}
-        <rect x="12" y="12" width="264" height="344" rx="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="2"/>
-        
-        {/* Company Header - slides down */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateY(0)' : 'translateY(-20px)',
-          transition: 'all 0.5s ease-out 0.3s'
-        }}>
-          <rect x="12" y="12" width="264" height="50" rx="8" fill="#1a4731"/>
-          <text x="144" y="35" textAnchor="middle" fill="#ffffff" fontSize="14" fontWeight="bold" style={{ fontFamily: 'system-ui' }}>MINTSLIP CORPORATION</text>
-          <text x="144" y="52" textAnchor="middle" fill="#a7f3d0" fontSize="8">EARNINGS STATEMENT</text>
-        </g>
-
-        {/* Pay Period Info - fades in */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.4s ease-out 0.6s'
-        }}>
-          <rect x="24" y="72" width="120" height="32" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
-          <text x="32" y="85" fill="#64748b" fontSize="7">PAY PERIOD</text>
-          <text x="32" y="97" fill="#1a4731" fontSize="9" fontWeight="600">01/01/2025 - 01/15/2025</text>
-          
-          <rect x="152" y="72" width="112" height="32" rx="4" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
-          <text x="160" y="85" fill="#64748b" fontSize="7">PAY DATE</text>
-          <text x="160" y="97" fill="#1a4731" fontSize="9" fontWeight="600">01/20/2025</text>
-        </g>
-
-        {/* Employee Info Section - slides in from left */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateX(0)' : 'translateX(-30px)',
-          transition: 'all 0.5s ease-out 0.8s'
-        }}>
-          <rect x="24" y="114" width="240" height="40" rx="4" fill="#ecfdf5" stroke="#a7f3d0" strokeWidth="1"/>
-          <text x="32" y="128" fill="#64748b" fontSize="7">EMPLOYEE</text>
-          <text x="32" y="142" fill="#1a4731" fontSize="11" fontWeight="700">John M. Smith</text>
-          <text x="160" y="128" fill="#64748b" fontSize="7">EMPLOYEE ID</text>
-          <text x="160" y="142" fill="#1a4731" fontSize="10" fontWeight="600">EMP-2025-0142</text>
-        </g>
-
-        {/* Earnings Section Header */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.4s ease-out 1s'
-        }}>
-          <rect x="24" y="164" width="240" height="20" rx="2" fill="#1a4731"/>
-          <text x="32" y="177" fill="#ffffff" fontSize="8" fontWeight="600">EARNINGS</text>
-          <text x="130" y="177" fill="#ffffff" fontSize="8" fontWeight="600">HOURS</text>
-          <text x="175" y="177" fill="#ffffff" fontSize="8" fontWeight="600">RATE</text>
-          <text x="220" y="177" fill="#ffffff" fontSize="8" fontWeight="600">AMOUNT</text>
-        </g>
-
-        {/* Earnings Row - animates value */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.4s ease-out 1.2s'
-        }}>
-          <rect x="24" y="186" width="240" height="22" rx="0" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1"/>
-          <text x="32" y="200" fill="#334155" fontSize="9">Regular Pay</text>
-          <text x="138" y="200" fill="#334155" fontSize="9" fontWeight="500">80.00</text>
-          <text x="175" y="200" fill="#334155" fontSize="9">$25.00</text>
-          <text x="220" y="200" fill="#1a4731" fontSize="9" fontWeight="600"
-            style={{
-              opacity: isVisible ? 1 : 0,
-              animation: isVisible ? 'countUp 0.8s ease-out 1.5s forwards' : 'none'
-            }}>$2,000.00</text>
-        </g>
-
-        {/* Overtime Row */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.4s ease-out 1.4s'
-        }}>
-          <rect x="24" y="208" width="240" height="22" rx="0" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1"/>
-          <text x="32" y="222" fill="#334155" fontSize="9">Overtime</text>
-          <text x="138" y="222" fill="#334155" fontSize="9" fontWeight="500">8.00</text>
-          <text x="175" y="222" fill="#334155" fontSize="9">$37.50</text>
-          <text x="220" y="222" fill="#1a4731" fontSize="9" fontWeight="600">$300.00</text>
-        </g>
-
-        {/* Gross Pay */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.4s ease-out 1.6s'
-        }}>
-          <rect x="24" y="232" width="240" height="22" rx="0" fill="#d1fae5" stroke="#6ee7b7" strokeWidth="1"/>
-          <text x="32" y="246" fill="#065f46" fontSize="9" fontWeight="700">GROSS PAY</text>
-          <text x="220" y="246" fill="#065f46" fontSize="10" fontWeight="700">$2,300.00</text>
-        </g>
-
-        {/* Deductions Section */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'translateX(0)' : 'translateX(30px)',
-          transition: 'all 0.5s ease-out 1.8s'
-        }}>
-          <rect x="24" y="262" width="240" height="18" rx="2" fill="#fef2f2"/>
-          <text x="32" y="274" fill="#991b1b" fontSize="8" fontWeight="600">DEDUCTIONS</text>
-          
-          <g>
-            <text x="32" y="292" fill="#64748b" fontSize="8">Federal Tax</text>
-            <text x="220" y="292" fill="#dc2626" fontSize="8" fontWeight="500">-$287.50</text>
-          </g>
-          <g>
-            <text x="32" y="306" fill="#64748b" fontSize="8">State Tax</text>
-            <text x="220" y="306" fill="#dc2626" fontSize="8" fontWeight="500">-$115.00</text>
-          </g>
-          <g>
-            <text x="32" y="320" fill="#64748b" fontSize="8">Social Security</text>
-            <text x="220" y="320" fill="#dc2626" fontSize="8" fontWeight="500">-$142.60</text>
-          </g>
-        </g>
-
-        {/* Net Pay - Final reveal with emphasis */}
-        <g style={{ 
-          opacity: isVisible ? 1 : 0,
-          transform: isVisible ? 'scale(1)' : 'scale(0.9)',
-          transformOrigin: '144px 342px',
-          transition: 'all 0.5s ease-out 2.2s'
-        }}>
-          <rect x="24" y="330" width="240" height="26" rx="4" fill="#1a4731"/>
-          <text x="32" y="347" fill="#ffffff" fontSize="10" fontWeight="700">NET PAY</text>
-          <text x="210" y="347" fill="#34d399" fontSize="12" fontWeight="800"
-            style={{
-              textShadow: '0 0 10px rgba(52, 211, 153, 0.5)'
-            }}>$1,754.90</text>
-        </g>
-      </g>
-
-      {/* Floating decorative elements */}
-      <g style={{ 
-        opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.5s ease-out 2.5s'
-      }}>
-        {/* Checkmark badge */}
-        <g style={{
-          animation: isVisible ? 'bounceIn 0.6s ease-out 2.6s forwards' : 'none',
-          opacity: 0
-        }}>
-          <circle cx="264" cy="30" r="20" fill="#10b981" stroke="#ffffff" strokeWidth="3"/>
-          <path d="M254,30 L261,38 L276,22" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-            style={{
-              strokeDasharray: 30,
-              strokeDashoffset: isVisible ? 0 : 30,
-              transition: 'stroke-dashoffset 0.4s ease-out 2.8s'
-            }}/>
-        </g>
-
-        {/* Dollar signs floating */}
-        <text x="8" y="100" fill="#10b981" fontSize="18" opacity="0.4"
-          style={{ animation: isVisible ? 'floatUp 2s ease-in-out infinite 2.5s' : 'none' }}>$</text>
-        <text x="278" y="200" fill="#10b981" fontSize="14" opacity="0.3"
-          style={{ animation: isVisible ? 'floatUp 2.5s ease-in-out infinite 2.7s' : 'none' }}>$</text>
-        <text x="5" y="300" fill="#10b981" fontSize="12" opacity="0.3"
-          style={{ animation: isVisible ? 'floatUp 2.2s ease-in-out infinite 2.9s' : 'none' }}>$</text>
-      </g>
-
-      {/* Sparkle effects */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 2.8s' }}>
-        <circle cx="280" cy="80" r="3" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.5s ease-in-out infinite' : 'none' }}/>
-        <circle cx="20" cy="180" r="2" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.8s ease-in-out infinite 0.3s' : 'none' }}/>
-        <circle cx="285" cy="280" r="2.5" fill="#fbbf24" style={{ animation: isVisible ? 'sparkle 1.6s ease-in-out infinite 0.6s' : 'none' }}/>
-      </g>
-    </svg>
-    
-    <style>{`
-      @keyframes countUp {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      @keyframes bounceIn {
-        0% { opacity: 0; transform: scale(0); }
-        60% { transform: scale(1.2); }
-        100% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes floatUp {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-      }
-      @keyframes sparkle {
-        0%, 100% { opacity: 0.3; transform: scale(1); }
-        50% { opacity: 1; transform: scale(1.5); }
-      }
-    `}</style>
-  </div>
-);
-
 // Instant Download Animation Component - for "Instant Download" card
 const InstantDownloadAnimation = ({ isVisible }) => (
   <div className="relative w-full h-full flex items-center justify-center">
@@ -872,129 +670,6 @@ const TestimonialCard = ({ t, inView, delay }) => (
       <p className="mt-4 font-bold" style={{ color: '#1a4731' }}>{t.name}</p>
       <p className="text-slate-600">{t.city}</p>
     </div>
-  </div>
-);
-
-// Form Typing Animation Component
-const FormTypingAnimation = ({ isVisible }) => (
-  <div className="relative w-full h-full flex items-center justify-center p-4">
-    <svg viewBox="0 0 280 220" className="w-full h-full max-w-sm">
-      {/* Form container */}
-      <rect x="20" y="10" width="240" height="200" rx="12" fill="#ffffff" stroke="#1a4731" strokeWidth="2"/>
-      
-      {/* Form header */}
-      <rect x="20" y="10" width="240" height="35" rx="12" fill="#1a4731"/>
-      <text x="140" y="33" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="bold">PAYSTUB GENERATOR</text>
-      
-      {/* Company Name Field */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out' }}>
-        <text x="35" y="65" fill="#666666" fontSize="8">Company Name</text>
-        <rect x="35" y="70" width="110" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
-        <text x="40" y="84" fill="#1a4731" fontSize="10" fontWeight="500"
-          style={{ 
-            opacity: isVisible ? 1 : 0,
-            animation: isVisible ? 'typeText 0.8s steps(10) 0.3s forwards' : 'none'
-          }}>
-          <tspan className="typing-text">MintSlip Inc</tspan>
-        </text>
-        {/* Cursor */}
-        <rect x="100" y="74" width="2" height="12" fill="#1a4731"
-          style={{ 
-            opacity: isVisible ? 1 : 0,
-            animation: isVisible ? 'blink 0.5s infinite 0.3s, moveCursor1 0.8s ease-out 0.3s forwards' : 'none'
-          }}/>
-      </g>
-      
-      {/* Employee Name Field */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 0.5s' }}>
-        <text x="155" y="65" fill="#666666" fontSize="8">Employee Name</text>
-        <rect x="155" y="70" width="95" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
-        <text x="160" y="84" fill="#1a4731" fontSize="10" fontWeight="500"
-          style={{ 
-            opacity: isVisible ? 1 : 0,
-            animation: isVisible ? 'typeText 0.6s steps(8) 1s forwards' : 'none'
-          }}>John Doe</text>
-      </g>
-      
-      {/* Hourly Rate Field */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 1s' }}>
-        <text x="35" y="108" fill="#666666" fontSize="8">Hourly Rate</text>
-        <rect x="35" y="113" width="80" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
-        <text x="40" y="127" fill="#1a4731" fontSize="10" fontWeight="500"
-          style={{ 
-            opacity: isVisible ? 1 : 0,
-            animation: isVisible ? 'typeText 0.4s steps(6) 1.5s forwards' : 'none'
-          }}>$25.00</text>
-      </g>
-      
-      {/* Hours Worked Field */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 1.3s' }}>
-        <text x="125" y="108" fill="#666666" fontSize="8">Hours Worked</text>
-        <rect x="125" y="113" width="60" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
-        <text x="130" y="127" fill="#1a4731" fontSize="10" fontWeight="500"
-          style={{ 
-            opacity: isVisible ? 1 : 0,
-            animation: isVisible ? 'typeText 0.3s steps(2) 1.8s forwards' : 'none'
-          }}>40</text>
-      </g>
-      
-      {/* Pay Period Field */}
-      <g style={{ opacity: isVisible ? 1 : 0, transition: 'opacity 0.3s ease-out 1.5s' }}>
-        <text x="195" y="108" fill="#666666" fontSize="8">Pay Period</text>
-        <rect x="195" y="113" width="55" height="22" rx="4" fill="#f8f8f8" stroke="#e0e0e0" strokeWidth="1"/>
-        <text x="200" y="127" fill="#1a4731" fontSize="10" fontWeight="500"
-          style={{ 
-            opacity: isVisible ? 1 : 0,
-            animation: isVisible ? 'typeText 0.5s steps(8) 2s forwards' : 'none'
-          }}>Bi-Weekly</text>
-      </g>
-      
-      {/* Gross Pay Display */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.5s ease-out 2.3s forwards' : 'none' }}>
-        <rect x="35" y="145" width="100" height="25" rx="4" fill="#e8f5e9" stroke="#1a4731" strokeWidth="1"/>
-        <text x="45" y="155" fill="#666666" fontSize="7">GROSS PAY</text>
-        <text x="45" y="166" fill="#1a4731" fontSize="11" fontWeight="bold">$1,000.00</text>
-      </g>
-      
-      {/* Net Pay Display */}
-      <g style={{ opacity: 0, animation: isVisible ? 'fadeIn 0.5s ease-out 2.5s forwards' : 'none' }}>
-        <rect x="145" y="145" width="100" height="25" rx="4" fill="#1a4731"/>
-        <text x="155" y="155" fill="#a7f3d0" fontSize="7">NET PAY</text>
-        <text x="155" y="166" fill="#ffffff" fontSize="11" fontWeight="bold">$780.00</text>
-      </g>
-      
-      {/* Generate Button */}
-      <g style={{ opacity: 0, animation: isVisible ? 'popIn 0.4s ease-out 2.8s forwards' : 'none' }}>
-        <rect x="35" y="180" width="210" height="24" rx="12" fill="#1a4731"/>
-        <text x="140" y="196" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold">✓ GENERATE PAYSTUB</text>
-      </g>
-      
-      {/* Floating elements */}
-      <g style={{ opacity: 0, animation: isVisible ? 'floatIn 0.5s ease-out 3s forwards' : 'none' }}>
-        {/* Dollar signs floating */}
-        <text x="5" y="80" fill="#1a4731" fontSize="14" opacity="0.3">$</text>
-        <text x="265" y="120" fill="#1a4731" fontSize="12" opacity="0.3">$</text>
-        <text x="10" y="160" fill="#1a4731" fontSize="10" opacity="0.3">$</text>
-      </g>
-    </svg>
-    <style>{`
-      @keyframes typeText {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      @keyframes blink {
-        0%, 50% { opacity: 1; }
-        51%, 100% { opacity: 0; }
-      }
-      @keyframes moveCursor1 {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(55px); }
-      }
-      @keyframes floatIn {
-        0% { opacity: 0; transform: translateY(10px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-    `}</style>
   </div>
 );
 
@@ -1450,220 +1125,11 @@ export default function Home() {
         );
       })()}
 
-      {/* What is a Pay stub? Section - with scroll-triggered animation */}
-      {(() => {
-        const [paystubRef, paystubInView] = useInView();
-        return (
-          <section ref={paystubRef} className="bg-slate-50/70 border-y border-slate-200/80 py-20 md:py-24">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl border border-emerald-100 shadow-sm h-[450px] flex items-center justify-center overflow-hidden">
-                  <PaystubRevealAnimation isVisible={paystubInView} />
-                </div>
-                <div className="space-y-6">
-                  <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-                    What is a Pay Stub?
-                  </h2>
-                  <p className="text-lg leading-relaxed text-slate-600">
-                    A pay stub is a document that summarizes an employee&apos;s pay for a specific pay period. It&apos;s typically created by an employer in conjunction with each paycheck and can be provided in paper or electronic form.
-                  </p>
-                  <p className="text-base leading-relaxed text-slate-600">
-                    Pay stubs are also known as paycheck stubs, check stubs, earnings statements, or pay slips. They show your gross pay, deductions for taxes, insurance, and retirement contributions, resulting in your net pay — the amount you actually take home.
-                  </p>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
-                      <span className="text-slate-700">Create accurate income documentation</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
-                      <span className="text-slate-700">Essential for tax filing & records</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-emerald-700 mt-1 flex-shrink-0" />
-                      <span className="text-slate-700">Track earnings & deductions clearly</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* Accurate Income Documentation Section */}
-      {(() => {
-        const [docRef, docInView] = useInView();
-        return (
-          <section ref={docRef} className="py-20 md:py-24 bg-white">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center">
-                <div className="order-2 md:order-1 space-y-6">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700" style={{ letterSpacing: '0.15em' }}>
-                    Accurate Income Documentation
-                  </p>
-                  <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-                    Our Paystub Generator Has Your Accurate Income Documentation Needs
-                  </h2>
-                  <p className="text-lg leading-relaxed text-slate-600">
-                    MintSlip provides a wide selection of paystub templates to suit your needs. Whether you&apos;re a freelancer, small business owner, or employee, we&apos;ve got you covered with professional, accurate documents.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    {[
-                      { icon: FileText, title: "Earnings Record", desc: "Accurate calculations" },
-                      { icon: FileBarChart, title: "Tax Filing", desc: "Accurate tax records" },
-                      { icon: Shield, title: "Business Documentation", desc: "Accurate records for freelancers" },
-                      { icon: Clock, title: "Instant Generation", desc: "Ready in minutes" },
-                    ].map((item) => (
-                      <div key={item.title} className="p-4 bg-white rounded-xl border border-slate-200 hover:border-emerald-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                        <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center mb-2.5">
-                          <item.icon className="w-4.5 h-4.5 text-emerald-700" style={{ width: 18, height: 18 }} />
-                        </div>
-                        <h3 className="font-semibold text-slate-900 text-sm md:text-base">{item.title}</h3>
-                        <p className="text-sm text-slate-500 mt-0.5">{item.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="order-1 md:order-2">
-                  <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/70 rounded-2xl border border-emerald-100 shadow-sm h-96 flex items-center justify-center">
-                    <FormTypingAnimation isVisible={docInView} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-      })()}
-
-      {/* Best Pricing Section */}
-      <section className="relative bg-gradient-to-br from-emerald-900 to-emerald-800 py-20 md:py-24 overflow-hidden">
-        <div aria-hidden="true" className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-700/30 rounded-full filter blur-3xl pointer-events-none" />
-        <div aria-hidden="true" className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-700/20 rounded-full filter blur-3xl pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300 mb-4" style={{ letterSpacing: '0.15em' }}>
-              THE BEST PRICING
-            </p>
-            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight mb-4 text-white">
-              We Offer the Best Pricing in The Paystub Generator Industry
-            </h2>
-            <p className="text-lg text-emerald-100/90 max-w-2xl mx-auto">
-              Transparent Pricing, Unmatched Value Ã¢â‚¬” That&apos;s the MintSlip Promise
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
-            {/* Pay Stub Pricing */}
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-emerald-950/20 flex flex-col">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                <Receipt className="w-7 h-7 text-emerald-700" />
-              </div>
-              <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">Pay Stub Generator</h3>
-              <div className="mb-5">
-                <span className="font-display text-5xl font-bold text-emerald-900">$9.99</span>
-                <span className="text-slate-500 ml-2">/ stub</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>100% Accurate Calculations</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Professional Templates</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Instant PDF Download</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/app")}
-                className="w-full mt-auto py-3 bg-emerald-700 text-white rounded-xl font-semibold hover:bg-emerald-800 transition-colors duration-200"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* Canadian Pay Stub Pricing */}
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-emerald-950/20 relative flex flex-col">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white border border-emerald-600 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                NEW
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
-                <TreePine className="w-7 h-7 text-red-600" />
-              </div>
-              <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">Canadian Pay Stub</h3>
-              <div className="mb-5">
-                <span className="font-display text-5xl font-bold text-emerald-900">$9.99</span>
-                <span className="text-slate-500 ml-2">/ stub</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>CPP/QPP & EI Calculations</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>All Provinces & Territories</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Provincial Tax Brackets</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/app/canadian-paystub")}
-                className="w-full mt-auto py-3 bg-emerald-700 text-white rounded-xl font-semibold hover:bg-emerald-800 transition-colors duration-200"
-              >
-                Generate Now
-              </button>
-            </div>
-
-            {/* AI Resume Builder Pricing */}
-            <div className="bg-white rounded-2xl p-8 text-center shadow-lg shadow-emerald-950/20 relative flex flex-col ring-2 ring-emerald-400/70">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                POPULAR
-              </div>
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-7 h-7 text-emerald-700" />
-              </div>
-              <h3 className="font-display text-2xl font-bold mb-2 text-slate-900">AI Resume Builder</h3>
-              <div className="mb-5">
-                <span className="font-display text-5xl font-bold text-emerald-900">$9.99</span>
-                <span className="text-slate-500 ml-2">/ resume</span>
-              </div>
-              <ul className="text-left space-y-2 mb-6">
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>ATS-optimized resume</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Tailored To Target Jobs</span>
-                </li>
-                <li className="flex items-center gap-2 text-slate-600">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Professional Templates</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => navigate("/app/resumes")}
-                className="w-full mt-auto py-3 bg-emerald-700 text-white rounded-xl font-semibold hover:bg-emerald-800 transition-colors duration-200"
-              >
-                Generate Now
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Quick Solution Section */}
       {(() => {
         const [quickSolutionRef, quickSolutionInView] = useInView();
         return (
-          <section id="how-it-works" ref={quickSolutionRef} className="py-20 bg-white scroll-mt-24">
+          <section ref={quickSolutionRef} className="py-20 bg-white">
             <div className="max-w-7xl mx-auto px-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 {/* Left Content - appears below animation on mobile */}
@@ -1725,41 +1191,134 @@ export default function Home() {
         );
       })()}
 
-      {/* Steps to Use Section */}
-      <section className="py-20 md:py-24 bg-slate-50/70 border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-4" style={{ letterSpacing: '0.15em' }}>
-              How It Works
-            </p>
-            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
-              Steps to use our Check Stub Maker
-            </h2>
+      {/* How it works — Kikoff-style: three gray cards, each with a step
+          bubble and a cropped iPhone mockup walking the MintSlip flow. */}
+      {(() => {
+        const [howRef, howInView] = useInView();
+        const StatusBar = () => (
+          <div className="relative flex items-center justify-between text-[13px] font-semibold text-slate-900 pt-3 px-5">
+            <span>9:41</span>
+            <span className="absolute left-1/2 -translate-x-1/2 top-[10px] w-24 h-[26px] bg-[#111] rounded-full" aria-hidden="true" />
+            <span className="flex items-center gap-1.5" aria-hidden="true">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1" /><rect x="4.5" y="5" width="3" height="6" rx="1" /><rect x="9" y="2.5" width="3" height="8.5" rx="1" /><rect x="13.5" y="0" width="3" height="11" rx="1" /></svg>
+              <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor"><path d="M7.5 10 L10 7.4 A3.8 3.8 0 0 0 5 7.4 Z" /><path d="M2.9 5.2 A6.8 6.8 0 0 1 12.1 5.2 L10.6 6.8 A4.8 4.8 0 0 0 4.4 6.8 Z" /><path d="M0.6 2.8 A10 10 0 0 1 14.4 2.8 L12.9 4.4 A7.9 7.9 0 0 0 2.1 4.4 Z" /></svg>
+              <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" fill="none" stroke="currentColor" opacity="0.4" /><rect x="2" y="2" width="18" height="8" rx="2" fill="currentColor" /><path d="M23 4 A2.2 2.2 0 0 1 23 8 Z" fill="currentColor" opacity="0.4" /></svg>
+            </span>
           </div>
+        );
+        const Phone = ({ children }) => (
+          <div className="relative mx-auto mt-auto w-[88%] max-w-[330px] bg-[#111] rounded-[46px] p-[9px] shadow-2xl -mb-14">
+            <div className="bg-white rounded-[38px] overflow-hidden min-h-[560px]">
+              <StatusBar />
+              {children}
+            </div>
+          </div>
+        );
+        const StepPill = ({ n }) => (
+          <span className="bg-emerald-400 text-emerald-950 text-[13px] font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0">Step {n}</span>
+        );
+        const cardCls = (i) => `rounded-3xl bg-[#f0f0f0] px-4 pt-8 md:px-6 overflow-hidden flex flex-col gap-10 transition-all duration-700 ${howInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`;
+        return (
+          <section id="how-it-works" ref={howRef} className="py-20 md:py-24 bg-white scroll-mt-24">
+            <div className="max-w-[1288px] mx-auto px-6">
+              <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-12 transition-all duration-700 ${howInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                How it works
+              </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {[
-              { img: select, alt: "Choosing a pay stub template in the MintSlip generator", text: "Choose a pay stub template from our meticulously designed templates" },
-              { img: inputInfo, alt: "Entering company and salary details into the pay stub form", text: "Enter Information such as company name, your work schedule and salary details" },
-              { img: download, alt: "Downloading the finished pay stub as a PDF", text: "Download your paycheck stubs directly to your computer or mobile device in PDF format" },
-            ].map((step, i) => (
-              <div key={i} className="flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden">
-                <div className="relative p-6 pb-0">
-                  <div className="absolute top-4 left-4 z-10 w-10 h-10 rounded-xl bg-emerald-700 text-white font-display font-bold flex items-center justify-center shadow-md shadow-emerald-900/20">
-                    {i + 1}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                {/* Step 1: start a document */}
+                <div className={cardCls(0)} style={{ transitionDelay: '0ms' }}>
+                  <div className="bg-white rounded-3xl p-5 md:p-6 flex items-start gap-3">
+                    <StepPill n={1} />
+                    <p className="text-[16px] md:text-[17px] leading-snug text-slate-900">
+                      Create your document in minutes with <strong>no account required. No subscriptions or hidden fees.</strong>
+                    </p>
                   </div>
-                  <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden h-64 w-full">
-                    <img src={step.img} alt={step.alt} className="w-full h-full object-contain" loading="lazy" />
-                  </div>
+                  <Phone>
+                    <div className="px-6 pt-8">
+                      <img src={MintSlipLogo} alt="MintSlip" className="h-7 w-auto" />
+                      <h3 className="font-display text-[27px] leading-tight font-bold text-slate-900 mt-8">
+                        Ready to make your paystub? Let's go!
+                      </h3>
+                      <div className="mt-8 space-y-4">
+                        <div className="border border-slate-300 rounded-xl px-4 py-4 text-slate-400 text-[15px]">Company name</div>
+                        <div className="border border-slate-300 rounded-xl px-4 py-4 text-slate-400 text-[15px]">Employee name</div>
+                      </div>
+                      <div className="mt-7 bg-slate-200 rounded-full py-4 text-center text-slate-500 font-semibold">
+                        Start my paystub
+                      </div>
+                    </div>
+                  </Phone>
                 </div>
-                <p className="text-base leading-relaxed p-6 text-center text-slate-600">
-                  {step.text}
-                </p>
+
+                {/* Step 2: pick + fill */}
+                <div className={cardCls(1)} style={{ transitionDelay: '120ms' }}>
+                  <div className="bg-white rounded-3xl p-5 md:p-6 flex items-start gap-3">
+                    <StepPill n={2} />
+                    <p className="text-[16px] md:text-[17px] leading-snug text-slate-900">
+                      Pick the document that fits your needs, <strong>starting at $9.99</strong>. Fill it in and the math is done for you.
+                    </p>
+                  </div>
+                  <Phone>
+                    <div className="px-6 pt-6">
+                      <h3 className="font-display text-[26px] font-bold text-slate-900">Select your document</h3>
+                      <p className="text-[13px] text-slate-500 mt-3 leading-relaxed">
+                        Every document is a one-time purchase with no subscriptions or hidden fees. Pick the one that fits your needs.
+                      </p>
+                      <div className="flex gap-2 mt-5">
+                        <span className="px-4 py-2 rounded-full bg-emerald-500 text-white text-sm font-semibold">Paystub</span>
+                        <span className="px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm font-semibold text-slate-700">W-2</span>
+                        <span className="px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm font-semibold text-slate-700">1099</span>
+                      </div>
+                      <div className="mt-6 text-center text-[13px] text-slate-600 font-medium border-b border-slate-100 pb-2">Taxes &amp; deductions</div>
+                      <div className="grid grid-cols-3 text-center mt-3 text-[14px]">
+                        <span className="text-emerald-600 font-bold">Automatic</span>
+                        <span className="text-slate-800 font-semibold">Automatic</span>
+                        <span className="text-slate-800 font-semibold">Automatic</span>
+                      </div>
+                      <div className="mt-5 text-center text-[13px] text-slate-600 font-medium border-b border-slate-100 pb-2">Instant PDF download</div>
+                    </div>
+                  </Phone>
+                </div>
+
+                {/* Step 3: go further */}
+                <div className={cardCls(2)} style={{ transitionDelay: '240ms' }}>
+                  <div className="bg-white rounded-3xl p-5 md:p-6 flex items-start gap-3">
+                    <StepPill n={3} />
+                    <p className="text-[16px] md:text-[17px] leading-snug text-slate-900">
+                      Take your documents even further with <strong>powerful extra features</strong>. Save and re-download. Build resumes with AI. And more.
+                    </p>
+                  </div>
+                  <Phone>
+                    <div className="px-5 pt-6">
+                      <h3 className="font-display text-[22px] font-bold text-slate-900 px-1">More ways to use MintSlip</h3>
+                      <div className="mt-5 space-y-4">
+                        {[
+                          { icon: Download, t: "Saved Documents", g: "Re-download anytime", rest: " — your files stay safe" },
+                          { icon: Sparkles, t: "AI Resume Builder", g: "Land interviews", rest: " with a tailored resume" },
+                          { icon: MessageCircle, t: "Live Support", g: "Chat with a human", rest: " whenever you need help" },
+                        ].map((f) => (
+                          <div key={f.t} className="bg-white border border-slate-100 rounded-2xl shadow-md shadow-slate-200/60 p-4 flex items-start gap-3">
+                            <span className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                              <f.icon className="w-5 h-5 text-white" />
+                            </span>
+                            <span>
+                              <span className="block font-bold text-slate-900 text-[15px]">{f.t}</span>
+                              <span className="block text-[13px] text-slate-600 mt-0.5">
+                                <span className="text-emerald-600 font-bold">{f.g}</span>{f.rest}
+                              </span>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </Phone>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Why Choose Our Paystub Generator Section */}
       {(() => {
@@ -1854,134 +1413,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-        );
-      })()}
-
-      {/* Document Selection - Clean Informational Section */}
-      {(() => {
-        const [docRef, docInView] = useInView();
-        return (
-          <section ref={docRef} className="max-w-6xl mx-auto px-6 py-24">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left: Info Content */}
-              <div className={`space-y-6 transition-all duration-700 ${docInView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-200">
-                  <FileText className="w-4 h-4 text-emerald-700" />
-                  <span className="text-sm font-medium text-emerald-800">13+ Document Types</span>
-                </div>
-                
-                <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
-                  All the Documents You Need
-                </h2>
-                
-                <p className="text-lg leading-relaxed text-slate-600">
-                  From pay stubs to tax forms, we've got you covered with a comprehensive suite of professional document generators designed for accuracy and ease of use.
-                </p>
-                
-                <div className="grid grid-cols-2 gap-4 py-4">
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">Pay Stubs (US & Canada)</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">W-2 & W-9 Forms</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">1099-NEC & 1099-MISC</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">AI Resume Builder</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">Offer Letters</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">Vehicle Bill of Sale</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">Schedule C Forms</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    <span className="text-sm">Service Expenses & More</span>
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={() => navigate("/generators")}
-                  size="lg"
-                  className="group gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10 hover:shadow-lg transition-all duration-200"
-                >
-                  Browse All Documents
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-                </Button>
-              </div>
-              
-              {/* Right: Visual Cards Preview */}
-              <div className={`relative transition-all duration-700 delay-200 ${docInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Featured Document Cards */}
-                  <button
-                    onClick={() => navigate("/app")}
-                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
-                      <Receipt className="w-5 h-5 text-emerald-700" />
-                    </div>
-                    <h4 className="font-bold text-slate-800 mb-1">Pay Stub</h4>
-                    <p className="text-xs text-slate-500">Most Popular</p>
-                    <p className="text-lg font-bold text-emerald-700 mt-2">$9.99</p>
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate("/app/resumes")}
-                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
-                      <Sparkles className="w-5 h-5 text-emerald-700" />
-                    </div>
-                    <h4 className="font-bold text-slate-800 mb-1">AI Resume</h4>
-                    <p className="text-xs text-slate-500">AI-Powered</p>
-                    <p className="text-lg font-bold text-emerald-700 mt-2">$9.99</p>
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate("/w2-generator")}
-                    className="group p-5 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors">
-                      <Calendar className="w-5 h-5 text-emerald-700" />
-                    </div>
-                    <h4 className="font-bold text-slate-800 mb-1">W-2 Form</h4>
-                    <p className="text-xs text-slate-500">Tax Documents</p>
-                    <p className="text-lg font-bold text-emerald-700 mt-2">$14.99</p>
-                  </button>
-                  
-                  <button
-                    onClick={() => navigate("/generators")}
-                    className="group p-5 bg-gradient-to-br from-emerald-50 to-emerald-100/70 border border-emerald-200 rounded-xl hover:border-emerald-400 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center mb-3 group-hover:bg-emerald-50 transition-colors">
-                      <ArrowRight className="w-5 h-5 text-emerald-700 group-hover:translate-x-0.5 transition-transform" />
-                    </div>
-                    <h4 className="font-bold text-emerald-800 mb-1">View All</h4>
-                    <p className="text-xs text-emerald-600">13+ Document Types</p>
-                    <p className="text-sm font-medium text-emerald-700 mt-2">Browse Directory →</p>
-                  </button>
-                </div>
-                
-                {/* Background decoration */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-100 rounded-full filter blur-2xl opacity-50 -z-10" />
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-100 rounded-full filter blur-2xl opacity-40 -z-10" />
-              </div>
-            </div>
-          </section>
         );
       })()}
 

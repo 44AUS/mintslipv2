@@ -20,9 +20,6 @@ import KevinPhoto from '../assests/images/Kevin.png';
 import SophiaPhoto from '../assests/images/Sophia.png';
 import LeftLeaf from '../assests/images/left-leaf.avif';
 import RightLeaf from '../assests/images/right-leaf.avif';
-import AdpLogo from '../assests/adp-logo.png';
-import GustoLogo from '../assests/gustoLogo.png';
-import WorkdayLogo from '../assests/workday-logo.png';
 
 // Rotating hero word: flips out, swaps, flips back in on a loop
 const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Documents"];
@@ -1294,7 +1291,7 @@ export default function Home() {
         ];
         return (
           <section ref={lovedRef} className="bg-white py-20 md:py-24">
-            <div className="max-w-5xl mx-auto px-6 text-center">
+            <div className="max-w-[1288px] mx-auto px-6 text-center">
               <h2 className={`font-display text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-6 transition-all duration-700 ${lovedInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                 The most-loved <span className="font-black">document generator</span>.
               </h2>
@@ -1366,7 +1363,7 @@ export default function Home() {
         const delay = (i) => ({ transitionDelay: `${i * 120}ms` });
         return (
           <section ref={buildRef} className="bg-white pb-20 md:pb-24">
-            <div className="max-w-6xl mx-auto px-6">
+            <div className="max-w-[1288px] mx-auto px-6">
               <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-12 transition-all duration-700 ${buildInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                 Build documents, <span className="font-black italic underline decoration-4 underline-offset-8">fast.</span>
               </h2>
@@ -1396,15 +1393,18 @@ export default function Home() {
                         fill="url(#mintStair)"
                       />
                     </svg>
-                    {/* Floating format chips */}
-                    <div className="absolute left-1/2 top-[8%] -translate-x-[10%] bg-white rounded-xl shadow-lg px-5 py-3">
-                      <img src={AdpLogo} alt="ADP format" className="h-8 w-auto" />
+                    {/* Floating document-type chips */}
+                    <div className="absolute left-1/2 top-[6%] -translate-x-[10%] bg-white rounded-xl shadow-lg px-5 py-3 font-display font-bold text-slate-900 text-base md:text-lg whitespace-nowrap">
+                      Paystubs
                     </div>
-                    <div className="absolute left-[6%] top-[38%] bg-white rounded-xl shadow-lg px-5 py-3">
-                      <img src={GustoLogo} alt="Gusto format" className="h-7 w-auto" />
+                    <div className="absolute left-[5%] top-[34%] bg-white rounded-xl shadow-lg px-5 py-3 font-display font-bold text-slate-900 text-base md:text-lg whitespace-nowrap">
+                      Tax Forms
                     </div>
-                    <div className="absolute right-[6%] top-[60%] bg-white rounded-xl shadow-lg px-5 py-3">
-                      <img src={WorkdayLogo} alt="Workday format" className="h-7 w-auto" />
+                    <div className="absolute right-[4%] top-[56%] bg-white rounded-xl shadow-lg px-5 py-3 font-display font-bold text-slate-900 text-base md:text-lg whitespace-nowrap">
+                      Business Docs
+                    </div>
+                    <div className="absolute left-[16%] top-[76%] bg-white rounded-xl shadow-lg px-5 py-3 font-display font-bold text-slate-900 text-base md:text-lg whitespace-nowrap">
+                      Resumes
                     </div>
                   </div>
                   <p className="text-white text-center text-base md:text-lg font-medium leading-relaxed mt-6 max-w-md mx-auto">
@@ -2135,7 +2135,7 @@ export default function Home() {
         const [trustRef, trustInView] = useInView();
         return (
           <section ref={trustRef} className="bg-white py-20 md:py-24">
-            <div className="max-w-6xl mx-auto px-6">
+            <div className="max-w-[1288px] mx-auto px-6">
               {/* Overlapping avatar strip */}
               <div className={`flex justify-center mb-10 transition-all duration-700 ${trustInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                 {[EmilyPhoto, JakePhoto, SophiaPhoto, KevinPhoto].map((src, i) => (

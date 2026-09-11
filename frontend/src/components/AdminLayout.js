@@ -18,34 +18,12 @@ import {
   personOutline, lockClosedOutline, logOutOutline, settingsOutline,
   notificationsOutline, searchOutline, arrowForwardOutline,
 } from "ionicons/icons";
-import {
-  FileText,
-  Receipt, FileSpreadsheet, FileBarChart,
-  Building2, Car, Briefcase, ShieldAlert, Scale,
-} from "lucide-react";
 import MintSlipLogo from "../assests/mintslip-logo.png";
 import { toast } from "@/utils/toast";
+import PurchaseDetailModal from "@/components/PurchaseDetailModal";
 import "../admin-theme.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
-
-const DOC_ICONS = {
-  "paystub":              Receipt,
-  "canadian-paystub":     Receipt,
-  "resume":               FileText,
-  "w2":                   FileSpreadsheet,
-  "w9":                   FileSpreadsheet,
-  "1099-nec":             FileSpreadsheet,
-  "1099-misc":            FileSpreadsheet,
-  "bank-statement":       Building2,
-  "offer-letter":         Briefcase,
-  "cease-and-desist":     ShieldAlert,
-  "power-of-attorney":    Scale,
-  "commercial-lease":     Building2,
-  "vehicle-bill-of-sale": Car,
-  "schedule-c":           FileBarChart,
-  "utility-bill":         FileText,
-};
 
 // ── Topbar global search (whodat admin port) ─────────────────────────────────
 const SEARCH_META = {
@@ -164,6 +142,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount,   setUnreadCount]   = useState(0);
   const [notifOpen,     setNotifOpen]     = useState(false);
+  const [detailPurchase, setDetailPurchase] = useState(null);
   const [isMobile,      setIsMobile]      = useState(window.innerWidth < 768);
   const [supportUnread, setSupportUnread] = useState(0);
   const [bizMenu,       setBizMenu]       = useState({ open: false, event: undefined });
@@ -462,6 +441,34 @@ export default function AdminLayout({ children, fillHeight = false }) {
     });
     setNotifications([]);
     setUnreadCount(0);
+  };
+
+  // Clicking a notification opens the same payment-detail modal the Purchases
+  // page uses. Notifications carry a purchaseId; fall back to a minimal record
+  // built from the notification for older ones created before that field.
+  const openNotificationPurchase = async (n) => {
+    setNotifOpen(false);
+    const fallback = {
+      email: n.customerEmail || "",
+      documentType: n.docType,
+      amount: n.amount,
+      createdAt: n.createdAt,
+    };
+    if (!n.purchaseId) { setDetailPurchase(fallback); return; }
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${BACKEND_URL}/api/admin/purchases/${n.purchaseId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDetailPurchase(data.purchase || { ...fallback, id: n.purchaseId });
+      } else {
+        setDetailPurchase({ ...fallback, id: n.purchaseId });
+      }
+    } catch {
+      setDetailPurchase({ ...fallback, id: n.purchaseId });
+    }
   };
 
   const handleLogout = async () => {
@@ -935,7 +942,7 @@ export default function AdminLayout({ children, fillHeight = false }) {
             </IonButton>
           )}
           {notifications.length > 0 && (
-            <IonButton fill="clear" onClick={handleClearNotifications} style={{ "--color": "var(--ion-color-danger)", fontSize: "0.78rem" }}>
+            <IonButton color="danger" size="small" onClick={handleClearNotifications}>
               Clear all
             </IonButton>
           )}
@@ -954,26 +961,44 @@ export default function AdminLayout({ children, fillHeight = false }) {
             </div>
           ) : (
             <IonList lines="inset" style={{ padding: 0, "--background": "transparent" }}>
-              {notifications.map(n => {
-                const Icon = DOC_ICONS[n.docType] || FileText;
-                return (
-                  <IonItem key={n.id} style={{ "--background": n.read ? "transparent" : "var(--ion-color-step-50)", "--min-height": "64px", "--padding-start": "16px", "--inner-padding-end": "16px" }}>
-                    <div slot="start" style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", background: "var(--ion-color-step-100)", flexShrink: 0 }}>
-                      <Icon size={16} />
-                    </div>
-                    <IonLabel style={{ whiteSpace: "normal" }}>
-                      <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{n.docDisplayName} created</div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</div>
-                      <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{timeAgo(n.createdAt)}</div>
-                    </IonLabel>
-                    {!n.read && <IonBadge color="primary" slot="end" style={{ width: 8, height: 8, borderRadius: "50%", padding: 0, minWidth: 0 }} />}
-                  </IonItem>
-                );
-              })}
+              {notifications.map(n => (
+                <IonItem
+                  key={n.id}
+                  button
+                  detail={false}
+                  onClick={() => openNotificationPurchase(n)}
+                  style={{ "--background": n.read ? "transparent" : "var(--ion-color-step-50)", "--min-height": "64px", "--padding-start": "16px", "--inner-padding-end": "16px" }}
+                >
+                  <IonLabel style={{ whiteSpace: "normal" }}>
+                    <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{n.docDisplayName} created</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{n.customerEmail || "Guest"} · ${n.amount?.toFixed(2)}</div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>{timeAgo(n.createdAt)}</div>
+                  </IonLabel>
+                  {!n.read && <IonBadge color="primary" slot="end" style={{ width: 8, height: 8, borderRadius: "50%", padding: 0, minWidth: 0 }} />}
+                </IonItem>
+              ))}
             </IonList>
           )}
         </div>
       </div>
+
+      {/* Same payment-detail modal the Purchases page uses, opened from a
+          notification row. */}
+      <PurchaseDetailModal
+        purchase={detailPurchase}
+        onClose={() => setDetailPurchase(null)}
+        onRefunded={(p, amount) => setDetailPurchase(d => (d ? { ...d, refunded: true, refundedAmount: amount } : d))}
+        onDelete={async (p) => {
+          if (!p.id) { setDetailPurchase(null); return; }
+          if (!window.confirm("Delete this purchase? This cannot be undone.")) return;
+          const token = localStorage.getItem("adminToken");
+          await fetch(`${BACKEND_URL}/api/admin/purchases/${p.id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setDetailPurchase(null);
+        }}
+      />
 
       {/* ── Shared identity popovers (used by both the desktop rail and the mobile drawer) ── */}
       <FreshPopover

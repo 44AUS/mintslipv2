@@ -6,6 +6,7 @@ import {
   IonContent, IonButtons, IonButton, IonIcon,
   IonPage, IonSegment, IonSegmentButton, IonLabel,
   IonList, IonItem, IonPopover, IonActionSheet, IonToast, IonSpinner, IonRippleEffect,
+  IonModal,
 } from "@ionic/react";
 import {
   menuOutline, closeOutline, moonOutline, sunnyOutline,
@@ -42,6 +43,8 @@ import AppTaxFormModal from "../pages/app/AppTaxFormModal";
 import { BUSINESS_FORM_CONFIGS } from "../pages/app/appBusinessFormConfigs";
 import SupportChatWidget from "./SupportChatWidget";
 import PromoBanner from "./PromoBanner";
+import PreviewPager from "./PreviewPager";
+import { buildNotificationPreviewPages } from "../utils/notificationPreview";
 import { t, useLanguage } from "../utils/i18n";
 import "../admin-theme.css";
 
@@ -136,6 +139,37 @@ export default function AppLayout({ children, fillHeight = false }) {
   const [toastOpen,         setToastOpen]           = useState(false);
   const [toastMessage,      setToastMessage]        = useState("");
   const [redownloadingId,   setRedownloadingId]     = useState(null);
+  // Notification preview modal — shows the pages of the document the user
+  // bought, swipeable + slider via <PreviewPager>.
+  const [previewNotif,      setPreviewNotif]        = useState(null);
+  const [previewPages,      setPreviewPages]        = useState([]);
+  const [previewIndex,      setPreviewIndex]        = useState(0);
+  const [previewLoading,    setPreviewLoading]      = useState(false);
+
+  const openPreview = useCallback(async (notif) => {
+    setPreviewNotif(notif);
+    setPreviewPages([]);
+    setPreviewIndex(0);
+    if (notif.status !== "ready") return;
+    setPreviewLoading(true);
+    try {
+      const pages = await buildNotificationPreviewPages(notif);
+      // Ignore if the modal was closed or switched while we were rendering.
+      setPreviewNotif((cur) => {
+        if (cur && cur.id === notif.id) setPreviewPages(pages);
+        return cur;
+      });
+    } finally {
+      setPreviewLoading(false);
+    }
+  }, []);
+
+  const closePreview = useCallback(() => {
+    setPreviewNotif(null);
+    setPreviewPages([]);
+    setPreviewIndex(0);
+    setPreviewLoading(false);
+  }, []);
 
   const refreshNotifications = useCallback(() => {
     setNotifications(getNotifications());
@@ -675,66 +709,133 @@ export default function AppLayout({ children, fillHeight = false }) {
             </div>
           ) : (
             <div style={{ flex: 1, overflowY: "auto" }}>
-              {notifications.map(notif => (
-                <div
-                  key={notif.id}
-                  style={{
-                    display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 16px",
-                    borderBottom: "1px solid var(--app-divider)",
-                    background: notif.read ? "transparent" : "rgba(5,150,105,0.05)",
-                  }}
-                >
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {notif.fileName}
-                    </div>
-                    <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>
-                      {formatRelativeTime(notif.timestamp)}
-                    </div>
-                    {notif.status === "generating" && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-                        <IonSpinner name="crescent" style={{ width: 13, height: 13, color: "var(--ion-color-primary)" }} />
-                        <span style={{ fontSize: "0.72rem", color: "var(--ion-color-primary)" }}>{t("Generating...")}</span>
+              {/* Each row is a clickable Ionic item (with ripple) that opens a
+                  preview modal showing the pages of the purchased document. */}
+              <IonList lines="full" style={{ padding: 0, background: "transparent" }}>
+                {notifications.map(notif => (
+                  <IonItem
+                    key={notif.id}
+                    button
+                    detail={false}
+                    onClick={() => openPreview(notif)}
+                    style={{
+                      "--background": notif.read ? "transparent" : "rgba(5,150,105,0.05)",
+                      "--min-height": "68px",
+                      "--padding-start": "16px",
+                      "--inner-padding-end": "12px",
+                    }}
+                  >
+                    {!notif.read && (
+                      <span slot="start" style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--ion-color-primary)", flexShrink: 0, marginInlineEnd: 12, alignSelf: "center" }} />
+                    )}
+                    <IonLabel style={{ whiteSpace: "normal" }}>
+                      <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--ion-text-color)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {notif.fileName}
                       </div>
-                    )}
-                    {notif.status === "ready" && (
-                      <div style={{ fontSize: "0.72rem", color: "#059669", marginTop: 4, fontWeight: 500 }}>{t("Ready to download")}</div>
-                    )}
-                    {notif.status === "error" && (
-                      <div style={{ fontSize: "0.72rem", color: "#dc2626", marginTop: 4 }}>{t("Generation failed")}</div>
-                    )}
-                  </div>
-
-                  {/* Actions — Ionic badge buttons: success Download, danger Delete */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0, alignItems: "stretch" }}>
-                    {notif.status === "ready" && (
-                      <IonButton
-                        color="success"
-                        size="small"
-                        disabled={redownloadingId === notif.id}
-                        onClick={() => handleRedownload(notif)}
-                      >
-                        {redownloadingId === notif.id && (
-                          <IonSpinner name="crescent" slot="start" style={{ width: 12, height: 12, color: "var(--ion-color-success-contrast)" }} />
-                        )}
-                        Download
-                      </IonButton>
-                    )}
-                    <IonButton
-                      color="danger"
-                      size="small"
-                      onClick={() => { removeNotification(notif.id); setNotifications(getNotifications()); }}
-                    >
-                      Delete
-                    </IonButton>
-                  </div>
-                </div>
-              ))}
+                      <div style={{ fontSize: "0.72rem", color: "var(--ion-color-medium)", marginTop: 2 }}>
+                        {formatRelativeTime(notif.timestamp)}
+                      </div>
+                      {notif.status === "generating" && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                          <IonSpinner name="crescent" style={{ width: 13, height: 13, color: "var(--ion-color-primary)" }} />
+                          <span style={{ fontSize: "0.72rem", color: "var(--ion-color-primary)" }}>{t("Generating...")}</span>
+                        </div>
+                      )}
+                      {notif.status === "ready" && (
+                        <div style={{ fontSize: "0.72rem", color: "#059669", marginTop: 4, fontWeight: 500 }}>{t("Ready to download")}</div>
+                      )}
+                      {notif.status === "error" && (
+                        <div style={{ fontSize: "0.72rem", color: "#dc2626", marginTop: 4 }}>{t("Generation failed")}</div>
+                      )}
+                    </IonLabel>
+                  </IonItem>
+                ))}
+              </IonList>
             </div>
           )}
         </div>
       </>, document.querySelector("ion-app") || document.body)}
+
+      {/* ── Notification preview modal — pages of the purchased document,
+          swipeable + slider via <PreviewPager> ── */}
+      <IonModal isOpen={!!previewNotif} onDidDismiss={closePreview} className="app-notif-preview-modal">
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle style={{ fontSize: "0.95rem", paddingInline: 8 }}>{previewNotif?.fileName || t("Preview")}</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={closePreview}>
+                <IonIcon slot="icon-only" icon={closeOutline} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+          {previewNotif && (
+            previewNotif.status === "generating" ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "48px 16px" }}>
+                <IonSpinner name="crescent" style={{ color: "var(--ion-color-primary)" }} />
+                <p style={{ color: "var(--ion-color-medium)", margin: 0, fontSize: "0.9rem" }}>{t("Generating...")}</p>
+              </div>
+            ) : previewNotif.status === "error" ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "48px 16px" }}>
+                <IonIcon icon={notificationsOutline} style={{ fontSize: 44, color: "var(--ion-color-danger)" }} />
+                <p style={{ color: "var(--ion-color-medium)", margin: 0, fontSize: "0.9rem", textAlign: "center" }}>{t("Generation failed")}</p>
+              </div>
+            ) : previewLoading ? (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "48px 16px" }}>
+                <IonSpinner name="crescent" style={{ color: "var(--ion-color-primary)" }} />
+                <p style={{ color: "var(--ion-color-medium)", margin: 0, fontSize: "0.9rem" }}>{t("Loading preview...")}</p>
+              </div>
+            ) : previewPages.length > 0 ? (
+              <PreviewPager
+                pages={previewPages}
+                index={previewIndex}
+                onIndexChange={setPreviewIndex}
+                altPrefix={previewNotif.fileName || "Preview"}
+              />
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: "48px 16px" }}>
+                <IonIcon icon={documentTextOutline} style={{ fontSize: 44, color: "var(--ion-color-medium)" }} />
+                <p style={{ color: "var(--ion-color-medium)", margin: 0, fontSize: "0.9rem", textAlign: "center", lineHeight: 1.5 }}>
+                  {t("Preview is no longer available, but you can still download your file.")}
+                </p>
+              </div>
+            )
+          )}
+
+          {previewNotif && (
+            <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+              {previewNotif.status === "ready" && (
+                <IonButton
+                  expand="block"
+                  color="success"
+                  style={{ flex: 1 }}
+                  disabled={redownloadingId === previewNotif.id}
+                  onClick={() => handleRedownload(previewNotif)}
+                >
+                  {redownloadingId === previewNotif.id && (
+                    <IonSpinner name="crescent" slot="start" style={{ width: 14, height: 14, color: "var(--ion-color-success-contrast)" }} />
+                  )}
+                  {t("Download")}
+                </IonButton>
+              )}
+              <IonButton
+                expand="block"
+                fill="outline"
+                color="danger"
+                style={{ flex: previewNotif.status === "ready" ? "0 0 auto" : 1 }}
+                onClick={() => {
+                  removeNotification(previewNotif.id);
+                  setNotifications(getNotifications());
+                  closePreview();
+                }}
+              >
+                {t("Delete")}
+              </IonButton>
+            </div>
+          )}
+        </IonContent>
+      </IonModal>
 
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && createPortal(<>

@@ -1259,7 +1259,7 @@ DOC_DISPLAY_NAMES = {
     "utility-bill": "Service Expense",
 }
 
-async def create_notification(doc_type: str, customer_email: str = "", amount: float = 0):
+async def create_notification(doc_type: str, customer_email: str = "", amount: float = 0, purchase_id: str = None):
     display_name = DOC_DISPLAY_NAMES.get(doc_type, doc_type.replace("-", " ").title())
     notification = {
         "id": str(uuid.uuid4()),
@@ -1268,6 +1268,9 @@ async def create_notification(doc_type: str, customer_email: str = "", amount: f
         "docDisplayName": display_name,
         "customerEmail": customer_email or "",
         "amount": float(amount or 0),
+        # Links the notification to its purchase so the admin drawer can open
+        # the same payment-detail modal the Purchases page uses.
+        "purchaseId": purchase_id,
         "read": False,
         "createdAt": datetime.now(timezone.utc).isoformat()
     }
@@ -2739,7 +2742,7 @@ async def get_checkout_status(session_id: str):
                         "createdAt": datetime.now(timezone.utc).isoformat()
                     }
                     await purchases_collection.insert_one(purchase)
-                    asyncio.create_task(create_notification(document_type, customer_email, purchase["amount"]))
+                    asyncio.create_task(create_notification(document_type, customer_email, purchase["amount"], purchase["id"]))
                     print(f"Tracked purchase via status check: {document_type} x{quantity} - ${purchase['amount']} - userId: {user_id or 'guest'}")
                     
                     # Send download confirmation and review request emails
@@ -2895,7 +2898,7 @@ async def stripe_webhook(request: Request):
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await purchases_collection.insert_one(purchase)
-            asyncio.create_task(create_notification(document_type, customer_email, purchase["amount"]))
+            asyncio.create_task(create_notification(document_type, customer_email, purchase["amount"], purchase["id"]))
             print(f"Tracked guest purchase: {document_type} - ${purchase['amount']}")
             
             # Send emails for guest purchase
@@ -3048,7 +3051,7 @@ async def stripe_webhook(request: Request):
                 "createdAt": datetime.now(timezone.utc).isoformat()
             }
             await purchases_collection.insert_one(purchase)
-            asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"]))
+            asyncio.create_task(create_notification(purchase["documentType"], customer_email, purchase["amount"], purchase["id"]))
 
             # Same follow-up emails as the hosted-checkout flow (the download
             # confirmation with the attached file is sent from the frontend)
@@ -3446,7 +3449,7 @@ async def track_purchase(data: PurchaseCreate, request: Request):
         "downloadedAt": datetime.now(timezone.utc).isoformat()
     }
     await purchases_collection.insert_one(purchase)
-    asyncio.create_task(create_notification(data.documentType, data.email or "", data.amount))
+    asyncio.create_task(create_notification(data.documentType, data.email or "", data.amount, purchase["id"]))
     
     # If user has subscription, decrement downloads
     if data.userId:
@@ -3508,6 +3511,16 @@ async def get_all_purchases(
         "skip": skip,
         "limit": limit
     }
+
+@app.get("/api/admin/purchases/{purchase_id}")
+async def get_purchase(purchase_id: str, session: dict = Depends(get_current_admin)):
+    """Get a single purchase by id (admin only) — used by the notifications
+    drawer to open the same payment-detail modal as the Purchases page."""
+    check_permission(session, "view_purchases")
+    purchase = await purchases_collection.find_one({"id": purchase_id}, {"_id": 0})
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    return {"success": True, "purchase": purchase}
 
 @app.get("/api/admin/dashboard")
 async def get_admin_dashboard(session: dict = Depends(get_current_admin)):

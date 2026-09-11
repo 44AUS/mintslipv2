@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Download, Lock } from "lucide-react";
+import { FileText, FileBarChart, CheckCircle, Shield, Clock, PiggyBank, Calendar, Receipt, ArrowRight, ArrowUp, Sparkles, Zap, MessageCircle, ClipboardList, Users, Landmark, Mail, Car, MapPin, TreePine, Eye, Download, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -20,6 +20,9 @@ import KevinPhoto from '../assests/images/Kevin.png';
 import SophiaPhoto from '../assests/images/Sophia.png';
 import LeftLeaf from '../assests/images/left-leaf.avif';
 import RightLeaf from '../assests/images/right-leaf.avif';
+import AdpLogo from '../assests/adp-logo.png';
+import GustoLogo from '../assests/gustoLogo.png';
+import WorkdayLogo from '../assests/workday-logo.png';
 
 // Rotating hero word: flips out, swaps, flips back in on a loop
 const FLIP_WORDS = ["Paystubs", "Tax Forms", "Resumes", "Documents"];
@@ -1350,6 +1353,99 @@ export default function Home() {
                 .laurel-track { animation: none; }
               }
             `}</style>
+          </section>
+        );
+      })()}
+
+      {/* Build documents, fast. — Kikoff-style feature grid: black chart card
+          with floating payroll-format chips, plus three stacked benefit cards
+          (gray / mint / black) with white arrow circles. */}
+      {(() => {
+        const [buildRef, buildInView] = useInView();
+        const card = (i) => `transition-all duration-700 ${buildInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`;
+        const delay = (i) => ({ transitionDelay: `${i * 120}ms` });
+        return (
+          <section ref={buildRef} className="bg-white pb-20 md:pb-24">
+            <div className="max-w-6xl mx-auto px-6">
+              <h2 className={`font-display text-center text-4xl md:text-5xl lg:text-6xl tracking-tight text-slate-900 font-medium mb-12 transition-all duration-700 ${buildInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+                Build documents, <span className="font-black italic underline decoration-4 underline-offset-8">fast.</span>
+              </h2>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                {/* Left: black chart card */}
+                <div className={`relative rounded-3xl bg-[#0b0b0b] p-6 md:p-9 flex flex-col ${card(0)}`} style={delay(0)}>
+                  <div className="relative flex-1 min-h-[300px] md:min-h-[360px]">
+                    <svg viewBox="0 0 400 320" className="absolute inset-0 w-full h-full" aria-hidden="true">
+                      {/* Dotted gridlines */}
+                      {[40, 72, 104, 136, 168, 200, 232, 264, 296, 328, 360].map((x) => (
+                        <line key={x} x1={x} y1="16" x2={x} y2="304" stroke="#2c2c2c" strokeWidth="1.5" strokeDasharray="2 7" />
+                      ))}
+                      <defs>
+                        <linearGradient id="mintStair" x1="0" y1="1" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="#34d399" />
+                        </linearGradient>
+                      </defs>
+                      {/* 3D underside, then the mint staircase ribbon */}
+                      <polygon
+                        points="32,277 122,202 172,202 232,145 282,145 362,55 362,89 282,179 232,179 172,236 122,236 32,311"
+                        fill="#065f46"
+                      />
+                      <polygon
+                        points="25,270 115,195 165,195 225,138 275,138 355,48 355,82 275,172 225,172 165,229 115,229 25,304"
+                        fill="url(#mintStair)"
+                      />
+                    </svg>
+                    {/* Floating format chips */}
+                    <div className="absolute left-1/2 top-[8%] -translate-x-[10%] bg-white rounded-xl shadow-lg px-5 py-3">
+                      <img src={AdpLogo} alt="ADP format" className="h-8 w-auto" />
+                    </div>
+                    <div className="absolute left-[6%] top-[38%] bg-white rounded-xl shadow-lg px-5 py-3">
+                      <img src={GustoLogo} alt="Gusto format" className="h-7 w-auto" />
+                    </div>
+                    <div className="absolute right-[6%] top-[60%] bg-white rounded-xl shadow-lg px-5 py-3">
+                      <img src={WorkdayLogo} alt="Workday format" className="h-7 w-auto" />
+                    </div>
+                  </div>
+                  <p className="text-white text-center text-base md:text-lg font-medium leading-relaxed mt-6 max-w-md mx-auto">
+                    MintSlip templates are modeled after <span className="text-emerald-400 font-bold">real payroll formats</span> with
+                    accurate <span className="text-emerald-400 font-bold">taxes</span>, <span className="text-emerald-400 font-bold">deductions</span>,
+                    and <span className="text-emerald-400 font-bold">year-to-date totals</span>.
+                  </p>
+                </div>
+
+                {/* Right: stacked benefit cards */}
+                <div className="flex flex-col gap-6">
+                  <div className={`flex items-center gap-6 rounded-3xl bg-slate-100 p-7 md:p-8 flex-1 ${card(1)}`} style={delay(1)}>
+                    <span className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                      <ArrowUp className="w-7 h-7 text-slate-900" strokeWidth={2.5} />
+                    </span>
+                    <span>
+                      <span className="font-display block text-2xl md:text-3xl font-medium text-slate-900 mb-1">Accurate calculations</span>
+                      <span className="block text-slate-600 leading-relaxed">Taxes, deductions, and YTD totals are done for you — no math required.</span>
+                    </span>
+                  </div>
+                  <div className={`flex items-center gap-6 rounded-3xl bg-emerald-400 p-7 md:p-8 flex-1 ${card(2)}`} style={delay(2)}>
+                    <span className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                      <ArrowUp className="w-7 h-7 text-slate-900" strokeWidth={2.5} />
+                    </span>
+                    <span>
+                      <span className="font-display block text-2xl md:text-3xl font-medium text-emerald-950 mb-1">Instant download</span>
+                      <span className="block text-emerald-900 leading-relaxed">Your PDF is generated and ready the second you finish.</span>
+                    </span>
+                  </div>
+                  <div className={`flex items-center gap-6 rounded-3xl bg-[#0b0b0b] p-7 md:p-8 flex-1 ${card(3)}`} style={delay(3)}>
+                    <span className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+                      <ArrowUp className="w-7 h-7 text-slate-900" strokeWidth={2.5} />
+                    </span>
+                    <span>
+                      <span className="font-display block text-2xl md:text-3xl font-medium text-white mb-1">Professional templates</span>
+                      <span className="block text-slate-300 leading-relaxed">Pixel-perfect layouts for pay stubs, tax forms, letters, and more.</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
         );
       })()}

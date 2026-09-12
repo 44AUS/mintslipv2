@@ -269,17 +269,37 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Brand gauge */}
+            {/* Brand gauge: the mint arc slowly fills, then the logo spins to
+                the opposite side and back; the sequence loops. */}
             <div className="rounded-[28px] bg-[#0b0b0b] px-8 py-14 flex items-center justify-center lg:col-start-4 lg:row-start-2">
               <div className="relative w-40 h-40 flex items-center justify-center">
                 <svg viewBox="0 0 160 160" className="absolute inset-0 w-full h-full" aria-hidden="true">
                   <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="14" strokeLinecap="round" strokeDasharray="300 500" transform="rotate(115 80 80)" />
-                  <circle cx="80" cy="80" r="66" fill="none" stroke="#34d399" strokeWidth="14" strokeLinecap="round" strokeDasharray="110 500" transform="rotate(115 80 80)" />
+                  <circle className="gauge-arc" cx="80" cy="80" r="66" fill="none" stroke="#34d399" strokeWidth="14" strokeLinecap="round" strokeDasharray="110 500" transform="rotate(115 80 80)" />
                 </svg>
-                <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                <div className="gauge-logo w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
                   <img src={MintSlipLogo} alt="MintSlip" className="w-16 h-auto" />
                 </div>
               </div>
+              <style>{`
+                .gauge-arc {
+                  stroke-dasharray: 110 500;
+                  animation: gaugeFill 5.5s ease-in-out infinite;
+                }
+                @keyframes gaugeFill {
+                  0% { stroke-dashoffset: 110; }
+                  40%, 100% { stroke-dashoffset: 0; }
+                }
+                .gauge-logo { animation: gaugeSpin 5.5s ease-in-out infinite; }
+                @keyframes gaugeSpin {
+                  0%, 42% { transform: rotate(0deg); }
+                  58% { transform: rotate(180deg); }
+                  74%, 100% { transform: rotate(0deg); }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                  .gauge-arc, .gauge-logo { animation: none; }
+                }
+              `}</style>
             </div>
           </div>
         </div>

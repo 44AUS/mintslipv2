@@ -279,10 +279,8 @@ export default function Home() {
               <span className="font-display text-4xl md:text-5xl text-slate-900 font-medium text-center leading-tight">One form.<br />Done in minutes.</span>
             </div>
 
-            {/* Live /app phone with mint diagonal accents */}
+            {/* Live /app phone */}
             <div className="relative flex items-center justify-center lg:col-start-3 lg:row-start-1 lg:row-span-2 py-6 lg:py-0">
-              <div aria-hidden="true" className="absolute top-3 right-1 w-40 h-40 bg-emerald-400" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
-              <div aria-hidden="true" className="absolute bottom-3 left-1 w-40 h-40 bg-emerald-400" style={{ clipPath: 'polygon(0 100%, 0 0, 100% 100%)' }} />
               <div className="relative bg-[#111] rounded-[48px] p-[10px] shadow-2xl pointer-events-none select-none" aria-hidden="true">
                 <div className="rounded-[40px] overflow-hidden relative" style={{ background: heroAppDark ? '#1e1e1e' : '#ffffff', width: 280 }}>
                   <StatusBar dark={heroAppDark} />

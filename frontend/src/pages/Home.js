@@ -225,60 +225,67 @@ export default function Home() {
           </div>
           <p className="text-center text-slate-500 mb-14">Instant download. No sign-up required.</p>
 
-          {/* Bento grid around the phone */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_1.05fr_1fr] gap-5">
+          {/* Bento grid around the phone. Mobile is a 2-column bento like the
+              reference: green spans both, then 15+ / tagline side by side,
+              then the phone (2 rows tall) beside the pricing and gauge cards.
+              Desktop positions are pinned with lg-classes so DOM order only
+              drives the mobile layout. */}
+          <div className="grid grid-cols-2 lg:grid-cols-[1fr_1fr_1.05fr_1fr] gap-4 md:gap-5">
             {/* Mint headline stat */}
-            <div className="lg:col-span-2 rounded-[28px] bg-emerald-400 px-8 py-14 flex flex-col items-center justify-center text-center">
-              <span className="font-display font-black text-6xl md:text-7xl text-slate-900">1,000+</span>
-              <span className="mt-4 text-lg text-emerald-950 max-w-md">people just like you have created professional documents with MintSlip</span>
-            </div>
-
-            {/* Pricing */}
-            <div className="rounded-[28px] bg-slate-100 px-8 py-14 flex flex-col items-center justify-center text-center lg:col-start-4 lg:row-start-1">
-              <span className="text-xl text-slate-800">Documents start at</span>
-              <span className="font-display font-black text-6xl md:text-7xl text-slate-900 my-2">$9.99</span>
-              <span className="text-xl text-slate-800">each</span>
+            <div className="col-span-2 rounded-[28px] bg-emerald-400 px-6 py-10 md:px-8 md:py-14 flex flex-col items-center justify-center text-center">
+              <span className="font-display font-black text-5xl sm:text-6xl md:text-7xl text-slate-900">1,000+</span>
+              <span className="mt-4 text-base md:text-lg text-emerald-950 max-w-md">people just like you have created professional documents with MintSlip</span>
             </div>
 
             {/* Document count */}
-            <div className="rounded-[28px] bg-[#0b0b0b] px-8 py-14 flex flex-col items-center justify-center text-center lg:col-start-1 lg:row-start-2">
-              <span className="font-display font-black text-6xl md:text-7xl text-white">15<span className="text-emerald-400">+</span></span>
-              <span className="mt-3 text-lg text-slate-300">document types ready to generate</span>
+            <div className="rounded-[28px] bg-[#0b0b0b] px-4 py-10 md:px-8 md:py-14 flex flex-col items-center justify-center text-center lg:col-start-1 lg:row-start-2">
+              <span className="font-display font-black text-5xl sm:text-6xl md:text-7xl text-white">15<span className="text-emerald-400">+</span></span>
+              <span className="mt-3 text-sm md:text-lg text-slate-300">document types ready to generate</span>
             </div>
 
             {/* Tagline */}
-            <div className="rounded-[28px] bg-slate-100 px-8 py-14 flex items-center justify-center lg:col-start-2 lg:row-start-2">
-              <span className="font-display text-4xl md:text-5xl text-slate-900 font-medium text-center leading-tight">One form.<br />Done in minutes.</span>
+            <div className="rounded-[28px] bg-slate-100 px-4 py-10 md:px-8 md:py-14 flex items-center justify-center lg:col-start-2 lg:row-start-2">
+              <span className="font-display text-2xl sm:text-3xl lg:text-5xl text-slate-900 font-medium text-center leading-tight">One form.<br />Done in minutes.</span>
             </div>
 
-            {/* Live /app phone */}
-            <div className="relative flex items-center justify-center lg:col-start-3 lg:row-start-1 lg:row-span-2 py-6 lg:py-0">
-              <div className="relative bg-[#111] rounded-[48px] p-[10px] shadow-2xl pointer-events-none select-none" aria-hidden="true">
-                <div className="rounded-[40px] overflow-hidden relative" style={{ background: heroAppDark ? '#1e1e1e' : '#ffffff', width: 280 }}>
-                  <StatusBar dark={heroAppDark} />
-                  <iframe
-                    src="/app"
-                    title="Live MintSlip app"
-                    loading="lazy"
-                    scrolling="no"
-                    tabIndex={-1}
-                    className="w-full border-0 block"
-                    style={{ height: 596 }}
-                  />
+            {/* Live /app phone — scaled down into its half-width column on
+                mobile (bottom cropped like the reference), full size on lg */}
+            <div className="relative row-span-2 lg:col-start-3 lg:row-start-1 lg:row-span-2 flex items-start lg:items-center justify-center overflow-hidden lg:overflow-visible">
+              <div className="origin-top scale-[0.54] sm:scale-90 lg:scale-100 lg:py-0">
+                <div className="relative bg-[#111] rounded-[48px] p-[10px] shadow-2xl pointer-events-none select-none" aria-hidden="true">
+                  <div className="rounded-[40px] overflow-hidden relative" style={{ background: heroAppDark ? '#1e1e1e' : '#ffffff', width: 280 }}>
+                    <StatusBar dark={heroAppDark} />
+                    <iframe
+                      src="/app"
+                      title="Live MintSlip app"
+                      loading="lazy"
+                      scrolling="no"
+                      tabIndex={-1}
+                      className="w-full border-0 block"
+                      style={{ height: 596 }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Pricing */}
+            <div className="rounded-[28px] bg-slate-100 px-4 py-10 md:px-8 md:py-14 flex flex-col items-center justify-center text-center lg:col-start-4 lg:row-start-1">
+              <span className="text-base md:text-xl text-slate-800">Documents start at</span>
+              <span className="font-display font-black text-5xl sm:text-6xl md:text-7xl text-slate-900 my-2">$9.99</span>
+              <span className="text-base md:text-xl text-slate-800">each</span>
+            </div>
+
             {/* Brand gauge: the mint arc slowly fills, then the logo spins to
                 the opposite side and back; the sequence loops. */}
-            <div className="rounded-[28px] bg-[#0b0b0b] px-8 py-14 flex items-center justify-center lg:col-start-4 lg:row-start-2">
-              <div className="relative w-40 h-40 flex items-center justify-center">
+            <div className="rounded-[28px] bg-[#0b0b0b] px-4 py-10 md:px-8 md:py-14 flex items-center justify-center lg:col-start-4 lg:row-start-2">
+              <div className="relative w-28 h-28 md:w-40 md:h-40 flex items-center justify-center">
                 <svg viewBox="0 0 160 160" className="absolute inset-0 w-full h-full" aria-hidden="true">
                   <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="14" strokeLinecap="round" strokeDasharray="300 500" transform="rotate(115 80 80)" />
                   <circle className="gauge-arc" cx="80" cy="80" r="66" fill="none" stroke="#34d399" strokeWidth="14" strokeLinecap="round" strokeDasharray="110 500" transform="rotate(115 80 80)" />
                 </svg>
-                <div className="gauge-logo w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
-                  <img src={MintSlipLogo} alt="MintSlip" className="w-16 h-auto" />
+                <div className="gauge-logo w-[68px] h-[68px] md:w-24 md:h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                  <img src={MintSlipLogo} alt="MintSlip" className="w-11 md:w-16 h-auto" />
                 </div>
               </div>
               <style>{`

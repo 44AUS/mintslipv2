@@ -250,7 +250,7 @@ export default function Home() {
 
             {/* Live /app phone — scaled down into its half-width column on
                 mobile (bottom cropped like the reference), full size on lg */}
-            <div className="relative row-span-2 lg:col-start-3 lg:row-start-1 lg:row-span-2 flex items-start lg:items-center justify-center overflow-hidden lg:overflow-visible">
+            <div className="relative row-span-2 h-[360px] sm:h-[596px] lg:h-auto lg:col-start-3 lg:row-start-1 lg:row-span-2 flex items-start lg:items-center justify-center overflow-hidden lg:overflow-visible">
               <div className="origin-top scale-[0.54] sm:scale-90 lg:scale-100 lg:py-0">
                 <div className="relative bg-[#111] rounded-[48px] p-[10px] shadow-2xl pointer-events-none select-none" aria-hidden="true">
                   <div className="rounded-[40px] overflow-hidden relative" style={{ background: heroAppDark ? '#1e1e1e' : '#ffffff', width: 280 }}>
@@ -270,15 +270,15 @@ export default function Home() {
             </div>
 
             {/* Pricing */}
-            <div className="rounded-[28px] bg-slate-100 px-4 py-10 md:px-8 md:py-14 flex flex-col items-center justify-center text-center lg:col-start-4 lg:row-start-1">
-              <span className="text-base md:text-xl text-slate-800">Documents start at</span>
-              <span className="font-display font-black text-5xl sm:text-6xl md:text-7xl text-slate-900 my-2">$9.99</span>
-              <span className="text-base md:text-xl text-slate-800">each</span>
+            <div className="rounded-[28px] bg-slate-100 h-[172px] sm:h-[290px] lg:h-auto px-4 py-4 md:px-8 lg:py-14 flex flex-col items-center justify-center text-center lg:col-start-4 lg:row-start-1">
+              <span className="text-sm sm:text-base md:text-xl text-slate-800">Documents start at</span>
+              <span className="font-display font-black text-4xl sm:text-6xl md:text-7xl text-slate-900 my-1.5 md:my-2">$9.99</span>
+              <span className="text-sm sm:text-base md:text-xl text-slate-800">each</span>
             </div>
 
             {/* Brand gauge: the mint arc slowly fills, then the logo spins to
                 the opposite side and back; the sequence loops. */}
-            <div className="rounded-[28px] bg-[#0b0b0b] px-4 py-10 md:px-8 md:py-14 flex items-center justify-center lg:col-start-4 lg:row-start-2">
+            <div className="rounded-[28px] bg-[#0b0b0b] h-[172px] sm:h-[290px] lg:h-auto px-4 py-4 md:px-8 lg:py-14 flex items-center justify-center lg:col-start-4 lg:row-start-2">
               <div className="relative w-28 h-28 md:w-40 md:h-40 flex items-center justify-center">
                 <svg viewBox="0 0 160 160" className="absolute inset-0 w-full h-full" aria-hidden="true">
                   <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="14" strokeLinecap="round" strokeDasharray="300 500" transform="rotate(115 80 80)" />

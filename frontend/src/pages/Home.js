@@ -282,7 +282,7 @@ export default function Home() {
               <div className="relative w-28 h-28 md:w-40 md:h-40 flex items-center justify-center">
                 <svg viewBox="0 0 160 160" className="absolute inset-0 w-full h-full" aria-hidden="true">
                   <circle cx="80" cy="80" r="66" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="14" strokeLinecap="round" strokeDasharray="300 500" transform="rotate(115 80 80)" />
-                  <circle className="gauge-arc" cx="80" cy="80" r="66" fill="none" stroke="#34d399" strokeWidth="14" strokeLinecap="round" strokeDasharray="110 500" transform="rotate(115 80 80)" />
+                  <circle className="gauge-arc" cx="80" cy="80" r="66" fill="none" stroke="#34d399" strokeWidth="14" strokeLinecap="round" strokeDasharray="300 500" transform="rotate(115 80 80)" />
                 </svg>
                 <div className="gauge-logo w-[68px] h-[68px] md:w-24 md:h-24 rounded-full bg-white flex items-center justify-center overflow-hidden">
                   <img src={MintSlipLogo} alt="MintSlip" className="w-11 md:w-16 h-auto" />
@@ -290,11 +290,11 @@ export default function Home() {
               </div>
               <style>{`
                 .gauge-arc {
-                  stroke-dasharray: 110 500;
+                  stroke-dasharray: 300 500;
                   animation: gaugeFill 5.5s ease-in-out infinite;
                 }
                 @keyframes gaugeFill {
-                  0% { stroke-dashoffset: 110; }
+                  0% { stroke-dashoffset: 300; }
                   40%, 100% { stroke-dashoffset: 0; }
                 }
                 .gauge-logo { animation: gaugeSpin 5.5s ease-in-out infinite; }
